@@ -20,7 +20,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { leaveData } from "@/lib/data";
+import { leaveData, Leave } from "@/lib/data";
+import { AddLeaveRequestSheet } from "@/components/leave/add-leave-request-sheet";
+
 
 type Status = "Approved" | "Pending" | "Rejected";
 
@@ -32,7 +34,9 @@ const statusVariantMap: Record<Status, "default" | "secondary" | "destructive"> 
   };
 
 export default function LeavePage() {
-  const [leaves, setLeaves] = useState(leaveData);
+  const [leaves, setLeaves] = useState<Leave[]>(leaveData);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+
 
   const handleLeaveStatusChange = (id: string, status: Status) => {
     setLeaves((prevLeaves) =>
@@ -40,6 +44,16 @@ export default function LeavePage() {
         leave.id === id ? { ...leave, status: status } : leave
       )
     );
+  };
+  
+  const handleAddLeaveRequest = (newLeaveRequest: Omit<Leave, 'id' | 'status'>) => {
+    const newId = `LVE${(leaves.length + 1).toString().padStart(3, '0')}`;
+    const newRequest: Leave = {
+      id: newId,
+      ...newLeaveRequest,
+      status: 'Pending',
+    };
+    setLeaves([...leaves, newRequest]);
   };
 
   const pendingCount = leaves.filter((l) => l.status === "Pending").length;
@@ -51,7 +65,7 @@ export default function LeavePage() {
         <h1 className="text-3xl font-bold tracking-tight">
           Gestion des Congés
         </h1>
-        <Button>
+        <Button onClick={() => setIsSheetOpen(true)}>
           <PlusCircle className="mr-2 h-4 w-4" />
           Nouvelle demande de congé
         </Button>
@@ -151,6 +165,11 @@ export default function LeavePage() {
           </Table>
         </CardContent>
       </Card>
+       <AddLeaveRequestSheet
+        isOpen={isSheetOpen}
+        onClose={() => setIsSheetOpen(false)}
+        onAddLeaveRequest={handleAddLeaveRequest}
+      />
     </div>
   );
 }

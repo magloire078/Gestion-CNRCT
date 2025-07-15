@@ -15,7 +15,16 @@ export const employeeData: Employee[] = [
   { id: 'EMP006', name: 'Fiona Glenanne', department: 'Operations', role: 'Operations Manager', status: 'Active' },
 ];
 
-export const leaveData = [
+export type Leave = {
+  id: string;
+  employee: string;
+  type: string;
+  startDate: string;
+  endDate: string;
+  status: 'Approved' | 'Pending' | 'Rejected';
+};
+
+export const leaveData: Leave[] = [
   { id: 'LVE001', employee: 'Charlie Brown', type: 'Annual Leave', startDate: '2024-07-20', endDate: '2024-07-25', status: 'Approved' },
   { id: 'LVE002', employee: 'Alice Johnson', type: 'Sick Leave', startDate: '2024-08-01', endDate: '2024-08-02', status: 'Pending' },
   { id: 'LVE003', employee: 'Bob Smith', type: 'Personal Leave', startDate: '2024-08-05', endDate: '2024-08-05', status: 'Pending' },

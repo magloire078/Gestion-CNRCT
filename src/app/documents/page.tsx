@@ -33,7 +33,7 @@ export default function DocumentGeneratorPage() {
   const [documentContent, setDocumentContent] = useState('');
 
   useEffect(() => {
-    if (selectedEmployeeId) {
+    if (selectedEmployeeId && selectedEmployeeId !== 'none') {
       const employee = employeeData.find(emp => emp.id === selectedEmployeeId);
       if (employee) {
         const content = `Employé: ${employee.name}\nRôle: ${employee.role}\nDépartement: ${employee.department}\n`;
@@ -85,7 +85,7 @@ export default function DocumentGeneratorPage() {
                      <SelectValue placeholder="Sélectionnez un employé pour pré-remplir..." />
                   </SelectTrigger>
                   <SelectContent>
-                     <SelectItem value="">Aucun</SelectItem>
+                     <SelectItem value="none">Aucun</SelectItem>
                     {employeeData.map(emp => (
                       <SelectItem key={emp.id} value={emp.id}>{emp.name} ({emp.role})</SelectItem>
                     ))}

@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -12,6 +13,7 @@ import {
   LogOut,
   Building2,
   MessageSquare,
+  Landmark,
 } from "lucide-react";
 
 import {
@@ -32,6 +34,7 @@ import { Button } from "@/components/ui/button";
 const menuItems = [
   { href: "/", label: "Tableau de Bord", icon: LayoutDashboard },
   { href: "/employees", label: "Employés", icon: Users },
+  { href: "/payroll", label: "Paie", icon: Landmark },
   { href: "/leave", label: "Congés", icon: CalendarOff },
   { href: "/it-assets", label: "Actifs TI", icon: Laptop },
   { href: "/fleet", label: "Flotte de Véhicules", icon: Car },

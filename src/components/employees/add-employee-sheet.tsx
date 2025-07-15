@@ -26,7 +26,7 @@ import type { Employee } from "@/lib/data";
 interface AddEmployeeSheetProps {
   isOpen: boolean;
   onClose: () => void;
-  onAddEmployee: (employee: Omit<Employee, "id">) => void;
+  onAddEmployee: (employee: Omit<Employee, "id">) => Promise<void>;
 }
 
 export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployeeSheetProps) {
@@ -35,24 +35,41 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
   const [department, setDepartment] = useState("");
   const [status, setStatus] = useState<Employee['status']>('Active');
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = () => {
-    if (!name || !role || !department) {
-      setError("Veuillez remplir tous les champs obligatoires.");
-      return;
-    }
-    onAddEmployee({ name, role, department, status });
-    setError("");
-    onClose();
-    // Reset form
+  const resetForm = () => {
     setName("");
     setRole("");
     setDepartment("");
     setStatus("Active");
+    setError("");
+  }
+
+  const handleClose = () => {
+    resetForm();
+    onClose();
+  }
+
+  const handleSubmit = async () => {
+    if (!name || !role || !department) {
+      setError("Veuillez remplir tous les champs obligatoires.");
+      return;
+    }
+    setIsSubmitting(true);
+    setError("");
+    try {
+      await onAddEmployee({ name, role, department, status });
+      handleClose();
+    } catch(err) {
+      setError("Échec de l'ajout de l'employé. Veuillez réessayer.");
+      console.error(err);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <Sheet open={isOpen} onOpenChange={onClose}>
+    <Sheet open={isOpen} onOpenChange={handleClose}>
       <SheetContent className="sm:max-w-lg">
         <SheetHeader>
           <SheetTitle>Ajouter un nouvel employé</SheetTitle>
@@ -109,11 +126,13 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
         </div>
         <SheetFooter>
           <SheetClose asChild>
-            <Button type="button" variant="outline">
+            <Button type="button" variant="outline" onClick={handleClose}>
               Annuler
             </Button>
           </SheetClose>
-          <Button type="submit" onClick={handleSubmit}>Enregistrer</Button>
+          <Button type="submit" onClick={handleSubmit} disabled={isSubmitting}>
+            {isSubmitting ? "Enregistrement..." : "Enregistrer"}
+          </Button>
         </SheetFooter>
       </SheetContent>
     </Sheet>

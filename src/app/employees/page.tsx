@@ -1,14 +1,16 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { employeeData, Employee } from "@/lib/data";
+import type { Employee } from "@/lib/data";
 import { AddEmployeeSheet } from "@/components/employees/add-employee-sheet";
+import { getEmployees, addEmployee } from "@/services/employee-service";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type Status = 'Active' | 'On Leave' | 'Terminated';
 
@@ -19,12 +21,37 @@ const statusVariantMap: Record<Status, "default" | "secondary" | "destructive"> 
 };
 
 export default function EmployeesPage() {
-  const [employees, setEmployees] = useState<Employee[]>(employeeData);
+  const [employees, setEmployees] = useState<Employee[]>([]);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleAddEmployee = (newEmployee: Omit<Employee, 'id'>) => {
-    const newId = `EMP${(employees.length + 1).toString().padStart(3, '0')}`;
-    setEmployees([...employees, { id: newId, ...newEmployee }]);
+  useEffect(() => {
+    async function fetchEmployees() {
+      try {
+        setLoading(true);
+        const fetchedEmployees = await getEmployees();
+        setEmployees(fetchedEmployees);
+        setError(null);
+      } catch (err) {
+        setError("Impossible de charger les employés. Veuillez vérifier la configuration de votre base de données Firestore et les règles de sécurité.");
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchEmployees();
+  }, []);
+
+  const handleAddEmployee = async (newEmployeeData: Omit<Employee, 'id'>) => {
+    try {
+        const newEmployee = await addEmployee(newEmployeeData);
+        setEmployees(prev => [...prev, newEmployee]);
+        setIsSheetOpen(false);
+    } catch (err) {
+        console.error("Failed to add employee:", err);
+        // Optionally, show an error to the user
+    }
   };
 
   return (
@@ -42,6 +69,7 @@ export default function EmployeesPage() {
           <CardDescription>Une liste complète de tous les employés de l'entreprise.</CardDescription>
         </CardHeader>
         <CardContent>
+          {error && <p className="text-destructive text-center py-4">{error}</p>}
           <Table>
             <TableHeader>
               <TableRow>
@@ -53,17 +81,29 @@ export default function EmployeesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {employees.map((employee) => (
-                <TableRow key={employee.id}>
-                  <TableCell className="font-medium">{employee.id}</TableCell>
-                  <TableCell>{employee.name}</TableCell>
-                  <TableCell>{employee.department}</TableCell>
-                  <TableCell>{employee.role}</TableCell>
-                  <TableCell>
-                    <Badge variant={statusVariantMap[employee.status as Status] || 'default'}>{employee.status}</Badge>
-                  </TableCell>
-                </TableRow>
-              ))}
+              {loading ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <TableRow key={i}>
+                    <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                    <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                employees.map((employee) => (
+                  <TableRow key={employee.id}>
+                    <TableCell className="font-medium">{employee.id}</TableCell>
+                    <TableCell>{employee.name}</TableCell>
+                    <TableCell>{employee.department}</TableCell>
+                    <TableCell>{employee.role}</TableCell>
+                    <TableCell>
+                      <Badge variant={statusVariantMap[employee.status as Status] || 'default'}>{employee.status}</Badge>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </CardContent>

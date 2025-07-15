@@ -1,12 +1,11 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Sheet,
@@ -30,12 +29,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { employeeData, Leave } from "@/lib/data";
+import type { Leave, Employee } from "@/lib/data";
+import { getEmployees } from "@/services/employee-service";
 
 interface AddLeaveRequestSheetProps {
   isOpen: boolean;
   onClose: () => void;
-  onAddLeaveRequest: (leaveRequest: Omit<Leave, "id" | "status">) => void;
+  onAddLeaveRequest: (leaveRequest: Omit<Leave, "id" | "status">) => Promise<void>;
 }
 
 export function AddLeaveRequestSheet({
@@ -43,13 +43,44 @@ export function AddLeaveRequestSheet({
   onClose,
   onAddLeaveRequest,
 }: AddLeaveRequestSheetProps) {
+  const [employees, setEmployees] = useState<Employee[]>([]);
   const [employee, setEmployee] = useState("");
   const [leaveType, setLeaveType] = useState("");
   const [startDate, setStartDate] = useState<Date>();
   const [endDate, setEndDate] = useState<Date>();
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = () => {
+  useEffect(() => {
+    if (isOpen) {
+      async function fetchEmployees() {
+        try {
+          const fetchedEmployees = await getEmployees();
+          setEmployees(fetchedEmployees.filter(e => e.status === 'Active'));
+        } catch (error) {
+          console.error("Failed to fetch employees for leave request form", error);
+        }
+      }
+      fetchEmployees();
+    }
+  }, [isOpen]);
+  
+  const resetForm = () => {
+    setEmployee("");
+    setLeaveType("");
+    setStartDate(undefined);
+    setEndDate(undefined);
+    setError("");
+  }
+
+  const handleClose = () => {
+    resetForm();
+    onClose();
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
     if (!employee || !leaveType || !startDate || !endDate) {
       setError("Veuillez remplir tous les champs.");
       return;
@@ -58,24 +89,30 @@ export function AddLeaveRequestSheet({
       setError("La date de fin ne peut pas être antérieure à la date de début.");
       return;
     }
-    onAddLeaveRequest({
-      employee,
-      type: leaveType,
-      startDate: format(startDate, "yyyy-MM-dd"),
-      endDate: format(endDate, "yyyy-MM-dd"),
-    });
+    
+    setIsSubmitting(true);
     setError("");
-    onClose();
-    // Reset form
-    setEmployee("");
-    setLeaveType("");
-    setStartDate(undefined);
-    setEndDate(undefined);
+
+    try {
+      await onAddLeaveRequest({
+        employee,
+        type: leaveType,
+        startDate: format(startDate, "yyyy-MM-dd"),
+        endDate: format(endDate, "yyyy-MM-dd"),
+      });
+      handleClose();
+    } catch(err) {
+       setError("Échec de l'ajout de la demande. Veuillez réessayer.");
+       console.error(err);
+    } finally {
+        setIsSubmitting(false);
+    }
   };
 
   return (
-    <Sheet open={isOpen} onOpenChange={onClose}>
+    <Sheet open={isOpen} onOpenChange={(open) => !open && handleClose()}>
       <SheetContent className="sm:max-w-lg">
+        <form onSubmit={handleSubmit}>
         <SheetHeader>
           <SheetTitle>Nouvelle demande de congé</SheetTitle>
           <SheetDescription>
@@ -92,7 +129,7 @@ export function AddLeaveRequestSheet({
                 <SelectValue placeholder="Sélectionnez un employé..." />
               </SelectTrigger>
               <SelectContent>
-                {employeeData.map((emp) => (
+                {employees.map((emp) => (
                   <SelectItem key={emp.id} value={emp.name}>
                     {emp.name}
                   </SelectItem>
@@ -179,14 +216,15 @@ export function AddLeaveRequestSheet({
         </div>
         <SheetFooter>
           <SheetClose asChild>
-            <Button type="button" variant="outline">
+            <Button type="button" variant="outline" onClick={handleClose}>
               Annuler
             </Button>
           </SheetClose>
-          <Button type="submit" onClick={handleSubmit}>
-            Soumettre la Demande
+          <Button type="submit" disabled={isSubmitting}>
+             {isSubmitting ? "Soumission..." : "Soumettre la Demande"}
           </Button>
         </SheetFooter>
+        </form>
       </SheetContent>
     </Sheet>
   );

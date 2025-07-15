@@ -1,8 +1,8 @@
 
 "use client";
 
-import { useState, useMemo } from "react";
-import { PlusCircle, Check, X, Search } from "lucide-react";
+import { useState, useMemo, useEffect } from "react";
+import { PlusCircle, Check, X, Search, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -20,10 +20,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { leaveData, Leave } from "@/lib/data";
+import type { Leave } from "@/lib/data";
 import { AddLeaveRequestSheet } from "@/components/leave/add-leave-request-sheet";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { getLeaves, addLeave, updateLeaveStatus } from "@/services/leave-service";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useToast } from "@/hooks/use-toast";
 
 type Status = "Approved" | "Pending" | "Rejected";
 
@@ -37,30 +40,61 @@ const statusVariantMap: Record<Status, "default" | "secondary" | "destructive"> 
 const leaveTypes = ["Annual Leave", "Sick Leave", "Personal Leave", "Maternity Leave", "Unpaid Leave"];
 
 export default function LeavePage() {
-  const [leaves, setLeaves] = useState<Leave[]>(leaveData);
+  const [leaves, setLeaves] = useState<Leave[]>([]);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
   
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
 
+  useEffect(() => {
+    async function fetchLeaves() {
+      try {
+        setLoading(true);
+        const fetchedLeaves = await getLeaves();
+        setLeaves(fetchedLeaves);
+        setError(null);
+      } catch (err) {
+        setError("Impossible de charger les demandes de congé. Veuillez vérifier la configuration de votre base de données Firestore et les règles de sécurité.");
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchLeaves();
+  }, []);
 
-  const handleLeaveStatusChange = (id: string, status: Status) => {
-    setLeaves((prevLeaves) =>
-      prevLeaves.map((leave) =>
-        leave.id === id ? { ...leave, status: status } : leave
-      )
-    );
+  const handleLeaveStatusChange = async (id: string, status: Status) => {
+    try {
+      await updateLeaveStatus(id, status);
+      setLeaves((prevLeaves) =>
+        prevLeaves.map((leave) =>
+          leave.id === id ? { ...leave, status: status } : leave
+        )
+      );
+      toast({
+        title: "Statut mis à jour",
+        description: `La demande a été marquée comme ${status}.`,
+      });
+    } catch (err) {
+       toast({
+        title: "Erreur",
+        description: "Impossible de mettre à jour le statut de la demande.",
+        variant: "destructive",
+      });
+    }
   };
   
-  const handleAddLeaveRequest = (newLeaveRequest: Omit<Leave, 'id' | 'status'>) => {
-    const newId = `LVE${(leaves.length + 1).toString().padStart(3, '0')}`;
-    const newRequest: Leave = {
-      id: newId,
-      ...newLeaveRequest,
-      status: 'Pending',
-    };
-    setLeaves([...leaves, newRequest]);
+  const handleAddLeaveRequest = async (newLeaveRequest: Omit<Leave, 'id' | 'status'>) => {
+    const newRequest = await addLeave(newLeaveRequest);
+    setLeaves(prev => [...prev, newRequest].sort((a,b) => b.startDate.localeCompare(a.startDate)));
+     toast({
+        title: "Demande ajoutée",
+        description: `La demande de congé pour ${newRequest.employee} a été ajoutée.`,
+      });
   };
 
   const filteredLeaves = useMemo(() => {
@@ -72,8 +106,8 @@ export default function LeavePage() {
     });
   }, [leaves, searchTerm, typeFilter, statusFilter]);
 
-  const pendingCount = leaves.filter((l) => l.status === "Pending").length;
-  const approvedCount = leaves.filter((l) => l.status === "Approved").length;
+  const pendingCount = useMemo(() => leaves.filter((l) => l.status === "Pending").length, [leaves]);
+  const approvedCount = useMemo(() => leaves.filter((l) => l.status === "Approved").length, [leaves]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -96,18 +130,18 @@ export default function LeavePage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-4xl font-bold">{pendingCount}</p>
+            {loading ? <Skeleton className="h-10 w-16"/> : <p className="text-4xl font-bold">{pendingCount}</p>}
           </CardContent>
         </Card>
         <Card>
           <CardHeader>
             <CardTitle>Demandes Approuvées</CardTitle>
             <CardDescription>
-              Total des demandes de congé approuvées.
+              Total des demandes de congé approuvées cette période.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-4xl font-bold">{approvedCount}</p>
+            {loading ? <Skeleton className="h-10 w-16"/> : <p className="text-4xl font-bold">{approvedCount}</p>}
           </CardContent>
         </Card>
       </div>
@@ -151,7 +185,7 @@ export default function LeavePage() {
               </SelectContent>
             </Select>
           </div>
-
+          {error && <p className="text-destructive text-center py-4">{error}</p>}
           <Table>
             <TableHeader>
               <TableRow>
@@ -164,54 +198,67 @@ export default function LeavePage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredLeaves.map((leave) => (
-                <TableRow key={leave.id}>
-                  <TableCell className="font-medium">{leave.employee}</TableCell>
-                  <TableCell>{leave.type}</TableCell>
-                  <TableCell>{leave.startDate}</TableCell>
-                  <TableCell>{leave.endDate}</TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={
-                        (statusVariantMap[leave.status as Status] || "default")
-                      }
-                    >
-                      {leave.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="h-8 w-8"
-                        disabled={leave.status !== "Pending"}
-                        onClick={() =>
-                          handleLeaveStatusChange(leave.id, "Approved")
+              {loading ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <TableRow key={i}>
+                    <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                    <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
+                    <TableCell><div className="flex justify-end gap-2"><Skeleton className="h-8 w-8 rounded-md" /><Skeleton className="h-8 w-8 rounded-md" /></div></TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                filteredLeaves.map((leave) => (
+                  <TableRow key={leave.id}>
+                    <TableCell className="font-medium">{leave.employee}</TableCell>
+                    <TableCell>{leave.type}</TableCell>
+                    <TableCell>{leave.startDate}</TableCell>
+                    <TableCell>{leave.endDate}</TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={
+                          (statusVariantMap[leave.status as Status] || "default")
                         }
                       >
-                        <Check className="h-4 w-4" />
-                        <span className="sr-only">Approuver</span>
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="h-8 w-8"
-                        disabled={leave.status !== "Pending"}
-                        onClick={() =>
-                          handleLeaveStatusChange(leave.id, "Rejected")
-                        }
-                      >
-                        <X className="h-4 w-4" />
-                        <span className="sr-only">Rejeter</span>
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
+                        {leave.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="h-8 w-8"
+                          disabled={leave.status !== "Pending"}
+                          onClick={() =>
+                            handleLeaveStatusChange(leave.id, "Approved")
+                          }
+                        >
+                          <Check className="h-4 w-4" />
+                          <span className="sr-only">Approuver</span>
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="h-8 w-8"
+                          disabled={leave.status !== "Pending"}
+                          onClick={() =>
+                            handleLeaveStatusChange(leave.id, "Rejected")
+                          }
+                        >
+                          <X className="h-4 w-4" />
+                          <span className="sr-only">Rejeter</span>
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
-          {filteredLeaves.length === 0 && (
+          { !loading && filteredLeaves.length === 0 && (
             <div className="text-center py-10 text-muted-foreground">
                 Aucune demande de congé trouvée.
             </div>

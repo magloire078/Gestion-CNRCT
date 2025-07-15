@@ -17,26 +17,26 @@ export default function EmployeesPage() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">Employee Management</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Gestion des Employés</h1>
         <Button>
           <PlusCircle className="mr-2 h-4 w-4" />
-          Add Employee
+          Ajouter un employé
         </Button>
       </div>
       <Card>
         <CardHeader>
-          <CardTitle>Employee List</CardTitle>
-          <CardDescription>A complete list of all employees in the company.</CardDescription>
+          <CardTitle>Liste des employés</CardTitle>
+          <CardDescription>Une liste complète de tous les employés de l'entreprise.</CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Employee ID</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Department</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead>ID Employé</TableHead>
+                <TableHead>Nom</TableHead>
+                <TableHead>Département</TableHead>
+                <TableHead>Rôle</TableHead>
+                <TableHead>Statut</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

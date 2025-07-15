@@ -21,18 +21,18 @@ export default function LeavePage() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">Leave Management</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Gestion des Congés</h1>
         <Button>
           <PlusCircle className="mr-2 h-4 w-4" />
-          New Leave Request
+          Nouvelle demande de congé
         </Button>
       </div>
 
        <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Pending Requests</CardTitle>
-            <CardDescription>Leave requests awaiting approval.</CardDescription>
+            <CardTitle>Demandes en attente</CardTitle>
+            <CardDescription>Demandes de congé en attente d'approbation.</CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-4xl font-bold">{pendingCount}</p>
@@ -40,8 +40,8 @@ export default function LeavePage() {
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Approved Requests</CardTitle>
-            <CardDescription>Total approved leave requests.</CardDescription>
+            <CardTitle>Demandes Approuvées</CardTitle>
+            <CardDescription>Total des demandes de congé approuvées.</CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-4xl font-bold">{approvedCount}</p>
@@ -51,18 +51,18 @@ export default function LeavePage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>All Leave Requests</CardTitle>
-          <CardDescription>Manage all employee leave requests here.</CardDescription>
+          <CardTitle>Toutes les Demandes de Congé</CardTitle>
+          <CardDescription>Gérez toutes les demandes de congé des employés ici.</CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Employee</TableHead>
-                <TableHead>Leave Type</TableHead>
-                <TableHead>Start Date</TableHead>
-                <TableHead>End Date</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead>Employé</TableHead>
+                <TableHead>Type de congé</TableHead>
+                <TableHead>Date de début</TableHead>
+                <TableHead>Date de fin</TableHead>
+                <TableHead>Statut</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -80,11 +80,11 @@ export default function LeavePage() {
                     <div className="flex justify-end gap-2">
                       <Button variant="outline" size="icon" className="h-8 w-8" disabled={leave.status !== 'Pending'}>
                         <Check className="h-4 w-4" />
-                        <span className="sr-only">Approve</span>
+                        <span className="sr-only">Approuver</span>
                       </Button>
                       <Button variant="outline" size="icon" className="h-8 w-8" disabled={leave.status !== 'Pending'}>
                         <X className="h-4 w-4" />
-                        <span className="sr-only">Reject</span>
+                        <span className="sr-only">Rejeter</span>
                       </Button>
                     </div>
                   </TableCell>

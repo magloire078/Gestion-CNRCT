@@ -29,11 +29,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 
 const menuItems = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/employees", label: "Employees", icon: Users },
-  { href: "/leave", label: "Leave", icon: CalendarOff },
-  { href: "/it-assets", label: "IT Assets", icon: Laptop },
-  { href: "/fleet", label: "Vehicle Fleet", icon: Car },
+  { href: "/", label: "Tableau de Bord", icon: LayoutDashboard },
+  { href: "/employees", label: "Employés", icon: Users },
+  { href: "/leave", label: "Congés", icon: CalendarOff },
+  { href: "/it-assets", label: "Actifs TI", icon: Laptop },
+  { href: "/fleet", label: "Flotte de Véhicules", icon: Car },
   { href: "/documents", label: "Documents", icon: FileText },
 ];
 
@@ -76,7 +76,7 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
                 <AvatarFallback>A</AvatarFallback>
               </Avatar>
               <div className="flex flex-col">
-                <span className="text-sm font-semibold">Admin User</span>
+                <span className="text-sm font-semibold">Admin</span>
                 <span className="text-xs text-muted-foreground">admin@synergierh.com</span>
               </div>
               <Button variant="ghost" size="icon" className="ml-auto">

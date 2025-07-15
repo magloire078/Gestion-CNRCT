@@ -20,7 +20,7 @@ function SubmitButton() {
   return (
     <Button type="submit" disabled={pending}>
       {pending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Bot className="mr-2 h-4 w-4" />}
-      Generate Document
+      Générer le Document
     </Button>
   );
 }
@@ -32,35 +32,35 @@ export default function DocumentGeneratorPage() {
     <div className="grid gap-6 lg:grid-cols-2">
       <div className="flex flex-col gap-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold tracking-tight">Document Generation</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Génération de Documents</h1>
         </div>
         <form action={formAction}>
           <Card>
             <CardHeader>
-              <CardTitle>Create a New Document</CardTitle>
-              <CardDescription>Use AI to generate legal and policy documents for your organization.</CardDescription>
+              <CardTitle>Créer un nouveau document</CardTitle>
+              <CardDescription>Utilisez l'IA pour générer des documents juridiques et politiques pour votre organisation.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="documentType">Document Type</Label>
+                <Label htmlFor="documentType">Type de document</Label>
                 <Select name="documentType" required>
                   <SelectTrigger id="documentType" className="w-full">
-                    <SelectValue placeholder="Select a document type..." />
+                    <SelectValue placeholder="Sélectionnez un type de document..." />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Employment Contract">Employment Contract</SelectItem>
-                    <SelectItem value="Company Policy">Company Policy</SelectItem>
-                    <SelectItem value="Warning Letter">Warning Letter</SelectItem>
-                    <SelectItem value="Termination Letter">Termination Letter</SelectItem>
+                    <SelectItem value="Employment Contract">Contrat de travail</SelectItem>
+                    <SelectItem value="Company Policy">Politique d'entreprise</SelectItem>
+                    <SelectItem value="Warning Letter">Lettre d'avertissement</SelectItem>
+                    <SelectItem value="Termination Letter">Lettre de licenciement</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="documentContent">Key Information & Context</Label>
+                <Label htmlFor="documentContent">Informations Clés & Contexte</Label>
                 <Textarea
                   id="documentContent"
                   name="documentContent"
-                  placeholder="e.g., For John Doe, position of Software Engineer, starting on August 1st, 2024, with a salary of $80,000 per year..."
+                  placeholder="Ex: Pour John Doe, poste d'Ingénieur Logiciel, début le 1er août 2024, avec un salaire de 80 000 $ par an..."
                   rows={8}
                   required
                 />
@@ -69,7 +69,7 @@ export default function DocumentGeneratorPage() {
               {state.issues && (
                 <Alert variant="destructive">
                   <Terminal className="h-4 w-4" />
-                  <AlertTitle>Error</AlertTitle>
+                  <AlertTitle>Erreur</AlertTitle>
                   <AlertDescription>
                     <ul className="list-disc pl-5">
                       {state.issues.map((issue) => (
@@ -90,8 +90,8 @@ export default function DocumentGeneratorPage() {
       <div className="flex flex-col gap-6 lg:mt-12">
         <Card className="flex-1">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2"><FileText className="h-5 w-5" />Generated Document</CardTitle>
-            <CardDescription>The AI-generated content will appear here.</CardDescription>
+            <CardTitle className="flex items-center gap-2"><FileText className="h-5 w-5" />Document Généré</CardTitle>
+            <CardDescription>Le contenu généré par l'IA apparaîtra ici.</CardDescription>
           </CardHeader>
           <CardContent>
             {state.document ? (
@@ -101,7 +101,7 @@ export default function DocumentGeneratorPage() {
             ) : (
               <div className="flex flex-col items-center justify-center h-64 text-center border-2 border-dashed rounded-lg">
                 <Bot className="h-12 w-12 text-muted-foreground" />
-                <p className="mt-4 text-muted-foreground">Your document is waiting to be generated.</p>
+                <p className="mt-4 text-muted-foreground">Votre document est en attente de génération.</p>
               </div>
             )}
           </CardContent>

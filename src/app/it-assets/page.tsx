@@ -19,26 +19,26 @@ export default function ItAssetsPage() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">IT Asset Management</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Gestion des Actifs Informatiques</h1>
         <Button>
           <PlusCircle className="mr-2 h-4 w-4" />
-          Add New Asset
+          Ajouter un nouvel actif
         </Button>
       </div>
       <Card>
         <CardHeader>
-          <CardTitle>Asset Inventory</CardTitle>
-          <CardDescription>Track all company hardware and software licenses.</CardDescription>
+          <CardTitle>Inventaire des actifs</CardTitle>
+          <CardDescription>Suivez tout le matériel et les licences logicielles de l'entreprise.</CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Asset Tag</TableHead>
+                <TableHead>Étiquette d'actif</TableHead>
                 <TableHead>Type</TableHead>
-                <TableHead>Model</TableHead>
-                <TableHead>Assigned To</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead>Modèle</TableHead>
+                <TableHead>Assigné à</TableHead>
+                <TableHead>Statut</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

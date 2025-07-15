@@ -15,34 +15,34 @@ export default function DashboardPage() {
 
   const stats = [
     {
-      title: 'Total Employees',
+      title: 'Total des employés',
       value: employeeData.length,
       icon: Users,
-      description: `${onLeaveCount} on leave`,
+      description: `${onLeaveCount} en congé`,
     },
     {
-      title: 'Pending Approvals',
+      title: 'Approbations en attente',
       value: pendingLeaveCount,
       icon: FileWarning,
-      description: 'Leave requests',
+      description: 'Demandes de congé',
     },
     {
-      title: 'IT Assets',
+      title: 'Actifs Informatiques',
       value: assetData.length,
       icon: Laptop,
-      description: 'Tracked hardware & software',
+      description: 'Matériel et logiciels suivis',
     },
     {
-      title: 'Fleet Vehicles',
+      title: 'Véhicules de la Flotte',
       value: fleetData.length,
       icon: Car,
-      description: 'Company cars & vans',
+      description: 'Voitures et camionnettes de société',
     },
   ];
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+      <h1 className="text-3xl font-bold tracking-tight">Tableau de Bord</h1>
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat, index) => (
           <Card key={index} className="hover:shadow-lg transition-shadow duration-300">
@@ -60,8 +60,8 @@ export default function DashboardPage() {
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Recent Leave Requests</CardTitle>
-            <CardDescription>A quick look at the latest leave requests.</CardDescription>
+            <CardTitle>Demandes de Congé Récentes</CardTitle>
+            <CardDescription>Un aperçu rapide des dernières demandes de congé.</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -88,8 +88,8 @@ export default function DashboardPage() {
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>New Hires</CardTitle>
-            <CardDescription>Welcoming the newest members of our team.</CardDescription>
+            <CardTitle>Nouvelles Recrues</CardTitle>
+            <CardDescription>Bienvenue aux nouveaux membres de notre équipe.</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">

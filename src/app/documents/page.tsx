@@ -1,7 +1,9 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useFormState, useFormStatus } from "react-dom";
 import { generateDocumentAction, FormState } from "./actions";
+import { employeeData } from "@/lib/data";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Terminal, FileText, Bot, Loader2 } from "lucide-react";
+import { Terminal, FileText, Bot, Loader2, User } from "lucide-react";
 
 const initialState: FormState = {
   message: "",
@@ -27,6 +29,26 @@ function SubmitButton() {
 
 export default function DocumentGeneratorPage() {
   const [state, formAction] = useFormState(generateDocumentAction, initialState);
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState('');
+  const [documentContent, setDocumentContent] = useState('');
+
+  useEffect(() => {
+    if (selectedEmployeeId) {
+      const employee = employeeData.find(emp => emp.id === selectedEmployeeId);
+      if (employee) {
+        const content = `Employé: ${employee.name}\nRôle: ${employee.role}\nDépartement: ${employee.department}\n`;
+        setDocumentContent(content);
+      }
+    } else {
+      setDocumentContent('');
+    }
+  }, [selectedEmployeeId]);
+
+  useEffect(() => {
+    if (state.fields?.documentContent) {
+      setDocumentContent(state.fields.documentContent);
+    }
+  }, [state.fields?.documentContent]);
 
   return (
     <div className="grid gap-6 lg:grid-cols-2">
@@ -43,7 +65,7 @@ export default function DocumentGeneratorPage() {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="documentType">Type de document</Label>
-                <Select name="documentType" required>
+                <Select name="documentType" required defaultValue={state.fields?.documentType}>
                   <SelectTrigger id="documentType" className="w-full">
                     <SelectValue placeholder="Sélectionnez un type de document..." />
                   </SelectTrigger>
@@ -55,6 +77,22 @@ export default function DocumentGeneratorPage() {
                   </SelectContent>
                 </Select>
               </div>
+
+               <div className="space-y-2">
+                <Label htmlFor="employee">Sélectionner un employé (Optionnel)</Label>
+                <Select onValueChange={setSelectedEmployeeId}>
+                  <SelectTrigger id="employee" className="w-full">
+                     <SelectValue placeholder="Sélectionnez un employé pour pré-remplir..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                     <SelectItem value="">Aucun</SelectItem>
+                    {employeeData.map(emp => (
+                      <SelectItem key={emp.id} value={emp.id}>{emp.name} ({emp.role})</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="documentContent">Informations Clés & Contexte</Label>
                 <Textarea
@@ -63,6 +101,8 @@ export default function DocumentGeneratorPage() {
                   placeholder="Ex: Pour John Doe, poste d'Ingénieur Logiciel, début le 1er août 2024, avec un salaire de 80 000 $ par an..."
                   rows={8}
                   required
+                  value={documentContent}
+                  onChange={(e) => setDocumentContent(e.target.value)}
                 />
               </div>
 

@@ -1,3 +1,6 @@
+
+"use client";
+
 import {
   Card,
   CardHeader,
@@ -8,6 +11,9 @@ import {
 import { Users, FileWarning, Laptop, Car } from 'lucide-react';
 import { leaveData, employeeData, assetData, fleetData } from '@/lib/data';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { EmployeeDistributionChart } from '@/components/charts/employee-distribution-chart';
+import { AssetStatusChart } from '@/components/charts/asset-status-chart';
+
 
 export default function DashboardPage() {
   const onLeaveCount = employeeData.filter(e => e.status === 'On Leave').length;
@@ -56,6 +62,26 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
         ))}
+      </div>
+      <div className="grid gap-6 lg:grid-cols-2">
+         <Card>
+          <CardHeader>
+            <CardTitle>Répartition des Employés</CardTitle>
+            <CardDescription>Distribution des employés par département.</CardDescription>
+          </CardHeader>
+          <CardContent>
+             <EmployeeDistributionChart />
+          </CardContent>
+        </Card>
+         <Card>
+          <CardHeader>
+            <CardTitle>État des Actifs Informatiques</CardTitle>
+            <CardDescription>Aperçu du statut actuel de tous les actifs informatiques.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <AssetStatusChart />
+          </CardContent>
+        </Card>
       </div>
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>

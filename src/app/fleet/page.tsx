@@ -1,15 +1,41 @@
+"use client";
+
+import { useState } from "react";
 import { PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { fleetData } from "@/lib/data";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { fleetData, Fleet } from "@/lib/data";
+import { AddVehicleSheet } from "@/components/fleet/add-vehicle-sheet";
 
 export default function FleetPage() {
+  const [vehicles, setVehicles] = useState<Fleet[]>(fleetData);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+
+  const handleAddVehicle = (newVehicle: Fleet) => {
+    setVehicles([...vehicles, newVehicle]);
+  };
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">Gestion de la Flotte de Véhicules</h1>
-        <Button>
+        <h1 className="text-3xl font-bold tracking-tight">
+          Gestion de la Flotte de Véhicules
+        </h1>
+        <Button onClick={() => setIsSheetOpen(true)}>
           <PlusCircle className="mr-2 h-4 w-4" />
           Ajouter un véhicule
         </Button>
@@ -17,7 +43,10 @@ export default function FleetPage() {
       <Card>
         <CardHeader>
           <CardTitle>Flotte de l'Entreprise</CardTitle>
-          <CardDescription>Gérez tous les véhicules de l'entreprise et leurs calendriers d'entretien.</CardDescription>
+          <CardDescription>
+            Gérez tous les véhicules de l'entreprise et leurs calendriers
+            d'entretien.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
@@ -30,7 +59,7 @@ export default function FleetPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {fleetData.map((vehicle) => (
+              {vehicles.map((vehicle) => (
                 <TableRow key={vehicle.plate}>
                   <TableCell className="font-medium">{vehicle.plate}</TableCell>
                   <TableCell>{vehicle.makeModel}</TableCell>
@@ -42,6 +71,11 @@ export default function FleetPage() {
           </Table>
         </CardContent>
       </Card>
+      <AddVehicleSheet
+        isOpen={isSheetOpen}
+        onClose={() => setIsSheetOpen(false)}
+        onAddVehicle={handleAddVehicle}
+      />
     </div>
   );
 }

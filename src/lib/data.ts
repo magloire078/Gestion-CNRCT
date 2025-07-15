@@ -40,7 +40,14 @@ export const assetData: Asset[] = [
   { tag: 'IT-LPT-004', type: 'Laptop', model: 'Dell XPS 15', assignedTo: 'Unassigned', status: 'In Stock' },
 ];
 
-export const fleetData = [
+export type Fleet = {
+  plate: string;
+  makeModel: string;
+  assignedTo: string;
+  maintenanceDue: string;
+};
+
+export const fleetData: Fleet[] = [
   { plate: 'XYZ 123', makeModel: 'Toyota Camry 2022', assignedTo: 'Bob Smith', maintenanceDue: '2024-12-15' },
   { plate: 'ABC 789', makeModel: 'Ford Transit 2021', assignedTo: 'Pool Vehicle', maintenanceDue: '2024-09-30' },
   { plate: 'GHI 456', makeModel: 'Honda Civic 2023', assignedTo: 'Ethan Hunt', maintenanceDue: '2025-02-10' },

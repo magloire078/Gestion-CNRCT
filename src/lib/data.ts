@@ -1,4 +1,12 @@
-export const employeeData = [
+export type Employee = {
+  id: string;
+  name: string;
+  department: string;
+  role: string;
+  status: 'Active' | 'On Leave' | 'Terminated';
+};
+
+export const employeeData: Employee[] = [
   { id: 'EMP001', name: 'Alice Johnson', department: 'Engineering', role: 'Senior Developer', status: 'Active' },
   { id: 'EMP002', name: 'Bob Smith', department: 'Marketing', role: 'Marketing Manager', status: 'Active' },
   { id: 'EMP003', name: 'Charlie Brown', department: 'HR', role: 'HR Specialist', status: 'On Leave' },

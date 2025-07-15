@@ -50,7 +50,10 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
             <Button variant="ghost" size="icon" className="h-10 w-10 text-primary">
               <Building2 className="h-6 w-6" />
             </Button>
-            <h1 className="text-xl font-semibold tracking-tight">SynergieRH</h1>
+            <div className="flex flex-col">
+               <h1 className="text-base font-semibold tracking-tight">Gestion RH & RM</h1>
+               <p className="text-xs text-muted-foreground">de la CNRCT</p>
+            </div>
           </div>
         </SidebarHeader>
         <SidebarContent>
@@ -79,7 +82,7 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
               </Avatar>
               <div className="flex flex-col">
                 <span className="text-sm font-semibold">Admin</span>
-                <span className="text-xs text-muted-foreground">admin@synergierh.com</span>
+                <span className="text-xs text-muted-foreground">admin@cnrct.com</span>
               </div>
               <Button variant="ghost" size="icon" className="ml-auto">
                 <LogOut />

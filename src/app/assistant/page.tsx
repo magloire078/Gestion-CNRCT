@@ -43,7 +43,7 @@ export default function AssistantPage() {
       <div className="flex-1 overflow-hidden">
         <Card className="h-full flex flex-col border-0 shadow-none rounded-none">
             <CardHeader>
-                <CardTitle className="flex items-center gap-2"><Bot className="h-6 w-6"/> Assistant RH SynergieRH</CardTitle>
+                <CardTitle className="flex items-center gap-2"><Bot className="h-6 w-6"/> Assistant RH</CardTitle>
                 <CardDescription>Posez-moi vos questions sur les politiques RH, le droit du travail ou la gestion d'équipe.</CardDescription>
             </CardHeader>
           <ScrollArea className="flex-1 p-6" ref={scrollAreaRef}>

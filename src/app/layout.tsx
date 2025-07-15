@@ -4,7 +4,7 @@ import {SiteLayout} from '@/components/site-layout';
 import {Toaster} from '@/components/ui/toaster';
 
 export const metadata: Metadata = {
-  title: 'SynergieRH',
+  title: 'Gestion RH & RM de la CNRCT',
   description: 'Gestion des ressources humaines et matérielles',
 };
 

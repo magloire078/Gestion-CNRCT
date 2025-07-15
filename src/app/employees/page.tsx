@@ -1,8 +1,8 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
-import { PlusCircle } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import { PlusCircle, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -12,6 +12,8 @@ import { AddEmployeeSheet } from "@/components/employees/add-employee-sheet";
 import { getEmployees, addEmployee } from "@/services/employee-service";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 type Status = 'Active' | 'On Leave' | 'Terminated';
 
@@ -21,11 +23,17 @@ const statusVariantMap: Record<Status, "default" | "secondary" | "destructive"> 
   'Terminated': 'destructive',
 };
 
+const departments = ["Engineering", "Marketing", "Sales", "HR", "Operations"];
+
 export default function EmployeesPage() {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [departmentFilter, setDepartmentFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
 
   useEffect(() => {
     async function fetchEmployees() {
@@ -51,9 +59,17 @@ export default function EmployeesPage() {
         setIsSheetOpen(false);
     } catch (err) {
         console.error("Failed to add employee:", err);
-        // Optionally, show an error to the user
     }
   };
+
+  const filteredEmployees = useMemo(() => {
+    return employees.filter(employee => {
+      const matchesSearchTerm = employee.name.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesDepartment = departmentFilter === 'all' || employee.department === departmentFilter;
+      const matchesStatus = statusFilter === 'all' || employee.status === statusFilter;
+      return matchesSearchTerm && matchesDepartment && matchesStatus;
+    });
+  }, [employees, searchTerm, departmentFilter, statusFilter]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -70,6 +86,38 @@ export default function EmployeesPage() {
           <CardDescription>Une liste complète de tous les employés de l'entreprise.</CardDescription>
         </CardHeader>
         <CardContent>
+           <div className="flex flex-col sm:flex-row gap-4 mb-6">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+              <Input
+                placeholder="Rechercher par nom..."
+                className="pl-10"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
+              <SelectTrigger className="w-full sm:w-[180px]">
+                <SelectValue placeholder="Filtrer par département" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tous les départements</SelectItem>
+                {departments.map(dep => <SelectItem key={dep} value={dep}>{dep}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-full sm:w-[180px]">
+                <SelectValue placeholder="Filtrer par statut" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tous les statuts</SelectItem>
+                <SelectItem value="Active">Actif</SelectItem>
+                <SelectItem value="On Leave">En congé</SelectItem>
+                <SelectItem value="Terminated">Licencié</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
           {error && <p className="text-destructive text-center py-4">{error}</p>}
           <Table>
             <TableHeader>
@@ -93,7 +141,7 @@ export default function EmployeesPage() {
                   </TableRow>
                 ))
               ) : (
-                employees.map((employee) => (
+                filteredEmployees.map((employee) => (
                   <TableRow key={employee.id}>
                     <TableCell>
                        <Avatar>
@@ -112,6 +160,11 @@ export default function EmployeesPage() {
               )}
             </TableBody>
           </Table>
+           { !loading && filteredEmployees.length === 0 && (
+            <div className="text-center py-10 text-muted-foreground">
+                Aucun employé trouvé.
+            </div>
+          )}
         </CardContent>
       </Card>
       <AddEmployeeSheet 

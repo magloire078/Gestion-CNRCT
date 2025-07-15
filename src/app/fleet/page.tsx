@@ -1,7 +1,8 @@
+
 "use client";
 
-import { useState } from "react";
-import { PlusCircle } from "lucide-react";
+import { useState, useMemo } from "react";
+import { PlusCircle, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -20,14 +21,25 @@ import {
 } from "@/components/ui/table";
 import { fleetData, Fleet } from "@/lib/data";
 import { AddVehicleSheet } from "@/components/fleet/add-vehicle-sheet";
+import { Input } from "@/components/ui/input";
 
 export default function FleetPage() {
   const [vehicles, setVehicles] = useState<Fleet[]>(fleetData);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const handleAddVehicle = (newVehicle: Fleet) => {
     setVehicles([...vehicles, newVehicle]);
   };
+
+  const filteredVehicles = useMemo(() => {
+    return vehicles.filter(vehicle => {
+      const searchTermLower = searchTerm.toLowerCase();
+      return vehicle.plate.toLowerCase().includes(searchTermLower) ||
+             vehicle.makeModel.toLowerCase().includes(searchTermLower) ||
+             vehicle.assignedTo.toLowerCase().includes(searchTermLower);
+    });
+  }, [vehicles, searchTerm]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -49,6 +61,17 @@ export default function FleetPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
+           <div className="flex flex-col sm:flex-row gap-4 mb-6">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+              <Input
+                placeholder="Rechercher par plaque, modèle, assigné..."
+                className="pl-10"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+          </div>
           <Table>
             <TableHeader>
               <TableRow>
@@ -59,7 +82,7 @@ export default function FleetPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {vehicles.map((vehicle) => (
+              {filteredVehicles.map((vehicle) => (
                 <TableRow key={vehicle.plate}>
                   <TableCell className="font-medium">{vehicle.plate}</TableCell>
                   <TableCell>{vehicle.makeModel}</TableCell>
@@ -69,6 +92,11 @@ export default function FleetPage() {
               ))}
             </TableBody>
           </Table>
+          {filteredVehicles.length === 0 && (
+            <div className="text-center py-10 text-muted-foreground">
+                Aucun véhicule trouvé.
+            </div>
+          )}
         </CardContent>
       </Card>
       <AddVehicleSheet

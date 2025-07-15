@@ -11,6 +11,7 @@ import {
   CalendarOff,
   LogOut,
   Building2,
+  MessageSquare,
 } from "lucide-react";
 
 import {
@@ -35,6 +36,7 @@ const menuItems = [
   { href: "/it-assets", label: "Actifs TI", icon: Laptop },
   { href: "/fleet", label: "Flotte de Véhicules", icon: Car },
   { href: "/documents", label: "Documents", icon: FileText },
+  { href: "/assistant", label: "Assistant IA", icon: MessageSquare },
 ];
 
 export function SiteLayout({ children }: { children: React.ReactNode }) {

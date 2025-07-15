@@ -1,6 +1,7 @@
 
 "use client";
 
+import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -14,6 +15,7 @@ import {
   Building2,
   MessageSquare,
   Landmark,
+  Shield,
 } from "lucide-react";
 
 import {
@@ -40,10 +42,17 @@ const menuItems = [
   { href: "/fleet", label: "Flotte de Véhicules", icon: Car },
   { href: "/documents", label: "Documents", icon: FileText },
   { href: "/assistant", label: "Assistant IA", icon: MessageSquare },
+  { href: "/admin", label: "Administration", icon: Shield },
 ];
 
 export function SiteLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const [isClient, setIsClient] = React.useState(false);
+
+  React.useEffect(() => {
+    setIsClient(true);
+  }, []);
+
 
   return (
     <SidebarProvider>
@@ -95,7 +104,7 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
       </Sidebar>
       <SidebarInset>
         <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-sm sm:h-16 sm:px-6">
-          <SidebarTrigger className="md:hidden" />
+           {isClient && <SidebarTrigger className="md:hidden" />}
           <div className="flex-1">
              {/* Can add breadcrumbs or page title here later */}
           </div>

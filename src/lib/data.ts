@@ -63,3 +63,29 @@ export const fleetData: Fleet[] = [
   { plate: 'GHI 456', makeModel: 'Honda Civic 2023', assignedTo: 'Ethan Hunt', maintenanceDue: '2025-02-10' },
   { plate: 'JKL 101', makeModel: 'Tesla Model 3', assignedTo: 'Management', maintenanceDue: '2025-05-20' },
 ];
+
+export type User = {
+    id: string;
+    name: string;
+    email: string;
+    role: 'Admin' | 'Manager' | 'Employé';
+}
+
+export const userData: User[] = [
+    { id: 'USR001', name: 'Admin User', email: 'admin@cnrct.com', role: 'Admin' },
+    { id: 'USR002', name: 'Alice Johnson', email: 'alice.j@cnrct.com', role: 'Manager' },
+    { id: 'USR003', name: 'Bob Smith', email: 'bob.s@cnrct.com', role: 'Employé' },
+    { id: 'USR004', name: 'Charlie Brown', email: 'charlie.b@cnrct.com', role: 'Employé' },
+]
+
+export type Role = {
+    id: string;
+    name: 'Admin' | 'Manager' | 'Employé';
+    permissions: string[];
+}
+
+export const roleData: Role[] = [
+    { id: 'ROLE01', name: 'Admin', permissions: ['Tout gérer', 'Gérer les utilisateurs', 'Gérer les rôles', 'Gérer la paie'] },
+    { id: 'ROLE02', name: 'Manager', permissions: ['Gérer les employés de l\'équipe', 'Approuver les congés', 'Voir les rapports'] },
+    { id: 'ROLE03', name: 'Employé', permissions: ['Voir ses propres informations', 'Demander des congés'] },
+]

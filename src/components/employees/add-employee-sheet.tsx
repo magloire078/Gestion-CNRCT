@@ -52,7 +52,9 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
     onClose();
   }
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
     if (!name || !role || !department) {
       setError("Veuillez remplir tous les champs obligatoires.");
       return;
@@ -73,75 +75,77 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
   return (
     <Sheet open={isOpen} onOpenChange={handleClose}>
       <SheetContent className="sm:max-w-lg">
-        <SheetHeader>
-          <SheetTitle>Ajouter un nouvel employé</SheetTitle>
-          <SheetDescription>
-            Remplissez les détails ci-dessous pour ajouter un nouvel employé au système.
-          </SheetDescription>
-        </SheetHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="name" className="text-right">
-              Nom
-            </Label>
-            <Input id="name" value={name} onChange={(e) => setName(e.target.value)} className="col-span-3" />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="role" className="text-right">
-              Rôle
-            </Label>
-            <Input id="role" value={role} onChange={(e) => setRole(e.target.value)} className="col-span-3" />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="department" className="text-right">
-              Département
-            </Label>
-             <Select value={department} onValueChange={(value) => setDepartment(value)}>
-              <SelectTrigger className="col-span-3">
-                <SelectValue placeholder="Sélectionnez..." />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Engineering">Ingénierie</SelectItem>
-                <SelectItem value="Marketing">Marketing</SelectItem>
-                <SelectItem value="Sales">Ventes</SelectItem>
-                <SelectItem value="HR">RH</SelectItem>
-                <SelectItem value="Operations">Opérations</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="status" className="text-right">
-              Statut
-            </Label>
-             <Select value={status} onValueChange={(value: Employee['status']) => setStatus(value)}>
+        <form onSubmit={handleSubmit}>
+          <SheetHeader>
+            <SheetTitle>Ajouter un nouvel employé</SheetTitle>
+            <SheetDescription>
+              Remplissez les détails ci-dessous pour ajouter un nouvel employé au système.
+            </SheetDescription>
+          </SheetHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="name" className="text-right">
+                Nom
+              </Label>
+              <Input id="name" value={name} onChange={(e) => setName(e.target.value)} className="col-span-3" />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="role" className="text-right">
+                Rôle
+              </Label>
+              <Input id="role" value={role} onChange={(e) => setRole(e.target.value)} className="col-span-3" />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="department" className="text-right">
+                Département
+              </Label>
+               <Select value={department} onValueChange={(value) => setDepartment(value)}>
                 <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Sélectionnez un statut" />
+                  <SelectValue placeholder="Sélectionnez..." />
                 </SelectTrigger>
                 <SelectContent>
-                    <SelectItem value="Active">Actif</SelectItem>
-                    <SelectItem value="On Leave">En congé</SelectItem>
-                    <SelectItem value="Terminated">Licencié</SelectItem>
+                  <SelectItem value="Engineering">Ingénierie</SelectItem>
+                  <SelectItem value="Marketing">Marketing</SelectItem>
+                  <SelectItem value="Sales">Ventes</SelectItem>
+                  <SelectItem value="HR">RH</SelectItem>
+                  <SelectItem value="Operations">Opérations</SelectItem>
                 </SelectContent>
-             </Select>
+              </Select>
+            </div>
+             <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="status" className="text-right">
+                Statut
+              </Label>
+               <Select value={status} onValueChange={(value: Employee['status']) => setStatus(value)}>
+                  <SelectTrigger className="col-span-3">
+                      <SelectValue placeholder="Sélectionnez un statut" />
+                  </SelectTrigger>
+                  <SelectContent>
+                      <SelectItem value="Active">Actif</SelectItem>
+                      <SelectItem value="On Leave">En congé</SelectItem>
+                      <SelectItem value="Terminated">Licencié</SelectItem>
+                  </SelectContent>
+               </Select>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="photoUrl" className="text-right">
+                URL de la photo
+              </Label>
+              <Input id="photoUrl" value={photoUrl} onChange={(e) => setPhotoUrl(e.target.value)} className="col-span-3" placeholder="https://example.com/photo.png"/>
+            </div>
+            {error && <p className="text-sm text-destructive col-span-4 text-center">{error}</p>}
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="photoUrl" className="text-right">
-              URL de la photo
-            </Label>
-            <Input id="photoUrl" value={photoUrl} onChange={(e) => setPhotoUrl(e.target.value)} className="col-span-3" placeholder="https://example.com/photo.png"/>
-          </div>
-          {error && <p className="text-sm text-destructive col-span-4 text-center">{error}</p>}
-        </div>
-        <SheetFooter>
-          <SheetClose asChild>
-            <Button type="button" variant="outline" onClick={handleClose}>
-              Annuler
+          <SheetFooter>
+            <SheetClose asChild>
+              <Button type="button" variant="outline" onClick={handleClose}>
+                Annuler
+              </Button>
+            </SheetClose>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Enregistrement..." : "Enregistrer"}
             </Button>
-          </SheetClose>
-          <Button type="submit" onClick={handleSubmit} disabled={isSubmitting}>
-            {isSubmitting ? "Enregistrement..." : "Enregistrer"}
-          </Button>
-        </SheetFooter>
+          </SheetFooter>
+        </form>
       </SheetContent>
     </Sheet>
   );

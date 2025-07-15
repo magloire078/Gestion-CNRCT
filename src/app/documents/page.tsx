@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useFormState, useFormStatus } from "react-dom";
+import { useState, useEffect, useActionState } from "react";
+import { useFormStatus } from "react-dom";
 import { generateDocumentAction, FormState } from "./actions";
 import { employeeData } from "@/lib/data";
 
@@ -28,7 +28,7 @@ function SubmitButton() {
 }
 
 export default function DocumentGeneratorPage() {
-  const [state, formAction] = useFormState(generateDocumentAction, initialState);
+  const [state, formAction] = useActionState(generateDocumentAction, initialState);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState('');
   const [documentContent, setDocumentContent] = useState('');
 

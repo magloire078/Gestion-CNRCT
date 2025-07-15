@@ -11,6 +11,7 @@ import type { Employee } from "@/lib/data";
 import { AddEmployeeSheet } from "@/components/employees/add-employee-sheet";
 import { getEmployees, addEmployee } from "@/services/employee-service";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 type Status = 'Active' | 'On Leave' | 'Terminated';
 
@@ -73,7 +74,7 @@ export default function EmployeesPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>ID Employé</TableHead>
+                <TableHead className="w-[80px]">Photo</TableHead>
                 <TableHead>Nom</TableHead>
                 <TableHead>Département</TableHead>
                 <TableHead>Rôle</TableHead>
@@ -84,7 +85,7 @@ export default function EmployeesPage() {
               {loading ? (
                 Array.from({ length: 5 }).map((_, i) => (
                   <TableRow key={i}>
-                    <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                    <TableCell><Skeleton className="h-10 w-10 rounded-full" /></TableCell>
                     <TableCell><Skeleton className="h-4 w-32" /></TableCell>
                     <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                     <TableCell><Skeleton className="h-4 w-32" /></TableCell>
@@ -94,8 +95,13 @@ export default function EmployeesPage() {
               ) : (
                 employees.map((employee) => (
                   <TableRow key={employee.id}>
-                    <TableCell className="font-medium">{employee.id}</TableCell>
-                    <TableCell>{employee.name}</TableCell>
+                    <TableCell>
+                       <Avatar>
+                        <AvatarImage src={employee.photoUrl} alt={employee.name} data-ai-hint="employee photo" />
+                        <AvatarFallback>{employee.name.charAt(0)}</AvatarFallback>
+                      </Avatar>
+                    </TableCell>
+                    <TableCell className="font-medium">{employee.name}</TableCell>
                     <TableCell>{employee.department}</TableCell>
                     <TableCell>{employee.role}</TableCell>
                     <TableCell>

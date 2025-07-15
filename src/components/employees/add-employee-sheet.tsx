@@ -34,6 +34,7 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
   const [role, setRole] = useState("");
   const [department, setDepartment] = useState("");
   const [status, setStatus] = useState<Employee['status']>('Active');
+  const [photoUrl, setPhotoUrl] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -42,6 +43,7 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
     setRole("");
     setDepartment("");
     setStatus("Active");
+    setPhotoUrl("");
     setError("");
   }
 
@@ -58,7 +60,7 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
     setIsSubmitting(true);
     setError("");
     try {
-      await onAddEmployee({ name, role, department, status });
+      await onAddEmployee({ name, role, department, status, photoUrl: photoUrl || `https://placehold.co/100x100.png` });
       handleClose();
     } catch(err) {
       setError("Échec de l'ajout de l'employé. Veuillez réessayer.");
@@ -121,6 +123,12 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
                     <SelectItem value="Terminated">Licencié</SelectItem>
                 </SelectContent>
              </Select>
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="photoUrl" className="text-right">
+              URL de la photo
+            </Label>
+            <Input id="photoUrl" value={photoUrl} onChange={(e) => setPhotoUrl(e.target.value)} className="col-span-3" placeholder="https://example.com/photo.png"/>
           </div>
           {error && <p className="text-sm text-destructive col-span-4 text-center">{error}</p>}
         </div>

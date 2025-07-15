@@ -4,15 +4,16 @@ export type Employee = {
   department: string;
   role: string;
   status: 'Active' | 'On Leave' | 'Terminated';
+  photoUrl: string;
 };
 
 export const employeeData: Employee[] = [
-  { id: 'EMP001', name: 'Alice Johnson', department: 'Engineering', role: 'Senior Developer', status: 'Active' },
-  { id: 'EMP002', name: 'Bob Smith', department: 'Marketing', role: 'Marketing Manager', status: 'Active' },
-  { id: 'EMP003', name: 'Charlie Brown', department: 'HR', role: 'HR Specialist', status: 'On Leave' },
-  { id: 'EMP004', name: 'Diana Prince', department: 'Engineering', role: 'UI/UX Designer', status: 'Active' },
-  { id: 'EMP005', name: 'Ethan Hunt', department: 'Sales', role: 'Sales Executive', status: 'Terminated' },
-  { id: 'EMP006', name: 'Fiona Glenanne', department: 'Operations', role: 'Operations Manager', status: 'Active' },
+  { id: 'EMP001', name: 'Alice Johnson', department: 'Engineering', role: 'Senior Developer', status: 'Active', photoUrl: 'https://placehold.co/100x100.png' },
+  { id: 'EMP002', name: 'Bob Smith', department: 'Marketing', role: 'Marketing Manager', status: 'Active', photoUrl: 'https://placehold.co/100x100.png' },
+  { id: 'EMP003', name: 'Charlie Brown', department: 'HR', role: 'HR Specialist', status: 'On Leave', photoUrl: 'https://placehold.co/100x100.png' },
+  { id: 'EMP004', name: 'Diana Prince', department: 'Engineering', role: 'UI/UX Designer', status: 'Active', photoUrl: 'https://placehold.co/100x100.png' },
+  { id: 'EMP005', name: 'Ethan Hunt', department: 'Sales', role: 'Sales Executive', status: 'Terminated', photoUrl: 'https://placehold.co/100x100.png' },
+  { id: 'EMP006', name: 'Fiona Glenanne', department: 'Operations', role: 'Operations Manager', status: 'Active', photoUrl: 'https://placehold.co/100x100.png' },
 ];
 
 export type Leave = {

@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -176,6 +177,12 @@ const Sidebar = React.forwardRef<
     ref
   ) => {
     const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
+    const [isClient, setIsClient] = React.useState(false);
+
+    React.useEffect(() => {
+        setIsClient(true);
+    }, []);
+
 
     if (collapsible === "none") {
       return (
@@ -192,7 +199,7 @@ const Sidebar = React.forwardRef<
       )
     }
 
-    if (isMobile) {
+    if (isMobile && isClient) {
       return (
         <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
           <SheetContent
@@ -210,6 +217,10 @@ const Sidebar = React.forwardRef<
           </SheetContent>
         </Sheet>
       )
+    }
+
+    if (!isClient) {
+        return null;
     }
 
     return (
@@ -761,3 +772,4 @@ export {
   SidebarTrigger,
   useSidebar,
 }
+

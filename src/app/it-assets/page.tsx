@@ -1,16 +1,18 @@
 
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { PlusCircle, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { assetData, Asset } from "@/lib/data";
+import type { Asset } from "@/lib/data";
 import { AddAssetSheet } from "@/components/it-assets/add-asset-sheet";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { getAssets, addAsset } from "@/services/asset-service";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type Status = 'In Use' | 'In Stock' | 'In Repair' | 'Retired' | 'Active';
 
@@ -25,20 +27,45 @@ const statusVariantMap: Record<Status, "default" | "secondary" | "outline"> = {
 const assetTypes = ["Laptop", "Monitor", "Keyboard", "Mouse", "Software", "Other"];
 
 export default function ItAssetsPage() {
-  const [assets, setAssets] = useState<Asset[]>(assetData);
+  const [assets, setAssets] = useState<Asset[]>([]);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
 
-  const handleAddAsset = (newAsset: Omit<Asset, 'tag'>) => {
-    const newTag = `IT-NEW-${(assets.length + 1).toString().padStart(3, '0')}`;
-    setAssets([...assets, { tag: newTag, ...newAsset }]);
+  useEffect(() => {
+    async function fetchAssets() {
+      try {
+        setLoading(true);
+        const fetchedAssets = await getAssets();
+        setAssets(fetchedAssets);
+        setError(null);
+      } catch (err) {
+        setError("Impossible de charger les actifs. Veuillez vérifier la configuration de votre base de données Firestore et les règles de sécurité.");
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchAssets();
+  }, []);
+
+  const handleAddAsset = async (newAssetData: Omit<Asset, 'tag'>) => {
+    try {
+      const newAsset = await addAsset(newAssetData);
+      setAssets(prev => [...prev, newAsset]);
+      setIsSheetOpen(false);
+    } catch (err) {
+      console.error("Failed to add asset:", err);
+    }
   };
 
   const filteredAssets = useMemo(() => {
     return assets.filter(asset => {
+      if (!asset.model || !asset.assignedTo || !asset.tag) return false;
       const searchTermLower = searchTerm.toLowerCase();
       const matchesSearch = asset.model.toLowerCase().includes(searchTermLower) ||
                             asset.assignedTo.toLowerCase().includes(searchTermLower) ||
@@ -97,7 +124,7 @@ export default function ItAssetsPage() {
               </SelectContent>
             </Select>
           </div>
-
+          {error && <p className="text-destructive text-center py-4">{error}</p>}
           <Table>
             <TableHeader>
               <TableRow>
@@ -109,20 +136,32 @@ export default function ItAssetsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredAssets.map((asset) => (
-                <TableRow key={asset.tag}>
-                  <TableCell className="font-medium">{asset.tag}</TableCell>
-                  <TableCell>{asset.type}</TableCell>
-                  <TableCell>{asset.model}</TableCell>
-                  <TableCell>{asset.assignedTo}</TableCell>
-                   <TableCell>
-                    <Badge variant={statusVariantMap[asset.status as Status] || 'default'}>{asset.status}</Badge>
-                  </TableCell>
-                </TableRow>
-              ))}
+              {loading ? (
+                 Array.from({ length: 5 }).map((_, i) => (
+                  <TableRow key={i}>
+                    <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                    <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                filteredAssets.map((asset) => (
+                  <TableRow key={asset.tag}>
+                    <TableCell className="font-medium">{asset.tag}</TableCell>
+                    <TableCell>{asset.type}</TableCell>
+                    <TableCell>{asset.model}</TableCell>
+                    <TableCell>{asset.assignedTo}</TableCell>
+                     <TableCell>
+                      <Badge variant={statusVariantMap[asset.status as Status] || 'default'}>{asset.status}</Badge>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
-          {filteredAssets.length === 0 && (
+          { !loading && filteredAssets.length === 0 && (
             <div className="text-center py-10 text-muted-foreground">
                 Aucun actif trouvé.
             </div>

@@ -1,9 +1,14 @@
+
+"use client";
+
+import { useState } from "react";
 import { PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { assetData } from "@/lib/data";
+import { assetData, Asset } from "@/lib/data";
+import { AddAssetSheet } from "@/components/it-assets/add-asset-sheet";
 
 type Status = 'In Use' | 'In Stock' | 'In Repair' | 'Retired' | 'Active';
 
@@ -16,11 +21,20 @@ const statusVariantMap: Record<Status, "default" | "secondary" | "outline"> = {
 };
 
 export default function ItAssetsPage() {
+  const [assets, setAssets] = useState<Asset[]>(assetData);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+
+  const handleAddAsset = (newAsset: Omit<Asset, 'tag'>) => {
+    const newTag = `IT-NEW-${(assets.length + 1).toString().padStart(3, '0')}`;
+    setAssets([...assets, { tag: newTag, ...newAsset }]);
+  };
+
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight">Gestion des Actifs Informatiques</h1>
-        <Button>
+        <Button onClick={() => setIsSheetOpen(true)}>
           <PlusCircle className="mr-2 h-4 w-4" />
           Ajouter un nouvel actif
         </Button>
@@ -42,7 +56,7 @@ export default function ItAssetsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {assetData.map((asset) => (
+              {assets.map((asset) => (
                 <TableRow key={asset.tag}>
                   <TableCell className="font-medium">{asset.tag}</TableCell>
                   <TableCell>{asset.type}</TableCell>
@@ -57,6 +71,11 @@ export default function ItAssetsPage() {
           </Table>
         </CardContent>
       </Card>
+      <AddAssetSheet
+        isOpen={isSheetOpen}
+        onClose={() => setIsSheetOpen(false)}
+        onAddAsset={handleAddAsset}
+      />
     </div>
   );
 }

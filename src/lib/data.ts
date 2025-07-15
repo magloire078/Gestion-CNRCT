@@ -23,7 +23,15 @@ export const leaveData = [
   { id: 'LVE005', employee: 'Ethan Hunt', type: 'Sick Leave', startDate: '2024-06-15', endDate: '2024-06-15', status: 'Rejected' },
 ];
 
-export const assetData = [
+export type Asset = {
+  tag: string;
+  type: string;
+  model: string;
+  assignedTo: string;
+  status: 'In Use' | 'In Stock' | 'In Repair' | 'Retired' | 'Active';
+}
+
+export const assetData: Asset[] = [
   { tag: 'IT-LPT-001', type: 'Laptop', model: 'Dell XPS 15', assignedTo: 'Alice Johnson', status: 'In Use' },
   { tag: 'IT-MON-005', type: 'Monitor', model: 'LG UltraFine 27"', assignedTo: 'Alice Johnson', status: 'In Use' },
   { tag: 'IT-LPT-002', type: 'Laptop', model: 'MacBook Pro 16"', assignedTo: 'Diana Prince', status: 'In Use' },

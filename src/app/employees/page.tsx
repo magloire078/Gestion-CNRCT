@@ -14,6 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
 
 type Status = 'Active' | 'On Leave' | 'Terminated';
 
@@ -23,13 +24,14 @@ const statusVariantMap: Record<Status, "default" | "secondary" | "destructive"> 
   'Terminated': 'destructive',
 };
 
-const departments = ["Engineering", "Marketing", "Sales", "HR", "Operations"];
+const departments = ["Engineering", "Marketing", "Sales", "HR", "Operations", "Informatique", "Secretariat Général", "Communication", "Direction Administrative", "Direction des Affaires financières et du patrimoine", "Protocole", "Cabinet", "Direction des Affaires sociales", "Directoire", "Comités Régionaux", "Other"];
 
 export default function EmployeesPage() {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [departmentFilter, setDepartmentFilter] = useState("all");
@@ -55,16 +57,21 @@ export default function EmployeesPage() {
   const handleAddEmployee = async (newEmployeeData: Omit<Employee, 'id'>) => {
     try {
         const newEmployee = await addEmployee(newEmployeeData);
-        setEmployees(prev => [...prev, newEmployee]);
+        setEmployees(prev => [...prev, newEmployee].sort((a, b) => a.name.localeCompare(b.name)));
         setIsSheetOpen(false);
+        toast({
+          title: "Employé ajouté",
+          description: `${newEmployee.name} a été ajouté avec succès.`,
+        });
     } catch (err) {
         console.error("Failed to add employee:", err);
+        throw err; // Re-throw to be caught in the sheet
     }
   };
 
   const filteredEmployees = useMemo(() => {
     return employees.filter(employee => {
-      const matchesSearchTerm = employee.name.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesSearchTerm = employee.name.toLowerCase().includes(searchTerm.toLowerCase()) || employee.matricule.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesDepartment = departmentFilter === 'all' || employee.department === departmentFilter;
       const matchesStatus = statusFilter === 'all' || employee.status === statusFilter;
       return matchesSearchTerm && matchesDepartment && matchesStatus;
@@ -90,7 +97,7 @@ export default function EmployeesPage() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <Input
-                placeholder="Rechercher par nom..."
+                placeholder="Rechercher par nom, matricule..."
                 className="pl-10"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -124,6 +131,7 @@ export default function EmployeesPage() {
               <TableRow>
                 <TableHead className="w-[80px]">Photo</TableHead>
                 <TableHead>Nom</TableHead>
+                <TableHead>Matricule</TableHead>
                 <TableHead>Rôle</TableHead>
                 <TableHead>Département</TableHead>
                 <TableHead>Statut</TableHead>
@@ -135,6 +143,7 @@ export default function EmployeesPage() {
                   <TableRow key={i}>
                     <TableCell><Skeleton className="h-10 w-10 rounded-full" /></TableCell>
                     <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-20" /></TableCell>
                     <TableCell><Skeleton className="h-4 w-32" /></TableCell>
                     <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                     <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
@@ -150,6 +159,7 @@ export default function EmployeesPage() {
                       </Avatar>
                     </TableCell>
                     <TableCell className="font-medium">{employee.name}</TableCell>
+                    <TableCell>{employee.matricule}</TableCell>
                     <TableCell>{employee.role}</TableCell>
                     <TableCell>{employee.department}</TableCell>
                     <TableCell>

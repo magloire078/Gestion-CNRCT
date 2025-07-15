@@ -30,7 +30,9 @@ interface AddEmployeeSheetProps {
 }
 
 export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployeeSheetProps) {
+  const [matricule, setMatricule] = useState("");
   const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [role, setRole] = useState("");
   const [department, setDepartment] = useState("");
   const [status, setStatus] = useState<Employee['status']>('Active');
@@ -39,7 +41,9 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const resetForm = () => {
+    setMatricule("");
     setName("");
+    setEmail("");
     setRole("");
     setDepartment("");
     setStatus("Active");
@@ -55,17 +59,17 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!name || !role || !department) {
-      setError("Veuillez remplir tous les champs obligatoires.");
+    if (!matricule || !name || !role || !department) {
+      setError("Veuillez remplir tous les champs obligatoires (Matricule, Nom, Rôle, Département).");
       return;
     }
     setIsSubmitting(true);
     setError("");
     try {
-      await onAddEmployee({ name, role, department, status, photoUrl: photoUrl || `https://placehold.co/100x100.png` });
+      await onAddEmployee({ matricule, name, email, role, department, status, photoUrl: photoUrl || `https://placehold.co/100x100.png` });
       handleClose();
     } catch(err) {
-      setError("Échec de l'ajout de l'employé. Veuillez réessayer.");
+      setError(err instanceof Error ? err.message : "Échec de l'ajout de l'employé. Veuillez réessayer.");
       console.error(err);
     } finally {
       setIsSubmitting(false);
@@ -73,7 +77,7 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
   };
 
   return (
-    <Sheet open={isOpen} onOpenChange={handleClose}>
+    <Sheet open={isOpen} onOpenChange={(open) => { if (!open) handleClose(); }}>
       <SheetContent className="sm:max-w-lg">
         <form onSubmit={handleSubmit}>
           <SheetHeader>
@@ -84,10 +88,22 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
           </SheetHeader>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="matricule" className="text-right">
+                Matricule
+              </Label>
+              <Input id="matricule" value={matricule} onChange={(e) => setMatricule(e.target.value)} className="col-span-3" />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="name" className="text-right">
-                Nom
+                Nom Complet
               </Label>
               <Input id="name" value={name} onChange={(e) => setName(e.target.value)} className="col-span-3" />
+            </div>
+             <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="email" className="text-right">
+                Email
+              </Label>
+              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="col-span-3" />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="role" className="text-right">
@@ -104,11 +120,22 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
                   <SelectValue placeholder="Sélectionnez..." />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Engineering">Ingénierie</SelectItem>
+                  <SelectItem value="Informatique">Informatique</SelectItem>
+                  <SelectItem value="Secretariat Général">Secrétariat Général</SelectItem>
+                  <SelectItem value="Communication">Communication</SelectItem>
+                  <SelectItem value="Direction Administrative">Direction Administrative</SelectItem>
+                  <SelectItem value="Direction des Affaires financières et du patrimoine">Direction des Affaires financières et du patrimoine</SelectItem>
+                  <SelectItem value="Protocole">Protocole</SelectItem>
+                  <SelectItem value="Cabinet">Cabinet</SelectItem>
+                  <SelectItem value="Direction des Affaires sociales">Direction des Affaires sociales</SelectItem>
+                  <SelectItem value="Directoire">Directoire</SelectItem>
+                  <SelectItem value="Comités Régionaux">Comités Régionaux</SelectItem>
+                   <SelectItem value="Engineering">Ingénierie</SelectItem>
                   <SelectItem value="Marketing">Marketing</SelectItem>
                   <SelectItem value="Sales">Ventes</SelectItem>
                   <SelectItem value="HR">RH</SelectItem>
                   <SelectItem value="Operations">Opérations</SelectItem>
+                  <SelectItem value="Other">Autre</SelectItem>
                 </SelectContent>
               </Select>
             </div>

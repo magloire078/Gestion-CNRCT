@@ -1,6 +1,8 @@
 export type Employee = {
-  id: string;
+  id: string; // Firestore document ID
+  matricule: string;
   name: string;
+  email?: string;
   department: string;
   role: string;
   status: 'Active' | 'On Leave' | 'Terminated';
@@ -8,12 +10,12 @@ export type Employee = {
 };
 
 export const employeeData: Employee[] = [
-  { id: 'EMP001', name: 'Alice Johnson', department: 'Engineering', role: 'Senior Developer', status: 'Active', photoUrl: 'https://placehold.co/100x100.png' },
-  { id: 'EMP002', name: 'Bob Smith', department: 'Marketing', role: 'Marketing Manager', status: 'Active', photoUrl: 'https://placehold.co/100x100.png' },
-  { id: 'EMP003', name: 'Charlie Brown', department: 'HR', role: 'HR Specialist', status: 'On Leave', photoUrl: 'https://placehold.co/100x100.png' },
-  { id: 'EMP004', name: 'Diana Prince', department: 'Engineering', role: 'UI/UX Designer', status: 'Active', photoUrl: 'https://placehold.co/100x100.png' },
-  { id: 'EMP005', name: 'Ethan Hunt', department: 'Sales', role: 'Sales Executive', status: 'Terminated', photoUrl: 'https://placehold.co/100x100.png' },
-  { id: 'EMP006', name: 'Fiona Glenanne', department: 'Operations', role: 'Operations Manager', status: 'Active', photoUrl: 'https://placehold.co/100x100.png' },
+  { id: 'EMP001', matricule: 'A 0011', name: 'Alice Johnson', department: 'Engineering', role: 'Senior Developer', status: 'Active', photoUrl: 'https://placehold.co/100x100.png' },
+  { id: 'EMP002', matricule: 'V 0019', name: 'Bob Smith', department: 'Marketing', role: 'Marketing Manager', status: 'Active', photoUrl: 'https://placehold.co/100x100.png' },
+  { id: 'EMP003', matricule: 'F 001', name: 'Charlie Brown', department: 'HR', role: 'HR Specialist', status: 'On Leave', photoUrl: 'https://placehold.co/100x100.png' },
+  { id: 'EMP004', matricule: 'A 0022', name: 'Diana Prince', department: 'Engineering', role: 'UI/UX Designer', status: 'Active', photoUrl: 'https://placehold.co/100x100.png' },
+  { id: 'EMP005', matricule: 'A 0024', name: 'Ethan Hunt', department: 'Sales', role: 'Sales Executive', status: 'Terminated', photoUrl: 'https://placehold.co/100x100.png' },
+  { id: 'EMP006', matricule: 'C 0013', name: 'Fiona Glenanne', department: 'Operations', role: 'Operations Manager', status: 'Active', photoUrl: 'https://placehold.co/100x100.png' },
 ];
 
 export type Leave = {

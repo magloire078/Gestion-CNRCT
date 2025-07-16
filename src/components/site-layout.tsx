@@ -92,52 +92,6 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <SidebarProvider>
-      <Sidebar collapsible="icon" side="left" variant="sidebar">
-        <SidebarHeader>
-          <div className="flex items-center gap-2 p-2">
-            <Button variant="ghost" size="icon" className="h-10 w-10 text-primary">
-              <Building2 className="h-6 w-6" />
-            </Button>
-            <div className="flex flex-col">
-               <h1 className="text-base font-semibold tracking-tight">Gestion RH & RM</h1>
-               <p className="text-xs text-muted-foreground">de la CNRCT</p>
-            </div>
-          </div>
-        </SidebarHeader>
-        <SidebarContent>
-          <SidebarMenu>
-            {menuItems.map((item) => (
-              <SidebarMenuItem key={item.label}>
-                <SidebarMenuButton
-                  asChild
-                  isActive={pathname === item.href}
-                  tooltip={{ children: item.label }}
-                >
-                  <Link href={item.href}>
-                    <item.icon />
-                    <span>{item.label}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
-          </SidebarMenu>
-        </SidebarContent>
-        <SidebarFooter>
-            <div className="flex items-center gap-3 p-2">
-              <Avatar>
-                <AvatarImage src="https://placehold.co/40x40.png" alt="Admin" data-ai-hint="user avatar" />
-                <AvatarFallback>A</AvatarFallback>
-              </Avatar>
-              <div className="flex flex-col">
-                <span className="text-sm font-semibold">Admin</span>
-                <span className="text-sm text-muted-foreground">admin@cnrct.com</span>
-              </div>
-              <Button variant="ghost" size="icon" className="ml-auto" onClick={handleLogout}>
-                <LogOut />
-              </Button>
-            </div>
-        </SidebarFooter>
-      </Sidebar>
       <SidebarInset>
         <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-sm sm:h-16 sm:px-6">
            <SidebarTrigger className="md:hidden" />

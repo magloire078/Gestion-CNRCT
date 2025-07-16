@@ -3,13 +3,14 @@ import { db } from '@/lib/firebase';
 import { collection, getDocs, addDoc, doc, setDoc } from 'firebase/firestore';
 import type { Asset } from '@/lib/data';
 
-const assetsCollection = collection(db, 'assets');
-
 export async function getAssets(): Promise<Asset[]> {
+  if (!db) {
+    console.error("Firestore is not initialized. Check your Firebase configuration.");
+    return [];
+  }
+  const assetsCollection = collection(db, 'assets');
   const assetSnapshot = await getDocs(assetsCollection);
   const assetList = assetSnapshot.docs.map(doc => {
-    // The asset tag is the document ID in Firestore.
-    // For other fields, we spread the document data.
     return {
       tag: doc.id,
       ...doc.data()
@@ -19,10 +20,12 @@ export async function getAssets(): Promise<Asset[]> {
 }
 
 export async function addAsset(assetData: Omit<Asset, 'tag'>): Promise<Asset> {
-    // Firestore will auto-generate a unique ID for the new document.
+    if (!db) {
+      throw new Error("Firestore is not initialized. Check your Firebase configuration.");
+    }
+    const assetsCollection = collection(db, 'assets');
     const docRef = await addDoc(assetsCollection, assetData);
     
-    // The new asset object includes the auto-generated ID as its 'tag'.
     const newAsset: Asset = {
         tag: docRef.id,
         ...assetData

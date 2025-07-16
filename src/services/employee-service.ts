@@ -3,9 +3,12 @@ import { db } from '@/lib/firebase';
 import { collection, getDocs, addDoc, setDoc, doc, query, where, writeBatch, getDoc } from 'firebase/firestore';
 import type { Employee } from '@/lib/data';
 
-const employeesCollection = collection(db, 'employees');
-
 export async function getEmployees(): Promise<Employee[]> {
+  if (!db) {
+    console.error("Firestore is not initialized. Check your Firebase configuration.");
+    return [];
+  }
+  const employeesCollection = collection(db, 'employees');
   const employeeSnapshot = await getDocs(employeesCollection);
   const employeeList = employeeSnapshot.docs.map(doc => ({
     id: doc.id,
@@ -15,6 +18,10 @@ export async function getEmployees(): Promise<Employee[]> {
 }
 
 export async function addEmployee(employeeData: Omit<Employee, 'id'>): Promise<Employee> {
+    if (!db) {
+        throw new Error("Firestore is not initialized. Check your Firebase configuration.");
+    }
+    const employeesCollection = collection(db, 'employees');
     const q = query(employeesCollection, where("matricule", "==", employeeData.matricule));
     const querySnapshot = await getDocs(q);
 
@@ -24,7 +31,6 @@ export async function addEmployee(employeeData: Omit<Employee, 'id'>): Promise<E
 
     const docRef = doc(employeesCollection);
     
-    // Explicitly create the object to be stored, excluding the 'id' field
     const dataToStore: Omit<Employee, 'id'> = {
         matricule: employeeData.matricule,
         name: employeeData.name,
@@ -44,9 +50,12 @@ export async function addEmployee(employeeData: Omit<Employee, 'id'>): Promise<E
     return newEmployee;
 }
 
-
-// This function is for the migration script and is not intended for general use in the app.
 export async function batchAddEmployees(employees: Omit<Employee, 'id'>[]) {
+    if (!db) {
+        console.error("Firestore is not initialized. Cannot run migration script.");
+        return;
+    }
+    const employeesCollection = collection(db, 'employees');
     const batch = writeBatch(db);
     let count = 0;
 
@@ -55,7 +64,7 @@ export async function batchAddEmployees(employees: Omit<Employee, 'id'>[]) {
         const querySnapshot = await getDocs(q);
 
         if (querySnapshot.empty) {
-            const docRef = doc(employeesCollection); // Auto-generate new ID
+            const docRef = doc(employeesCollection); 
             batch.set(docRef, employee);
             count++;
             console.log(`Scheduling add for ${employee.name} (${employee.matricule})`);

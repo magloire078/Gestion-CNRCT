@@ -3,10 +3,12 @@ import { db } from '@/lib/firebase';
 import { collection, getDocs, addDoc, doc, setDoc, query, where, getDoc } from 'firebase/firestore';
 import type { PayrollEntry } from '@/lib/payroll-data';
 
-const payrollCollection = collection(db, 'payroll');
-
-// Get all payroll entries
 export async function getPayroll(): Promise<PayrollEntry[]> {
+  if (!db) {
+    console.error("Firestore is not initialized. Check your Firebase configuration.");
+    return [];
+  }
+  const payrollCollection = collection(db, 'payroll');
   const snapshot = await getDocs(payrollCollection);
   const payrollList = snapshot.docs.map(doc => ({
     id: doc.id,
@@ -15,8 +17,11 @@ export async function getPayroll(): Promise<PayrollEntry[]> {
   return payrollList;
 }
 
-// Add a new payroll entry
 export async function addPayroll(payrollData: Omit<PayrollEntry, 'id'>): Promise<PayrollEntry> {
+    if (!db) {
+        throw new Error("Firestore is not initialized. Check your Firebase configuration.");
+    }
+    const payrollCollection = collection(db, 'payroll');
     const q = query(payrollCollection, where("employeeId", "==", payrollData.employeeId));
     const querySnapshot = await getDocs(q);
 
@@ -33,8 +38,12 @@ export async function addPayroll(payrollData: Omit<PayrollEntry, 'id'>): Promise
     return newEntry;
 }
 
-// Get a single payroll entry by employeeId
 export async function getPayrollByEmployeeId(employeeId: string): Promise<PayrollEntry | null> {
+    if (!db) {
+        console.error("Firestore is not initialized. Check your Firebase configuration.");
+        return null;
+    }
+    const payrollCollection = collection(db, 'payroll');
     const q = query(payrollCollection, where("employeeId", "==", employeeId));
     const querySnapshot = await getDocs(q);
 

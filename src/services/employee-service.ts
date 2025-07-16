@@ -1,7 +1,26 @@
 
 import { db } from '@/lib/firebase';
-import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, onSnapshot, Unsubscribe, query, orderBy } from 'firebase/firestore';
 import type { Employee } from '@/lib/data';
+
+export function subscribeToEmployees(
+    callback: (employees: Employee[]) => void,
+    onError: (error: Error) => void
+): Unsubscribe {
+    const employeesCollection = collection(db, 'employees');
+    const q = query(employeesCollection, orderBy("name", "asc"));
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+        const employeeList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Employee));
+        callback(employeeList);
+    }, (error) => {
+        console.error("Error subscribing to employees:", error);
+        onError(error);
+    });
+
+    return unsubscribe;
+}
+
 
 export async function getEmployees(): Promise<Employee[]> {
   const employeesCollection = collection(db, 'employees');

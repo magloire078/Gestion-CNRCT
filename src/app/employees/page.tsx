@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import type { Employee } from "@/lib/data";
 import { AddEmployeeSheet } from "@/components/employees/add-employee-sheet";
 import { EditEmployeeSheet } from "@/components/employees/edit-employee-sheet";
-import { getEmployees, addEmployee, updateEmployee, deleteEmployee } from "@/services/employee-service";
+import { subscribeToEmployees, addEmployee, updateEmployee, deleteEmployee } from "@/services/employee-service";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
@@ -44,26 +44,24 @@ export default function EmployeesPage() {
   const [statusFilter, setStatusFilter] = useState("all");
 
   useEffect(() => {
-    async function fetchEmployees() {
-      try {
-        setLoading(true);
-        const fetchedEmployees = await getEmployees();
+    const unsubscribe = subscribeToEmployees((fetchedEmployees) => {
         setEmployees(fetchedEmployees);
+        setLoading(false);
         setError(null);
-      } catch (err) {
+    }, (err) => {
         setError("Impossible de charger les employés. Veuillez vérifier la configuration de votre base de données Firestore et les règles de sécurité.");
         console.error(err);
-      } finally {
         setLoading(false);
-      }
-    }
-    fetchEmployees();
+    });
+
+    // Cleanup subscription on component unmount
+    return () => unsubscribe();
   }, []);
 
   const handleAddEmployee = async (newEmployeeData: Omit<Employee, 'id'>) => {
     try {
         const newEmployee = await addEmployee(newEmployeeData);
-        setEmployees(prev => [...prev, newEmployee].sort((a, b) => a.name.localeCompare(b.name)));
+        // No need to update state here, onSnapshot will do it
         setIsAddSheetOpen(false);
         toast({
           title: "Employé ajouté",
@@ -78,7 +76,7 @@ export default function EmployeesPage() {
   const handleUpdateEmployee = async (employeeId: string, updatedEmployeeData: Omit<Employee, 'id'>) => {
     try {
       const updatedEmployee = await updateEmployee(employeeId, updatedEmployeeData);
-      setEmployees(prev => prev.map(emp => emp.id === employeeId ? updatedEmployee : emp));
+      // No need to update state here, onSnapshot will do it
       setIsEditSheetOpen(false);
       toast({
         title: "Employé mis à jour",
@@ -94,7 +92,7 @@ export default function EmployeesPage() {
       if (confirm("Êtes-vous sûr de vouloir supprimer cet employé ?")) {
           try {
               await deleteEmployee(employeeId);
-              setEmployees(prev => prev.filter(emp => emp.id !== employeeId));
+              // No need to update state here, onSnapshot will do it
               toast({
                   title: "Employé supprimé",
                   description: "L'employé a été supprimé avec succès.",

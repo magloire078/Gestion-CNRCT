@@ -17,6 +17,16 @@ export async function addEmployee(employeeDataToAdd: Omit<Employee, 'id'>): Prom
     return Promise.resolve(newEmployee);
 }
 
+export async function updateEmployee(employeeId: string, employeeDataToUpdate: Omit<Employee, 'id'>): Promise<Employee> {
+    const employeeIndex = employeeData.findIndex(emp => emp.id === employeeId);
+    if (employeeIndex === -1) {
+        throw new Error("Employee not found");
+    }
+    const updatedEmployee = { ...employeeData[employeeIndex], ...employeeDataToUpdate };
+    employeeData[employeeIndex] = updatedEmployee;
+    return Promise.resolve(updatedEmployee);
+}
+
 export async function batchAddEmployees(employees: Omit<Employee, 'id'>[]) {
     // This function is for seeding, which is not needed with mock data.
     console.log("Batch add is disabled when using mock data.");

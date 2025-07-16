@@ -1,7 +1,9 @@
+
 import type {Metadata} from 'next';
 import './globals.css';
-import {SiteLayout} from '@/components/site-layout';
 import {Toaster} from '@/components/ui/toaster';
+import { SiteLayout } from '@/components/site-layout';
+
 
 export const metadata: Metadata = {
   title: 'Gestion RH & RM de la CNRCT',
@@ -24,9 +26,12 @@ export default function RootLayout({
         />
       </head>
       <body className="font-body antialiased">
-        <SiteLayout>{children}</SiteLayout>
+        <SiteLayout>
+            {children}
+        </SiteLayout>
         <Toaster />
       </body>
     </html>
   );
 }
+

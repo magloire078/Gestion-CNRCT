@@ -3,7 +3,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Car,
   FileText,
@@ -47,11 +47,23 @@ const menuItems = [
 
 export function SiteLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [isClient, setIsClient] = React.useState(false);
 
   React.useEffect(() => {
     setIsClient(true);
   }, []);
+  
+  const isAuthPage = pathname === "/login" || pathname === "/signup";
+
+  const handleLogout = () => {
+    // In a real app, you would clear session/token here
+    router.push("/login");
+  };
+
+  if (isAuthPage) {
+    return <>{children}</>;
+  }
 
 
   return (
@@ -96,7 +108,7 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
                 <span className="text-sm font-semibold">Admin</span>
                 <span className="text-xs text-muted-foreground">admin@cnrct.com</span>
               </div>
-              <Button variant="ghost" size="icon" className="ml-auto">
+              <Button variant="ghost" size="icon" className="ml-auto" onClick={handleLogout}>
                 <LogOut />
               </Button>
             </div>

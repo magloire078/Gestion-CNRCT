@@ -5,15 +5,24 @@ import type { Role } from '@/lib/data';
 
 export async function getRoles(): Promise<Role[]> {
   if (!db) {
-    console.error("Firestore is not initialized. Check your Firebase configuration.");
+    console.error("Firestore is not initialized.");
     return [];
   }
-  const rolesCollection = collection(db, 'roles');
-  const snapshot = await getDocs(rolesCollection);
-  return snapshot.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data()
-  } as Role));
+  try {
+    const rolesCollection = collection(db, 'roles');
+    const snapshot = await getDocs(rolesCollection);
+     if (snapshot.empty) {
+        console.log("No roles found in the 'roles' collection.");
+        return [];
+    }
+    return snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+    } as Role));
+   } catch (error) {
+    console.error("Error fetching roles:", error);
+    return [];
+  }
 }
 
 export async function addRole(roleData: Omit<Role, 'id'>): Promise<Role> {

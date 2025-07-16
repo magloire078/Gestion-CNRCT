@@ -1,47 +1,26 @@
 
-import { db } from '@/lib/firebase';
-import { collection, getDocs, addDoc, doc, updateDoc, serverTimestamp, query, orderBy } from 'firebase/firestore';
 import type { Leave } from '@/lib/data';
+import { leaveData } from '@/lib/data';
 
 export async function getLeaves(): Promise<Leave[]> {
-  if (!db) {
-    console.error("Firestore is not initialized. Check your Firebase configuration.");
-    return [];
-  }
-  const leavesCollection = collection(db, 'leaves');
-  const q = query(leavesCollection, orderBy("startDate", "desc"));
-  const leaveSnapshot = await getDocs(q);
-  const leaveList = leaveSnapshot.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data()
-  } as Leave));
-  return leaveList;
+  // Returning mock data to bypass Firestore permission issues.
+  return Promise.resolve(leaveData);
 }
 
-export async function addLeave(leaveData: Omit<Leave, 'id' | 'status'>): Promise<Leave> {
-    if (!db) {
-        throw new Error("Firestore is not initialized. Check your Firebase configuration.");
-    }
-    const leavesCollection = collection(db, 'leaves');
-    const dataToStore = {
-        ...leaveData,
+export async function addLeave(leaveDataToAdd: Omit<Leave, 'id' | 'status'>): Promise<Leave> {
+    const newLeave: Leave = { 
+        id: `LVE${Math.floor(Math.random() * 1000)}`, 
         status: 'Pending',
-        createdAt: serverTimestamp(),
+        ...leaveDataToAdd 
     };
-    const docRef = await addDoc(leavesCollection, dataToStore);
-    
-    const newLeave: Leave = {
-        id: docRef.id,
-        ...leaveData,
-        status: 'Pending'
-    };
-    return newLeave;
+    leaveData.push(newLeave);
+    return Promise.resolve(newLeave);
 }
 
 export async function updateLeaveStatus(id: string, status: 'Approved' | 'Rejected'): Promise<void> {
-    if (!db) {
-        throw new Error("Firestore is not initialized. Check your Firebase configuration.");
+    const leave = leaveData.find(l => l.id === id);
+    if (leave) {
+        leave.status = status;
     }
-    const leaveDoc = doc(db, 'leaves', id);
-    await updateDoc(leaveDoc, { status });
+    return Promise.resolve();
 }

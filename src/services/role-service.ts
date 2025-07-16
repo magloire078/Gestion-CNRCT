@@ -1,43 +1,25 @@
 
-import { db } from '@/lib/firebase';
-import { collection, getDocs, addDoc, doc, deleteDoc } from 'firebase/firestore';
 import type { Role } from '@/lib/data';
+import { roleData } from '@/lib/data';
 
 export async function getRoles(): Promise<Role[]> {
-  if (!db) {
-    console.error("Firestore is not initialized.");
-    return [];
-  }
-  try {
-    const rolesCollection = collection(db, 'roles');
-    const snapshot = await getDocs(rolesCollection);
-     if (snapshot.empty) {
-        console.log("No roles found in the 'roles' collection.");
-        return [];
-    }
-    return snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-    } as Role));
-   } catch (error) {
-    console.error("Error fetching roles:", error);
-    return [];
-  }
+  // Returning mock data to bypass Firestore permission issues.
+  return Promise.resolve(roleData);
 }
 
-export async function addRole(roleData: Omit<Role, 'id'>): Promise<Role> {
-    if (!db) {
-      throw new Error("Firestore is not initialized. Check your Firebase configuration.");
-    }
-    const rolesCollection = collection(db, 'roles');
-    const docRef = await addDoc(rolesCollection, roleData);
-    return { id: docRef.id, ...roleData };
+export async function addRole(roleDataToAdd: Omit<Role, 'id'>): Promise<Role> {
+    const newRole: Role = { 
+        id: `ROLE${Math.floor(Math.random() * 1000)}`, 
+        ...roleDataToAdd 
+    };
+    roleData.push(newRole);
+    return Promise.resolve(newRole);
 }
 
 export async function deleteRole(roleId: string): Promise<void> {
-    if (!db) {
-      throw new Error("Firestore is not initialized. Check your Firebase configuration.");
+    const index = roleData.findIndex(role => role.id === roleId);
+    if (index > -1) {
+        roleData.splice(index, 1);
     }
-    const roleDoc = doc(db, 'roles', roleId);
-    await deleteDoc(roleDoc);
+    return Promise.resolve();
 }

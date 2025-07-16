@@ -1,7 +1,11 @@
 
 import type { PayrollEntry } from '@/lib/payroll-data';
 // Mock data for payroll is not in data.ts, so we create an empty array.
-const payrollData: PayrollEntry[] = [];
+const payrollData: PayrollEntry[] = [
+    { id: 'PAY-1', employeeId: 'EMP001', employeeName: 'Alice Johnson', role: 'Senior Developer', baseSalary: 1200000, payFrequency: 'Mensuel', nextPayDate: '2024-08-31'},
+    { id: 'PAY-2', employeeId: 'EMP002', employeeName: 'Bob Smith', role: 'Marketing Manager', baseSalary: 1000000, payFrequency: 'Mensuel', nextPayDate: '2024-08-31'},
+    { id: 'PAY-3', employeeId: 'EMP003', employeeName: 'Charlie Brown', role: 'HR Specialist', baseSalary: 800000, payFrequency: 'Mensuel', nextPayDate: '2024-08-31'},
+];
 
 export async function getPayroll(): Promise<PayrollEntry[]> {
   // Returning mock data to bypass Firestore permission issues.

@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -25,6 +25,7 @@ import { getPayroll, addPayroll } from "@/services/payroll-service";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { AddPayrollSheet } from "@/components/payroll/add-payroll-sheet";
+import Link from "next/link";
 
 export default function PayrollPage() {
   const [payroll, setPayroll] = useState<PayrollEntry[]>([]);
@@ -93,6 +94,7 @@ export default function PayrollPage() {
                     <TableHead className="text-right">Salaire de Base</TableHead>
                     <TableHead>Fréquence</TableHead>
                     <TableHead>Prochaine Date de Paie</TableHead>
+                    <TableHead><span className="sr-only">Actions</span></TableHead>
                 </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -104,6 +106,7 @@ export default function PayrollPage() {
                         <TableCell><Skeleton className="h-4 w-24 ml-auto" /></TableCell>
                         <TableCell><Skeleton className="h-6 w-24 rounded-full" /></TableCell>
                         <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                        <TableCell><Skeleton className="h-8 w-8 rounded-md" /></TableCell>
                     </TableRow>
                     ))
                 ) : (
@@ -121,6 +124,14 @@ export default function PayrollPage() {
                         <Badge variant="outline">{entry.payFrequency}</Badge>
                         </TableCell>
                         <TableCell>{entry.nextPayDate}</TableCell>
+                        <TableCell className="text-right">
+                          <Button asChild variant="outline" size="icon" className="h-8 w-8">
+                            <Link href={`/payroll/${entry.employeeId}`}>
+                              <Eye className="h-4 w-4" />
+                              <span className="sr-only">Afficher le bulletin</span>
+                            </Link>
+                          </Button>
+                        </TableCell>
                     </TableRow>
                     ))
                 )}
@@ -135,16 +146,24 @@ export default function PayrollPage() {
              ) : (
                 payroll.map((entry) => (
                     <Card key={entry.id}>
-                        <CardContent className="p-4 space-y-2">
+                        <CardContent className="p-4">
                              <div className="flex justify-between items-start">
                                 <div>
                                     <p className="font-bold">{entry.employeeName}</p>
                                     <p className="text-sm text-muted-foreground">{entry.role}</p>
                                 </div>
+                                <Button asChild variant="outline" size="icon" className="h-8 w-8">
+                                  <Link href={`/payroll/${entry.employeeId}`}>
+                                    <Eye className="h-4 w-4" />
+                                    <span className="sr-only">Afficher le bulletin</span>
+                                  </Link>
+                                </Button>
+                            </div>
+                            <div className="mt-2 space-y-1">
+                                <p className="text-sm"><span className="font-medium">Salaire:</span> {entry.baseSalary.toLocaleString("fr-FR", { style: "currency", currency: "XOF",})}</p>
+                                <p className="text-sm"><span className="font-medium">Prochaine paie:</span> {entry.nextPayDate}</p>
                                 <Badge variant="outline">{entry.payFrequency}</Badge>
                             </div>
-                            <p className="text-sm"><span className="font-medium">Salaire:</span> {entry.baseSalary.toLocaleString("fr-FR", { style: "currency", currency: "XOF",})}</p>
-                            <p className="text-sm"><span className="font-medium">Prochaine paie:</span> {entry.nextPayDate}</p>
                         </CardContent>
                     </Card>
                 ))

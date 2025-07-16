@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import type { Employee } from "@/lib/data";
 import { AddEmployeeSheet } from "@/components/employees/add-employee-sheet";
 import { EditEmployeeSheet } from "@/components/employees/edit-employee-sheet";
-import { getEmployees, addEmployee, updateEmployee } from "@/services/employee-service";
+import { getEmployees, addEmployee, updateEmployee, deleteEmployee } from "@/services/employee-service";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
@@ -88,6 +88,25 @@ export default function EmployeesPage() {
       console.error("Failed to update employee:", err);
       throw err; // Re-throw to be caught in the sheet
     }
+  };
+  
+  const handleDeleteEmployee = async (employeeId: string) => {
+      if (confirm("Êtes-vous sûr de vouloir supprimer cet employé ?")) {
+          try {
+              await deleteEmployee(employeeId);
+              setEmployees(prev => prev.filter(emp => emp.id !== employeeId));
+              toast({
+                  title: "Employé supprimé",
+                  description: "L'employé a été supprimé avec succès.",
+              });
+          } catch (err) {
+              toast({
+                  variant: "destructive",
+                  title: "Erreur",
+                  description: "Impossible de supprimer l'employé.",
+              });
+          }
+      }
   };
 
   const openEditSheet = (employee: Employee) => {
@@ -205,7 +224,7 @@ export default function EmployeesPage() {
                             <DropdownMenuContent align="end">
                                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                 <DropdownMenuItem onClick={() => openEditSheet(employee)}>Modifier</DropdownMenuItem>
-                                <DropdownMenuItem disabled>Supprimer</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleDeleteEmployee(employee.id)}>Supprimer</DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>

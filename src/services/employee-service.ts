@@ -22,9 +22,17 @@ export async function updateEmployee(employeeId: string, employeeDataToUpdate: O
     if (employeeIndex === -1) {
         throw new Error("Employee not found");
     }
-    const updatedEmployee = { ...employeeData[employeeIndex], ...employeeDataToUpdate };
+    const updatedEmployee = { id: employeeId, ...employeeDataToUpdate };
     employeeData[employeeIndex] = updatedEmployee;
     return Promise.resolve(updatedEmployee);
+}
+
+export async function deleteEmployee(employeeId: string): Promise<void> {
+    const index = employeeData.findIndex(emp => emp.id === employeeId);
+    if (index > -1) {
+        employeeData.splice(index, 1);
+    }
+    return Promise.resolve();
 }
 
 export async function batchAddEmployees(employees: Omit<Employee, 'id'>[]) {

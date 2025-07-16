@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { PlusCircle, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,17 +19,51 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { fleetData, Fleet } from "@/lib/data";
+import type { Fleet } from "@/lib/data";
 import { AddVehicleSheet } from "@/components/fleet/add-vehicle-sheet";
 import { Input } from "@/components/ui/input";
+import { getVehicles, addVehicle } from "@/services/fleet-service";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useToast } from "@/hooks/use-toast";
 
 export default function FleetPage() {
-  const [vehicles, setVehicles] = useState<Fleet[]>(fleetData);
+  const [vehicles, setVehicles] = useState<Fleet[]>([]);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const { toast } = useToast();
 
-  const handleAddVehicle = (newVehicle: Fleet) => {
-    setVehicles([...vehicles, newVehicle]);
+  useEffect(() => {
+    async function fetchVehicles() {
+      try {
+        setLoading(true);
+        const fetchedVehicles = await getVehicles();
+        setVehicles(fetchedVehicles);
+        setError(null);
+      } catch (err) {
+        setError("Impossible de charger les véhicules. Veuillez vérifier la configuration de votre base de données Firestore et les règles de sécurité.");
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchVehicles();
+  }, []);
+
+  const handleAddVehicle = async (newVehicleData: Omit<Fleet, "plate">) => {
+     try {
+        const newVehicle = await addVehicle(newVehicleData);
+        setVehicles(prev => [...prev, newVehicle]);
+        setIsSheetOpen(false);
+        toast({
+            title: "Véhicule ajouté",
+            description: `Le véhicule ${newVehicle.makeModel} a été ajouté avec succès.`,
+        });
+     } catch (err) {
+        console.error("Failed to add vehicle:", err);
+        throw err;
+     }
   };
 
   const filteredVehicles = useMemo(() => {
@@ -72,6 +106,7 @@ export default function FleetPage() {
               />
             </div>
           </div>
+          {error && <p className="text-destructive text-center py-4">{error}</p>}
           <Table>
             <TableHeader>
               <TableRow>
@@ -82,17 +117,28 @@ export default function FleetPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredVehicles.map((vehicle) => (
-                <TableRow key={vehicle.plate}>
-                  <TableCell className="font-medium">{vehicle.plate}</TableCell>
-                  <TableCell>{vehicle.makeModel}</TableCell>
-                  <TableCell>{vehicle.assignedTo}</TableCell>
-                  <TableCell>{vehicle.maintenanceDue}</TableCell>
-                </TableRow>
-              ))}
+              {loading ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                    <TableRow key={i}>
+                        <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                        <TableCell><Skeleton className="h-4 w-40" /></TableCell>
+                        <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                        <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                    </TableRow>
+                ))
+              ) : (
+                filteredVehicles.map((vehicle) => (
+                    <TableRow key={vehicle.plate}>
+                    <TableCell className="font-medium">{vehicle.plate}</TableCell>
+                    <TableCell>{vehicle.makeModel}</TableCell>
+                    <TableCell>{vehicle.assignedTo}</TableCell>
+                    <TableCell>{vehicle.maintenanceDue}</TableCell>
+                    </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
-          {filteredVehicles.length === 0 && (
+          {!loading && filteredVehicles.length === 0 && (
             <div className="text-center py-10 text-muted-foreground">
                 Aucun véhicule trouvé.
             </div>

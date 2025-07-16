@@ -223,7 +223,34 @@ const Sidebar = React.forwardRef<
         return null;
     }
 
-    return null;
+    return (
+        <div
+        ref={ref}
+        data-sidebar="sidebar"
+        data-state={state}
+        data-collapsible={collapsible}
+        data-variant={variant}
+        data-side={side}
+        className={cn(
+            "relative hidden flex-col bg-sidebar text-sidebar-foreground group-data-[side=right]:order-2 group-data-[side=right]:border-l md:flex",
+            "group-data-[variant=floating]:absolute group-data-[variant=floating]:z-30 group-data-[variant=floating]:shadow-lg",
+            "[[data-variant=floating][data-side=left]_&]:left-0",
+            "[[data-variant=floating][data-side=right]_&]:right-0",
+            "group-data-[collapsible=icon]:w-[--sidebar-width-icon]",
+            "group-data-[collapsible=icon]:duration-300",
+            "group-data-[state=expanded]:w-[--sidebar-width]",
+            "group-data-[state=expanded]:duration-300",
+            "group-data-[variant=inset]:m-2 group-data-[variant=inset]:h-[calc(100svh-theme(spacing.4))] group-data-[variant=inset]:rounded-xl",
+            "[[data-side=left][data-variant=inset]_&]:-translate-x-[calc(100%+theme(spacing.2))]",
+            "[[data-side=right][data-variant=inset]_&]:translate-x-[calc(100%+theme(spacing.2))]",
+            "group-data-[state=expanded]:translate-x-0",
+            className
+        )}
+        {...props}
+        >
+        {children}
+        </div>
+    );
   }
 )
 Sidebar.displayName = "Sidebar"

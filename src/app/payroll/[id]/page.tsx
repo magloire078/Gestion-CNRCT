@@ -1,188 +1,288 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { PayrollEntry } from "@/lib/payroll-data";
-import { getPayrollByEmployeeId } from "@/services/payroll-service"; // We need a new service function
+import { getPayrollByEmployeeId } from "@/services/payroll-service";
+import { getPayslipDetails, PayslipDetails } from "@/services/payslip-details-service";
 import { ArrowLeft, Printer } from "lucide-react";
-
-// Mock data for deductions and earnings for demonstration
-const earnings = [
-    { description: 'Salaire de base', amount: 0 },
-    { description: 'Heures supplémentaires', amount: 15000 },
-    { description: 'Prime de performance', amount: 50000 },
-];
-
-const deductions = [
-    { description: 'Cotisation de sécurité sociale', amount: 25000 },
-    { description: 'Impôt sur le revenu', amount: 75000 },
-    { description: 'Assurance santé', amount: 10000 },
-];
-
+import Image from 'next/image';
 
 export default function PayslipPage() {
     const params = useParams();
     const router = useRouter();
     const { id } = params;
-    const [payslip, setPayslip] = useState<PayrollEntry | null>(null);
+    const [payrollEntry, setPayrollEntry] = useState<PayrollEntry | null>(null);
+    const [payslipDetails, setPayslipDetails] = useState<PayslipDetails | null>(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        if (typeof id === 'string') {
-            getPayrollByEmployeeId(id)
-                .then(data => {
-                    setPayslip(data);
+        async function fetchData() {
+            if (typeof id !== 'string') {
+                setLoading(false);
+                setError("ID d'employé invalide.");
+                return;
+            }
+            try {
+                const entry = await getPayrollByEmployeeId(id);
+                if (!entry) {
+                    setError("Données de paie non trouvées.");
                     setLoading(false);
-                })
-                .catch(err => {
-                    console.error(err);
-                    setLoading(false);
-                });
+                    return;
+                }
+                setPayrollEntry(entry);
+                const details = await getPayslipDetails(entry);
+                setPayslipDetails(details);
+            } catch (err) {
+                console.error(err);
+                setError("Impossible de charger les données du bulletin de paie.");
+            } finally {
+                setLoading(false);
+            }
         }
+        fetchData();
     }, [id]);
 
     const handlePrint = () => {
         window.print();
     };
-    
+
     if (loading) {
         return (
-            <div className="space-y-4">
+            <div className="space-y-4 max-w-4xl mx-auto p-8">
                 <Skeleton className="h-8 w-48" />
-                <Skeleton className="h-96 w-full" />
+                <Skeleton className="h-[1000px] w-full" />
             </div>
         )
     }
 
-    if (!payslip) {
-        return <div className="text-center text-muted-foreground">Bulletin de paie non trouvé.</div>;
+    if (error || !payrollEntry || !payslipDetails) {
+        return <div className="text-center text-destructive">{error || "Bulletin de paie non trouvé."}</div>;
     }
-    
-    const baseSalary = payslip.baseSalary || 0;
-    const totalEarnings = baseSalary + earnings.reduce((acc, item) => acc + item.amount, 0);
-    const totalDeductions = deductions.reduce((acc, item) => acc + item.amount, 0);
-    const netSalary = totalEarnings - totalDeductions;
 
+    const { employeeInfo, earnings, deductions, totals, employerContributions } = payslipDetails;
 
     return (
-        <div className="flex flex-col gap-6">
-             <div className="flex items-center justify-between print:hidden">
-                <Button variant="outline" onClick={() => router.back()}>
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Retour
-                </Button>
-                 <Button onClick={handlePrint}>
-                    <Printer className="mr-2 h-4 w-4" />
-                    Imprimer / Enregistrer en PDF
-                </Button>
+        <div className="bg-background text-foreground">
+             <div className="max-w-4xl mx-auto p-4 sm:p-8 print:hidden">
+                <div className="flex items-center justify-between">
+                    <Button variant="outline" onClick={() => router.back()}>
+                        <ArrowLeft className="mr-2 h-4 w-4" />
+                        Retour
+                    </Button>
+                    <Button onClick={handlePrint}>
+                        <Printer className="mr-2 h-4 w-4" />
+                        Imprimer / Enregistrer en PDF
+                    </Button>
+                </div>
             </div>
-            <Card className="w-full max-w-4xl mx-auto" id="payslip-content">
-                <CardHeader>
-                    <CardTitle className="text-3xl">Bulletin de Paie</CardTitle>
-                    <CardDescription>Période: {new Date(payslip.nextPayDate).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <div className="grid md:grid-cols-2 gap-6 mb-8">
-                        <div>
-                            <h3 className="font-semibold">Entreprise</h3>
-                            <p>SYSTEME DE GESTION CNRCT</p>
-                            <p>Cotonou, Bénin</p>
+            <div id="payslip-content" className="w-full max-w-4xl mx-auto bg-white p-4 sm:p-8 border rounded-lg text-black">
+                {/* Header */}
+                <header className="flex justify-between items-start pb-4 border-b">
+                    <div className="text-center">
+                        <h2 className="font-bold">Chambre Nationale des Rois</h2>
+                        <h2 className="font-bold">et Chefs Traditionnels</h2>
+                        <Image src="https://placehold.co/100x100.png" alt="Logo CNRCT" width={80} height={80} className="mx-auto mt-2" data-ai-hint="logo traditional" />
+                        <p className="font-bold mt-1">UN CHEF NOUVEAU</p>
+                    </div>
+                    <div className="text-center">
+                        <h2 className="font-bold">République de Côte d'Ivoire</h2>
+                         <Image src="https://placehold.co/100x100.png" alt="Logo Cote d'Ivoire" width={80} height={80} className="mx-auto mt-2" data-ai-hint="emblem ivory coast"/>
+                        <p className="mt-1">Union - Discipline - Travail</p>
+                    </div>
+                </header>
+
+                <div className="text-center my-4 p-1 bg-gray-200 font-bold">
+                    BULLETIN DE PAIE CNRCT : Période de {new Date(payrollEntry.nextPayDate).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
+                </div>
+
+                {/* Employee Info */}
+                <section className="grid grid-cols-12 gap-4 text-sm">
+                    <div className="col-span-5 space-y-1">
+                        <p><span className="font-bold">N° CNPS EMPLOYEUR :</span> {employeeInfo.cnpsEmployeur}</p>
+                        <p><span className="font-bold">N° CNPS EMPLOYE :</span> {employeeInfo.cnpsEmploye}</p>
+                        <Image src="https://placehold.co/80x80.png" alt="QR Code" width={80} height={80} className="mt-2" data-ai-hint="qr code"/>
+                    </div>
+                    <div className="col-span-7 border rounded-lg p-3">
+                         <div className="grid grid-cols-3 gap-x-2 gap-y-1">
+                            <span className="font-bold">NOM & PRENOMS</span><span className="col-span-2">: {employeeInfo.name}</span>
+                            <span className="font-bold">MATRICULE</span><span className="col-span-2">: {employeeInfo.matricule}</span>
+                            <span className="font-bold">SITUATION MATRIMONIALE</span><span className="col-span-2">: {employeeInfo.situationMatrimoniale}</span>
+                            <span className="font-bold">BANQUE</span><span className="col-span-2">: {employeeInfo.banque}</span>
+                            <span className="font-bold">NUMERO DE COMPTE</span><span className="col-span-2">: {employeeInfo.numeroCompte}</span>
+                            <span className="font-bold">SERVICE</span><span className="col-span-2">: {employeeInfo.service}</span>
+                            <span className="font-bold">DATE DE CONGE</span><span className="col-span-2">: {employeeInfo.dateConge}</span>
                         </div>
-                        <div className="text-right">
-                            <h3 className="font-semibold">Employé</h3>
-                            <p>{payslip.employeeName}</p>
-                            <p>Rôle: {payslip.role}</p>
-                            <p>Matricule: {payslip.employeeId}</p>
-                        </div>
                     </div>
+                     <div className="col-span-12 grid grid-cols-7 gap-x-2 gap-y-1 text-right pr-4">
+                        <span className="col-start-3 col-span-2 font-bold">ANCIENNETE :</span><span className="col-span-3 text-left">{employeeInfo.anciennete}</span>
+                        <span className="col-start-3 col-span-2 font-bold">CATEGORIE :</span><span className="col-span-3 text-left">{employeeInfo.categorie}</span>
+                        <span className="col-start-3 col-span-2 font-bold">ENFANT(S) :</span><span className="col-span-3 text-left">{employeeInfo.enfants}</span>
+                    </div>
+                </section>
+                
+                {/* Job Info Table */}
+                 <table className="w-full text-sm border-collapse border mt-4">
+                    <thead>
+                        <tr className="bg-gray-200 font-bold">
+                            <td className="border p-1">EMPLOI</td>
+                            <td className="border p-1">MATRICULE</td>
+                            <td className="border p-1">NBRE DE PARTS</td>
+                            <td className="border p-1">DATE D'EMBAUCHE</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td className="border p-1">{employeeInfo.emploi}</td>
+                            <td className="border p-1">{employeeInfo.matricule}</td>
+                            <td className="border p-1">{employeeInfo.parts}</td>
+                            <td className="border p-1">{employeeInfo.dateEmbauche}</td>
+                        </tr>
+                    </tbody>
+                </table>
 
-                    <div className="grid md:grid-cols-2 gap-8">
-                         <div>
-                            <h4 className="font-semibold text-lg mb-2">Gains</h4>
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Description</TableHead>
-                                        <TableHead className="text-right">Montant</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    <TableRow>
-                                        <TableCell>Salaire de base</TableCell>
-                                        <TableCell className="text-right font-mono">{baseSalary.toLocaleString('fr-FR')} XOF</TableCell>
-                                    </TableRow>
-                                    {earnings.slice(1).map((item, i) => (
-                                        <TableRow key={`earning-${i}`}>
-                                            <TableCell>{item.description}</TableCell>
-                                            <TableCell className="text-right font-mono">{item.amount.toLocaleString('fr-FR')} XOF</TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
+
+                {/* Earnings & Deductions */}
+                <div className="grid grid-cols-12 mt-1">
+                    <div className="col-span-9 border-r">
+                         <table className="w-full text-sm border-collapse border">
+                            <thead>
+                                <tr className="bg-gray-200 font-bold">
+                                    <td className="border p-1 w-2/3">ELEMENTS</td>
+                                    <td className="border p-1 text-center">GAINS</td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {earnings.map(item => (
+                                    <tr key={item.label}>
+                                        <td className="border p-1">{item.label}</td>
+                                        <td className="border p-1 text-right font-mono">{item.amount > 0 ? item.amount.toLocaleString('fr-FR') : ''}</td>
+                                    </tr>
+                                ))}
+                                <tr className="font-bold">
+                                    <td className="border p-1">BRUT IMPOSABLE</td>
+                                    <td className="border p-1 text-right font-mono bg-gray-200">{totals.brutImposable.toLocaleString('fr-FR')}</td>
+                                </tr>
+                                 <tr>
+                                    <td className="border p-1">{totals.transportNonImposable.label}</td>
+                                    <td className="border p-1 text-right font-mono">{totals.transportNonImposable.amount.toLocaleString('fr-FR')}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div className="col-span-3">
+                         <table className="w-full text-sm border-collapse border">
+                            <thead>
+                                <tr className="bg-gray-200 font-bold">
+                                    <td className="border p-1 text-center">RETENUES</td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {earnings.map(item => (
+                                     <tr key={item.label}>
+                                        <td className="border p-1 text-right font-mono h-[29px]">{item.deduction > 0 ? item.deduction.toLocaleString('fr-FR') : ''}</td>
+                                    </tr>
+                                ))}
+                                <tr className="font-bold h-[29px]"><td className="border p-1"></td></tr>
+                                <tr className="h-[29px]"><td className="border p-1"></td></tr>
+                            </tbody>
+                         </table>
+                    </div>
+                </div>
+                 <div className="grid grid-cols-12 mt-[-1px]">
+                     <div className="col-span-9">
+                        <table className="w-full text-sm border-collapse border">
+                            <tbody>
+                                {deductions.map(item => (
+                                    <tr key={item.label}>
+                                        <td className="border p-1 w-2/3">{item.label}</td>
+                                        <td className="border p-1 text-right font-mono w-1/3"></td>
+                                    </tr>
+                                ))}
+                                <tr>
+                                     <td className="border p-1">NBR JRS IMPOSABLES :</td>
+                                     <td className="border p-1 text-right font-mono"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                     </div>
+                     <div className="col-span-3">
+                         <table className="w-full text-sm border-collapse border">
+                             <tbody>
+                                {deductions.map(item => (
+                                    <tr key={item.label}>
+                                        <td className="border p-1 text-right font-mono h-[29px]">{item.amount > 0 ? item.amount.toLocaleString('fr-FR') : '0'}</td>
+                                    </tr>
+                                ))}
+                                 <tr><td className="border p-1 h-[29px]"></td></tr>
+                            </tbody>
+                         </table>
+                     </div>
+                 </div>
+
+                 <div className="grid grid-cols-12 mt-[-1px] border">
+                    <div className="col-span-9 p-1 flex justify-between items-center font-bold">
+                        <span>NET A PAYER</span>
+                        <span>{totals.netAPayerInWords}</span>
+                    </div>
+                    <div className="col-span-3 p-1 text-right font-bold font-mono bg-gray-200">{totals.netAPayer.toLocaleString('fr-FR')}</div>
+                 </div>
+                
+                 {/* Employer Contributions */}
+                 <div className="grid grid-cols-12 mt-4 border rounded-b-lg">
+                    <div className="col-span-9 p-2">
+                        <p className="font-bold text-center underline mb-2">Impôts à la charge de l'employeur</p>
+                        <table className="w-full text-sm">
+                            <tbody>
+                                {employerContributions.map(item => (
+                                     <tr key={item.label}>
+                                        <td className="w-2/4">{item.label}</td>
+                                        <td className="w-1/4 font-mono">{item.base.toLocaleString('fr-FR')}</td>
+                                        <td className="w-1/4 text-right font-mono">{item.rate}</td>
+                                        <td className="w-1/4 text-right font-mono">{item.amount.toLocaleString('fr-FR')}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                     <div className="col-span-3 flex flex-col justify-between items-center p-2 border-l">
+                        <div></div>
+                         <div className="text-center">
+                             <p className="font-bold">Payé à {employeeInfo.paymentLocation} le</p>
+                             <p>{employeeInfo.paymentDate}</p>
                          </div>
-                         <div>
-                            <h4 className="font-semibold text-lg mb-2">Déductions</h4>
-                             <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Description</TableHead>
-                                        <TableHead className="text-right">Montant</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                     {deductions.map((item, i) => (
-                                        <TableRow key={`deduction-${i}`}>
-                                            <TableCell>{item.description}</TableCell>
-                                            <TableCell className="text-right font-mono">{item.amount.toLocaleString('fr-FR')} XOF</TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                         </div>
-                    </div>
+                         <div className="text-xs"></div>
+                     </div>
+                 </div>
 
-                    <div className="mt-8 pt-4 border-t">
-                        <Table>
-                            <TableBody>
-                                <TableRow>
-                                    <TableCell className="font-semibold">Total Gains</TableCell>
-                                    <TableCell className="text-right font-semibold font-mono">{totalEarnings.toLocaleString('fr-FR')} XOF</TableCell>
-                                </TableRow>
-                                 <TableRow>
-                                    <TableCell className="font-semibold">Total Déductions</TableCell>
-                                    <TableCell className="text-right font-semibold font-mono">{totalDeductions.toLocaleString('fr-FR')} XOF</TableCell>
-                                </TableRow>
-                                 <TableRow className="text-xl">
-                                    <TableCell className="font-bold">Salaire Net</TableCell>
-                                    <TableCell className="text-right font-bold font-mono">{netSalary.toLocaleString('fr-FR')} XOF</TableCell>
-                                </TableRow>
-                            </TableBody>
-                        </Table>
-                    </div>
+                {/* Footer */}
+                <footer className="text-center text-xs mt-4 pt-4 border-t">
+                    <p className="font-bold">Chambre Nationale de Rois et Chefs Traditionnels (CNRCT)</p>
+                    <p>Yamoussoukro, Riviera - BP 201 Yamoussoukro | Tél : (225) 30 64 06 60 | Fax : (+255) 30 64 06 63</p>
+                    <p>www.cnrct.ci - Email : info@cnrct.ci</p>
+                </footer>
 
-                </CardContent>
-            </Card>
+            </div>
             <style jsx global>{`
                 @media print {
-                    body * {
-                        visibility: hidden;
-                    }
-                    #payslip-content, #payslip-content * {
-                        visibility: visible;
-                    }
-                    #payslip-content {
-                        position: absolute;
-                        left: 0;
-                        top: 0;
-                        width: 100%;
+                    body {
+                        -webkit-print-color-adjust: exact;
+                        print-color-adjust: exact;
                     }
                     .print-hidden {
                         display: none;
+                    }
+                     #payslip-content {
+                        margin: 0;
+                        padding: 0;
+                        border: none;
+                        border-radius: 0;
+                        box-shadow: none;
+                        width: 100%;
+                        max-width: 100%;
                     }
                 }
             `}</style>

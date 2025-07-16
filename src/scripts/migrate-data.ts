@@ -1,3 +1,4 @@
+
 // This is a one-time script to migrate data from the SQL dump to Firestore.
 // To run this script, you'll need to:
 // 1. Ensure your .env.local file has your Firebase project credentials.

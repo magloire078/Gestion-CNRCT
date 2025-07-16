@@ -39,3 +39,20 @@ export type PayslipDeduction = {
 export type PayslipEmployerContribution = {
     label: string;
     base: number;
+    rate: string;
+    amount: number;
+};
+
+// Type for the full payslip details
+export type PayslipDetails = {
+    employeeInfo: Omit<PayrollEntry, 'id'>;
+    earnings: PayslipEarning[];
+    deductions: PayslipDeduction[];
+    totals: {
+        brutImposable: number;
+        transportNonImposable: { label: string; amount: number };
+        netAPayer: number;
+        netAPayerInWords: string;
+    };
+    employerContributions: PayslipEmployerContribution[];
+};

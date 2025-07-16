@@ -31,3 +31,12 @@ export async function deleteEmployee(employeeId: string): Promise<void> {
     const employeeRef = doc(db, 'employees', employeeId);
     await deleteDoc(employeeRef);
 }
+
+export async function searchEmployees(query: string): Promise<Employee[]> {
+    const lowerCaseQuery = query.toLowerCase();
+    const allEmployees = await getEmployees();
+    return allEmployees.filter(employee => 
+        employee.name.toLowerCase().includes(lowerCaseQuery) || 
+        employee.matricule.toLowerCase().includes(lowerCaseQuery)
+    );
+}

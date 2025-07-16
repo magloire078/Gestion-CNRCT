@@ -35,8 +35,9 @@ export function AddPayrollSheet({ isOpen, onClose, onAddPayroll }: AddPayrollShe
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   
-  const [formState, setFormState] = useState<Partial<Omit<PayrollEntry, 'id' | 'employeeName' | 'role'>>>({
+  const [formState, setFormState] = useState<Omit<PayrollEntry, 'id' | 'employeeId' | 'employeeName' | 'role'>>({
       payFrequency: 'Mensuel',
+      nextPayDate: '',
       baseSalary: 0,
       cnpsEmployeur: '320491',
       cnpsEmploye: '288011808670',
@@ -48,6 +49,7 @@ export function AddPayrollSheet({ isOpen, onClose, onAddPayroll }: AddPayrollShe
       anciennete: "7 an(s) 8 mois 14 jours",
       categorie: 'Catégorie',
       enfants: 1,
+      emploi: '',
       parts: 2.0,
       dateEmbauche: '2017-08-16',
       paymentLocation: 'Yamoussoukro',
@@ -75,6 +77,26 @@ export function AddPayrollSheet({ isOpen, onClose, onAddPayroll }: AddPayrollShe
   const resetForm = () => {
     setSelectedEmployee(null);
     setError('');
+    setFormState({
+      payFrequency: 'Mensuel',
+      nextPayDate: '',
+      baseSalary: 0,
+      cnpsEmployeur: '320491',
+      cnpsEmploye: '288011808670',
+      situationMatrimoniale: 'Célibataire',
+      banque: 'BNI',
+      numeroCompte: 'CI092 09001 00134952000 77',
+      service: 'Cabinet',
+      dateConge: '__/__/____',
+      anciennete: "7 an(s) 8 mois 14 jours",
+      categorie: 'Catégorie',
+      enfants: 1,
+      emploi: '',
+      parts: 2.0,
+      dateEmbauche: '2017-08-16',
+      paymentLocation: 'Yamoussoukro',
+      paymentDate: 'Mercredi 30 Avril 2025'
+    })
   };
 
   const handleClose = () => {
@@ -88,7 +110,6 @@ export function AddPayrollSheet({ isOpen, onClose, onAddPayroll }: AddPayrollShe
     if(employee) {
         setFormState(prev => ({
             ...prev,
-            employeeId: employee.id,
             emploi: employee.role,
         }));
     }
@@ -107,8 +128,8 @@ export function AddPayrollSheet({ isOpen, onClose, onAddPayroll }: AddPayrollShe
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!selectedEmployee) {
-      setError("Veuillez sélectionner un employé.");
+    if (!selectedEmployee || !formState.baseSalary || !formState.nextPayDate) {
+      setError("Veuillez sélectionner un employé et remplir le salaire et la prochaine date de paie.");
       return;
     }
     
@@ -121,7 +142,7 @@ export function AddPayrollSheet({ isOpen, onClose, onAddPayroll }: AddPayrollShe
           employeeName: selectedEmployee.name,
           role: selectedEmployee.role,
           ...formState
-      } as Omit<PayrollEntry, 'id'>;
+      };
 
       await onAddPayroll(payrollData);
       handleClose();

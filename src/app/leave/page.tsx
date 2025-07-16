@@ -111,13 +111,13 @@ export default function LeavePage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
         <h1 className="text-3xl font-bold tracking-tight">
           Gestion des Congés
         </h1>
-        <Button onClick={() => setIsSheetOpen(true)}>
+        <Button onClick={() => setIsSheetOpen(true)} className="w-full sm:w-auto">
           <PlusCircle className="mr-2 h-4 w-4" />
-          Nouvelle demande de congé
+          Nouvelle demande
         </Button>
       </div>
 
@@ -186,78 +186,127 @@ export default function LeavePage() {
             </Select>
           </div>
           {error && <p className="text-destructive text-center py-4">{error}</p>}
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Employé</TableHead>
-                <TableHead>Type de congé</TableHead>
-                <TableHead>Date de début</TableHead>
-                <TableHead>Date de fin</TableHead>
-                <TableHead>Statut</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading ? (
-                Array.from({ length: 5 }).map((_, i) => (
-                  <TableRow key={i}>
-                    <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                    <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                    <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                    <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                    <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
-                    <TableCell><div className="flex justify-end gap-2"><Skeleton className="h-8 w-8 rounded-md" /><Skeleton className="h-8 w-8 rounded-md" /></div></TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                filteredLeaves.map((leave) => (
-                  <TableRow key={leave.id}>
-                    <TableCell className="font-medium">{leave.employee}</TableCell>
-                    <TableCell>{leave.type}</TableCell>
-                    <TableCell>{leave.startDate}</TableCell>
-                    <TableCell>{leave.endDate}</TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={
-                          (statusVariantMap[leave.status as Status] || "default")
-                        }
-                      >
-                        {leave.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          className="h-8 w-8"
-                          disabled={leave.status !== "Pending"}
-                          onClick={() =>
-                            handleLeaveStatusChange(leave.id, "Approved")
-                          }
+          <div className="hidden md:block">
+            <Table>
+                <TableHeader>
+                <TableRow>
+                    <TableHead>Employé</TableHead>
+                    <TableHead>Type de congé</TableHead>
+                    <TableHead>Date de début</TableHead>
+                    <TableHead>Date de fin</TableHead>
+                    <TableHead>Statut</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+                </TableHeader>
+                <TableBody>
+                {loading ? (
+                    Array.from({ length: 5 }).map((_, i) => (
+                    <TableRow key={i}>
+                        <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                        <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                        <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                        <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                        <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
+                        <TableCell><div className="flex justify-end gap-2"><Skeleton className="h-8 w-8 rounded-md" /><Skeleton className="h-8 w-8 rounded-md" /></div></TableCell>
+                    </TableRow>
+                    ))
+                ) : (
+                    filteredLeaves.map((leave) => (
+                    <TableRow key={leave.id}>
+                        <TableCell className="font-medium">{leave.employee}</TableCell>
+                        <TableCell>{leave.type}</TableCell>
+                        <TableCell>{leave.startDate}</TableCell>
+                        <TableCell>{leave.endDate}</TableCell>
+                        <TableCell>
+                        <Badge
+                            variant={
+                            (statusVariantMap[leave.status as Status] || "default")
+                            }
                         >
-                          <Check className="h-4 w-4" />
-                          <span className="sr-only">Approuver</span>
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          className="h-8 w-8"
-                          disabled={leave.status !== "Pending"}
-                          onClick={() =>
-                            handleLeaveStatusChange(leave.id, "Rejected")
-                          }
-                        >
-                          <X className="h-4 w-4" />
-                          <span className="sr-only">Rejeter</span>
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                            {leave.status}
+                        </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                            <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-8 w-8"
+                            disabled={leave.status !== "Pending"}
+                            onClick={() =>
+                                handleLeaveStatusChange(leave.id, "Approved")
+                            }
+                            >
+                            <Check className="h-4 w-4" />
+                            <span className="sr-only">Approuver</span>
+                            </Button>
+                            <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-8 w-8"
+                            disabled={leave.status !== "Pending"}
+                            onClick={() =>
+                                handleLeaveStatusChange(leave.id, "Rejected")
+                            }
+                            >
+                            <X className="h-4 w-4" />
+                            <span className="sr-only">Rejeter</span>
+                            </Button>
+                        </div>
+                        </TableCell>
+                    </TableRow>
+                    ))
+                )}
+                </TableBody>
+            </Table>
+          </div>
+           <div className="grid grid-cols-1 gap-4 md:hidden">
+                {loading ? (
+                    Array.from({ length: 5 }).map((_, i) => (
+                        <Card key={i}><CardContent className="p-4"><Skeleton className="h-24 w-full" /></CardContent></Card>
+                    ))
+                ) : (
+                    filteredLeaves.map((leave) => (
+                        <Card key={leave.id}>
+                            <CardContent className="p-4 flex items-center gap-4">
+                                <div className="flex-1 space-y-1">
+                                    <p className="font-medium">{leave.employee}</p>
+                                    <p className="text-sm text-muted-foreground">{leave.type}</p>
+                                    <p className="text-sm text-muted-foreground">{leave.startDate} au {leave.endDate}</p>
+                                    <Badge
+                                        variant={(statusVariantMap[leave.status as Status] || "default")}
+                                        className="mt-1"
+                                    >
+                                        {leave.status}
+                                    </Badge>
+                                </div>
+                                {leave.status === 'Pending' && (
+                                    <div className="flex flex-col gap-2">
+                                        <Button
+                                            variant="outline"
+                                            size="icon"
+                                            className="h-8 w-8"
+                                            onClick={() => handleLeaveStatusChange(leave.id, "Approved")}
+                                        >
+                                            <Check className="h-4 w-4" />
+                                            <span className="sr-only">Approuver</span>
+                                        </Button>
+                                        <Button
+                                            variant="outline"
+                                            size="icon"
+                                            className="h-8 w-8"
+                                            onClick={() => handleLeaveStatusChange(leave.id, "Rejected")}
+                                        >
+                                            <X className="h-4 w-4" />
+                                            <span className="sr-only">Rejeter</span>
+                                        </Button>
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+                    ))
+                )}
+            </div>
           { !loading && filteredLeaves.length === 0 && (
             <div className="text-center py-10 text-muted-foreground">
                 Aucune demande de congé trouvée.

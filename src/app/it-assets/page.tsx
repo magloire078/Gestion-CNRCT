@@ -78,11 +78,11 @@ export default function ItAssetsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">Gestion des Actifs Informatiques</h1>
-        <Button onClick={() => setIsSheetOpen(true)}>
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+        <h1 className="text-3xl font-bold tracking-tight">Actifs Informatiques</h1>
+        <Button onClick={() => setIsSheetOpen(true)} className="w-full sm:w-auto">
           <PlusCircle className="mr-2 h-4 w-4" />
-          Ajouter un nouvel actif
+          Ajouter un actif
         </Button>
       </div>
       <Card>
@@ -125,42 +125,67 @@ export default function ItAssetsPage() {
             </Select>
           </div>
           {error && <p className="text-destructive text-center py-4">{error}</p>}
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Étiquette d'actif</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Modèle</TableHead>
-                <TableHead>Assigné à</TableHead>
-                <TableHead>Statut</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
+          <div className="hidden md:block">
+            <Table>
+                <TableHeader>
+                <TableRow>
+                    <TableHead>Étiquette d'actif</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Modèle</TableHead>
+                    <TableHead>Assigné à</TableHead>
+                    <TableHead>Statut</TableHead>
+                </TableRow>
+                </TableHeader>
+                <TableBody>
+                {loading ? (
+                    Array.from({ length: 5 }).map((_, i) => (
+                    <TableRow key={i}>
+                        <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                        <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                        <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                        <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                        <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
+                    </TableRow>
+                    ))
+                ) : (
+                    filteredAssets.map((asset) => (
+                    <TableRow key={asset.tag}>
+                        <TableCell className="font-medium">{asset.tag}</TableCell>
+                        <TableCell>{asset.type}</TableCell>
+                        <TableCell>{asset.model}</TableCell>
+                        <TableCell>{asset.assignedTo}</TableCell>
+                        <TableCell>
+                        <Badge variant={statusVariantMap[asset.status as Status] || 'default'}>{asset.status}</Badge>
+                        </TableCell>
+                    </TableRow>
+                    ))
+                )}
+                </TableBody>
+            </Table>
+          </div>
+           <div className="grid grid-cols-1 gap-4 md:hidden">
               {loading ? (
-                 Array.from({ length: 5 }).map((_, i) => (
-                  <TableRow key={i}>
-                    <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                    <TableCell><Skeleton className="h-4 w-20" /></TableCell>
-                    <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                    <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                    <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
-                  </TableRow>
+                Array.from({ length: 5 }).map((_, i) => (
+                  <Card key={i}><CardContent className="p-4"><Skeleton className="h-20 w-full" /></CardContent></Card>
                 ))
               ) : (
                 filteredAssets.map((asset) => (
-                  <TableRow key={asset.tag}>
-                    <TableCell className="font-medium">{asset.tag}</TableCell>
-                    <TableCell>{asset.type}</TableCell>
-                    <TableCell>{asset.model}</TableCell>
-                    <TableCell>{asset.assignedTo}</TableCell>
-                     <TableCell>
-                      <Badge variant={statusVariantMap[asset.status as Status] || 'default'}>{asset.status}</Badge>
-                    </TableCell>
-                  </TableRow>
+                  <Card key={asset.tag}>
+                    <CardContent className="p-4 space-y-2">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <p className="font-bold">{asset.model}</p>
+                          <p className="text-sm text-muted-foreground">{asset.type}</p>
+                        </div>
+                        <Badge variant={statusVariantMap[asset.status as Status] || 'default'}>{asset.status}</Badge>
+                      </div>
+                      <p className="text-sm"><span className="font-medium">Tag:</span> {asset.tag}</p>
+                      <p className="text-sm"><span className="font-medium">Assigné à:</span> {asset.assignedTo}</p>
+                    </CardContent>
+                  </Card>
                 ))
               )}
-            </TableBody>
-          </Table>
+            </div>
           { !loading && filteredAssets.length === 0 && (
             <div className="text-center py-10 text-muted-foreground">
                 Aucun actif trouvé.

@@ -109,7 +109,7 @@ export default function AdminPage() {
           <h1 className="text-3xl font-bold tracking-tight">Administration</h1>
         </div>
         <Tabs defaultValue="users">
-          <TabsList>
+          <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="users">Gestion des utilisateurs</TabsTrigger>
             <TabsTrigger value="roles">Gestion des rôles</TabsTrigger>
           </TabsList>
@@ -133,8 +133,8 @@ export default function AdminPage() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Nom</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Rôle</TableHead>
+                      <TableHead className="hidden md:table-cell">Email</TableHead>
+                      <TableHead className="hidden md:table-cell">Rôle</TableHead>
                       <TableHead>
                         <span className="sr-only">Actions</span>
                       </TableHead>
@@ -145,17 +145,21 @@ export default function AdminPage() {
                       Array.from({ length: 3 }).map((_, i) => (
                         <TableRow key={i}>
                           <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                          <TableCell><Skeleton className="h-4 w-48" /></TableCell>
-                          <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                          <TableCell className="hidden md:table-cell"><Skeleton className="h-4 w-48" /></TableCell>
+                          <TableCell className="hidden md:table-cell"><Skeleton className="h-4 w-20" /></TableCell>
                           <TableCell><Skeleton className="h-8 w-8" /></TableCell>
                         </TableRow>
                       ))
                     ) : (
                       users.map((user) => (
                         <TableRow key={user.id}>
-                          <TableCell className="font-medium">{user.name}</TableCell>
-                          <TableCell>{user.email}</TableCell>
-                          <TableCell>{user.role}</TableCell>
+                          <TableCell>
+                              <div className="font-medium">{user.name}</div>
+                              <div className="text-sm text-muted-foreground md:hidden">{user.email}</div>
+                              <div className="text-sm text-muted-foreground md:hidden">{user.role}</div>
+                          </TableCell>
+                          <TableCell className="hidden md:table-cell">{user.email}</TableCell>
+                          <TableCell className="hidden md:table-cell">{user.role}</TableCell>
                           <TableCell>
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
@@ -217,7 +221,7 @@ export default function AdminPage() {
                       roles.map((role) => (
                         <TableRow key={role.id}>
                           <TableCell className="font-medium">{role.name}</TableCell>
-                          <TableCell>{role.permissions.join(", ")}</TableCell>
+                          <TableCell className="truncate max-w-[200px] md:max-w-none">{role.permissions.join(", ")}</TableCell>
                           <TableCell>
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>

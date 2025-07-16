@@ -3,6 +3,7 @@ import type {Metadata} from 'next';
 import './globals.css';
 import {Toaster} from '@/components/ui/toaster';
 import { SiteLayout } from '@/components/site-layout';
+import { ThemeProvider } from "@/components/theme-provider"
 
 
 export const metadata: Metadata = {
@@ -16,7 +17,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="fr" className="dark" suppressHydrationWarning>
+    <html lang="fr" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -26,10 +27,17 @@ export default function RootLayout({
         />
       </head>
       <body className="font-body antialiased">
-        <SiteLayout>
-            {children}
-        </SiteLayout>
-        <Toaster />
+         <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <SiteLayout>
+                {children}
+            </SiteLayout>
+            <Toaster />
+        </ThemeProvider>
       </body>
     </html>
   );

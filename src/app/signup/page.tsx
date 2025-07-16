@@ -30,8 +30,8 @@ export default function SignupPage() {
     };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <Card className="mx-auto max-w-sm">
+    <div className="flex min-h-screen items-center justify-center bg-background p-4">
+      <Card className="w-full max-w-sm">
          <CardHeader>
           <div className="flex items-center justify-center gap-2 mb-4">
               <Building2 className="h-8 w-8 text-primary" />

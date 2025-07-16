@@ -16,7 +16,10 @@ import {
   MessageSquare,
   Landmark,
   Shield,
+  Moon,
+  Sun,
 } from "lucide-react";
+import { useTheme } from "next-themes";
 
 import {
   SidebarProvider,
@@ -32,6 +35,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
 
 const menuItems = [
   { href: "/", label: "Tableau de Bord", icon: LayoutDashboard },
@@ -45,26 +49,46 @@ const menuItems = [
   { href: "/admin", label: "Administration", icon: Shield },
 ];
 
+function ThemeToggle() {
+  const { setTheme } = useTheme();
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon">
+          <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+          <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+          <span className="sr-only">Toggle theme</span>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem onClick={() => setTheme("light")}>
+          Clair
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setTheme("dark")}>
+          Sombre
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setTheme("system")}>
+          Système
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 export function SiteLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const [isClient, setIsClient] = React.useState(false);
 
-  React.useEffect(() => {
-    setIsClient(true);
-  }, []);
-  
   const isAuthPage = pathname === "/login" || pathname === "/signup";
-
-  const handleLogout = () => {
-    // In a real app, you would clear session/token here
-    router.push("/login");
-  };
 
   if (isAuthPage) {
     return <>{children}</>;
   }
 
+  const handleLogout = () => {
+    router.push("/login");
+  };
 
   return (
     <SidebarProvider>
@@ -116,10 +140,9 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
       </Sidebar>
       <SidebarInset>
         <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-sm sm:h-16 sm:px-6">
-           {isClient && <SidebarTrigger className="md:hidden" />}
-          <div className="flex-1">
-             {/* Can add breadcrumbs or page title here later */}
-          </div>
+           <SidebarTrigger className="md:hidden" />
+          <div className="flex-1" />
+           <ThemeToggle />
         </header>
         <main className="flex-1 p-4 sm:p-6">
           <div className="mx-auto w-full max-w-7xl">{children}</div>

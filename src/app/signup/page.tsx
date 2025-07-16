@@ -35,7 +35,7 @@ export default function SignupPage() {
          <CardHeader>
           <div className="flex items-center justify-center gap-2 mb-4">
               <Building2 className="h-8 w-8 text-primary" />
-              <h1 className="text-xl font-semibold tracking-tight">Gestion RH & RM</h1>
+              <h1 className="text-xl font-semibold tracking-tight">Gestion RH & RM de la CNRCT</h1>
           </div>
           <CardTitle className="text-2xl text-center">Inscription</CardTitle>
           <CardDescription className="text-center">

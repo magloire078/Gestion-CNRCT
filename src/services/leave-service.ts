@@ -1,26 +1,31 @@
 
+import { db } from '@/lib/firebase';
+import { collection, getDocs, addDoc, doc, updateDoc } from 'firebase/firestore';
 import type { Leave } from '@/lib/data';
-import { leaveData } from '@/lib/data';
 
 export async function getLeaves(): Promise<Leave[]> {
-  // Returning mock data to bypass Firestore permission issues.
-  return Promise.resolve(leaveData);
+  const leavesCollection = collection(db, 'leaves');
+  const leaveSnapshot = await getDocs(leavesCollection);
+  const leaveList = leaveSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Leave));
+  return leaveList.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
 }
 
 export async function addLeave(leaveDataToAdd: Omit<Leave, 'id' | 'status'>): Promise<Leave> {
-    const newLeave: Leave = { 
-        id: `LVE${Math.floor(Math.random() * 1000)}`, 
-        status: 'Pending',
-        ...leaveDataToAdd 
+    const newLeaveData = {
+        ...leaveDataToAdd,
+        status: 'Pending'
     };
-    leaveData.push(newLeave);
-    return Promise.resolve(newLeave);
+    const leavesCollection = collection(db, 'leaves');
+    const docRef = await addDoc(leavesCollection, newLeaveData);
+    
+    const newLeave: Leave = { 
+        id: docRef.id, 
+        ...newLeaveData
+    };
+    return newLeave;
 }
 
 export async function updateLeaveStatus(id: string, status: 'Approved' | 'Rejected'): Promise<void> {
-    const leave = leaveData.find(l => l.id === id);
-    if (leave) {
-        leave.status = status;
-    }
-    return Promise.resolve();
+    const leaveRef = doc(db, 'leaves', id);
+    await updateDoc(leaveRef, { status });
 }

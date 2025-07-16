@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getAssets, addAsset } from "@/services/asset-service";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useToast } from "@/hooks/use-toast";
 
 type Status = 'In Use' | 'In Stock' | 'In Repair' | 'Retired' | 'Active';
 
@@ -31,6 +32,7 @@ export default function ItAssetsPage() {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
@@ -58,8 +60,10 @@ export default function ItAssetsPage() {
       const newAsset = await addAsset(newAssetData);
       setAssets(prev => [...prev, newAsset]);
       setIsSheetOpen(false);
+      toast({ title: 'Actif ajouté', description: `L'actif ${newAsset.model} a été ajouté avec succès.` });
     } catch (err) {
       console.error("Failed to add asset:", err);
+      throw err;
     }
   };
 

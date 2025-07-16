@@ -19,7 +19,7 @@ import type { Fleet } from "@/lib/data";
 interface AddVehicleSheetProps {
   isOpen: boolean;
   onClose: () => void;
-  onAddVehicle: (vehicle: Omit<Fleet, "plate">) => Promise<void>;
+  onAddVehicle: (vehicle: Omit<Fleet, "id"> & { plate: string }) => Promise<void>;
 }
 
 export function AddVehicleSheet({
@@ -58,7 +58,6 @@ export function AddVehicleSheet({
     setError("");
 
     try {
-        // The plate is now part of the object being passed
         await onAddVehicle({ plate, makeModel, assignedTo, maintenanceDue });
         handleClose();
     } catch (err) {
@@ -141,7 +140,7 @@ export function AddVehicleSheet({
                 Annuler
               </Button>
             </SheetClose>
-            <Button type="submit" disabled={isSubmitting} onClick={handleSubmit}>
+            <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? "Enregistrement..." : "Enregistrer le Véhicule"}
             </Button>
           </SheetFooter>

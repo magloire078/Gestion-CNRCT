@@ -1,18 +1,23 @@
 
+import { db } from '@/lib/firebase';
+import { collection, getDocs, addDoc, doc, setDoc } from 'firebase/firestore';
 import type { Asset } from '@/lib/data';
-import { assetData } from '@/lib/data';
-
 
 export async function getAssets(): Promise<Asset[]> {
-  // Returning mock data to bypass Firestore permission issues.
-  return Promise.resolve(assetData);
+  const assetsCollection = collection(db, 'assets');
+  const assetSnapshot = await getDocs(assetsCollection);
+  const assetList = assetSnapshot.docs.map(doc => ({ tag: doc.id, ...doc.data() } as Asset));
+  return assetList;
 }
 
-export async function addAsset(assetDataToAdd: Omit<Asset, 'tag'>): Promise<Asset> {
+export async function addAsset(assetDataToAdd: Omit<Asset, 'tag'> & { tag?: string }): Promise<Asset> {
+    const { tag, ...data } = assetDataToAdd;
+    const newTag = tag || `IT-NEW-${Date.now()}`;
+    const assetRef = doc(db, 'assets', newTag);
+    await setDoc(assetRef, data);
     const newAsset: Asset = { 
-        tag: `IT-NEW-${Math.floor(Math.random() * 1000)}`, 
-        ...assetDataToAdd
+        tag: newTag, 
+        ...data
     };
-    assetData.push(newAsset);
-    return Promise.resolve(newAsset);
+    return newAsset;
 }

@@ -22,11 +22,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { Asset } from "@/lib/data";
+import { useToast } from "@/hooks/use-toast";
 
 interface AddAssetSheetProps {
   isOpen: boolean;
   onClose: () => void;
-  onAddAsset: (asset: Omit<Asset, "tag">) => Promise<void>;
+  onAddAsset: (asset: Omit<Asset, 'tag'>) => Promise<void>;
 }
 
 export function AddAssetSheet({ isOpen, onClose, onAddAsset }: AddAssetSheetProps) {
@@ -36,6 +37,7 @@ export function AddAssetSheet({ isOpen, onClose, onAddAsset }: AddAssetSheetProp
   const [status, setStatus] = useState<Asset['status']>('In Stock');
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
 
   const resetForm = () => {
     setType("");
@@ -64,7 +66,9 @@ export function AddAssetSheet({ isOpen, onClose, onAddAsset }: AddAssetSheetProp
       await onAddAsset({ type, model, assignedTo, status });
       handleClose();
     } catch(err) {
-      setError("Échec de l'ajout de l'actif. Veuillez réessayer.");
+      const errorMessage = err instanceof Error ? err.message : "Échec de l'ajout de l'actif. Veuillez réessayer.";
+      setError(errorMessage);
+      toast({ variant: 'destructive', title: 'Erreur', description: errorMessage });
       console.error(err);
     } finally {
       setIsSubmitting(false);

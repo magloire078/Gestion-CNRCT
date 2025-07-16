@@ -1,25 +1,27 @@
 
+import { db } from '@/lib/firebase';
+import { collection, getDocs, addDoc, deleteDoc, doc } from 'firebase/firestore';
 import type { Role } from '@/lib/data';
-import { roleData } from '@/lib/data';
+
 
 export async function getRoles(): Promise<Role[]> {
-  // Returning mock data to bypass Firestore permission issues.
-  return Promise.resolve(roleData);
+  const rolesCollection = collection(db, 'roles');
+  const roleSnapshot = await getDocs(rolesCollection);
+  const roleList = roleSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Role));
+  return roleList;
 }
 
 export async function addRole(roleDataToAdd: Omit<Role, 'id'>): Promise<Role> {
+    const rolesCollection = collection(db, 'roles');
+    const docRef = await addDoc(rolesCollection, roleDataToAdd);
     const newRole: Role = { 
-        id: `ROLE${Math.floor(Math.random() * 1000)}`, 
+        id: docRef.id, 
         ...roleDataToAdd 
     };
-    roleData.push(newRole);
-    return Promise.resolve(newRole);
+    return newRole;
 }
 
 export async function deleteRole(roleId: string): Promise<void> {
-    const index = roleData.findIndex(role => role.id === roleId);
-    if (index > -1) {
-        roleData.splice(index, 1);
-    }
-    return Promise.resolve();
+    const roleRef = doc(db, 'roles', roleId);
+    await deleteDoc(roleRef);
 }

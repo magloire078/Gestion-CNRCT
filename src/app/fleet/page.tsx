@@ -51,7 +51,7 @@ export default function FleetPage() {
     fetchVehicles();
   }, []);
 
-  const handleAddVehicle = async (newVehicleData: Omit<Fleet, "plate">) => {
+  const handleAddVehicle = async (newVehicleData: Omit<Fleet, "id"> & { plate: string }) => {
      try {
         const newVehicle = await addVehicle(newVehicleData);
         setVehicles(prev => [...prev, newVehicle]);

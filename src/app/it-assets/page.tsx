@@ -77,8 +77,8 @@ export default function ItAssetsPage() {
   }, [assets, searchTerm, typeFilter, statusFilter]);
 
   return (
-    <>
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
+    <div className="flex flex-col gap-6">
+      <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight">Actifs Informatiques</h1>
         <Button onClick={() => setIsSheetOpen(true)} className="w-full sm:w-auto">
           <PlusCircle className="mr-2 h-4 w-4" />
@@ -198,6 +198,6 @@ export default function ItAssetsPage() {
         onClose={() => setIsSheetOpen(false)}
         onAddAsset={handleAddAsset}
       />
-    </>
+    </div>
   );
 }

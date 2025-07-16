@@ -37,12 +37,9 @@ export default function AssistantPage() {
   }, [state.messages]);
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)]">
-      <div className="p-4 border-b">
-         <h1 className="text-3xl font-bold tracking-tight">Assistant IA</h1>
-      </div>
-      <div className="flex-1 overflow-hidden">
-        <Card className="h-full flex flex-col border-0 shadow-none rounded-none">
+    <div className="flex flex-col h-[calc(100vh-8rem)]">
+       <h1 className="text-3xl font-bold tracking-tight mb-6">Assistant IA</h1>
+        <Card className="h-full flex flex-col border-0 shadow-none rounded-none flex-1">
             <CardHeader>
                 <CardTitle className="flex items-center gap-2"><Bot className="h-6 w-6"/> Assistant RH</CardTitle>
                 <CardDescription>Posez-moi vos questions sur les politiques RH, le droit du travail ou la gestion d'équipe.</CardDescription>
@@ -117,7 +114,6 @@ export default function AssistantPage() {
             </form>
           </CardFooter>
         </Card>
-      </div>
     </div>
   );
 }

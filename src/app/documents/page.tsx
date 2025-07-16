@@ -52,10 +52,8 @@ export default function DocumentGeneratorPage() {
   }, [state.fields?.documentContent]);
 
   return (
-    <>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">Génération de Documents</h1>
-      </div>
+    <div className="flex flex-col gap-6">
+      <h1 className="text-3xl font-bold tracking-tight">Génération de Documents</h1>
       <div className="grid gap-6 lg:grid-cols-2">
         <form action={formAction}>
           <Card>
@@ -146,6 +144,6 @@ export default function DocumentGeneratorPage() {
           </CardContent>
         </Card>
       </div>
-    </>
+    </div>
   );
 }

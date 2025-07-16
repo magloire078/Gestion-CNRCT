@@ -103,10 +103,8 @@ export default function AdminPage() {
   };
 
   return (
-    <>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">Administration</h1>
-      </div>
+    <div className="flex flex-col gap-6">
+      <h1 className="text-3xl font-bold tracking-tight">Administration</h1>
       <Tabs defaultValue="users">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="users">Gestion des utilisateurs</TabsTrigger>
@@ -255,6 +253,6 @@ export default function AdminPage() {
         onClose={() => setIsRoleSheetOpen(false)}
         onAddRole={handleAddRole}
       />
-    </>
+    </div>
   );
 }

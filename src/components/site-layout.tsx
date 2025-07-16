@@ -122,7 +122,7 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
           </div>
         </header>
         <main className="flex-1 p-4 sm:p-6">
-          <div className="mx-auto w-full max-w-7xl">{children}</div>
+          <div className="w-full">{children}</div>
         </main>
       </SidebarInset>
     </SidebarProvider>

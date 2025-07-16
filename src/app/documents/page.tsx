@@ -52,11 +52,11 @@ export default function DocumentGeneratorPage() {
   }, [state.fields?.documentContent]);
 
   return (
-    <div className="grid gap-6 lg:grid-cols-2">
-      <div className="flex flex-col gap-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold tracking-tight">Génération de Documents</h1>
-        </div>
+    <div className="flex flex-col gap-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold tracking-tight">Génération de Documents</h1>
+      </div>
+      <div className="grid gap-6 lg:grid-cols-2">
         <form action={formAction}>
           <Card>
             <CardHeader>
@@ -126,10 +126,8 @@ export default function DocumentGeneratorPage() {
             </CardFooter>
           </Card>
         </form>
-      </div>
 
-      <div className="flex flex-col gap-6 lg:mt-12">
-        <Card className="flex-1">
+        <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2"><FileText className="h-5 w-5" />Document Généré</CardTitle>
             <CardDescription>Le contenu généré par l'IA apparaîtra ici.</CardDescription>

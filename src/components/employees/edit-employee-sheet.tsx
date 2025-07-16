@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,6 +22,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { Employee } from "@/lib/data";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Upload } from "lucide-react";
+
 
 interface EditEmployeeSheetProps {
   isOpen: boolean;
@@ -40,6 +43,7 @@ export function EditEmployeeSheet({ isOpen, onClose, onUpdateEmployee, employee 
   const [photoUrl, setPhotoUrl] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (employee) {
@@ -53,6 +57,17 @@ export function EditEmployeeSheet({ isOpen, onClose, onUpdateEmployee, employee 
     }
   }, [employee]);
 
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPhotoUrl(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -63,7 +78,7 @@ export function EditEmployeeSheet({ isOpen, onClose, onUpdateEmployee, employee 
     setIsSubmitting(true);
     setError("");
     try {
-      await onUpdateEmployee(employee.id, { matricule, name, email, role, department, status, photoUrl: photoUrl || `https://placehold.co/100x100.png` });
+      await onUpdateEmployee(employee.id, { matricule, name, email, role, department, status, photoUrl });
       onClose();
     } catch(err) {
       setError(err instanceof Error ? err.message : "Échec de la mise à jour de l'employé. Veuillez réessayer.");
@@ -84,6 +99,28 @@ export function EditEmployeeSheet({ isOpen, onClose, onUpdateEmployee, employee 
             </SheetDescription>
           </SheetHeader>
           <div className="grid gap-4 py-4">
+             <div className="grid grid-cols-4 items-center gap-4">
+              <Label className="text-right">
+                Photo
+              </Label>
+              <div className="col-span-3 flex items-center gap-4">
+                  <Avatar className="h-16 w-16">
+                     <AvatarImage src={photoUrl} alt="Aperçu de la photo" data-ai-hint="employee photo" />
+                     <AvatarFallback>{name ? name.charAt(0) : 'E'}</AvatarFallback>
+                  </Avatar>
+                  <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>
+                    <Upload className="mr-2 h-4 w-4" />
+                    Changer
+                  </Button>
+                  <Input 
+                    ref={fileInputRef}
+                    type="file"
+                    className="hidden"
+                    accept="image/*"
+                    onChange={handlePhotoChange}
+                    />
+              </div>
+            </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="matricule" className="text-right">
                 Matricule
@@ -150,12 +187,6 @@ export function EditEmployeeSheet({ isOpen, onClose, onUpdateEmployee, employee 
                       <SelectItem value="Terminated">Licencié</SelectItem>
                   </SelectContent>
                </Select>
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="photoUrl" className="text-right">
-                URL de la photo
-              </Label>
-              <Input id="photoUrl" value={photoUrl} onChange={(e) => setPhotoUrl(e.target.value)} className="col-span-3" placeholder="https://example.com/photo.png"/>
             </div>
             {error && <p className="text-sm text-destructive col-span-4 text-center">{error}</p>}
           </div>

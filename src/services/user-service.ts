@@ -8,8 +8,9 @@ export async function getUsers(): Promise<User[]> {
 }
 
 export async function addUser(userDataToAdd: Omit<User, 'id'>): Promise<User> {
+    const newId = `USR${Date.now()}-${Math.floor(Math.random() * 1000)}`;
     const newUser: User = { 
-        id: `USR${Math.floor(Math.random() * 1000)}`, 
+        id: newId, 
         ...userDataToAdd 
     };
     userData.push(newUser);

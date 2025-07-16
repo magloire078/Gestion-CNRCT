@@ -106,7 +106,7 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
               </Avatar>
               <div className="flex flex-col">
                 <span className="text-sm font-semibold">Admin</span>
-                <span className="text-xs text-muted-foreground">admin@cnrct.com</span>
+                <span className="text-sm text-muted-foreground">admin@cnrct.com</span>
               </div>
               <Button variant="ghost" size="icon" className="ml-auto" onClick={handleLogout}>
                 <LogOut />

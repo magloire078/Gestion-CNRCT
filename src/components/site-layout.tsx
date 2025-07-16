@@ -83,10 +83,13 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
   const handleLogout = () => {
     router.push("/login");
   };
+  
+  if (pathname === '/login' || pathname === '/signup') {
+    return <>{children}</>;
+  }
 
   return (
     <SidebarProvider>
-      <div className="h-svh w-full flex-col bg-background text-foreground md:flex">
         <Sidebar>
           <SidebarHeader>
             <div className="flex items-center gap-2">
@@ -145,7 +148,6 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
             <div className="mx-auto w-full max-w-7xl">{children}</div>
           </main>
         </SidebarInset>
-      </div>
     </SidebarProvider>
   );
 }

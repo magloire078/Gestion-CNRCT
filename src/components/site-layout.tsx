@@ -18,6 +18,8 @@ import {
   Shield,
   Moon,
   Sun,
+  Briefcase,
+  Scale,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 
@@ -42,6 +44,8 @@ const menuItems = [
   { href: "/employees", label: "Employés", icon: Users },
   { href: "/payroll", label: "Paie", icon: Landmark },
   { href: "/leave", label: "Congés", icon: CalendarOff },
+  { href: "/missions", label: "Missions", icon: Briefcase },
+  { href: "/conflicts", label: "Conflits", icon: Scale },
   { href: "/it-assets", label: "Actifs TI", icon: Laptop },
   { href: "/fleet", label: "Flotte de Véhicules", icon: Car },
   { href: "/documents", label: "Documents", icon: FileText },
@@ -79,11 +83,20 @@ function ThemeToggle() {
 export function SiteLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
+  const [isClient, setIsClient] = React.useState(false);
+
+  React.useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const handleLogout = () => {
     router.push("/login");
   };
   
+  if (!isClient) {
+    return null; 
+  }
+
   if (pathname === '/login' || pathname === '/signup') {
     return <>{children}</>;
   }

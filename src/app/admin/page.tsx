@@ -167,7 +167,7 @@ export default function AdminPage() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <DropdownMenuItem disabled>Modifier</DropdownMenuItem>
+                              <DropdownMenuItem>Modifier</DropdownMenuItem>
                               <DropdownMenuItem onClick={() => handleDeleteUser(user.id)}>Supprimer</DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -229,7 +229,7 @@ export default function AdminPage() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <DropdownMenuItem disabled>Modifier</DropdownMenuItem>
+                              <DropdownMenuItem>Modifier</DropdownMenuItem>
                               <DropdownMenuItem onClick={() => handleDeleteRole(role.id)}>Supprimer</DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>

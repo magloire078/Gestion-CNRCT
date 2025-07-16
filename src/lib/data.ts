@@ -1,3 +1,4 @@
+
 export type Employee = {
   id: string; // Firestore document ID
   matricule: string;
@@ -91,3 +92,33 @@ export const roleData: Role[] = [
     { id: 'ROLE02', name: 'Manager', permissions: ['Gérer les employés de l\'équipe', 'Approuver les congés', 'Voir les rapports'] },
     { id: 'ROLE03', name: 'Employé', permissions: ['Voir ses propres informations', 'Demander des congés'] },
 ]
+
+export type Mission = {
+  id: string;
+  title: string;
+  description: string;
+  assignedTo: string;
+  startDate: string;
+  endDate: string;
+  status: 'Planned' | 'In Progress' | 'Completed' | 'Cancelled';
+};
+
+export const missionData: Mission[] = [
+    { id: 'MIS001', title: 'Audit des infrastructures régionales', description: 'Visiter 5 bureaux régionaux pour un audit complet.', assignedTo: 'Fiona Glenanne', startDate: '2024-09-01', endDate: '2024-09-30', status: 'Planned' },
+    { id: 'MIS002', title: 'Déploiement du nouveau logiciel de paie', description: 'Installer et configurer le logiciel dans tous les départements.', assignedTo: 'Alice Johnson', startDate: '2024-08-15', endDate: '2024-10-15', status: 'In Progress' },
+    { id: 'MIS003', title: 'Campagne marketing T4', description: 'Lancement de la nouvelle campagne publicitaire pour la fin de l\'année.', assignedTo: 'Bob Smith', startDate: '2024-10-01', endDate: '2024-12-31', status: 'Planned' },
+];
+
+export type Conflict = {
+    id: string;
+    village: string;
+    description: string;
+    reportedDate: string;
+    status: 'Ongoing' | 'Resolved' | 'Mediating';
+}
+
+export const conflictData: Conflict[] = [
+    { id: 'CNF001', village: 'Kpomassè', description: 'Dispute sur la délimitation des terres agricoles entre deux familles.', reportedDate: '2024-07-28', status: 'Mediating' },
+    { id: 'CNF002', village: 'Ouidah', description: 'Conflit concernant l\'accès à un point d\'eau commun.', reportedDate: '2024-07-15', status: 'Resolved' },
+    { id: 'CNF003', village: 'Allada', description: 'Désaccord sur la gestion des revenus du marché local.', reportedDate: '2024-08-01', status: 'Ongoing' },
+];

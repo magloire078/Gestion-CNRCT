@@ -110,8 +110,8 @@ export default function LeavePage() {
   const approvedCount = useMemo(() => leaves.filter((l) => l.status === "Approved").length, [leaves]);
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+    <>
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
         <h1 className="text-3xl font-bold tracking-tight">
           Gestion des Congés
         </h1>
@@ -121,7 +121,7 @@ export default function LeavePage() {
         </Button>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2 mb-6">
         <Card>
           <CardHeader>
             <CardTitle>Demandes en attente</CardTitle>
@@ -319,6 +319,6 @@ export default function LeavePage() {
         onClose={() => setIsSheetOpen(false)}
         onAddLeaveRequest={handleAddLeaveRequest}
       />
-    </div>
+    </>
   );
 }

@@ -84,9 +84,9 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div className="flex flex-col gap-6">
-      <h1 className="text-3xl font-bold tracking-tight">Tableau de Bord</h1>
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+    <>
+      <h1 className="text-3xl font-bold tracking-tight mb-6">Tableau de Bord</h1>
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-6">
         {stats.map((stat, index) => (
           <Card key={index} className="hover:shadow-lg transition-shadow duration-300">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -100,7 +100,7 @@ export default function DashboardPage() {
           </Card>
         ))}
       </div>
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-6 lg:grid-cols-2 mb-6">
          <Card>
           <CardHeader>
             <CardTitle>Répartition des Employés</CardTitle>
@@ -183,6 +183,6 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </>
   );
 }

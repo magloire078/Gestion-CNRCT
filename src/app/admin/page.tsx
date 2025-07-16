@@ -104,149 +104,147 @@ export default function AdminPage() {
 
   return (
     <>
-      <div className="flex flex-col gap-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold tracking-tight">Administration</h1>
-        </div>
-        <Tabs defaultValue="users">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="users">Gestion des utilisateurs</TabsTrigger>
-            <TabsTrigger value="roles">Gestion des rôles</TabsTrigger>
-          </TabsList>
-          <TabsContent value="users" className="mt-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Utilisateurs</CardTitle>
-                <CardDescription>
-                  Gérez les utilisateurs de l'application et leurs rôles.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex justify-end mb-4">
-                  <Button onClick={() => setIsUserSheetOpen(true)}>
-                    <PlusCircle className="mr-2 h-4 w-4" />
-                    Ajouter un utilisateur
-                  </Button>
-                </div>
-                {error && <p className="text-destructive text-center py-4">{error}</p>}
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Nom</TableHead>
-                      <TableHead className="hidden md:table-cell">Email</TableHead>
-                      <TableHead className="hidden md:table-cell">Rôle</TableHead>
-                      <TableHead>
-                        <span className="sr-only">Actions</span>
-                      </TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {loading ? (
-                      Array.from({ length: 3 }).map((_, i) => (
-                        <TableRow key={i}>
-                          <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                          <TableCell className="hidden md:table-cell"><Skeleton className="h-4 w-48" /></TableCell>
-                          <TableCell className="hidden md:table-cell"><Skeleton className="h-4 w-20" /></TableCell>
-                          <TableCell><Skeleton className="h-8 w-8" /></TableCell>
-                        </TableRow>
-                      ))
-                    ) : (
-                      users.map((user) => (
-                        <TableRow key={user.id}>
-                          <TableCell>
-                              <div className="font-medium">{user.name}</div>
-                              <div className="text-sm text-muted-foreground md:hidden">{user.email}</div>
-                              <div className="text-sm text-muted-foreground md:hidden">{user.role}</div>
-                          </TableCell>
-                          <TableCell className="hidden md:table-cell">{user.email}</TableCell>
-                          <TableCell className="hidden md:table-cell">{user.role}</TableCell>
-                          <TableCell>
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button aria-haspopup="true" size="icon" variant="ghost">
-                                  <MoreHorizontal className="h-4 w-4" />
-                                  <span className="sr-only">Toggle menu</span>
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                <DropdownMenuItem disabled>Modifier</DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleDeleteUser(user.id)}>Supprimer</DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          <TabsContent value="roles" className="mt-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Rôles</CardTitle>
-                <CardDescription>
-                  Gérez les rôles et leurs permissions.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex justify-end mb-4">
-                  <Button onClick={() => setIsRoleSheetOpen(true)}>
-                    <PlusCircle className="mr-2 h-4 w-4" />
-                    Ajouter un rôle
-                  </Button>
-                </div>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Rôle</TableHead>
-                      <TableHead>Permissions</TableHead>
-                      <TableHead>
-                        <span className="sr-only">Actions</span>
-                      </TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                     {loading ? (
-                      Array.from({ length: 3 }).map((_, i) => (
-                        <TableRow key={i}>
-                          <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                          <TableCell><Skeleton className="h-4 w-full" /></TableCell>
-                          <TableCell><Skeleton className="h-8 w-8" /></TableCell>
-                        </TableRow>
-                      ))
-                    ) : (
-                      roles.map((role) => (
-                        <TableRow key={role.id}>
-                          <TableCell className="font-medium">{role.name}</TableCell>
-                          <TableCell className="truncate max-w-[200px] md:max-w-none">{role.permissions.join(", ")}</TableCell>
-                          <TableCell>
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button aria-haspopup="true" size="icon" variant="ghost">
-                                  <MoreHorizontal className="h-4 w-4" />
-                                  <span className="sr-only">Toggle menu</span>
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                <DropdownMenuItem disabled>Modifier</DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleDeleteRole(role.id)}>Supprimer</DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-3xl font-bold tracking-tight">Administration</h1>
       </div>
+      <Tabs defaultValue="users">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="users">Gestion des utilisateurs</TabsTrigger>
+          <TabsTrigger value="roles">Gestion des rôles</TabsTrigger>
+        </TabsList>
+        <TabsContent value="users" className="mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Utilisateurs</CardTitle>
+              <CardDescription>
+                Gérez les utilisateurs de l'application et leurs rôles.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex justify-end mb-4">
+                <Button onClick={() => setIsUserSheetOpen(true)}>
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  Ajouter un utilisateur
+                </Button>
+              </div>
+              {error && <p className="text-destructive text-center py-4">{error}</p>}
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Nom</TableHead>
+                    <TableHead className="hidden md:table-cell">Email</TableHead>
+                    <TableHead className="hidden md:table-cell">Rôle</TableHead>
+                    <TableHead>
+                      <span className="sr-only">Actions</span>
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {loading ? (
+                    Array.from({ length: 3 }).map((_, i) => (
+                      <TableRow key={i}>
+                        <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                        <TableCell className="hidden md:table-cell"><Skeleton className="h-4 w-48" /></TableCell>
+                        <TableCell className="hidden md:table-cell"><Skeleton className="h-4 w-20" /></TableCell>
+                        <TableCell><Skeleton className="h-8 w-8" /></TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    users.map((user) => (
+                      <TableRow key={user.id}>
+                        <TableCell>
+                            <div className="font-medium">{user.name}</div>
+                            <div className="text-sm text-muted-foreground md:hidden">{user.email}</div>
+                            <div className="text-sm text-muted-foreground md:hidden">{user.role}</div>
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell">{user.email}</TableCell>
+                        <TableCell className="hidden md:table-cell">{user.role}</TableCell>
+                        <TableCell>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button aria-haspopup="true" size="icon" variant="ghost">
+                                <MoreHorizontal className="h-4 w-4" />
+                                <span className="sr-only">Toggle menu</span>
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                              <DropdownMenuItem disabled>Modifier</DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleDeleteUser(user.id)}>Supprimer</DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="roles" className="mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Rôles</CardTitle>
+              <CardDescription>
+                Gérez les rôles et leurs permissions.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex justify-end mb-4">
+                <Button onClick={() => setIsRoleSheetOpen(true)}>
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  Ajouter un rôle
+                </Button>
+              </div>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Rôle</TableHead>
+                    <TableHead>Permissions</TableHead>
+                    <TableHead>
+                      <span className="sr-only">Actions</span>
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                   {loading ? (
+                    Array.from({ length: 3 }).map((_, i) => (
+                      <TableRow key={i}>
+                        <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                        <TableCell><Skeleton className="h-4 w-full" /></TableCell>
+                        <TableCell><Skeleton className="h-8 w-8" /></TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    roles.map((role) => (
+                      <TableRow key={role.id}>
+                        <TableCell className="font-medium">{role.name}</TableCell>
+                        <TableCell className="truncate max-w-[200px] md:max-w-none">{role.permissions.join(", ")}</TableCell>
+                        <TableCell>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button aria-haspopup="true" size="icon" variant="ghost">
+                                <MoreHorizontal className="h-4 w-4" />
+                                <span className="sr-only">Toggle menu</span>
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                              <DropdownMenuItem disabled>Modifier</DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleDeleteRole(role.id)}>Supprimer</DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
       <AddUserSheet
         isOpen={isUserSheetOpen}
         onClose={() => setIsUserSheetOpen(false)}

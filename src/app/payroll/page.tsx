@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,17 +19,57 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { payrollData, PayrollEntry } from "@/lib/payroll-data";
 import { Badge } from "@/components/ui/badge";
+import type { PayrollEntry } from "@/lib/payroll-data";
+import { getPayroll, addPayroll } from "@/services/payroll-service";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useToast } from "@/hooks/use-toast";
+import { AddPayrollSheet } from "@/components/payroll/add-payroll-sheet";
 
 export default function PayrollPage() {
-  const [payroll, setPayroll] = useState<PayrollEntry[]>(payrollData);
+  const [payroll, setPayroll] = useState<PayrollEntry[]>([]);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    async function fetchPayroll() {
+      try {
+        setLoading(true);
+        const fetchedPayroll = await getPayroll();
+        setPayroll(fetchedPayroll);
+        setError(null);
+      } catch (err) {
+        setError("Impossible de charger les données de paie.");
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchPayroll();
+  }, []);
+
+  const handleAddPayroll = async (newPayrollData: Omit<PayrollEntry, "id">) => {
+    try {
+      const newEntry = await addPayroll(newPayrollData);
+      setPayroll(prev => [...prev, newEntry]);
+      setIsSheetOpen(false);
+      toast({
+        title: "Entrée de paie ajoutée",
+        description: `Les informations de paie pour ${newEntry.employeeName} ont été ajoutées.`,
+      });
+    } catch (err) {
+        console.error("Failed to add payroll entry:", err);
+        throw err; // Re-throw to be caught in the sheet
+    }
+  };
   
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight">Gestion de la Paie</h1>
-        <Button disabled>
+        <Button onClick={() => setIsSheetOpen(true)}>
           <PlusCircle className="mr-2 h-4 w-4" />
           Ajouter des détails de paie
         </Button>
@@ -43,6 +83,7 @@ export default function PayrollPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {error && <p className="text-destructive text-center py-4">{error}</p>}
           <Table>
             <TableHeader>
               <TableRow>
@@ -54,31 +95,48 @@ export default function PayrollPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {payroll.map((entry) => (
-                <TableRow key={entry.employeeId}>
-                  <TableCell className="font-medium">{entry.employeeName}</TableCell>
-                  <TableCell>{entry.role}</TableCell>
-                  <TableCell className="text-right font-mono">
-                    {entry.baseSalary.toLocaleString("fr-FR", {
-                      style: "currency",
-                      currency: "XOF",
-                    })}
-                  </TableCell>
-                  <TableCell>
-                     <Badge variant="outline">{entry.payFrequency}</Badge>
-                  </TableCell>
-                  <TableCell>{entry.nextPayDate}</TableCell>
-                </TableRow>
-              ))}
+              {loading ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <TableRow key={i}>
+                    <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                    <TableCell><Skeleton className="h-6 w-24 rounded-full" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                 payroll.map((entry) => (
+                  <TableRow key={entry.id}>
+                    <TableCell className="font-medium">{entry.employeeName}</TableCell>
+                    <TableCell>{entry.role}</TableCell>
+                    <TableCell className="text-right font-mono">
+                      {entry.baseSalary.toLocaleString("fr-FR", {
+                        style: "currency",
+                        currency: "XOF",
+                      })}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{entry.payFrequency}</Badge>
+                    </TableCell>
+                    <TableCell>{entry.nextPayDate}</TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
-           {payroll.length === 0 && (
+           {!loading && payroll.length === 0 && (
             <div className="text-center py-10 text-muted-foreground">
                 Aucune donnée de paie trouvée.
             </div>
           )}
         </CardContent>
       </Card>
+      <AddPayrollSheet
+        isOpen={isSheetOpen}
+        onClose={() => setIsSheetOpen(false)}
+        onAddPayroll={handleAddPayroll}
+      />
     </div>
   );
 }

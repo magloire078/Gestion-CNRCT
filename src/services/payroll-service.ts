@@ -10,7 +10,7 @@ export async function getPayroll(): Promise<PayrollEntry[]> {
 
 export async function addPayroll(payrollDataToAdd: Omit<PayrollEntry, 'id'>): Promise<PayrollEntry> {
     const newEntry: PayrollEntry = { 
-        id: `PAY${Math.floor(Math.random() * 1000)}`, 
+        id: `PAY-${Date.now()}-${Math.floor(Math.random() * 1000)}`, 
         ...payrollDataToAdd 
     };
     payrollData.push(newEntry);

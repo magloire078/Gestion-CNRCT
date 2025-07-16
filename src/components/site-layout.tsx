@@ -24,8 +24,8 @@ import { useTheme } from "next-themes";
 import {
   SidebarProvider,
   Sidebar,
-  SidebarHeader,
   SidebarContent,
+  SidebarHeader,
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
@@ -80,28 +80,72 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
 
-  const isAuthPage = pathname === "/login" || pathname === "/signup";
-
-  if (isAuthPage) {
-    return <>{children}</>;
-  }
-
   const handleLogout = () => {
     router.push("/login");
   };
 
   return (
     <SidebarProvider>
-      <SidebarInset>
-        <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-sm sm:h-16 sm:px-6">
-           <SidebarTrigger className="md:hidden" />
-          <div className="flex-1" />
-           <ThemeToggle />
-        </header>
-        <main className="flex-1 p-4 sm:p-6">
-          <div className="mx-auto w-full max-w-7xl">{children}</div>
-        </main>
-      </SidebarInset>
+      <div className="h-svh w-full flex-col bg-background text-foreground md:flex">
+        <Sidebar>
+          <SidebarHeader>
+            <div className="flex items-center gap-2">
+              <Avatar className="size-8">
+                <AvatarImage
+                  src="https://placehold.co/40x40.png"
+                  alt="Logo"
+                  data-ai-hint="logo"
+                />
+                <AvatarFallback>GRH</AvatarFallback>
+              </Avatar>
+              <span className="text-lg font-semibold">
+                Gestion RH & RM de la CNRCT
+              </span>
+            </div>
+          </SidebarHeader>
+          <SidebarContent className="p-2">
+            <SidebarMenu>
+              {menuItems.map((item) => (
+                <SidebarMenuItem key={item.href}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={pathname === item.href}
+                    className="w-full justify-start"
+                  >
+                    <Link href={item.href}>
+                      <item.icon className="mr-2 h-4 w-4" />
+                      {item.label}
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarContent>
+          <SidebarFooter className="p-2">
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  onClick={handleLogout}
+                  className="w-full justify-start"
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Déconnexion
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarFooter>
+        </Sidebar>
+        <SidebarInset>
+          <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-sm sm:h-16 sm:px-6">
+            <SidebarTrigger className="md:hidden" />
+            <div className="flex-1" />
+            <ThemeToggle />
+          </header>
+          <main className="flex-1 p-4 sm:p-6">
+            <div className="mx-auto w-full max-w-7xl">{children}</div>
+          </main>
+        </SidebarInset>
+      </div>
     </SidebarProvider>
   );
 }

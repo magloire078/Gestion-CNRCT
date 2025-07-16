@@ -115,7 +115,7 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
                 <AvatarFallback>GRH</AvatarFallback>
               </Avatar>
               <span className="text-lg font-semibold">
-                Gestion RH & RM de la CNRCT
+                SYSTEME DE GESTION CNRCT
               </span>
             </div>
           </SidebarHeader>

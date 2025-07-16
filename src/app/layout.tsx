@@ -7,7 +7,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 
 
 export const metadata: Metadata = {
-  title: 'Gestion RH & RM de la CNRCT',
+  title: 'SYSTEME DE GESTION CNRCT',
   description: 'Gestion des ressources humaines et matérielles',
 };
 

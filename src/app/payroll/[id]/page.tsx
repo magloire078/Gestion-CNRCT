@@ -90,7 +90,7 @@ export default function PayslipPage() {
                     <div className="grid md:grid-cols-2 gap-6 mb-8">
                         <div>
                             <h3 className="font-semibold">Entreprise</h3>
-                            <p>Gestion RH & RM de la CNRCT</p>
+                            <p>SYSTEME DE GESTION CNRCT</p>
                             <p>Cotonou, Bénin</p>
                         </div>
                         <div className="text-right">

@@ -1,3 +1,4 @@
+
 "use server";
 
 import { askAssistant } from "@/ai/flows/assistant-flow";
@@ -35,7 +36,7 @@ export async function continueConversation(
     const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
     return {
       messages: updatedHistory,
-      error: `Failed to get a response from the assistant. ${errorMessage}`
+      error: `Désolé, une erreur est survenue lors de la communication avec l'assistant. Veuillez réessayer. Détails : ${errorMessage}`
     };
   }
 }

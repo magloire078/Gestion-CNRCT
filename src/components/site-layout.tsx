@@ -54,6 +54,7 @@ const menuItems = [
   { href: "/documents", label: "Documents", icon: FileText },
   { href: "/assistant", label: "Assistant IA", icon: MessageSquare },
   { href: "/admin", label: "Administration", icon: Shield },
+  { href: "/profile", label: "Profil", icon: User },
 ];
 
 function ThemeToggle() {
@@ -151,13 +152,17 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
                 <DropdownMenuContent className="w-56 mb-2" align="end" side="top">
                     <DropdownMenuLabel>Mon Compte</DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem>
-                        <User className="mr-2 h-4 w-4" />
-                        <span>Profil</span>
+                    <DropdownMenuItem asChild>
+                        <Link href="/profile">
+                            <User className="mr-2 h-4 w-4" />
+                            <span>Profil</span>
+                        </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem>
-                        <Settings className="mr-2 h-4 w-4" />
-                        <span>Paramètres</span>
+                    <DropdownMenuItem asChild>
+                        <Link href="/settings">
+                            <Settings className="mr-2 h-4 w-4" />
+                            <span>Paramètres</span>
+                        </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleLogout}>

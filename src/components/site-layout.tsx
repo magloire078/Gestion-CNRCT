@@ -20,6 +20,9 @@ import {
   Sun,
   Briefcase,
   Scale,
+  User,
+  Settings,
+  MoreHorizontal,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 
@@ -37,7 +40,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel } from "./ui/dropdown-menu";
 
 const menuItems = [
   { href: "/", label: "Tableau de Bord", icon: LayoutDashboard },
@@ -106,14 +109,7 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
         <Sidebar>
           <SidebarHeader>
             <div className="flex items-center gap-2">
-              <Avatar className="size-8">
-                <AvatarImage
-                  src="https://placehold.co/40x40.png"
-                  alt="Logo"
-                  data-ai-hint="logo"
-                />
-                <AvatarFallback>GRH</AvatarFallback>
-              </Avatar>
+              <Building2 className="size-8 text-primary" />
               <span className="text-lg font-semibold">
                 Gestion CNRCT
               </span>
@@ -137,18 +133,39 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
               ))}
             </SidebarMenu>
           </SidebarContent>
-          <SidebarFooter className="p-2">
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  onClick={handleLogout}
-                  className="w-full justify-start"
-                >
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Déconnexion
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
+          <SidebarFooter className="p-2 border-t border-sidebar-border">
+             <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="w-full justify-start items-center gap-3 p-2 h-auto">
+                        <Avatar className="size-8">
+                            <AvatarImage src="https://placehold.co/40x40.png" alt="Admin" data-ai-hint="user avatar" />
+                            <AvatarFallback>A</AvatarFallback>
+                        </Avatar>
+                        <div className="flex flex-col items-start text-left">
+                           <span className="text-sm font-medium text-sidebar-foreground">Admin User</span>
+                           <span className="text-xs text-sidebar-foreground/70">admin@cnrct.com</span>
+                        </div>
+                        <MoreHorizontal className="ml-auto h-5 w-5 text-sidebar-foreground/70" />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56 mb-2" align="end" side="top">
+                    <DropdownMenuLabel>Mon Compte</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem>
+                        <User className="mr-2 h-4 w-4" />
+                        <span>Profil</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                        <Settings className="mr-2 h-4 w-4" />
+                        <span>Paramètres</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleLogout}>
+                        <LogOut className="mr-2 h-4 w-4" />
+                        <span>Déconnexion</span>
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
           </SidebarFooter>
         </Sidebar>
         <SidebarInset>

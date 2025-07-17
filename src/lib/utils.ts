@@ -1,3 +1,4 @@
+
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 
@@ -23,13 +24,15 @@ export function numberToWords(num: number): string {
             return tens[ten] + (unit > 0 ? '-' + units[unit] : '');
         }
         if (n < 80) { // 70-79
-            return tens[6] + '-ET-' + teens[n - 70];
+             const unit = n % 10;
+             if (unit === 1) return tens[6] + '-ET-ONZE';
+             return tens[6] + '-' + teens[n - 70];
         }
         if (n < 100) {
             const ten = Math.floor(n / 10);
             const unit = n % 10;
-            const link = (ten === 8 && unit > 0) ? '-' : '';
-            return tens[ten] + link + (unit > 0 ? units[unit] : (ten === 8 ? 'S' : ''));
+            if (unit === 0) return tens[ten] + 'S';
+            return tens[ten] + (unit > 0 ? '-' + units[unit] : '');
         }
         if (n < 200) {
             return 'CENT' + (n % 100 > 0 ? ' ' + convert(n % 100) : '');
@@ -47,9 +50,9 @@ export function numberToWords(num: number): string {
         let str = '';
         if (n > 1) {
             str = convert(n) + ' ' + groupName;
-            if (n % 100 !== 1) str += 'S';
+             str += 'S';
         } else {
-            str = (isLastGroup ? 'UN ' : '') + groupName;
+            str = 'UN ' + groupName;
         }
         return str;
     }
@@ -64,9 +67,12 @@ export function numberToWords(num: number): string {
     if (millions > 0) result += processGroup(millions, 'MILLION', false) + ' ';
     if (thousands > 0) {
         if (thousands === 1) result += 'MILLE ';
-        else result += convert(thousands) + ' MILLE ';
+        else result += convert(thousands).replace(/S$/, '') + ' MILLE ';
     }
     if (remainder > 0) result += convert(remainder);
+    
+    // Cleanup: remove trailing S from CENT if followed by MILLE/MILLION etc.
+    result = result.replace(/CENTS\s(MILLE|MILLION|MILLIARD)/g, 'CENT $1');
 
     return result.trim().toUpperCase();
 }

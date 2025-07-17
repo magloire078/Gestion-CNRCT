@@ -45,7 +45,7 @@ export type PayslipEmployerContribution = {
 
 // Type for the full payslip details
 export type PayslipDetails = {
-    employeeInfo: Omit<PayrollEntry, 'id'>;
+    employeeInfo: Omit<PayrollEntry, 'id'> & { matricule: string }; // Add matricule here
     earnings: PayslipEarning[];
     deductions: PayslipDeduction[];
     totals: {

@@ -1,3 +1,4 @@
+
 import { db } from '@/lib/firebase';
 import { collection, getDocs, addDoc, doc, getDoc, query, where, limit } from 'firebase/firestore';
 import type { PayrollEntry } from '@/lib/payroll-data';

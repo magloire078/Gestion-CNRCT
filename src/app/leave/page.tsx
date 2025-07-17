@@ -24,7 +24,7 @@ import type { Leave } from "@/lib/data";
 import { AddLeaveRequestSheet } from "@/components/leave/add-leave-request-sheet";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { getLeaves, addLeave, updateLeaveStatus } from "@/services/leave-service";
+import { subscribeToLeaves, addLeave, updateLeaveStatus } from "@/services/leave-service";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 
@@ -51,30 +51,24 @@ export default function LeavePage() {
   const [statusFilter, setStatusFilter] = useState("all");
 
   useEffect(() => {
-    async function fetchLeaves() {
-      try {
-        setLoading(true);
-        const fetchedLeaves = await getLeaves();
+    const unsubscribe = subscribeToLeaves((fetchedLeaves) => {
         setLeaves(fetchedLeaves);
+        setLoading(false);
         setError(null);
-      } catch (err) {
+    }, (err) => {
         setError("Impossible de charger les demandes de congé. Veuillez vérifier la configuration de votre base de données Firestore et les règles de sécurité.");
         console.error(err);
-      } finally {
         setLoading(false);
-      }
-    }
-    fetchLeaves();
+    });
+
+    // Cleanup subscription on component unmount
+    return () => unsubscribe();
   }, []);
 
   const handleLeaveStatusChange = async (id: string, status: Status) => {
     try {
       await updateLeaveStatus(id, status);
-      setLeaves((prevLeaves) =>
-        prevLeaves.map((leave) =>
-          leave.id === id ? { ...leave, status: status } : leave
-        )
-      );
+      // No need for local state update, onSnapshot will handle it.
       toast({
         title: "Statut mis à jour",
         description: `La demande a été marquée comme ${status}.`,
@@ -89,12 +83,18 @@ export default function LeavePage() {
   };
   
   const handleAddLeaveRequest = async (newLeaveRequest: Omit<Leave, 'id' | 'status'>) => {
-    const newRequest = await addLeave(newLeaveRequest);
-    setLeaves(prev => [...prev, newRequest].sort((a,b) => b.startDate.localeCompare(a.startDate)));
-     toast({
-        title: "Demande ajoutée",
-        description: `La demande de congé pour ${newRequest.employee} a été ajoutée.`,
-      });
+    try {
+        const newRequest = await addLeave(newLeaveRequest);
+        // No need for local state update, onSnapshot will handle it.
+        setIsSheetOpen(false);
+        toast({
+            title: "Demande ajoutée",
+            description: `La demande de congé pour ${newRequest.employee} a été ajoutée.`,
+        });
+    } catch (err) {
+        console.error("Failed to add leave request:", err);
+        throw err; // Re-throw to be caught in the sheet
+    }
   };
 
   const filteredLeaves = useMemo(() => {

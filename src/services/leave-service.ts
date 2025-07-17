@@ -1,7 +1,25 @@
 
 import { db } from '@/lib/firebase';
-import { collection, getDocs, addDoc, doc, updateDoc } from 'firebase/firestore';
+import { collection, getDocs, addDoc, doc, updateDoc, onSnapshot, Unsubscribe, query, orderBy } from 'firebase/firestore';
 import type { Leave } from '@/lib/data';
+
+export function subscribeToLeaves(
+    callback: (leaves: Leave[]) => void,
+    onError: (error: Error) => void
+): Unsubscribe {
+    const leavesCollection = collection(db, 'leaves');
+    const q = query(leavesCollection, orderBy("startDate", "desc"));
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+        const leaveList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Leave));
+        callback(leaveList);
+    }, (error) => {
+        console.error("Error subscribing to leaves:", error);
+        onError(error);
+    });
+
+    return unsubscribe;
+}
 
 export async function getLeaves(): Promise<Leave[]> {
   const leavesCollection = collection(db, 'leaves');

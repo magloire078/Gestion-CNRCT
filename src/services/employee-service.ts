@@ -1,6 +1,6 @@
 
 import { db } from '@/lib/firebase';
-import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, onSnapshot, Unsubscribe, query, orderBy } from 'firebase/firestore';
+import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, onSnapshot, Unsubscribe, query, orderBy, where } from 'firebase/firestore';
 import type { Employee } from '@/lib/data';
 
 export function subscribeToEmployees(
@@ -31,6 +31,14 @@ export async function getEmployees(): Promise<Employee[]> {
 
 export async function addEmployee(employeeDataToAdd: Omit<Employee, 'id'>): Promise<Employee> {
     const employeesCollection = collection(db, 'employees');
+    
+    // Check for existing matricule
+    const q = query(employeesCollection, where("matricule", "==", employeeDataToAdd.matricule));
+    const querySnapshot = await getDocs(q);
+    if (!querySnapshot.empty) {
+        throw new Error("Un employé avec ce matricule existe déjà.");
+    }
+
     const docRef = await addDoc(employeesCollection, employeeDataToAdd);
     const newEmployee: Employee = { 
         id: docRef.id, 

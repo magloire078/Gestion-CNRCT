@@ -42,7 +42,7 @@ export default function PayrollPage() {
         setPayroll(fetchedPayroll);
         setError(null);
       } catch (err) {
-        setError("Impossible de charger les données de paie.");
+        setError("Impossible de charger les données de paie. Veuillez vérifier votre connexion et les permissions Firestore.");
         console.error(err);
       } finally {
         setLoading(false);
@@ -54,7 +54,7 @@ export default function PayrollPage() {
   const handleAddPayroll = async (newPayrollData: Omit<PayrollEntry, "id">) => {
     try {
       const newEntry = await addPayroll(newPayrollData);
-      setPayroll(prev => [...prev, newEntry]);
+      setPayroll(prev => [...prev, newEntry].sort((a,b) => a.employeeName.localeCompare(b.employeeName)));
       setIsSheetOpen(false);
       toast({
         title: "Entrée de paie ajoutée",
@@ -109,7 +109,7 @@ export default function PayrollPage() {
                         <TableCell><Skeleton className="h-8 w-8 rounded-md" /></TableCell>
                     </TableRow>
                     ))
-                ) : (
+                ) : payroll.length > 0 ? (
                     payroll.map((entry) => (
                     <TableRow key={entry.id}>
                         <TableCell className="font-medium">{entry.employeeName}</TableCell>
@@ -134,7 +134,7 @@ export default function PayrollPage() {
                         </TableCell>
                     </TableRow>
                     ))
-                )}
+                ) : null}
                 </TableBody>
             </Table>
            </div>
@@ -143,7 +143,7 @@ export default function PayrollPage() {
                 Array.from({ length: 5 }).map((_, i) => (
                   <Card key={i}><CardContent className="p-4"><Skeleton className="h-20 w-full" /></CardContent></Card>
                 ))
-             ) : (
+             ) : payroll.length > 0 ? (
                 payroll.map((entry) => (
                     <Card key={entry.id}>
                         <CardContent className="p-4">
@@ -167,9 +167,9 @@ export default function PayrollPage() {
                         </CardContent>
                     </Card>
                 ))
-             )}
+             ) : null}
            </div>
-           {!loading && payroll.length === 0 && (
+           {!loading && payroll.length === 0 && !error && (
             <div className="text-center py-10 text-muted-foreground">
                 Aucune donnée de paie trouvée.
             </div>

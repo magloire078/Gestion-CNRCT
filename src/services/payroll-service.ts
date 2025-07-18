@@ -1,6 +1,6 @@
 
 import { db } from '@/lib/firebase';
-import { collection, getDocs, addDoc, doc, getDoc, query, where, limit } from 'firebase/firestore';
+import { collection, getDocs, addDoc, doc, getDoc, query, where, limit, updateDoc } from 'firebase/firestore';
 import type { PayrollEntry } from '@/lib/payroll-data';
 
 export async function getPayroll(): Promise<PayrollEntry[]> {
@@ -16,7 +16,15 @@ export async function addPayroll(payrollDataToAdd: Omit<PayrollEntry, 'id'>): Pr
     const q = query(payrollCollection, where("employeeId", "==", payrollDataToAdd.employeeId));
     const querySnapshot = await getDocs(q);
     if (!querySnapshot.empty) {
-        throw new Error("Une entrée de paie pour cet employé existe déjà.");
+        // Instead of throwing an error, update the existing entry
+        const existingDoc = querySnapshot.docs[0];
+        const docRef = doc(db, 'payroll', existingDoc.id);
+        await updateDoc(docRef, payrollDataToAdd);
+        const updatedEntry: PayrollEntry = { 
+            id: existingDoc.id, 
+            ...payrollDataToAdd 
+        };
+        return updatedEntry;
     }
     
     const docRef = await addDoc(payrollCollection, payrollDataToAdd);

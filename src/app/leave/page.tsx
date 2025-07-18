@@ -56,7 +56,7 @@ export default function LeavePage() {
         setLoading(false);
         setError(null);
     }, (err) => {
-        setError("Impossible de charger les demandes de congé. Veuillez vérifier la configuration de votre base de données Firestore et les règles de sécurité.");
+        setError("Impossible de charger les demandes de congé.");
         console.error(err);
         setLoading(false);
     });
@@ -307,7 +307,7 @@ export default function LeavePage() {
                     ))
                 )}
             </div>
-          { !loading && filteredLeaves.length === 0 && (
+          { !loading && filteredLeaves.length === 0 && !error && (
             <div className="text-center py-10 text-muted-foreground">
                 Aucune demande de congé trouvée.
             </div>

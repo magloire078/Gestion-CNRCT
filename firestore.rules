@@ -3,10 +3,8 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     // Allow read and write access to all documents
-    // for developers to get started quickly.
-    // WARNING: This is not a secure rule for production.
-    // You should secure your database before deploying to production.
-    // https://firebase.google.com/docs/firestore/security/get-started
+    // for prototyping purposes.
+    // WARNING: This is not secure for production.
     match /{document=**} {
       allow read, write: if true;
     }

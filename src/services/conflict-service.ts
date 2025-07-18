@@ -1,8 +1,25 @@
 
 import { db } from '@/lib/firebase';
-import { collection, getDocs, addDoc, doc, setDoc } from 'firebase/firestore';
+import { collection, getDocs, addDoc, onSnapshot, Unsubscribe, query, orderBy } from 'firebase/firestore';
 import type { Conflict } from '@/lib/data';
 
+export function subscribeToConflicts(
+    callback: (conflicts: Conflict[]) => void,
+    onError: (error: Error) => void
+): Unsubscribe {
+    const conflictsCollection = collection(db, 'conflicts');
+    const q = query(conflictsCollection, orderBy("reportedDate", "desc"));
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+        const conflictList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Conflict));
+        callback(conflictList);
+    }, (error) => {
+        console.error("Error subscribing to conflicts:", error);
+        onError(error);
+    });
+
+    return unsubscribe;
+}
 
 export async function getConflicts(): Promise<Conflict[]> {
   const conflictsCollection = collection(db, 'conflicts');

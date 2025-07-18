@@ -23,17 +23,18 @@ interface AddRoleSheetProps {
   isOpen: boolean;
   onClose: () => void;
   onAddRole: (role: Role) => void;
+  roles: Role[];
 }
 
-export function AddRoleSheet({ isOpen, onClose, onAddRole }: AddRoleSheetProps) {
-  const [name, setName] = useState<Role['name']>('Employé');
+export function AddRoleSheet({ isOpen, onClose, onAddRole, roles }: AddRoleSheetProps) {
+  const [name, setName] = useState('');
   const [permissions, setPermissions] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
   const resetForm = () => {
-    setName("Employé");
+    setName("");
     setPermissions("");
     setError("");
   };
@@ -49,11 +50,18 @@ export function AddRoleSheet({ isOpen, onClose, onAddRole }: AddRoleSheetProps) 
       setError("Le nom du rôle et les permissions sont obligatoires.");
       return;
     }
+
+    if (roles.some(role => role.name.toLowerCase() === name.toLowerCase())) {
+        setError(`Le rôle "${name}" existe déjà.`);
+        return;
+    }
+    
     setIsSubmitting(true);
     setError("");
     try {
       const permissionArray = permissions.split(',').map(p => p.trim());
-      const newRole = await addRole({ name, permissions: permissionArray });
+      // The role name cannot be one of the pre-defined ones for the type
+      const newRole = await addRole({ name: name as any, permissions: permissionArray });
       onAddRole(newRole);
       toast({ title: "Rôle ajouté", description: `Le rôle ${name} a été ajouté.` });
       handleClose();
@@ -77,7 +85,7 @@ export function AddRoleSheet({ isOpen, onClose, onAddRole }: AddRoleSheetProps) 
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="name" className="text-right">Nom du Rôle</Label>
-              <Input id="name" value={name} onChange={(e) => setName(e.target.value as Role['name'])} className="col-span-3" />
+              <Input id="name" value={name} onChange={(e) => setName(e.target.value)} className="col-span-3" />
             </div>
             <div className="grid grid-cols-4 items-start gap-4">
               <Label htmlFor="permissions" className="text-right pt-2">Permissions</Label>

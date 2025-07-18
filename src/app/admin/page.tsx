@@ -36,8 +36,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 
 import type { User, Role } from "@/lib/data";
-import { getUsers, deleteUser } from "@/services/user-service";
-import { getRoles, deleteRole } from "@/services/role-service";
+import { subscribeToUsers, deleteUser } from "@/services/user-service";
+import { subscribeToRoles, deleteRole } from "@/services/role-service";
 
 import { AddUserSheet } from "@/components/admin/add-user-sheet";
 import { AddRoleSheet } from "@/components/admin/add-role-sheet";
@@ -53,36 +53,49 @@ export default function AdminPage() {
   const [isRoleSheetOpen, setIsRoleSheetOpen] = useState(false);
 
   useEffect(() => {
-    async function fetchData() {
-      try {
-        setLoading(true);
-        const [userList, roleList] = await Promise.all([getUsers(), getRoles()]);
+    setLoading(true);
+    const unsubscribeUsers = subscribeToUsers(
+      (userList) => {
         setUsers(userList);
-        setRoles(roleList);
         setError(null);
-      } catch (err) {
-        setError("Impossible de charger les données d'administration.");
+        setLoading(false); // Can set loading to false after first data is fetched
+      },
+      (err) => {
+        setError("Impossible de charger les utilisateurs.");
         console.error(err);
-      } finally {
         setLoading(false);
       }
-    }
-    fetchData();
+    );
+
+    const unsubscribeRoles = subscribeToRoles(
+      (roleList) => {
+        setRoles(roleList);
+      },
+      (err) => {
+        setError((prevError) => prevError || "Impossible de charger les rôles.");
+        console.error(err);
+        setLoading(false);
+      }
+    );
+
+    return () => {
+      unsubscribeUsers();
+      unsubscribeRoles();
+    };
   }, []);
 
   const handleAddUser = (newUser: User) => {
-    setUsers((prev) => [...prev, newUser]);
+    // State is now managed by the real-time subscription
   };
 
   const handleAddRole = (newRole: Role) => {
-    setRoles((prev) => [...prev, newRole]);
+    // State is now managed by the real-time subscription
   };
 
   const handleDeleteUser = async (userId: string) => {
     if (confirm("Êtes-vous sûr de vouloir supprimer cet utilisateur ?")) {
       try {
         await deleteUser(userId);
-        setUsers((prev) => prev.filter((user) => user.id !== userId));
         toast({ title: "Utilisateur supprimé", description: "L'utilisateur a été supprimé avec succès." });
       } catch (err) {
         toast({ variant: "destructive", title: "Erreur", description: "Impossible de supprimer l'utilisateur." });
@@ -91,10 +104,16 @@ export default function AdminPage() {
   };
 
   const handleDeleteRole = async (roleId: string) => {
+    // Prevent deletion of essential roles
+    const roleToDelete = roles.find(r => r.id === roleId);
+    if (roleToDelete && ['Admin', 'Manager', 'Employé'].includes(roleToDelete.name)) {
+        toast({ variant: "destructive", title: "Action non autorisée", description: `Le rôle "${roleToDelete.name}" est un rôle système et ne peut pas être supprimé.` });
+        return;
+    }
+    
     if (confirm("Êtes-vous sûr de vouloir supprimer ce rôle ?")) {
       try {
         await deleteRole(roleId);
-        setRoles((prev) => prev.filter((role) => role.id !== roleId));
         toast({ title: "Rôle supprimé", description: "Le rôle a été supprimé avec succès." });
       } catch (err) {
         toast({ variant: "destructive", title: "Erreur", description: "Impossible de supprimer le rôle." });
@@ -252,6 +271,7 @@ export default function AdminPage() {
         isOpen={isRoleSheetOpen}
         onClose={() => setIsRoleSheetOpen(false)}
         onAddRole={handleAddRole}
+        roles={roles}
       />
     </div>
   );

@@ -1,7 +1,25 @@
 
 import { db } from '@/lib/firebase';
-import { collection, getDocs, addDoc } from 'firebase/firestore';
+import { collection, getDocs, addDoc, onSnapshot, Unsubscribe, query, orderBy } from 'firebase/firestore';
 import type { Mission } from '@/lib/data';
+
+export function subscribeToMissions(
+    callback: (missions: Mission[]) => void,
+    onError: (error: Error) => void
+): Unsubscribe {
+    const missionsCollection = collection(db, 'missions');
+    const q = query(missionsCollection, orderBy("startDate", "desc"));
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+        const missionList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Mission));
+        callback(missionList);
+    }, (error) => {
+        console.error("Error subscribing to missions:", error);
+        onError(error);
+    });
+
+    return unsubscribe;
+}
 
 export async function getMissions(): Promise<Mission[]> {
   const missionsCollection = collection(db, 'missions');

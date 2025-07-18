@@ -23,7 +23,7 @@ import { Badge } from "@/components/ui/badge";
 import type { Conflict } from "@/lib/data";
 import { AddConflictSheet } from "@/components/conflicts/add-conflict-sheet";
 import { Input } from "@/components/ui/input";
-import { getConflicts, addConflict } from "@/services/conflict-service";
+import { subscribeToConflicts, addConflict } from "@/services/conflict-service";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 
@@ -44,30 +44,29 @@ export default function ConflictsPage() {
   const { toast } = useToast();
 
   useEffect(() => {
-    async function fetchConflicts() {
-      try {
-        setLoading(true);
-        const fetchedConflicts = await getConflicts();
+    const unsubscribe = subscribeToConflicts(
+      (fetchedConflicts) => {
         setConflicts(fetchedConflicts);
+        setLoading(false);
         setError(null);
-      } catch (err) {
+      },
+      (err) => {
         setError("Impossible de charger les conflits.");
         console.error(err);
-      } finally {
         setLoading(false);
       }
-    }
-    fetchConflicts();
+    );
+    return () => unsubscribe();
   }, []);
 
   const handleAddConflict = async (newConflictData: Omit<Conflict, "id">) => {
      try {
-        const newConflict = await addConflict(newConflictData);
-        setConflicts(prev => [...prev, newConflict]);
+        await addConflict(newConflictData);
+        // State is managed by real-time subscription
         setIsSheetOpen(false);
         toast({
             title: "Conflit ajouté",
-            description: `Le conflit à ${newConflict.village} a été enregistré.`,
+            description: `Le conflit à ${newConflictData.village} a été enregistré.`,
         });
      } catch (err) {
         console.error("Failed to add conflict:", err);

@@ -22,7 +22,7 @@ import {
 import type { Fleet } from "@/lib/data";
 import { AddVehicleSheet } from "@/components/fleet/add-vehicle-sheet";
 import { Input } from "@/components/ui/input";
-import { getVehicles, addVehicle } from "@/services/fleet-service";
+import { subscribeToVehicles, addVehicle } from "@/services/fleet-service";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 
@@ -35,30 +35,29 @@ export default function FleetPage() {
   const { toast } = useToast();
 
   useEffect(() => {
-    async function fetchVehicles() {
-      try {
-        setLoading(true);
-        const fetchedVehicles = await getVehicles();
+    const unsubscribe = subscribeToVehicles(
+      (fetchedVehicles) => {
         setVehicles(fetchedVehicles);
+        setLoading(false);
         setError(null);
-      } catch (err) {
+      },
+      (err) => {
         setError("Impossible de charger les véhicules. Veuillez vérifier la configuration de votre base de données Firestore et les règles de sécurité.");
         console.error(err);
-      } finally {
         setLoading(false);
       }
-    }
-    fetchVehicles();
+    );
+    return () => unsubscribe();
   }, []);
 
   const handleAddVehicle = async (newVehicleData: Omit<Fleet, "id"> & { plate: string }) => {
      try {
-        const newVehicle = await addVehicle(newVehicleData);
-        setVehicles(prev => [...prev, newVehicle]);
+        await addVehicle(newVehicleData);
+        // State is managed by real-time subscription
         setIsSheetOpen(false);
         toast({
             title: "Véhicule ajouté",
-            description: `Le véhicule ${newVehicle.makeModel} a été ajouté avec succès.`,
+            description: `Le véhicule ${newVehicleData.makeModel} a été ajouté avec succès.`,
         });
      } catch (err) {
         console.error("Failed to add vehicle:", err);

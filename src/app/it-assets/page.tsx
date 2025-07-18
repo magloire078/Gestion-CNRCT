@@ -11,7 +11,7 @@ import type { Asset } from "@/lib/data";
 import { AddAssetSheet } from "@/components/it-assets/add-asset-sheet";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { getAssets, addAsset } from "@/services/asset-service";
+import { subscribeToAssets, addAsset } from "@/services/asset-service";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 
@@ -39,28 +39,27 @@ export default function ItAssetsPage() {
   const [statusFilter, setStatusFilter] = useState("all");
 
   useEffect(() => {
-    async function fetchAssets() {
-      try {
-        setLoading(true);
-        const fetchedAssets = await getAssets();
+    const unsubscribe = subscribeToAssets(
+      (fetchedAssets) => {
         setAssets(fetchedAssets);
+        setLoading(false);
         setError(null);
-      } catch (err) {
+      },
+      (err) => {
         setError("Impossible de charger les actifs. Veuillez vérifier la configuration de votre base de données Firestore et les règles de sécurité.");
         console.error(err);
-      } finally {
         setLoading(false);
       }
-    }
-    fetchAssets();
+    );
+    return () => unsubscribe();
   }, []);
 
   const handleAddAsset = async (newAssetData: Omit<Asset, 'tag'>) => {
     try {
-      const newAsset = await addAsset(newAssetData);
-      setAssets(prev => [...prev, newAsset]);
+      await addAsset(newAssetData);
+      // State is managed by real-time subscription
       setIsSheetOpen(false);
-      toast({ title: 'Actif ajouté', description: `L'actif ${newAsset.model} a été ajouté avec succès.` });
+      toast({ title: 'Actif ajouté', description: `L'actif ${newAssetData.model} a été ajouté avec succès.` });
     } catch (err) {
       console.error("Failed to add asset:", err);
       throw err;

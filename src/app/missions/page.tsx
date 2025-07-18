@@ -23,7 +23,7 @@ import { Badge } from "@/components/ui/badge";
 import type { Mission } from "@/lib/data";
 import { AddMissionSheet } from "@/components/missions/add-mission-sheet";
 import { Input } from "@/components/ui/input";
-import { getMissions, addMission } from "@/services/mission-service";
+import { subscribeToMissions, addMission } from "@/services/mission-service";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 
@@ -45,30 +45,29 @@ export default function MissionsPage() {
   const { toast } = useToast();
 
   useEffect(() => {
-    async function fetchMissions() {
-      try {
-        setLoading(true);
-        const fetchedMissions = await getMissions();
+    const unsubscribe = subscribeToMissions(
+      (fetchedMissions) => {
         setMissions(fetchedMissions);
+        setLoading(false);
         setError(null);
-      } catch (err) {
+      },
+      (err) => {
         setError("Impossible de charger les missions.");
         console.error(err);
-      } finally {
         setLoading(false);
       }
-    }
-    fetchMissions();
+    );
+    return () => unsubscribe();
   }, []);
 
   const handleAddMission = async (newMissionData: Omit<Mission, "id">) => {
      try {
-        const newMission = await addMission(newMissionData);
-        setMissions(prev => [...prev, newMission]);
+        await addMission(newMissionData);
+        // State is managed by real-time subscription
         setIsSheetOpen(false);
         toast({
             title: "Mission ajoutée",
-            description: `La mission "${newMission.title}" a été ajoutée avec succès.`,
+            description: `La mission "${newMissionData.title}" a été ajoutée avec succès.`,
         });
      } catch (err) {
         console.error("Failed to add mission:", err);

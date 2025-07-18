@@ -309,7 +309,9 @@ export default function LeavePage() {
             </div>
           { !loading && filteredLeaves.length === 0 && !error && (
             <div className="text-center py-10 text-muted-foreground">
-                Aucune demande de congé trouvée.
+                Aucune demande de congé n'a été trouvée.
+                <br />
+                Cliquez sur "Nouvelle demande" pour en ajouter une.
             </div>
           )}
         </CardContent>

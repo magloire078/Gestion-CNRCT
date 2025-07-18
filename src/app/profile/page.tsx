@@ -14,12 +14,30 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Upload } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation";
 
 export default function ProfilePage() {
+  const { toast } = useToast();
+  const router = useRouter();
 
   const handleUpdate = (e: React.FormEvent) => {
     e.preventDefault();
     // Logic to update profile comes here
+    toast({
+        title: "Profil mis à jour",
+        description: "Vos informations ont été enregistrées avec succès.",
+    });
+    router.push('/');
+  };
+  
+   const handleChangePassword = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Logic to update password comes here
+    toast({
+        title: "Mot de passe modifié",
+        description: "Votre mot de passe a été mis à jour.",
+    });
   };
 
   return (
@@ -43,8 +61,9 @@ export default function ProfilePage() {
           </Card>
         </div>
         <div className="md:col-span-2">
-          <form onSubmit={handleUpdate}>
+          
             <Card>
+             <form onSubmit={handleUpdate}>
               <CardHeader>
                 <CardTitle>Informations Personnelles</CardTitle>
                 <CardDescription>Mettez à jour les informations de votre compte.</CardDescription>
@@ -68,8 +87,11 @@ export default function ProfilePage() {
               <CardFooter>
                 <Button type="submit">Enregistrer les modifications</Button>
               </CardFooter>
+              </form>
             </Card>
+
             <Card className="mt-6">
+               <form onSubmit={handleChangePassword}>
                 <CardHeader>
                     <CardTitle>Changer le mot de passe</CardTitle>
                     <CardDescription>Mettez à jour votre mot de passe ici.</CardDescription>
@@ -91,8 +113,9 @@ export default function ProfilePage() {
                  <CardFooter>
                     <Button type="submit">Changer le mot de passe</Button>
                 </CardFooter>
+                </form>
             </Card>
-          </form>
+         
         </div>
       </div>
     </div>

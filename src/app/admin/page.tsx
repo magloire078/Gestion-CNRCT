@@ -18,12 +18,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
 import { PlusCircle, MoreHorizontal } from "lucide-react";
 import {
   DropdownMenu,
@@ -35,244 +29,179 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 
-import type { User, Role } from "@/lib/data";
-import { subscribeToUsers, deleteUser } from "@/services/user-service";
-import { subscribeToRoles, deleteRole } from "@/services/role-service";
+import type { Employee } from "@/lib/data";
+import { subscribeToEmployees, addEmployee, deleteEmployee, updateEmployee } from "@/services/employee-service";
 
-import { AddUserSheet } from "@/components/admin/add-user-sheet";
-import { AddRoleSheet } from "@/components/admin/add-role-sheet";
+import { AddEmployeeSheet } from "@/components/employees/add-employee-sheet";
+import { EditEmployeeSheet } from "@/components/employees/edit-employee-sheet";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
 
 export default function AdminPage() {
-  const [users, setUsers] = useState<User[]>([]);
-  const [roles, setRoles] = useState<Role[]>([]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const [isUserSheetOpen, setIsUserSheetOpen] = useState(false);
-  const [isRoleSheetOpen, setIsRoleSheetOpen] = useState(false);
+  const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
+  const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
+  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
 
   useEffect(() => {
     setLoading(true);
-    const unsubscribeUsers = subscribeToUsers(
-      (userList) => {
-        setUsers(userList);
+    const unsubscribeEmployees = subscribeToEmployees(
+      (employeeList) => {
+        setEmployees(employeeList);
         setError(null);
-        setLoading(false); // Can set loading to false after first data is fetched
-      },
-      (err) => {
-        setError("Impossible de charger les utilisateurs.");
-        console.error(err);
         setLoading(false);
-      }
-    );
-
-    const unsubscribeRoles = subscribeToRoles(
-      (roleList) => {
-        setRoles(roleList);
       },
       (err) => {
-        setError((prevError) => prevError || "Impossible de charger les rôles.");
+        setError("Impossible de charger les employés.");
         console.error(err);
         setLoading(false);
       }
     );
 
     return () => {
-      unsubscribeUsers();
-      unsubscribeRoles();
+      unsubscribeEmployees();
     };
   }, []);
-
-  const handleAddUser = (newUser: User) => {
-    // State is now managed by the real-time subscription
+  
+  const handleAddEmployee = async (newEmployeeData: Omit<Employee, 'id'>) => {
+    try {
+        await addEmployee(newEmployeeData);
+        setIsAddSheetOpen(false);
+        toast({
+          title: "Employé ajouté",
+          description: `${newEmployeeData.name} a été ajouté avec succès.`,
+        });
+    } catch (err) {
+        toast({ variant: "destructive", title: "Erreur", description: err instanceof Error ? err.message : "Impossible d'ajouter l'employé." });
+    }
+  };
+  
+  const handleUpdateEmployee = async (employeeId: string, updatedEmployeeData: Omit<Employee, 'id'>) => {
+    try {
+      await updateEmployee(employeeId, updatedEmployeeData);
+      setIsEditSheetOpen(false);
+      toast({
+        title: "Employé mis à jour",
+        description: `Les informations de ${updatedEmployeeData.name} ont été mises à jour.`,
+      });
+    } catch (err) {
+      toast({ variant: "destructive", title: "Erreur", description: "Impossible de mettre à jour l'employé." });
+    }
   };
 
-  const handleAddRole = (newRole: Role) => {
-    // State is now managed by the real-time subscription
-  };
-
-  const handleDeleteUser = async (userId: string) => {
-    if (confirm("Êtes-vous sûr de vouloir supprimer cet utilisateur ?")) {
+  const handleDeleteEmployee = async (employeeId: string) => {
+    if (confirm("Êtes-vous sûr de vouloir supprimer cet employé ?")) {
       try {
-        await deleteUser(userId);
-        toast({ title: "Utilisateur supprimé", description: "L'utilisateur a été supprimé avec succès." });
+        await deleteEmployee(employeeId);
+        toast({ title: "Employé supprimé", description: "L'employé a été supprimé avec succès." });
       } catch (err) {
-        toast({ variant: "destructive", title: "Erreur", description: "Impossible de supprimer l'utilisateur." });
+        toast({ variant: "destructive", title: "Erreur", description: "Impossible de supprimer l'employé." });
       }
     }
   };
-
-  const handleDeleteRole = async (roleId: string) => {
-    // Prevent deletion of essential roles
-    const roleToDelete = roles.find(r => r.id === roleId);
-    if (roleToDelete && ['Admin', 'Manager', 'Employé'].includes(roleToDelete.name)) {
-        toast({ variant: "destructive", title: "Action non autorisée", description: `Le rôle "${roleToDelete.name}" est un rôle système et ne peut pas être supprimé.` });
-        return;
-    }
-    
-    if (confirm("Êtes-vous sûr de vouloir supprimer ce rôle ?")) {
-      try {
-        await deleteRole(roleId);
-        toast({ title: "Rôle supprimé", description: "Le rôle a été supprimé avec succès." });
-      } catch (err) {
-        toast({ variant: "destructive", title: "Erreur", description: "Impossible de supprimer le rôle." });
-      }
-    }
+  
+  const openEditSheet = (employee: Employee) => {
+    setSelectedEmployee(employee);
+    setIsEditSheetOpen(true);
   };
+
 
   return (
     <div className="flex flex-col gap-6">
       <h1 className="text-3xl font-bold tracking-tight">Administration</h1>
-      <Tabs defaultValue="users">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="users">Gestion des utilisateurs</TabsTrigger>
-          <TabsTrigger value="roles">Gestion des rôles</TabsTrigger>
-        </TabsList>
-        <TabsContent value="users" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Utilisateurs</CardTitle>
-              <CardDescription>
-                Gérez les utilisateurs de l'application et leurs rôles.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex justify-end mb-4">
-                <Button onClick={() => setIsUserSheetOpen(true)}>
-                  <PlusCircle className="mr-2 h-4 w-4" />
-                  Ajouter un utilisateur
-                </Button>
-              </div>
-              {error && <p className="text-destructive text-center py-4">{error}</p>}
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nom</TableHead>
-                    <TableHead className="hidden md:table-cell">Email</TableHead>
-                    <TableHead className="hidden md:table-cell">Rôle</TableHead>
-                    <TableHead>
-                      <span className="sr-only">Actions</span>
-                    </TableHead>
+       <Card>
+        <CardHeader>
+          <CardTitle>Gestion des Employés</CardTitle>
+          <CardDescription>
+            Ajoutez, modifiez ou supprimez les employés de l'application.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex justify-end mb-4">
+            <Button onClick={() => setIsAddSheetOpen(true)}>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Ajouter un employé
+            </Button>
+          </div>
+          {error && <p className="text-destructive text-center py-4">{error}</p>}
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[80px]">Photo</TableHead>
+                <TableHead>Nom</TableHead>
+                <TableHead className="hidden md:table-cell">Matricule</TableHead>
+                <TableHead className="hidden md:table-cell">Rôle</TableHead>
+                <TableHead>
+                  <span className="sr-only">Actions</span>
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {loading ? (
+                Array.from({ length: 3 }).map((_, i) => (
+                  <TableRow key={i}>
+                    <TableCell><Skeleton className="h-10 w-10 rounded-full" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                    <TableCell className="hidden md:table-cell"><Skeleton className="h-4 w-24" /></TableCell>
+                    <TableCell className="hidden md:table-cell"><Skeleton className="h-4 w-20" /></TableCell>
+                    <TableCell><Skeleton className="h-8 w-8" /></TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {loading ? (
-                    Array.from({ length: 3 }).map((_, i) => (
-                      <TableRow key={i}>
-                        <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                        <TableCell className="hidden md:table-cell"><Skeleton className="h-4 w-48" /></TableCell>
-                        <TableCell className="hidden md:table-cell"><Skeleton className="h-4 w-20" /></TableCell>
-                        <TableCell><Skeleton className="h-8 w-8" /></TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    users.map((user) => (
-                      <TableRow key={user.id}>
-                        <TableCell>
-                            <div className="font-medium">{user.name}</div>
-                            <div className="text-sm text-muted-foreground md:hidden">{user.email}</div>
-                            <div className="text-sm text-muted-foreground md:hidden">{user.role}</div>
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">{user.email}</TableCell>
-                        <TableCell className="hidden md:table-cell">{user.role}</TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button aria-haspopup="true" size="icon" variant="ghost">
-                                <MoreHorizontal className="h-4 w-4" />
-                                <span className="sr-only">Toggle menu</span>
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <DropdownMenuItem>Modifier</DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleDeleteUser(user.id)}>Supprimer</DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="roles" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Rôles</CardTitle>
-              <CardDescription>
-                Gérez les rôles et leurs permissions.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex justify-end mb-4">
-                <Button onClick={() => setIsRoleSheetOpen(true)}>
-                  <PlusCircle className="mr-2 h-4 w-4" />
-                  Ajouter un rôle
-                </Button>
-              </div>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Rôle</TableHead>
-                    <TableHead>Permissions</TableHead>
-                    <TableHead>
-                      <span className="sr-only">Actions</span>
-                    </TableHead>
+                ))
+              ) : (
+                employees.map((employee) => (
+                  <TableRow key={employee.id}>
+                    <TableCell>
+                        <Avatar>
+                            <AvatarImage src={employee.photoUrl} alt={employee.name} data-ai-hint="employee photo" />
+                            <AvatarFallback>{employee.name.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                    </TableCell>
+                    <TableCell>
+                        <div className="font-medium">{employee.name}</div>
+                        <div className="text-sm text-muted-foreground md:hidden">{employee.email}</div>
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell">{employee.matricule}</TableCell>
+                    <TableCell className="hidden md:table-cell">{employee.role}</TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button aria-haspopup="true" size="icon" variant="ghost">
+                            <MoreHorizontal className="h-4 w-4" />
+                            <span className="sr-only">Toggle menu</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuItem onClick={() => openEditSheet(employee)}>Modifier</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleDeleteEmployee(employee.id)}>Supprimer</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                   {loading ? (
-                    Array.from({ length: 3 }).map((_, i) => (
-                      <TableRow key={i}>
-                        <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                        <TableCell><Skeleton className="h-4 w-full" /></TableCell>
-                        <TableCell><Skeleton className="h-8 w-8" /></TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    roles.map((role) => (
-                      <TableRow key={role.id}>
-                        <TableCell className="font-medium">{role.name}</TableCell>
-                        <TableCell className="truncate max-w-[200px] md:max-w-none">{role.permissions.join(", ")}</TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button aria-haspopup="true" size="icon" variant="ghost">
-                                <MoreHorizontal className="h-4 w-4" />
-                                <span className="sr-only">Toggle menu</span>
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <DropdownMenuItem>Modifier</DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleDeleteRole(role.id)}>Supprimer</DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-      <AddUserSheet
-        isOpen={isUserSheetOpen}
-        onClose={() => setIsUserSheetOpen(false)}
-        onAddUser={handleAddUser}
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
+      <AddEmployeeSheet
+        isOpen={isAddSheetOpen}
+        onClose={() => setIsAddSheetOpen(false)}
+        onAddEmployee={handleAddEmployee}
       />
-      <AddRoleSheet
-        isOpen={isRoleSheetOpen}
-        onClose={() => setIsRoleSheetOpen(false)}
-        onAddRole={handleAddRole}
-        roles={roles}
-      />
+       {selectedEmployee && (
+            <EditEmployeeSheet
+            isOpen={isEditSheetOpen}
+            onClose={() => {setIsEditSheetOpen(false); setSelectedEmployee(null)}}
+            onUpdateEmployee={handleUpdateEmployee}
+            employee={selectedEmployee}
+            />
+        )}
     </div>
   );
 }

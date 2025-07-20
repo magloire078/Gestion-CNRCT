@@ -23,11 +23,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 
 import type { User, Role } from "@/lib/data";
-import { subscribeToUsers, addUser, deleteUser } from "@/services/user-service";
+import { subscribeToUsers, deleteUser } from "@/services/user-service";
 import { subscribeToRoles, addRole, deleteRole } from "@/services/role-service";
 
 import { AddUserSheet } from "@/components/admin/add-user-sheet";
 import { AddRoleSheet } from "@/components/admin/add-role-sheet";
+import { ImportDataCard } from "@/components/admin/import-data-card";
 
 export default function AdminPage() {
   const [users, setUsers] = useState<User[]>([]);
@@ -122,6 +123,9 @@ export default function AdminPage() {
   return (
     <div className="flex flex-col gap-6">
       <h1 className="text-3xl font-bold tracking-tight">Administration</h1>
+      
+      <ImportDataCard />
+
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
             <CardHeader>

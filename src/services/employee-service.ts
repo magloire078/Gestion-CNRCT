@@ -1,6 +1,6 @@
 
 import { db } from '@/lib/firebase';
-import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, onSnapshot, Unsubscribe, query, orderBy, where } from 'firebase/firestore';
+import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, onSnapshot, Unsubscribe, query, orderBy, where, writeBatch } from 'firebase/firestore';
 import type { Employee } from '@/lib/data';
 
 export function subscribeToEmployees(
@@ -46,6 +46,32 @@ export async function addEmployee(employeeDataToAdd: Omit<Employee, 'id'>): Prom
     };
     return newEmployee;
 }
+
+export async function batchAddEmployees(employees: Omit<Employee, 'id'>[]): Promise<number> {
+    const employeesCollection = collection(db, 'employees');
+    const q = query(employeesCollection);
+    const querySnapshot = await getDocs(q);
+    const existingMatricules = new Set(querySnapshot.docs.map(doc => doc.data().matricule));
+
+    const batch = writeBatch(db);
+    let addedCount = 0;
+
+    employees.forEach(employee => {
+        if (!existingMatricules.has(employee.matricule)) {
+            const docRef = doc(collection(db, "employees"));
+            batch.set(docRef, employee);
+            existingMatricules.add(employee.matricule); // Avoid duplicates within the same batch
+            addedCount++;
+        }
+    });
+
+    if (addedCount > 0) {
+        await batch.commit();
+    }
+    
+    return addedCount;
+}
+
 
 export async function updateEmployee(employeeId: string, employeeDataToUpdate: Omit<Employee, 'id'>): Promise<Employee> {
     const employeeRef = doc(db, 'employees', employeeId);

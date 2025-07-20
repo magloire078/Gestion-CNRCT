@@ -43,7 +43,7 @@ export type User = {
 
 export type Role = {
     id: string; // Firestore document ID
-    name: 'Admin' | 'Manager' | 'Employé';
+    name: string;
     permissions: string[];
 }
 

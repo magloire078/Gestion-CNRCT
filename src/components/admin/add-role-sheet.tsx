@@ -60,8 +60,7 @@ export function AddRoleSheet({ isOpen, onClose, onAddRole, roles }: AddRoleSheet
     setError("");
     try {
       const permissionArray = permissions.split(',').map(p => p.trim());
-      // The role name cannot be one of the pre-defined ones for the type
-      const newRole = await addRole({ name: name as any, permissions: permissionArray });
+      const newRole = await addRole({ name, permissions: permissionArray });
       onAddRole(newRole);
       toast({ title: "Rôle ajouté", description: `Le rôle ${name} a été ajouté.` });
       handleClose();

@@ -38,12 +38,13 @@ export default function LoginPage() {
       await signIn(email, password);
       router.push("/");
     } catch (err: any) {
-       if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found') {
+      if (err.code === 'auth/network-request-failed') {
+          setError("Erreur de réseau. Veuillez vérifier votre connexion et réessayer.");
+      } else if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found') {
           setError("Email ou mot de passe incorrect.");
-      } else if (err.code === 'auth/network-request-failed') {
-          setError("Erreur de réseau. Veuillez vérifier votre connexion internet et réessayer.");
       } else {
-          setError(err.message || "Échec de la connexion. Veuillez réessayer.");
+          setError("Une erreur inattendue est survenue. Veuillez réessayer.");
+          console.error("Login Error:", err);
       }
     } finally {
       setLoading(false);

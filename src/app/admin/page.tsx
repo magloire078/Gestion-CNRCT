@@ -46,7 +46,7 @@ export default function AdminPage() {
       (userList) => {
         setUsers(userList);
         setError(null);
-        if(!loading) setLoading(false);
+        setLoading(false);
       },
       (err) => {
         setError("Impossible de charger les utilisateurs.");
@@ -59,7 +59,7 @@ export default function AdminPage() {
       (roleList) => {
         setRoles(roleList);
         setError(null);
-        if(!loading) setLoading(false);
+        setLoading(false);
       },
       (err) => {
         setError("Impossible de charger les rôles.");
@@ -67,12 +67,6 @@ export default function AdminPage() {
         setLoading(false);
       }
     );
-
-    Promise.all([
-      new Promise(resolve => setTimeout(resolve, 500)) // To avoid flash of loading
-    ]).then(() => {
-        setLoading(false);
-    });
 
     return () => {
       unsubscribeUsers();

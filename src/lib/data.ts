@@ -64,13 +64,3 @@ export type Conflict = {
     reportedDate: string; // YYYY-MM-DD
     status: 'Ongoing' | 'Resolved' | 'Mediating';
 }
-
-// Mock data is no longer used, but types are kept for reference.
-export const employeeData: Employee[] = [];
-export const leaveData: Leave[] = [];
-export const assetData: Asset[] = [];
-export const fleetData: Fleet[] = [];
-export const userData: User[] = [];
-export const roleData: Role[] = [];
-export const missionData: Mission[] = [];
-export const conflictData: Conflict[] = [];

@@ -7,6 +7,7 @@ import {
     signInWithEmailAndPassword, 
     signOut as firebaseSignOut,
     onAuthStateChanged,
+    sendPasswordResetEmail,
     type User as FirebaseUser
 } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
@@ -49,6 +50,11 @@ export async function signIn(email: string, password: string): Promise<User> {
 // Sign Out
 export async function signOut(): Promise<void> {
     return firebaseSignOut(auth);
+}
+
+// Password Reset
+export async function sendPasswordReset(email: string): Promise<void> {
+    return sendPasswordResetEmail(auth, email);
 }
 
 // Auth State Listener

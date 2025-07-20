@@ -43,7 +43,7 @@ export default function LoginPage() {
       } else if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found') {
           setError("Email ou mot de passe incorrect.");
       } else {
-          setError("Une erreur inattendue est survenue. Veuillez réessayer.");
+          setError(err.message || "Une erreur inattendue est survenue. Veuillez réessayer.");
           console.error("Login Error:", err);
       }
     } finally {
@@ -83,7 +83,7 @@ export default function LoginPage() {
                 <div className="flex items-center">
                   <Label htmlFor="password">Mot de passe</Label>
                   <Link
-                    href="#"
+                    href="/forgot-password"
                     className="ml-auto inline-block text-sm underline"
                   >
                     Mot de passe oublié ?

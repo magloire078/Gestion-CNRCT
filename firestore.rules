@@ -1,12 +1,16 @@
+
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Allow read/write access for development purposes.
-    // This rule is not secure for production.
-    // It is configured to expire. Remember to secure your database before then.
+    // This rule allows anyone with your project ID to read and write to
+    // your Firestore database. This is useful for getting started, but is
+    // not recommended for production.
+    //
+    // Make sure to secure your database before deploying to production.
+    // For more information, see: https://firebase.google.com/docs/firestore/security/get-started
     match /{document=**} {
-      allow read, write: if request.time < timestamp.date(2025, 8, 22);
+      allow read, write: if true;
     }
   }
 }

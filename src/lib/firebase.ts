@@ -1,6 +1,7 @@
 
 import { initializeApp, getApps, type FirebaseOptions } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 
 // Your web app's Firebase configuration from your project settings
 const firebaseConfig: FirebaseOptions = {
@@ -23,5 +24,6 @@ if (!getApps().length) {
 }
 
 const db = getFirestore(app);
+const auth = getAuth(app);
 
-export { app, db };
+export { app, db, auth };

@@ -16,15 +16,16 @@ import {
   MessageSquare,
   Landmark,
   Shield,
-  Moon,
-  Sun,
   Briefcase,
   Scale,
   User,
   Settings,
   MoreHorizontal,
+  Loader2,
 } from "lucide-react";
-import { useTheme } from "next-themes";
+
+import { AuthProvider, useAuth } from "@/hooks/use-auth";
+import { signOut } from "@/services/auth-service";
 
 import {
   SidebarProvider,
@@ -36,7 +37,6 @@ import {
   SidebarMenuButton,
   SidebarFooter,
   SidebarInset,
-  SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -56,26 +56,30 @@ const menuItems = [
   { href: "/admin", label: "Administration", icon: Shield },
 ];
 
-
-export function SiteLayout({ children }: { children: React.ReactNode }) {
+function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const [isClient, setIsClient] = React.useState(false);
+  const { user, loading } = useAuth();
 
-  React.useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await signOut();
     router.push("/login");
   };
-  
-  if (!isClient) {
-    return null; 
-  }
 
-  if (pathname === '/login' || pathname === '/signup') {
-    return <>{children}</>;
+  if (loading) {
+    return (
+        <div className="flex h-screen items-center justify-center">
+            <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        </div>
+    );
+  }
+  
+  if (!user) {
+    // This should ideally be handled by the AuthProvider, but as a fallback
+    if (typeof window !== 'undefined') {
+        router.push("/login");
+    }
+    return null; 
   }
 
   return (
@@ -112,12 +116,12 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
                 <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="w-full justify-start items-center gap-3 p-2 h-auto">
                         <Avatar className="size-8">
-                            <AvatarImage src="https://placehold.co/40x40.png" alt="Admin" data-ai-hint="user avatar" />
-                            <AvatarFallback>A</AvatarFallback>
+                            <AvatarImage src="https://placehold.co/40x40.png" alt={user.name} data-ai-hint="user avatar" />
+                            <AvatarFallback>{user.name.charAt(0).toUpperCase()}</AvatarFallback>
                         </Avatar>
-                        <div className="flex flex-col items-start text-left">
-                           <span className="text-sm font-medium text-sidebar-foreground">Admin User</span>
-                           <span className="text-xs text-sidebar-foreground/70">admin@cnrct.com</span>
+                        <div className="flex flex-col items-start text-left overflow-hidden">
+                           <span className="text-sm font-medium text-sidebar-foreground truncate">{user.name}</span>
+                           <span className="text-xs text-sidebar-foreground/70 truncate">{user.email}</span>
                         </div>
                         <MoreHorizontal className="ml-auto h-5 w-5 text-sidebar-foreground/70" />
                     </Button>
@@ -153,4 +157,22 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
         </SidebarInset>
     </SidebarProvider>
   );
+}
+
+export function SiteLayout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  
+  // Public pages that don't need the AuthProvider or Sidebar
+  if (pathname === '/login' || pathname === '/signup') {
+    return <>{children}</>;
+  }
+
+  // Protected pages
+  return (
+    <AuthProvider>
+        <AppLayout>
+            {children}
+        </AppLayout>
+    </AuthProvider>
+  )
 }

@@ -14,19 +14,39 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Building2, Eye, EyeOff } from "lucide-react";
+import { Building2, Eye, EyeOff, Loader2, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { signUp } from "@/services/auth-service";
 
 export default function SignupPage() {
     const router = useRouter();
+    const [name, setName] = useState("");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     const togglePasswordVisibility = () => {
         setShowPassword(!showPassword);
     };
 
-    const handleSignup = (event: React.FormEvent<HTMLFormElement>) => {
+    const handleSignup = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        router.push("/");
+        if (password.length < 6) {
+          setError("Le mot de passe doit contenir au moins 6 caractères.");
+          return;
+        }
+        setLoading(true);
+        setError(null);
+        try {
+            await signUp({name, email, role: 'Employé'}, password);
+            router.push("/");
+        } catch (err: any) {
+            setError(err.message || "Échec de l'inscription. Veuillez réessayer.");
+        } finally {
+            setLoading(false);
+        }
     };
 
   return (
@@ -46,12 +66,8 @@ export default function SignupPage() {
           <form onSubmit={handleSignup}>
             <div className="grid gap-4">
               <div className="grid gap-2">
-                <Label htmlFor="first-name">Nom</Label>
-                <Input id="first-name" placeholder="Prénom" required />
-              </div>
-               <div className="grid gap-2">
-                <Label htmlFor="last-name">Prénom</Label>
-                <Input id="last-name" placeholder="Nom de famille" required />
+                <Label htmlFor="name">Nom Complet</Label>
+                <Input id="name" placeholder="Prénom Nom" required value={name} onChange={(e) => setName(e.target.value)} disabled={loading} />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="email">Email</Label>
@@ -60,25 +76,44 @@ export default function SignupPage() {
                   type="email"
                   placeholder="nom@exemple.com"
                   required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  disabled={loading}
                 />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="password">Mot de passe</Label>
                 <div className="relative">
-                  <Input id="password" type={showPassword ? "text" : "password"} required />
+                  <Input 
+                    id="password" 
+                    type={showPassword ? "text" : "password"} 
+                    required 
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    disabled={loading}
+                    />
                    <Button
                     type="button"
                     variant="ghost"
                     size="icon"
                     className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2 text-muted-foreground"
                     onClick={togglePasswordVisibility}
+                    disabled={loading}
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     <span className="sr-only">{showPassword ? 'Cacher' : 'Afficher'} le mot de passe</span>
                   </Button>
                 </div>
               </div>
-              <Button type="submit" className="w-full">
+               {error && (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>Erreur d'inscription</AlertTitle>
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Créer un compte
               </Button>
             </div>

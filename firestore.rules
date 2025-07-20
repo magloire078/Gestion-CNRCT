@@ -1,15 +1,19 @@
-
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // This rule allows anyone with your project ID to read and write to
-    // your Firestore database. This is useful for getting started, but is
-    // not recommended for production.
+    // This rule allows anyone with your Firestore database reference to view, edit,
+    // and delete all data in your Firestore database. It is useful for getting
+    // started, but it is configured to expire after 30 days because it
+    // leaves your app open to attackers. At that time, all client
+    // requests to your Firestore database will be denied.
     //
-    // Make sure to secure your database before deploying to production.
-    // For more information, see: https://firebase.google.com/docs/firestore/security/get-started
+    // Make sure to write security rules for your app before that time, or else
+    // all client requests to your Firestore database will be denied until you Update
+    // your rules.
     match /{document=**} {
+      // Allow read and write access for development purposes.
+      // This rule is not secure for production.
       allow read, write: if true;
     }
   }

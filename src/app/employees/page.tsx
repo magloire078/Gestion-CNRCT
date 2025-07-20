@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { PlusCircle, Search } from "lucide-react";
+import { PlusCircle, Search, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -18,6 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal } from "lucide-react";
+import Papa from "papaparse";
 
 
 type Status = 'Active' | 'On Leave' | 'Terminated';
@@ -120,15 +121,51 @@ export default function EmployeesPage() {
       return matchesSearchTerm && matchesDepartment && matchesStatus;
     });
   }, [employees, searchTerm, departmentFilter, statusFilter]);
+  
+  const handleExport = () => {
+    if (filteredEmployees.length === 0) {
+      toast({
+        variant: "destructive",
+        title: "Aucune donnée à exporter",
+        description: "La liste actuelle des employés est vide.",
+      });
+      return;
+    }
+
+    const csvData = Papa.unparse(filteredEmployees, {
+        header: true,
+        columns: ["matricule", "name", "email", "role", "department", "status", "photoUrl"]
+    });
+
+    const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'export_employes.csv');
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+     toast({
+        title: "Exportation réussie",
+        description: "Le fichier des employés a été téléchargé.",
+      });
+  };
 
   return (
     <div className="flex flex-col gap-6">
         <div className="flex items-center justify-between">
             <h1 className="text-3xl font-bold tracking-tight">Gestion des Employés</h1>
-            <Button onClick={() => setIsAddSheetOpen(true)} className="w-full sm:w-auto">
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Ajouter un employé
-            </Button>
+            <div className="flex gap-2">
+                <Button onClick={handleExport} variant="outline" className="w-full sm:w-auto">
+                    <Download className="mr-2 h-4 w-4" />
+                    Exporter
+                </Button>
+                <Button onClick={() => setIsAddSheetOpen(true)} className="w-full sm:w-auto">
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Ajouter un employé
+                </Button>
+            </div>
         </div>
         <Card>
             <CardHeader>

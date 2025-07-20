@@ -2,10 +2,11 @@
 import { initializeApp, getApps, type FirebaseOptions } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 
-// Your web app's Firebase configuration
+// Your web app's Firebase configuration from your project settings
 const firebaseConfig: FirebaseOptions = {
   apiKey: "AIzaSyDitYwDJDbuOQ_P-oNYl4frU5f4BwUH7Ts",
   authDomain: "gestion-rh---rm---cnrct.firebaseapp.com",
+  databaseURL: "https://gestion-rh---rm---cnrct-default-rtdb.europe-west1.firebasedatabase.app",
   projectId: "gestion-rh---rm---cnrct",
   storageBucket: "gestion-rh---rm---cnrct.firebasestorage.app",
   messagingSenderId: "487878818691",
@@ -13,7 +14,7 @@ const firebaseConfig: FirebaseOptions = {
   measurementId: "G-SKJM2Y12HT"
 };
 
-// Initialize Firebase
+// Initialize Firebase safely for Next.js
 let app;
 if (!getApps().length) {
     app = initializeApp(firebaseConfig);
@@ -24,4 +25,3 @@ if (!getApps().length) {
 const db = getFirestore(app);
 
 export { app, db };
-

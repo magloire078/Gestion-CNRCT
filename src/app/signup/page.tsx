@@ -43,7 +43,11 @@ export default function SignupPage() {
             await signUp({name, email, role: 'Employé'}, password);
             router.push("/");
         } catch (err: any) {
-            setError(err.message || "Échec de l'inscription. Veuillez réessayer.");
+            if (err.code === 'auth/email-already-in-use') {
+                setError("Cette adresse email est déjà utilisée. Essayez de vous connecter.");
+            } else {
+                setError(err.message || "Échec de l'inscription. Veuillez réessayer.");
+            }
         } finally {
             setLoading(false);
         }

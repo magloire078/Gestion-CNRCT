@@ -24,6 +24,7 @@ import { getPayroll } from '@/services/payroll-service';
 import type { Employee, Leave, Asset, Fleet } from '@/lib/data';
 import type { PayrollEntry } from '@/lib/payroll-data';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Label } from '@/components/ui/label';
 
 export default function DashboardPage() {
     const [employees, setEmployees] = useState<Employee[]>([]);

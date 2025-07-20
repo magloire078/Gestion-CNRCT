@@ -7,11 +7,10 @@ import { getAuth } from "firebase/auth";
 const firebaseConfig: FirebaseOptions = {
   apiKey: "AIzaSyDitYwDJDbuOQ_P-oNYl4frU5f4BwUH7Ts",
   authDomain: "gestion-rh---rm---cnrct.firebaseapp.com",
-  databaseURL: "https://gestion-rh---rm---cnrct-default-rtdb.europe-west1.firebasedatabase.app",
   projectId: "gestion-rh---rm---cnrct",
-  storageBucket: "gestion-rh---rm---cnrct.firebasestorage.app",
-  messagingSenderId: "487878818691",
-  appId: "1:487878818691:web:a33c62ee0f1844cd1154b6",
+  storageBucket: "gestion-rh---rm---cnrct.appspot.com",
+  messagingSenderId: "48787881869",
+  appId: "1:48787881869:web:a33c62ee0f1844cd1154b6",
   measurementId: "G-SKJM2Y12HT"
 };
 

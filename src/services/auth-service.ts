@@ -35,10 +35,12 @@ export async function signIn(email: string, password: string): Promise<User> {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const firebaseUser = userCredential.user;
     
-    // Fetch the full user profile from Firestore
+    // Fetch the full user profile from Firestore to ensure they are a valid app user
     const userDoc = await getDoc(doc(db, "users", firebaseUser.uid));
     if (!userDoc.exists()) {
-        throw new Error("Profil utilisateur non trouvé dans la base de données.");
+        // Log out the user from Firebase Auth as they don't have a profile in our app
+        await firebaseSignOut(auth);
+        throw new Error("Aucun profil utilisateur correspondant à cet email n'a été trouvé. Veuillez vous inscrire d'abord.");
     }
 
     return userDoc.data() as User;
@@ -59,6 +61,9 @@ export function onAuthStateChange(callback: (user: User | null) => void) {
         callback(userDoc.data() as User);
       } else {
         // This case might happen if Firestore data is deleted but auth record remains.
+        // Or if a user from another Firebase project with the same auth instance tries to log in.
+        // We ensure they are logged out and treated as a non-user.
+        await firebaseSignOut(auth);
         callback(null);
       }
     } else {

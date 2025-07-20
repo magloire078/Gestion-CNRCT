@@ -38,7 +38,11 @@ export default function LoginPage() {
       await signIn(email, password);
       router.push("/");
     } catch (err: any) {
-      setError(err.message || "Échec de la connexion. Veuillez vérifier vos identifiants.");
+       if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found') {
+          setError("Email ou mot de passe incorrect.");
+      } else {
+          setError(err.message || "Échec de la connexion. Veuillez réessayer.");
+      }
     } finally {
       setLoading(false);
     }

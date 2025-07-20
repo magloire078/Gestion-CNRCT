@@ -3,14 +3,14 @@ import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 
 // Your web app's Firebase configuration from your project settings
+// IMPORTANT: Please update apiKey, messagingSenderId, and appId from your new Firebase project console.
 const firebaseConfig: FirebaseOptions = {
-  apiKey: "AIzaSyDitYwDJDbuOQ_P-oNYl4frU5f4BwUH7Ts",
-  authDomain: "gestion-rh---rm---cnrct.firebaseapp.com",
-  projectId: "gestion-rh---rm---cnrct",
-  storageBucket: "gestion-rh---rm---cnrct.appspot.com",
-  messagingSenderId: "48787881869",
-  appId: "1:48787881869:web:a33c62ee0f1844cd1154b6",
-  measurementId: "G-SKJM2Y12HT"
+  apiKey: "YOUR_NEW_API_KEY",
+  authDomain: "gestion-cnrct.firebaseapp.com",
+  projectId: "gestion-cnrct",
+  storageBucket: "gestion-cnrct.appspot.com",
+  messagingSenderId: "YOUR_NEW_MESSAGING_SENDER_ID",
+  appId: "YOUR_NEW_APP_ID",
 };
 
 // Initialize Firebase safely for Next.js

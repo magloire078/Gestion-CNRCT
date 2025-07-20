@@ -6,7 +6,7 @@ import { db } from '@/lib/firebase';
 import type { Employee } from '@/lib/data';
 
 // This service calculates payslip details based on a payroll entry.
-// Note: Tax and contribution rates are simplified approximations based on the provided image.
+// Note: Tax and contribution rates are simplified approximations.
 // A real-world application would require precise, up-to-date rates and regulations.
 
 async function getEmployeeMatricule(employeeId: string): Promise<string> {
@@ -22,19 +22,13 @@ async function getEmployeeMatricule(employeeId: string): Promise<string> {
 
 export async function getPayslipDetails(payrollEntry: PayrollEntry): Promise<PayslipDetails> {
     
-    // --- Earnings Calculation ---
-    const baseSalary = payrollEntry.baseSalary;
-    const primeAnciennete = baseSalary * 0.07; // Approx 7% from example
-    const indemniteTransportImposable = 125000; // Fixed from example
-    const indemniteLogement = 200000; // Fixed from example
-    const transportNonImposable = 25000; // Fixed from example
-
+    // --- Earnings Calculation from Payroll Entry ---
     const earnings: PayslipEarning[] = [
-        { label: 'SALAIRE DE BASE', amount: baseSalary, deduction: 0 },
-        { label: 'PRIME D\'ANCIENNETE', amount: primeAnciennete, deduction: 0 },
-        { label: 'INDEMNITE DE TRANSPORT IMPOSABLE', amount: indemniteTransportImposable, deduction: 0 },
-        { label: 'INDEMNITE DE RESPONSABILITE', amount: 0, deduction: 0 },
-        { label: 'INDEMNITE DE LOGEMENT', amount: indemniteLogement, deduction: 0 },
+        { label: 'SALAIRE DE BASE', amount: payrollEntry.baseSalary, deduction: 0 },
+        { label: 'PRIME D\'ANCIENNETE', amount: payrollEntry.primeAnciennete, deduction: 0 },
+        { label: 'INDEMNITE DE TRANSPORT IMPOSABLE', amount: payrollEntry.indemniteTransportImposable, deduction: 0 },
+        { label: 'INDEMNITE DE RESPONSABILITE', amount: payrollEntry.indemniteResponsabilite, deduction: 0 },
+        { label: 'INDEMNITE DE LOGEMENT', amount: payrollEntry.indemniteLogement, deduction: 0 },
     ];
 
     const brutImposable = earnings.reduce((sum, item) => sum + item.amount, 0);
@@ -48,10 +42,18 @@ export async function getPayslipDetails(payrollEntry: PayrollEntry): Promise<Pay
     const cn = brutImposable * 0.015; // 1.5%
     
     // Align deductions with earnings for table layout
-    earnings[0].deduction = cnps;
-    earnings[1].deduction = its;
-    earnings[2].deduction = igr;
-    earnings[4].deduction = cn;
+    // Find the corresponding earnings and set the deduction value
+    const cnpsEarning = earnings.find(e => e.label === 'SALAIRE DE BASE');
+    if(cnpsEarning) cnpsEarning.deduction = cnps;
+
+    const itsEarning = earnings.find(e => e.label === 'PRIME D\'ANCIENNETE');
+    if(itsEarning) itsEarning.deduction = its;
+    
+    const igrEarning = earnings.find(e => e.label === 'INDEMNITE DE TRANSPORT IMPOSABLE');
+    if(igrEarning) igrEarning.deduction = igr;
+
+    const cnEarning = earnings.find(e => e.label === 'INDEMNITE DE LOGEMENT');
+    if(cnEarning) cnEarning.deduction = cn;
 
 
     const otherDeductions: PayslipDeduction[] = [
@@ -62,11 +64,11 @@ export async function getPayslipDetails(payrollEntry: PayrollEntry): Promise<Pay
     
     const totalDeductions = cnps + otherDeductions.reduce((sum, item) => sum + item.amount, 0);
     
-    const netAPayer = brutImposable + transportNonImposable - totalDeductions;
+    const netAPayer = brutImposable + payrollEntry.transportNonImposable - totalDeductions;
     const netAPayerInWords = numberToWords(Math.floor(netAPayer)) + " FRANCS CFA";
 
     // --- Employer Contributions ---
-    const baseCalculCotisations = brutImposable + transportNonImposable;
+    const baseCalculCotisations = brutImposable + payrollEntry.transportNonImposable;
     const employerContributions: PayslipEmployerContribution[] = [
         { label: 'PRESTATION FAMILIALE', base: baseCalculCotisations, rate: '5.75%', amount: baseCalculCotisations * 0.0575 },
         { label: 'ACCIDENT DE TRAVAIL', base: baseCalculCotisations, rate: '3.00%', amount: baseCalculCotisations * 0.03 },
@@ -83,7 +85,7 @@ export async function getPayslipDetails(payrollEntry: PayrollEntry): Promise<Pay
         deductions: otherDeductions,
         totals: {
             brutImposable,
-            transportNonImposable: { label: 'INDEMNITE DE TRANSPORT NON IMPOSABLE', amount: transportNonImposable },
+            transportNonImposable: { label: 'INDEMNITE DE TRANSPORT NON IMPOSABLE', amount: payrollEntry.transportNonImposable },
             netAPayer,
             netAPayerInWords,
         },

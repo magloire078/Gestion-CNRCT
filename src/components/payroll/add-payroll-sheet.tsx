@@ -31,30 +31,38 @@ interface AddPayrollSheetProps {
   onAddPayroll: (payroll: Omit<PayrollEntry, "id">) => Promise<void>;
 }
 
+const initialFormState: Omit<PayrollEntry, 'id' | 'employeeId' | 'employeeName' | 'role'> = {
+    payFrequency: 'Mensuel',
+    nextPayDate: '',
+    baseSalary: 0,
+    primeAnciennete: 0,
+    indemniteTransportImposable: 0,
+    indemniteResponsabilite: 0,
+    indemniteLogement: 0,
+    transportNonImposable: 0,
+    cnpsEmployeur: '320491',
+    cnpsEmploye: '288011808670',
+    situationMatrimoniale: 'Célibataire',
+    banque: 'BNI',
+    numeroCompte: 'CI092 09001 00134952000 77',
+    service: 'Cabinet',
+    dateConge: '__/__/____',
+    anciennete: "7 an(s) 8 mois 14 jours",
+    categorie: 'Catégorie',
+    enfants: 1,
+    emploi: '',
+    parts: 2.0,
+    dateEmbauche: '2017-08-16',
+    paymentLocation: 'Yamoussoukro',
+    paymentDate: 'Mercredi 30 Avril 2025'
+};
+
+
 export function AddPayrollSheet({ isOpen, onClose, onAddPayroll }: AddPayrollSheetProps) {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   
-  const [formState, setFormState] = useState<Omit<PayrollEntry, 'id' | 'employeeId' | 'employeeName' | 'role'>>({
-      payFrequency: 'Mensuel',
-      nextPayDate: '',
-      baseSalary: 0,
-      cnpsEmployeur: '320491',
-      cnpsEmploye: '288011808670',
-      situationMatrimoniale: 'Célibataire',
-      banque: 'BNI',
-      numeroCompte: 'CI092 09001 00134952000 77',
-      service: 'Cabinet',
-      dateConge: '__/__/____',
-      anciennete: "7 an(s) 8 mois 14 jours",
-      categorie: 'Catégorie',
-      enfants: 1,
-      emploi: '',
-      parts: 2.0,
-      dateEmbauche: '2017-08-16',
-      paymentLocation: 'Yamoussoukro',
-      paymentDate: 'Mercredi 30 Avril 2025'
-  });
+  const [formState, setFormState] = useState(initialFormState);
 
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -77,26 +85,7 @@ export function AddPayrollSheet({ isOpen, onClose, onAddPayroll }: AddPayrollShe
   const resetForm = () => {
     setSelectedEmployee(null);
     setError('');
-    setFormState({
-      payFrequency: 'Mensuel',
-      nextPayDate: '',
-      baseSalary: 0,
-      cnpsEmployeur: '320491',
-      cnpsEmploye: '288011808670',
-      situationMatrimoniale: 'Célibataire',
-      banque: 'BNI',
-      numeroCompte: 'CI092 09001 00134952000 77',
-      service: 'Cabinet',
-      dateConge: '__/__/____',
-      anciennete: "7 an(s) 8 mois 14 jours",
-      categorie: 'Catégorie',
-      enfants: 1,
-      emploi: '',
-      parts: 2.0,
-      dateEmbauche: '2017-08-16',
-      paymentLocation: 'Yamoussoukro',
-      paymentDate: 'Mercredi 30 Avril 2025'
-    })
+    setFormState(initialFormState);
   };
 
   const handleClose = () => {
@@ -160,7 +149,7 @@ export function AddPayrollSheet({ isOpen, onClose, onAddPayroll }: AddPayrollShe
           <SheetHeader>
             <SheetTitle>Ajouter des Détails de Paie</SheetTitle>
             <SheetDescription>
-              Remplissez les informations de paie pour un employé. Les champs sont pré-remplis avec les données de l'exemple.
+              Remplissez les informations de paie pour un employé.
             </SheetDescription>
           </SheetHeader>
           <div className="grid gap-4 py-4">
@@ -181,6 +170,9 @@ export function AddPayrollSheet({ isOpen, onClose, onAddPayroll }: AddPayrollShe
                 </SelectContent>
               </Select>
             </div>
+
+            <hr className="my-2 col-span-4"/>
+            <h4 className="col-span-4 font-semibold text-center">Informations Générales</h4>
             
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="baseSalary" className="text-right">Salaire de Base</Label>
@@ -203,9 +195,33 @@ export function AddPayrollSheet({ isOpen, onClose, onAddPayroll }: AddPayrollShe
               <Input id="nextPayDate" type="date" value={formState.nextPayDate} onChange={handleInputChange} className="col-span-3" required />
             </div>
             
-            <hr className="my-4 col-span-4"/>
-            <h4 className="col-span-4 font-semibold text-center">Informations du Bulletin</h4>
+            <hr className="my-2 col-span-4"/>
+            <h4 className="col-span-4 font-semibold text-center">Gains & Indemnités</h4>
 
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="primeAnciennete" className="text-right">Prime Ancienneté</Label>
+              <Input id="primeAnciennete" type="number" value={formState.primeAnciennete} onChange={handleInputChange} className="col-span-3" />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="indemniteTransportImposable" className="text-right">Ind. Transport (Imposable)</Label>
+              <Input id="indemniteTransportImposable" type="number" value={formState.indemniteTransportImposable} onChange={handleInputChange} className="col-span-3" />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="indemniteResponsabilite" className="text-right">Ind. Responsabilité</Label>
+              <Input id="indemniteResponsabilite" type="number" value={formState.indemniteResponsabilite} onChange={handleInputChange} className="col-span-3" />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="indemniteLogement" className="text-right">Ind. Logement</Label>
+              <Input id="indemniteLogement" type="number" value={formState.indemniteLogement} onChange={handleInputChange} className="col-span-3" />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="transportNonImposable" className="text-right">Transport (Non Imposable)</Label>
+              <Input id="transportNonImposable" type="number" value={formState.transportNonImposable} onChange={handleInputChange} className="col-span-3" />
+            </div>
+
+            <hr className="my-2 col-span-4"/>
+            <h4 className="col-span-4 font-semibold text-center">Informations du Bulletin</h4>
+            
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="cnpsEmployeur" className="text-right">CNPS Employeur</Label>
               <Input id="cnpsEmployeur" value={formState.cnpsEmployeur} onChange={handleInputChange} className="col-span-3" />

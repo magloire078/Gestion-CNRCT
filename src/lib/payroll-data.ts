@@ -7,6 +7,12 @@ export type PayrollEntry = {
     baseSalary: number; // Mensuel
     payFrequency: 'Mensuel' | 'Bi-hebdomadaire';
     nextPayDate: string;
+    // Payslip Generation Fields
+    primeAnciennete: number;
+    indemniteTransportImposable: number;
+    indemniteResponsabilite: number;
+    indemniteLogement: number;
+    transportNonImposable: number;
     // Fields from image
     cnpsEmployeur: string;
     cnpsEmploye: string;

@@ -20,20 +20,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChange((user) => {
-      setUser(user);
+    const unsubscribe = onAuthStateChange((currentUser) => {
+      setUser(currentUser);
       setLoading(false);
-      
-      // Redirect logic
-      if (!user && pathname !== '/login' && pathname !== '/signup') {
-        router.push('/login');
-      } else if (user && (pathname === '/login' || pathname === '/signup')) {
-        router.push('/');
-      }
     });
 
     return () => unsubscribe();
-  }, [router, pathname]);
+  }, []);
+
+  useEffect(() => {
+    if (loading) return; // Don't redirect until authentication state is loaded
+
+    const isPublicPage = pathname === '/login' || pathname === '/signup' || pathname === '/forgot-password';
+
+    if (!user && !isPublicPage) {
+      router.push('/login');
+    } else if (user && isPublicPage) {
+      router.push('/');
+    }
+  }, [user, loading, pathname, router]);
+
 
   const value = { user, loading };
 

@@ -75,10 +75,8 @@ function AppLayout({ children }: { children: React.ReactNode }) {
   }
   
   if (!user) {
-    // This should ideally be handled by the AuthProvider, but as a fallback
-    if (typeof window !== 'undefined') {
-        router.push("/login");
-    }
+    // The AuthProvider handles redirection. Returning null here prevents
+    // rendering the layout for logged-out users on protected pages.
     return null; 
   }
 
@@ -163,7 +161,7 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   
   // Public pages that don't need the AuthProvider or Sidebar
-  if (pathname === '/login' || pathname === '/signup') {
+  if (pathname === '/login' || pathname === '/signup' || pathname === '/forgot-password') {
     return <>{children}</>;
   }
 

@@ -16,19 +16,12 @@ import { getAuth } from "firebase/auth";
 // ==========================================================================================
 
 const firebaseConfig: FirebaseOptions = {
-  // ✅ REMPLACEZ CECI par la valeur "apiKey" de votre console Firebase.
-  apiKey: "YOUR_NEW_API_KEY",
-
-  // Ces valeurs sont généralement correctes si votre ID de projet est "gestion-cnrct".
+  apiKey: "AIzaSyBuMgqk-I_mngDw4SYuNhOOLcF6JNchXhw",
   authDomain: "gestion-cnrct.firebaseapp.com",
   projectId: "gestion-cnrct",
   storageBucket: "gestion-cnrct.appspot.com",
-
-  // ✅ REMPLACEZ CECI par la valeur "messagingSenderId" de votre console Firebase.
-  messagingSenderId: "YOUR_NEW_MESSAGING_SENDER_ID",
-  
-  // ✅ REMPLACEZ CECI par la valeur "appId" de votre console Firebase.
-  appId: "YOUR_NEW_APP_ID",
+  messagingSenderId: "126727792063",
+  appId: "1:126727792063:web:55513c7e21531a87286d0a"
 };
 
 // Initialize Firebase safely for Next.js

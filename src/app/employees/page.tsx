@@ -16,7 +16,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal } from "lucide-react";
 import Papa from "papaparse";
 
@@ -66,7 +66,7 @@ export default function EmployeesPage() {
         setIsAddSheetOpen(false);
         toast({
           title: "Employé ajouté",
-          description: `${newEmployee.name} a été ajouté avec succès.`,
+          description: `${newEmployee.firstName} ${newEmployee.lastName} a été ajouté avec succès.`,
         });
     } catch (err) {
         console.error("Failed to add employee:", err);
@@ -81,7 +81,7 @@ export default function EmployeesPage() {
       setIsEditSheetOpen(false);
       toast({
         title: "Employé mis à jour",
-        description: `Les informations de ${updatedEmployee.name} ont été mises à jour.`,
+        description: `Les informations de ${updatedEmployee.firstName} ${updatedEmployee.lastName} ont été mises à jour.`,
       });
     } catch (err) {
       console.error("Failed to update employee:", err);
@@ -115,52 +115,67 @@ export default function EmployeesPage() {
 
   const filteredEmployees = useMemo(() => {
     return employees.filter(employee => {
-      const matchesSearchTerm = employee.name.toLowerCase().includes(searchTerm.toLowerCase()) || employee.matricule.toLowerCase().includes(searchTerm.toLowerCase());
+      const fullName = `${employee.firstName} ${employee.lastName}`.toLowerCase();
+      const matchesSearchTerm = fullName.includes(searchTerm.toLowerCase()) || employee.matricule.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesDepartment = departmentFilter === 'all' || employee.department === departmentFilter;
       const matchesStatus = statusFilter === 'all' || employee.status === statusFilter;
       return matchesSearchTerm && matchesDepartment && matchesStatus;
     });
   }, [employees, searchTerm, departmentFilter, statusFilter]);
   
-  const handleExport = () => {
+  const downloadFile = (content: string, fileName: string, contentType: string) => {
+      const blob = new Blob([content], { type: contentType });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', fileName);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+  };
+
+  const handleExportCsv = () => {
     if (filteredEmployees.length === 0) {
-      toast({
-        variant: "destructive",
-        title: "Aucune donnée à exporter",
-        description: "La liste actuelle des employés est vide.",
-      });
+      toast({ variant: "destructive", title: "Aucune donnée à exporter" });
       return;
     }
-
-    const csvData = Papa.unparse(filteredEmployees, {
+    const csvData = Papa.unparse(filteredEmployees.map(e => ({...e, name: `${e.firstName} ${e.lastName}`})), {
         header: true,
         columns: ["matricule", "name", "email", "role", "department", "status", "photoUrl"]
     });
-
-    const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', 'export_employes.csv');
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-     toast({
-        title: "Exportation réussie",
-        description: "Le fichier des employés a été téléchargé.",
-      });
+    downloadFile(csvData, 'export_employes.csv', 'text/csv;charset=utf-8;');
+    toast({ title: "Exportation CSV réussie" });
   };
+  
+  const handleExportJson = () => {
+    if (filteredEmployees.length === 0) {
+      toast({ variant: "destructive", title: "Aucune donnée à exporter" });
+      return;
+    }
+    const jsonData = JSON.stringify(filteredEmployees, null, 2);
+    downloadFile(jsonData, 'export_employes.json', 'application/json;charset=utf-8;');
+    toast({ title: "Exportation JSON réussie" });
+  };
+
 
   return (
     <div className="flex flex-col gap-6">
         <div className="flex items-center justify-between">
             <h1 className="text-3xl font-bold tracking-tight">Gestion des Employés</h1>
             <div className="flex gap-2">
-                <Button onClick={handleExport} variant="outline" className="w-full sm:w-auto">
-                    <Download className="mr-2 h-4 w-4" />
-                    Exporter
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="w-full sm:w-auto">
+                      <Download className="mr-2 h-4 w-4" />
+                      Exporter
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={handleExportCsv}>Exporter en CSV</DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleExportJson}>Exporter en JSON</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
                 <Button onClick={() => setIsAddSheetOpen(true)} className="w-full sm:w-auto">
                     <PlusCircle className="mr-2 h-4 w-4" />
                     Ajouter un employé
@@ -238,11 +253,11 @@ export default function EmployeesPage() {
                         <TableRow key={employee.id}>
                         <TableCell>
                             <Avatar>
-                            <AvatarImage src={employee.photoUrl} alt={employee.name} data-ai-hint="employee photo" />
-                            <AvatarFallback>{employee.name.charAt(0)}</AvatarFallback>
+                            <AvatarImage src={employee.photoUrl} alt={`${employee.firstName} ${employee.lastName}`} data-ai-hint="employee photo" />
+                            <AvatarFallback>{employee.firstName?.charAt(0) || ''}{employee.lastName?.charAt(0) || ''}</AvatarFallback>
                             </Avatar>
                         </TableCell>
-                        <TableCell className="font-medium">{employee.name}</TableCell>
+                        <TableCell className="font-medium">{`${employee.firstName} ${employee.lastName}`}</TableCell>
                         <TableCell>{employee.matricule}</TableCell>
                         <TableCell>{employee.role}</TableCell>
                         <TableCell>{employee.department}</TableCell>
@@ -290,11 +305,11 @@ export default function EmployeesPage() {
                     <Card key={employee.id}>
                     <CardContent className="p-4 flex items-center gap-4">
                         <Avatar className="h-12 w-12">
-                            <AvatarImage src={employee.photoUrl} alt={employee.name} data-ai-hint="employee photo" />
-                            <AvatarFallback>{employee.name.charAt(0)}</AvatarFallback>
+                            <AvatarImage src={employee.photoUrl} alt={`${employee.firstName} ${employee.lastName}`} data-ai-hint="employee photo" />
+                            <AvatarFallback>{employee.firstName?.charAt(0) || ''}{employee.lastName?.charAt(0) || ''}</AvatarFallback>
                         </Avatar>
                         <div className="flex-1 space-y-1">
-                            <p className="font-medium">{employee.name}</p>
+                            <p className="font-medium">{`${employee.firstName} ${employee.lastName}`}</p>
                             <p className="text-sm text-muted-foreground">{employee.role}</p>
                             <p className="text-sm text-muted-foreground">{employee.department} - {employee.matricule}</p>
                             <Badge variant={statusVariantMap[employee.status as Status] || 'default'} className="mt-1">{employee.status}</Badge>
@@ -341,3 +356,4 @@ export default function EmployeesPage() {
     </div>
   );
 }
+

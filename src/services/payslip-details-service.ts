@@ -1,7 +1,7 @@
 
 import type { PayrollEntry, PayslipDetails, PayslipEarning, PayslipDeduction, PayslipEmployerContribution } from '@/lib/payroll-data';
 import { numberToWords } from '@/lib/utils';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, query, where, getDocs, limit } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { Employee } from '@/lib/data';
 
@@ -16,6 +16,15 @@ async function getEmployeeMatricule(employeeId: string): Promise<string> {
         const employeeData = employeeSnap.data() as Employee;
         return employeeData.matricule;
     }
+    
+    // Fallback if not found by ID, which is less ideal
+    const q = query(collection(db, "employees"), where("employeeId", "==", employeeId), limit(1));
+    const querySnapshot = await getDocs(q);
+    if (!querySnapshot.empty) {
+        const employeeData = querySnapshot.docs[0].data() as Employee;
+        return employeeData.matricule;
+    }
+
     return "N/A";
 }
 

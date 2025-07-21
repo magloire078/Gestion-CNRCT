@@ -83,109 +83,113 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, payrollEntr
               Mettez à jour les informations de paie pour {payrollEntry.employeeName}.
             </SheetDescription>
           </SheetHeader>
-          <div className="grid gap-4 py-4">
-             <div className="grid grid-cols-4 items-center gap-4">
-              <Label className="text-right">Employé</Label>
-              <p className="col-span-3 font-medium">{payrollEntry.employeeName}</p>
+          <div className="space-y-4 py-4">
+             <div className="space-y-2">
+              <Label>Employé</Label>
+              <p className="font-medium text-muted-foreground">{payrollEntry.employeeName}</p>
             </div>
 
-            <hr className="my-2 col-span-4"/>
-            <h4 className="col-span-4 font-semibold text-center">Informations Générales</h4>
+            <hr className="my-2"/>
+            <h4 className="font-semibold text-center">Informations Générales</h4>
             
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="baseSalary" className="text-right">Salaire de Base</Label>
-              <Input id="baseSalary" type="number" value={formState.baseSalary} onChange={handleInputChange} className="col-span-3" required />
-            </div>
-
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="payFrequency" className="text-right">Fréquence</Label>
-              <Select value={formState.payFrequency} onValueChange={(v: 'Mensuel' | 'Bi-hebdomadaire') => handleSelectChange('payFrequency', v)} required>
-                <SelectTrigger className="col-span-3"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Mensuel">Mensuel</SelectItem>
-                  <SelectItem value="Bi-hebdomadaire">Bi-hebdomadaire</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="nextPayDate" className="text-right">Prochaine Paie</Label>
-              <Input id="nextPayDate" type="date" value={formState.nextPayDate} onChange={handleInputChange} className="col-span-3" required />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                 <div className="space-y-2 md:col-span-1">
+                    <Label htmlFor="baseSalary">Salaire de Base</Label>
+                    <Input id="baseSalary" type="number" value={formState.baseSalary} onChange={handleInputChange} required />
+                </div>
+                 <div className="space-y-2 md:col-span-1">
+                    <Label htmlFor="payFrequency">Fréquence</Label>
+                    <Select value={formState.payFrequency} onValueChange={(v: 'Mensuel' | 'Bi-hebdomadaire') => handleSelectChange('payFrequency', v)} required>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                        <SelectItem value="Mensuel">Mensuel</SelectItem>
+                        <SelectItem value="Bi-hebdomadaire">Bi-hebdomadaire</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+                 <div className="space-y-2 md:col-span-1">
+                    <Label htmlFor="nextPayDate">Prochaine Paie</Label>
+                    <Input id="nextPayDate" type="date" value={formState.nextPayDate} onChange={handleInputChange} required />
+                </div>
             </div>
             
-            <hr className="my-2 col-span-4"/>
-            <h4 className="col-span-4 font-semibold text-center">Gains & Indemnités</h4>
+            <hr className="my-2"/>
+            <h4 className="font-semibold text-center">Gains & Indemnités</h4>
 
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="primeAnciennete" className="text-right">Prime Ancienneté</Label>
-              <Input id="primeAnciennete" type="number" value={formState.primeAnciennete} onChange={handleInputChange} className="col-span-3" />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="indemniteTransportImposable" className="text-right">Ind. Transport (Imposable)</Label>
-              <Input id="indemniteTransportImposable" type="number" value={formState.indemniteTransportImposable} onChange={handleInputChange} className="col-span-3" />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="indemniteResponsabilite" className="text-right">Ind. Responsabilité</Label>
-              <Input id="indemniteResponsabilite" type="number" value={formState.indemniteResponsabilite} onChange={handleInputChange} className="col-span-3" />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="indemniteLogement" className="text-right">Ind. Logement</Label>
-              <Input id="indemniteLogement" type="number" value={formState.indemniteLogement} onChange={handleInputChange} className="col-span-3" />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="transportNonImposable" className="text-right">Transport (Non Imposable)</Label>
-              <Input id="transportNonImposable" type="number" value={formState.transportNonImposable} onChange={handleInputChange} className="col-span-3" />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                    <Label htmlFor="primeAnciennete">Prime Ancienneté</Label>
+                    <Input id="primeAnciennete" type="number" value={formState.primeAnciennete} onChange={handleInputChange} />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="indemniteTransportImposable">Ind. Transport (Imposable)</Label>
+                    <Input id="indemniteTransportImposable" type="number" value={formState.indemniteTransportImposable} onChange={handleInputChange} />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="indemniteResponsabilite">Ind. Responsabilité</Label>
+                    <Input id="indemniteResponsabilite" type="number" value={formState.indemniteResponsabilite} onChange={handleInputChange} />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="indemniteLogement">Ind. Logement</Label>
+                    <Input id="indemniteLogement" type="number" value={formState.indemniteLogement} onChange={handleInputChange} />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="transportNonImposable">Transport (Non Imposable)</Label>
+                    <Input id="transportNonImposable" type="number" value={formState.transportNonImposable} onChange={handleInputChange} />
+                </div>
             </div>
 
-            <hr className="my-2 col-span-4"/>
-            <h4 className="col-span-4 font-semibold text-center">Informations du Bulletin</h4>
+            <hr className="my-2"/>
+            <h4 className="font-semibold text-center">Informations du Bulletin</h4>
             
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="cnpsEmployeur" className="text-right">CNPS Employeur</Label>
-              <Input id="cnpsEmployeur" value={formState.cnpsEmployeur} onChange={handleInputChange} className="col-span-3" />
-            </div>
-             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="cnpsEmploye" className="text-right">CNPS Employé</Label>
-              <Input id="cnpsEmploye" value={formState.cnpsEmploye} onChange={handleInputChange} className="col-span-3" />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="situationMatrimoniale" className="text-right">Sit. Matrimoniale</Label>
-              <Input id="situationMatrimoniale" value={formState.situationMatrimoniale} onChange={handleInputChange} className="col-span-3" />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="banque" className="text-right">Banque</Label>
-              <Input id="banque" value={formState.banque} onChange={handleInputChange} className="col-span-3" />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="numeroCompte" className="text-right">N° Compte</Label>
-              <Input id="numeroCompte" value={formState.numeroCompte} onChange={handleInputChange} className="col-span-3" />
-            </div>
-             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="service" className="text-right">Service</Label>
-              <Input id="service" value={formState.service} onChange={handleInputChange} className="col-span-3" />
-            </div>
-             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="anciennete" className="text-right">Ancienneté</Label>
-              <Input id="anciennete" value={formState.anciennete} onChange={handleInputChange} className="col-span-3" />
-            </div>
-             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="categorie" className="text-right">Catégorie</Label>
-              <Input id="categorie" value={formState.categorie} onChange={handleInputChange} className="col-span-3" />
-            </div>
-             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="enfants" className="text-right">Enfants</Label>
-              <Input id="enfants" type="number" value={formState.enfants} onChange={handleInputChange} className="col-span-3" />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="parts" className="text-right">Parts</Label>
-              <Input id="parts" type="number" step="0.5" value={formState.parts} onChange={handleInputChange} className="col-span-3" />
-            </div>
-             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="dateEmbauche" className="text-right">Date d'embauche</Label>
-              <Input id="dateEmbauche" type="date" value={formState.dateEmbauche} onChange={handleInputChange} className="col-span-3" />
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                    <Label htmlFor="cnpsEmployeur">CNPS Employeur</Label>
+                    <Input id="cnpsEmployeur" value={formState.cnpsEmployeur} onChange={handleInputChange} />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="cnpsEmploye">CNPS Employé</Label>
+                    <Input id="cnpsEmploye" value={formState.cnpsEmploye} onChange={handleInputChange} />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="situationMatrimoniale">Sit. Matrimoniale</Label>
+                    <Input id="situationMatrimoniale" value={formState.situationMatrimoniale} onChange={handleInputChange} />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="banque">Banque</Label>
+                    <Input id="banque" value={formState.banque} onChange={handleInputChange} />
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                    <Label htmlFor="numeroCompte">N° Compte</Label>
+                    <Input id="numeroCompte" value={formState.numeroCompte} onChange={handleInputChange} />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="service">Service</Label>
+                    <Input id="service" value={formState.service} onChange={handleInputChange} />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="anciennete">Ancienneté</Label>
+                    <Input id="anciennete" value={formState.anciennete} onChange={handleInputChange} />
+                </div>
+                 <div className="space-y-2">
+                    <Label htmlFor="categorie">Catégorie</Label>
+                    <Input id="categorie" value={formState.categorie} onChange={handleInputChange} />
+                </div>
+                 <div className="space-y-2">
+                    <Label htmlFor="enfants">Enfants</Label>
+                    <Input id="enfants" type="number" value={formState.enfants} onChange={handleInputChange} />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="parts">Parts</Label>
+                    <Input id="parts" type="number" step="0.5" value={formState.parts} onChange={handleInputChange} />
+                </div>
+                 <div className="space-y-2">
+                    <Label htmlFor="dateEmbauche">Date d'embauche</Label>
+                    <Input id="dateEmbauche" type="date" value={formState.dateEmbauche} onChange={handleInputChange} />
+                </div>
             </div>
 
-            {error && <p className="text-sm text-destructive col-span-4 text-center">{error}</p>}
+            {error && <p className="text-sm text-destructive text-center pt-2">{error}</p>}
           </div>
           <SheetFooter>
             <SheetClose asChild>

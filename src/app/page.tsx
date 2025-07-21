@@ -97,8 +97,8 @@ export default function DashboardPage() {
         <div className="flex items-center">
             <TabsList>
             <TabsTrigger value="overview">Aperçu</TabsTrigger>
-            <TabsTrigger value="analytics" disabled>Analyses</TabsTrigger>
-            <TabsTrigger value="reports" disabled>Rapports</TabsTrigger>
+            <TabsTrigger value="analytics">Analyses</TabsTrigger>
+            <TabsTrigger value="reports">Rapports</TabsTrigger>
             </TabsList>
             <div className="ml-auto flex items-center gap-2">
             <Button size="sm" variant="outline" className="h-7 gap-1">
@@ -213,13 +213,13 @@ export default function DashboardPage() {
                             <Avatar>
                             <AvatarImage
                                 src={emp.photoUrl}
-                                alt={emp.name}
+                                alt={emp.firstName}
                                 data-ai-hint="user avatar"
                             />
-                            <AvatarFallback>{emp.name.charAt(0)}</AvatarFallback>
+                            <AvatarFallback>{emp.firstName.charAt(0)}</AvatarFallback>
                             </Avatar>
                             <div>
-                            <p className="font-medium">{emp.name}</p>
+                            <p className="font-medium">{`${emp.firstName} ${emp.lastName}`}</p>
                             <p className="text-sm text-muted-foreground">{emp.role}</p>
                             </div>
                         </div>
@@ -232,7 +232,39 @@ export default function DashboardPage() {
                 </Card>
             </div>
         </TabsContent>
+         <TabsContent value="analytics" className="space-y-4">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Analyses</CardTitle>
+                    <CardDescription>
+                        Cette section contiendra des analyses détaillées et des visualisations de données.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="flex flex-col items-center justify-center h-64 text-center border-2 border-dashed rounded-lg">
+                        <p className="mt-4 text-muted-foreground">Contenu des analyses à venir.</p>
+                    </div>
+                </CardContent>
+            </Card>
+        </TabsContent>
+        <TabsContent value="reports" className="space-y-4">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Rapports</CardTitle>
+                    <CardDescription>
+                        Cette section vous permettra de générer et de télécharger des rapports personnalisés.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="flex flex-col items-center justify-center h-64 text-center border-2 border-dashed rounded-lg">
+                        <p className="mt-4 text-muted-foreground">Génération de rapports à venir.</p>
+                    </div>
+                </CardContent>
+            </Card>
+        </TabsContent>
       </Tabs>
     </div>
   );
 }
+
+    

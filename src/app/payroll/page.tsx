@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { PlusCircle, Eye, MoreHorizontal } from "lucide-react";
+import { PlusCircle, Eye, MoreHorizontal, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -165,7 +165,10 @@ export default function PayrollPage() {
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
                                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                    <DropdownMenuItem onClick={() => openEditSheet(entry)}>Modifier</DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => openEditSheet(entry)}>
+                                        <Pencil className="mr-2 h-4 w-4" />
+                                        Modifier
+                                    </DropdownMenuItem>
                                     <DropdownMenuItem asChild>
                                        <Link href={`/payroll/${entry.employeeId}`}>
                                             <Eye className="mr-2 h-4 w-4" />
@@ -204,7 +207,10 @@ export default function PayrollPage() {
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end">
                                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                        <DropdownMenuItem onClick={() => openEditSheet(entry)}>Modifier</DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => openEditSheet(entry)}>
+                                            <Pencil className="mr-2 h-4 w-4" />
+                                            Modifier
+                                        </DropdownMenuItem>
                                         <DropdownMenuItem asChild>
                                             <Link href={`/payroll/${entry.employeeId}`}>
                                                 <Eye className="mr-2 h-4 w-4" />

@@ -1,7 +1,27 @@
 
 import { db } from '@/lib/firebase';
-import { collection, getDocs, addDoc, doc, getDoc, query, where, limit, updateDoc } from 'firebase/firestore';
+import { collection, getDocs, addDoc, doc, getDoc, query, where, limit, updateDoc, onSnapshot, Unsubscribe, orderBy } from 'firebase/firestore';
 import type { PayrollEntry } from '@/lib/payroll-data';
+
+
+export function subscribeToPayroll(
+    callback: (payroll: PayrollEntry[]) => void,
+    onError: (error: Error) => void
+): Unsubscribe {
+    const payrollCollection = collection(db, 'payroll');
+    const q = query(payrollCollection, orderBy("employeeName", "asc"));
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+        const payrollList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as PayrollEntry));
+        callback(payrollList);
+    }, (error) => {
+        console.error("Error subscribing to payroll:", error);
+        onError(error);
+    });
+
+    return unsubscribe;
+}
+
 
 export async function getPayroll(): Promise<PayrollEntry[]> {
   const payrollCollection = collection(db, 'payroll');

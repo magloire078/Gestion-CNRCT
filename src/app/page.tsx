@@ -16,11 +16,11 @@ import { Users, FileWarning, Laptop, Car, Download } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { EmployeeDistributionChart } from '@/components/charts/employee-distribution-chart';
 import { AssetStatusChart } from '@/components/charts/asset-status-chart';
-import { getEmployees } from '@/services/employee-service';
-import { getLeaves } from '@/services/leave-service';
-import { getAssets } from '@/services/asset-service';
-import { getVehicles } from '@/services/fleet-service';
-import { getPayroll } from '@/services/payroll-service';
+import { subscribeToEmployees } from '@/services/employee-service';
+import { subscribeToLeaves } from '@/services/leave-service';
+import { subscribeToAssets } from '@/services/asset-service';
+import { subscribeToVehicles } from '@/services/fleet-service';
+import { subscribeToPayroll } from '@/services/payroll-service';
 import type { Employee, Leave, Asset, Fleet } from '@/lib/data';
 import type { PayrollEntry } from '@/lib/payroll-data';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -35,29 +35,23 @@ export default function DashboardPage() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        async function loadDashboardData() {
-            try {
-                setLoading(true);
-                const [employeeData, leaveData, assetData, fleetData, payrollData] = await Promise.all([
-                    getEmployees(),
-                    getLeaves(),
-                    getAssets(),
-                    getVehicles(),
-                    getPayroll(),
-                ]);
-                setEmployees(employeeData);
-                setLeaves(leaveData);
-                setAssets(assetData);
-                setFleet(fleetData);
-                setPayroll(payrollData);
-            } catch (error) {
-                console.error("Failed to load dashboard data:", error);
-                // Optionally set an error state here to show in the UI
-            } finally {
-                setLoading(false);
-            }
-        }
-        loadDashboardData();
+        setLoading(true);
+        const unsubscribers = [
+            subscribeToEmployees(setEmployees, console.error),
+            subscribeToLeaves(setLeaves, console.error),
+            subscribeToAssets(setAssets, console.error),
+            subscribeToVehicles(setFleet, console.error),
+            subscribeToPayroll(setPayroll, console.error),
+        ];
+        
+        // A simple way to check if all initial data has loaded.
+        // This could be improved with more granular loading states.
+        const loadingTimeout = setTimeout(() => setLoading(false), 2000);
+
+        return () => {
+            unsubscribers.forEach(unsub => unsub());
+            clearTimeout(loadingTimeout);
+        };
     }, []);
 
   const onLeaveCount = employees.filter(e => e.status === 'On Leave').length;

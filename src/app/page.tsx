@@ -216,10 +216,10 @@ export default function DashboardPage() {
                                 alt={emp.firstName}
                                 data-ai-hint="user avatar"
                             />
-                            <AvatarFallback>{emp.firstName.charAt(0)}</AvatarFallback>
+                            <AvatarFallback>{emp.firstName?.charAt(0) || emp.name?.charAt(0) || 'E'}</AvatarFallback>
                             </Avatar>
                             <div>
-                            <p className="font-medium">{`${emp.firstName} ${emp.lastName}`}</p>
+                            <p className="font-medium">{emp.firstName ? `${emp.firstName} ${emp.lastName}` : emp.name}</p>
                             <p className="text-sm text-muted-foreground">{emp.role}</p>
                             </div>
                         </div>
@@ -266,5 +266,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    

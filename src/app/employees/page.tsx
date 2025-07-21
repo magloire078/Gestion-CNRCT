@@ -61,12 +61,12 @@ export default function EmployeesPage() {
 
   const handleAddEmployee = async (newEmployeeData: Omit<Employee, 'id'>) => {
     try {
-        const newEmployee = await addEmployee(newEmployeeData);
+        await addEmployee(newEmployeeData);
         // No need to update state here, onSnapshot will do it
         setIsAddSheetOpen(false);
         toast({
           title: "Employé ajouté",
-          description: `${newEmployee.firstName} ${newEmployee.lastName} a été ajouté avec succès.`,
+          description: `${newEmployeeData.firstName} ${newEmployeeData.lastName} a été ajouté avec succès.`,
         });
     } catch (err) {
         console.error("Failed to add employee:", err);
@@ -76,12 +76,12 @@ export default function EmployeesPage() {
 
   const handleUpdateEmployee = async (employeeId: string, updatedEmployeeData: Omit<Employee, 'id'>) => {
     try {
-      const updatedEmployee = await updateEmployee(employeeId, updatedEmployeeData);
+      await updateEmployee(employeeId, updatedEmployeeData);
       // No need to update state here, onSnapshot will do it
       setIsEditSheetOpen(false);
       toast({
         title: "Employé mis à jour",
-        description: `Les informations de ${updatedEmployee.firstName} ${updatedEmployee.lastName} ont été mises à jour.`,
+        description: `Les informations de ${updatedEmployeeData.firstName} ${updatedEmployeeData.lastName} ont été mises à jour.`,
       });
     } catch (err) {
       console.error("Failed to update employee:", err);
@@ -115,8 +115,8 @@ export default function EmployeesPage() {
 
   const filteredEmployees = useMemo(() => {
     return employees.filter(employee => {
-      const fullName = `${employee.firstName} ${employee.lastName}`.toLowerCase();
-      const matchesSearchTerm = fullName.includes(searchTerm.toLowerCase()) || employee.matricule.toLowerCase().includes(searchTerm.toLowerCase());
+      const fullName = employee.firstName ? `${employee.firstName} ${employee.lastName}`.toLowerCase() : (employee.name || '').toLowerCase();
+      const matchesSearchTerm = fullName.includes(searchTerm.toLowerCase()) || (employee.matricule || '').toLowerCase().includes(searchTerm.toLowerCase());
       const matchesDepartment = departmentFilter === 'all' || employee.department === departmentFilter;
       const matchesStatus = statusFilter === 'all' || employee.status === statusFilter;
       return matchesSearchTerm && matchesDepartment && matchesStatus;
@@ -140,7 +140,15 @@ export default function EmployeesPage() {
       toast({ variant: "destructive", title: "Aucune donnée à exporter" });
       return;
     }
-    const csvData = Papa.unparse(filteredEmployees.map(e => ({...e, name: `${e.firstName} ${e.lastName}`})), {
+    const csvData = Papa.unparse(filteredEmployees.map(e => ({
+        matricule: e.matricule, 
+        name: e.firstName ? `${e.firstName} ${e.lastName}` : e.name, 
+        email: e.email, 
+        role: e.role, 
+        department: e.department, 
+        status: e.status, 
+        photoUrl: e.photoUrl
+    })), {
         header: true,
         columns: ["matricule", "name", "email", "role", "department", "status", "photoUrl"]
     });
@@ -253,11 +261,11 @@ export default function EmployeesPage() {
                         <TableRow key={employee.id}>
                         <TableCell>
                             <Avatar>
-                            <AvatarImage src={employee.photoUrl} alt={`${employee.firstName} ${employee.lastName}`} data-ai-hint="employee photo" />
-                            <AvatarFallback>{employee.firstName?.charAt(0) || ''}{employee.lastName?.charAt(0) || ''}</AvatarFallback>
+                            <AvatarImage src={employee.photoUrl} alt={employee.firstName ? `${employee.firstName} ${employee.lastName}` : employee.name} data-ai-hint="employee photo" />
+                            <AvatarFallback>{employee.firstName?.charAt(0) || employee.name?.charAt(0) || 'E'}{employee.lastName?.charAt(0) || ''}</AvatarFallback>
                             </Avatar>
                         </TableCell>
-                        <TableCell className="font-medium">{`${employee.firstName} ${employee.lastName}`}</TableCell>
+                        <TableCell className="font-medium">{employee.firstName ? `${employee.firstName} ${employee.lastName}` : employee.name}</TableCell>
                         <TableCell>{employee.matricule}</TableCell>
                         <TableCell>{employee.role}</TableCell>
                         <TableCell>{employee.department}</TableCell>
@@ -305,11 +313,11 @@ export default function EmployeesPage() {
                     <Card key={employee.id}>
                     <CardContent className="p-4 flex items-center gap-4">
                         <Avatar className="h-12 w-12">
-                            <AvatarImage src={employee.photoUrl} alt={`${employee.firstName} ${employee.lastName}`} data-ai-hint="employee photo" />
-                            <AvatarFallback>{employee.firstName?.charAt(0) || ''}{employee.lastName?.charAt(0) || ''}</AvatarFallback>
+                            <AvatarImage src={employee.photoUrl} alt={employee.firstName ? `${employee.firstName} ${employee.lastName}` : employee.name} data-ai-hint="employee photo" />
+                            <AvatarFallback>{employee.firstName?.charAt(0) || employee.name?.charAt(0) || 'E'}{employee.lastName?.charAt(0) || ''}</AvatarFallback>
                         </Avatar>
                         <div className="flex-1 space-y-1">
-                            <p className="font-medium">{`${employee.firstName} ${employee.lastName}`}</p>
+                            <p className="font-medium">{employee.firstName ? `${employee.firstName} ${employee.lastName}` : employee.name}</p>
                             <p className="text-sm text-muted-foreground">{employee.role}</p>
                             <p className="text-sm text-muted-foreground">{employee.department} - {employee.matricule}</p>
                             <Badge variant={statusVariantMap[employee.status as Status] || 'default'} className="mt-1">{employee.status}</Badge>
@@ -356,4 +364,3 @@ export default function EmployeesPage() {
     </div>
   );
 }
-

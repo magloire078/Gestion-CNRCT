@@ -1,16 +1,34 @@
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // Allow users to create their own user document, but not read/write others'
-    match /users/{userId} {
-      allow create: if request.auth != null && request.auth.uid == userId;
-      allow read, update, delete: if request.auth != null && request.auth.uid == userId;
+    // Helper function to check for Admin role
+    function isAdmin() {
+      return exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Admin';
     }
 
-    // Allow any authenticated user to read/write all other collections
-    match /{document=**} {
-      allow read, write: if request.auth != null;
+    // Users can create their own profile upon signup, and update it.
+    // Only admins can delete users.
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null; // Allows new user creation
+      allow update: if request.auth.uid == userId || isAdmin();
+      allow delete: if isAdmin();
+    }
+    
+    // Only admins can manage roles. Authenticated users can read them.
+    match /roles/{roleId} {
+      allow read: if request.auth != null;
+      allow create, update, delete: if isAdmin();
+    }
+    
+    // For most other collections, allow authenticated users to read/create.
+    // Restrict updates and deletes to admins to prevent data tampering.
+    match /{collection}/{docId} {
+      allow read, create: if request.auth != null;
+      allow update, delete: if isAdmin();
     }
   }
 }

@@ -38,7 +38,9 @@ export default function LoginPage() {
       await signIn(email, password);
       router.push("/");
     } catch (err: any) {
-      if (err.code === 'auth/network-request-failed') {
+      if (err.code === 'auth/api-key-not-valid') {
+          setError("La clé d'API Firebase est invalide. Veuillez vérifier votre configuration dans src/lib/firebase.ts et la mettre à jour avec les clés de votre console Firebase.");
+      } else if (err.code === 'auth/network-request-failed') {
           setError("Erreur de réseau. Veuillez vérifier votre connexion et réessayer.");
       } else if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found') {
           setError("Email ou mot de passe incorrect.");

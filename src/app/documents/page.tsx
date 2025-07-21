@@ -4,7 +4,9 @@
 import { useState, useEffect, useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { generateDocumentAction, FormState } from "./actions";
-import { employeeData } from "@/lib/data";
+import { getEmployees } from "@/services/employee-service";
+import type { Employee } from "@/lib/data";
+
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,6 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Terminal, FileText, Bot, Loader2, User } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const initialState: FormState = {
   message: "",
@@ -30,20 +33,37 @@ function SubmitButton() {
 
 export default function DocumentGeneratorPage() {
   const [state, formAction] = useActionState(generateDocumentAction, initialState);
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [loadingEmployees, setLoadingEmployees] = useState(true);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState('');
   const [documentContent, setDocumentContent] = useState('');
 
   useEffect(() => {
+    async function fetchEmployees() {
+        try {
+            const fetchedEmployees = await getEmployees();
+            setEmployees(fetchedEmployees);
+        } catch (error) {
+            console.error("Failed to fetch employees:", error);
+            // Optionally set an error state to show in the UI
+        } finally {
+            setLoadingEmployees(false);
+        }
+    }
+    fetchEmployees();
+  }, []);
+
+  useEffect(() => {
     if (selectedEmployeeId && selectedEmployeeId !== 'none') {
-      const employee = employeeData.find(emp => emp.id === selectedEmployeeId);
+      const employee = employees.find(emp => emp.id === selectedEmployeeId);
       if (employee) {
-        const content = `Employé: ${employee.name}\nRôle: ${employee.role}\nDépartement: ${employee.department}\n`;
+        const content = `Employé: ${employee.name}\nMatricule: ${employee.matricule}\nRôle: ${employee.role}\nDépartement: ${employee.department}\n`;
         setDocumentContent(content);
       }
     } else {
       setDocumentContent('');
     }
-  }, [selectedEmployeeId]);
+  }, [selectedEmployeeId, employees]);
 
   useEffect(() => {
     if (state.fields?.documentContent) {
@@ -79,17 +99,21 @@ export default function DocumentGeneratorPage() {
 
                <div className="space-y-2">
                 <Label htmlFor="employee">Sélectionner un employé (Optionnel)</Label>
-                <Select onValueChange={setSelectedEmployeeId}>
+                {loadingEmployees ? (
+                    <Skeleton className="h-10 w-full" />
+                ) : (
+                <Select onValueChange={setSelectedEmployeeId} disabled={loadingEmployees}>
                   <SelectTrigger id="employee" className="w-full">
                      <SelectValue placeholder="Sélectionnez un employé pour pré-remplir..." />
                   </SelectTrigger>
                   <SelectContent>
                      <SelectItem value="none">Aucun</SelectItem>
-                    {employeeData.map(emp => (
-                      <SelectItem key={emp.id} value={emp.id}>{emp.name} ({emp.role})</SelectItem>
+                    {employees.map(emp => (
+                      <SelectItem key={emp.id} value={emp.id}>{emp.name} ({emp.matricule})</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
+                )}
               </div>
 
               <div className="space-y-2">

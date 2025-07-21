@@ -75,7 +75,7 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, payrollEntr
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent className="sm:max-w-lg overflow-y-auto">
+      <SheetContent className="sm:max-w-2xl overflow-y-auto">
         <form onSubmit={handleSubmit}>
           <SheetHeader>
             <SheetTitle>Modifier les Détails de Paie</SheetTitle>

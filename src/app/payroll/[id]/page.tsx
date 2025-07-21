@@ -80,34 +80,34 @@ export default function PayslipPage() {
                     </Button>
                 </div>
             </div>
-            <div id="payslip-content" className="w-full max-w-4xl mx-auto bg-white p-4 sm:p-8 border rounded-lg text-black">
+            <div id="payslip-content" className="w-full max-w-4xl mx-auto bg-white p-4 sm:p-8 border rounded-lg text-black print:shadow-none print:border-none print:p-0">
                 {/* Header */}
                 <header className="flex justify-between items-start pb-4 border-b">
                     <div className="text-center">
-                        <h2 className="font-bold">Chambre Nationale des Rois</h2>
-                        <h2 className="font-bold">et Chefs Traditionnels</h2>
-                        <Image src="https://placehold.co/100x100.png" alt="Logo CNRCT" width={80} height={80} className="mx-auto mt-2" data-ai-hint="logo traditional" />
-                        <p className="font-bold mt-1">UN CHEF NOUVEAU</p>
+                        <h2 className="font-bold print:text-sm">Chambre Nationale des Rois</h2>
+                        <h2 className="font-bold print:text-sm">et Chefs Traditionnels</h2>
+                        <Image src="https://placehold.co/100x100.png" alt="Logo CNRCT" width={80} height={80} className="mx-auto mt-2 print:w-16 print:h-16" data-ai-hint="logo traditional" />
+                        <p className="font-bold mt-1 print:text-xs">UN CHEF NOUVEAU</p>
                     </div>
                     <div className="text-center">
-                        <h2 className="font-bold">République de Côte d'Ivoire</h2>
-                         <Image src="https://placehold.co/100x100.png" alt="Logo Cote d'Ivoire" width={80} height={80} className="mx-auto mt-2" data-ai-hint="emblem ivory coast"/>
-                        <p className="mt-1">Union - Discipline - Travail</p>
+                        <h2 className="font-bold print:text-sm">République de Côte d'Ivoire</h2>
+                         <Image src="https://placehold.co/100x100.png" alt="Logo Cote d'Ivoire" width={80} height={80} className="mx-auto mt-2 print:w-16 print:h-16" data-ai-hint="emblem ivory coast"/>
+                        <p className="mt-1 print:text-xs">Union - Discipline - Travail</p>
                     </div>
                 </header>
 
-                <div className="text-center my-4 p-1 bg-gray-200 font-bold">
+                <div className="text-center my-4 p-1 bg-gray-200 font-bold print:text-sm print:my-2">
                     BULLETIN DE PAIE CNRCT : Période de {new Date(payrollEntry.nextPayDate).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
                 </div>
 
                 {/* Employee Info */}
-                <section className="grid grid-cols-12 gap-4 text-sm">
+                <section className="grid grid-cols-12 gap-4 text-sm print:text-xs">
                     <div className="col-span-5 space-y-1">
                         <p><span className="font-bold">N° CNPS EMPLOYEUR :</span> {employeeInfo.cnpsEmployeur}</p>
                         <p><span className="font-bold">N° CNPS EMPLOYE :</span> {employeeInfo.cnpsEmploye}</p>
-                        <Image src="https://placehold.co/80x80.png" alt="QR Code" width={80} height={80} className="mt-2" data-ai-hint="qr code"/>
+                        <Image src="https://placehold.co/80x80.png" alt="QR Code" width={80} height={80} className="mt-2 print:w-16 print:h-16" data-ai-hint="qr code"/>
                     </div>
-                    <div className="col-span-7 border rounded-lg p-3">
+                    <div className="col-span-7 border rounded-lg p-3 print:p-2">
                          <div className="grid grid-cols-3 gap-x-2 gap-y-1">
                             <span className="font-bold">NOM & PRENOMS</span><span className="col-span-2">: {employeeInfo.name}</span>
                             <span className="font-bold">MATRICULE</span><span className="col-span-2">: {employeeInfo.matricule}</span>
@@ -126,7 +126,7 @@ export default function PayslipPage() {
                 </section>
                 
                 {/* Job Info Table */}
-                 <table className="w-full text-sm border-collapse border mt-4">
+                 <table className="w-full text-sm border-collapse border mt-4 print:text-xs print:mt-2">
                     <thead>
                         <tr className="bg-gray-200 font-bold">
                             <td className="border p-1">EMPLOI</td>
@@ -149,7 +149,7 @@ export default function PayslipPage() {
                 {/* Earnings & Deductions */}
                 <div className="grid grid-cols-12 mt-1">
                     <div className="col-span-9 border-r">
-                         <table className="w-full text-sm border-collapse border">
+                         <table className="w-full text-sm border-collapse border print:text-xs">
                             <thead>
                                 <tr className="bg-gray-200 font-bold">
                                     <td className="border p-1 w-2/3">ELEMENTS</td>
@@ -175,7 +175,7 @@ export default function PayslipPage() {
                         </table>
                     </div>
                     <div className="col-span-3">
-                         <table className="w-full text-sm border-collapse border">
+                         <table className="w-full text-sm border-collapse border print:text-xs">
                             <thead>
                                 <tr className="bg-gray-200 font-bold">
                                     <td className="border p-1 text-center">RETENUES</td>
@@ -184,18 +184,18 @@ export default function PayslipPage() {
                             <tbody>
                                 {earnings.map(item => (
                                      <tr key={item.label}>
-                                        <td className="border p-1 text-right font-mono h-[29px]">{item.deduction > 0 ? item.deduction.toLocaleString('fr-FR') : ''}</td>
+                                        <td className="border p-1 text-right font-mono h-[29px] print:h-auto print:leading-tight">{item.deduction > 0 ? item.deduction.toLocaleString('fr-FR') : ''}</td>
                                     </tr>
                                 ))}
-                                <tr className="font-bold h-[29px]"><td className="border p-1"></td></tr>
-                                <tr className="h-[29px]"><td className="border p-1"></td></tr>
+                                <tr className="font-bold h-[29px] print:h-auto print:leading-tight"><td className="border p-1"></td></tr>
+                                <tr className="h-[29px] print:h-auto print:leading-tight"><td className="border p-1"></td></tr>
                             </tbody>
                          </table>
                     </div>
                 </div>
                  <div className="grid grid-cols-12 mt-[-1px]">
                      <div className="col-span-9">
-                        <table className="w-full text-sm border-collapse border">
+                        <table className="w-full text-sm border-collapse border print:text-xs">
                             <tbody>
                                 {deductions.map(item => (
                                     <tr key={item.label}>
@@ -211,20 +211,20 @@ export default function PayslipPage() {
                         </table>
                      </div>
                      <div className="col-span-3">
-                         <table className="w-full text-sm border-collapse border">
+                         <table className="w-full text-sm border-collapse border print:text-xs">
                              <tbody>
                                 {deductions.map(item => (
                                     <tr key={item.label}>
-                                        <td className="border p-1 text-right font-mono h-[29px]">{item.amount > 0 ? item.amount.toLocaleString('fr-FR') : '0'}</td>
+                                        <td className="border p-1 text-right font-mono h-[29px] print:h-auto print:leading-tight">{item.amount > 0 ? item.amount.toLocaleString('fr-FR') : '0'}</td>
                                     </tr>
                                 ))}
-                                 <tr><td className="border p-1 h-[29px]"></td></tr>
+                                 <tr><td className="border p-1 h-[29px] print:h-auto print:leading-tight"></td></tr>
                             </tbody>
                          </table>
                      </div>
                  </div>
 
-                 <div className="grid grid-cols-12 mt-[-1px] border">
+                 <div className="grid grid-cols-12 mt-[-1px] border print:text-xs">
                     <div className="col-span-9 p-1 flex justify-between items-center font-bold">
                         <span>NET A PAYER</span>
                         <span>{totals.netAPayerInWords}</span>
@@ -233,10 +233,10 @@ export default function PayslipPage() {
                  </div>
                 
                  {/* Employer Contributions */}
-                 <div className="grid grid-cols-12 mt-4 border rounded-b-lg">
+                 <div className="grid grid-cols-12 mt-4 border rounded-b-lg print:mt-2">
                     <div className="col-span-9 p-2">
-                        <p className="font-bold text-center underline mb-2">Impôts à la charge de l'employeur</p>
-                        <table className="w-full text-sm">
+                        <p className="font-bold text-center underline mb-2 print:text-sm">Impôts à la charge de l'employeur</p>
+                        <table className="w-full text-sm print:text-xs">
                             <tbody>
                                 {employerContributions.map(item => (
                                      <tr key={item.label}>
@@ -251,7 +251,7 @@ export default function PayslipPage() {
                     </div>
                      <div className="col-span-3 flex flex-col justify-between items-center p-2 border-l">
                         <div></div>
-                         <div className="text-center">
+                         <div className="text-center print:text-xs">
                              <p className="font-bold">Payé à {employeeInfo.paymentLocation} le</p>
                              <p>{employeeInfo.paymentDate}</p>
                          </div>
@@ -260,7 +260,7 @@ export default function PayslipPage() {
                  </div>
 
                 {/* Footer */}
-                <footer className="text-center text-xs mt-4 pt-4 border-t">
+                <footer className="text-center text-xs pt-4 border-t print:pt-2 print:text-[8px]">
                     <p className="font-bold">Chambre Nationale de Rois et Chefs Traditionnels (CNRCT)</p>
                     <p>Yamoussoukro, Riviera - BP 201 Yamoussoukro | Tél : (225) 30 64 06 60 | Fax : (+255) 30 64 06 63</p>
                     <p>www.cnrct.ci - Email : info@cnrct.ci</p>
@@ -269,9 +269,14 @@ export default function PayslipPage() {
             </div>
             <style jsx global>{`
                 @media print {
+                    @page {
+                        size: A4;
+                        margin: 0.5cm;
+                    }
                     body {
                         -webkit-print-color-adjust: exact;
                         print-color-adjust: exact;
+                        background-color: #fff;
                     }
                     .print-hidden {
                         display: none;
@@ -284,6 +289,9 @@ export default function PayslipPage() {
                         box-shadow: none;
                         width: 100%;
                         max-width: 100%;
+                    }
+                    #payslip-content table td, #payslip-content table th {
+                        padding: 2px 4px;
                     }
                 }
             `}</style>

@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { PlusCircle, Eye } from "lucide-react";
+import { PlusCircle, Eye, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -19,46 +19,61 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import type { PayrollEntry } from "@/lib/payroll-data";
-import { getPayroll, addPayroll } from "@/services/payroll-service";
+import { subscribeToPayroll, addPayroll, updatePayroll } from "@/services/payroll-service";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { AddPayrollSheet } from "@/components/payroll/add-payroll-sheet";
+import { EditPayrollSheet } from "@/components/payroll/edit-payroll-sheet";
 import Link from "next/link";
 
 export default function PayrollPage() {
   const [payroll, setPayroll] = useState<PayrollEntry[]>([]);
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
+  const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
+  const [selectedEntry, setSelectedEntry] = useState<PayrollEntry | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
-    async function fetchPayroll() {
-      try {
-        setLoading(true);
-        const fetchedPayroll = await getPayroll();
+    setLoading(true);
+    const unsubscribe = subscribeToPayroll(
+      (fetchedPayroll) => {
         setPayroll(fetchedPayroll);
         setError(null);
-      } catch (err) {
+        setLoading(false);
+      },
+      (err) => {
         setError("Impossible de charger les données de paie. Veuillez vérifier votre connexion et les permissions Firestore.");
         console.error(err);
-      } finally {
         setLoading(false);
       }
-    }
-    fetchPayroll();
+    );
+     return () => unsubscribe();
   }, []);
+  
+  const openEditSheet = (entry: PayrollEntry) => {
+    setSelectedEntry(entry);
+    setIsEditSheetOpen(true);
+  };
 
   const handleAddPayroll = async (newPayrollData: Omit<PayrollEntry, "id">) => {
     try {
-      const newEntry = await addPayroll(newPayrollData);
-      setPayroll(prev => [...prev, newEntry].sort((a,b) => a.employeeName.localeCompare(b.employeeName)));
-      setIsSheetOpen(false);
+      await addPayroll(newPayrollData);
+      // State will update via subscription
+      setIsAddSheetOpen(false);
       toast({
         title: "Entrée de paie ajoutée",
-        description: `Les informations de paie pour ${newEntry.employeeName} ont été ajoutées.`,
+        description: `Les informations de paie pour ${newPayrollData.employeeName} ont été ajoutées.`,
       });
     } catch (err) {
         console.error("Failed to add payroll entry:", err);
@@ -66,11 +81,27 @@ export default function PayrollPage() {
     }
   };
   
+  const handleUpdatePayroll = async (entryId: string, updatedPayrollData: Omit<PayrollEntry, "id">) => {
+    try {
+      await updatePayroll(entryId, updatedPayrollData);
+      // State will update via subscription
+      setIsEditSheetOpen(false);
+      toast({
+        title: "Informations de paie mises à jour",
+        description: `Les informations de paie pour ${updatedPayrollData.employeeName} ont été modifiées.`,
+      });
+    } catch (err) {
+      console.error("Failed to update payroll entry:", err);
+      throw err;
+    }
+  };
+
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight">Gestion de la Paie</h1>
-        <Button onClick={() => setIsSheetOpen(true)} className="w-full sm:w-auto">
+        <Button onClick={() => setIsAddSheetOpen(true)} className="w-full sm:w-auto">
           <PlusCircle className="mr-2 h-4 w-4" />
           Ajouter une entrée
         </Button>
@@ -125,12 +156,24 @@ export default function PayrollPage() {
                         </TableCell>
                         <TableCell>{entry.nextPayDate}</TableCell>
                         <TableCell className="text-right">
-                          <Button asChild variant="outline" size="icon" className="h-8 w-8">
-                            <Link href={`/payroll/${entry.employeeId}`}>
-                              <Eye className="h-4 w-4" />
-                              <span className="sr-only">Afficher le bulletin</span>
-                            </Link>
-                          </Button>
+                           <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button aria-haspopup="true" size="icon" variant="ghost">
+                                        <MoreHorizontal className="h-4 w-4" />
+                                        <span className="sr-only">Toggle menu</span>
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                    <DropdownMenuItem onClick={() => openEditSheet(entry)}>Modifier</DropdownMenuItem>
+                                    <DropdownMenuItem asChild>
+                                       <Link href={`/payroll/${entry.employeeId}`}>
+                                            <Eye className="mr-2 h-4 w-4" />
+                                            Afficher le bulletin
+                                        </Link>
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         </TableCell>
                     </TableRow>
                     ))
@@ -152,12 +195,24 @@ export default function PayrollPage() {
                                     <p className="font-bold">{entry.employeeName}</p>
                                     <p className="text-sm text-muted-foreground">{entry.role}</p>
                                 </div>
-                                <Button asChild variant="outline" size="icon" className="h-8 w-8">
-                                  <Link href={`/payroll/${entry.employeeId}`}>
-                                    <Eye className="h-4 w-4" />
-                                    <span className="sr-only">Afficher le bulletin</span>
-                                  </Link>
-                                </Button>
+                                 <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button aria-haspopup="true" size="icon" variant="ghost">
+                                            <MoreHorizontal className="h-4 w-4" />
+                                            <span className="sr-only">Toggle menu</span>
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                        <DropdownMenuItem onClick={() => openEditSheet(entry)}>Modifier</DropdownMenuItem>
+                                        <DropdownMenuItem asChild>
+                                            <Link href={`/payroll/${entry.employeeId}`}>
+                                                <Eye className="mr-2 h-4 w-4" />
+                                                Afficher le bulletin
+                                            </Link>
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
                             </div>
                             <div className="mt-2 space-y-1">
                                 <p className="text-sm"><span className="font-medium">Salaire:</span> {entry.baseSalary.toLocaleString("fr-FR", { style: "currency", currency: "XOF",})}</p>
@@ -177,10 +232,18 @@ export default function PayrollPage() {
         </CardContent>
       </Card>
       <AddPayrollSheet
-        isOpen={isSheetOpen}
-        onClose={() => setIsSheetOpen(false)}
+        isOpen={isAddSheetOpen}
+        onClose={() => setIsAddSheetOpen(false)}
         onAddPayroll={handleAddPayroll}
       />
+       {selectedEntry && (
+        <EditPayrollSheet
+            isOpen={isEditSheetOpen}
+            onClose={() => setIsEditSheetOpen(false)}
+            onUpdatePayroll={handleUpdatePayroll}
+            payrollEntry={selectedEntry}
+        />
+       )}
     </div>
   );
 }

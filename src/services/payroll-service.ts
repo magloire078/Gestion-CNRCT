@@ -55,6 +55,12 @@ export async function addPayroll(payrollDataToAdd: Omit<PayrollEntry, 'id'>): Pr
     return newEntry;
 }
 
+export async function updatePayroll(entryId: string, payrollDataToUpdate: Omit<PayrollEntry, 'id'>): Promise<void> {
+    const payrollRef = doc(db, 'payroll', entryId);
+    await updateDoc(payrollRef, payrollDataToUpdate);
+}
+
+
 export async function getPayrollByEmployeeId(employeeId: string): Promise<PayrollEntry | null> {
     const payrollCollection = collection(db, 'payroll');
     const q = query(payrollCollection, where("employeeId", "==", employeeId), limit(1));

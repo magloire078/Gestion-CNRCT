@@ -3,5 +3,6 @@ config();
 
 import '@/ai/flows/generate-document.ts';
 import '@/ai/flows/assistant-flow.ts';
+import '@/ai/flows/conflict-resolution-flow.ts';
 import '@/ai/tools/hr-tools.ts';
 import '@/ai/tools/mission-tools.ts';

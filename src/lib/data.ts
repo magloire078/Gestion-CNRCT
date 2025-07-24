@@ -2,7 +2,9 @@
 export type Employee = {
   id: string; // Firestore document ID
   matricule: string;
-  name: string;
+  name: string; // Combined name
+  firstName?: string; // Optional for backward compatibility
+  lastName?: string;  // Optional for backward compatibility
   email?: string;
   department: string;
   role: string;
@@ -36,7 +38,9 @@ export type Fleet = {
 
 export type User = {
     id: string; // Firestore document ID
-    name: string;
+    name: string; // Combined name
+    firstName?: string; // Optional for backward compatibility
+    lastName?: string;  // Optional for backward compatibility
     email: string;
     role: 'Admin' | 'Manager' | 'Employé';
 }
@@ -64,3 +68,5 @@ export type Conflict = {
     reportedDate: string; // YYYY-MM-DD
     status: 'Ongoing' | 'Resolved' | 'Mediating';
 }
+
+    

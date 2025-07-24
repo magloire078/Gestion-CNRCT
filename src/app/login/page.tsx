@@ -37,17 +37,15 @@ export default function LoginPage() {
     try {
       await signIn(email, password);
       router.push("/");
-    } catch (err: any) {
-      if (err.code === 'auth/api-key-not-valid') {
-          setError("La clé d'API Firebase est invalide. Veuillez vérifier votre configuration dans src/lib/firebase.ts et la mettre à jour avec les clés de votre console Firebase.");
-      } else if (err.code === 'auth/network-request-failed') {
-          setError("Erreur de réseau. Veuillez vérifier votre connexion et réessayer.");
-      } else if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found') {
+    } catch (err) {
+      // Capture any error and display its message
+      const errorMessage = err instanceof Error ? err.message : "Une erreur inattendue est survenue. Veuillez réessayer.";
+      if (errorMessage.includes("auth/invalid-credential") || errorMessage.includes("auth/wrong-password") || errorMessage.includes("auth/user-not-found")) {
           setError("Email ou mot de passe incorrect.");
       } else {
-          setError(err.message || "Une erreur inattendue est survenue. Veuillez réessayer.");
-          console.error("Login Error:", err);
+          setError(errorMessage);
       }
+      console.error("Login Error:", err);
     } finally {
       setLoading(false);
     }

@@ -20,6 +20,7 @@ import { useToast } from "@/hooks/use-toast";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal } from "lucide-react";
 import Papa from "papaparse";
+import Image from "next/image";
 
 
 type Status = 'Active' | 'On Leave' | 'Terminated';
@@ -33,11 +34,11 @@ const statusVariantMap: Record<Status, "default" | "secondary" | "destructive"> 
 const departments = ["Engineering", "Marketing", "Sales", "HR", "Operations", "Informatique", "Secretariat Général", "Communication", "Direction Administrative", "Direction des Affaires financières et du patrimoine", "Protocole", "Cabinet", "Direction des Affaires sociales", "Directoire", "Comités Régionaux", "Other"];
 
 const allColumns = {
-  matricule: "Matricule",
-  name: "Nom",
-  email: "Email",
-  role: "Rôle",
-  department: "Département",
+  matricule: "N° MAT",
+  name: "NOM ET PRENOMS",
+  role: "FONCTION",
+  department: "REGION", // Mapped to department for now
+  email: "CONTACT", // Mapped to email
   status: "Statut",
 };
 export type ColumnKeys = keyof typeof allColumns;
@@ -58,6 +59,8 @@ export default function EmployeesPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [columnsToPrint, setColumnsToPrint] = useState<ColumnKeys[]>(Object.keys(allColumns) as ColumnKeys[]);
 
+  const [printDate, setPrintDate] = useState('');
+
   useEffect(() => {
     const unsubscribe = subscribeToEmployees((fetchedEmployees) => {
         setEmployees(fetchedEmployees);
@@ -77,7 +80,7 @@ export default function EmployeesPage() {
     try {
         const { firstName, lastName } = newEmployeeData;
         const name = `${firstName} ${lastName}`;
-        await addEmployee({ ...newEmployeeData, name });
+        await addEmployee({ ...newEmployeeData, firstName, lastName, name });
         // No need to update state here, onSnapshot will do it
         setIsAddSheetOpen(false);
         toast({
@@ -94,7 +97,7 @@ export default function EmployeesPage() {
     try {
        const { firstName, lastName } = updatedEmployeeData;
        const name = `${firstName} ${lastName}`;
-      await updateEmployee(employeeId, { ...updatedEmployeeData, name });
+      await updateEmployee(employeeId, { ...updatedEmployeeData, firstName, lastName, name });
       // No need to update state here, onSnapshot will do it
       setIsEditSheetOpen(false);
       toast({
@@ -221,6 +224,9 @@ export default function EmployeesPage() {
 
   const handlePrint = (selectedColumns: ColumnKeys[]) => {
     setColumnsToPrint(selectedColumns);
+    const now = new Date();
+    setPrintDate(now.toLocaleDateString('fr-FR'));
+
     // Use timeout to allow state to update before triggering print
     setTimeout(() => {
         window.print();
@@ -434,31 +440,74 @@ export default function EmployeesPage() {
                 allColumns={allColumns}
             />
         </div>
-        <div id="print-section" className="hidden print:block">
-            <h1 className="text-center text-2xl font-bold mb-4">Liste des Employés</h1>
-            <Table>
-                <TableHeader>
-                    <TableRow>
-                        {columnsToPrint.map(key => <TableHead key={key}>{allColumns[key]}</TableHead>)}
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {filteredEmployees.map(employee => (
-                        <TableRow key={employee.id}>
-                           {columnsToPrint.map(key => {
+        <div id="print-section" className="hidden print:block text-black bg-white p-6">
+            <header className="flex justify-between items-start mb-8">
+                <div className="text-center">
+                    <h2 className="font-bold">Chambre Nationale des Rois</h2>
+                    <h2 className="font-bold">et Chefs Traditionnels</h2>
+                    <Image src="https://placehold.co/100x100.png" alt="Logo CNRCT" width={80} height={80} className="mx-auto mt-2" data-ai-hint="logo traditional" />
+                    <p className="font-bold mt-1 text-sm">UN CHEF NOUVEAU</p>
+                    <p className="text-xs mt-4">LE DIRECTOIRE</p>
+                    <p className="text-xs">LE CABINET / LE SERVICE INFORMATIQUE</p>
+                </div>
+                <div className="text-center">
+                    <h2 className="font-bold">République de Côte d'Ivoire</h2>
+                    <Image src="https://placehold.co/100x100.png" alt="Logo Cote d'Ivoire" width={80} height={80} className="mx-auto mt-2" data-ai-hint="emblem ivory coast"/>
+                    <p className="mt-1">Union - Discipline - Travail</p>
+                </div>
+            </header>
+
+            <div className="text-center my-6">
+                <h1 className="text-lg font-bold underline">LISTE ALPHABETIQUE DES MEMBRES DU DIRECTIORE EN DATE DU {printDate}</h1>
+                <h2 className="text-md font-bold mt-4">PERSONNELS ACTIFS</h2>
+            </div>
+            
+            <table className="w-full text-xs border-collapse border border-black">
+                <thead>
+                    <tr className="bg-gray-200">
+                        <th className="border border-black p-1">N°</th>
+                        {columnsToPrint.map(key => <th key={key} className="border border-black p-1 text-left font-bold">{allColumns[key]}</th>)}
+                    </tr>
+                </thead>
+                <tbody>
+                    {filteredEmployees.map((employee, index) => (
+                        <tr key={employee.id}>
+                            <td className="border border-black p-1 text-center">{index + 1}</td>
+                            {columnsToPrint.map(key => {
                                 let value: React.ReactNode = employee[key as keyof Employee] as string || '';
-                                if (key === 'name' && employee.firstName) value = `${employee.firstName} ${employee.lastName}`;
-                                else if (key === 'name') value = employee.name;
-                                return <TableCell key={key}>{value}</TableCell>
+                                if (key === 'name' && (employee.firstName || employee.lastName)) {
+                                    value = `${employee.lastName || ''} ${employee.firstName || ''}`.trim();
+                                }
+                                return <td key={key} className="border border-black p-1">{value}</td>
                            })}
-                        </TableRow>
+                        </tr>
                     ))}
-                </TableBody>
-            </Table>
+                </tbody>
+            </table>
+
+            <footer className="mt-8 text-xs">
+                <div className="flex justify-between items-end">
+                    <div>
+                        <p>{new Date().toLocaleString('fr-FR')}</p>
+                    </div>
+                    <div className="text-center">
+                        <p className="font-bold">Chambre Nationale de Rois et Chefs Traditionnels (CNRCT)</p>
+                        <p>Yamoussoukro, Riviera - BP 201 Yamoussoukro | Tél : (225) 30 64 06 60 | Fax : (+255) 30 64 06 63</p>
+                        <p>www.cnrct.ci - Email : info@cnrct.ci</p>
+                    </div>
+                    <div>
+                        <p>1</p>
+                    </div>
+                </div>
+            </footer>
         </div>
         <style jsx global>{`
             @media print {
-                body > * {
+                body {
+                    -webkit-print-color-adjust: exact;
+                    print-color-adjust: exact;
+                }
+                .main-content {
                     display: none;
                 }
                 #print-section {
@@ -469,5 +518,3 @@ export default function EmployeesPage() {
     </>
   );
 }
-
-    

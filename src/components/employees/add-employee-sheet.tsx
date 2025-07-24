@@ -33,7 +33,8 @@ interface AddEmployeeSheetProps {
 
 export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployeeSheetProps) {
   const [matricule, setMatricule] = useState("");
-  const [name, setName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("");
   const [department, setDepartment] = useState("");
@@ -45,7 +46,8 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
 
   const resetForm = () => {
     setMatricule("");
-    setName("");
+    setFirstName("");
+    setLastName("");
     setEmail("");
     setRole("");
     setDepartment("");
@@ -76,14 +78,14 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!matricule || !name || !role || !department) {
-      setError("Veuillez remplir tous les champs obligatoires (Matricule, Nom, Rôle, Département).");
+    if (!matricule || !firstName || !lastName || !role || !department) {
+      setError("Veuillez remplir tous les champs obligatoires.");
       return;
     }
     setIsSubmitting(true);
     setError("");
     try {
-      await onAddEmployee({ matricule, name, email, role, department, status, photoUrl });
+      await onAddEmployee({ matricule, firstName, lastName, email, role, department, status, photoUrl, name: `${firstName} ${lastName}` });
       handleClose();
     } catch(err) {
       setError(err instanceof Error ? err.message : "Échec de l'ajout de l'employé. Veuillez réessayer.");
@@ -111,7 +113,7 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
               <div className="col-span-3 flex items-center gap-4">
                   <Avatar className="h-16 w-16">
                      <AvatarImage src={photoUrl} alt="Aperçu de la photo" data-ai-hint="employee photo" />
-                     <AvatarFallback>{name ? name.charAt(0) : 'E'}</AvatarFallback>
+                     <AvatarFallback>{firstName ? firstName.charAt(0) : 'E'}</AvatarFallback>
                   </Avatar>
                   <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>
                     <Upload className="mr-2 h-4 w-4" />
@@ -132,11 +134,17 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
               </Label>
               <Input id="matricule" value={matricule} onChange={(e) => setMatricule(e.target.value)} className="col-span-3" />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="name" className="text-right">
-                Nom Complet
+             <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="lastName" className="text-right">
+                Nom
               </Label>
-              <Input id="name" value={name} onChange={(e) => setName(e.target.value)} className="col-span-3" />
+              <Input id="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} className="col-span-3" />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="firstName" className="text-right">
+                Prénom(s)
+              </Label>
+              <Input id="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} className="col-span-3" />
             </div>
              <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="email" className="text-right">

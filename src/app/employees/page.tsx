@@ -440,7 +440,7 @@ export default function EmployeesPage() {
                 allColumns={allColumns}
             />
         </div>
-        <div id="print-section" className="hidden print:block text-black bg-white p-6">
+        <div id="print-section">
             <header className="flex justify-between items-start mb-8">
                 <div className="text-center">
                     <h2 className="font-bold">Chambre Nationale des Rois</h2>
@@ -501,20 +501,6 @@ export default function EmployeesPage() {
                 </div>
             </footer>
         </div>
-        <style jsx global>{`
-            @media print {
-                body {
-                    -webkit-print-color-adjust: exact;
-                    print-color-adjust: exact;
-                }
-                .main-content {
-                    display: none;
-                }
-                #print-section {
-                    display: block;
-                }
-            }
-        `}</style>
     </>
   );
 }

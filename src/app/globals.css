@@ -73,27 +73,3 @@
     @apply bg-background text-foreground;
   }
 }
-
-@media print {
-  body {
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
-  .main-content {
-    display: none !important;
-  }
-  #print-section {
-    display: block !important;
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    background-color: white;
-    color: black;
-    padding: 1.5rem;
-  }
-}
-
-#print-section {
-    display: none;
-}

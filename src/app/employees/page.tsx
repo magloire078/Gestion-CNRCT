@@ -1,8 +1,8 @@
 
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import { PlusCircle, Search, Download, Printer, Pencil } from "lucide-react";
+import { useState, useEffect, useMemo, useRef } from "react";
+import { PlusCircle, Search, Download, Printer, Pencil, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -17,8 +17,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import Papa from "papaparse";
 import Image from "next/image";
 
@@ -53,6 +52,7 @@ export default function EmployeesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
+  const printSectionRef = useRef<HTMLDivElement>(null);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [departmentFilter, setDepartmentFilter] = useState("all");
@@ -227,9 +227,16 @@ export default function EmployeesPage() {
     const now = new Date();
     setPrintDate(now.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }));
 
-    // Use timeout to allow state to update before triggering print
     setTimeout(() => {
-        window.print();
+        const printContent = printSectionRef.current;
+        if (printContent) {
+            const originalContents = document.body.innerHTML;
+            document.body.innerHTML = printContent.innerHTML;
+            window.print();
+            document.body.innerHTML = originalContents;
+            // We need to re-attach the event listeners or simply reload
+            window.location.reload(); 
+        }
     }, 100);
   };
 
@@ -446,7 +453,7 @@ export default function EmployeesPage() {
                 allColumns={allColumns}
             />
         </div>
-        <div id="print-section">
+        <div id="print-section" ref={printSectionRef} className="hidden">
             <header className="flex justify-between items-start mb-8">
                 <div className="text-center">
                     <h2 className="font-bold">Chambre Nationale des Rois</h2>

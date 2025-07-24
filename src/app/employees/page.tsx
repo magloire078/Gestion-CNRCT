@@ -133,7 +133,7 @@ export default function EmployeesPage() {
 
   const filteredEmployees = useMemo(() => {
     return employees.filter(employee => {
-      const fullName = employee.firstName ? `${employee.firstName} ${employee.lastName}`.toLowerCase() : (employee.name || '').toLowerCase();
+      const fullName = (employee.firstName && employee.lastName) ? `${employee.firstName} ${employee.lastName}`.toLowerCase() : (employee.name || '').toLowerCase();
       const matchesSearchTerm = fullName.includes(searchTerm.toLowerCase()) || (employee.matricule || '').toLowerCase().includes(searchTerm.toLowerCase());
       const matchesDepartment = departmentFilter === 'all' || employee.department === departmentFilter;
       const matchesStatus = statusFilter === 'all' || employee.status === statusFilter;
@@ -184,6 +184,41 @@ export default function EmployeesPage() {
     toast({ title: "Exportation JSON réussie" });
   };
   
+  const handleExportSql = () => {
+    if (filteredEmployees.length === 0) {
+      toast({ variant: "destructive", title: "Aucune donnée à exporter" });
+      return;
+    }
+
+    const escapeSql = (str: string | undefined | null) => {
+      if (str === null || str === undefined) return 'NULL';
+      return `'${str.replace(/'/g, "''")}'`;
+    };
+
+    const tableName = 'employees';
+    const columns = ['id', 'matricule', 'firstName', 'lastName', 'name', 'email', 'role', 'department', 'status', 'photoUrl'];
+    
+    const sqlContent = filteredEmployees.map(emp => {
+      const values = [
+        escapeSql(emp.id),
+        escapeSql(emp.matricule),
+        escapeSql(emp.firstName),
+        escapeSql(emp.lastName),
+        escapeSql(emp.firstName && emp.lastName ? `${emp.firstName} ${emp.lastName}` : emp.name),
+        escapeSql(emp.email),
+        escapeSql(emp.role),
+        escapeSql(emp.department),
+        escapeSql(emp.status),
+        escapeSql(emp.photoUrl),
+      ].join(', ');
+      return `INSERT INTO ${tableName} (${columns.join(', ')}) VALUES (${values});`;
+    }).join('\n');
+
+    downloadFile(sqlContent, 'export_employes.sql', 'application/sql');
+    toast({ title: "Exportation SQL réussie" });
+  };
+
+
   const handlePrint = (selectedColumns: ColumnKeys[]) => {
     setColumnsToPrint(selectedColumns);
     // Use timeout to allow state to update before triggering print
@@ -261,6 +296,7 @@ export default function EmployeesPage() {
                     <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={handleExportCsv}>Exporter en CSV</DropdownMenuItem>
                         <DropdownMenuItem onClick={handleExportJson}>Exporter en JSON</DropdownMenuItem>
+                        <DropdownMenuItem onClick={handleExportSql}>Exporter en SQL</DropdownMenuItem>
                     </DropdownMenuContent>
                     </DropdownMenu>
                     <Button onClick={() => setIsAddSheetOpen(true)} className="w-full sm:w-auto">
@@ -340,11 +376,11 @@ export default function EmployeesPage() {
                             <TableRow key={employee.id}>
                             <TableCell>
                                 <Avatar>
-                                <AvatarImage src={employee.photoUrl} alt={employee.firstName ? `${employee.firstName} ${employee.lastName}` : employee.name} data-ai-hint="employee photo" />
+                                <AvatarImage src={employee.photoUrl} alt={(employee.firstName && employee.lastName) ? `${employee.firstName} ${employee.lastName}` : employee.name} data-ai-hint="employee photo" />
                                 <AvatarFallback>{employee.firstName?.charAt(0) || employee.name?.charAt(0) || 'E'}{employee.lastName?.charAt(0) || ''}</AvatarFallback>
                                 </Avatar>
                             </TableCell>
-                            <TableCell className="font-medium">{employee.firstName ? `${employee.firstName} ${employee.lastName}` : employee.name}</TableCell>
+                            <TableCell className="font-medium">{(employee.firstName && employee.lastName) ? `${employee.firstName} ${employee.lastName}` : employee.name}</TableCell>
                             <TableCell>{employee.matricule}</TableCell>
                             <TableCell>{employee.role}</TableCell>
                             <TableCell>{employee.department}</TableCell>
@@ -392,11 +428,11 @@ export default function EmployeesPage() {
                         <Card key={employee.id}>
                         <CardContent className="p-4 flex items-center gap-4">
                             <Avatar className="h-12 w-12">
-                                <AvatarImage src={employee.photoUrl} alt={employee.firstName ? `${employee.firstName} ${employee.lastName}` : employee.name} data-ai-hint="employee photo" />
+                                <AvatarImage src={employee.photoUrl} alt={(employee.firstName && employee.lastName) ? `${employee.firstName} ${employee.lastName}` : employee.name} data-ai-hint="employee photo" />
                                 <AvatarFallback>{employee.firstName?.charAt(0) || employee.name?.charAt(0) || 'E'}{employee.lastName?.charAt(0) || ''}</AvatarFallback>
                             </Avatar>
                             <div className="flex-1 space-y-1">
-                                <p className="font-medium">{employee.firstName ? `${employee.firstName} ${employee.lastName}` : employee.name}</p>
+                                <p className="font-medium">{(employee.firstName && employee.lastName) ? `${employee.firstName} ${employee.lastName}` : employee.name}</p>
                                 <p className="text-sm text-muted-foreground">{employee.role}</p>
                                 <p className="text-sm text-muted-foreground">{employee.department} - {employee.matricule}</p>
                                 <Badge variant={statusVariantMap[employee.status as Status] || 'default'} className="mt-1">{employee.status}</Badge>
@@ -450,5 +486,3 @@ export default function EmployeesPage() {
     </>
   );
 }
-
-    

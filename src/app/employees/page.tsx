@@ -225,7 +225,7 @@ export default function EmployeesPage() {
   const handlePrint = (selectedColumns: ColumnKeys[]) => {
     setColumnsToPrint(selectedColumns);
     const now = new Date();
-    setPrintDate(now.toLocaleDateString('fr-FR'));
+    setPrintDate(now.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }));
 
     // Use timeout to allow state to update before triggering print
     setTimeout(() => {
@@ -337,7 +337,7 @@ export default function EmployeesPage() {
                                 <AvatarFallback>{employee.firstName?.charAt(0) || employee.name?.charAt(0) || 'E'}{employee.lastName?.charAt(0) || ''}</AvatarFallback>
                                 </Avatar>
                             </TableCell>
-                            <TableCell className="font-medium">{(employee.firstName && employee.lastName) ? `${employee.firstName} ${employee.lastName}` : employee.name}</TableCell>
+                            <TableCell className="font-medium">{(employee.firstName && employee.lastName) ? `${employee.lastName} ${employee.firstName}` : employee.name}</TableCell>
                             <TableCell>{employee.matricule}</TableCell>
                             <TableCell>{employee.role}</TableCell>
                             <TableCell>{employee.department}</TableCell>
@@ -354,7 +354,10 @@ export default function EmployeesPage() {
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end">
                                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                        <DropdownMenuItem onClick={() => openEditSheet(employee)}>Modifier</DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => openEditSheet(employee)}>
+                                            <Pencil className="mr-2 h-4 w-4" />
+                                            Modifier
+                                        </DropdownMenuItem>
                                         <DropdownMenuItem onClick={() => handleDeleteEmployee(employee.id)}>Supprimer</DropdownMenuItem>
                                     </DropdownMenuContent>
                                 </DropdownMenu>
@@ -389,7 +392,7 @@ export default function EmployeesPage() {
                                 <AvatarFallback>{employee.firstName?.charAt(0) || employee.name?.charAt(0) || 'E'}{employee.lastName?.charAt(0) || ''}</AvatarFallback>
                             </Avatar>
                             <div className="flex-1 space-y-1">
-                                <p className="font-medium">{(employee.firstName && employee.lastName) ? `${employee.firstName} ${employee.lastName}` : employee.name}</p>
+                                <p className="font-medium">{(employee.firstName && employee.lastName) ? `${employee.lastName} ${employee.firstName}` : employee.name}</p>
                                 <p className="text-sm text-muted-foreground">{employee.role}</p>
                                 <p className="text-sm text-muted-foreground">{employee.department} - {employee.matricule}</p>
                                 <Badge variant={statusVariantMap[employee.status as Status] || 'default'} className="mt-1">{employee.status}</Badge>
@@ -403,7 +406,10 @@ export default function EmployeesPage() {
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
                                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                    <DropdownMenuItem onClick={() => openEditSheet(employee)}>Modifier</DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => openEditSheet(employee)}>
+                                        <Pencil className="mr-2 h-4 w-4" />
+                                        Modifier
+                                    </DropdownMenuItem>
                                     <DropdownMenuItem onClick={() => handleDeleteEmployee(employee.id)}>Supprimer</DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
@@ -504,3 +510,4 @@ export default function EmployeesPage() {
     </>
   );
 }
+

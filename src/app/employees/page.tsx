@@ -229,55 +229,6 @@ export default function EmployeesPage() {
 
   return (
     <>
-        <div className="print-container">
-            <style jsx global>{`
-                @media print {
-                    body * {
-                        visibility: hidden;
-                    }
-                    .print-container, .print-container * {
-                        visibility: visible;
-                    }
-                    .print-container {
-                        position: absolute;
-                        left: 0;
-                        top: 0;
-                        width: 100%;
-                    }
-                    table {
-                        width: 100%;
-                        border-collapse: collapse;
-                    }
-                    th, td {
-                        border: 1px solid black;
-                        padding: 8px;
-                        text-align: left;
-                    }
-                    h1 {
-                        text-align: center;
-                    }
-                }
-            `}</style>
-            <h1>Liste des Employés</h1>
-            <Table>
-                <TableHeader>
-                    <TableRow>
-                        {columnsToPrint.map(key => <TableHead key={key}>{allColumns[key]}</TableHead>)}
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {filteredEmployees.map(employee => (
-                        <TableRow key={employee.id}>
-                           {columnsToPrint.map(key => {
-                                let value: React.ReactNode = employee[key as keyof Employee] as string || '';
-                                if (key === 'name') value = employee.firstName ? `${employee.firstName} ${employee.lastName}` : (employee.name || '');
-                                return <TableCell key={key}>{value}</TableCell>
-                           })}
-                        </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
-        </div>
         <div className="flex flex-col gap-6 main-content">
             <div className="flex items-center justify-between">
                 <h1 className="text-3xl font-bold tracking-tight">Gestion des Employés</h1>
@@ -483,6 +434,40 @@ export default function EmployeesPage() {
                 allColumns={allColumns}
             />
         </div>
+        <div id="print-section" className="hidden print:block">
+            <h1 className="text-center text-2xl font-bold mb-4">Liste des Employés</h1>
+            <Table>
+                <TableHeader>
+                    <TableRow>
+                        {columnsToPrint.map(key => <TableHead key={key}>{allColumns[key]}</TableHead>)}
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {filteredEmployees.map(employee => (
+                        <TableRow key={employee.id}>
+                           {columnsToPrint.map(key => {
+                                let value: React.ReactNode = employee[key as keyof Employee] as string || '';
+                                if (key === 'name' && employee.firstName) value = `${employee.firstName} ${employee.lastName}`;
+                                else if (key === 'name') value = employee.name;
+                                return <TableCell key={key}>{value}</TableCell>
+                           })}
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+        </div>
+        <style jsx global>{`
+            @media print {
+                body > * {
+                    display: none;
+                }
+                #print-section {
+                    display: block;
+                }
+            }
+        `}</style>
     </>
   );
 }
+
+    

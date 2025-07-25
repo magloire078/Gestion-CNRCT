@@ -2,6 +2,7 @@
 "use client";
 
 import { useTheme } from "next-themes";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -9,6 +10,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import {
@@ -19,6 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { ChevronRight } from "lucide-react";
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
@@ -26,6 +29,24 @@ export default function SettingsPage() {
   return (
     <div className="flex flex-col gap-6 max-w-2xl mx-auto">
       <h1 className="text-3xl font-bold tracking-tight">Paramètres</h1>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Général</CardTitle>
+          <CardDescription>
+            Gérez les paramètres généraux de l'application.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+            <Link href="/settings/organization" className="flex items-center justify-between p-4 rounded-lg hover:bg-muted/50 transition-colors">
+                <div>
+                    <p className="font-medium">Organisation</p>
+                    <p className="text-sm text-muted-foreground">Gérez les logos et les informations de l'entreprise.</p>
+                </div>
+                <ChevronRight className="h-5 w-5 text-muted-foreground" />
+            </Link>
+        </CardContent>
+      </Card>
       
       <Card>
         <CardHeader>

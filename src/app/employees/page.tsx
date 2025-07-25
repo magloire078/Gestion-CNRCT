@@ -230,47 +230,67 @@ export default function EmployeesPage() {
     const now = new Date();
     setPrintDate(now.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }));
     setIsPrinting(true);
-
-    // Give the state a moment to update the DOM
+  
     await new Promise(resolve => setTimeout(resolve, 100));
-
+  
     const printContent = printSectionRef.current;
     if (printContent) {
-        try {
-            const canvas = await html2canvas(printContent, {
-                scale: 2, // Increase resolution
-                useCORS: true, // For external images
-                logging: true,
-                onclone: (document) => {
-                    // This is crucial to ensure the hidden element is visible for the canvas capture
-                    const clonedContent = document.getElementById('print-section');
-                    if(clonedContent) {
-                        clonedContent.style.display = 'block';
-                    }
-                }
-            });
-
-            const imgData = canvas.toDataURL('image/png');
-            const pdf = new jsPDF('p', 'mm', 'a4');
-            const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfHeight = pdf.internal.pageSize.getHeight();
-            const canvasWidth = canvas.width;
-            const canvasHeight = canvas.height;
-            const ratio = canvasWidth / canvasHeight;
-            const width = pdfWidth - 20; // with some margin
-            const height = width / ratio;
-
-            pdf.addImage(imgData, 'PNG', 10, 10, width, height);
-            pdf.output('dataurlnewwindow');
-
-        } catch (error) {
-            console.error("Error generating PDF: ", error);
-            toast({
-                variant: "destructive",
-                title: "Erreur PDF",
-                description: "Impossible de générer le document PDF."
-            });
+      const originalPosition = printContent.style.position;
+      const originalTop = printContent.style.top;
+      const originalLeft = printContent.style.left;
+      const originalOpacity = printContent.style.opacity;
+      const originalZIndex = printContent.style.zIndex;
+  
+      // Make the element "visible" to html2canvas
+      printContent.style.position = 'absolute';
+      printContent.style.left = '0';
+      printContent.style.top = '0';
+      printContent.style.zIndex = '-9999';
+      printContent.style.opacity = '1';
+  
+      try {
+        const canvas = await html2canvas(printContent, {
+          scale: 2,
+          useCORS: true,
+          logging: true,
+        });
+  
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
+        const canvasWidth = canvas.width;
+        const canvasHeight = canvas.height;
+        const ratio = canvasWidth / canvasHeight;
+        let width = pdfWidth - 20;
+        let height = width / ratio;
+  
+        if (height > pdfHeight - 20) {
+            height = pdfHeight - 20;
+            width = height * ratio;
         }
+  
+        const x = (pdfWidth - width) / 2;
+        const y = 10;
+  
+        pdf.addImage(imgData, 'PNG', x, y, width, height);
+        pdf.output('dataurlnewwindow');
+  
+      } catch (error) {
+        console.error("Error generating PDF: ", error);
+        toast({
+          variant: "destructive",
+          title: "Erreur PDF",
+          description: "Impossible de générer le document PDF."
+        });
+      } finally {
+        // Restore original styles
+        printContent.style.position = originalPosition;
+        printContent.style.left = originalLeft;
+        printContent.style.top = originalTop;
+        printContent.style.zIndex = originalZIndex;
+        printContent.style.opacity = originalOpacity;
+      }
     }
     setIsPrinting(false);
   };
@@ -490,7 +510,7 @@ export default function EmployeesPage() {
         </div>
         
         {/* This section is hidden by default and only used for printing to PDF */}
-        <div id="print-section" ref={printSectionRef} className="fixed -left-[9999px] top-0 bg-white text-black p-8 w-[210mm]">
+        <div id="print-section" ref={printSectionRef} className="fixed -left-[9999px] top-0 bg-white text-black p-8 w-[210mm] opacity-0 -z-50">
             <header className="flex justify-between items-start mb-8">
                 <div className="text-center">
                     <h2 className="font-bold">Chambre Nationale des Rois</h2>
@@ -555,4 +575,3 @@ export default function EmployeesPage() {
   );
 }
 
-    

@@ -52,6 +52,12 @@ const initialFormState: Omit<PayrollEntry, 'id' | 'employeeId' | 'employeeName' 
 };
 
 
+interface AddPayrollSheetProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onAddPayroll: (payroll: Omit<PayrollEntry, "id">) => Promise<void>;
+}
+
 export function AddPayrollSheet({ isOpen, onClose, onAddPayroll }: AddPayrollSheetProps) {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);

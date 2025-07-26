@@ -574,4 +574,3 @@ export default function EmployeesPage() {
     </>
   );
 }
-

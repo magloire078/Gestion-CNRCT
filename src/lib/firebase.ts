@@ -8,7 +8,7 @@ import { getAuth } from "firebase/auth";
 //
 // Accédez à la console Firebase de votre projet :
 // 1. Allez sur https://console.firebase.google.com/
-// 2. Sélectionnez votre projet "gestion-cnrct-w8js".
+// 2. Sélectionnez votre projet "gestion-cnrct".
 // 3. Cliquez sur l'icône d'engrenage (⚙️) en haut à gauche et allez dans "Paramètres du projet".
 // 4. Faites défiler vers le bas jusqu'à la section "Vos applications".
 // 5. Trouvez votre application Web et cliquez sur l'icône </> pour voir le "SDK setup and configuration".
@@ -17,9 +17,9 @@ import { getAuth } from "firebase/auth";
 
 const firebaseConfig: FirebaseOptions = {
   apiKey: "AIzaSyBuMgqk-I_mngDw4SYuNhOOLcF6JNchXhw",
-  authDomain: "gestion-cnrct-w8js.firebaseapp.com",
-  projectId: "gestion-cnrct-w8js",
-  storageBucket: "gestion-cnrct-w8js.appspot.com",
+  authDomain: "gestion-cnrct.firebaseapp.com",
+  projectId: "gestion-cnrct",
+  storageBucket: "gestion-cnrct.appspot.com",
   messagingSenderId: "126727792063",
   appId: "1:126727792063:web:55513c7e21531a87286d0a"
 };

@@ -25,12 +25,6 @@ import type { PayrollEntry } from "@/lib/payroll-data";
 import type { Employee } from "@/lib/data";
 import { getEmployees } from "@/services/employee-service";
 
-interface AddPayrollSheetProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onAddPayroll: (payroll: Omit<PayrollEntry, "id">) => Promise<void>;
-}
-
 const initialFormState: Omit<PayrollEntry, 'id' | 'employeeId' | 'employeeName' | 'role'> = {
     payFrequency: 'Mensuel',
     nextPayDate: '',

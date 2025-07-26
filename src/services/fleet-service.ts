@@ -35,3 +35,13 @@ export async function addVehicle(vehicleDataToAdd: Omit<Fleet, 'id'> & { plate: 
     await setDoc(vehicleRef, data);
     return { plate, ...data };
 }
+
+export async function searchVehicles(query: string): Promise<Fleet[]> {
+    const lowerCaseQuery = query.toLowerCase();
+    const allVehicles = await getVehicles();
+    return allVehicles.filter(vehicle => 
+        vehicle.plate.toLowerCase().includes(lowerCaseQuery) || 
+        vehicle.makeModel.toLowerCase().includes(lowerCaseQuery) ||
+        vehicle.assignedTo.toLowerCase().includes(lowerCaseQuery)
+    );
+}

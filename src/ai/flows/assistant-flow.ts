@@ -12,6 +12,7 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 import { getEmployeeInfo } from '@/ai/tools/hr-tools';
 import { getMissionInfo } from '@/ai/tools/mission-tools';
+import { getVehicleInfo } from '@/ai/tools/fleet-tools';
 
 const AskAssistantInputSchema = z.string().describe('The user question for the HR assistant.');
 export type AskAssistantInput = z.infer<typeof AskAssistantInputSchema>;
@@ -27,15 +28,17 @@ const assistantPrompt = ai.definePrompt({
   name: 'assistantPrompt',
   input: {schema: AskAssistantInputSchema},
   output: {schema: AskAssistantOutputSchema},
-  tools: [getEmployeeInfo, getMissionInfo],
-  prompt: `You are an expert HR assistant for a company named "SYSTEME DE GESTION CNRCT".
-  Your role is to provide helpful and accurate information on human resources topics, company policies, and best practices for management.
+  tools: [getEmployeeInfo, getMissionInfo, getVehicleInfo],
+  prompt: `You are an expert HR and logistics assistant for a company named "SYSTEME DE GESTION CNRCT".
+  Your role is to provide helpful and accurate information on human resources topics, company policies, and company assets.
   
   If the user asks for information about a specific employee by name or matricule, use the getEmployeeInfo tool to find their details.
   If the tool returns no results, inform the user that the employee was not found.
   If the tool returns employee data, present it to the user in a clear and readable format.
 
   If the user asks about missions (e.g., "what are the current missions?", "show me completed missions"), use the getMissionInfo tool. You can filter by status if the user specifies one.
+
+  If the user asks about a vehicle (e.g., "what info do you have on plate XYZ-123?", "who is driving the Toyota Camry?"), use the getVehicleInfo tool.
 
   When responding, be professional, clear, and concise.
 

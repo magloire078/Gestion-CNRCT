@@ -5,8 +5,8 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { PayrollEntry } from "@/lib/payroll-data";
-import { getPayrollByEmployeeId } from "@/services/payroll-service";
+import type { Employee } from "@/lib/data";
+import { getEmployee } from "@/services/employee-service";
 import { getPayslipDetails, PayslipDetails } from "@/services/payslip-details-service";
 import { ArrowLeft, Printer } from "lucide-react";
 import Image from 'next/image';
@@ -15,7 +15,7 @@ export default function PayslipPage() {
     const params = useParams();
     const router = useRouter();
     const { id } = params;
-    const [payrollEntry, setPayrollEntry] = useState<PayrollEntry | null>(null);
+    const [employee, setEmployee] = useState<Employee | null>(null);
     const [payslipDetails, setPayslipDetails] = useState<PayslipDetails | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -28,14 +28,14 @@ export default function PayslipPage() {
                 return;
             }
             try {
-                const entry = await getPayrollByEmployeeId(id);
-                if (!entry) {
-                    setError("Données de paie non trouvées.");
+                const employeeData = await getEmployee(id);
+                if (!employeeData) {
+                    setError("Données de l'employé non trouvées.");
                     setLoading(false);
                     return;
                 }
-                setPayrollEntry(entry);
-                const details = await getPayslipDetails(entry);
+                setEmployee(employeeData);
+                const details = await getPayslipDetails(employeeData);
                 setPayslipDetails(details);
             } catch (err) {
                 console.error(err);
@@ -60,7 +60,7 @@ export default function PayslipPage() {
         )
     }
 
-    if (error || !payrollEntry || !payslipDetails) {
+    if (error || !employee || !payslipDetails) {
         return <div className="text-center text-destructive">{error || "Bulletin de paie non trouvé."}</div>;
     }
 
@@ -97,7 +97,7 @@ export default function PayslipPage() {
                 </header>
 
                 <div className="text-center my-4 p-1 bg-gray-200 font-bold print:text-sm print:my-2">
-                    BULLETIN DE PAIE CNRCT : Période de {new Date(payrollEntry.nextPayDate).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
+                    BULLETIN DE PAIE CNRCT : Période de {new Date(employeeInfo.nextPayDate || Date.now()).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
                 </div>
 
                 {/* Employee Info */}

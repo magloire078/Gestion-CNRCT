@@ -1,6 +1,7 @@
 
+
 import { db } from '@/lib/firebase';
-import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, onSnapshot, Unsubscribe, query, orderBy, where, writeBatch } from 'firebase/firestore';
+import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, onSnapshot, Unsubscribe, query, orderBy, where, writeBatch, getDoc } from 'firebase/firestore';
 import type { Employee } from '@/lib/data';
 
 export function subscribeToEmployees(
@@ -27,6 +28,15 @@ export async function getEmployees(): Promise<Employee[]> {
   const employeeSnapshot = await getDocs(employeesCollection);
   const employeeList = employeeSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Employee));
   return employeeList.sort((a, b) => a.name.localeCompare(b.name));
+}
+
+export async function getEmployee(id: string): Promise<Employee | null> {
+    const employeeRef = doc(db, 'employees', id);
+    const employeeSnap = await getDoc(employeeRef);
+    if(employeeSnap.exists()){
+        return { id: employeeSnap.id, ...employeeSnap.data() } as Employee;
+    }
+    return null;
 }
 
 export async function addEmployee(employeeDataToAdd: Omit<Employee, 'id'>): Promise<Employee> {
@@ -73,11 +83,9 @@ export async function batchAddEmployees(employees: Omit<Employee, 'id'>[]): Prom
 }
 
 
-export async function updateEmployee(employeeId: string, employeeDataToUpdate: Omit<Employee, 'id'>): Promise<Employee> {
+export async function updateEmployee(employeeId: string, employeeDataToUpdate: Partial<Employee>): Promise<void> {
     const employeeRef = doc(db, 'employees', employeeId);
     await updateDoc(employeeRef, employeeDataToUpdate);
-    const updatedEmployee = { id: employeeId, ...employeeDataToUpdate };
-    return updatedEmployee;
 }
 
 export async function deleteEmployee(employeeId: string): Promise<void> {

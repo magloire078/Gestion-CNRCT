@@ -1,8 +1,8 @@
 
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import { PlusCircle, Eye, MoreHorizontal, Pencil } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Eye, MoreHorizontal, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -27,33 +27,33 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import type { PayrollEntry } from "@/lib/payroll-data";
-import { subscribeToPayroll, addPayroll, updatePayroll } from "@/services/payroll-service";
+import type { Employee } from "@/lib/data";
+import { subscribeToEmployees, updateEmployee } from "@/services/employee-service";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { AddPayrollSheet } from "@/components/payroll/add-payroll-sheet";
 import { EditPayrollSheet } from "@/components/payroll/edit-payroll-sheet";
 import Link from "next/link";
 
 export default function PayrollPage() {
-  const [payroll, setPayroll] = useState<PayrollEntry[]>([]);
-  const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
+  const [employees, setEmployees] = useState<Employee[]>([]);
   const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
-  const [selectedEntry, setSelectedEntry] = useState<PayrollEntry | null>(null);
+  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
     setLoading(true);
-    const unsubscribe = subscribeToPayroll(
-      (fetchedPayroll) => {
-        setPayroll(fetchedPayroll);
+    const unsubscribe = subscribeToEmployees(
+      (fetchedEmployees) => {
+        // Filter for employees who should be on payroll
+        const payrollEmployees = fetchedEmployees.filter(e => e.status === 'Active' || e.status === 'On Leave');
+        setEmployees(payrollEmployees);
         setError(null);
         setLoading(false);
       },
       (err) => {
-        setError("Impossible de charger les données de paie. Veuillez vérifier votre connexion et les permissions Firestore.");
+        setError("Impossible de charger les données des employés. Veuillez vérifier votre connexion et les permissions Firestore.");
         console.error(err);
         setLoading(false);
       }
@@ -61,34 +61,19 @@ export default function PayrollPage() {
      return () => unsubscribe();
   }, []);
   
-  const openEditSheet = (entry: PayrollEntry) => {
-    setSelectedEntry(entry);
+  const openEditSheet = (employee: Employee) => {
+    setSelectedEmployee(employee);
     setIsEditSheetOpen(true);
   };
-
-  const handleAddPayroll = async (newPayrollData: Omit<PayrollEntry, "id">) => {
-    try {
-      await addPayroll(newPayrollData);
-      // State will update via subscription
-      setIsAddSheetOpen(false);
-      toast({
-        title: "Entrée de paie ajoutée",
-        description: `Les informations de paie pour ${newPayrollData.employeeName} ont été ajoutées.`,
-      });
-    } catch (err) {
-        console.error("Failed to add payroll entry:", err);
-        throw err; // Re-throw to be caught in the sheet
-    }
-  };
   
-  const handleUpdatePayroll = async (entryId: string, updatedPayrollData: Omit<PayrollEntry, "id">) => {
+  const handleUpdatePayroll = async (employeeId: string, updatedPayrollData: Partial<Employee>) => {
     try {
-      await updatePayroll(entryId, updatedPayrollData);
-      // State will update via subscription
+      // The service function now just updates the employee document
+      await updateEmployee(employeeId, updatedPayrollData);
       setIsEditSheetOpen(false);
       toast({
         title: "Informations de paie mises à jour",
-        description: `Les informations de paie pour ${updatedPayrollData.employeeName} ont été modifiées.`,
+        description: `Les informations de paie pour ${updatedPayrollData.name} ont été modifiées.`,
       });
     } catch (err) {
       console.error("Failed to update payroll entry:", err);
@@ -101,17 +86,12 @@ export default function PayrollPage() {
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight">Gestion de la Paie</h1>
-        <Button onClick={() => setIsAddSheetOpen(true)} className="w-full sm:w-auto">
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Ajouter une entrée
-        </Button>
       </div>
       <Card>
         <CardHeader>
-          <CardTitle>Informations sur la Paie</CardTitle>
+          <CardTitle>Employés sur la Paie</CardTitle>
           <CardDescription>
-            Gérez le salaire, la fréquence et les dates de paie de tous les
-            employés.
+            Gérez le salaire et les informations financières de tous les employés actifs.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -140,21 +120,21 @@ export default function PayrollPage() {
                         <TableCell><Skeleton className="h-8 w-8 rounded-md" /></TableCell>
                     </TableRow>
                     ))
-                ) : payroll.length > 0 ? (
-                    payroll.map((entry) => (
-                    <TableRow key={entry.id}>
-                        <TableCell className="font-medium">{entry.employeeName}</TableCell>
-                        <TableCell>{entry.role}</TableCell>
+                ) : employees.length > 0 ? (
+                    employees.map((employee) => (
+                    <TableRow key={employee.id}>
+                        <TableCell className="font-medium">{employee.name}</TableCell>
+                        <TableCell>{employee.role}</TableCell>
                         <TableCell className="text-right font-mono">
-                        {entry.baseSalary.toLocaleString("fr-FR", {
+                        {(employee.baseSalary || 0).toLocaleString("fr-FR", {
                             style: "currency",
                             currency: "XOF",
                         })}
                         </TableCell>
                         <TableCell>
-                        <Badge variant="outline">{entry.payFrequency}</Badge>
+                        <Badge variant="outline">{employee.payFrequency || 'N/D'}</Badge>
                         </TableCell>
-                        <TableCell>{entry.nextPayDate}</TableCell>
+                        <TableCell>{employee.nextPayDate || 'N/D'}</TableCell>
                         <TableCell className="text-right">
                            <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
@@ -165,12 +145,12 @@ export default function PayrollPage() {
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
                                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                    <DropdownMenuItem onClick={() => openEditSheet(entry)}>
+                                    <DropdownMenuItem onClick={() => openEditSheet(employee)}>
                                         <Pencil className="mr-2 h-4 w-4" />
-                                        Modifier
+                                        Modifier les infos de paie
                                     </DropdownMenuItem>
                                     <DropdownMenuItem asChild>
-                                       <Link href={`/payroll/${entry.employeeId}`}>
+                                       <Link href={`/payroll/${employee.id}`}>
                                             <Eye className="mr-2 h-4 w-4" />
                                             Afficher le bulletin
                                         </Link>
@@ -189,14 +169,14 @@ export default function PayrollPage() {
                 Array.from({ length: 5 }).map((_, i) => (
                   <Card key={i}><CardContent className="p-4"><Skeleton className="h-20 w-full" /></CardContent></Card>
                 ))
-             ) : payroll.length > 0 ? (
-                payroll.map((entry) => (
-                    <Card key={entry.id}>
+             ) : employees.length > 0 ? (
+                employees.map((employee) => (
+                    <Card key={employee.id}>
                         <CardContent className="p-4">
                              <div className="flex justify-between items-start">
                                 <div>
-                                    <p className="font-bold">{entry.employeeName}</p>
-                                    <p className="text-sm text-muted-foreground">{entry.role}</p>
+                                    <p className="font-bold">{employee.name}</p>
+                                    <p className="text-sm text-muted-foreground">{employee.role}</p>
                                 </div>
                                  <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
@@ -207,12 +187,12 @@ export default function PayrollPage() {
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end">
                                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                        <DropdownMenuItem onClick={() => openEditSheet(entry)}>
+                                        <DropdownMenuItem onClick={() => openEditSheet(employee)}>
                                             <Pencil className="mr-2 h-4 w-4" />
-                                            Modifier
+                                            Modifier les infos de paie
                                         </DropdownMenuItem>
                                         <DropdownMenuItem asChild>
-                                            <Link href={`/payroll/${entry.employeeId}`}>
+                                            <Link href={`/payroll/${employee.id}`}>
                                                 <Eye className="mr-2 h-4 w-4" />
                                                 Afficher le bulletin
                                             </Link>
@@ -221,33 +201,28 @@ export default function PayrollPage() {
                                 </DropdownMenu>
                             </div>
                             <div className="mt-2 space-y-1">
-                                <p className="text-sm"><span className="font-medium">Salaire:</span> {entry.baseSalary.toLocaleString("fr-FR", { style: "currency", currency: "XOF",})}</p>
-                                <p className="text-sm"><span className="font-medium">Prochaine paie:</span> {entry.nextPayDate}</p>
-                                <Badge variant="outline">{entry.payFrequency}</Badge>
+                                <p className="text-sm"><span className="font-medium">Salaire:</span> {(employee.baseSalary || 0).toLocaleString("fr-FR", { style: "currency", currency: "XOF",})}</p>
+                                <p className="text-sm"><span className="font-medium">Prochaine paie:</span> {employee.nextPayDate || 'N/D'}</p>
+                                <Badge variant="outline">{employee.payFrequency || 'N/D'}</Badge>
                             </div>
                         </CardContent>
                     </Card>
                 ))
              ) : null}
            </div>
-           {!loading && payroll.length === 0 && !error && (
+           {!loading && employees.length === 0 && !error && (
             <div className="text-center py-10 text-muted-foreground">
-                Aucune donnée de paie trouvée.
+                Aucun employé actif trouvé.
             </div>
           )}
         </CardContent>
       </Card>
-      <AddPayrollSheet
-        isOpen={isAddSheetOpen}
-        onClose={() => setIsAddSheetOpen(false)}
-        onAddPayroll={handleAddPayroll}
-      />
-       {selectedEntry && (
+       {selectedEmployee && (
         <EditPayrollSheet
             isOpen={isEditSheetOpen}
             onClose={() => setIsEditSheetOpen(false)}
             onUpdatePayroll={handleUpdatePayroll}
-            payrollEntry={selectedEntry}
+            employee={selectedEmployee}
         />
        )}
     </div>

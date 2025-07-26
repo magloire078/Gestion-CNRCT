@@ -21,9 +21,7 @@ import { subscribeToEmployees } from '@/services/employee-service';
 import { subscribeToLeaves } from '@/services/leave-service';
 import { subscribeToAssets } from '@/services/asset-service';
 import { subscribeToVehicles } from '@/services/fleet-service';
-import { subscribeToPayroll } from '@/services/payroll-service';
 import type { Employee, Leave, Asset, Fleet } from '@/lib/data';
-import type { PayrollEntry } from '@/lib/payroll-data';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Label } from '@/components/ui/label';
 
@@ -32,7 +30,6 @@ export default function DashboardPage() {
     const [leaves, setLeaves] = useState<Leave[]>([]);
     const [assets, setAssets] = useState<Asset[]>([]);
     const [fleet, setFleet] = useState<Fleet[]>([]);
-    const [payroll, setPayroll] = useState<PayrollEntry[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -42,7 +39,6 @@ export default function DashboardPage() {
             subscribeToLeaves(setLeaves, console.error),
             subscribeToAssets(setAssets, console.error),
             subscribeToVehicles(setFleet, console.error),
-            subscribeToPayroll(setPayroll, console.error),
         ];
         
         // A simple way to check if all initial data has loaded.
@@ -60,8 +56,8 @@ export default function DashboardPage() {
   const recentLeaves = leaves.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()).slice(0, 3);
   const newHires = employees.sort((a,b) => (a.id > b.id ? -1 : 1)).slice(0,3);
   
-  const totalPayroll = payroll.reduce((acc, entry) => acc + entry.baseSalary, 0);
-  const totalDeductions = payroll.reduce((acc, entry) => acc + (entry.baseSalary * 0.2), 0); // Approximation
+  const totalPayroll = employees.reduce((acc, entry) => acc + (entry.baseSalary || 0), 0);
+  const totalDeductions = employees.reduce((acc, entry) => acc + ((entry.baseSalary || 0) * 0.2), 0); // Approximation
 
   const stats = [
     {

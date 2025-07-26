@@ -112,7 +112,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
           <SidebarFooter className="p-2 border-t border-sidebar-border">
              <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="w-full justify-start items-center gap-3 p-2 h-auto">
+                    <Button variant="ghost" className="w-full justify-start items-center gap-3 p-2 h-auto hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
                         <Avatar className="size-8">
                             <AvatarImage src="https://placehold.co/40x40.png" alt={user.name} data-ai-hint="user avatar" />
                             <AvatarFallback>{user.name.charAt(0).toUpperCase()}</AvatarFallback>

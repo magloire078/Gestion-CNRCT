@@ -61,4 +61,8 @@ export type PayslipDetails = {
         netAPayerInWords: string;
     };
     employerContributions: PayslipEmployerContribution[];
+    organizationLogos: {
+        mainLogoUrl: string;
+        secondaryLogoUrl: string;
+    }
 };

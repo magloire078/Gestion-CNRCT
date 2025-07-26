@@ -4,6 +4,8 @@ import { numberToWords } from '@/lib/utils';
 import { doc, getDoc, collection, query, where, getDocs, limit } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { Employee } from '@/lib/data';
+import { getOrganizationSettings } from './organization-service';
+
 
 // This service calculates payslip details based on a payroll entry.
 // Note: Tax and contribution rates are simplified approximations.
@@ -85,7 +87,11 @@ export async function getPayslipDetails(payrollEntry: PayrollEntry): Promise<Pay
         { label: 'TAXE FORMATION CONTINUE', base: baseCalculCotisations, rate: '0.60%', amount: baseCalculCotisations * 0.006 },
     ];
     
-    const matricule = await getEmployeeMatricule(payrollEntry.employeeId);
+    const [matricule, organizationLogos] = await Promise.all([
+        getEmployeeMatricule(payrollEntry.employeeId),
+        getOrganizationSettings(),
+    ]);
+
     const employeeInfo = { ...payrollEntry, matricule };
 
     return {
@@ -99,5 +105,6 @@ export async function getPayslipDetails(payrollEntry: PayrollEntry): Promise<Pay
             netAPayerInWords,
         },
         employerContributions,
+        organizationLogos
     };
 }

@@ -64,7 +64,7 @@ export default function PayslipPage() {
         return <div className="text-center text-destructive">{error || "Bulletin de paie non trouvé."}</div>;
     }
 
-    const { employeeInfo, earnings, deductions, totals, employerContributions } = payslipDetails;
+    const { employeeInfo, earnings, deductions, totals, employerContributions, organizationLogos } = payslipDetails;
 
     return (
         <div className="bg-background text-foreground">
@@ -86,12 +86,12 @@ export default function PayslipPage() {
                     <div className="text-center">
                         <h2 className="font-bold print:text-sm">Chambre Nationale des Rois</h2>
                         <h2 className="font-bold print:text-sm">et Chefs Traditionnels</h2>
-                        <Image src="https://placehold.co/100x100.png" alt="Logo CNRCT" width={80} height={80} className="mx-auto mt-2 print:w-16 print:h-16" data-ai-hint="logo traditional" />
+                        <Image src={organizationLogos.mainLogoUrl} alt="Logo CNRCT" width={80} height={80} className="mx-auto mt-2 print:w-16 print:h-16" data-ai-hint="logo traditional" />
                         <p className="font-bold mt-1 print:text-xs">UN CHEF NOUVEAU</p>
                     </div>
                     <div className="text-center">
                         <h2 className="font-bold print:text-sm">République de Côte d'Ivoire</h2>
-                         <Image src="https://placehold.co/100x100.png" alt="Logo Cote d'Ivoire" width={80} height={80} className="mx-auto mt-2 print:w-16 print:h-16" data-ai-hint="emblem ivory coast"/>
+                         <Image src={organizationLogos.secondaryLogoUrl} alt="Logo Cote d'Ivoire" width={80} height={80} className="mx-auto mt-2 print:w-16 print:h-16" data-ai-hint="emblem ivory coast"/>
                         <p className="mt-1 print:text-xs">Union - Discipline - Travail</p>
                     </div>
                 </header>

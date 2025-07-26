@@ -2,18 +2,16 @@
 "use client";
 
 import { useState, useEffect, useMemo, useRef } from "react";
-import { PlusCircle, Search, Download, Printer, Pencil, MoreHorizontal, Loader2 } from "lucide-react";
+import { PlusCircle, Search, Download, Printer, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import type { Employee } from "@/lib/data";
 import { AddEmployeeSheet } from "@/components/employees/add-employee-sheet";
-import { EditEmployeeSheet } from "@/components/employees/edit-employee-sheet";
 import { PrintDialog } from "@/components/employees/print-dialog";
 import { subscribeToEmployees, addEmployee, updateEmployee, deleteEmployee } from "@/services/employee-service";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
@@ -22,6 +20,7 @@ import Papa from "papaparse";
 import Image from "next/image";
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import { InlineEditRow } from "@/components/employees/inline-edit-row";
 
 
 type Status = 'Active' | 'On Leave' | 'Terminated';
@@ -32,7 +31,7 @@ const statusVariantMap: Record<Status, "default" | "secondary" | "destructive"> 
   'Terminated': 'destructive',
 };
 
-const departments = ["Engineering", "Marketing", "Sales", "HR", "Operations", "Informatique", "Secretariat Général", "Communication", "Direction Administrative", "Direction des Affaires financières et du patrimoine", "Protocole", "Cabinet", "Direction des Affaires sociales", "Directoire", "Comités Régionaux", "Other"];
+export const departments = ["Engineering", "Marketing", "Sales", "HR", "Operations", "Informatique", "Secretariat Général", "Communication", "Direction Administrative", "Direction des Affaires financières et du patrimoine", "Protocole", "Cabinet", "Direction des Affaires sociales", "Directoire", "Comités Régionaux", "Other"];
 
 const allColumns = {
   matricule: "N° MAT",
@@ -48,9 +47,9 @@ export type ColumnKeys = keyof typeof allColumns;
 export default function EmployeesPage() {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
-  const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
   const [isPrintDialogOpen, setIsPrintDialogOpen] = useState(false);
-  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
+  const [editingEmployeeId, setEditingEmployeeId] = useState<string | null>(null);
+  
   const [loading, setLoading] = useState(true);
   const [isPrinting, setIsPrinting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -96,20 +95,28 @@ export default function EmployeesPage() {
     }
   };
 
-  const handleUpdateEmployee = async (employeeId: string, updatedEmployeeData: Omit<Employee, 'id'>) => {
+  const handleUpdateEmployee = async (employeeId: string, updatedEmployeeData: Partial<Employee>) => {
     try {
-       const { firstName, lastName } = updatedEmployeeData;
-       const name = `${firstName} ${lastName}`;
-      await updateEmployee(employeeId, { ...updatedEmployeeData, firstName, lastName, name });
-      // No need to update state here, onSnapshot will do it
-      setIsEditSheetOpen(false);
+      const originalEmployee = employees.find(e => e.id === employeeId);
+      if (!originalEmployee) throw new Error("Employé non trouvé");
+
+      // Merge original data with updated data to prevent overwriting fields not in the form
+      const dataToUpdate = { ...originalEmployee, ...updatedEmployeeData };
+      
+      await updateEmployee(employeeId, dataToUpdate);
+      setEditingEmployeeId(null);
       toast({
         title: "Employé mis à jour",
-        description: `Les informations de ${name} ont été mises à jour.`,
+        description: `Les informations de ${dataToUpdate.name} ont été mises à jour.`,
       });
     } catch (err) {
       console.error("Failed to update employee:", err);
-      throw err; // Re-throw to be caught in the sheet
+      toast({
+        variant: "destructive",
+        title: "Erreur de mise à jour",
+        description: err instanceof Error ? err.message : "Une erreur est survenue.",
+      });
+      throw err;
     }
   };
   
@@ -117,7 +124,6 @@ export default function EmployeesPage() {
       if (confirm("Êtes-vous sûr de vouloir supprimer cet employé ?")) {
           try {
               await deleteEmployee(employeeId);
-              // No need to update state here, onSnapshot will do it
               toast({
                   title: "Employé supprimé",
                   description: "L'employé a été supprimé avec succès.",
@@ -130,11 +136,6 @@ export default function EmployeesPage() {
               });
           }
       }
-  };
-
-  const openEditSheet = (employee: Employee) => {
-    setSelectedEmployee(employee);
-    setIsEditSheetOpen(true);
   };
 
   const filteredEmployees = useMemo(() => {
@@ -344,7 +345,7 @@ export default function EmployeesPage() {
 
                 {error && <p className="text-destructive text-center py-4">{error}</p>}
                 
-                <div className="hidden md:block">
+                <div className="overflow-x-auto">
                     <Table>
                     <TableHeader>
                         <TableRow>
@@ -354,7 +355,7 @@ export default function EmployeesPage() {
                         <TableHead>Rôle</TableHead>
                         <TableHead>Département</TableHead>
                         <TableHead>Statut</TableHead>
-                        <TableHead><span className="sr-only">Actions</span></TableHead>
+                        <TableHead className="w-[100px] text-right">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -367,98 +368,25 @@ export default function EmployeesPage() {
                             <TableCell><Skeleton className="h-4 w-32" /></TableCell>
                             <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                             <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
-                            <TableCell><Skeleton className="h-8 w-8" /></TableCell>
+                            <TableCell><div className="flex gap-2 justify-end"><Skeleton className="h-8 w-8" /><Skeleton className="h-8 w-8" /></div></TableCell>
                             </TableRow>
                         ))
                         ) : (
                         filteredEmployees.map((employee) => (
-                            <TableRow key={employee.id}>
-                            <TableCell>
-                                <Avatar>
-                                <AvatarImage src={employee.photoUrl} alt={(employee.firstName && employee.lastName) ? `${employee.firstName} ${employee.lastName}` : employee.name} data-ai-hint="employee photo" />
-                                <AvatarFallback>{employee.firstName?.charAt(0) || employee.name?.charAt(0) || 'E'}{employee.lastName?.charAt(0) || ''}</AvatarFallback>
-                                </Avatar>
-                            </TableCell>
-                            <TableCell className="font-medium">{(employee.firstName && employee.lastName) ? `${employee.lastName} ${employee.firstName}` : employee.name}</TableCell>
-                            <TableCell>{employee.matricule}</TableCell>
-                            <TableCell>{employee.role}</TableCell>
-                            <TableCell>{employee.department}</TableCell>
-                            <TableCell>
-                                <Badge variant={statusVariantMap[employee.status as Status] || 'default'}>{employee.status}</Badge>
-                            </TableCell>
-                            <TableCell>
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button aria-haspopup="true" size="icon" variant="ghost">
-                                            <MoreHorizontal className="h-4 w-4" />
-                                            <span className="sr-only">Toggle menu</span>
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end">
-                                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                        <DropdownMenuItem onClick={() => openEditSheet(employee)}>
-                                            <Pencil className="mr-2 h-4 w-4" />
-                                            Modifier
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => handleDeleteEmployee(employee.id)}>Supprimer</DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                            </TableCell>
-                            </TableRow>
+                           <InlineEditRow 
+                             key={employee.id} 
+                             employee={employee}
+                             isEditing={editingEmployeeId === employee.id}
+                             onEdit={() => setEditingEmployeeId(employee.id)}
+                             onCancel={() => setEditingEmployeeId(null)}
+                             onSave={handleUpdateEmployee}
+                             onDelete={handleDeleteEmployee}
+                             statusVariantMap={statusVariantMap}
+                            />
                         ))
                         )}
                     </TableBody>
                     </Table>
-                </div>
-
-                <div className="grid grid-cols-1 gap-4 md:hidden">
-                    {loading ? (
-                    Array.from({ length: 5 }).map((_, i) => (
-                        <Card key={i}>
-                        <CardContent className="p-4 flex items-center gap-4">
-                            <Skeleton className="h-12 w-12 rounded-full" />
-                            <div className="flex-1 space-y-2">
-                            <Skeleton className="h-4 w-3/4" />
-                            <Skeleton className="h-4 w-1/2" />
-                            </div>
-                            <Skeleton className="h-8 w-8" />
-                        </CardContent>
-                        </Card>
-                    ))
-                    ) : (
-                    filteredEmployees.map((employee) => (
-                        <Card key={employee.id}>
-                        <CardContent className="p-4 flex items-center gap-4">
-                            <Avatar className="h-12 w-12">
-                                <AvatarImage src={employee.photoUrl} alt={(employee.firstName && employee.lastName) ? `${employee.firstName} ${employee.lastName}` : employee.name} data-ai-hint="employee photo" />
-                                <AvatarFallback>{employee.firstName?.charAt(0) || employee.name?.charAt(0) || 'E'}{employee.lastName?.charAt(0) || ''}</AvatarFallback>
-                            </Avatar>
-                            <div className="flex-1 space-y-1">
-                                <p className="font-medium">{(employee.firstName && employee.lastName) ? `${employee.lastName} ${employee.firstName}` : employee.name}</p>
-                                <p className="text-sm text-muted-foreground">{employee.role}</p>
-                                <p className="text-sm text-muted-foreground">{employee.department} - {employee.matricule}</p>
-                                <Badge variant={statusVariantMap[employee.status as Status] || 'default'} className="mt-1">{employee.status}</Badge>
-                            </div>
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button aria-haspopup="true" size="icon" variant="ghost">
-                                        <MoreHorizontal className="h-4 w-4" />
-                                        <span className="sr-only">Toggle menu</span>
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                    <DropdownMenuItem onClick={() => openEditSheet(employee)}>
-                                        <Pencil className="mr-2 h-4 w-4" />
-                                        Modifier
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => handleDeleteEmployee(employee.id)}>Supprimer</DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        </CardContent>
-                        </Card>
-                    ))
-                    )}
                 </div>
 
                 { !loading && filteredEmployees.length === 0 && (
@@ -473,14 +401,6 @@ export default function EmployeesPage() {
                 onClose={() => setIsAddSheetOpen(false)}
                 onAddEmployee={handleAddEmployee}
             />
-            {selectedEmployee && (
-                <EditEmployeeSheet
-                isOpen={isEditSheetOpen}
-                onClose={() => setIsEditSheetOpen(false)}
-                onUpdateEmployee={handleUpdateEmployee}
-                employee={selectedEmployee}
-                />
-            )}
              <PrintDialog
                 isOpen={isPrintDialogOpen}
                 onClose={() => setIsPrintDialogOpen(false)}

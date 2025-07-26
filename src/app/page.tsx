@@ -16,6 +16,7 @@ import { Users, FileWarning, Laptop, Car, Download } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { EmployeeDistributionChart } from '@/components/charts/employee-distribution-chart';
 import { AssetStatusChart } from '@/components/charts/asset-status-chart';
+import { EmployeeActivityReport } from '@/components/reports/employee-activity-report';
 import { subscribeToEmployees } from '@/services/employee-service';
 import { subscribeToLeaves } from '@/services/leave-service';
 import { subscribeToAssets } from '@/services/asset-service';
@@ -248,19 +249,7 @@ export default function DashboardPage() {
             </Card>
         </TabsContent>
         <TabsContent value="reports" className="space-y-4">
-            <Card>
-                <CardHeader>
-                    <CardTitle>Rapports</CardTitle>
-                    <CardDescription>
-                        Cette section vous permettra de générer et de télécharger des rapports personnalisés.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <div className="flex flex-col items-center justify-center h-64 text-center border-2 border-dashed rounded-lg">
-                        <p className="mt-4 text-muted-foreground">Génération de rapports à venir.</p>
-                    </div>
-                </CardContent>
-            </Card>
+            <EmployeeActivityReport />
         </TabsContent>
       </Tabs>
     </div>

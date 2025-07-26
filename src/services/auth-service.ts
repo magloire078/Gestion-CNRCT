@@ -11,24 +11,30 @@ import {
     type User as FirebaseUser
 } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
-import type { User } from '@/lib/data';
+import type { User, Role } from '@/lib/data';
 
 // Sign Up
-export async function signUp(userData: Omit<User, 'id'>, password: string): Promise<User> {
+export async function signUp(userData: { name: string, email: string, role?: string }, password: string): Promise<User> {
     const userCredential = await createUserWithEmailAndPassword(auth, userData.email, password);
     const firebaseUser = userCredential.user;
 
-    const newUser: User = {
-        id: firebaseUser.uid,
+    // For simplicity, new users get a default roleId. In a real app, this might be different.
+    // Let's assume an "Employé" role with id 'employee-role-id' exists.
+    const defaultRoleId = "employe"; 
+
+    const newUser: Omit<User, 'id' | 'role' | 'permissions'> = {
         name: userData.name,
         email: userData.email,
-        role: userData.role
+        roleId: defaultRoleId,
     };
 
     // Save additional user data to Firestore
     await setDoc(doc(db, "users", firebaseUser.uid), newUser);
 
-    return newUser;
+    // Fetch the full user profile to return
+    const userProfile = await getFullUserProfile(firebaseUser);
+    if (!userProfile) throw new Error("Could not create user profile.");
+    return userProfile;
 }
 
 // Sign In
@@ -36,15 +42,13 @@ export async function signIn(email: string, password: string): Promise<User> {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const firebaseUser = userCredential.user;
     
-    // Fetch the full user profile from Firestore to ensure they are a valid app user
-    const userDoc = await getDoc(doc(db, "users", firebaseUser.uid));
-    if (!userDoc.exists()) {
-        // Log out the user from Firebase Auth as they don't have a profile in our app
+    const userProfile = await getFullUserProfile(firebaseUser);
+    if (!userProfile) {
         await firebaseSignOut(auth);
-        throw new Error("Aucun profil utilisateur correspondant à cet email n'a été trouvé. Veuillez vous inscrire d'abord.");
+        throw new Error("Aucun profil utilisateur correspondant à cet email n'a été trouvé.");
     }
 
-    return userDoc.data() as User;
+    return userProfile;
 }
 
 // Sign Out
@@ -61,20 +65,44 @@ export async function sendPasswordReset(email: string): Promise<void> {
 export function onAuthStateChange(callback: (user: User | null) => void) {
   return onAuthStateChanged(auth, async (firebaseUser: FirebaseUser | null) => {
     if (firebaseUser) {
-      // User is signed in, get full profile from Firestore
-      const userDoc = await getDoc(doc(db, "users", firebaseUser.uid));
-      if (userDoc.exists()) {
-        callback(userDoc.data() as User);
-      } else {
-        // This case might happen if Firestore data is deleted but auth record remains.
-        // Or if a user from another Firebase project with the same auth instance tries to log in.
-        // We ensure they are logged out and treated as a non-user.
-        await firebaseSignOut(auth);
-        callback(null);
-      }
+      const userProfile = await getFullUserProfile(firebaseUser);
+      callback(userProfile);
     } else {
-      // User is signed out
       callback(null);
     }
   });
 }
+
+
+async function getFullUserProfile(firebaseUser: FirebaseUser): Promise<User | null> {
+    const userRef = doc(db, "users", firebaseUser.uid);
+    const userDoc = await getDoc(userRef);
+
+    if (!userDoc.exists()) {
+        return null;
+    }
+
+    const userData = userDoc.data() as Omit<User, 'id' | 'role' | 'permissions'>;
+    
+    let role: Role | null = null;
+    let permissions: string[] = [];
+
+    if (userData.roleId) {
+        const roleRef = doc(db, "roles", userData.roleId);
+        const roleDoc = await getDoc(roleRef);
+        if (roleDoc.exists()) {
+            role = { id: roleDoc.id, ...roleDoc.data() } as Role;
+            permissions = role.permissions || [];
+        }
+    }
+
+    return {
+        id: firebaseUser.uid,
+        name: userData.name,
+        email: userData.email,
+        roleId: userData.roleId,
+        role,
+        permissions,
+    };
+}
+

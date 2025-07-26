@@ -40,7 +40,7 @@ export default function SignupPage() {
         setLoading(true);
         setError(null);
         try {
-            await signUp({name, email, role: 'Employé'}, password);
+            await signUp({name, email}, password);
             router.push("/");
         } catch (err: any) {
             if (err.code === 'auth/email-already-in-use') {

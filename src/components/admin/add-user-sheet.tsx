@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,8 +21,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { User } from "@/lib/data";
+import type { User, Role } from "@/lib/data";
 import { addUser } from "@/services/user-service";
+import { getRoles } from "@/services/role-service";
 import { useToast } from "@/hooks/use-toast";
 
 interface AddUserSheetProps {
@@ -34,16 +35,33 @@ interface AddUserSheetProps {
 export function AddUserSheet({ isOpen, onClose, onAddUser }: AddUserSheetProps) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState<User['role']>('Employé');
+  const [roleId, setRoleId] = useState("");
+  const [roles, setRoles] = useState<Role[]>([]);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  
+  useEffect(() => {
+    if (isOpen) {
+        async function fetchRoles() {
+            try {
+                const fetchedRoles = await getRoles();
+                setRoles(fetchedRoles);
+            } catch(err) {
+                console.error("Failed to fetch roles:", err);
+                setError("Impossible de charger les rôles.");
+            }
+        }
+        fetchRoles();
+    }
+  }, [isOpen]);
 
   const resetForm = () => {
     setName("");
     setEmail("");
-    setRole("Employé");
+    setRoleId("");
     setError("");
+    setRoles([]);
   };
 
   const handleClose = () => {
@@ -54,16 +72,18 @@ export function AddUserSheet({ isOpen, onClose, onAddUser }: AddUserSheetProps) 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!name || !email) {
-      setError("Le nom et l'email sont obligatoires.");
+    if (!name || !email || !roleId) {
+      setError("Le nom, l'email et le rôle sont obligatoires.");
       return;
     }
     setIsSubmitting(true);
     setError("");
     try {
-      const newUser = await addUser({ name, email, role });
+      // Note: This only creates the user in Firestore. The auth user must be created separately.
+      // In a real app, this might be a Cloud Function that does both.
+      const newUser = await addUser({ name, email, roleId });
       onAddUser(newUser);
-      toast({ title: "Utilisateur ajouté", description: `${name} a été ajouté avec succès.` });
+      toast({ title: "Utilisateur ajouté", description: `${name} a été ajouté avec succès. Il doit maintenant être invité ou créer un mot de passe.` });
       handleClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Échec de l'ajout de l'utilisateur.");
@@ -79,7 +99,7 @@ export function AddUserSheet({ isOpen, onClose, onAddUser }: AddUserSheetProps) 
           <SheetHeader>
             <SheetTitle>Ajouter un nouvel utilisateur</SheetTitle>
             <SheetDescription>
-              Remplissez les détails pour ajouter un nouvel utilisateur au système.
+              Remplissez les détails pour ajouter un nouvel utilisateur au système. L'utilisateur devra ensuite s'inscrire avec le même email pour se connecter.
             </SheetDescription>
           </SheetHeader>
           <div className="grid gap-4 py-4">
@@ -93,14 +113,14 @@ export function AddUserSheet({ isOpen, onClose, onAddUser }: AddUserSheetProps) 
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="role" className="text-right">Rôle</Label>
-              <Select value={role} onValueChange={(value: User['role']) => setRole(value)}>
+              <Select value={roleId} onValueChange={setRoleId}>
                 <SelectTrigger className="col-span-3">
                   <SelectValue placeholder="Sélectionnez un rôle" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Admin">Admin</SelectItem>
-                  <SelectItem value="Manager">Manager</SelectItem>
-                  <SelectItem value="Employé">Employé</SelectItem>
+                  {roles.map(role => (
+                    <SelectItem key={role.id} value={role.id}>{role.name}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -110,7 +130,7 @@ export function AddUserSheet({ isOpen, onClose, onAddUser }: AddUserSheetProps) 
             <SheetClose asChild>
               <Button type="button" variant="outline">Annuler</Button>
             </SheetClose>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" disabled={isSubmitting || roles.length === 0}>
               {isSubmitting ? "Enregistrement..." : "Enregistrer"}
             </Button>
           </SheetFooter>

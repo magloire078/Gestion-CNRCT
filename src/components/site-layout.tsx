@@ -22,6 +22,7 @@ import {
   Settings,
   MoreHorizontal,
   Loader2,
+  Lock,
 } from "lucide-react";
 
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
@@ -41,30 +42,73 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel } from "./ui/dropdown-menu";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 
-const menuItems = [
-  { href: "/", label: "Tableau de Bord", icon: LayoutDashboard },
-  { href: "/employees", label: "Employés", icon: Users },
-  { href: "/payroll", label: "Paie", icon: Landmark },
-  { href: "/leave", label: "Congés", icon: CalendarOff },
-  { href: "/missions", label: "Missions", icon: Briefcase },
-  { href: "/conflicts", label: "Conflits", icon: Scale },
-  { href: "/it-assets", label: "Actifs TI", icon: Laptop },
-  { href: "/fleet", label: "Flotte de Véhicules", icon: Car },
-  { href: "/documents", label: "Documents", icon: FileText },
-  { href: "/assistant", label: "Assistant IA", icon: MessageSquare },
-  { href: "/admin", label: "Administration", icon: Shield },
+const allMenuItems = [
+  { href: "/", label: "Tableau de Bord", icon: LayoutDashboard, permission: "page:dashboard:view" },
+  { href: "/employees", label: "Employés", icon: Users, permission: "page:employees:view" },
+  { href: "/payroll", label: "Paie", icon: Landmark, permission: "page:payroll:view" },
+  { href: "/leave", label: "Congés", icon: CalendarOff, permission: "page:leave:view" },
+  { href: "/missions", label: "Missions", icon: Briefcase, permission: "page:missions:view" },
+  { href: "/conflicts", label: "Conflits", icon: Scale, permission: "page:conflicts:view" },
+  { href: "/it-assets", label: "Actifs TI", icon: Laptop, permission: "page:it-assets:view" },
+  { href: "/fleet", label: "Flotte de Véhicules", icon: Car, permission: "page:fleet:view" },
+  { href: "/documents", label: "Documents", icon: FileText, permission: "page:documents:view" },
+  { href: "/assistant", label: "Assistant IA", icon: MessageSquare, permission: "page:assistant:view" },
+  { href: "/admin", label: "Administration", icon: Shield, permission: "page:admin:view" },
 ];
+
+function ProtectedPage({ children, permission }: { children: React.ReactNode, permission: string }) {
+    const { hasPermission, loading } = useAuth();
+
+    if (loading) {
+        return (
+            <div className="flex h-64 items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+        );
+    }
+    
+    if (hasPermission(permission)) {
+        return <>{children}</>;
+    }
+
+    return (
+        <Card className="w-full max-w-md mx-auto">
+            <CardHeader className="text-center">
+                <div className="mx-auto bg-destructive/10 text-destructive p-3 rounded-full w-fit">
+                    <Lock className="h-8 w-8" />
+                </div>
+                <CardTitle className="mt-4">Accès Refusé</CardTitle>
+                <CardDescription>
+                    Vous n'avez pas les permissions nécessaires pour accéder à cette page. Veuillez contacter votre administrateur si vous pensez qu'il s'agit d'une erreur.
+                </CardDescription>
+            </CardHeader>
+             <CardContent>
+                <Button asChild className="w-full">
+                    <Link href="/">Retour au Tableau de Bord</Link>
+                </Button>
+            </CardContent>
+        </Card>
+    );
+}
+
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { user, loading } = useAuth();
-
+  const { user, loading, hasPermission } = useAuth();
+  
   const handleLogout = async () => {
     await signOut();
     router.push("/login");
   };
+
+  const menuItems = React.useMemo(() => {
+    return allMenuItems.filter(item => hasPermission(item.permission));
+  }, [hasPermission]);
+  
+  const currentPage = allMenuItems.find(item => item.href === pathname);
 
   if (loading) {
     return (
@@ -75,8 +119,6 @@ function AppLayout({ children }: { children: React.ReactNode }) {
   }
   
   if (!user) {
-    // The AuthProvider handles redirection. Returning null here prevents
-    // rendering the layout for logged-out users on protected pages.
     return null; 
   }
 
@@ -98,7 +140,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
                   <SidebarMenuButton
                     asChild
                     isActive={pathname === item.href}
-                    className="w-full justify-start"
+                    className="w-full justify-start hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                   >
                     <Link href={item.href}>
                       <item.icon className="mr-2 h-4 w-4" />
@@ -125,7 +167,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56 mb-2" align="end" side="top">
-                    <DropdownMenuLabel>Mon Compte</DropdownMenuLabel>
+                    <DropdownMenuLabel>{user.role?.name || 'Utilisateur'}</DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
                         <Link href="/profile">
@@ -150,7 +192,15 @@ function AppLayout({ children }: { children: React.ReactNode }) {
         </Sidebar>
         <SidebarInset>
           <main className="flex-1 p-4 sm:p-6">
-            <div className="mx-auto w-full max-w-7xl">{children}</div>
+            <div className="mx-auto w-full max-w-7xl">
+                {currentPage ? (
+                    <ProtectedPage permission={currentPage.permission}>
+                        {children}
+                    </ProtectedPage>
+                ) : (
+                    children
+                )}
+            </div>
           </main>
         </SidebarInset>
     </SidebarProvider>
@@ -160,12 +210,12 @@ function AppLayout({ children }: { children: React.ReactNode }) {
 export function SiteLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   
-  // Public pages that don't need the AuthProvider or Sidebar
-  if (pathname === '/login' || pathname === '/signup' || pathname === '/forgot-password') {
+  const isPublicPage = ['/login', '/signup', '/forgot-password'].includes(pathname);
+
+  if (isPublicPage) {
     return <>{children}</>;
   }
 
-  // Protected pages
   return (
     <AuthProvider>
         <AppLayout>

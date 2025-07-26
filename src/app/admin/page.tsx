@@ -24,7 +24,7 @@ import { useToast } from "@/hooks/use-toast";
 
 import type { User, Role } from "@/lib/data";
 import { subscribeToUsers, deleteUser } from "@/services/user-service";
-import { subscribeToRoles, addRole, deleteRole } from "@/services/role-service";
+import { subscribeToRoles, deleteRole, getRoles } from "@/services/role-service";
 
 import { AddUserSheet } from "@/components/admin/add-user-sheet";
 import { AddRoleSheet } from "@/components/admin/add-role-sheet";
@@ -39,43 +39,62 @@ export default function AdminPage() {
 
   const [isAddUserSheetOpen, setIsAddUserSheetOpen] = useState(false);
   const [isAddRoleSheetOpen, setIsAddRoleSheetOpen] = useState(false);
-  
-  useEffect(() => {
-    setLoading(true);
-    const unsubscribeUsers = subscribeToUsers(
-      (userList) => {
-        setUsers(userList);
-        setError(null);
-        setLoading(false);
-      },
-      (err) => {
-        setError("Impossible de charger les utilisateurs.");
-        console.error(err);
-        setLoading(false);
-      }
-    );
 
-    const unsubscribeRoles = subscribeToRoles(
-      (roleList) => {
-        setRoles(roleList);
-        setError(null);
-        setLoading(false);
-      },
-      (err) => {
-        setError("Impossible de charger les rôles.");
-        console.error(err);
-        setLoading(false);
-      }
-    );
+  useEffect(() => {
+    async function fetchData() {
+        setLoading(true);
+        try {
+            const allRoles = await getRoles();
+            const rolesMap = new Map(allRoles.map(r => [r.id, r]));
+
+            const unsubscribeUsers = subscribeToUsers(
+              (userList) => {
+                const usersWithRoles = userList.map(user => ({
+                    ...user,
+                    role: rolesMap.get(user.roleId) || null,
+                }));
+                setUsers(usersWithRoles);
+                if (roles.length > 0) setLoading(false);
+              },
+              (err) => {
+                setError("Impossible de charger les utilisateurs.");
+                console.error(err);
+                setLoading(false);
+              }
+            );
+
+            const unsubscribeRoles = subscribeToRoles(
+              (roleList) => {
+                setRoles(roleList);
+                if (users.length > 0 || userList.length === 0) setLoading(false);
+              },
+              (err) => {
+                setError("Impossible de charger les rôles.");
+                console.error(err);
+                setLoading(false);
+              }
+            );
+            
+            return () => {
+              unsubscribeUsers();
+              unsubscribeRoles();
+            };
+
+        } catch (err) {
+            setError("Impossible de charger les données initiales.");
+            console.error(err);
+            setLoading(false);
+        }
+    }
+
+    const unsubscribers = fetchData();
 
     return () => {
-      unsubscribeUsers();
-      unsubscribeRoles();
+        unsubscribers.then(cleanup => cleanup && cleanup());
     };
   }, []);
 
   const handleAddUser = (newUser: User) => {
-    // The user is added via service, and the UI will update via subscription
     setIsAddUserSheetOpen(false);
     toast({
       title: "Utilisateur ajouté",
@@ -92,7 +111,7 @@ export default function AdminPage() {
   };
 
   const handleDeleteUser = async (userId: string) => {
-    if (confirm("Êtes-vous sûr de vouloir supprimer cet utilisateur ?")) {
+    if (confirm("Êtes-vous sûr de vouloir supprimer cet utilisateur ? Cela ne supprimera pas ses identifiants de connexion.")) {
       try {
         await deleteUser(userId);
         toast({ title: "Utilisateur supprimé", description: "L'utilisateur a été supprimé avec succès." });
@@ -160,7 +179,7 @@ export default function AdminPage() {
                     <TableRow key={user.id}>
                         <TableCell className="font-medium">{user.name}</TableCell>
                         <TableCell>{user.email}</TableCell>
-                        <TableCell>{user.role}</TableCell>
+                        <TableCell>{user.role?.name || 'Non assigné'}</TableCell>
                         <TableCell>
                             <Button variant="ghost" size="icon" onClick={() => handleDeleteUser(user.id)}>
                                 <Trash2 className="h-4 w-4" />

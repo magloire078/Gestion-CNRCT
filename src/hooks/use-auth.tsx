@@ -9,6 +9,7 @@ import type { User } from '@/lib/data';
 interface AuthContextType {
   user: User | null;
   loading: boolean;
+  hasPermission: (permission: string) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -40,8 +41,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [user, loading, pathname, router]);
 
+  const hasPermission = (permission: string) => {
+      if (!user) return false;
+      return user.permissions.includes(permission);
+  }
 
-  const value = { user, loading };
+  const value = { user, loading, hasPermission };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

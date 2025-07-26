@@ -1,7 +1,10 @@
 
 import { db } from '@/lib/firebase';
-import { collection, getDocs, addDoc, deleteDoc, doc, onSnapshot, Unsubscribe, query, orderBy } from 'firebase/firestore';
+import { collection, getDocs, addDoc, deleteDoc, doc, onSnapshot, Unsubscribe, query, orderBy, setDoc } from 'firebase/firestore';
 import type { User } from '@/lib/data';
+
+// Note: This service now deals with user data in Firestore, not Firebase Auth users.
+// Auth-related user creation is in auth-service.ts.
 
 export function subscribeToUsers(
     callback: (users: User[]) => void,
@@ -28,17 +31,24 @@ export async function getUsers(): Promise<User[]> {
   return userList;
 }
 
-export async function addUser(userDataToAdd: Omit<User, 'id'>): Promise<User> {
+export async function addUser(userDataToAdd: Omit<User, 'id' | 'role' | 'permissions'>): Promise<User> {
     const usersCollection = collection(db, 'users');
+    // In a real app, adding a user would likely involve Firebase Auth Cloud Functions
+    // to create the auth user and then this record. Here we just add the Firestore record.
     const docRef = await addDoc(usersCollection, userDataToAdd);
     const newUser: User = { 
         id: docRef.id, 
-        ...userDataToAdd 
+        ...userDataToAdd,
+        role: null, // Role needs to be fetched separately
+        permissions: [] 
     };
     return newUser;
 }
 
 export async function deleteUser(userId: string): Promise<void> {
+    // Note: This does not delete the user from Firebase Auth, only from the 'users' collection.
+    // A cloud function would be needed for a full cleanup.
     const userRef = doc(db, 'users', userId);
     await deleteDoc(userRef);
 }
+

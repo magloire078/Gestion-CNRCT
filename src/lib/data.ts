@@ -37,12 +37,12 @@ export type Fleet = {
 };
 
 export type User = {
-    id: string; // Firestore document ID
-    name: string; // Combined name
-    firstName?: string; // Optional for backward compatibility
-    lastName?: string;  // Optional for backward compatibility
+    id: string; // Firestore document ID from auth
+    name: string; 
     email: string;
-    role: 'Admin' | 'Manager' | 'Employé';
+    roleId: string; // Reference to a role document in the 'roles' collection
+    role: Role | null; // The resolved role object
+    permissions: string[]; // The resolved permissions for the user's role
 }
 
 export type Role = {

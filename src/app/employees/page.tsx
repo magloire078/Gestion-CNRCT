@@ -235,19 +235,6 @@ export default function EmployeesPage() {
   
     const printContent = printSectionRef.current;
     if (printContent) {
-      const originalPosition = printContent.style.position;
-      const originalTop = printContent.style.top;
-      const originalLeft = printContent.style.left;
-      const originalOpacity = printContent.style.opacity;
-      const originalZIndex = printContent.style.zIndex;
-  
-      // Make the element "visible" to html2canvas
-      printContent.style.position = 'absolute';
-      printContent.style.left = '0';
-      printContent.style.top = '0';
-      printContent.style.zIndex = '-9999';
-      printContent.style.opacity = '1';
-  
       try {
         const canvas = await html2canvas(printContent, {
           scale: 2,
@@ -283,13 +270,6 @@ export default function EmployeesPage() {
           title: "Erreur PDF",
           description: "Impossible de générer le document PDF."
         });
-      } finally {
-        // Restore original styles
-        printContent.style.position = originalPosition;
-        printContent.style.left = originalLeft;
-        printContent.style.top = originalTop;
-        printContent.style.zIndex = originalZIndex;
-        printContent.style.opacity = originalOpacity;
       }
     }
     setIsPrinting(false);
@@ -574,3 +554,5 @@ export default function EmployeesPage() {
     </>
   );
 }
+
+    

@@ -37,7 +37,10 @@ export async function signUp(userData: { name: string, email: string }, password
     await setDoc(doc(db, "users", firebaseUser.uid), newUser);
 
     const userProfile = await getFullUserProfile(firebaseUser);
-    if (!userProfile) throw new Error("Could not create user profile.");
+    if (!userProfile) {
+        // This case should ideally not happen if Firestore write is successful
+        throw new Error("La création du profil utilisateur a échoué après l'inscription.");
+    }
     return userProfile;
 }
 
@@ -48,7 +51,7 @@ export async function signIn(email: string, password: string): Promise<User> {
     
     const userProfile = await getFullUserProfile(firebaseUser);
     if (!userProfile) {
-        await firebaseSignOut(auth);
+        await firebaseSignOut(auth); // Sign out the user as they don't have a valid profile
         throw new Error("Aucun profil utilisateur correspondant à cet email n'a été trouvé.");
     }
 

@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import type { Employee } from "@/lib/data";
 import { AddEmployeeSheet } from "@/components/employees/add-employee-sheet";
 import { PrintDialog } from "@/components/employees/print-dialog";
-import { subscribeToEmployees, addEmployee, updateEmployee, deleteEmployee } from "@/services/employee-service";
+import { subscribeToEmployees, addEmployee, updateEmployee, deleteEmployee, getOrganizationSettings } from "@/services/employee-service";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -60,6 +60,7 @@ export default function EmployeesPage() {
   const [departmentFilter, setDepartmentFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [columnsToPrint, setColumnsToPrint] = useState<ColumnKeys[]>(Object.keys(allColumns) as ColumnKeys[]);
+  const [organizationLogos, setOrganizationLogos] = useState({ mainLogoUrl: '', secondaryLogoUrl: '' });
 
   const [printDate, setPrintDate] = useState('');
 
@@ -73,6 +74,12 @@ export default function EmployeesPage() {
         console.error(err);
         setLoading(false);
     });
+    
+    async function loadLogos() {
+        const logos = await getOrganizationSettings();
+        setOrganizationLogos(logos);
+    }
+    loadLogos();
 
     // Cleanup subscription on component unmount
     return () => unsubscribe();
@@ -274,6 +281,7 @@ export default function EmployeesPage() {
       }
     }
     setIsPrinting(false);
+    setIsPrintDialogOpen(false);
   };
 
   return (
@@ -415,14 +423,14 @@ export default function EmployeesPage() {
                 <div className="text-center">
                     <h2 className="font-bold">Chambre Nationale des Rois</h2>
                     <h2 className="font-bold">et Chefs Traditionnels</h2>
-                    <Image src="https://placehold.co/100x100.png" alt="Logo CNRCT" width={80} height={80} className="mx-auto mt-2" data-ai-hint="logo traditional" />
+                     {organizationLogos.mainLogoUrl && <Image src={organizationLogos.mainLogoUrl} alt="Logo CNRCT" width={80} height={80} className="mx-auto mt-2" data-ai-hint="logo traditional" />}
                     <p className="font-bold mt-1 text-sm">UN CHEF NOUVEAU</p>
                     <p className="text-xs mt-4">LE DIRECTOIRE</p>
                     <p className="text-xs">LE CABINET / LE SERVICE INFORMATIQUE</p>
                 </div>
                 <div className="text-center">
                     <h2 className="font-bold">République de Côte d'Ivoire</h2>
-                    <Image src="https://placehold.co/100x100.png" alt="Logo Cote d'Ivoire" width={80} height={80} className="mx-auto mt-2" data-ai-hint="emblem ivory coast"/>
+                    {organizationLogos.secondaryLogoUrl && <Image src={organizationLogos.secondaryLogoUrl} alt="Logo Cote d'Ivoire" width={80} height={80} className="mx-auto mt-2" data-ai-hint="emblem ivory coast"/>}
                     <p className="mt-1">Union - Discipline - Travail</p>
                 </div>
             </header>
@@ -440,7 +448,7 @@ export default function EmployeesPage() {
                     </tr>
                 </thead>
                 <tbody>
-                    {filteredEmployees.map((employee, index) => (
+                    {filteredEmployees.filter(e => e.status === 'Active').map((employee, index) => (
                         <tr key={employee.id}>
                             <td className="border border-black p-1 text-center">{index + 1}</td>
                             {columnsToPrint.map(key => {
@@ -474,5 +482,3 @@ export default function EmployeesPage() {
     </>
   );
 }
-
-    

@@ -3,6 +3,7 @@
 import { db } from '@/lib/firebase';
 import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, onSnapshot, Unsubscribe, query, orderBy, where, writeBatch, getDoc } from 'firebase/firestore';
 import type { Employee } from '@/lib/data';
+import { getOrganizationSettings } from './organization-service';
 
 export function subscribeToEmployees(
     callback: (employees: Employee[]) => void,
@@ -101,3 +102,5 @@ export async function searchEmployees(query: string): Promise<Employee[]> {
         employee.matricule.toLowerCase().includes(lowerCaseQuery)
     );
 }
+
+export { getOrganizationSettings };

@@ -47,11 +47,11 @@ export function PrintDialog({ isOpen, onClose, onPrint, allColumns }: PrintDialo
     const selected = (Object.keys(selectedColumns) as ColumnKeys[]).filter(key => selectedColumns[key]);
     if(selected.length > 0) {
         onPrint(selected);
-        onClose();
     }
   };
 
   const areAllSelected = Object.values(selectedColumns).every(Boolean);
+  const isIndeterminate = !areAllSelected && Object.values(selectedColumns).some(Boolean);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -68,6 +68,7 @@ export function PrintDialog({ isOpen, onClose, onPrint, allColumns }: PrintDialo
                     id="select-all"
                     checked={areAllSelected}
                     onCheckedChange={(checked) => handleSelectAll(Boolean(checked))}
+                    aria-label="Tout sélectionner"
                 />
                 <Label htmlFor="select-all" className="font-bold">
                     Tout sélectionner / Désélectionner
@@ -99,5 +100,3 @@ export function PrintDialog({ isOpen, onClose, onPrint, allColumns }: PrintDialo
     </Dialog>
   );
 }
-
-    

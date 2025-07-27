@@ -49,10 +49,30 @@ export async function signIn(email: string, password: string): Promise<User> {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const firebaseUser = userCredential.user;
     
-    const userProfile = await getFullUserProfile(firebaseUser);
+    let userProfile = await getFullUserProfile(firebaseUser);
+
+    // If profile doesn't exist in Firestore, create it "just-in-time"
     if (!userProfile) {
-        await firebaseSignOut(auth); // Sign out the user as they don't have a valid profile
-        throw new Error("Aucun profil utilisateur correspondant à cet email n'a été trouvé.");
+        console.log(`User profile for ${email} not found in Firestore. Creating one.`);
+        try {
+            const defaultRoleId = "employe";
+            const newUserProfileData = {
+                name: firebaseUser.displayName || email.split('@')[0],
+                email: firebaseUser.email!,
+                roleId: defaultRoleId,
+            };
+            await setDoc(doc(db, "users", firebaseUser.uid), newUserProfileData);
+            userProfile = await getFullUserProfile(firebaseUser); // Re-fetch the newly created profile
+
+            if (!userProfile) {
+                 // This is a critical failure state. The profile could not be created or fetched.
+                 throw new Error("User profile could not be created or loaded after creation.");
+            }
+        } catch(error) {
+             console.error("Critical error: Failed to create user profile on-the-fly.", error);
+             await firebaseSignOut(auth); // Sign out the user to prevent an inconsistent state
+             throw new Error("profile-creation-failed");
+        }
     }
 
     return userProfile;
@@ -155,5 +175,3 @@ async function getFullUserProfile(firebaseUser: FirebaseUser): Promise<User | nu
         permissions,
     };
 }
-
-    

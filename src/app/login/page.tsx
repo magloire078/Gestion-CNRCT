@@ -42,7 +42,10 @@ export default function LoginPage() {
       const errorMessage = err instanceof Error ? err.message : "Une erreur inattendue est survenue. Veuillez réessayer.";
       if (errorMessage.includes("auth/invalid-credential") || errorMessage.includes("auth/wrong-password") || errorMessage.includes("auth/user-not-found")) {
           setError("Email ou mot de passe incorrect.");
-      } else {
+      } else if (errorMessage.includes("profile-creation-failed")) {
+          setError("Votre compte existe mais le profil n'a pas pu être chargé. Veuillez contacter un administrateur.");
+      }
+      else {
           setError(errorMessage);
       }
       console.error("Login Error:", err);

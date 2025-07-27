@@ -54,7 +54,7 @@ export default function AdminPage() {
                     role: rolesMap.get(user.roleId) || null,
                 }));
                 setUsers(usersWithRoles);
-                if (roles.length > 0) setLoading(false);
+                if (roles.length > 0 || userList.length === 0) setLoading(false);
               },
               (err) => {
                 setError("Impossible de charger les utilisateurs.");
@@ -66,7 +66,7 @@ export default function AdminPage() {
             const unsubscribeRoles = subscribeToRoles(
               (roleList) => {
                 setRoles(roleList);
-                if (users.length > 0 || userList.length === 0) setLoading(false);
+                if (users.length > 0 || roleList.length === 0) setLoading(false);
               },
               (err) => {
                 setError("Impossible de charger les rôles.");

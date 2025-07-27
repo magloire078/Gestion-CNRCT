@@ -72,20 +72,20 @@
   body {
     @apply bg-background text-foreground;
   }
-}
+  
+  /* Hide main content and show print content when printing */
+  @media print {
+    .main-content {
+      display: none;
+    }
+    #print-section {
+      display: block;
+    }
+  }
 
-@media print {
-  body * {
-    visibility: hidden;
-  }
-  #print-section, #print-section * {
-    visibility: visible;
-  }
+  /* Hide print content by default */
   #print-section {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
+    display: none;
   }
 }
 

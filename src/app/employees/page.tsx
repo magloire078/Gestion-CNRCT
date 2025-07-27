@@ -18,8 +18,6 @@ import { useToast } from "@/hooks/use-toast";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import Papa from "papaparse";
 import Image from "next/image";
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
 import { InlineEditRow } from "@/components/employees/inline-edit-row";
 
 
@@ -54,7 +52,6 @@ export default function EmployeesPage() {
   const [isPrinting, setIsPrinting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
-  const printSectionRef = useRef<HTMLDivElement>(null);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [departmentFilter, setDepartmentFilter] = useState("all");
@@ -233,54 +230,16 @@ export default function EmployeesPage() {
   };
 
 
-  const handlePrint = async (selectedColumns: ColumnKeys[]) => {
+  const handlePrint = (selectedColumns: ColumnKeys[]) => {
     setColumnsToPrint(selectedColumns);
     const now = new Date();
     setPrintDate(now.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }));
-    setIsPrinting(true);
-  
-    await new Promise(resolve => setTimeout(resolve, 100));
-  
-    const printContent = printSectionRef.current;
-    if (printContent) {
-      try {
-        const canvas = await html2canvas(printContent, {
-          scale: 2,
-          useCORS: true,
-          logging: true,
-        });
-  
-        const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = pdf.internal.pageSize.getHeight();
-        const canvasWidth = canvas.width;
-        const canvasHeight = canvas.height;
-        const ratio = canvasWidth / canvasHeight;
-        let width = pdfWidth - 20;
-        let height = width / ratio;
-  
-        if (height > pdfHeight - 20) {
-            height = pdfHeight - 20;
-            width = height * ratio;
-        }
-  
-        const x = (pdfWidth - width) / 2;
-        const y = 10;
-  
-        pdf.addImage(imgData, 'PNG', x, y, width, height);
-        pdf.output('dataurlnewwindow');
-  
-      } catch (error) {
-        console.error("Error generating PDF: ", error);
-        toast({
-          variant: "destructive",
-          title: "Erreur PDF",
-          description: "Impossible de générer le document PDF."
-        });
-      }
-    }
-    setIsPrinting(false);
+    
+    // Use a short timeout to ensure state has updated before printing
+    setTimeout(() => {
+        window.print();
+    }, 100);
+
     setIsPrintDialogOpen(false);
   };
 
@@ -290,8 +249,8 @@ export default function EmployeesPage() {
             <div className="flex items-center justify-between">
                 <h1 className="text-3xl font-bold tracking-tight">Gestion des Employés</h1>
                 <div className="flex gap-2">
-                    <Button variant="outline" className="w-full sm:w-auto" onClick={() => setIsPrintDialogOpen(true)} disabled={isPrinting}>
-                      {isPrinting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Printer className="mr-2 h-4 w-4" />}
+                    <Button variant="outline" className="w-full sm:w-auto" onClick={() => setIsPrintDialogOpen(true)}>
+                      <Printer className="mr-2 h-4 w-4" />
                       Imprimer
                     </Button>
                     <DropdownMenu>
@@ -417,8 +376,8 @@ export default function EmployeesPage() {
             />
         </div>
         
-        {/* This section is hidden by default and only used for printing to PDF */}
-        <div id="print-section" ref={printSectionRef} className="fixed -left-[9999px] top-0 bg-white text-black p-8 w-[210mm] opacity-0 -z-50">
+        {/* This section is hidden via CSS and only used for printing */}
+        <div id="print-section" className="bg-white text-black p-8 w-[210mm] print:shadow-none print:border-none print:p-0">
             <header className="flex justify-between items-start mb-8">
                 <div className="text-center">
                     <h2 className="font-bold">Chambre Nationale des Rois</h2>

@@ -82,6 +82,16 @@ export default function EmployeesPage() {
     return () => unsubscribe();
   }, []);
 
+  useEffect(() => {
+    if (isPrinting) {
+      setTimeout(() => {
+        window.print();
+        setIsPrinting(false);
+      }, 100);
+    }
+  }, [isPrinting]);
+
+
   const handleAddEmployee = async (newEmployeeData: Omit<Employee, 'id'>) => {
     try {
         const { firstName, lastName } = newEmployeeData;
@@ -234,209 +244,207 @@ export default function EmployeesPage() {
     setColumnsToPrint(selectedColumns);
     const now = new Date();
     setPrintDate(now.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }));
-    
-    // Use a short timeout to ensure state has updated before printing
-    setTimeout(() => {
-        window.print();
-    }, 100);
-
     setIsPrintDialogOpen(false);
+    setIsPrinting(true);
   };
 
   return (
     <>
-        <div className="flex flex-col gap-6 main-content">
-            <div className="flex items-center justify-between">
-                <h1 className="text-3xl font-bold tracking-tight">Gestion des Employés</h1>
-                <div className="flex gap-2">
-                    <Button variant="outline" className="w-full sm:w-auto" onClick={() => setIsPrintDialogOpen(true)}>
-                      <Printer className="mr-2 h-4 w-4" />
-                      Imprimer
-                    </Button>
-                    <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="outline" className="w-full sm:w-auto">
-                        <Download className="mr-2 h-4 w-4" />
-                        Exporter
+        <div className={isPrinting ? 'print-hidden' : ''}>
+            <div className="flex flex-col gap-6 main-content">
+                <div className="flex items-center justify-between">
+                    <h1 className="text-3xl font-bold tracking-tight">Gestion des Employés</h1>
+                    <div className="flex gap-2">
+                        <Button variant="outline" className="w-full sm:w-auto" onClick={() => setIsPrintDialogOpen(true)}>
+                          <Printer className="mr-2 h-4 w-4" />
+                          Imprimer
                         </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={handleExportCsv}>Exporter en CSV</DropdownMenuItem>
-                        <DropdownMenuItem onClick={handleExportJson}>Exporter en JSON</DropdownMenuItem>
-                        <DropdownMenuItem onClick={handleExportSql}>Exporter en SQL</DropdownMenuItem>
-                    </DropdownMenuContent>
-                    </DropdownMenu>
-                    <Button onClick={() => setIsAddSheetOpen(true)} className="w-full sm:w-auto">
-                        <PlusCircle className="mr-2 h-4 w-4" />
-                        Ajouter un employé
-                    </Button>
-                </div>
-            </div>
-            <Card>
-                <CardHeader>
-                <CardTitle>Liste des employés</CardTitle>
-                <CardDescription>Une liste complète de tous les employés de l'entreprise.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                <div className="flex flex-col sm:flex-row gap-4 mb-6">
-                    <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                    <Input
-                        placeholder="Rechercher par nom, matricule..."
-                        className="pl-10"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
+                        <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline" className="w-full sm:w-auto">
+                            <Download className="mr-2 h-4 w-4" />
+                            Exporter
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={handleExportCsv}>Exporter en CSV</DropdownMenuItem>
+                            <DropdownMenuItem onClick={handleExportJson}>Exporter en JSON</DropdownMenuItem>
+                            <DropdownMenuItem onClick={handleExportSql}>Exporter en SQL</DropdownMenuItem>
+                        </DropdownMenuContent>
+                        </DropdownMenu>
+                        <Button onClick={() => setIsAddSheetOpen(true)} className="w-full sm:w-auto">
+                            <PlusCircle className="mr-2 h-4 w-4" />
+                            Ajouter un employé
+                        </Button>
                     </div>
-                    <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
-                    <SelectTrigger className="w-full sm:w-[180px]">
-                        <SelectValue placeholder="Filtrer par département" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="all">Tous les départements</SelectItem>
-                        {departments.map(dep => <SelectItem key={dep} value={dep}>{dep}</SelectItem>)}
-                    </SelectContent>
-                    </Select>
-                    <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="w-full sm:w-[180px]">
-                        <SelectValue placeholder="Filtrer par statut" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="all">Tous les statuts</SelectItem>
-                        <SelectItem value="Active">Actif</SelectItem>
-                        <SelectItem value="On Leave">En congé</SelectItem>
-                        <SelectItem value="Terminated">Licencié</SelectItem>
-                    </SelectContent>
-                    </Select>
                 </div>
+                <Card>
+                    <CardHeader>
+                    <CardTitle>Liste des employés</CardTitle>
+                    <CardDescription>Une liste complète de tous les employés de l'entreprise.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                    <div className="flex flex-col sm:flex-row gap-4 mb-6">
+                        <div className="relative flex-1">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                        <Input
+                            placeholder="Rechercher par nom, matricule..."
+                            className="pl-10"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                        </div>
+                        <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
+                        <SelectTrigger className="w-full sm:w-[180px]">
+                            <SelectValue placeholder="Filtrer par département" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">Tous les départements</SelectItem>
+                            {departments.map(dep => <SelectItem key={dep} value={dep}>{dep}</SelectItem>)}
+                        </SelectContent>
+                        </Select>
+                        <Select value={statusFilter} onValueChange={setStatusFilter}>
+                        <SelectTrigger className="w-full sm:w-[180px]">
+                            <SelectValue placeholder="Filtrer par statut" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">Tous les statuts</SelectItem>
+                            <SelectItem value="Active">Actif</SelectItem>
+                            <SelectItem value="On Leave">En congé</SelectItem>
+                            <SelectItem value="Terminated">Licencié</SelectItem>
+                        </SelectContent>
+                        </Select>
+                    </div>
 
-                {error && <p className="text-destructive text-center py-4">{error}</p>}
-                
-                <div className="overflow-x-auto">
-                    <Table>
-                    <TableHeader>
-                        <TableRow>
-                        <TableHead className="w-[80px]">Photo</TableHead>
-                        <TableHead>Nom</TableHead>
-                        <TableHead>Matricule</TableHead>
-                        <TableHead>Rôle</TableHead>
-                        <TableHead>Département</TableHead>
-                        <TableHead>Statut</TableHead>
-                        <TableHead className="w-[100px] text-right">Actions</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {loading ? (
-                        Array.from({ length: 5 }).map((_, i) => (
-                            <TableRow key={i}>
-                            <TableCell><Skeleton className="h-10 w-10 rounded-full" /></TableCell>
-                            <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                            <TableCell><Skeleton className="h-4 w-20" /></TableCell>
-                            <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                            <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                            <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
-                            <TableCell><div className="flex gap-2 justify-end"><Skeleton className="h-8 w-8" /><Skeleton className="h-8 w-8" /></div></TableCell>
+                    {error && <p className="text-destructive text-center py-4">{error}</p>}
+                    
+                    <div className="overflow-x-auto">
+                        <Table>
+                        <TableHeader>
+                            <TableRow>
+                            <TableHead className="w-[80px]">Photo</TableHead>
+                            <TableHead>Nom</TableHead>
+                            <TableHead>Matricule</TableHead>
+                            <TableHead>Rôle</TableHead>
+                            <TableHead>Département</TableHead>
+                            <TableHead>Statut</TableHead>
+                            <TableHead className="w-[100px] text-right">Actions</TableHead>
                             </TableRow>
-                        ))
-                        ) : (
-                        filteredEmployees.map((employee) => (
-                           <InlineEditRow 
-                             key={employee.id} 
-                             employee={employee}
-                             isEditing={editingEmployeeId === employee.id}
-                             onEdit={() => setEditingEmployeeId(employee.id)}
-                             onCancel={() => setEditingEmployeeId(null)}
-                             onSave={handleUpdateEmployee}
-                             onDelete={handleDeleteEmployee}
-                             statusVariantMap={statusVariantMap}
-                            />
-                        ))
-                        )}
-                    </TableBody>
-                    </Table>
-                </div>
-
-                { !loading && filteredEmployees.length === 0 && (
-                    <div className="text-center py-10 text-muted-foreground">
-                        Aucun employé trouvé.
+                        </TableHeader>
+                        <TableBody>
+                            {loading ? (
+                            Array.from({ length: 5 }).map((_, i) => (
+                                <TableRow key={i}>
+                                <TableCell><Skeleton className="h-10 w-10 rounded-full" /></TableCell>
+                                <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                                <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                                <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                                <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                                <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
+                                <TableCell><div className="flex gap-2 justify-end"><Skeleton className="h-8 w-8" /><Skeleton className="h-8 w-8" /></div></TableCell>
+                                </TableRow>
+                            ))
+                            ) : (
+                            filteredEmployees.map((employee) => (
+                               <InlineEditRow 
+                                 key={employee.id} 
+                                 employee={employee}
+                                 isEditing={editingEmployeeId === employee.id}
+                                 onEdit={() => setEditingEmployeeId(employee.id)}
+                                 onCancel={() => setEditingEmployeeId(null)}
+                                 onSave={handleUpdateEmployee}
+                                 onDelete={handleDeleteEmployee}
+                                 statusVariantMap={statusVariantMap}
+                                />
+                            ))
+                            )}
+                        </TableBody>
+                        </Table>
                     </div>
-                )}
-                </CardContent>
-            </Card>
-            <AddEmployeeSheet 
-                isOpen={isAddSheetOpen}
-                onClose={() => setIsAddSheetOpen(false)}
-                onAddEmployee={handleAddEmployee}
-            />
-             <PrintDialog
-                isOpen={isPrintDialogOpen}
-                onClose={() => setIsPrintDialogOpen(false)}
-                onPrint={handlePrint}
-                allColumns={allColumns}
-            />
+
+                    { !loading && filteredEmployees.length === 0 && (
+                        <div className="text-center py-10 text-muted-foreground">
+                            Aucun employé trouvé.
+                        </div>
+                    )}
+                    </CardContent>
+                </Card>
+                <AddEmployeeSheet 
+                    isOpen={isAddSheetOpen}
+                    onClose={() => setIsAddSheetOpen(false)}
+                    onAddEmployee={handleAddEmployee}
+                />
+                 <PrintDialog
+                    isOpen={isPrintDialogOpen}
+                    onClose={() => setIsPrintDialogOpen(false)}
+                    onPrint={handlePrint}
+                    allColumns={allColumns}
+                />
+            </div>
         </div>
         
-        {/* This section is hidden via CSS and only used for printing */}
-        <div id="print-section" className="bg-white text-black p-8 w-[210mm] print:shadow-none print:border-none print:p-0">
-            <header className="flex justify-between items-start mb-8">
-                <div className="text-center">
-                    <h2 className="font-bold">Chambre Nationale des Rois</h2>
-                    <h2 className="font-bold">et Chefs Traditionnels</h2>
-                     {organizationLogos.mainLogoUrl && <Image src={organizationLogos.mainLogoUrl} alt="Logo CNRCT" width={80} height={80} className="mx-auto mt-2" data-ai-hint="logo traditional" />}
-                    <p className="font-bold mt-1 text-sm">UN CHEF NOUVEAU</p>
-                    <p className="text-xs mt-4">LE DIRECTOIRE</p>
-                    <p className="text-xs">LE CABINET / LE SERVICE INFORMATIQUE</p>
-                </div>
-                <div className="text-center">
-                    <h2 className="font-bold">République de Côte d'Ivoire</h2>
-                    {organizationLogos.secondaryLogoUrl && <Image src={organizationLogos.secondaryLogoUrl} alt="Logo Cote d'Ivoire" width={80} height={80} className="mx-auto mt-2" data-ai-hint="emblem ivory coast"/>}
-                    <p className="mt-1">Union - Discipline - Travail</p>
-                </div>
-            </header>
-
-            <div className="text-center my-6">
-                <h1 className="text-lg font-bold underline">LISTE ALPHABETIQUE DES MEMBRES DU DIRECTIORE EN DATE DU {printDate}</h1>
-                <h2 className="text-md font-bold mt-4">PERSONNELS ACTIFS</h2>
-            </div>
-            
-            <table className="w-full text-xs border-collapse border border-black">
-                <thead>
-                    <tr className="bg-gray-200">
-                        <th className="border border-black p-1">N°</th>
-                        {columnsToPrint.map(key => <th key={key} className="border border-black p-1 text-left font-bold">{allColumns[key]}</th>)}
-                    </tr>
-                </thead>
-                <tbody>
-                    {filteredEmployees.filter(e => e.status === 'Active').map((employee, index) => (
-                        <tr key={employee.id}>
-                            <td className="border border-black p-1 text-center">{index + 1}</td>
-                            {columnsToPrint.map(key => {
-                                let value: React.ReactNode = employee[key as keyof Employee] as string || '';
-                                if (key === 'name' && (employee.firstName || employee.lastName)) {
-                                    value = `${employee.lastName || ''} ${employee.firstName || ''}`.trim();
-                                }
-                                return <td key={key} className="border border-black p-1">{value}</td>
-                           })}
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-
-            <footer className="mt-8 text-xs">
-                <div className="flex justify-between items-end">
-                    <div>
-                        <p>{new Date().toLocaleString('fr-FR')}</p>
+        <div id="print-section" className={isPrinting ? 'print:block' : 'hidden'}>
+            <div className="bg-white text-black p-8 w-[210mm] print:shadow-none print:border-none print:p-0">
+                <header className="flex justify-between items-start mb-8">
+                    <div className="text-center">
+                        <h2 className="font-bold">Chambre Nationale des Rois</h2>
+                        <h2 className="font-bold">et Chefs Traditionnels</h2>
+                         {organizationLogos.mainLogoUrl && <Image src={organizationLogos.mainLogoUrl} alt="Logo CNRCT" width={80} height={80} className="mx-auto mt-2" data-ai-hint="logo traditional" />}
+                        <p className="font-bold mt-1 text-sm">UN CHEF NOUVEAU</p>
+                        <p className="text-xs mt-4">LE DIRECTOIRE</p>
+                        <p className="text-xs">LE CABINET / LE SERVICE INFORMATIQUE</p>
                     </div>
                     <div className="text-center">
-                        <p className="font-bold">Chambre Nationale de Rois et Chefs Traditionnels (CNRCT)</p>
-                        <p>Yamoussoukro, Riviera - BP 201 Yamoussoukro | Tél : (225) 30 64 06 60 | Fax : (+255) 30 64 06 63</p>
-                        <p>www.cnrct.ci - Email : info@cnrct.ci</p>
+                        <h2 className="font-bold">République de Côte d'Ivoire</h2>
+                        {organizationLogos.secondaryLogoUrl && <Image src={organizationLogos.secondaryLogoUrl} alt="Logo Cote d'Ivoire" width={80} height={80} className="mx-auto mt-2" data-ai-hint="emblem ivory coast"/>}
+                        <p className="mt-1">Union - Discipline - Travail</p>
                     </div>
-                    <div>
-                        <p>1</p>
-                    </div>
+                </header>
+
+                <div className="text-center my-6">
+                    <h1 className="text-lg font-bold underline">LISTE ALPHABETIQUE DES MEMBRES DU DIRECTIORE EN DATE DU {printDate}</h1>
+                    <h2 className="text-md font-bold mt-4">PERSONNELS ACTIFS</h2>
                 </div>
-            </footer>
+                
+                <table className="w-full text-xs border-collapse border border-black">
+                    <thead>
+                        <tr className="bg-gray-200">
+                            <th className="border border-black p-1">N°</th>
+                            {columnsToPrint.map(key => <th key={key} className="border border-black p-1 text-left font-bold">{allColumns[key]}</th>)}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {filteredEmployees.filter(e => e.status === 'Active').map((employee, index) => (
+                            <tr key={employee.id}>
+                                <td className="border border-black p-1 text-center">{index + 1}</td>
+                                {columnsToPrint.map(key => {
+                                    let value: React.ReactNode = employee[key as keyof Employee] as string || '';
+                                    if (key === 'name' && (employee.firstName || employee.lastName)) {
+                                        value = `${employee.lastName || ''} ${employee.firstName || ''}`.trim();
+                                    }
+                                    return <td key={key} className="border border-black p-1">{value}</td>
+                               })}
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+
+                <footer className="mt-8 text-xs">
+                    <div className="flex justify-between items-end">
+                        <div>
+                            <p>{new Date().toLocaleString('fr-FR')}</p>
+                        </div>
+                        <div className="text-center">
+                            <p className="font-bold">Chambre Nationale de Rois et Chefs Traditionnels (CNRCT)</p>
+                            <p>Yamoussoukro, Riviera - BP 201 Yamoussoukro | Tél : (225) 30 64 06 60 | Fax : (+255) 30 64 06 63</p>
+                            <p>www.cnrct.ci - Email : info@cnrct.ci</p>
+                        </div>
+                        <div>
+                            <p>1</p>
+                        </div>
+                    </div>
+                </footer>
+            </div>
         </div>
     </>
   );

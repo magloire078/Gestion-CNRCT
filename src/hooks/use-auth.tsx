@@ -49,6 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return true;
       }
       
+      if (!user.permissions) return false;
       return user.permissions.includes(permission);
   }
 
@@ -64,3 +65,5 @@ export function useAuth() {
   }
   return context;
 }
+
+    

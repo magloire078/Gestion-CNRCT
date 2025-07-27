@@ -8,30 +8,34 @@ import {
     signOut as firebaseSignOut,
     onAuthStateChanged,
     sendPasswordResetEmail,
+    updateProfile,
+    updatePassword,
+    EmailAuthProvider,
+    reauthenticateWithCredential,
     type User as FirebaseUser
 } from 'firebase/auth';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
 import type { User, Role } from '@/lib/data';
 
 // Sign Up
-export async function signUp(userData: { name: string, email: string, role?: string }, password: string): Promise<User> {
+export async function signUp(userData: { name: string, email: string }, password: string): Promise<User> {
     const userCredential = await createUserWithEmailAndPassword(auth, userData.email, password);
     const firebaseUser = userCredential.user;
+    
+    // Update Firebase Auth profile
+    await updateProfile(firebaseUser, { displayName: userData.name });
 
-    // For simplicity, new users get a default roleId. In a real app, this might be different.
-    // Let's assume an "Employé" role with id 'employee-role-id' exists.
     const defaultRoleId = "employe"; 
 
-    const newUser: Omit<User, 'id' | 'role' | 'permissions'> = {
+    const newUser: Omit<User, 'id' | 'role' | 'permissions' | 'photoUrl'> = {
         name: userData.name,
         email: userData.email,
         roleId: defaultRoleId,
     };
 
-    // Save additional user data to Firestore
     await setDoc(doc(db, "users", firebaseUser.uid), newUser);
 
-    // Fetch the full user profile to return
     const userProfile = await getFullUserProfile(firebaseUser);
     if (!userProfile) throw new Error("Could not create user profile.");
     return userProfile;
@@ -73,6 +77,48 @@ export function onAuthStateChange(callback: (user: User | null) => void) {
   });
 }
 
+// Update User Profile
+export async function updateUserProfile(userId: string, data: { name?: string, photoFile?: File | null }): Promise<void> {
+    const user = auth.currentUser;
+    if (!user || user.uid !== userId) throw new Error("Not authorized");
+
+    let photoURL = user.photoURL;
+
+    // Handle photo upload
+    if (data.photoFile) {
+        const storage = getStorage();
+        const storageRef = ref(storage, `profile_pictures/${userId}`);
+        await uploadBytes(storageRef, data.photoFile);
+        photoURL = await getDownloadURL(storageRef);
+    }
+
+    // Update Firebase Auth profile
+    await updateProfile(user, { displayName: data.name, photoURL });
+    
+    // Update Firestore user document
+    const userRef = doc(db, "users", userId);
+    await updateDoc(userRef, { name: data.name, photoUrl: photoURL });
+}
+
+
+// Change Password
+export async function changePassword(currentPassword: string, newPassword: string): Promise<void> {
+    const user = auth.currentUser;
+    if (!user || !user.email) throw new Error("Utilisateur non authentifié.");
+    
+    const credential = EmailAuthProvider.credential(user.email, currentPassword);
+    
+    try {
+        await reauthenticateWithCredential(user, credential);
+        await updatePassword(user, newPassword);
+    } catch (error: any) {
+        if (error.code === 'auth/wrong-password') {
+            throw new Error("Le mot de passe actuel est incorrect.");
+        }
+        throw new Error("Une erreur est survenue lors du changement de mot de passe.");
+    }
+}
+
 
 async function getFullUserProfile(firebaseUser: FirebaseUser): Promise<User | null> {
     const userRef = doc(db, "users", firebaseUser.uid);
@@ -98,11 +144,13 @@ async function getFullUserProfile(firebaseUser: FirebaseUser): Promise<User | nu
 
     return {
         id: firebaseUser.uid,
-        name: userData.name,
-        email: userData.email,
+        name: firebaseUser.displayName || userData.name,
+        email: firebaseUser.email!,
+        photoUrl: firebaseUser.photoURL || userData.photoUrl || '',
         roleId: userData.roleId,
         role,
         permissions,
     };
 }
 
+    

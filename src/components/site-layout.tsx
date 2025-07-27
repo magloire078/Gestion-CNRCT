@@ -105,6 +105,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
   };
 
   const menuItems = React.useMemo(() => {
+    if (!hasPermission) return [];
     return allMenuItems.filter(item => hasPermission(item.permission));
   }, [hasPermission]);
   
@@ -156,7 +157,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
                 <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="w-full justify-start items-center gap-3 p-2 h-auto hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
                         <Avatar className="size-8">
-                            <AvatarImage src="https://placehold.co/40x40.png" alt={user.name} data-ai-hint="user avatar" />
+                            <AvatarImage src={user.photoUrl} alt={user.name} data-ai-hint="user avatar" />
                             <AvatarFallback>{user.name.charAt(0).toUpperCase()}</AvatarFallback>
                         </Avatar>
                         <div className="flex flex-col items-start text-left overflow-hidden">
@@ -224,3 +225,5 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
     </AuthProvider>
   )
 }
+
+    

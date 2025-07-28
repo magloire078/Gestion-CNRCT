@@ -22,8 +22,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function OrganizationSettingsPage() {
   const { toast } = useToast();
-  const [mainLogo, setMainLogo] = useState("");
-  const [secondaryLogo, setSecondaryLogo] = useState("");
+  
+  // State for previewing logos in the UI
+  const [mainLogoPreview, setMainLogoPreview] = useState("");
+  const [secondaryLogoPreview, setSecondaryLogoPreview] = useState("");
+
+  // State to hold the actual data to be saved (can be existing URL or new data URI)
+  const [mainLogoData, setMainLogoData] = useState("");
+  const [secondaryLogoData, setSecondaryLogoData] = useState("");
+  
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   
@@ -35,8 +42,10 @@ export default function OrganizationSettingsPage() {
       setLoading(true);
       try {
         const settings = await getOrganizationSettings();
-        setMainLogo(settings.mainLogoUrl);
-        setSecondaryLogo(settings.secondaryLogoUrl);
+        setMainLogoPreview(settings.mainLogoUrl);
+        setSecondaryLogoPreview(settings.secondaryLogoUrl);
+        setMainLogoData(settings.mainLogoUrl);
+        setSecondaryLogoData(settings.secondaryLogoUrl);
       } catch (error) {
         console.error("Failed to load organization settings:", error);
         toast({
@@ -53,22 +62,25 @@ export default function OrganizationSettingsPage() {
 
 
   const handleFileChange = (
-    e: React.ChangeEvent<HTMLInputElement>, 
-    setter: React.Dispatch<React.SetStateAction<string>>
+    e: React.ChangeEvent<HTMLInputElement>,
+    setPreview: React.Dispatch<React.SetStateAction<string>>,
+    setData: React.Dispatch<React.SetStateAction<string>>
   ) => {
     const file = e.target.files?.[0];
     if (file) {
-      if(file.size > 1024 * 1024) { // 1MB limit
+      if(file.size > 2 * 1024 * 1024) { // 2MB limit for upload
         toast({
           variant: "destructive",
           title: "Fichier trop volumineux",
-          description: "Veuillez sélectionner une image de moins de 1 Mo.",
+          description: "Veuillez sélectionner une image de moins de 2 Mo.",
         });
         return;
       }
       const reader = new FileReader();
       reader.onloadend = () => {
-        setter(reader.result as string);
+        const dataUri = reader.result as string;
+        setPreview(dataUri); // For UI display
+        setData(dataUri); // For saving
       };
       reader.readAsDataURL(file);
     }
@@ -78,7 +90,7 @@ export default function OrganizationSettingsPage() {
     e.preventDefault();
     setIsSaving(true);
     try {
-      await saveOrganizationSettings({ mainLogoUrl: mainLogo, secondaryLogoUrl: secondaryLogo });
+      await saveOrganizationSettings({ mainLogoUrl: mainLogoData, secondaryLogoUrl: secondaryLogoData });
       toast({
         title: "Paramètres sauvegardés",
         description: "Les logos de votre organisation ont été mis à jour.",
@@ -132,7 +144,7 @@ export default function OrganizationSettingsPage() {
              <>
                 <div className="flex items-center gap-6">
                 <Avatar className="h-20 w-20 rounded-md">
-                    <AvatarImage src={mainLogo} alt="Logo principal" data-ai-hint="company logo"/>
+                    <AvatarImage src={mainLogoPreview} alt="Logo principal" data-ai-hint="company logo"/>
                     <AvatarFallback>CNRCT</AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
@@ -147,7 +159,7 @@ export default function OrganizationSettingsPage() {
                     type="file"
                     className="hidden"
                     accept="image/png, image/jpeg, image/svg+xml"
-                    onChange={(e) => handleFileChange(e, setMainLogo)}
+                    onChange={(e) => handleFileChange(e, setMainLogoPreview, setMainLogoData)}
                     />
                 </div>
                 </div>
@@ -156,7 +168,7 @@ export default function OrganizationSettingsPage() {
 
                 <div className="flex items-center gap-6">
                 <Avatar className="h-20 w-20 rounded-md">
-                    <AvatarImage src={secondaryLogo} alt="Logo secondaire" data-ai-hint="country emblem"/>
+                    <AvatarImage src={secondaryLogoPreview} alt="Logo secondaire" data-ai-hint="country emblem"/>
                     <AvatarFallback>RCI</AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
@@ -171,7 +183,7 @@ export default function OrganizationSettingsPage() {
                     type="file"
                     className="hidden"
                     accept="image/png, image/jpeg, image/svg+xml"
-                    onChange={(e) => handleFileChange(e, setSecondaryLogo)}
+                    onChange={(e) => handleFileChange(e, setSecondaryLogoPreview, setSecondaryLogoData)}
                     />
                 </div>
                 </div>

@@ -1,11 +1,19 @@
 
 import { db } from '@/lib/firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { getStorage, ref, uploadString, getDownloadURL, deleteObject } from "firebase/storage";
 
 export type OrganizationSettings = {
     mainLogoUrl: string;
     secondaryLogoUrl: string;
 };
+
+// Internal type to handle both URL strings and new file data URIs
+export type OrganizationSettingsInput = {
+    mainLogoUrl: string; // Can be a gs://, https://, or data: URL
+    secondaryLogoUrl: string; // Can be a gs://, https://, or data: URL
+};
+
 
 const defaultSettings: OrganizationSettings = {
     mainLogoUrl: 'https://placehold.co/100x100.png',
@@ -37,9 +45,37 @@ export async function getOrganizationSettings(): Promise<OrganizationSettings> {
 
 /**
  * Saves the organization settings to Firestore.
- * @param {OrganizationSettings} settings The settings to save.
+ * Handles uploading new logos (passed as data URIs) to Firebase Storage.
+ * @param {OrganizationSettingsInput} settings The settings to save.
  * @returns {Promise<void>}
  */
-export async function saveOrganizationSettings(settings: OrganizationSettings): Promise<void> {
-    await setDoc(settingsDocRef, settings, { merge: true });
+export async function saveOrganizationSettings(settings: OrganizationSettingsInput): Promise<void> {
+    const storage = getStorage();
+    const currentSettings = await getOrganizationSettings();
+
+    const processLogo = async (newLogoData: string, existingLogoUrl: string, storagePath: string): Promise<string> => {
+        // If the new data is not a data URI, it's an existing URL, so no change.
+        if (!newLogoData || !newLogoData.startsWith('data:image')) {
+            return newLogoData || existingLogoUrl;
+        }
+
+        // It's a new file, upload it to storage
+        const storageRef = ref(storage, storagePath);
+        
+        // Upload the new logo
+        await uploadString(storageRef, newLogoData, 'data_url');
+        
+        // Return the new download URL
+        return await getDownloadURL(storageRef);
+    };
+
+    const newMainLogoUrl = await processLogo(settings.mainLogoUrl, currentSettings.mainLogoUrl, 'organization/main_logo');
+    const newSecondaryLogoUrl = await processLogo(settings.secondaryLogoUrl, currentSettings.secondaryLogoUrl, 'organization/secondary_logo');
+
+    const finalSettings: OrganizationSettings = {
+        mainLogoUrl: newMainLogoUrl,
+        secondaryLogoUrl: newSecondaryLogoUrl,
+    };
+
+    await setDoc(settingsDocRef, finalSettings, { merge: true });
 }

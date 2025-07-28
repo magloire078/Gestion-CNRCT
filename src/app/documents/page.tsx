@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect, useActionState } from "react";
+import { useState, useEffect, useActionState, useRef } from "react";
 import { useFormStatus } from "react-dom";
 import { generateDocumentAction, FormState } from "./actions";
 import { getEmployees } from "@/services/employee-service";
@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Terminal, FileText, Bot, Loader2, User } from "lucide-react";
+import { Terminal, FileText, Bot, Loader2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const initialState: FormState = {
@@ -36,7 +36,9 @@ export default function DocumentGeneratorPage() {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loadingEmployees, setLoadingEmployees] = useState(true);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState('');
+  const [documentType, setDocumentType] = useState('');
   const [documentContent, setDocumentContent] = useState('');
+  const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
     async function fetchEmployees() {
@@ -45,7 +47,6 @@ export default function DocumentGeneratorPage() {
             setEmployees(fetchedEmployees);
         } catch (error) {
             console.error("Failed to fetch employees:", error);
-            // Optionally set an error state to show in the UI
         } finally {
             setLoadingEmployees(false);
         }
@@ -53,29 +54,59 @@ export default function DocumentGeneratorPage() {
     fetchEmployees();
   }, []);
 
-  useEffect(() => {
-    if (selectedEmployeeId && selectedEmployeeId !== 'none') {
-      const employee = employees.find(emp => emp.id === selectedEmployeeId);
-      if (employee) {
-        const content = `Employé: ${employee.name}\nMatricule: ${employee.matricule}\nRôle: ${employee.role}\nDépartement: ${employee.department}\n`;
-        setDocumentContent(content);
-      }
+  const prefillContent = (employee: Employee, type: string) => {
+    let content = '';
+    if (type === 'Attestation de Virement') {
+        content = `## Contexte pour l'Attestation de Virement Irrévocable
+
+### Informations sur l'employé
+*   **Nom et Prénoms** : ${employee.name || ''}
+*   **Matricule Solde** : ${employee.matricule || ''}
+*   **Fonction** : ${employee.role || ''}
+*   **Numéro de compte** : ${employee.numeroCompte || ''}
+*   **Banque** : ${employee.banque || ''}
+*   **Salaire de base (pour calcul)** : ${employee.baseSalary || 0}
+
+### Informations sur la décision
+*   **Détails de la décision** : n°024/CNRCT/DIR/P. du 01 Août 2017
+`;
     } else {
-      setDocumentContent('');
+        content = `Employé: ${employee.name}\nMatricule: ${employee.matricule}\nRôle: ${employee.role}\nDépartement: ${employee.department}\n`;
     }
-  }, [selectedEmployeeId, employees]);
+    setDocumentContent(content);
+  }
 
   useEffect(() => {
-    if (state.fields?.documentContent) {
-      setDocumentContent(state.fields.documentContent);
+    if (selectedEmployeeId && selectedEmployeeId !== 'none' && documentType) {
+      const employee = employees.find(emp => emp.id === selectedEmployeeId);
+      if (employee) {
+        prefillContent(employee, documentType);
+      }
+    } else if (!selectedEmployeeId || selectedEmployeeId === 'none') {
+       setDocumentContent('');
     }
-  }, [state.fields?.documentContent]);
+  }, [selectedEmployeeId, documentType, employees]);
+
+
+  useEffect(() => {
+    // If the form fails validation and the server sends back field data, repopulate the form
+    if (state.fields) {
+      if(state.fields.documentType) setDocumentType(state.fields.documentType);
+      if(state.fields.documentContent) setDocumentContent(state.fields.documentContent);
+    }
+    // If the form was successful, clear the content
+    if(state.document) {
+        setDocumentContent('');
+        setSelectedEmployeeId('');
+        if(formRef.current) formRef.current.reset();
+    }
+  }, [state]);
 
   return (
     <div className="flex flex-col gap-6">
       <h1 className="text-3xl font-bold tracking-tight">Génération de Documents</h1>
       <div className="grid gap-6 lg:grid-cols-2">
-        <form action={formAction}>
+        <form action={formAction} ref={formRef}>
           <Card>
             <CardHeader>
               <CardTitle>Créer un nouveau document</CardTitle>
@@ -84,11 +115,12 @@ export default function DocumentGeneratorPage() {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="documentType">Type de document</Label>
-                <Select name="documentType" required defaultValue={state.fields?.documentType}>
+                <Select name="documentType" required value={documentType} onValueChange={setDocumentType}>
                   <SelectTrigger id="documentType" className="w-full">
                     <SelectValue placeholder="Sélectionnez un type de document..." />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="Attestation de Virement">Attestation de Virement</SelectItem>
                     <SelectItem value="Employment Contract">Contrat de travail</SelectItem>
                     <SelectItem value="Company Policy">Politique d'entreprise</SelectItem>
                     <SelectItem value="Warning Letter">Lettre d'avertissement</SelectItem>
@@ -98,13 +130,13 @@ export default function DocumentGeneratorPage() {
               </div>
 
                <div className="space-y-2">
-                <Label htmlFor="employee">Sélectionner un employé (Optionnel)</Label>
+                <Label htmlFor="employee">Sélectionner un employé pour pré-remplir</Label>
                 {loadingEmployees ? (
                     <Skeleton className="h-10 w-full" />
                 ) : (
-                <Select onValueChange={setSelectedEmployeeId} disabled={loadingEmployees}>
+                <Select value={selectedEmployeeId} onValueChange={setSelectedEmployeeId} disabled={loadingEmployees || !documentType}>
                   <SelectTrigger id="employee" className="w-full">
-                     <SelectValue placeholder="Sélectionnez un employé pour pré-remplir..." />
+                     <SelectValue placeholder={!documentType ? "Choisissez d'abord un type de document" : "Sélectionnez un employé..."} />
                   </SelectTrigger>
                   <SelectContent>
                      <SelectItem value="none">Aucun</SelectItem>
@@ -121,8 +153,8 @@ export default function DocumentGeneratorPage() {
                 <Textarea
                   id="documentContent"
                   name="documentContent"
-                  placeholder="Ex: Pour John Doe, poste d'Ingénieur Logiciel, début le 1er août 2024, avec un salaire de 80 000 $ par an..."
-                  rows={8}
+                  placeholder="Sélectionnez un type de document et éventuellement un employé pour commencer..."
+                  rows={10}
                   required
                   value={documentContent}
                   onChange={(e) => setDocumentContent(e.target.value)}
@@ -152,11 +184,11 @@ export default function DocumentGeneratorPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2"><FileText className="h-5 w-5" />Document Généré</CardTitle>
-            <CardDescription>Le contenu généré par l'IA apparaîtra ici.</CardDescription>
+            <CardDescription>Le contenu généré par l'IA apparaîtra ici. Copiez le contenu ou imprimez la page.</CardDescription>
           </CardHeader>
           <CardContent>
             {state.document ? (
-               <div className="whitespace-pre-wrap p-4 text-sm rounded-md bg-muted/50 border font-mono h-[300px] overflow-auto">
+               <div className="whitespace-pre-wrap p-4 text-sm rounded-md bg-muted/50 border font-serif h-[400px] overflow-auto">
                 {state.document}
                </div>
             ) : (
@@ -166,6 +198,9 @@ export default function DocumentGeneratorPage() {
               </div>
             )}
           </CardContent>
+           <CardFooter>
+            <Button variant="outline" onClick={() => window.print()} disabled={!state.document}>Imprimer</Button>
+          </CardFooter>
         </Card>
       </div>
     </div>

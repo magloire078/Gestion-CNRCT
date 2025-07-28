@@ -4,8 +4,8 @@ import { generateDocument, GenerateDocumentInput } from "@/ai/flows/generate-doc
 import { z } from "zod";
 
 const formSchema = z.object({
-  documentType: z.string().min(1, "Document type is required."),
-  documentContent: z.string().min(10, "Content must be at least 10 characters long."),
+  documentType: z.string().min(1, "Le type de document est requis."),
+  documentContent: z.string().min(10, "Le contenu doit contenir au moins 10 caractères."),
 });
 
 export type FormState = {
@@ -14,6 +14,27 @@ export type FormState = {
   fields?: Record<string, string>;
   issues?: string[];
 };
+
+function parseEmployeeContext(content: string) {
+    const context: Record<string, any> = {};
+    const lines = content.split('\\n');
+    lines.forEach(line => {
+        const parts = line.split(':');
+        if (parts.length < 2) return;
+        const key = parts[0].replace(/\\*|\s/g, '').trim().toLowerCase();
+        const value = parts.slice(1).join(':').trim();
+
+        if (key.includes('nom')) context.name = value;
+        if (key.includes('matricule')) context.matricule = value;
+        if (key.includes('fonction')) context.role = value;
+        if (key.includes('compte')) context.numeroCompte = value;
+        if (key.includes('banque')) context.banque = value;
+        if (key.includes('salaire')) context.baseSalary = parseFloat(value.replace(/\\s/g, '')) || 0;
+        if (key.includes('décision')) context.decisionDetails = value;
+    });
+    return context;
+}
+
 
 export async function generateDocumentAction(
   prevState: FormState,
@@ -25,7 +46,7 @@ export async function generateDocumentAction(
   if (!parsed.success) {
     const issues = parsed.error.issues.map((issue) => issue.message);
     return {
-      message: "Invalid form data.",
+      message: "Formulaire invalide.",
       issues,
       fields: {
         documentType: formData.documentType as string,
@@ -39,19 +60,23 @@ export async function generateDocumentAction(
       documentType: parsed.data.documentType,
       documentContent: parsed.data.documentContent,
     };
+
+    if(input.documentType === 'Attestation de Virement') {
+        input.employeeContext = parseEmployeeContext(input.documentContent);
+    }
     
     const result = await generateDocument(input);
 
     return {
-      message: "Document generated successfully.",
+      message: "Document généré avec succès.",
       document: result.generatedDocument,
     };
   } catch (error) {
     console.error(error);
     return {
-      message: "Failed to generate document. Please try again.",
+      message: "Échec de la génération du document. Veuillez réessayer.",
       fields: parsed.data,
-      issues: [error instanceof Error ? error.message : "An unknown error occurred."]
+      issues: [error instanceof Error ? error.message : "Une erreur inconnue est survenue."]
     };
   }
 }

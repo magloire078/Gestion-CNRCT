@@ -47,11 +47,11 @@ export default {
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
         chart: {
-          '1': 'hsl(217.2, 91.2%, 59.8%)', // primary
-          '2': 'hsl(142.1, 76.2%, 36.3%)', // green
-          '3': 'hsl(346.8, 77.2%, 49.8%)', // red
-          '4': 'hsl(262.1, 83.3%, 57.8%)', // purple
-          '5': 'hsl(35, 100%, 65%)', // orange
+          '1': 'hsl(var(--primary))',
+          '2': 'hsl(142.1, 76.2%, 36.3%)',
+          '3': 'hsl(346.8, 77.2%, 49.8%)',
+          '4': 'hsl(262.1, 83.3%, 57.8%)',
+          '5': 'hsl(35, 100%, 65%)',
         },
         sidebar: {
           DEFAULT: 'hsl(var(--sidebar-background))',

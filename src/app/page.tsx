@@ -107,30 +107,6 @@ export default function DashboardPage() {
             </div>
         </div>
         <TabsContent value="overview" className="space-y-4">
-             <Card>
-                <CardHeader>
-                    <CardTitle>Aperçu de la paie</CardTitle>
-                    <CardDescription>Un résumé des informations de paie pour la période en cours.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-1">
-                           <p className="text-sm font-medium text-muted-foreground">Total de la paie</p>
-                           {loading ? <Skeleton className="h-6 w-24" /> : <p className="text-2xl font-bold">{totalPayroll.toLocaleString('fr-FR', { style: 'currency', currency: 'XOF' })}</p>}
-                        </div>
-                        <div className="space-y-1">
-                           <p className="text-sm font-medium text-muted-foreground">Total des retenues</p>
-                            {loading ? <Skeleton className="h-6 w-24" /> : <p className="text-2xl font-bold">{totalDeductions.toLocaleString('fr-FR', { style: 'currency', currency: 'XOF' })}</p>}
-                        </div>
-                    </div>
-                    <div className="space-y-2">
-                        <Label>Prochain cycle de paie</Label>
-                        {loading ? <Skeleton className="h-4 w-full" /> : <Progress value={33} aria-label="33% du cycle de paie" />}
-                    </div>
-                </CardContent>
-            </Card>
-
-
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
                 {stats.map((stat, index) => (
                 <Card key={index} className="hover:shadow-lg transition-shadow">

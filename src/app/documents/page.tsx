@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Terminal, FileText, Bot, Loader2 } from "lucide-react";
+import { Terminal, FileText, Bot, Loader2, Printer } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const initialState: FormState = {
@@ -38,6 +38,7 @@ export default function DocumentGeneratorPage() {
   const [selectedEmployeeId, setSelectedEmployeeId] = useState('');
   const [documentType, setDocumentType] = useState('');
   const [documentContent, setDocumentContent] = useState('');
+  const [isPrinting, setIsPrinting] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
@@ -89,12 +90,10 @@ export default function DocumentGeneratorPage() {
 
 
   useEffect(() => {
-    // If the form fails validation and the server sends back field data, repopulate the form
     if (state.fields) {
       if(state.fields.documentType) setDocumentType(state.fields.documentType);
       if(state.fields.documentContent) setDocumentContent(state.fields.documentContent);
     }
-    // If the form was successful, clear the content
     if(state.document) {
         setDocumentContent('');
         setSelectedEmployeeId('');
@@ -102,107 +101,137 @@ export default function DocumentGeneratorPage() {
     }
   }, [state]);
 
+  useEffect(() => {
+    if (isPrinting) {
+      setTimeout(() => {
+        window.print();
+        setIsPrinting(false);
+      }, 300);
+    }
+  }, [isPrinting]);
+
+  const handlePrint = () => {
+    if(state.document) {
+      setIsPrinting(true);
+    }
+  };
+
   return (
-    <div className="flex flex-col gap-6">
-      <h1 className="text-3xl font-bold tracking-tight">Génération de Documents</h1>
-      <div className="grid gap-6 lg:grid-cols-2">
-        <form action={formAction} ref={formRef}>
-          <Card>
-            <CardHeader>
-              <CardTitle>Créer un nouveau document</CardTitle>
-              <CardDescription>Utilisez l'IA pour générer des documents juridiques et politiques pour votre organisation.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="documentType">Type de document</Label>
-                <Select name="documentType" required value={documentType} onValueChange={setDocumentType}>
-                  <SelectTrigger id="documentType" className="w-full">
-                    <SelectValue placeholder="Sélectionnez un type de document..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Attestation de Virement">Attestation de Virement</SelectItem>
-                    <SelectItem value="Employment Contract">Contrat de travail</SelectItem>
-                    <SelectItem value="Company Policy">Politique d'entreprise</SelectItem>
-                    <SelectItem value="Warning Letter">Lettre d'avertissement</SelectItem>
-                    <SelectItem value="Termination Letter">Lettre de licenciement</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+    <>
+      <div className={isPrinting ? 'print-hidden' : ''}>
+        <div className="flex flex-col gap-6">
+          <h1 className="text-3xl font-bold tracking-tight">Génération de Documents</h1>
+          <div className="grid gap-6 lg:grid-cols-2">
+            <form action={formAction} ref={formRef}>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Créer un nouveau document</CardTitle>
+                  <CardDescription>Utilisez l'IA pour générer des documents juridiques et politiques pour votre organisation.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="documentType">Type de document</Label>
+                    <Select name="documentType" required value={documentType} onValueChange={setDocumentType}>
+                      <SelectTrigger id="documentType" className="w-full">
+                        <SelectValue placeholder="Sélectionnez un type de document..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Attestation de Virement">Attestation de Virement</SelectItem>
+                        <SelectItem value="Employment Contract">Contrat de travail</SelectItem>
+                        <SelectItem value="Company Policy">Politique d'entreprise</SelectItem>
+                        <SelectItem value="Warning Letter">Lettre d'avertissement</SelectItem>
+                        <SelectItem value="Termination Letter">Lettre de licenciement</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-               <div className="space-y-2">
-                <Label htmlFor="employee">Sélectionner un employé pour pré-remplir</Label>
-                {loadingEmployees ? (
-                    <Skeleton className="h-10 w-full" />
+                   <div className="space-y-2">
+                    <Label htmlFor="employee">Sélectionner un employé pour pré-remplir</Label>
+                    {loadingEmployees ? (
+                        <Skeleton className="h-10 w-full" />
+                    ) : (
+                    <Select value={selectedEmployeeId} onValueChange={setSelectedEmployeeId} disabled={loadingEmployees || !documentType}>
+                      <SelectTrigger id="employee" className="w-full">
+                         <SelectValue placeholder={!documentType ? "Choisissez d'abord un type de document" : "Sélectionnez un employé..."} />
+                      </SelectTrigger>
+                      <SelectContent>
+                         <SelectItem value="none">Aucun</SelectItem>
+                        {employees.map(emp => (
+                          <SelectItem key={emp.id} value={emp.id}>{emp.name} ({emp.matricule})</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="documentContent">Informations Clés & Contexte</Label>
+                    <Textarea
+                      id="documentContent"
+                      name="documentContent"
+                      placeholder="Sélectionnez un type de document et éventuellement un employé pour commencer..."
+                      rows={10}
+                      required
+                      value={documentContent}
+                      onChange={(e) => setDocumentContent(e.target.value)}
+                    />
+                  </div>
+
+                  {state.issues && (
+                    <Alert variant="destructive">
+                      <Terminal className="h-4 w-4" />
+                      <AlertTitle>Erreur</AlertTitle>
+                      <AlertDescription>
+                        <ul className="list-disc pl-5">
+                          {state.issues.map((issue) => (
+                            <li key={issue}>{issue}</li>
+                          ))}
+                        </ul>
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                </CardContent>
+                <CardFooter>
+                  <SubmitButton />
+                </CardFooter>
+              </Card>
+            </form>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2"><FileText className="h-5 w-5" />Document Généré</CardTitle>
+                <CardDescription>Le contenu généré par l'IA apparaîtra ici. Copiez le contenu ou imprimez la page.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {state.document ? (
+                   <div className="whitespace-pre-wrap p-4 text-sm rounded-md bg-muted/50 border font-serif h-[400px] overflow-auto">
+                    {state.document}
+                   </div>
                 ) : (
-                <Select value={selectedEmployeeId} onValueChange={setSelectedEmployeeId} disabled={loadingEmployees || !documentType}>
-                  <SelectTrigger id="employee" className="w-full">
-                     <SelectValue placeholder={!documentType ? "Choisissez d'abord un type de document" : "Sélectionnez un employé..."} />
-                  </SelectTrigger>
-                  <SelectContent>
-                     <SelectItem value="none">Aucun</SelectItem>
-                    {employees.map(emp => (
-                      <SelectItem key={emp.id} value={emp.id}>{emp.name} ({emp.matricule})</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  <div className="flex flex-col items-center justify-center h-64 text-center border-2 border-dashed rounded-lg">
+                    <Bot className="h-12 w-12 text-muted-foreground" />
+                    <p className="mt-4 text-muted-foreground">Votre document est en attente de génération.</p>
+                  </div>
                 )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="documentContent">Informations Clés & Contexte</Label>
-                <Textarea
-                  id="documentContent"
-                  name="documentContent"
-                  placeholder="Sélectionnez un type de document et éventuellement un employé pour commencer..."
-                  rows={10}
-                  required
-                  value={documentContent}
-                  onChange={(e) => setDocumentContent(e.target.value)}
-                />
-              </div>
-
-              {state.issues && (
-                <Alert variant="destructive">
-                  <Terminal className="h-4 w-4" />
-                  <AlertTitle>Erreur</AlertTitle>
-                  <AlertDescription>
-                    <ul className="list-disc pl-5">
-                      {state.issues.map((issue) => (
-                        <li key={issue}>{issue}</li>
-                      ))}
-                    </ul>
-                  </AlertDescription>
-                </Alert>
-              )}
-            </CardContent>
-            <CardFooter>
-              <SubmitButton />
-            </CardFooter>
-          </Card>
-        </form>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2"><FileText className="h-5 w-5" />Document Généré</CardTitle>
-            <CardDescription>Le contenu généré par l'IA apparaîtra ici. Copiez le contenu ou imprimez la page.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {state.document ? (
-               <div className="whitespace-pre-wrap p-4 text-sm rounded-md bg-muted/50 border font-serif h-[400px] overflow-auto">
-                {state.document}
-               </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center h-64 text-center border-2 border-dashed rounded-lg">
-                <Bot className="h-12 w-12 text-muted-foreground" />
-                <p className="mt-4 text-muted-foreground">Votre document est en attente de génération.</p>
-              </div>
-            )}
-          </CardContent>
-           <CardFooter>
-            <Button variant="outline" onClick={() => window.print()} disabled={!state.document}>Imprimer</Button>
-          </CardFooter>
-        </Card>
+              </CardContent>
+               <CardFooter>
+                <Button variant="outline" onClick={handlePrint} disabled={!state.document}>
+                    <Printer className="mr-2 h-4 w-4" />
+                    Imprimer
+                </Button>
+              </CardFooter>
+            </Card>
+          </div>
+        </div>
       </div>
-    </div>
+      
+      {isPrinting && state.document && (
+        <div id="print-section" className="bg-white text-black p-8 font-serif print:shadow-none print:border-none print:p-0">
+          <pre className="whitespace-pre-wrap text-sm">
+            {state.document}
+          </pre>
+        </div>
+      )}
+    </>
   );
 }

@@ -72,12 +72,6 @@ export default function EmployeesPage() {
         setLoading(false);
     });
     
-    async function loadLogos() {
-        const logos = await getOrganizationSettings();
-        setOrganizationLogos(logos);
-    }
-    loadLogos();
-
     // Cleanup subscription on component unmount
     return () => unsubscribe();
   }, []);
@@ -87,7 +81,7 @@ export default function EmployeesPage() {
       setTimeout(() => {
         window.print();
         setIsPrinting(false);
-      }, 100);
+      }, 500); // Increased timeout to ensure images load
     }
   }, [isPrinting]);
 
@@ -240,10 +234,15 @@ export default function EmployeesPage() {
   };
 
 
-  const handlePrint = (selectedColumns: ColumnKeys[]) => {
+  const handlePrint = async (selectedColumns: ColumnKeys[]) => {
     setColumnsToPrint(selectedColumns);
     const now = new Date();
     setPrintDate(now.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }));
+    
+    // Fetch logos before printing
+    const logos = await getOrganizationSettings();
+    setOrganizationLogos(logos);
+
     setIsPrintDialogOpen(false);
     setIsPrinting(true);
   };
@@ -383,20 +382,20 @@ export default function EmployeesPage() {
             </div>
         </div>
         
-        <div id="print-section" className={isPrinting ? 'print:block' : 'hidden'}>
-            <div className="bg-white text-black p-8 w-[210mm] print:shadow-none print:border-none print:p-0">
+        <div id="print-section" className={isPrinting ? 'print-block' : 'hidden'}>
+            <div className="bg-white text-black p-8 w-full print:shadow-none print:border-none print:p-0">
                 <header className="flex justify-between items-start mb-8">
                     <div className="text-center">
                         <h2 className="font-bold">Chambre Nationale des Rois</h2>
                         <h2 className="font-bold">et Chefs Traditionnels</h2>
-                         {organizationLogos.mainLogoUrl && <Image src={organizationLogos.mainLogoUrl} alt="Logo CNRCT" width={80} height={80} className="mx-auto mt-2" data-ai-hint="logo traditional" />}
+                         {organizationLogos.mainLogoUrl && <img src={organizationLogos.mainLogoUrl} alt="Logo CNRCT" width={80} height={80} className="mx-auto mt-2" />}
                         <p className="font-bold mt-1 text-sm">UN CHEF NOUVEAU</p>
                         <p className="text-xs mt-4">LE DIRECTOIRE</p>
                         <p className="text-xs">LE CABINET / LE SERVICE INFORMATIQUE</p>
                     </div>
                     <div className="text-center">
                         <h2 className="font-bold">République de Côte d'Ivoire</h2>
-                        {organizationLogos.secondaryLogoUrl && <Image src={organizationLogos.secondaryLogoUrl} alt="Logo Cote d'Ivoire" width={80} height={80} className="mx-auto mt-2" data-ai-hint="emblem ivory coast"/>}
+                        {organizationLogos.secondaryLogoUrl && <img src={organizationLogos.secondaryLogoUrl} alt="Logo Cote d'Ivoire" width={80} height={80} className="mx-auto mt-2" />}
                         <p className="mt-1">Union - Discipline - Travail</p>
                     </div>
                 </header>

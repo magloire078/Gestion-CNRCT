@@ -9,7 +9,6 @@ import type { Employee } from "@/lib/data";
 import { getEmployee } from "@/services/employee-service";
 import { getPayslipDetails, PayslipDetails } from "@/services/payslip-details-service";
 import { ArrowLeft, Printer } from "lucide-react";
-import Image from 'next/image';
 
 export default function PayslipPage() {
     const params = useParams();
@@ -67,8 +66,8 @@ export default function PayslipPage() {
     const { employeeInfo, earnings, deductions, totals, employerContributions, organizationLogos } = payslipDetails;
 
     return (
-        <div className="bg-background text-foreground">
-             <div className="max-w-4xl mx-auto p-4 sm:p-8 print:hidden">
+        <>
+             <div className="max-w-4xl mx-auto p-4 sm:p-8 print-hidden">
                 <div className="flex items-center justify-between">
                     <Button variant="outline" onClick={() => router.back()}>
                         <ArrowLeft className="mr-2 h-4 w-4" />
@@ -80,18 +79,18 @@ export default function PayslipPage() {
                     </Button>
                 </div>
             </div>
-            <div id="payslip-content" className="w-full max-w-4xl mx-auto bg-white p-4 sm:p-8 border rounded-lg text-black print:shadow-none print:border-none print:p-0">
+            <div id="print-section" className="w-full max-w-4xl mx-auto bg-white p-4 sm:p-8 border rounded-lg text-black print:shadow-none print:border-none print:p-0">
                 {/* Header */}
                 <header className="flex justify-between items-start pb-4 border-b">
                     <div className="text-center">
                         <h2 className="font-bold print:text-sm">Chambre Nationale des Rois</h2>
                         <h2 className="font-bold print:text-sm">et Chefs Traditionnels</h2>
-                        <Image src={organizationLogos.mainLogoUrl} alt="Logo CNRCT" width={80} height={80} className="mx-auto mt-2 print:w-16 print:h-16" data-ai-hint="logo traditional" />
+                        <img src={organizationLogos.mainLogoUrl} alt="Logo CNRCT" width={80} height={80} className="mx-auto mt-2 print:w-16 print:h-16" />
                         <p className="font-bold mt-1 print:text-xs">UN CHEF NOUVEAU</p>
                     </div>
                     <div className="text-center">
                         <h2 className="font-bold print:text-sm">République de Côte d'Ivoire</h2>
-                         <Image src={organizationLogos.secondaryLogoUrl} alt="Logo Cote d'Ivoire" width={80} height={80} className="mx-auto mt-2 print:w-16 print:h-16" data-ai-hint="emblem ivory coast"/>
+                         <img src={organizationLogos.secondaryLogoUrl} alt="Logo Cote d'Ivoire" width={80} height={80} className="mx-auto mt-2 print:w-16 print:h-16" />
                         <p className="mt-1 print:text-xs">Union - Discipline - Travail</p>
                     </div>
                 </header>
@@ -105,7 +104,7 @@ export default function PayslipPage() {
                     <div className="col-span-5 space-y-1">
                         <p><span className="font-bold">N° CNPS EMPLOYEUR :</span> {employeeInfo.cnpsEmployeur}</p>
                         <p><span className="font-bold">N° CNPS EMPLOYE :</span> {employeeInfo.cnpsEmploye}</p>
-                        <Image src="https://placehold.co/80x80.png" alt="QR Code" width={80} height={80} className="mt-2 print:w-16 print:h-16" data-ai-hint="qr code"/>
+                        <img src="https://placehold.co/80x80.png" alt="QR Code" width={80} height={80} className="mt-2 print:w-16 print:h-16" data-ai-hint="qr code"/>
                     </div>
                     <div className="col-span-7 border rounded-lg p-3 print:p-2">
                          <div className="grid grid-cols-3 gap-x-2 gap-y-1">
@@ -267,34 +266,6 @@ export default function PayslipPage() {
                 </footer>
 
             </div>
-            <style jsx global>{`
-                @media print {
-                    @page {
-                        size: A4;
-                        margin: 0.5cm;
-                    }
-                    body {
-                        -webkit-print-color-adjust: exact;
-                        print-color-adjust: exact;
-                        background-color: #fff;
-                    }
-                    .print-hidden {
-                        display: none;
-                    }
-                     #payslip-content {
-                        margin: 0;
-                        padding: 0;
-                        border: none;
-                        border-radius: 0;
-                        box-shadow: none;
-                        width: 100%;
-                        max-width: 100%;
-                    }
-                    #payslip-content table td, #payslip-content table th {
-                        padding: 2px 4px;
-                    }
-                }
-            `}</style>
-        </div>
+        </>
     );
 }

@@ -382,8 +382,8 @@ export default function EmployeesPage() {
             </div>
         </div>
         
-        <div id="print-section" className={isPrinting ? 'print-block' : 'hidden'}>
-            <div className="bg-white text-black p-8 w-full print:shadow-none print:border-none print:p-0">
+        {isPrinting && (
+            <div id="print-section" className="bg-white text-black p-8 w-full print:shadow-none print:border-none print:p-0">
                 <header className="flex justify-between items-start mb-8">
                     <div className="text-center">
                         <h2 className="font-bold">Chambre Nationale des Rois</h2>
@@ -444,7 +444,7 @@ export default function EmployeesPage() {
                     </div>
                 </footer>
             </div>
-        </div>
+        )}
     </>
   );
 }

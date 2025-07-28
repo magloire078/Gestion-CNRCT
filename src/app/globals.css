@@ -79,7 +79,7 @@
         margin: 1cm;
     }
     .print-hidden {
-        display: none;
+        display: none !important;
     }
     body * {
         visibility: hidden;

@@ -154,6 +154,7 @@ export default function OrganizationSettingsPage() {
                     <Upload className="mr-2 h-4 w-4" />
                     Changer le logo
                     </Button>
+                    <p className="text-xs text-muted-foreground mt-2">Taille max : 2 Mo.</p>
                     <Input 
                     ref={mainLogoInputRef}
                     type="file"
@@ -178,6 +179,7 @@ export default function OrganizationSettingsPage() {
                     <Upload className="mr-2 h-4 w-4" />
                     Changer le logo
                     </Button>
+                    <p className="text-xs text-muted-foreground mt-2">Taille max : 2 Mo.</p>
                     <Input 
                     ref={secondaryLogoInputRef}
                     type="file"

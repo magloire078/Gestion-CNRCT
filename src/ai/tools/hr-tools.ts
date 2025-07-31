@@ -29,7 +29,7 @@ export const getEmployeeInfo = ai.defineTool(
       return JSON.stringify(employees.map(e => ({
           name: e.name,
           matricule: e.matricule,
-          role: e.role,
+          poste: e.poste,
           department: e.department,
           status: e.status,
       })));

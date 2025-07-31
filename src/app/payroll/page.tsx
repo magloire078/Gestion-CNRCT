@@ -101,7 +101,7 @@ export default function PayrollPage() {
                 <TableHeader>
                 <TableRow>
                     <TableHead>Employé</TableHead>
-                    <TableHead>Rôle</TableHead>
+                    <TableHead>Poste</TableHead>
                     <TableHead className="text-right">Salaire de Base</TableHead>
                     <TableHead>Fréquence</TableHead>
                     <TableHead>Prochaine Date de Paie</TableHead>
@@ -124,7 +124,7 @@ export default function PayrollPage() {
                     employees.map((employee) => (
                     <TableRow key={employee.id}>
                         <TableCell className="font-medium">{employee.name}</TableCell>
-                        <TableCell>{employee.role}</TableCell>
+                        <TableCell>{employee.poste}</TableCell>
                         <TableCell className="text-right font-mono">
                         {(employee.baseSalary || 0).toLocaleString("fr-FR", {
                             style: "currency",
@@ -176,7 +176,7 @@ export default function PayrollPage() {
                              <div className="flex justify-between items-start">
                                 <div>
                                     <p className="font-bold">{employee.name}</p>
-                                    <p className="text-sm text-muted-foreground">{employee.role}</p>
+                                    <p className="text-sm text-muted-foreground">{employee.poste}</p>
                                 </div>
                                  <DropdownMenu>
                                     <DropdownMenuTrigger asChild>

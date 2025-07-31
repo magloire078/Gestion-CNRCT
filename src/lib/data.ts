@@ -8,7 +8,7 @@ export type Employee = {
   lastName?: string;  // Optional for backward compatibility
   email?: string;
   department: string;
-  role: string;
+  poste: string;
   status: 'Active' | 'On Leave' | 'Terminated';
   photoUrl: string; // Can be a data URL or a gs:// URL
 
@@ -132,7 +132,3 @@ export type PayslipDetails = {
         secondaryLogoUrl: string;
     }
 };
-
-    
-
-    

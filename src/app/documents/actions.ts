@@ -26,7 +26,7 @@ function parseEmployeeContext(content: string) {
 
         if (key.includes('nom')) context.name = value;
         if (key.includes('matricule')) context.matricule = value;
-        if (key.includes('fonction')) context.role = value;
+        if (key.includes('fonction') || key.includes('poste')) context.poste = value;
         if (key.includes('compte')) context.numeroCompte = value;
         if (key.includes('banque')) context.banque = value;
         if (key.includes('salaire')) context.baseSalary = parseFloat(value.replace(/\\s/g, '')) || 0;

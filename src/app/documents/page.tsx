@@ -63,7 +63,7 @@ export default function DocumentGeneratorPage() {
 ### Informations sur l'employé
 *   **Nom et Prénoms** : ${employee.name || ''}
 *   **Matricule Solde** : ${employee.matricule || ''}
-*   **Fonction** : ${employee.role || ''}
+*   **Poste** : ${employee.poste || ''}
 *   **Numéro de compte** : ${employee.numeroCompte || ''}
 *   **Banque** : ${employee.banque || ''}
 *   **Salaire de base (pour calcul)** : ${employee.baseSalary || 0}
@@ -72,7 +72,7 @@ export default function DocumentGeneratorPage() {
 *   **Détails de la décision** : n°024/CNRCT/DIR/P. du 01 Août 2017
 `;
     } else {
-        content = `Employé: ${employee.name}\nMatricule: ${employee.matricule}\nRôle: ${employee.role}\nDépartement: ${employee.department}\n`;
+        content = `Employé: ${employee.name}\nMatricule: ${employee.matricule}\nPoste: ${employee.poste}\nDépartement: ${employee.department}\n`;
     }
     setDocumentContent(content);
   }

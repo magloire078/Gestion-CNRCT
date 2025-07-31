@@ -23,7 +23,7 @@ const GenerateDocumentInputSchema = z.object({
   employeeContext: z.object({
       name: z.string().optional(),
       matricule: z.string().optional(),
-      role: z.string().optional(),
+      poste: z.string().optional(),
       numeroCompte: z.string().optional(),
       banque: z.string().optional(),
       baseSalary: z.number().optional(),
@@ -57,7 +57,7 @@ const generateDocumentPrompt = ai.definePrompt({
   {{#if (eq documentType "Attestation de Virement")}}
   ## ATTESTATION IRREVOCABLE DE VIREMENT DE SALAIRE
 
-  Le président de la Chambre Nationale des Rois et Chefs Traditionnels (CNRCT), soussigné, atteste que Monsieur {{employeeContext.name}}, matricule solde {{employeeContext.matricule}}, nommé par décision {{employeeContext.decisionDetails}}, {{employeeContext.role}}, y a pris service en cette qualité et à cet effet, engage la CNRCT à virer irrévocablement sur son compte N° {{employeeContext.numeroCompte}}, ouvert à la {{employeeContext.banque}}, toutes les sommes qui lui seront dues au titre de primes et indemnités.
+  Le président de la Chambre Nationale des Rois et Chefs Traditionnels (CNRCT), soussigné, atteste que Monsieur {{employeeContext.name}}, matricule solde {{employeeContext.matricule}}, nommé par décision {{employeeContext.decisionDetails}}, {{employeeContext.poste}}, y a pris service en cette qualité et à cet effet, engage la CNRCT à virer irrévocablement sur son compte N° {{employeeContext.numeroCompte}}, ouvert à la {{employeeContext.banque}}, toutes les sommes qui lui seront dues au titre de primes et indemnités.
 
   Cet engagement implique qu'aucun acompte ne doit être versé directement à l'intéressé en dehors dudit compte.
 
@@ -102,7 +102,7 @@ const generateDocumentFlow = ai.defineFlow(
             baseSalary: input.employeeContext.baseSalary || 0,
             matricule: '',
             department: '',
-            role: '',
+            poste: '',
             status: 'Active',
             photoUrl: '',
         };

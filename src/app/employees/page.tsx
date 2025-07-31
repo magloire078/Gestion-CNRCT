@@ -34,7 +34,7 @@ export const departments = ["Engineering", "Marketing", "Sales", "HR", "Operatio
 const allColumns = {
   matricule: "N° MAT",
   name: "NOM ET PRENOMS",
-  role: "FONCTION",
+  poste: "POSTE",
   department: "REGION", // Mapped to department for now
   email: "CONTACT", // Mapped to email
   status: "Statut",
@@ -177,13 +177,13 @@ export default function EmployeesPage() {
         matricule: e.matricule, 
         name: e.firstName ? `${e.firstName} ${e.lastName}` : e.name, 
         email: e.email, 
-        role: e.role, 
+        poste: e.poste, 
         department: e.department, 
         status: e.status, 
         photoUrl: e.photoUrl
     })), {
         header: true,
-        columns: ["matricule", "name", "email", "role", "department", "status", "photoUrl"]
+        columns: ["matricule", "name", "email", "poste", "department", "status", "photoUrl"]
     });
     downloadFile(csvData, 'export_employes.csv', 'text/csv;charset=utf-8;');
     toast({ title: "Exportation CSV réussie" });
@@ -211,7 +211,7 @@ export default function EmployeesPage() {
     };
 
     const tableName = 'employees';
-    const columns = ['id', 'matricule', 'firstName', 'lastName', 'name', 'email', 'role', 'department', 'status', 'photoUrl'];
+    const columns = ['id', 'matricule', 'firstName', 'lastName', 'name', 'email', 'poste', 'department', 'status', 'photoUrl'];
     
     const sqlContent = filteredEmployees.map(emp => {
       const values = [
@@ -221,7 +221,7 @@ export default function EmployeesPage() {
         escapeSql(emp.lastName),
         escapeSql(emp.firstName && emp.lastName ? `${emp.firstName} ${emp.lastName}` : emp.name),
         escapeSql(emp.email),
-        escapeSql(emp.role),
+        escapeSql(emp.poste),
         escapeSql(emp.department),
         escapeSql(emp.status),
         escapeSql(emp.photoUrl),
@@ -324,7 +324,7 @@ export default function EmployeesPage() {
                             <TableHead className="w-[80px]">Photo</TableHead>
                             <TableHead>Nom</TableHead>
                             <TableHead>Matricule</TableHead>
-                            <TableHead>Rôle</TableHead>
+                            <TableHead>Poste</TableHead>
                             <TableHead>Département</TableHead>
                             <TableHead>Statut</TableHead>
                             <TableHead className="w-[100px] text-right">Actions</TableHead>

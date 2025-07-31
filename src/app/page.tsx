@@ -193,7 +193,7 @@ export default function DashboardPage() {
                             </Avatar>
                             <div>
                             <p className="font-medium">{emp.firstName ? `${emp.firstName} ${emp.lastName}` : emp.name}</p>
-                            <p className="text-sm text-muted-foreground">{emp.role}</p>
+                            <p className="text-sm text-muted-foreground">{emp.poste}</p>
                             </div>
                         </div>
                         <span className="text-sm text-muted-foreground">{emp.department}</span>

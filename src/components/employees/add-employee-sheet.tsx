@@ -36,7 +36,7 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState("");
+  const [poste, setPoste] = useState("");
   const [department, setDepartment] = useState("");
   const [status, setStatus] = useState<Employee['status']>('Active');
   const [photoUrl, setPhotoUrl] = useState(`https://placehold.co/100x100.png`);
@@ -49,7 +49,7 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
     setFirstName("");
     setLastName("");
     setEmail("");
-    setRole("");
+    setPoste("");
     setDepartment("");
     setStatus("Active");
     setPhotoUrl(`https://placehold.co/100x100.png`);
@@ -78,14 +78,14 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!matricule || !firstName || !lastName || !role || !department) {
+    if (!matricule || !firstName || !lastName || !poste || !department) {
       setError("Veuillez remplir tous les champs obligatoires.");
       return;
     }
     setIsSubmitting(true);
     setError("");
     try {
-      await onAddEmployee({ matricule, firstName, lastName, email, role, department, status, photoUrl, name: `${firstName} ${lastName}` });
+      await onAddEmployee({ matricule, firstName, lastName, email, poste, department, status, photoUrl, name: `${firstName} ${lastName}` });
       handleClose();
     } catch(err) {
       setError(err instanceof Error ? err.message : "Échec de l'ajout de l'employé. Veuillez réessayer.");
@@ -153,10 +153,10 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
               <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="col-span-3" />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="role" className="text-right">
-                Rôle
+              <Label htmlFor="poste" className="text-right">
+                Poste
               </Label>
-              <Input id="role" value={role} onChange={(e) => setRole(e.target.value)} className="col-span-3" />
+              <Input id="poste" value={poste} onChange={(e) => setPoste(e.target.value)} className="col-span-3" />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="department" className="text-right">

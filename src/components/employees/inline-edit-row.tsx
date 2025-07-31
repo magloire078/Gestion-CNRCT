@@ -32,7 +32,7 @@ export function InlineEditRow({ employee, isEditing, onEdit, onSave, onCancel, o
             setEditData({
                 name: employee.name,
                 matricule: employee.matricule,
-                role: employee.role,
+                poste: employee.poste,
                 department: employee.department,
                 status: employee.status
             });
@@ -68,7 +68,7 @@ export function InlineEditRow({ employee, isEditing, onEdit, onSave, onCancel, o
                     <Input name="matricule" value={editData.matricule || ''} onChange={handleInputChange} className="h-8" />
                 </TableCell>
                 <TableCell>
-                    <Input name="role" value={editData.role || ''} onChange={handleInputChange} className="h-8" />
+                    <Input name="poste" value={editData.poste || ''} onChange={handleInputChange} className="h-8" />
                 </TableCell>
                 <TableCell>
                      <Select value={editData.department} onValueChange={(value) => handleSelectChange('department', value)}>
@@ -118,7 +118,7 @@ export function InlineEditRow({ employee, isEditing, onEdit, onSave, onCancel, o
             </TableCell>
             <TableCell className="font-medium">{employee.name}</TableCell>
             <TableCell>{employee.matricule}</TableCell>
-            <TableCell>{employee.role}</TableCell>
+            <TableCell>{employee.poste}</TableCell>
             <TableCell>{employee.department}</TableCell>
             <TableCell>
                 <Badge variant={statusVariantMap[employee.status as Status] || 'default'}>{employee.status}</Badge>
@@ -138,5 +138,3 @@ export function InlineEditRow({ employee, isEditing, onEdit, onSave, onCancel, o
         </TableRow>
     );
 }
-
-    

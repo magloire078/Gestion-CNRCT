@@ -169,7 +169,7 @@ export function EmployeeActivityReport() {
                         </Avatar>
                         <div>
                             <p className="font-medium">{emp.name}</p>
-                            <p className="text-sm text-muted-foreground">{emp.role}</p>
+                            <p className="text-sm text-muted-foreground">{emp.poste}</p>
                         </div>
                     </div>
                  )} />

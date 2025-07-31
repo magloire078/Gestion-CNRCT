@@ -14,7 +14,7 @@ import type { Employe } from "@/lib/data";
 
 
 // Define a more flexible type for CSV row to handle various fields
-type EmployeeCsvRow = { [key: string]: string | undefined };
+type EmployeeCsvRow = { [key: string]: string | number | undefined | null };
 
 export function ImportDataCard() {
   const [file, setFile] = useState<File | null>(null);
@@ -41,60 +41,63 @@ export function ImportDataCard() {
 
     Papa.parse<EmployeeCsvRow>(file, {
       header: true,
-      skipEmptyLines: true,
+      skipEmptyLines: 'greedy',
+      dynamicTyping: true,
       transformHeader: header => header.trim(),
       complete: async (results) => {
         if (results.errors.length > 0) {
             console.error("CSV Parsing errors:", results.errors);
-            setError(`Erreur lors de l'analyse du CSV: ${results.errors[0].message}`);
+            const firstError = results.errors[0];
+            setError(`Erreur à la ligne ${firstError.row}: ${firstError.message}`);
             setIsImporting(false);
             return;
         }
 
-        const requiredColumns = ['matricule', 'nom', 'prenom', 'poste', 'service', 'statut'];
         const headers = results.meta.fields || [];
+        const requiredColumns = ['matricule', 'nom', 'prenom', 'poste', 'service', 'statut'];
         const missingColumns = requiredColumns.filter(col => !headers.map(h => h.toLowerCase()).includes(col.toLowerCase()));
 
         if (missingColumns.length > 0) {
-             setError(`Le fichier CSV est invalide. Colonnes manquantes : ${missingColumns.join(', ')}.`);
+             setError(`Le fichier CSV est invalide. Colonnes requises manquantes : ${missingColumns.join(', ')}.`);
              setIsImporting(false);
              return;
         }
         
         const employeesToImport: Omit<Employe, "id">[] = results.data
-          .filter(row => row.matricule && (row.nom || row.prenom)) // Basic validation for a valid row
+          .filter(row => row.matricule) // Basic validation for a valid row
           .map(row => {
-              const parseNumber = (value: string | undefined) => {
-                  if (!value || value.trim() === '') return undefined;
-                  const cleanedValue = value.replace(/ /g, '').replace(/,/g, '.');
+              const parseNumber = (value: string | number | undefined | null): number | undefined => {
+                  if (value === null || value === undefined || (typeof value === 'string' && value.trim() === '')) return undefined;
+                  const cleanedValue = String(value).replace(/ /g, '').replace(/,/g, '.');
                   if (cleanedValue === '') return undefined;
                   const num = parseFloat(cleanedValue);
                   return isNaN(num) ? undefined : num;
               }
 
               const combinedName = `${row.prenom || ''} ${row.nom || ''}`.trim();
+              const photoPath = row.Photo ? String(row.Photo).trim() : null;
 
               return {
-                matricule: row.matricule!,
+                matricule: String(row.matricule),
                 name: combinedName,
-                firstName: row.prenom,
-                lastName: row.nom,
-                poste: row.poste,
-                department: row.service,
-                status: row.statut === '1' ? 'Actif' : 'Licencié',
+                firstName: String(row.prenom || ''),
+                lastName: String(row.nom || ''),
+                poste: String(row.poste || ''),
+                department: String(row.service || ''),
+                status: row.statut === 1 || String(row.statut).toLowerCase() === 'actif' ? 'Actif' : 'Licencié',
                 
-                civilite: row.civilite,
-                sexe: row.sexe,
-                mobile: row.mobile,
-                email: row.email,
+                civilite: String(row.civilite || ''),
+                sexe: String(row.sexe || ''),
+                mobile: String(row.mobile || ''),
+                email: String(row.email || ''),
                 
-                groupe_1: row.groupe_1,
-                groupe_2: row.groupe_2,
-                Region: row.Region,
-                Image_Region: row.Image_Region,
-                Departement: row.Departement,
-                Commune: row.Commune,
-                Village: row.Village,
+                groupe_1: String(row.groupe_1 || ''),
+                groupe_2: String(row.groupe_2 || ''),
+                Region: String(row.Region || ''),
+                Image_Region: String(row.Image_Region || ''),
+                Departement: String(row.Departement || ''),
+                Commune: String(row.Commune || ''),
+                Village: String(row.Village || ''),
                 
                 baseSalary: parseNumber(row.salaire_Base),
                 primeAnciennete: parseNumber(row.prime_ancien),
@@ -108,25 +111,25 @@ export function ImportDataCard() {
                 transportNonImposable: parseNumber(row.indemnite_transport_non_imposable),
                 Salaire_Net: parseNumber(row.Salaire_Net),
 
-                banque: row.Banque,
-                numeroCompte: row.Num_Compte,
-                CB: row.CB,
-                CG: row.CG,
-                Cle_RIB: row.Cle_RIB,
-                CNPS: row.CNPS === '1',
-                cnpsEmploye: row.Num_CNPS,
-                Num_Decision: row.Num_Decision,
+                banque: String(row.Banque || ''),
+                numeroCompte: String(row.Num_Compte || ''),
+                CB: String(row.CB || ''),
+                CG: String(row.CG || ''),
+                Cle_RIB: String(row.Cle_RIB || ''),
+                CNPS: row.CNPS === 1,
+                cnpsEmploye: String(row.Num_CNPS || ''),
+                Num_Decision: String(row.Num_Decision || ''),
                 
-                Date_Naissance: row.Date_Naissance,
-                dateEmbauche: row.Date_Embauche,
-                Date_Immatriculation: row.Date_Immatriculation,
-                Date_Depart: row.Date_Depart,
+                Date_Naissance: String(row.Date_Naissance || ''),
+                dateEmbauche: String(row.Date_Embauche || ''),
+                Date_Immatriculation: String(row.Date_Immatriculation || ''),
+                Date_Depart: String(row.Date_Depart || ''),
 
-                situationMatrimoniale: row.situation_famille,
+                situationMatrimoniale: String(row.situation_famille || ''),
                 enfants: parseNumber(row.nombre_enfants),
-                Lieu_Naissance: row.Lieu_Naissance,
+                Lieu_Naissance: String(row.Lieu_Naissance || ''),
                 
-                photoUrl: row.Photo ? `/photos/${row.Photo.trim()}` : `https://placehold.co/100x100.png`,
+                photoUrl: photoPath ? `/photos/${photoPath}` : `https://placehold.co/100x100.png`,
               } as Omit<Employe, 'id'>
           });
 

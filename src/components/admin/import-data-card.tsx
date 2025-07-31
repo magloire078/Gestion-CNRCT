@@ -13,12 +13,12 @@ import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import type { Employee } from "@/lib/data";
 
 type EmployeeCsvRow = {
-  mat_emp: string;
-  nom_emp: string;
-  prenom_emp: string;
-  Email?: string;
-  poste_emp: string;
-  service_emp: string;
+  matricule: string;
+  nom: string;
+  prenom: string;
+  email?: string;
+  poste: string;
+  service: string;
   Statut: '0' | '1';
   Photo?: string;
   salaire_Base?: string;
@@ -66,25 +66,25 @@ export function ImportDataCard() {
             setIsImporting(false);
             return;
         }
-
+        
         const employeesToImport: Omit<Employee, "id">[] = results.data
-          .filter(row => row.mat_emp && row.nom_emp && row.poste_emp && row.service_emp && row.Statut)
+          .filter(row => row.matricule && row.nom && row.poste && row.service && row.Statut)
           .map(row => ({
-              matricule: row.mat_emp,
-              firstName: row.prenom_emp || '',
-              lastName: row.nom_emp || '',
-              name: `${row.prenom_emp || ''} ${row.nom_emp || ''}`.trim(),
-              email: row.Email || '',
-              poste: row.poste_emp,
-              department: row.service_emp,
+              matricule: row.matricule,
+              firstName: row.prenom || '',
+              lastName: row.nom || '',
+              name: `${row.prenom || ''} ${row.nom || ''}`.trim(),
+              email: row.email || '',
+              poste: row.poste,
+              department: row.service,
               photoUrl: row.Photo ? `/photos/${row.Photo}` : 'https://placehold.co/100x100.png',
               status: row.Statut === '1' ? 'Active' : 'Terminated',
-              baseSalary: parseFloat(row.salaire_Base || '0'),
-              primeAnciennete: parseFloat(row.prime_ancien || '0'),
-              indemniteTransportImposable: parseFloat(row.indemnite_Transport || '0'),
-              indemniteResponsabilite: parseFloat(row.indemnite_Responsabilite || '0'),
-              indemniteLogement: parseFloat(row.indemnite_Logement || '0'),
-              transportNonImposable: parseFloat(row.indemnite_transport_non_imposable || '0'),
+              baseSalary: parseFloat(row.salaire_Base?.replace(/,/g, '.') || '0'),
+              primeAnciennete: parseFloat(row.prime_ancien?.replace(/,/g, '.') || '0'),
+              indemniteTransportImposable: parseFloat(row.indemnite_Transport?.replace(/,/g, '.') || '0'),
+              indemniteResponsabilite: parseFloat(row.indemnite_Responsabilite?.replace(/,/g, '.') || '0'),
+              indemniteLogement: parseFloat(row.indemnite_Logement?.replace(/,/g, '.') || '0'),
+              transportNonImposable: parseFloat(row.indemnite_transport_non_imposable?.replace(/,/g, '.') || '0'),
               banque: row.Banque || '',
               numeroCompte: row.Num_Compte || '',
               cnpsEmploye: row.Num_CNPS || '',
@@ -93,7 +93,7 @@ export function ImportDataCard() {
           ));
 
         if (employeesToImport.length === 0) {
-          setError("Le fichier CSV est vide ou ne contient pas les colonnes requises (mat_emp, nom_emp, poste_emp, service_emp, Statut).");
+          setError("Le fichier CSV est vide ou ne contient pas les colonnes requises (matricule, nom, prenom, poste, service, Statut).");
           setIsImporting(false);
           return;
         }

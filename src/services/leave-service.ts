@@ -31,7 +31,7 @@ export async function getLeaves(): Promise<Leave[]> {
 export async function addLeave(leaveDataToAdd: Omit<Leave, 'id' | 'status'>): Promise<Leave> {
     const newLeaveData = {
         ...leaveDataToAdd,
-        status: 'Pending'
+        status: 'En attente'
     };
     const leavesCollection = collection(db, 'leaves');
     const docRef = await addDoc(leavesCollection, newLeaveData);
@@ -43,7 +43,7 @@ export async function addLeave(leaveDataToAdd: Omit<Leave, 'id' | 'status'>): Pr
     return newLeave;
 }
 
-export async function updateLeaveStatus(id: string, status: 'Approved' | 'Rejected'): Promise<void> {
+export async function updateLeaveStatus(id: string, status: 'Approuvé' | 'Rejeté'): Promise<void> {
     const leaveRef = doc(db, 'leaves', id);
     await updateDoc(leaveRef, { status });
 }

@@ -38,12 +38,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { getConflictResolutionAdvice, type ConflictResolutionOutput } from "@/ai/flows/conflict-resolution-flow";
 
-type Status = "Ongoing" | "Resolved" | "Mediating";
+type Status = "En cours" | "Résolu" | "En médiation";
 
 const statusVariantMap: Record<Status, "destructive" | "default" | "secondary"> = {
-  Ongoing: "destructive",
-  Resolved: "default",
-  Mediating: "secondary",
+  "En cours": "destructive",
+  "Résolu": "default",
+  "En médiation": "secondary",
 };
 
 export default function ConflictsPage() {

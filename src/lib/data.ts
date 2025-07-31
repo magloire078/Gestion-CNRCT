@@ -9,7 +9,7 @@ export type Employee = {
   email?: string;
   department: string;
   poste: string;
-  status: 'Active' | 'On Leave' | 'Terminated';
+  status: 'Actif' | 'En congé' | 'Licencié';
   photoUrl: string; // Can be a data URL or a gs:// URL
 
   // Merged payroll fields
@@ -44,7 +44,7 @@ export type Leave = {
   type: string;
   startDate: string; // YYYY-MM-DD
   endDate: string; // YYYY-MM-DD
-  status: 'Approved' | 'Pending' | 'Rejected';
+  status: 'Approuvé' | 'En attente' | 'Rejeté';
 };
 
 export type Asset = {
@@ -52,7 +52,7 @@ export type Asset = {
   type: string;
   model: string;
   assignedTo: string;
-  status: 'In Use' | 'In Stock' | 'In Repair' | 'Retired' | 'Active';
+  status: 'En Utilisation' | 'En Stock' | 'En Réparation' | 'Retiré' | 'Actif';
 }
 
 export type Fleet = {
@@ -85,7 +85,7 @@ export type Mission = {
   assignedTo: string;
   startDate: string; // YYYY-MM-DD
   endDate: string; // YYYY-MM-DD
-  status: 'Planned' | 'In Progress' | 'Completed' | 'Cancelled';
+  status: 'Planifiée' | 'En cours' | 'Terminée' | 'Annulée';
 };
 
 export type Conflict = {
@@ -93,7 +93,7 @@ export type Conflict = {
     village: string;
     description: string;
     reportedDate: string; // YYYY-MM-DD
-    status: 'Ongoing' | 'Resolved' | 'Mediating';
+    status: 'En cours' | 'Résolu' | 'En médiation';
 }
 
 

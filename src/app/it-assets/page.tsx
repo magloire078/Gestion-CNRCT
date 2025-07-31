@@ -15,17 +15,17 @@ import { subscribeToAssets, addAsset } from "@/services/asset-service";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 
-type Status = 'In Use' | 'In Stock' | 'In Repair' | 'Retired' | 'Active';
+type Status = 'En Utilisation' | 'En Stock' | 'En Réparation' | 'Retiré' | 'Actif';
 
 const statusVariantMap: Record<Status, "default" | "secondary" | "outline"> = {
-  'In Use': 'default',
-  'Active': 'default',
-  'In Stock': 'secondary',
-  'In Repair': 'outline',
-  'Retired': 'outline',
+  'En Utilisation': 'default',
+  'Actif': 'default',
+  'En Stock': 'secondary',
+  'En Réparation': 'outline',
+  'Retiré': 'outline',
 };
 
-const assetTypes = ["Laptop", "Monitor", "Keyboard", "Mouse", "Software", "Other"];
+const assetTypes = ["Ordinateur portable", "Moniteur", "Clavier", "Souris", "Logiciel", "Autre"];
 
 export default function ItAssetsPage() {
   const [assets, setAssets] = useState<Asset[]>([]);
@@ -119,11 +119,11 @@ export default function ItAssetsPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Tous les statuts</SelectItem>
-                <SelectItem value="In Use">En Utilisation</SelectItem>
-                <SelectItem value="In Stock">En Stock</SelectItem>
-                <SelectItem value="In Repair">En Réparation</SelectItem>
-                <SelectItem value="Retired">Retiré</SelectItem>
-                <SelectItem value="Active">Actif</SelectItem>
+                <SelectItem value="En Utilisation">En Utilisation</SelectItem>
+                <SelectItem value="En Stock">En Stock</SelectItem>
+                <SelectItem value="En Réparation">En Réparation</SelectItem>
+                <SelectItem value="Retiré">Retiré</SelectItem>
+                <SelectItem value="Actif">Actif</SelectItem>
               </SelectContent>
             </Select>
           </div>

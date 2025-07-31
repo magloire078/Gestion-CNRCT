@@ -28,16 +28,16 @@ import { subscribeToLeaves, addLeave, updateLeaveStatus } from "@/services/leave
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 
-type Status = "Approved" | "Pending" | "Rejected";
+type Status = "Approuvé" | "En attente" | "Rejeté";
 
 const statusVariantMap: Record<Status, "default" | "secondary" | "destructive"> =
   {
-    Approved: "default",
-    Pending: "secondary",
-    Rejected: "destructive",
+    "Approuvé": "default",
+    "En attente": "secondary",
+    "Rejeté": "destructive",
   };
   
-const leaveTypes = ["Annual Leave", "Sick Leave", "Personal Leave", "Maternity Leave", "Unpaid Leave"];
+const leaveTypes = ["Congé Annuel", "Congé Maladie", "Congé Personnel", "Congé Maternité", "Congé sans solde"];
 
 export default function LeavePage() {
   const [leaves, setLeaves] = useState<Leave[]>([]);
@@ -106,8 +106,8 @@ export default function LeavePage() {
     });
   }, [leaves, searchTerm, typeFilter, statusFilter]);
 
-  const pendingCount = useMemo(() => leaves.filter((l) => l.status === "Pending").length, [leaves]);
-  const approvedCount = useMemo(() => leaves.filter((l) => l.status === "Approved").length, [leaves]);
+  const pendingCount = useMemo(() => leaves.filter((l) => l.status === "En attente").length, [leaves]);
+  const approvedCount = useMemo(() => leaves.filter((l) => l.status === "Approuvé").length, [leaves]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -170,7 +170,7 @@ export default function LeavePage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Tous les types</SelectItem>
-                {leaveTypes.map(type => <SelectItem key={type} value={type}>{type.replace(" Leave","")}</SelectItem>)}
+                {leaveTypes.map(type => <SelectItem key={type} value={type}>{type}</SelectItem>)}
               </SelectContent>
             </Select>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -179,9 +179,9 @@ export default function LeavePage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Tous les statuts</SelectItem>
-                <SelectItem value="Pending">En attente</SelectItem>
-                <SelectItem value="Approved">Approuvé</SelectItem>
-                <SelectItem value="Rejected">Rejeté</SelectItem>
+                <SelectItem value="En attente">En attente</SelectItem>
+                <SelectItem value="Approuvé">Approuvé</SelectItem>
+                <SelectItem value="Rejeté">Rejeté</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -232,9 +232,9 @@ export default function LeavePage() {
                             variant="outline"
                             size="icon"
                             className="h-8 w-8"
-                            disabled={leave.status !== "Pending"}
+                            disabled={leave.status !== "En attente"}
                             onClick={() =>
-                                handleLeaveStatusChange(leave.id, "Approved")
+                                handleLeaveStatusChange(leave.id, "Approuvé")
                             }
                             >
                             <Check className="h-4 w-4" />
@@ -244,9 +244,9 @@ export default function LeavePage() {
                             variant="outline"
                             size="icon"
                             className="h-8 w-8"
-                            disabled={leave.status !== "Pending"}
+                            disabled={leave.status !== "En attente"}
                             onClick={() =>
-                                handleLeaveStatusChange(leave.id, "Rejected")
+                                handleLeaveStatusChange(leave.id, "Rejeté")
                             }
                             >
                             <X className="h-4 w-4" />
@@ -280,13 +280,13 @@ export default function LeavePage() {
                                         {leave.status}
                                     </Badge>
                                 </div>
-                                {leave.status === 'Pending' && (
+                                {leave.status === 'En attente' && (
                                     <div className="flex flex-col gap-2">
                                         <Button
                                             variant="outline"
                                             size="icon"
                                             className="h-8 w-8"
-                                            onClick={() => handleLeaveStatusChange(leave.id, "Approved")}
+                                            onClick={() => handleLeaveStatusChange(leave.id, "Approuvé")}
                                         >
                                             <Check className="h-4 w-4" />
                                             <span className="sr-only">Approuver</span>
@@ -295,7 +295,7 @@ export default function LeavePage() {
                                             variant="outline"
                                             size="icon"
                                             className="h-8 w-8"
-                                            onClick={() => handleLeaveStatusChange(leave.id, "Rejected")}
+                                            onClick={() => handleLeaveStatusChange(leave.id, "Rejeté")}
                                         >
                                             <X className="h-4 w-4" />
                                             <span className="sr-only">Rejeter</span>

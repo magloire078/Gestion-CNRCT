@@ -27,13 +27,13 @@ import { subscribeToMissions, addMission } from "@/services/mission-service";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 
-type Status = "Planned" | "In Progress" | "Completed" | "Cancelled";
+type Status = "Planifiée" | "En cours" | "Terminée" | "Annulée";
 
 const statusVariantMap: Record<Status, "secondary" | "default" | "outline" | "destructive"> = {
-  'Planned': 'secondary',
-  'In Progress': 'default',
-  'Completed': 'outline',
-  'Cancelled': 'destructive',
+  'Planifiée': 'secondary',
+  'En cours': 'default',
+  'Terminée': 'outline',
+  'Annulée': 'destructive',
 };
 
 export default function MissionsPage() {

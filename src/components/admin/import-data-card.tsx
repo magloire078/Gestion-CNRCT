@@ -12,26 +12,9 @@ import { batchAddEmployees } from "@/services/employee-service";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import type { Employe } from "@/lib/data";
 
-type EmployeeCsvRow = {
-  matricule: string;
-  nom: string;
-  prenom: string;
-  email?: string;
-  poste: string;
-  service: string;
-  Statut: '0' | '1';
-  Photo?: string;
-  salaire_Base?: string;
-  prime_ancien?: string;
-  indemnite_Transport?: string;
-  indemnite_Responsabilite?: string;
-  indemnite_Logement?: string;
-  indemnite_transport_non_imposable?: string;
-  Banque?: string;
-  Num_Compte?: string;
-  Num_CNPS?: string;
-  Date_Embauche?: string;
-};
+
+// Define a more flexible type for CSV row to handle various fields
+type EmployeeCsvRow = { [key: string]: string | undefined };
 
 export function ImportDataCard() {
   const [file, setFile] = useState<File | null>(null);
@@ -56,7 +39,7 @@ export function ImportDataCard() {
     setIsImporting(true);
     setError(null);
 
-    Papa.parse<any>(file, {
+    Papa.parse<EmployeeCsvRow>(file, {
       header: true,
       skipEmptyLines: true,
       complete: async (results) => {
@@ -68,32 +51,78 @@ export function ImportDataCard() {
         }
         
         const employeesToImport: Omit<Employe, "id">[] = results.data
-          .filter(row => row.matricule && row.nom && row.poste && row.service && row.Statut)
-          .map(row => ({
-              matricule: row.matricule,
-              firstName: row.prenom || '',
-              lastName: row.nom || '',
-              name: `${row.prenom || ''} ${row.nom || ''}`.trim(),
-              email: row.email || '',
-              poste: row.poste,
-              department: row.service,
-              photoUrl: row.Photo ? `/photos/${row.Photo}` : 'https://placehold.co/100x100.png',
-              status: row.Statut === '1' ? 'Actif' : 'Licencié',
-              baseSalary: parseFloat(row.salaire_Base?.replace(/,/g, '.') || '0'),
-              primeAnciennete: parseFloat(row.prime_ancien?.replace(/,/g, '.') || '0'),
-              indemniteTransportImposable: parseFloat(row.indemnite_Transport?.replace(/,/g, '.') || '0'),
-              indemniteResponsabilite: parseFloat(row.indemnite_Responsabilite?.replace(/,/g, '.') || '0'),
-              indemniteLogement: parseFloat(row.indemnite_Logement?.replace(/,/g, '.') || '0'),
-              transportNonImposable: parseFloat(row.indemnite_transport_non_imposable?.replace(/,/g, '.') || '0'),
-              banque: row.Banque || '',
-              numeroCompte: row.Num_Compte || '',
-              cnpsEmploye: row.Num_CNPS || '',
-              dateEmbauche: row.Date_Embauche || '',
-            }
-          ));
+          .filter(row => row.matricule && row.nom && row.poste && row.service)
+          .map(row => {
+              const parseNumber = (value: string | undefined) => {
+                  if (!value) return 0;
+                  return parseFloat(value.replace(/ /g, '').replace(/,/g, '.')) || 0;
+              }
+
+              return {
+                // Main fields
+                matricule: row.matricule!,
+                nom: row.nom!,
+                prenom: row.prenom || '',
+                name: `${row.prenom || ''} ${row.nom || ''}`.trim(),
+                poste: row.poste!,
+                service: row.service!,
+                department: row.service!, // compatibility
+                status: row.Statut === '1' ? 'Actif' : 'Licencié',
+                
+                // Detailed personal info
+                civilite: row.civilite,
+                sexe: row.sexe,
+                mobile: row.mobile,
+                email: row.email,
+                situation_famille: row.situation_famille,
+                nombre_enfants: parseNumber(row.nombre_enfants),
+                Lieu_Naissance: row.Lieu_Naissance,
+                Date_Naissance: row.Date_Naissance,
+                Date_Embauche: row.Date_Embauche,
+                Date_Immatriculation: row.Date_Immatriculation,
+                Date_Depart: row.Date_Depart,
+
+                // Photo
+                photoUrl: row.Photo ? `/photos/${row.Photo.trim()}` : 'https://placehold.co/100x100.png',
+                Photo: row.Photo,
+                
+                // Grouping
+                groupe_1: row.groupe_1,
+                groupe_2: row.groupe_2,
+                Region: row.Region,
+                Image_Region: row.Image_Region,
+                Departement: row.Departement,
+                Commune: row.Commune,
+                Village: row.Village,
+                
+                // Salary & Compensation
+                baseSalary: parseNumber(row.salaire_Base),
+                primeAnciennete: parseNumber(row.prime_ancien),
+                indemniteTransportImposable: parseNumber(row.indemnite_Transport),
+                indemniteResponsabilite: parseNumber(row.indemnite_Responsabilite),
+                indemniteLogement: parseNumber(row.indemnite_Logement),
+                indemniteSujetion: parseNumber(row.indemnite_Sujetion),
+                indemniteCommunication: parseNumber(row.indemnite_Communication),
+                indemniteRepresentation: parseNumber(row.indemnite_Representation),
+                Salaire_Brut: parseNumber(row.Salaire_Brut),
+                transportNonImposable: parseNumber(row.indemnite_transport_non_imposable),
+                Salaire_Net: parseNumber(row.Salaire_Net),
+
+                // Bank & Legal
+                banque: row.Banque,
+                numeroCompte: row.Num_Compte,
+                CB: row.CB,
+                CG: row.CG,
+                Cle_RIB: row.Cle_RIB,
+                CNPS: row.CNPS === '1',
+                cnpsEmploye: row.Num_CNPS,
+                Num_CNPS: row.Num_CNPS,
+                Num_Decision: row.Num_Decision,
+              } as Omit<Employe, 'id'>
+          });
 
         if (employeesToImport.length === 0) {
-          setError("Le fichier CSV est vide ou ne contient pas les colonnes requises (matricule, nom, prenom, poste, service, Statut).");
+          setError("Le fichier CSV est vide ou ne contient pas les colonnes requises (matricule, nom, poste, service).");
           setIsImporting(false);
           return;
         }
@@ -102,7 +131,7 @@ export function ImportDataCard() {
           const count = await batchAddEmployees(employeesToImport);
           toast({
             title: "Importation réussie",
-            description: `${count} employés ont été importés avec succès. La page des employés va maintenant se mettre à jour.`,
+            description: `${count} employés ont été importés ou mis à jour. La page des employés va maintenant se rafraîchir.`,
           });
           setFile(null);
           if(inputRef.current) inputRef.current.value = "";

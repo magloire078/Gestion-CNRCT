@@ -29,7 +29,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import type { Leave, Employee } from "@/lib/data";
+import type { Leave, Employe } from "@/lib/data";
 import { getEmployees } from "@/services/employee-service";
 
 interface AddLeaveRequestSheetProps {
@@ -43,7 +43,7 @@ export function AddLeaveRequestSheet({
   onClose,
   onAddLeaveRequest,
 }: AddLeaveRequestSheetProps) {
-  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [employees, setEmployees] = useState<Employe[]>([]);
   const [employee, setEmployee] = useState("");
   const [leaveType, setLeaveType] = useState("");
   const [startDate, setStartDate] = useState<Date>();
@@ -56,7 +56,7 @@ export function AddLeaveRequestSheet({
       async function fetchEmployees() {
         try {
           const fetchedEmployees = await getEmployees();
-          setEmployees(fetchedEmployees.filter(e => e.status === 'Active'));
+          setEmployees(fetchedEmployees.filter(e => e.status === 'Actif'));
         } catch (error) {
           console.error("Failed to fetch employees for leave request form", error);
         }
@@ -96,7 +96,7 @@ export function AddLeaveRequestSheet({
     try {
       await onAddLeaveRequest({
         employee,
-        type: leaveType,
+        type: leaveType as Leave['type'],
         startDate: format(startDate, "yyyy-MM-dd"),
         endDate: format(endDate, "yyyy-MM-dd"),
       });
@@ -146,11 +146,11 @@ export function AddLeaveRequestSheet({
                 <SelectValue placeholder="Sélectionnez un type..." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Annual Leave">Congé Annuel</SelectItem>
-                <SelectItem value="Sick Leave">Congé Maladie</SelectItem>
-                <SelectItem value="Personal Leave">Congé Personnel</SelectItem>
-                <SelectItem value="Maternity Leave">Congé Maternité</SelectItem>
-                <SelectItem value="Unpaid Leave">Congé sans solde</SelectItem>
+                <SelectItem value="Congé Annuel">Congé Annuel</SelectItem>
+                <SelectItem value="Congé Maladie">Congé Maladie</SelectItem>
+                <SelectItem value="Congé Personnel">Congé Personnel</SelectItem>
+                <SelectItem value="Congé Maternité">Congé Maternité</SelectItem>
+                <SelectItem value="Congé sans solde">Congé sans solde</SelectItem>
               </SelectContent>
             </Select>
           </div>

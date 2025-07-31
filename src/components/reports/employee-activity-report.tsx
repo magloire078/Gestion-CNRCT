@@ -21,14 +21,14 @@ import { Label } from "../ui/label";
 import { getEmployees } from "@/services/employee-service";
 import { getLeaves } from "@/services/leave-service";
 import { getMissions } from "@/services/mission-service";
-import type { Employee, Leave, Mission } from "@/lib/data";
+import type { Employe, Leave, Mission } from "@/lib/data";
 import { Loader2 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
 interface ReportData {
-  newHires: Employee[];
-  terminations: Employee[];
+  newHires: Employe[];
+  terminations: Employe[];
   approvedLeaves: Leave[];
   missions: Mission[];
 }
@@ -58,12 +58,12 @@ export function EmployeeActivityReport() {
       // Note: We don't have hiring or termination dates, so we can't filter by month.
       // This is a placeholder for a more complete implementation.
       // For now, we'll just show all employees as "new" hires and "terminations" for demonstration.
-      const newHires = employees.filter(e => e.status === 'Active').slice(0, 5);
-      const terminations = employees.filter(e => e.status === 'Terminated').slice(0, 5);
+      const newHires = employees.filter(e => e.status === 'Actif').slice(0, 5);
+      const terminations = employees.filter(e => e.status === 'Licencié').slice(0, 5);
 
       const approvedLeaves = leaves.filter(l => {
         const leaveDate = new Date(l.startDate);
-        return l.status === "Approved" &&
+        return l.status === "Approuvé" &&
                leaveDate.getFullYear() === selectedYear &&
                leaveDate.getMonth() === selectedMonth;
       });

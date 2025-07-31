@@ -21,12 +21,12 @@ import { subscribeToEmployees } from '@/services/employee-service';
 import { subscribeToLeaves } from '@/services/leave-service';
 import { subscribeToAssets } from '@/services/asset-service';
 import { subscribeToVehicles } from '@/services/fleet-service';
-import type { Employee, Leave, Asset, Fleet } from '@/lib/data';
+import type { Employe, Leave, Asset, Fleet } from '@/lib/data';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Label } from '@/components/ui/label';
 
 export default function DashboardPage() {
-    const [employees, setEmployees] = useState<Employee[]>([]);
+    const [employees, setEmployees] = useState<Employe[]>([]);
     const [leaves, setLeaves] = useState<Leave[]>([]);
     const [assets, setAssets] = useState<Asset[]>([]);
     const [fleet, setFleet] = useState<Fleet[]>([]);

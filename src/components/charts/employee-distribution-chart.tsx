@@ -12,7 +12,7 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart"
 import { getEmployees } from "@/services/employee-service"
-import type { Employee } from "@/lib/data"
+import type { Employe } from "@/lib/data"
 import { Skeleton } from "../ui/skeleton"
 
 const chartConfig = {

@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -12,7 +13,7 @@ import {ai} from '@/ai/genkit';
 import {z} from 'zod';
 import { getPayslipDetails } from '@/services/payslip-details-service';
 import { numberToWords } from '@/lib/utils';
-import type { Employee } from '@/lib/data';
+import type { Employe } from '@/lib/data';
 
 
 const GenerateDocumentInputSchema = z.object({
@@ -96,14 +97,14 @@ const generateDocumentFlow = ai.defineFlow(
         let netSalaryInWords = '';
 
         // Very basic mock employee for calculation if only salary is provided
-        const mockEmployee: Employee = {
+        const mockEmployee: Employe = {
             id: 'temp',
             name: input.employeeContext.name || '',
             baseSalary: input.employeeContext.baseSalary || 0,
             matricule: '',
             department: '',
             poste: '',
-            status: 'Active',
+            status: 'Actif',
             photoUrl: '',
         };
 

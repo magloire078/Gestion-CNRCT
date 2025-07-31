@@ -27,17 +27,17 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import type { Employee } from "@/lib/data";
+import type { Employe } from "@/lib/data";
 
 interface EditPayrollSheetProps {
   isOpen: boolean;
   onClose: () => void;
-  onUpdatePayroll: (employeeId: string, payroll: Partial<Employee>) => Promise<void>;
-  employee: Employee;
+  onUpdatePayroll: (employeeId: string, payroll: Partial<Employe>) => Promise<void>;
+  employee: Employe;
 }
 
 export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }: EditPayrollSheetProps) {
-  const [formState, setFormState] = useState<Partial<Employee>>(employee);
+  const [formState, setFormState] = useState<Partial<Employe>>(employee);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -218,4 +218,3 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
     </Sheet>
   );
 }
-

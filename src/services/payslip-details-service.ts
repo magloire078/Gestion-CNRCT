@@ -1,6 +1,6 @@
 
 
-import type { Employee, PayslipDetails, PayslipEarning, PayslipDeduction, PayslipEmployerContribution } from '@/lib/data';
+import type { Employe, PayslipDetails, PayslipEarning, PayslipDeduction, PayslipEmployerContribution } from '@/lib/data';
 import { numberToWords } from '@/lib/utils';
 import { getOrganizationSettings } from './organization-service';
 
@@ -9,7 +9,7 @@ import { getOrganizationSettings } from './organization-service';
 // Note: Tax and contribution rates are simplified approximations.
 // A real-world application would require precise, up-to-date rates and regulations.
 
-export async function getPayslipDetails(employee: Employee): Promise<PayslipDetails> {
+export async function getPayslipDetails(employee: Employe): Promise<PayslipDetails> {
     
     const baseSalary = employee.baseSalary || 0;
     const primeAnciennete = employee.primeAnciennete || 0;

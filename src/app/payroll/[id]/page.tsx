@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { Employee } from "@/lib/data";
+import type { Employe } from "@/lib/data";
 import { getEmployee } from "@/services/employee-service";
 import { getPayslipDetails, PayslipDetails } from "@/services/payslip-details-service";
 import { ArrowLeft, Printer } from "lucide-react";
@@ -14,7 +14,7 @@ export default function PayslipPage() {
     const params = useParams();
     const router = useRouter();
     const { id } = params;
-    const [employee, setEmployee] = useState<Employee | null>(null);
+    const [employee, setEmployee] = useState<Employe | null>(null);
     const [payslipDetails, setPayslipDetails] = useState<PayslipDetails | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);

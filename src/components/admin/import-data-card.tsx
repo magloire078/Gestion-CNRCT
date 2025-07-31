@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Upload, Loader2, AlertCircle } from "lucide-react";
 import { batchAddEmployees } from "@/services/employee-service";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
-import type { Employee } from "@/lib/data";
+import type { Employe } from "@/lib/data";
 
 type EmployeeCsvRow = {
   matricule: string;
@@ -67,7 +67,7 @@ export function ImportDataCard() {
             return;
         }
         
-        const employeesToImport: Omit<Employee, "id">[] = results.data
+        const employeesToImport: Omit<Employe, "id">[] = results.data
           .filter(row => row.matricule && row.nom && row.poste && row.service && row.Statut)
           .map(row => ({
               matricule: row.matricule,
@@ -78,7 +78,7 @@ export function ImportDataCard() {
               poste: row.poste,
               department: row.service,
               photoUrl: row.Photo ? `/photos/${row.Photo}` : 'https://placehold.co/100x100.png',
-              status: row.Statut === '1' ? 'Active' : 'Terminated',
+              status: row.Statut === '1' ? 'Actif' : 'Licencié',
               baseSalary: parseFloat(row.salaire_Base?.replace(/,/g, '.') || '0'),
               primeAnciennete: parseFloat(row.prime_ancien?.replace(/,/g, '.') || '0'),
               indemniteTransportImposable: parseFloat(row.indemnite_Transport?.replace(/,/g, '.') || '0'),

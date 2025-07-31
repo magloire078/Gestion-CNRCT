@@ -5,7 +5,7 @@ import { useState, useEffect, useActionState, useRef } from "react";
 import { useFormStatus } from "react-dom";
 import { generateDocumentAction, FormState } from "./actions";
 import { getEmployees } from "@/services/employee-service";
-import type { Employee } from "@/lib/data";
+import type { Employe } from "@/lib/data";
 
 
 import { Button } from "@/components/ui/button";
@@ -33,7 +33,7 @@ function SubmitButton() {
 
 export default function DocumentGeneratorPage() {
   const [state, formAction] = useActionState(generateDocumentAction, initialState);
-  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [employees, setEmployees] = useState<Employe[]>([]);
   const [loadingEmployees, setLoadingEmployees] = useState(true);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState('');
   const [documentType, setDocumentType] = useState('');
@@ -55,7 +55,7 @@ export default function DocumentGeneratorPage() {
     fetchEmployees();
   }, []);
 
-  const prefillContent = (employee: Employee, type: string) => {
+  const prefillContent = (employee: Employe, type: string) => {
     let content = '';
     if (type === 'Attestation de Virement') {
         content = `## Contexte pour l'Attestation de Virement Irrévocable

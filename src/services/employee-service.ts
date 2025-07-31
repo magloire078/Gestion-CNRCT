@@ -2,18 +2,18 @@
 
 import { db } from '@/lib/firebase';
 import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, onSnapshot, Unsubscribe, query, orderBy, where, writeBatch, getDoc } from 'firebase/firestore';
-import type { Employee } from '@/lib/data';
+import type { Employe } from '@/lib/data';
 import { getOrganizationSettings } from './organization-service';
 
 export function subscribeToEmployees(
-    callback: (employees: Employee[]) => void,
+    callback: (employees: Employe[]) => void,
     onError: (error: Error) => void
 ): Unsubscribe {
     const employeesCollection = collection(db, 'employees');
     const q = query(employeesCollection, orderBy("name", "asc"));
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-        const employeeList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Employee));
+        const employeeList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Employe));
         callback(employeeList);
     }, (error) => {
         console.error("Error subscribing to employees:", error);
@@ -24,23 +24,23 @@ export function subscribeToEmployees(
 }
 
 
-export async function getEmployees(): Promise<Employee[]> {
+export async function getEmployees(): Promise<Employe[]> {
   const employeesCollection = collection(db, 'employees');
   const employeeSnapshot = await getDocs(employeesCollection);
-  const employeeList = employeeSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Employee));
+  const employeeList = employeeSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Employe));
   return employeeList.sort((a, b) => a.name.localeCompare(b.name));
 }
 
-export async function getEmployee(id: string): Promise<Employee | null> {
+export async function getEmployee(id: string): Promise<Employe | null> {
     const employeeRef = doc(db, 'employees', id);
     const employeeSnap = await getDoc(employeeRef);
     if(employeeSnap.exists()){
-        return { id: employeeSnap.id, ...employeeSnap.data() } as Employee;
+        return { id: employeeSnap.id, ...employeeSnap.data() } as Employe;
     }
     return null;
 }
 
-export async function addEmployee(employeeDataToAdd: Omit<Employee, 'id'>): Promise<Employee> {
+export async function addEmployee(employeeDataToAdd: Omit<Employe, 'id'>): Promise<Employe> {
     const employeesCollection = collection(db, 'employees');
     
     // Check for existing matricule
@@ -51,14 +51,14 @@ export async function addEmployee(employeeDataToAdd: Omit<Employee, 'id'>): Prom
     }
 
     const docRef = await addDoc(employeesCollection, employeeDataToAdd);
-    const newEmployee: Employee = { 
+    const newEmployee: Employe = { 
         id: docRef.id, 
         ...employeeDataToAdd
     };
     return newEmployee;
 }
 
-export async function batchAddEmployees(employees: Omit<Employee, 'id'>[]): Promise<number> {
+export async function batchAddEmployees(employees: Omit<Employe, 'id'>[]): Promise<number> {
     const employeesCollection = collection(db, 'employees');
     const q = query(employeesCollection);
     const querySnapshot = await getDocs(q);
@@ -84,7 +84,7 @@ export async function batchAddEmployees(employees: Omit<Employee, 'id'>[]): Prom
 }
 
 
-export async function updateEmployee(employeeId: string, employeeDataToUpdate: Partial<Employee>): Promise<void> {
+export async function updateEmployee(employeeId: string, employeeDataToUpdate: Partial<Employe>): Promise<void> {
     const employeeRef = doc(db, 'employees', employeeId);
     await updateDoc(employeeRef, employeeDataToUpdate);
 }
@@ -94,7 +94,7 @@ export async function deleteEmployee(employeeId: string): Promise<void> {
     await deleteDoc(employeeRef);
 }
 
-export async function searchEmployees(query: string): Promise<Employee[]> {
+export async function searchEmployees(query: string): Promise<Employe[]> {
     const lowerCaseQuery = query.toLowerCase();
     const allEmployees = await getEmployees();
     return allEmployees.filter(employee => 

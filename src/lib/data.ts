@@ -1,6 +1,6 @@
 
 
-export type Employee = {
+export type Employe = {
   id: string; // Firestore document ID
   civilite?: string;
   nom?: string;
@@ -158,7 +158,7 @@ export type PayslipEmployerContribution = {
 
 // Type for the full payslip details
 export type PayslipDetails = {
-    employeeInfo: Employee;
+    employeeInfo: Employe;
     earnings: PayslipEarning[];
     deductions: PayslipDeduction[];
     totals: {

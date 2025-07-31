@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import type { Employee } from "@/lib/data";
+import type { Employe } from "@/lib/data";
 import { TableRow, TableCell } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
@@ -15,17 +15,17 @@ import { departments } from "@/app/employees/page";
 type Status = 'Active' | 'On Leave' | 'Terminated';
 
 interface InlineEditRowProps {
-    employee: Employee;
+    employee: Employe;
     isEditing: boolean;
     onEdit: (employeeId: string) => void;
-    onSave: (employeeId: string, data: Partial<Employee>) => Promise<void>;
+    onSave: (employeeId: string, data: Partial<Employe>) => Promise<void>;
     onCancel: () => void;
     onDelete: (employeeId: string) => void;
     statusVariantMap: Record<Status, "default" | "secondary" | "destructive">;
 }
 
 export function InlineEditRow({ employee, isEditing, onEdit, onSave, onCancel, onDelete, statusVariantMap }: InlineEditRowProps) {
-    const [editData, setEditData] = useState<Partial<Employee>>({});
+    const [editData, setEditData] = useState<Partial<Employe>>({});
 
     useEffect(() => {
         if (isEditing) {

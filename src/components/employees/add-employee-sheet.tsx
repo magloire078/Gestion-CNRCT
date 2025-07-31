@@ -21,14 +21,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { Employee } from "@/lib/data";
+import type { Employe } from "@/lib/data";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Upload } from "lucide-react";
 
 interface AddEmployeeSheetProps {
   isOpen: boolean;
   onClose: () => void;
-  onAddEmployee: (employee: Omit<Employee, "id">) => Promise<void>;
+  onAddEmployee: (employee: Omit<Employe, "id">) => Promise<void>;
 }
 
 export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployeeSheetProps) {
@@ -38,7 +38,7 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
   const [email, setEmail] = useState("");
   const [poste, setPoste] = useState("");
   const [department, setDepartment] = useState("");
-  const [status, setStatus] = useState<Employee['status']>('Active');
+  const [status, setStatus] = useState<Employe['status']>('Actif');
   const [photoUrl, setPhotoUrl] = useState(`https://placehold.co/100x100.png`);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -51,7 +51,7 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
     setEmail("");
     setPoste("");
     setDepartment("");
-    setStatus("Active");
+    setStatus("Actif");
     setPhotoUrl(`https://placehold.co/100x100.png`);
     setError("");
     if(fileInputRef.current) {
@@ -190,14 +190,14 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
               <Label htmlFor="status" className="text-right">
                 Statut
               </Label>
-               <Select value={status} onValueChange={(value: Employee['status']) => setStatus(value)}>
+               <Select value={status} onValueChange={(value: Employe['status']) => setStatus(value)}>
                   <SelectTrigger className="col-span-3">
                       <SelectValue placeholder="Sélectionnez un statut" />
                   </SelectTrigger>
                   <SelectContent>
-                      <SelectItem value="Active">Actif</SelectItem>
-                      <SelectItem value="On Leave">En congé</SelectItem>
-                      <SelectItem value="Terminated">Licencié</SelectItem>
+                      <SelectItem value="Actif">Actif</SelectItem>
+                      <SelectItem value="En congé">En congé</SelectItem>
+                      <SelectItem value="Licencié">Licencié</SelectItem>
                   </SelectContent>
                </Select>
             </div>

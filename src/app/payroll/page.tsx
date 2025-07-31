@@ -27,7 +27,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import type { Employee } from "@/lib/data";
+import type { Employe } from "@/lib/data";
 import { subscribeToEmployees, updateEmployee } from "@/services/employee-service";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
@@ -35,9 +35,9 @@ import { EditPayrollSheet } from "@/components/payroll/edit-payroll-sheet";
 import Link from "next/link";
 
 export default function PayrollPage() {
-  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [employees, setEmployees] = useState<Employe[]>([]);
   const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
-  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
+  const [selectedEmployee, setSelectedEmployee] = useState<Employe | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
@@ -47,7 +47,7 @@ export default function PayrollPage() {
     const unsubscribe = subscribeToEmployees(
       (fetchedEmployees) => {
         // Filter for employees who should be on payroll
-        const payrollEmployees = fetchedEmployees.filter(e => e.status === 'Active' || e.status === 'On Leave');
+        const payrollEmployees = fetchedEmployees.filter(e => e.status === 'Actif' || e.status === 'En congé');
         setEmployees(payrollEmployees);
         setError(null);
         setLoading(false);
@@ -61,12 +61,12 @@ export default function PayrollPage() {
      return () => unsubscribe();
   }, []);
   
-  const openEditSheet = (employee: Employee) => {
+  const openEditSheet = (employee: Employe) => {
     setSelectedEmployee(employee);
     setIsEditSheetOpen(true);
   };
   
-  const handleUpdatePayroll = async (employeeId: string, updatedPayrollData: Partial<Employee>) => {
+  const handleUpdatePayroll = async (employeeId: string, updatedPayrollData: Partial<Employe>) => {
     try {
       if(updatedPayrollData.firstName || updatedPayrollData.lastName) {
           const originalEmployee = employees.find(e => e.id === employeeId);
@@ -233,4 +233,3 @@ export default function PayrollPage() {
     </div>
   );
 }
-

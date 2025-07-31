@@ -49,44 +49,41 @@ export function ImportDataCard() {
             setIsImporting(false);
             return;
         }
+
+        const requiredColumns = ['matricule', 'nom', 'prenom', 'poste', 'service'];
+        const headers = results.meta.fields || [];
+        const missingColumns = requiredColumns.filter(col => !headers.includes(col));
+
+        if (missingColumns.length > 0) {
+             setError(`Le fichier CSV est invalide. Colonnes manquantes : ${missingColumns.join(', ')}.`);
+             setIsImporting(false);
+             return;
+        }
         
         const employeesToImport: Omit<Employe, "id">[] = results.data
-          .filter(row => row.matricule && row.nom && row.poste && row.service)
+          .filter(row => row.matricule && (row.nom || row.prenom)) // Basic validation for a valid row
           .map(row => {
               const parseNumber = (value: string | undefined) => {
-                  if (!value) return 0;
-                  return parseFloat(value.replace(/ /g, '').replace(/,/g, '.')) || 0;
+                  if (!value || value.trim() === '') return undefined;
+                  return parseFloat(value.replace(/ /g, '').replace(/,/g, '.')) || undefined;
               }
 
+              const combinedName = `${row.prenom || ''} ${row.nom || ''}`.trim();
+
               return {
-                // Main fields
                 matricule: row.matricule!,
-                nom: row.nom!,
-                prenom: row.prenom || '',
-                name: `${row.prenom || ''} ${row.nom || ''}`.trim(),
-                poste: row.poste!,
-                service: row.service!,
-                department: row.service!, // compatibility
+                name: combinedName,
+                firstName: row.prenom,
+                lastName: row.nom,
+                poste: row.poste,
+                department: row.service,
                 status: row.Statut === '1' ? 'Actif' : 'Licencié',
                 
-                // Detailed personal info
                 civilite: row.civilite,
                 sexe: row.sexe,
                 mobile: row.mobile,
                 email: row.email,
-                situation_famille: row.situation_famille,
-                nombre_enfants: parseNumber(row.nombre_enfants),
-                Lieu_Naissance: row.Lieu_Naissance,
-                Date_Naissance: row.Date_Naissance,
-                Date_Embauche: row.Date_Embauche,
-                Date_Immatriculation: row.Date_Immatriculation,
-                Date_Depart: row.Date_Depart,
-
-                // Photo
-                photoUrl: row.Photo ? `/photos/${row.Photo.trim()}` : 'https://placehold.co/100x100.png',
-                Photo: row.Photo,
                 
-                // Grouping
                 groupe_1: row.groupe_1,
                 groupe_2: row.groupe_2,
                 Region: row.Region,
@@ -95,7 +92,6 @@ export function ImportDataCard() {
                 Commune: row.Commune,
                 Village: row.Village,
                 
-                // Salary & Compensation
                 baseSalary: parseNumber(row.salaire_Base),
                 primeAnciennete: parseNumber(row.prime_ancien),
                 indemniteTransportImposable: parseNumber(row.indemnite_Transport),
@@ -108,7 +104,6 @@ export function ImportDataCard() {
                 transportNonImposable: parseNumber(row.indemnite_transport_non_imposable),
                 Salaire_Net: parseNumber(row.Salaire_Net),
 
-                // Bank & Legal
                 banque: row.Banque,
                 numeroCompte: row.Num_Compte,
                 CB: row.CB,
@@ -116,13 +111,23 @@ export function ImportDataCard() {
                 Cle_RIB: row.Cle_RIB,
                 CNPS: row.CNPS === '1',
                 cnpsEmploye: row.Num_CNPS,
-                Num_CNPS: row.Num_CNPS,
                 Num_Decision: row.Num_Decision,
+                
+                Date_Naissance: row.Date_Naissance,
+                dateEmbauche: row.Date_Embauche,
+                Date_Immatriculation: row.Date_Immatriculation,
+                Date_Depart: row.Date_Depart,
+
+                situationMatrimoniale: row.situation_famille,
+                enfants: parseNumber(row.nombre_enfants),
+                Lieu_Naissance: row.Lieu_Naissance,
+                
+                photoUrl: row.Photo ? `/photos/${row.Photo.trim()}` : `https://placehold.co/100x100.png`,
               } as Omit<Employe, 'id'>
           });
 
         if (employeesToImport.length === 0) {
-          setError("Le fichier CSV est vide ou ne contient pas les colonnes requises (matricule, nom, poste, service).");
+          setError("Aucune ligne d'employé valide n'a été trouvée dans le fichier CSV.");
           setIsImporting(false);
           return;
         }

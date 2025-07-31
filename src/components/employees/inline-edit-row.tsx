@@ -30,7 +30,8 @@ export function InlineEditRow({ employee, isEditing, onEdit, onSave, onCancel, o
     useEffect(() => {
         if (isEditing) {
             setEditData({
-                name: employee.name,
+                firstName: employee.firstName,
+                lastName: employee.lastName,
                 matricule: employee.matricule,
                 poste: employee.poste,
                 department: employee.department,
@@ -62,7 +63,10 @@ export function InlineEditRow({ employee, isEditing, onEdit, onSave, onCancel, o
                     </Avatar>
                 </TableCell>
                 <TableCell>
-                    <Input name="name" value={editData.name || ''} onChange={handleInputChange} className="h-8" />
+                    <div className="flex gap-2">
+                        <Input name="lastName" placeholder="Nom" value={editData.lastName || ''} onChange={handleInputChange} className="h-8" />
+                        <Input name="firstName" placeholder="Prénom(s)" value={editData.firstName || ''} onChange={handleInputChange} className="h-8" />
+                    </div>
                 </TableCell>
                 <TableCell>
                     <Input name="matricule" value={editData.matricule || ''} onChange={handleInputChange} className="h-8" />
@@ -116,7 +120,7 @@ export function InlineEditRow({ employee, isEditing, onEdit, onSave, onCancel, o
                     <AvatarFallback>{employee.name?.charAt(0) || 'E'}</AvatarFallback>
                 </Avatar>
             </TableCell>
-            <TableCell className="font-medium">{employee.name}</TableCell>
+            <TableCell className="font-medium">{`${employee.lastName || ''} ${employee.firstName || ''}`.trim()}</TableCell>
             <TableCell>{employee.matricule}</TableCell>
             <TableCell>{employee.poste}</TableCell>
             <TableCell>{employee.department}</TableCell>
@@ -138,3 +142,4 @@ export function InlineEditRow({ employee, isEditing, onEdit, onSave, onCancel, o
         </TableRow>
     );
 }
+

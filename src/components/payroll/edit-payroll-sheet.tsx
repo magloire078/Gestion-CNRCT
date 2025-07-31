@@ -89,7 +89,7 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
           <SheetHeader>
             <SheetTitle>Modifier les Détails de Paie</SheetTitle>
             <SheetDescription>
-              Mettez à jour les informations de paie pour {employee.name}.
+              Mettez à jour les informations de paie pour {`${employee.lastName || ''} ${employee.firstName || ''}`.trim()}.
             </SheetDescription>
           </SheetHeader>
           <div className="space-y-4 py-4">
@@ -99,7 +99,7 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
                     <AccordionContent className="space-y-4 pt-2">
                         <div className="space-y-2">
                             <Label>Employé</Label>
-                            <p className="font-medium text-muted-foreground">{employee.name}</p>
+                            <p className="font-medium text-muted-foreground">{`${employee.lastName || ''} ${employee.firstName || ''}`.trim()}</p>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div className="space-y-2 md:col-span-1">
@@ -218,3 +218,4 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
     </Sheet>
   );
 }
+

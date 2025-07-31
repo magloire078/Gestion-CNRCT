@@ -68,7 +68,12 @@ export default function PayrollPage() {
   
   const handleUpdatePayroll = async (employeeId: string, updatedPayrollData: Partial<Employee>) => {
     try {
-      // The service function now just updates the employee document
+      if(updatedPayrollData.firstName || updatedPayrollData.lastName) {
+          const originalEmployee = employees.find(e => e.id === employeeId);
+          const firstName = updatedPayrollData.firstName || originalEmployee?.firstName;
+          const lastName = updatedPayrollData.lastName || originalEmployee?.lastName;
+          updatedPayrollData.name = `${firstName} ${lastName}`.trim();
+      }
       await updateEmployee(employeeId, updatedPayrollData);
       setIsEditSheetOpen(false);
       toast({
@@ -123,7 +128,7 @@ export default function PayrollPage() {
                 ) : employees.length > 0 ? (
                     employees.map((employee) => (
                     <TableRow key={employee.id}>
-                        <TableCell className="font-medium">{employee.name}</TableCell>
+                        <TableCell className="font-medium">{`${employee.lastName || ''} ${employee.firstName || ''}`.trim()}</TableCell>
                         <TableCell>{employee.poste}</TableCell>
                         <TableCell className="text-right font-mono">
                         {(employee.baseSalary || 0).toLocaleString("fr-FR", {
@@ -175,7 +180,7 @@ export default function PayrollPage() {
                         <CardContent className="p-4">
                              <div className="flex justify-between items-start">
                                 <div>
-                                    <p className="font-bold">{employee.name}</p>
+                                    <p className="font-bold">{`${employee.lastName || ''} ${employee.firstName || ''}`.trim()}</p>
                                     <p className="text-sm text-muted-foreground">{employee.poste}</p>
                                 </div>
                                  <DropdownMenu>
@@ -228,3 +233,4 @@ export default function PayrollPage() {
     </div>
   );
 }
+

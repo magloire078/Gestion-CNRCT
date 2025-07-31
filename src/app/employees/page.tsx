@@ -29,14 +29,14 @@ const statusVariantMap: Record<Status, "default" | "secondary" | "destructive"> 
   'Terminated': 'destructive',
 };
 
-export const departments = ["Engineering", "Marketing", "Sales", "HR", "Operations", "Informatique", "Secretariat Général", "Communication", "Direction Administrative", "Direction des Affaires financières et du patrimoine", "Protocole", "Cabinet", "Direction des Affaires sociales", "Directoire", "Comités Régionaux", "Other"];
+export const departments = ["Engineering", "Marketing", "Sales", "HR", "Operations", "Informatique", "Secretariat Général", "Communication", "Direction Administrative", "Direction des Affaires financière et du patrimoine", "Protocole", "Cabinet", "Direction des Affaires sociales", "Directoire", "Comités Régionaux", "Other", "Sous Direction Patrimoine", "Direction Etudes et Documentation", "Rois & Chefs", "Gardes", "Manoeuvres", "Gendarmerie", "Garde Republicaine"];
 
 const allColumns = {
   matricule: "N° MAT",
   name: "NOM ET PRENOMS",
   poste: "POSTE",
-  department: "REGION", // Mapped to department for now
-  email: "CONTACT", // Mapped to email
+  department: "SERVICE", 
+  email: "CONTACT",
   status: "Statut",
 };
 export type ColumnKeys = keyof typeof allColumns;
@@ -110,6 +110,9 @@ export default function EmployeesPage() {
 
       // Merge original data with updated data to prevent overwriting fields not in the form
       const dataToUpdate = { ...originalEmployee, ...updatedEmployeeData };
+       if(dataToUpdate.firstName || dataToUpdate.lastName) {
+        dataToUpdate.name = `${dataToUpdate.firstName || ''} ${dataToUpdate.lastName || ''}`.trim();
+      }
       
       await updateEmployee(employeeId, dataToUpdate);
       setEditingEmployeeId(null);
@@ -322,10 +325,10 @@ export default function EmployeesPage() {
                         <TableHeader>
                             <TableRow>
                             <TableHead className="w-[80px]">Photo</TableHead>
-                            <TableHead>Nom</TableHead>
+                            <TableHead>Nom Complet</TableHead>
                             <TableHead>Matricule</TableHead>
                             <TableHead>Poste</TableHead>
-                            <TableHead>Département</TableHead>
+                            <TableHead>Service</TableHead>
                             <TableHead>Statut</TableHead>
                             <TableHead className="w-[100px] text-right">Actions</TableHead>
                             </TableRow>
@@ -448,3 +451,4 @@ export default function EmployeesPage() {
     </>
   );
 }
+

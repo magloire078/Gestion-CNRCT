@@ -7,7 +7,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { Upload, Loader2, AlertCircle } from "lucide-react";
+import { Upload, Loader2, AlertCircle, Download } from "lucide-react";
 import { batchAddEmployees } from "@/services/employee-service";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import type { Employe } from "@/lib/data";
@@ -65,7 +65,10 @@ export function ImportDataCard() {
           .map(row => {
               const parseNumber = (value: string | undefined) => {
                   if (!value || value.trim() === '') return undefined;
-                  return parseFloat(value.replace(/ /g, '').replace(/,/g, '.')) || undefined;
+                  const cleanedValue = value.replace(/ /g, '').replace(/,/g, '.');
+                  if (cleanedValue === '') return undefined;
+                  const num = parseFloat(cleanedValue);
+                  return isNaN(num) ? undefined : num;
               }
 
               const combinedName = `${row.prenom || ''} ${row.nom || ''}`.trim();
@@ -154,35 +157,27 @@ export function ImportDataCard() {
     });
   };
 
-  const loadAndImportDefault = async () => {
-    try {
-        const response = await fetch('/data/import_employes.csv');
-        if(!response.ok) {
-            throw new Error("Le fichier CSV par défaut n'a pas pu être chargé.");
-        }
-        const blob = await response.blob();
-        const defaultFile = new File([blob], "import_employes.csv", { type: "text/csv" });
-        setFile(defaultFile);
-        toast({
-            title: "Fichier prêt",
-            description: "Le fichier d'importation par défaut a été chargé. Cliquez sur 'Importer' pour continuer."
-        })
-    } catch(e) {
-        setError(e instanceof Error ? e.message : "Erreur inconnue");
-    }
-  }
-
   return (
     <Card>
       <CardHeader>
         <CardTitle>Importer des données</CardTitle>
         <CardDescription>
-          Importez une liste d'employés à partir d'un fichier CSV. Vous pouvez charger le <Button variant="link" className="p-0 h-auto" onClick={loadAndImportDefault}>fichier par défaut</Button> ou téléverser le vôtre.
+          Importez en masse des employés à partir d'un fichier CSV. Les employés avec un matricule déjà existant seront ignorés.
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="flex gap-4">
-          <Input type="file" accept=".csv" onChange={handleFileChange} className="flex-grow" ref={inputRef} />
+        <div className="flex flex-col gap-4">
+            <div className="flex gap-4">
+            <Input type="file" accept=".csv" onChange={handleFileChange} className="flex-grow" ref={inputRef} />
+            </div>
+            <a 
+                href="/data/import-employes-template.csv" 
+                download="modele-import-employes.csv"
+                className="text-sm text-primary hover:underline"
+            >
+                <Download className="inline-block mr-2 h-4 w-4" />
+                Télécharger le modèle CSV
+            </a>
         </div>
         {error && (
             <Alert variant="destructive" className="mt-4">

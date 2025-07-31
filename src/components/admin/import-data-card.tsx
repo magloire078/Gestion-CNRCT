@@ -56,7 +56,7 @@ export function ImportDataCard() {
     setIsImporting(true);
     setError(null);
 
-    Papa.parse<EmployeeCsvRow>(file, {
+    Papa.parse<any>(file, {
       header: true,
       skipEmptyLines: true,
       complete: async (results) => {
@@ -113,7 +113,7 @@ export function ImportDataCard() {
           setIsImporting(false);
         }
       },
-      error: (err) => {
+      error: (err: any) => {
         setError(`Erreur lors de l'analyse du fichier CSV : ${err.message}`);
         setIsImporting(false);
       },

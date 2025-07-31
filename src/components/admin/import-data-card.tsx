@@ -42,6 +42,7 @@ export function ImportDataCard() {
     Papa.parse<EmployeeCsvRow>(file, {
       header: true,
       skipEmptyLines: true,
+      transformHeader: header => header.trim(),
       complete: async (results) => {
         if (results.errors.length > 0) {
             console.error("CSV Parsing errors:", results.errors);
@@ -50,9 +51,9 @@ export function ImportDataCard() {
             return;
         }
 
-        const requiredColumns = ['matricule', 'nom', 'prenom', 'poste', 'service'];
+        const requiredColumns = ['matricule', 'nom', 'prenom', 'poste', 'service', 'statut'];
         const headers = results.meta.fields || [];
-        const missingColumns = requiredColumns.filter(col => !headers.includes(col));
+        const missingColumns = requiredColumns.filter(col => !headers.map(h => h.toLowerCase()).includes(col.toLowerCase()));
 
         if (missingColumns.length > 0) {
              setError(`Le fichier CSV est invalide. Colonnes manquantes : ${missingColumns.join(', ')}.`);
@@ -80,7 +81,7 @@ export function ImportDataCard() {
                 lastName: row.nom,
                 poste: row.poste,
                 department: row.service,
-                status: row.Statut === '1' ? 'Actif' : 'Licencié',
+                status: row.statut === '1' ? 'Actif' : 'Licencié',
                 
                 civilite: row.civilite,
                 sexe: row.sexe,

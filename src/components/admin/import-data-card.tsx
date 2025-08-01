@@ -43,7 +43,7 @@ export function ImportDataCard() {
       header: true,
       skipEmptyLines: 'greedy',
       dynamicTyping: true,
-      transformHeader: header => header.trim(),
+      transformHeader: header => header.trim().toLowerCase(),
       complete: async (results) => {
         if (results.errors.length > 0) {
             console.error("CSV Parsing errors:", results.errors);
@@ -55,7 +55,7 @@ export function ImportDataCard() {
 
         const headers = results.meta.fields || [];
         const requiredColumns = ['matricule', 'nom', 'prenom', 'poste', 'service', 'statut'];
-        const missingColumns = requiredColumns.filter(col => !headers.map(h => h.toLowerCase()).includes(col.toLowerCase()));
+        const missingColumns = requiredColumns.filter(col => !headers.includes(col));
 
         if (missingColumns.length > 0) {
              setError(`Le fichier CSV est invalide. Colonnes requises manquantes : ${missingColumns.join(', ')}.`);
@@ -75,7 +75,7 @@ export function ImportDataCard() {
               }
 
               const combinedName = `${row.prenom || ''} ${row.nom || ''}`.trim();
-              const photoPath = row.Photo ? String(row.Photo).trim() : null;
+              const photoPath = row.photo ? String(row.photo).trim() : null;
 
               return {
                 matricule: String(row.matricule),
@@ -93,41 +93,41 @@ export function ImportDataCard() {
                 
                 groupe_1: String(row.groupe_1 || ''),
                 groupe_2: String(row.groupe_2 || ''),
-                Region: String(row.Region || ''),
-                Image_Region: String(row.Image_Region || ''),
-                Departement: String(row.Departement || ''),
-                Commune: String(row.Commune || ''),
-                Village: String(row.Village || ''),
+                Region: String(row.region || ''),
+                Image_Region: String(row.image_region || ''),
+                Departement: String(row.departement || ''),
+                Commune: String(row.commune || ''),
+                Village: String(row.village || ''),
                 
-                baseSalary: parseNumber(row.salaire_Base),
+                baseSalary: parseNumber(row.salaire_base),
                 primeAnciennete: parseNumber(row.prime_ancien),
-                indemniteTransportImposable: parseNumber(row.indemnite_Transport),
-                indemniteResponsabilite: parseNumber(row.indemnite_Responsabilite),
-                indemniteLogement: parseNumber(row.indemnite_Logement),
-                indemniteSujetion: parseNumber(row.indemnite_Sujetion),
-                indemniteCommunication: parseNumber(row.indemnite_Communication),
-                indemniteRepresentation: parseNumber(row.indemnite_Representation),
-                Salaire_Brut: parseNumber(row.Salaire_Brut),
+                indemniteTransportImposable: parseNumber(row.indemnite_transport),
+                indemniteResponsabilite: parseNumber(row.indemnite_responsabilite),
+                indemniteLogement: parseNumber(row.indemnite_logement),
+                indemniteSujetion: parseNumber(row.indemnite_sujetion),
+                indemniteCommunication: parseNumber(row.indemnite_communication),
+                indemniteRepresentation: parseNumber(row.indemnite_representation),
+                Salaire_Brut: parseNumber(row.salaire_brut),
                 transportNonImposable: parseNumber(row.indemnite_transport_non_imposable),
-                Salaire_Net: parseNumber(row.Salaire_Net),
+                Salaire_Net: parseNumber(row.salaire_net),
 
-                banque: String(row.Banque || ''),
-                numeroCompte: String(row.Num_Compte || ''),
-                CB: String(row.CB || ''),
-                CG: String(row.CG || ''),
-                Cle_RIB: String(row.Cle_RIB || ''),
-                CNPS: row.CNPS === 1,
-                cnpsEmploye: String(row.Num_CNPS || ''),
-                Num_Decision: String(row.Num_Decision || ''),
+                banque: String(row.banque || ''),
+                numeroCompte: String(row.num_compte || ''),
+                CB: String(row.cb || ''),
+                CG: String(row.cg || ''),
+                Cle_RIB: String(row.cle_rib || ''),
+                CNPS: row.cnps === 1,
+                cnpsEmploye: String(row.num_cnps || ''),
+                Num_Decision: String(row.num_decision || ''),
                 
-                Date_Naissance: String(row.Date_Naissance || ''),
-                dateEmbauche: String(row.Date_Embauche || ''),
-                Date_Immatriculation: String(row.Date_Immatriculation || ''),
-                Date_Depart: String(row.Date_Depart || ''),
+                Date_Naissance: String(row.date_naissance || ''),
+                dateEmbauche: String(row.date_embauche || ''),
+                Date_Immatriculation: String(row.date_immatriculation || ''),
+                Date_Depart: String(row.date_depart || ''),
 
                 situationMatrimoniale: String(row.situation_famille || ''),
                 enfants: parseNumber(row.nombre_enfants),
-                Lieu_Naissance: String(row.Lieu_Naissance || ''),
+                Lieu_Naissance: String(row.lieu_naissance || ''),
                 
                 photoUrl: photoPath ? `/photos/${photoPath}` : `https://placehold.co/100x100.png`,
               } as Omit<Employe, 'id'>

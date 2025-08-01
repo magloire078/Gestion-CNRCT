@@ -23,6 +23,7 @@ import {
   MoreHorizontal,
   Loader2,
   Lock,
+  Package,
 } from "lucide-react";
 
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
@@ -51,6 +52,7 @@ const allMenuItems = [
   { href: "/leave", label: "Congés", icon: CalendarOff, permission: "page:leave:view" },
   { href: "/missions", label: "Missions", icon: Briefcase, permission: "page:missions:view" },
   { href: "/conflicts", label: "Conflits", icon: Scale, permission: "page:conflicts:view" },
+  { href: "/supplies", label: "Fournitures", icon: Package, permission: "page:supplies:view" },
   { href: "/it-assets", label: "Actifs TI", icon: Laptop, permission: "page:it-assets:view" },
   { href: "/fleet", label: "Flotte de Véhicules", icon: Car, permission: "page:fleet:view" },
   { href: "/documents", label: "Documents", icon: FileText, permission: "page:documents:view" },
@@ -225,5 +227,3 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
     </AuthProvider>
   )
 }
-
-    

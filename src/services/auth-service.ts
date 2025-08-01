@@ -17,6 +17,7 @@ import {
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
 import type { User, Role } from '@/lib/data';
+import { initializeDefaultRoles } from './role-service';
 
 // Sign Up
 export async function signUp(userData: { name: string, email: string }, password: string): Promise<User> {
@@ -26,7 +27,7 @@ export async function signUp(userData: { name: string, email: string }, password
     // Update Firebase Auth profile
     await updateProfile(firebaseUser, { displayName: userData.name });
 
-    const defaultRoleId = "employe"; 
+    const defaultRoleId = "employé"; 
 
     const newUser: Omit<User, 'id' | 'role' | 'permissions' | 'photoUrl'> = {
         name: userData.name,
@@ -46,6 +47,7 @@ export async function signUp(userData: { name: string, email: string }, password
 
 // Sign In
 export async function signIn(email: string, password: string): Promise<User> {
+    await initializeDefaultRoles(); // Ensure roles exist before sign-in
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const firebaseUser = userCredential.user;
     
@@ -55,7 +57,7 @@ export async function signIn(email: string, password: string): Promise<User> {
     if (!userProfile) {
         console.log(`User profile for ${email} not found in Firestore. Creating one.`);
         try {
-            const defaultRoleId = "employe";
+            const defaultRoleId = "employé";
             const newUserProfileData = {
                 name: firebaseUser.displayName || email.split('@')[0],
                 email: firebaseUser.email!,

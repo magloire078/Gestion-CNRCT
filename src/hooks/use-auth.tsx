@@ -49,6 +49,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return true;
       }
       
+      // Grant all permissions for the 'Administrateur' role
+      if (user.role?.name === 'Administrateur') {
+          return true;
+      }
+
       if (!user.permissions) return false;
       return user.permissions.includes(permission);
   }

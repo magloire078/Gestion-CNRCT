@@ -1,5 +1,6 @@
 
 
+
 export type Employe = {
   id: string; // Firestore document ID
   civilite?: string;
@@ -137,6 +138,14 @@ export type Conflict = {
     status: 'En cours' | 'Résolu' | 'En médiation';
 }
 
+export type Supply = {
+  id: string; // Firestore document ID
+  name: string;
+  category: "Papeterie" | "Cartouches d'encre" | "Matériel de nettoyage" | "Autre";
+  quantity: number;
+  reorderLevel: number;
+  lastRestockDate: string; // YYYY-MM-DD
+};
 
 export type PayslipEarning = {
     label: string;

@@ -48,9 +48,12 @@ export function ImportDataCard() {
         if (results.errors.length > 0) {
             console.error("CSV Parsing errors:", results.errors);
             const firstError = results.errors[0];
-            setError(`Erreur à la ligne ${firstError.row}: ${firstError.message}`);
-            setIsImporting(false);
-            return;
+            // Only block on critical errors
+            if (firstError.code !== 'TooManyFields' && firstError.code !== 'TooFewFields') {
+                setError(`Erreur d'analyse à la ligne ${firstError.row}: ${firstError.message}`);
+                setIsImporting(false);
+                return;
+            }
         }
 
         const headers = results.meta.fields || [];
@@ -64,7 +67,7 @@ export function ImportDataCard() {
         }
         
         const employeesToImport: Omit<Employe, "id">[] = results.data
-          .filter(row => row.matricule) // Basic validation for a valid row
+          .filter(row => row && row.matricule) // Basic validation for a valid row
           .map(row => {
               const parseNumber = (value: string | number | undefined | null): number | undefined => {
                   if (value === null || value === undefined || (typeof value === 'string' && value.trim() === '')) return undefined;
@@ -84,7 +87,7 @@ export function ImportDataCard() {
                 lastName: String(row.nom || ''),
                 poste: String(row.poste || ''),
                 department: String(row.service || ''),
-                status: row.statut === 1 || String(row.statut).toLowerCase() === 'actif' ? 'Actif' : 'Licencié',
+                status: String(row.statut) === '1' || String(row.statut).toLowerCase() === 'actif' ? 'Actif' : 'Licencié',
                 
                 civilite: String(row.civilite || ''),
                 sexe: String(row.sexe || ''),
@@ -100,7 +103,7 @@ export function ImportDataCard() {
                 Village: String(row.village || ''),
                 
                 baseSalary: parseNumber(row.salaire_base),
-                primeAnciennete: parseNumber(row.prime_ancien),
+                primeAnciennete: parseNumber(row.prime_anciennete),
                 indemniteTransportImposable: parseNumber(row.indemnite_transport),
                 indemniteResponsabilite: parseNumber(row.indemnite_responsabilite),
                 indemniteLogement: parseNumber(row.indemnite_logement),
@@ -116,7 +119,7 @@ export function ImportDataCard() {
                 CB: String(row.cb || ''),
                 CG: String(row.cg || ''),
                 Cle_RIB: String(row.cle_rib || ''),
-                CNPS: row.cnps === 1,
+                CNPS: String(row.cnps) === '1',
                 cnpsEmploye: String(row.num_cnps || ''),
                 Num_Decision: String(row.num_decision || ''),
                 
@@ -155,7 +158,7 @@ export function ImportDataCard() {
         }
       },
       error: (err: any) => {
-        setError(`Erreur lors de l'analyse du fichier CSV : ${err.message}`);
+        setError(`Erreur critique lors de l'analyse du fichier CSV : ${err.message}`);
         setIsImporting(false);
       },
     });

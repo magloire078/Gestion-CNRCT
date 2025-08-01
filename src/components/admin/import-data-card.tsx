@@ -82,7 +82,7 @@ export function ImportDataCard() {
               const combinedName = `${row.prenom || ''} ${row.nom || ''}`.trim();
               const photoPath = row.photo ? String(row.photo).trim() : null;
 
-              return {
+              const employeeData: Omit<Employe, 'id'> = {
                 matricule: String(row.matricule),
                 name: combinedName,
                 firstName: String(row.prenom || ''),
@@ -103,18 +103,6 @@ export function ImportDataCard() {
                 Departement: String(row.departement || ''),
                 Commune: String(row.commune || ''),
                 Village: String(row.village || ''),
-                
-                baseSalary: parseNumber(row.salaire_base),
-                primeAnciennete: parseNumber(row.prime_anciennete),
-                indemniteTransportImposable: parseNumber(row.indemnite_transport),
-                indemniteResponsabilite: parseNumber(row.indemnite_responsabilite),
-                indemniteLogement: parseNumber(row.indemnite_logement),
-                indemniteSujetion: parseNumber(row.indemnite_sujetion),
-                indemniteCommunication: parseNumber(row.indemnite_communication),
-                indemniteRepresentation: parseNumber(row.indemnite_representation),
-                Salaire_Brut: parseNumber(row.salaire_brut),
-                transportNonImposable: parseNumber(row.indemnite_transport_non_imposable),
-                Salaire_Net: parseNumber(row.salaire_net),
 
                 banque: String(row.banque || ''),
                 numeroCompte: String(row.num_compte || ''),
@@ -131,11 +119,41 @@ export function ImportDataCard() {
                 Date_Depart: String(row.date_depart || ''),
 
                 situationMatrimoniale: String(row.situation_famille || ''),
-                enfants: parseNumber(row.nombre_enfants),
                 Lieu_Naissance: String(row.lieu_naissance || ''),
                 
                 photoUrl: photoPath ? `/photos/${photoPath}` : `https://placehold.co/100x100.png`,
-              } as Omit<Employe, 'id'>
+              };
+
+              // Add numeric fields only if they are valid numbers
+              const numericFields: (keyof Employe)[] = [
+                'baseSalary', 'primeAnciennete', 'indemniteTransportImposable', 'indemniteResponsabilite', 
+                'indemniteLogement', 'indemniteSujetion', 'indemniteCommunication', 'indemniteRepresentation', 
+                'Salaire_Brut', 'transportNonImposable', 'Salaire_Net', 'enfants'
+              ];
+              const csvFieldMap: Record<string, string> = {
+                  'baseSalary': 'salaire_base',
+                  'primeAnciennete': 'prime_anciennete',
+                  'indemniteTransportImposable': 'indemnite_transport',
+                  'indemniteResponsabilite': 'indemnite_responsabilite',
+                  'indemniteLogement': 'indemnite_logement',
+                  'indemniteSujetion': 'indemnite_sujetion',
+                  'indemniteCommunication': 'indemnite_communication',
+                  'indemniteRepresentation': 'indemnite_representation',
+                  'Salaire_Brut': 'salaire_brut',
+                  'transportNonImposable': 'indemnite_transport_non_imposable',
+                  'Salaire_Net': 'salaire_net',
+                  'enfants': 'nombre_enfants'
+              };
+
+              numericFields.forEach(field => {
+                  const csvField = csvFieldMap[field] || field;
+                  const numValue = parseNumber(row[csvField]);
+                  if (numValue !== undefined) {
+                      (employeeData as any)[field] = numValue;
+                  }
+              });
+
+              return employeeData;
           });
 
         if (employeesToImport.length === 0) {

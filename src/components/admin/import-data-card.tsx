@@ -45,15 +45,17 @@ export function ImportDataCard() {
       dynamicTyping: true,
       transformHeader: header => header.trim().toLowerCase(),
       complete: async (results) => {
-        if (results.errors.length > 0) {
-            console.error("CSV Parsing errors:", results.errors);
-            const firstError = results.errors[0];
-            // Only block on critical errors
-            if (firstError.code !== 'TooManyFields' && firstError.code !== 'TooFewFields') {
-                setError(`Erreur d'analyse à la ligne ${firstError.row}: ${firstError.message}`);
-                setIsImporting(false);
-                return;
-            }
+        // Filter for critical errors only
+        const criticalErrors = results.errors.filter(
+          e => e.code !== 'TooManyFields' && e.code !== 'TooFewFields'
+        );
+
+        if (criticalErrors.length > 0) {
+            console.error("Critical CSV Parsing errors:", criticalErrors);
+            const firstError = criticalErrors[0];
+            setError(`Erreur critique d'analyse à la ligne ${firstError.row}: ${firstError.message}`);
+            setIsImporting(false);
+            return;
         }
 
         const headers = results.meta.fields || [];

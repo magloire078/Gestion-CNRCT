@@ -1,7 +1,9 @@
 
 import { initializeApp, getApps, type FirebaseOptions } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
+import { getFirestore, connectFirestoreEmulator } from "firebase/firestore";
+import { getAuth, connectAuthEmulator } from "firebase/auth";
+import { getStorage, connectStorageEmulator } from "firebase/storage";
+
 
 // ==========================================================================================
 // ACTION REQUISE : Mettez à jour votre configuration Firebase ci-dessous.
@@ -34,5 +36,14 @@ if (!getApps().length) {
 
 const db = getFirestore(app);
 const auth = getAuth(app);
+const storage = getStorage(app);
 
-export { app, db, auth };
+// Connect to emulators in development mode
+if (typeof window !== 'undefined' && window.location.hostname === "localhost") {
+    console.log("Connecting to Firebase Emulators");
+    connectAuthEmulator(auth, "http://localhost:9099", { disableWarnings: true });
+    connectFirestoreEmulator(db, 'localhost', 8080);
+    connectStorageEmulator(storage, 'localhost', 9199);
+}
+
+export { app, db, auth, storage };

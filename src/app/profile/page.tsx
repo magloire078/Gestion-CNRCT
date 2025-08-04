@@ -14,11 +14,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Upload, Loader2, AlertCircle } from "lucide-react";
+import { Upload, Loader2, AlertCircle, ShieldCheck } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { updateUserProfile, changePassword } from "@/services/auth-service";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 
 export default function ProfilePage() {
   const { toast } = useToast();
@@ -121,7 +122,7 @@ export default function ProfilePage() {
     <div className="flex flex-col gap-6">
       <h1 className="text-3xl font-bold tracking-tight">Profil</h1>
       <div className="grid gap-6 md:grid-cols-3">
-        <div className="md:col-span-1">
+        <div className="md:col-span-1 space-y-6">
           <Card>
             <CardContent className="p-6 flex flex-col items-center text-center">
               <Avatar className="h-24 w-24 mb-4">
@@ -130,6 +131,7 @@ export default function ProfilePage() {
               </Avatar>
               <h3 className="text-xl font-semibold">{user.name}</h3>
               <p className="text-muted-foreground">{user.email}</p>
+              <Badge variant="outline" className="mt-2">{user.role?.name || "Rôle non défini"}</Badge>
               <Button variant="outline" size="sm" className="mt-4" onClick={() => photoInputRef.current?.click()}>
                 <Upload className="mr-2 h-4 w-4" />
                 Changer la photo
@@ -142,6 +144,21 @@ export default function ProfilePage() {
                 onChange={handlePhotoChange}
               />
             </CardContent>
+          </Card>
+          <Card>
+             <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-lg">
+                    <ShieldCheck className="h-5 w-5 text-primary" />
+                    Permissions Actives
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="flex flex-wrap gap-2">
+                {user.permissions && user.permissions.length > 0 ? (
+                    user.permissions.map(p => <Badge key={p} variant="secondary">{p}</Badge>)
+                ) : (
+                    <p className="text-sm text-muted-foreground">Aucune permission spéciale.</p>
+                )}
+              </CardContent>
           </Card>
         </div>
         <div className="md:col-span-2">
@@ -218,4 +235,3 @@ export default function ProfilePage() {
   );
 }
 
-    

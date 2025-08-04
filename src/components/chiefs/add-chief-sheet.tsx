@@ -32,6 +32,16 @@ interface AddChiefSheetProps {
   onAddChief: (chief: Omit<Chief, "id">) => Promise<void>;
 }
 
+const regionsCI = [
+    "Agnéby-Tiassa", "Bafing", "Bagoué", "Bélier", "Béré", "Bounkani", "Cavally",
+    "Folon", "Gbêkê", "Gbôklé", "Gôh", "Gontougo", "Grands-Ponts", "Guémon",
+    "Hambol", "Haut-Sassandra", "Iffou", "Indénié-Djuablin", "Kabadougou",
+    "La Mé", "Lôh-Djiboua", "Marahoué", "Moronou", "N'Zi", "Nawa", "Poro",
+    "San-Pédro", "Sud-Comoé", "Tchologo", "Tonkpi", "Worodougou",
+    "District Autonome d'Abidjan", "District Autonome de Yamoussoukro"
+];
+
+
 export function AddChiefSheet({ isOpen, onClose, onAddChief }: AddChiefSheetProps) {
   const [name, setName] = useState("");
   const [title, setTitle] = useState("");
@@ -141,7 +151,16 @@ export function AddChiefSheet({ isOpen, onClose, onAddChief }: AddChiefSheetProp
               <Label htmlFor="region" className="text-right">
                 Région / Canton
               </Label>
-              <Input id="region" value={region} onChange={(e) => setRegion(e.target.value)} className="col-span-3" placeholder="Ex: Sud-Comoé" required />
+               <Select value={region} onValueChange={setRegion} required>
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Sélectionnez une région..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {regionsCI.sort().map(r => (
+                    <SelectItem key={r} value={r}>{r}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="contact" className="text-right">

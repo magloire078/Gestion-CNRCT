@@ -282,9 +282,9 @@ export default function EmployeesPage() {
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="all">Tous les statuts</SelectItem>
-                            <SelectItem value="Active">Actif</SelectItem>
-                            <SelectItem value="On Leave">En congé</SelectItem>
-                            <SelectItem value="Terminated">Licencié</SelectItem>
+                            <SelectItem value="Actif">Actif</SelectItem>
+                            <SelectItem value="En congé">En congé</SelectItem>
+                            <SelectItem value="Licencié">Licencié</SelectItem>
                         </SelectContent>
                         </Select>
                     </div>

@@ -55,11 +55,17 @@ export function EmployeeActivityReport() {
         getMissions(),
       ]);
 
-      // Note: We don't have hiring or termination dates, so we can't filter by month.
-      // This is a placeholder for a more complete implementation.
-      // For now, we'll just show all employees as "new" hires and "terminations" for demonstration.
-      const newHires = employees.filter(e => e.status === 'Actif').slice(0, 5);
-      const terminations = employees.filter(e => e.status === 'Licencié').slice(0, 5);
+      const newHires = employees.filter(e => {
+          if (!e.dateEmbauche) return false;
+          const hireDate = new Date(e.dateEmbauche);
+          return hireDate.getFullYear() === selectedYear && hireDate.getMonth() === selectedMonth;
+      });
+      
+      const terminations = employees.filter(e => {
+          if (!e.Date_Depart) return false;
+          const termDate = new Date(e.Date_Depart);
+           return e.status === 'Licencié' && termDate.getFullYear() === selectedYear && termDate.getMonth() === selectedMonth;
+      });
 
       const approvedLeaves = leaves.filter(l => {
         const leaveDate = new Date(l.startDate);
@@ -160,8 +166,7 @@ export function EmployeeActivityReport() {
                     </div>
                 )} />
                 
-                {/* Placeholder sections */}
-                 <ReportSection title="Nouvelles Embauches (Démo)" data={reportData.newHires} renderItem={emp => (
+                 <ReportSection title="Nouvelles Embauches" data={reportData.newHires} renderItem={emp => (
                      <div className="flex items-center gap-3">
                         <Avatar className="h-8 w-8">
                             <AvatarImage src={emp.photoUrl} alt={emp.name} />
@@ -173,7 +178,7 @@ export function EmployeeActivityReport() {
                         </div>
                     </div>
                  )} />
-                 <ReportSection title="Départs (Démo)" data={reportData.terminations} renderItem={emp => (
+                 <ReportSection title="Départs" data={reportData.terminations} renderItem={emp => (
                      <div className="flex items-center gap-3">
                         <Avatar className="h-8 w-8">
                             <AvatarImage src={emp.photoUrl} alt={emp.name} />

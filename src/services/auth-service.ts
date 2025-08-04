@@ -21,13 +21,13 @@ import { initializeDefaultRoles } from './role-service';
 
 // Sign Up
 export async function signUp(userData: { name: string, email: string }, password: string): Promise<User> {
+    await initializeDefaultRoles(); // Ensure roles exist before any user action
     const userCredential = await createUserWithEmailAndPassword(auth, userData.email, password);
     const firebaseUser = userCredential.user;
     
-    // Update Firebase Auth profile
     await updateProfile(firebaseUser, { displayName: userData.name });
 
-    const defaultRoleId = "employé"; 
+    const defaultRoleId = "employe"; // Use the hardcoded ID for the default role
 
     const newUser: Omit<User, 'id' | 'role' | 'permissions' | 'photoUrl'> = {
         name: userData.name,
@@ -39,7 +39,6 @@ export async function signUp(userData: { name: string, email: string }, password
 
     const userProfile = await getFullUserProfile(firebaseUser);
     if (!userProfile) {
-        // This case should ideally not happen if Firestore write is successful
         throw new Error("La création du profil utilisateur a échoué après l'inscription.");
     }
     return userProfile;
@@ -57,22 +56,21 @@ export async function signIn(email: string, password: string): Promise<User> {
     if (!userProfile) {
         console.log(`User profile for ${email} not found in Firestore. Creating one.`);
         try {
-            const defaultRoleId = "employé";
+            const defaultRoleId = "employe"; // Use the hardcoded ID for the default role
             const newUserProfileData = {
                 name: firebaseUser.displayName || email.split('@')[0],
                 email: firebaseUser.email!,
                 roleId: defaultRoleId,
             };
             await setDoc(doc(db, "users", firebaseUser.uid), newUserProfileData);
-            userProfile = await getFullUserProfile(firebaseUser); // Re-fetch the newly created profile
+            userProfile = await getFullUserProfile(firebaseUser); 
 
             if (!userProfile) {
-                 // This is a critical failure state. The profile could not be created or fetched.
                  throw new Error("User profile could not be created or loaded after creation.");
             }
         } catch(error) {
              console.error("Critical error: Failed to create user profile on-the-fly.", error);
-             await firebaseSignOut(auth); // Sign out the user to prevent an inconsistent state
+             await firebaseSignOut(auth); 
              throw new Error("profile-creation-failed");
         }
     }
@@ -94,8 +92,14 @@ export async function sendPasswordReset(email: string): Promise<void> {
 export function onAuthStateChange(callback: (user: User | null) => void) {
   return onAuthStateChanged(auth, async (firebaseUser: FirebaseUser | null) => {
     if (firebaseUser) {
-      const userProfile = await getFullUserProfile(firebaseUser);
-      callback(userProfile);
+      try {
+        const userProfile = await getFullUserProfile(firebaseUser);
+        callback(userProfile);
+      } catch (error) {
+        console.error("Error fetching full user profile, signing out.", error);
+        await firebaseSignOut(auth);
+        callback(null);
+      }
     } else {
       callback(null);
     }
@@ -158,7 +162,17 @@ async function getFullUserProfile(firebaseUser: FirebaseUser): Promise<User | nu
     let role: Role | null = null;
     let permissions: string[] = [];
 
-    if (userData.roleId) {
+    // --- Permission Granting Logic ---
+    // Super-admin check
+    if (firebaseUser.email === 'magloire078@gmail.com') {
+        permissions = ["page:dashboard:view", "page:employees:view", "page:payroll:view", "page:leave:view", "page:missions:view", "page:conflicts:view", "page:supplies:view", "page:it-assets:view", "page:fleet:view", "page:documents:view", "page:assistant:view", "page:admin:view"];
+        const adminRoleRef = doc(db, "roles", "administrateur");
+        const adminRoleDoc = await getDoc(adminRoleRef);
+        if (adminRoleDoc.exists()) {
+            role = { id: adminRoleDoc.id, ...adminRoleDoc.data() } as Role;
+        }
+
+    } else if (userData.roleId) {
         const roleRef = doc(db, "roles", userData.roleId);
         const roleDoc = await getDoc(roleRef);
         if (roleDoc.exists()) {

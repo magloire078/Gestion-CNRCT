@@ -1,32 +1,41 @@
 
 import { db } from '@/lib/firebase';
-import { collection, getDocs, addDoc, deleteDoc, doc, onSnapshot, Unsubscribe, query, orderBy, setDoc } from 'firebase/firestore';
+import { collection, getDocs, addDoc, deleteDoc, doc, onSnapshot, Unsubscribe, query, orderBy, setDoc, writeBatch } from 'firebase/firestore';
 import type { Role } from '@/lib/data';
 
 // Default roles and permissions
-const defaultRoles: Omit<Role, 'id'>[] = [
+const defaultRoles: { id: string; data: Omit<Role, 'id'> }[] = [
     { 
-        name: 'Administrateur', 
-        permissions: [
-            "page:dashboard:view", "page:employees:view", "page:payroll:view",
-            "page:leave:view", "page:missions:view", "page:conflicts:view",
-            "page:supplies:view", "page:it-assets:view", "page:fleet:view",
-            "page:documents:view", "page:assistant:view", "page:admin:view"
-        ] 
+        id: 'administrateur',
+        data: {
+            name: 'Administrateur', 
+            permissions: [
+                "page:dashboard:view", "page:employees:view", "page:payroll:view",
+                "page:leave:view", "page:missions:view", "page:conflicts:view",
+                "page:supplies:view", "page:it-assets:view", "page:fleet:view",
+                "page:documents:view", "page:assistant:view", "page:admin:view"
+            ] 
+        }
     },
     { 
-        name: 'Employé', 
-        permissions: [
-            "page:dashboard:view", "page:leave:view", "page:documents:view", "page:assistant:view"
-        ] 
+        id: 'employe',
+        data: {
+            name: 'Employé', 
+            permissions: [
+                "page:dashboard:view", "page:leave:view", "page:documents:view", "page:assistant:view"
+            ] 
+        }
     },
     {
-        name: 'Manager RH',
-        permissions: [
-            "page:dashboard:view", "page:employees:view", "page:payroll:view",
-            "page:leave:view", "page:missions:view", "page:conflicts:view",
-            "page:documents:view", "page:assistant:view"
-        ]
+        id: 'manager-rh',
+        data: {
+            name: 'Manager RH',
+            permissions: [
+                "page:dashboard:view", "page:employees:view", "page:payroll:view",
+                "page:leave:view", "page:missions:view", "page:conflicts:view",
+                "page:documents:view", "page:assistant:view"
+            ]
+        }
     }
 ];
 
@@ -37,11 +46,12 @@ export async function initializeDefaultRoles() {
     
     if (roleSnapshot.empty) {
         console.log("No roles found, initializing default roles...");
-        const batch = setDoc; // In a real batch, you'd use writeBatch
-        for (const roleData of defaultRoles) {
-            const roleRef = doc(rolesCollection, roleData.name.toLowerCase().replace(/\s+/g, '-'));
-            await setDoc(roleRef, roleData);
+        const batch = writeBatch(db);
+        for (const role of defaultRoles) {
+            const roleRef = doc(rolesCollection, role.id);
+            batch.set(roleRef, role.data);
         }
+        await batch.commit();
         console.log("Default roles initialized.");
     }
 }
@@ -78,10 +88,11 @@ export async function getRoles(): Promise<Role[]> {
 }
 
 export async function addRole(roleDataToAdd: Omit<Role, 'id'>): Promise<Role> {
-    const rolesCollection = collection(db, 'roles');
-    const docRef = await addDoc(rolesCollection, roleDataToAdd);
+    const roleId = roleDataToAdd.name.toLowerCase().replace(/\s+/g, '-');
+    const roleRef = doc(db, 'roles', roleId);
+    await setDoc(roleRef, roleDataToAdd);
     const newRole: Role = { 
-        id: docRef.id, 
+        id: roleId, 
         ...roleDataToAdd 
     };
     return newRole;

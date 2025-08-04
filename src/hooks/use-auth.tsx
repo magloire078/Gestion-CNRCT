@@ -43,17 +43,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const hasPermission = (permission: string) => {
       if (!user) return false;
-
-      // Super user check for magloire078@gmail.com
-      if (user.email === 'magloire078@gmail.com') {
-        return true;
-      }
-      
-      // Grant all permissions for the 'Administrateur' role
-      if (user.role?.name === 'Administrateur') {
-          return true;
-      }
-
       if (!user.permissions) return false;
       return user.permissions.includes(permission);
   }

@@ -2,15 +2,64 @@
 
 export type Employe = {
   id: string; // Firestore document ID
-  civilite?: string;
-  nom?: string;
-  prenom?: string;
   matricule: string;
-  sexe?: string;
+  name: string; // Combined name
+  firstName?: string;
+  lastName?: string;
   poste: string;
-  service?: string;
-  mobile?: string;
+  department: string;
+  status: 'Actif' | 'En congé' | 'Licencié';
+  photoUrl: string;
+
+  // Personal Info
   email?: string;
+  mobile?: string;
+  Date_Naissance?: string;
+  Lieu_Naissance?: string;
+  situationMatrimoniale?: string; // 'Célibataire', 'Marié(e)', etc.
+  enfants?: number;
+  
+  // Professional Info
+  dateEmbauche?: string; // YYYY-MM-DD
+  Date_Depart?: string; // YYYY-MM-DD
+  Num_Decision?: string;
+  
+  // Payroll Info
+  baseSalary?: number;
+  payFrequency?: 'Mensuel' | 'Bi-hebdomadaire';
+  nextPayDate?: string; // YYYY-MM-DD
+  
+  // Earnings
+  primeAnciennete?: number;
+  indemniteTransportImposable?: number;
+  indemniteResponsabilite?: number;
+  indemniteLogement?: number;
+  indemniteSujetion?: number;
+  indemniteCommunication?: number;
+  indemniteRepresentation?: number;
+  
+  // Non-taxable earnings
+  transportNonImposable?: number;
+
+  // Bank Info
+  banque?: string;
+  numeroCompte?: string;
+
+  // Payslip specific details (can be calculated or stored)
+  cnpsEmployeur?: string;
+  cnpsEmploye?: string;
+  dateConge?: string;
+  anciennete?: string; // e.g., "5 ans 3 mois"
+  categorie?: string;
+  emploi?: string; // can be same as 'poste'
+  parts?: number; // for tax calculation
+  paymentLocation?: string;
+  paymentDate?: string; // "Mercredi 30 Avril 2025"
+  
+  // Other potential fields from CSV
+  skills?: string[];
+  civilite?: string;
+  sexe?: string;
   groupe_1?: string;
   groupe_2?: string;
   Region?: string;
@@ -18,66 +67,17 @@ export type Employe = {
   Departement?: string;
   Commune?: string;
   Village?: string;
-  salaire_Base?: number;
-  prime_ancien?: number;
-  indemnite_Transport?: number;
-  indemnite_Responsabilite?: number;
-  indemnite_Logement?: number;
-  indemnite_Sujetion?: number;
-  indemnite_Communication?: number;
-  indemnite_Representation?: number;
-  Salaire_Brut?: number;
-  indemnite_transport_non_imposable?: number;
-  Salaire_Net?: number;
-  Banque?: string;
   CB?: string;
   CG?: string;
-  Num_Compte?: string;
   Cle_RIB?: string;
   CNPS?: boolean;
-  Num_CNPS?: string;
-  Num_Decision?: string;
-  Date_Naissance?: string;
-  Date_Embauche?: string;
   Date_Immatriculation?: string;
-  Date_Depart?: string;
-  situation_famille?: string;
-  nombre_enfants?: number;
-  Lieu_Naissance?: string;
   Photo?: string;
-  Statut?: 'Actif' | 'En congé' | 'Licencié';
   solde_conges?: number;
   Droit?: number;
   bActif?: boolean;
-
-  // Maintained fields from previous version for compatibility
-  name: string; // Combined name
-  firstName?: string;
-  lastName?: string;
-  department: string;
-  status: 'Actif' | 'En congé' | 'Licencié';
-  photoUrl: string;
-  baseSalary?: number;
-  payFrequency?: 'Mensuel' | 'Bi-hebdomadaire';
-  nextPayDate?: string;
-  primeAnciennete?: number;
-  indemniteTransportImposable?: number;
-  transportNonImposable?: number;
-  cnpsEmployeur?: string;
-  cnpsEmploye?: string;
-  situationMatrimoniale?: string;
-  banque?: string;
-  numeroCompte?: string;
-  dateConge?: string;
-  anciennete?: string;
-  categorie?: string;
-  enfants?: number;
-  emploi?: string;
-  parts?: number;
-  dateEmbauche?: string; // YYYY-MM-DD
-  paymentLocation?: string;
-  paymentDate?: string; // "Mercredi 30 Avril 2025"
-  skills?: string[];
+  Salaire_Brut?: number; // Can be calculated or stored
+  Salaire_Net?: number; // Can be calculated or stored
 };
 
 export type Leave = {
@@ -94,7 +94,7 @@ export type Asset = {
   type: "Ordinateur portable" | "Moniteur" | "Clavier" | "Souris" | "Logiciel" | "Autre";
   model: string;
   assignedTo: string;
-  status: 'En Utilisation' | 'En Stock' | 'En Réparation' | 'Retiré';
+  status: 'En Utilisation' | 'En Stock' | 'En Réparation' | 'Retiré' | 'Actif';
 }
 
 export type Fleet = {
@@ -182,3 +182,5 @@ export type PayslipDetails = {
         secondaryLogoUrl: string;
     }
 };
+
+    

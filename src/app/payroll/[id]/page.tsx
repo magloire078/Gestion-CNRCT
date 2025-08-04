@@ -85,12 +85,12 @@ export default function PayslipPage() {
                     <div className="text-center">
                         <h2 className="font-bold print:text-sm">Chambre Nationale des Rois</h2>
                         <h2 className="font-bold print:text-sm">et Chefs Traditionnels</h2>
-                        <img src={organizationLogos.mainLogoUrl} alt="Logo CNRCT" width={80} height={80} className="mx-auto mt-2 print:w-16 print:h-16" />
+                        {organizationLogos.mainLogoUrl && <img src={organizationLogos.mainLogoUrl} alt="Logo CNRCT" width={80} height={80} className="mx-auto mt-2 print:w-16 print:h-16" />}
                         <p className="font-bold mt-1 print:text-xs">UN CHEF NOUVEAU</p>
                     </div>
                     <div className="text-center">
                         <h2 className="font-bold print:text-sm">République de Côte d'Ivoire</h2>
-                         <img src={organizationLogos.secondaryLogoUrl} alt="Logo Cote d'Ivoire" width={80} height={80} className="mx-auto mt-2 print:w-16 print:h-16" />
+                         {organizationLogos.secondaryLogoUrl && <img src={organizationLogos.secondaryLogoUrl} alt="Logo Cote d'Ivoire" width={80} height={80} className="mx-auto mt-2 print:w-16 print:h-16" />}
                         <p className="mt-1 print:text-xs">Union - Discipline - Travail</p>
                     </div>
                 </header>
@@ -113,7 +113,7 @@ export default function PayslipPage() {
                             <span className="font-bold">SITUATION MATRIMONIALE</span><span className="col-span-2">: {employeeInfo.situationMatrimoniale}</span>
                             <span className="font-bold">BANQUE</span><span className="col-span-2">: {employeeInfo.banque}</span>
                             <span className="font-bold">NUMERO DE COMPTE</span><span className="col-span-2">: {employeeInfo.numeroCompte}</span>
-                            <span className="font-bold">SERVICE</span><span className="col-span-2">: {employeeInfo.service}</span>
+                            <span className="font-bold">SERVICE</span><span className="col-span-2">: {employeeInfo.department}</span>
                             <span className="font-bold">DATE DE CONGE</span><span className="col-span-2">: {employeeInfo.dateConge}</span>
                         </div>
                     </div>
@@ -136,7 +136,7 @@ export default function PayslipPage() {
                     </thead>
                     <tbody>
                         <tr>
-                            <td className="border p-1">{employeeInfo.emploi}</td>
+                            <td className="border p-1">{employeeInfo.poste}</td>
                             <td className="border p-1">{employeeInfo.matricule}</td>
                             <td className="border p-1">{employeeInfo.parts}</td>
                             <td className="border p-1">{employeeInfo.dateEmbauche}</td>
@@ -269,3 +269,5 @@ export default function PayslipPage() {
         </>
     );
 }
+
+    

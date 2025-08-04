@@ -175,8 +175,8 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
                                 <Input id="numeroCompte" value={formState.numeroCompte || ''} onChange={handleInputChange} />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="service">Service</Label>
-                                <Input id="service" value={formState.service || ''} onChange={handleInputChange} />
+                                <Label htmlFor="department">Service</Label>
+                                <Input id="department" value={formState.department || ''} onChange={handleInputChange} />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="anciennete">Ancienneté</Label>
@@ -218,3 +218,5 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
     </Sheet>
   );
 }
+
+    

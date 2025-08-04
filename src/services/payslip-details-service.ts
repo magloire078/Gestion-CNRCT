@@ -35,7 +35,7 @@ export async function getPayslipDetails(employee: Employe): Promise<PayslipDetai
     const cnps = brutImposable * 0.063; // 6.3%
     const itsBase = brutImposable * 0.8; // ITS is on 80% of brut
     const its = itsBase * 0.012;  // 1.2% on the 80% base
-    const igr = (brutImposable - cnps - its) * 0.1 * parts; // Very simplified IGR
+    const igr = Math.max(0, (brutImposable - cnps - its) * 0.1 * parts); // Very simplified IGR, ensure non-negative
     const cn = brutImposable * 0.015; // 1.5%
     
     // Align deductions with earnings for table layout
@@ -82,10 +82,12 @@ export async function getPayslipDetails(employee: Employe): Promise<PayslipDetai
         totals: {
             brutImposable,
             transportNonImposable: { label: 'INDEMNITE DE TRANSPORT NON IMPOSABLE', amount: transportNonImposable },
-            netAPayer,
+            netAPayer: Math.round(netAPayer),
             netAPayerInWords,
         },
         employerContributions,
         organizationLogos
     };
 }
+
+    

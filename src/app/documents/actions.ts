@@ -1,3 +1,4 @@
+
 "use server";
 
 import { generateDocument, GenerateDocumentInput } from "@/ai/flows/generate-document";
@@ -17,11 +18,11 @@ export type FormState = {
 
 function parseEmployeeContext(content: string) {
     const context: Record<string, any> = {};
-    const lines = content.split('\\n');
+    const lines = content.split('\n');
     lines.forEach(line => {
         const parts = line.split(':');
         if (parts.length < 2) return;
-        const key = parts[0].replace(/\\*|\s/g, '').trim().toLowerCase();
+        const key = parts[0].replace(/\*|\s/g, '').trim().toLowerCase();
         const value = parts.slice(1).join(':').trim();
 
         if (key.includes('nom')) context.name = value;
@@ -29,8 +30,10 @@ function parseEmployeeContext(content: string) {
         if (key.includes('fonction') || key.includes('poste')) context.poste = value;
         if (key.includes('compte')) context.numeroCompte = value;
         if (key.includes('banque')) context.banque = value;
-        if (key.includes('salaire')) context.baseSalary = parseFloat(value.replace(/\\s/g, '')) || 0;
+        if (key.includes('salaire')) context.baseSalary = parseFloat(value.replace(/\s/g, '')) || 0;
         if (key.includes('décision')) context.decisionDetails = value;
+        if (key.includes("dated'embauche")) context.dateEmbauche = value;
+        if (key.includes('lieudenaissance')) context.lieuNaissance = value;
     });
     return context;
 }
@@ -61,7 +64,7 @@ export async function generateDocumentAction(
       documentContent: parsed.data.documentContent,
     };
 
-    if(input.documentType === 'Attestation de Virement') {
+    if(input.documentType === 'Attestation de Virement' || input.documentType === 'Employment Contract') {
         input.employeeContext = parseEmployeeContext(input.documentContent);
     }
     

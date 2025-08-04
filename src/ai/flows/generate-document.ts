@@ -34,6 +34,8 @@ const GenerateDocumentInputSchema = z.object({
       currentDate: z.string().optional(),
       signerName: z.string().optional().default('Ange-Marie Christophe Dja GAGNIE'),
       signerTitle: z.string().optional().default('Préfet'),
+      dateEmbauche: z.string().optional(),
+      lieuNaissance: z.string().optional(),
   }).optional().describe("Contextual information about the employee for document generation."),
 });
 export type GenerateDocumentInput = z.infer<typeof GenerateDocumentInputSchema>;
@@ -75,6 +77,43 @@ const generateDocumentPrompt = ai.definePrompt({
 
   {{employeeContext.signerName}}
   {{employeeContext.signerTitle}}
+  {{else if (eq documentType "Employment Contract")}}
+  ## CONTRAT DE TRAVAIL A DUREE INDETERMINEE
+
+  **ENTRE LES SOUSSIGNES :**
+
+  La Chambre Nationale des Rois et Chefs Traditionnels (CNRCT), ci-après dénommée "l'Employeur", représentée par son Président, {{employeeContext.signerName}}.
+
+  **ET**
+
+  Monsieur/Madame {{employeeContext.name}}, né(e) le {{employeeContext.dateEmbauche}} à {{employeeContext.lieuNaissance}}, ci-après dénommé(e) "l'Employé(e)".
+
+  **IL A ETE CONVENU CE QUI SUIT :**
+
+  **Article 1 : Engagement**
+  L'Employeur engage l'Employé(e) en qualité de {{employeeContext.poste}}, à compter du {{employeeContext.dateEmbauche}}.
+
+  **Article 2 : Fonctions**
+  L'Employé(e) exercera les fonctions de {{employeeContext.poste}}. Il/Elle sera chargé(e) de [Description générique des tâches].
+
+  **Article 3 : Rémunération**
+  L'Employé(e) percevra une rémunération mensuelle brute de {{employeeContext.baseSalary}} FCFA.
+
+  **Article 4 : Durée et Période d'essai**
+  Le présent contrat est conclu pour une durée indéterminée. La période d'essai est fixée à trois (3) mois, renouvelable une fois.
+
+  **Article 5 : Lieu de travail**
+  Le lieu de travail est fixé au siège de la CNRCT à Yamoussoukro.
+
+  Fait à Yamoussoukro, le {{employeeContext.currentDate}}, en deux exemplaires originaux.
+
+  **Pour l'Employeur,**
+  {{employeeContext.signerName}}
+  {{employeeContext.signerTitle}}
+
+  **L'Employé(e),**
+  (Signature précédée de la mention "Lu et approuvé")
+  {{employeeContext.name}}
   {{else}}
   ## Generic Document Generation
   Document Type: {{{documentType}}}
@@ -91,6 +130,12 @@ const generateDocumentFlow = ai.defineFlow(
     outputSchema: GenerateDocumentOutputSchema,
   },
   async (input) => {
+    
+    // Set current date for all document types that need it
+    if (input.documentType === 'Attestation de Virement' || input.documentType === 'Employment Contract') {
+      if(!input.employeeContext) input.employeeContext = {};
+      input.employeeContext.currentDate = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+    }
 
     if (input.documentType === 'Attestation de Virement' && input.employeeContext) {
         let netSalary = 0;
@@ -121,9 +166,8 @@ const generateDocumentFlow = ai.defineFlow(
 
         input.employeeContext.netSalary = Math.round(netSalary);
         input.employeeContext.netSalaryInWords = netSalaryInWords;
-        input.employeeContext.currentDate = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
     }
-
+    
     const { output } = await generateDocumentPrompt(input);
     return output!;
   }

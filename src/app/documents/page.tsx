@@ -71,7 +71,18 @@ export default function DocumentGeneratorPage() {
 ### Informations sur la décision
 *   **Détails de la décision** : n°024/CNRCT/DIR/P. du 01 Août 2017
 `;
-    } else {
+    } else if (type === 'Employment Contract') {
+      content = `## Contexte pour le Contrat de Travail
+
+### Informations sur l'employé
+*   **Nom et Prénoms** : ${employee.name || ''}
+*   **Poste** : ${employee.poste || ''}
+*   **Date d'embauche** : ${employee.dateEmbauche || new Date().toISOString().split('T')[0]}
+*   **Lieu de naissance** : ${employee.Lieu_Naissance || ''}
+*   **Salaire de base** : ${employee.baseSalary || 0}
+`;
+    }
+    else {
         content = `Employé: ${employee.name}\nMatricule: ${employee.matricule}\nPoste: ${employee.poste}\nDépartement: ${employee.department}\n`;
     }
     setDocumentContent(content);

@@ -193,4 +193,6 @@ export type Chief = {
   contact: string;
   bio: string;
   photoUrl: string;
+  latitude?: number;
+  longitude?: number;
 };

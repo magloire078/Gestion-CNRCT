@@ -21,6 +21,13 @@ export function subscribeToChiefs(
     return unsubscribe;
 }
 
+export async function getChiefs(): Promise<Chief[]> {
+    const chiefsCollection = collection(db, 'chiefs');
+    const q = query(chiefsCollection, orderBy("name", "asc"));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Chief));
+}
+
 export async function addChief(chiefData: Omit<Chief, 'id'>): Promise<Chief> {
     const chiefsCollection = collection(db, 'chiefs');
     const docRef = await addDoc(chiefsCollection, chiefData);

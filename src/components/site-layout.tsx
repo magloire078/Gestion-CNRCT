@@ -24,6 +24,7 @@ import {
   Loader2,
   Lock,
   Package,
+  Crown,
 } from "lucide-react";
 
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
@@ -48,6 +49,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/
 const allMenuItems = [
   { href: "/", label: "Tableau de Bord", icon: LayoutDashboard, permission: "page:dashboard:view" },
   { href: "/employees", label: "Employés", icon: Users, permission: "page:employees:view" },
+  { href: "/chiefs", label: "Rois & Chefs", icon: Crown, permission: "page:chiefs:view" },
   { href: "/payroll", label: "Paie", icon: Landmark, permission: "page:payroll:view" },
   { href: "/leave", label: "Congés", icon: CalendarOff, permission: "page:leave:view" },
   { href: "/missions", label: "Missions", icon: Briefcase, permission: "page:missions:view" },

@@ -165,7 +165,13 @@ async function getFullUserProfile(firebaseUser: FirebaseUser): Promise<User | nu
     // --- Permission Granting Logic ---
     // Super-admin check
     if (firebaseUser.email === 'magloire078@gmail.com') {
-        permissions = ["page:dashboard:view", "page:employees:view", "page:payroll:view", "page:leave:view", "page:missions:view", "page:conflicts:view", "page:supplies:view", "page:it-assets:view", "page:fleet:view", "page:documents:view", "page:assistant:view", "page:admin:view"];
+        permissions = [
+            "page:dashboard:view", "page:employees:view", "page:payroll:view", 
+            "page:leave:view", "page:missions:view", "page:conflicts:view", 
+            "page:supplies:view", "page:it-assets:view", "page:fleet:view", 
+            "page:documents:view", "page:assistant:view", "page:admin:view",
+            "page:chiefs:view"
+        ];
         const adminRoleRef = doc(db, "roles", "administrateur");
         const adminRoleDoc = await getDoc(adminRoleRef);
         if (adminRoleDoc.exists()) {

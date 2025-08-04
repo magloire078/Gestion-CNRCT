@@ -183,4 +183,12 @@ export type PayslipDetails = {
     }
 };
 
-    
+export type Chief = {
+  id: string; // Firestore document ID
+  name: string;
+  title: string; // e.g., "Roi des N'zima", "Chef de Canton"
+  region: string; // e.g., "Sud-Comoé"
+  contact: string;
+  bio: string;
+  photoUrl: string;
+};

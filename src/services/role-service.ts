@@ -13,7 +13,8 @@ const defaultRoles: { id: string; data: Omit<Role, 'id'> }[] = [
                 "page:dashboard:view", "page:employees:view", "page:payroll:view",
                 "page:leave:view", "page:missions:view", "page:conflicts:view",
                 "page:supplies:view", "page:it-assets:view", "page:fleet:view",
-                "page:documents:view", "page:assistant:view", "page:admin:view"
+                "page:documents:view", "page:assistant:view", "page:admin:view",
+                "page:chiefs:view"
             ] 
         }
     },
@@ -33,7 +34,7 @@ const defaultRoles: { id: string; data: Omit<Role, 'id'> }[] = [
             permissions: [
                 "page:dashboard:view", "page:employees:view", "page:payroll:view",
                 "page:leave:view", "page:missions:view", "page:conflicts:view",
-                "page:documents:view", "page:assistant:view"
+                "page:documents:view", "page:assistant:view", "page:chiefs:view"
             ]
         }
     }

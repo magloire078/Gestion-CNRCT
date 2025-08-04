@@ -1,9 +1,12 @@
+
 rules_version = '2';
 
 service firebase.storage {
   match /b/{bucket}/o {
+    // Règle de base pour le développement : autorise la lecture et l'écriture pour tous les utilisateurs authentifiés.
+    // ATTENTION : Pour la production, vous devriez restreindre l'accès en écriture (par exemple, aux photos de profil de l'utilisateur concerné).
     match /{allPaths=**} {
-      allow read, write: if true;
+      allow read, write: if request.auth != null;
     }
   }
 }

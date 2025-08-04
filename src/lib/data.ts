@@ -63,7 +63,6 @@ export type Employe = {
   groupe_1?: string;
   groupe_2?: string;
   Region?: string;
-  Image_Region?: string;
   Departement?: string;
   Commune?: string;
   Village?: string;

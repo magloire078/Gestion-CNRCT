@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useRef, useMemo } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,7 +25,6 @@ import type { Employe } from "@/lib/data";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Upload } from "lucide-react";
 import { Textarea } from "../ui/textarea";
-import { divisions } from "@/lib/ivory-coast-divisions";
 
 interface AddEmployeeSheetProps {
   isOpen: boolean;
@@ -44,18 +43,9 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
   const [photoUrl, setPhotoUrl] = useState(`https://placehold.co/100x100.png`);
   const [skills, setSkills] = useState("");
   
-  const [selectedRegion, setSelectedRegion] = useState("");
-  const [selectedDepartment, setSelectedDepartment] = useState("");
-  const [selectedSubPrefecture, setSelectedSubPrefecture] = useState("");
-  const [selectedVillage, setSelectedVillage] = useState("");
-  
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const departments = useMemo(() => selectedRegion ? Object.keys(divisions[selectedRegion]) : [], [selectedRegion]);
-  const subPrefectures = useMemo(() => selectedRegion && selectedDepartment ? Object.keys(divisions[selectedRegion][selectedDepartment]) : [], [selectedRegion, selectedDepartment]);
-  const villages = useMemo(() => selectedRegion && selectedDepartment && selectedSubPrefecture ? divisions[selectedRegion][selectedDepartment][selectedSubPrefecture] : [], [selectedRegion, selectedDepartment, selectedSubPrefecture]);
 
   const resetForm = () => {
     setMatricule("");
@@ -67,10 +57,6 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
     setSkills("");
     setStatus("Actif");
     setPhotoUrl(`https://placehold.co/100x100.png`);
-    setSelectedRegion("");
-    setSelectedDepartment("");
-    setSelectedSubPrefecture("");
-    setSelectedVillage("");
     setError("");
     if(fileInputRef.current) {
         fileInputRef.current.value = "";
@@ -81,24 +67,6 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
     resetForm();
     onClose();
   }
-
-  const handleRegionChange = (value: string) => {
-    setSelectedRegion(value);
-    setSelectedDepartment("");
-    setSelectedSubPrefecture("");
-    setSelectedVillage("");
-  };
-
-  const handleDepartmentChange = (value: string) => {
-    setSelectedDepartment(value);
-    setSelectedSubPrefecture("");
-    setSelectedVillage("");
-  };
-  
-  const handleSubPrefectureChange = (value: string) => {
-    setSelectedSubPrefecture(value);
-    setSelectedVillage("");
-  };
   
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -133,10 +101,6 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
           photoUrl, 
           name: `${firstName} ${lastName}`, 
           skills: skillsArray,
-          Region: selectedRegion,
-          Departement: selectedDepartment,
-          Commune: selectedSubPrefecture,
-          Village: selectedVillage,
       });
       handleClose();
     } catch(err) {
@@ -252,38 +216,6 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
                       <SelectItem value="Licencié">Licencié</SelectItem>
                   </SelectContent>
                </Select>
-            </div>
-            
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="region" className="text-right">Région</Label>
-              <Select value={selectedRegion} onValueChange={handleRegionChange}>
-                <SelectTrigger className="col-span-3"><SelectValue placeholder="Sélectionnez une région..." /></SelectTrigger>
-                <SelectContent>{Object.keys(divisions).sort().map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}</SelectContent>
-              </Select>
-            </div>
-
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="department_loc" className="text-right">Département</Label>
-              <Select value={selectedDepartment} onValueChange={handleDepartmentChange} disabled={!selectedRegion}>
-                <SelectTrigger className="col-span-3" id="department_loc"><SelectValue placeholder="Sélectionnez un département..." /></SelectTrigger>
-                <SelectContent>{departments.sort().map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
-              </Select>
-            </div>
-
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="subPrefecture" className="text-right">Sous-préfecture</Label>
-              <Select value={selectedSubPrefecture} onValueChange={handleSubPrefectureChange} disabled={!selectedDepartment}>
-                <SelectTrigger className="col-span-3"><SelectValue placeholder="Sélectionnez une sous-préfecture..." /></SelectTrigger>
-                <SelectContent>{subPrefectures.sort().map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
-              </Select>
-            </div>
-
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="village" className="text-right">Village</Label>
-              <Select value={selectedVillage} onValueChange={setSelectedVillage} disabled={!selectedSubPrefecture}>
-                <SelectTrigger className="col-span-3"><SelectValue placeholder="Sélectionnez un village..." /></SelectTrigger>
-                <SelectContent>{villages.sort().map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}</SelectContent>
-              </Select>
             </div>
 
             <div className="grid grid-cols-4 items-start gap-4">

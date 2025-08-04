@@ -37,14 +37,14 @@ export function AddConflictSheet({
 }: AddConflictSheetProps) {
   const [village, setVillage] = useState("");
   const [description, setDescription] = useState("");
-  const [status, setStatus] = useState<Conflict['status']>('Ongoing');
+  const [status, setStatus] = useState<Conflict['status']>('En cours');
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const resetForm = () => {
     setVillage("");
     setDescription("");
-    setStatus("Ongoing");
+    setStatus("En cours");
     setError("");
   }
 
@@ -119,9 +119,9 @@ export function AddConflictSheet({
                       <SelectValue placeholder="Sélectionnez un statut" />
                   </SelectTrigger>
                   <SelectContent>
-                      <SelectItem value="Ongoing">En cours</SelectItem>
-                      <SelectItem value="Mediating">En médiation</SelectItem>
-                      <SelectItem value="Resolved">Résolu</SelectItem>
+                      <SelectItem value="En cours">En cours</SelectItem>
+                      <SelectItem value="En médiation">En médiation</SelectItem>
+                      <SelectItem value="Résolu">Résolu</SelectItem>
                   </SelectContent>
                </Select>
             </div>

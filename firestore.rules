@@ -3,9 +3,9 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Règle de base pour le développement : autorise la lecture et l'écriture pour tous les utilisateurs authentifiés.
-    // ATTENTION : Pour la production, vous devrez mettre en place des règles plus granulaires
-    // basées sur les rôles des utilisateurs (ex: seuls les administrateurs peuvent écrire dans la collection 'roles').
+    // Allow read/write access to all documents for any authenticated user.
+    // This is a permissive rule for development. For production, you should
+    // implement more granular rules.
     match /{document=**} {
       allow read, write: if request.auth != null;
     }

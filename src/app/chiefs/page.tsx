@@ -93,6 +93,7 @@ export default function ChiefsPage() {
     return chiefs.filter((chief) =>
       chief.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       chief.region.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      chief.village.toLowerCase().includes(searchTerm.toLowerCase()) ||
       chief.title.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [chiefs, searchTerm]);
@@ -118,7 +119,7 @@ export default function ChiefsPage() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <Input
-                placeholder="Rechercher par nom, région, titre..."
+                placeholder="Rechercher par nom, région, village..."
                 className="pl-10"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -134,7 +135,7 @@ export default function ChiefsPage() {
                 <TableRow>
                   <TableHead className="w-[80px]">Photo</TableHead>
                   <TableHead>Nom & Titre</TableHead>
-                  <TableHead>Région / Canton</TableHead>
+                  <TableHead>Localisation</TableHead>
                   <TableHead>Contact</TableHead>
                   <TableHead className="w-[100px] text-right">Actions</TableHead>
                 </TableRow>
@@ -145,7 +146,7 @@ export default function ChiefsPage() {
                     <TableRow key={i}>
                       <TableCell><Skeleton className="h-10 w-10 rounded-full" /></TableCell>
                       <TableCell><Skeleton className="h-4 w-48" /></TableCell>
-                      <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-48" /></TableCell>
                       <TableCell><Skeleton className="h-4 w-40" /></TableCell>
                       <TableCell><div className="flex justify-end"><Skeleton className="h-8 w-8" /></div></TableCell>
                     </TableRow>
@@ -163,7 +164,10 @@ export default function ChiefsPage() {
                         <div className="font-medium">{chief.name}</div>
                         <div className="text-sm text-muted-foreground">{chief.title}</div>
                       </TableCell>
-                      <TableCell>{chief.region}</TableCell>
+                       <TableCell>
+                        <div className="font-medium">{chief.village}</div>
+                        <div className="text-sm text-muted-foreground">{chief.region} / {chief.department}</div>
+                      </TableCell>
                       <TableCell>{chief.contact}</TableCell>
                       <TableCell className="text-right">
                         <DropdownMenu>

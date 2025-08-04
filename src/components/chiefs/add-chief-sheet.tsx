@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,6 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { Chief } from "@/lib/data";
+import { divisions } from "@/lib/ivory-coast-divisions";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Upload } from "lucide-react";
 import { Textarea } from "../ui/textarea";
@@ -32,34 +33,36 @@ interface AddChiefSheetProps {
   onAddChief: (chief: Omit<Chief, "id">) => Promise<void>;
 }
 
-const regionsCI = [
-    "Agnéby-Tiassa", "Bafing", "Bagoué", "Bélier", "Béré", "Bounkani", "Cavally",
-    "Folon", "Gbêkê", "Gbôklé", "Gôh", "Gontougo", "Grands-Ponts", "Guémon",
-    "Hambol", "Haut-Sassandra", "Iffou", "Indénié-Djuablin", "Kabadougou",
-    "La Mé", "Lôh-Djiboua", "Marahoué", "Moronou", "N'Zi", "Nawa", "Poro",
-    "San-Pédro", "Sud-Comoé", "Tchologo", "Tonkpi", "Worodougou",
-    "District Autonome d'Abidjan", "District Autonome de Yamoussoukro"
-];
-
-
 export function AddChiefSheet({ isOpen, onClose, onAddChief }: AddChiefSheetProps) {
   const [name, setName] = useState("");
   const [title, setTitle] = useState("");
-  const [region, setRegion] = useState("");
   const [contact, setContact] = useState("");
   const [bio, setBio] = useState("");
   const [photoUrl, setPhotoUrl] = useState(`https://placehold.co/100x100.png`);
+  
+  const [selectedRegion, setSelectedRegion] = useState("");
+  const [selectedDepartment, setSelectedDepartment] = useState("");
+  const [selectedSubPrefecture, setSelectedSubPrefecture] = useState("");
+  const [selectedVillage, setSelectedVillage] = useState("");
+
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const departments = useMemo(() => selectedRegion ? Object.keys(divisions[selectedRegion]) : [], [selectedRegion]);
+  const subPrefectures = useMemo(() => selectedRegion && selectedDepartment ? Object.keys(divisions[selectedRegion][selectedDepartment]) : [], [selectedRegion, selectedDepartment]);
+  const villages = useMemo(() => selectedRegion && selectedDepartment && selectedSubPrefecture ? divisions[selectedRegion][selectedDepartment][selectedSubPrefecture] : [], [selectedRegion, selectedDepartment, selectedSubPrefecture]);
+
   const resetForm = () => {
     setName("");
     setTitle("");
-    setRegion("");
     setContact("");
     setBio("");
     setPhotoUrl(`https://placehold.co/100x100.png`);
+    setSelectedRegion("");
+    setSelectedDepartment("");
+    setSelectedSubPrefecture("");
+    setSelectedVillage("");
     setError("");
     if(fileInputRef.current) {
         fileInputRef.current.value = "";
@@ -82,17 +85,45 @@ export function AddChiefSheet({ isOpen, onClose, onAddChief }: AddChiefSheetProp
     }
   };
 
+  const handleRegionChange = (value: string) => {
+    setSelectedRegion(value);
+    setSelectedDepartment("");
+    setSelectedSubPrefecture("");
+    setSelectedVillage("");
+  };
+
+  const handleDepartmentChange = (value: string) => {
+    setSelectedDepartment(value);
+    setSelectedSubPrefecture("");
+    setSelectedVillage("");
+  };
+  
+  const handleSubPrefectureChange = (value: string) => {
+    setSelectedSubPrefecture(value);
+    setSelectedVillage("");
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!name || !title || !region) {
-      setError("Veuillez remplir tous les champs obligatoires (Nom, Titre, Région).");
+    if (!name || !title || !selectedRegion || !selectedDepartment || !selectedSubPrefecture || !selectedVillage) {
+      setError("Veuillez remplir tous les champs de localisation (Région, Département, etc.).");
       return;
     }
     setIsSubmitting(true);
     setError("");
     try {
-      await onAddChief({ name, title, region, contact, bio, photoUrl });
+      await onAddChief({ 
+          name, 
+          title, 
+          region: selectedRegion, 
+          department: selectedDepartment,
+          subPrefecture: selectedSubPrefecture,
+          village: selectedVillage,
+          contact, 
+          bio, 
+          photoUrl 
+        });
       handleClose();
     } catch(err) {
       setError(err instanceof Error ? err.message : "Échec de l'ajout du chef.");
@@ -147,39 +178,46 @@ export function AddChiefSheet({ isOpen, onClose, onAddChief }: AddChiefSheetProp
               </Label>
               <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} className="col-span-3" placeholder="Ex: Roi des N'zima, Chef de canton" required />
             </div>
-             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="region" className="text-right">
-                Région / Canton
-              </Label>
-               <Select value={region} onValueChange={setRegion} required>
-                <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="Sélectionnez une région..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {regionsCI.sort().map(r => (
-                    <SelectItem key={r} value={r}>{r}</SelectItem>
-                  ))}
-                </SelectContent>
+
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="region" className="text-right">Région</Label>
+              <Select value={selectedRegion} onValueChange={handleRegionChange} required>
+                <SelectTrigger className="col-span-3"><SelectValue placeholder="Sélectionnez une région..." /></SelectTrigger>
+                <SelectContent>{Object.keys(divisions).sort().map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}</SelectContent>
               </Select>
             </div>
+
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="contact" className="text-right">
-                Contact
-              </Label>
+              <Label htmlFor="department" className="text-right">Département</Label>
+              <Select value={selectedDepartment} onValueChange={handleDepartmentChange} disabled={!selectedRegion} required>
+                <SelectTrigger className="col-span-3"><SelectValue placeholder="Sélectionnez un département..." /></SelectTrigger>
+                <SelectContent>{departments.sort().map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="subPrefecture" className="text-right">Sous-préfecture</Label>
+              <Select value={selectedSubPrefecture} onValueChange={handleSubPrefectureChange} disabled={!selectedDepartment} required>
+                <SelectTrigger className="col-span-3"><SelectValue placeholder="Sélectionnez une sous-préfecture..." /></SelectTrigger>
+                <SelectContent>{subPrefectures.sort().map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="village" className="text-right">Village</Label>
+              <Select value={selectedVillage} onValueChange={setSelectedVillage} disabled={!selectedSubPrefecture} required>
+                <SelectTrigger className="col-span-3"><SelectValue placeholder="Sélectionnez un village..." /></SelectTrigger>
+                <SelectContent>{villages.sort().map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="contact" className="text-right">Contact</Label>
               <Input id="contact" type="text" value={contact} onChange={(e) => setContact(e.target.value)} className="col-span-3" placeholder="Numéro de téléphone ou email" />
             </div>
             <div className="grid grid-cols-4 items-start gap-4">
-              <Label htmlFor="bio" className="text-right pt-2">
-                Biographie
-              </Label>
-              <Textarea
-                id="bio"
-                value={bio}
-                onChange={(e) => setBio(e.target.value)}
-                className="col-span-3"
-                rows={4}
-                placeholder="Brève biographie ou notes..."
-              />
+              <Label htmlFor="bio" className="text-right pt-2">Biographie</Label>
+              <Textarea id="bio" value={bio} onChange={(e) => setBio(e.target.value)} className="col-span-3" rows={3} placeholder="Brève biographie ou notes..."/>
             </div>
             {error && <p className="text-sm text-destructive col-span-4 text-center">{error}</p>}
           </div>

@@ -11,7 +11,6 @@ import {
 } from '@/components/ui/card';
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Progress } from "@/components/ui/progress";
 import { Users, FileWarning, Laptop, Car, Download } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { EmployeeDistributionChart } from '@/components/charts/employee-distribution-chart';
@@ -23,7 +22,6 @@ import { subscribeToAssets } from '@/services/asset-service';
 import { subscribeToVehicles } from '@/services/fleet-service';
 import type { Employe, Leave, Asset, Fleet } from '@/lib/data';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Label } from '@/components/ui/label';
 
 export default function DashboardPage() {
     const [employees, setEmployees] = useState<Employe[]>([]);
@@ -51,14 +49,11 @@ export default function DashboardPage() {
         };
     }, []);
 
-  const onLeaveCount = employees.filter(e => e.status === 'On Leave').length;
-  const pendingLeaveCount = leaves.filter(l => l.status === 'Pending').length;
+  const onLeaveCount = employees.filter(e => e.status === 'En congé').length;
+  const pendingLeaveCount = leaves.filter(l => l.status === 'En attente').length;
   const recentLeaves = leaves.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()).slice(0, 3);
-  const newHires = employees.sort((a,b) => (a.id > b.id ? -1 : 1)).slice(0,3);
+  const newHires = employees.sort((a,b) => new Date(b.dateEmbauche || 0).getTime() - new Date(a.dateEmbauche || 0).getTime()).slice(0,3);
   
-  const totalPayroll = employees.reduce((acc, entry) => acc + (entry.baseSalary || 0), 0);
-  const totalDeductions = employees.reduce((acc, entry) => acc + ((entry.baseSalary || 0) * 0.2), 0); // Approximation
-
   const stats = [
     {
       title: 'Total des employés',
@@ -186,13 +181,13 @@ export default function DashboardPage() {
                             <Avatar>
                             <AvatarImage
                                 src={emp.photoUrl}
-                                alt={emp.firstName}
+                                alt={emp.name}
                                 data-ai-hint="user avatar"
                             />
-                            <AvatarFallback>{emp.firstName?.charAt(0) || emp.name?.charAt(0) || 'E'}</AvatarFallback>
+                            <AvatarFallback>{emp.name?.charAt(0) || 'E'}</AvatarFallback>
                             </Avatar>
                             <div>
-                            <p className="font-medium">{emp.firstName ? `${emp.firstName} ${emp.lastName}` : emp.name}</p>
+                            <p className="font-medium">{emp.name}</p>
                             <p className="text-sm text-muted-foreground">{emp.poste}</p>
                             </div>
                         </div>

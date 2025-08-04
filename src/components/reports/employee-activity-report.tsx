@@ -169,7 +169,7 @@ export function EmployeeActivityReport() {
                  <ReportSection title="Nouvelles Embauches" data={reportData.newHires} renderItem={emp => (
                      <div className="flex items-center gap-3">
                         <Avatar className="h-8 w-8">
-                            <AvatarImage src={emp.photoUrl} alt={emp.name} />
+                            <AvatarImage src={emp.photoUrl} alt={emp.name} data-ai-hint="user avatar" />
                             <AvatarFallback>{emp.name.charAt(0)}</AvatarFallback>
                         </Avatar>
                         <div>
@@ -181,7 +181,7 @@ export function EmployeeActivityReport() {
                  <ReportSection title="Départs" data={reportData.terminations} renderItem={emp => (
                      <div className="flex items-center gap-3">
                         <Avatar className="h-8 w-8">
-                            <AvatarImage src={emp.photoUrl} alt={emp.name} />
+                            <AvatarImage src={emp.photoUrl} alt={emp.name} data-ai-hint="user avatar" />
                             <AvatarFallback>{emp.name.charAt(0)}</AvatarFallback>
                         </Avatar>
                         <div>

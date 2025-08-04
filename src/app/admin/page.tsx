@@ -24,7 +24,7 @@ import { useToast } from "@/hooks/use-toast";
 
 import type { User, Role } from "@/lib/data";
 import { subscribeToUsers, deleteUser } from "@/services/user-service";
-import { subscribeToRoles, deleteRole, getRoles } from "@/services/role-service";
+import { subscribeToRoles, deleteRole } from "@/services/role-service";
 
 import { AddUserSheet } from "@/components/admin/add-user-sheet";
 import { AddRoleSheet } from "@/components/admin/add-role-sheet";
@@ -32,9 +32,8 @@ import { ImportDataCard } from "@/components/admin/import-data-card";
 import { ConfirmationDialog } from "@/components/common/confirmation-dialog";
 
 export default function AdminPage() {
-  const [users, setUsers] = useState<User[]>([]);
-  const [roles, setRoles] = useState<Role[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [users, setUsers] = useState<User[] | null>(null);
+  const [roles, setRoles] = useState<Role[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
@@ -44,66 +43,48 @@ export default function AdminPage() {
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; type: 'user' | 'role'; name: string } | null>(null);
 
   useEffect(() => {
-    async function fetchData() {
-        setLoading(true);
-        try {
-            const allRoles = await getRoles();
-            const rolesMap = new Map(allRoles.map(r => [r.id, r]));
+    const rolesMap = new Map<string, Role>();
 
-            const unsubscribeUsers = subscribeToUsers(
-              (userList) => {
-                const usersWithRoles = userList.map(user => ({
-                    ...user,
-                    role: rolesMap.get(user.roleId) || null,
-                }));
-                setUsers(usersWithRoles);
-                if (roles.length > 0 || userList.length === 0) setLoading(false);
-              },
-              (err) => {
-                setError("Impossible de charger les utilisateurs.");
-                console.error(err);
-                setLoading(false);
-              }
-            );
+    const unsubscribeRoles = subscribeToRoles(
+      (roleList) => {
+        setRoles(roleList);
+        roleList.forEach(role => rolesMap.set(role.id, role));
+        
+        // When roles update, we might need to update users as well if they are already loaded
+        setUsers(currentUsers => 
+            currentUsers?.map(user => ({
+                ...user,
+                role: rolesMap.get(user.roleId) || null,
+            })) || null
+        );
+      },
+      (err) => {
+        setError("Impossible de charger les rôles.");
+        console.error(err);
+      }
+    );
 
-            const unsubscribeRoles = subscribeToRoles(
-              (roleList) => {
-                setRoles(roleList);
-                // Check loading state based on both users and roles
-              },
-              (err) => {
-                setError("Impossible de charger les rôles.");
-                console.error(err);
-                setLoading(false);
-              }
-            );
-            
-            return () => {
-              unsubscribeUsers();
-              unsubscribeRoles();
-            };
-
-        } catch (err) {
-            setError("Impossible de charger les données initiales.");
-            console.error(err);
-            setLoading(false);
-        }
-    }
-
-    const unsubscribers = fetchData();
+    const unsubscribeUsers = subscribeToUsers(
+      (userList) => {
+        const usersWithRoles = userList.map(user => ({
+            ...user,
+            role: rolesMap.get(user.roleId) || null,
+        }));
+        setUsers(usersWithRoles);
+      },
+      (err) => {
+        setError("Impossible de charger les utilisateurs.");
+        console.error(err);
+      }
+    );
 
     return () => {
-        unsubscribers.then(cleanup => cleanup && cleanup());
+      unsubscribeRoles();
+      unsubscribeUsers();
     };
   }, []);
 
-  useEffect(() => {
-    // If both subscriptions have run at least once, we can consider loading finished.
-    if(users.length >= 0 && roles.length >= 0) {
-        setLoading(false);
-    }
-  }, [users, roles]);
-
+  const loading = users === null || roles === null;
 
   const handleAddUser = (newUser: User) => {
     setIsAddUserSheetOpen(false);
@@ -187,7 +168,7 @@ export default function AdminPage() {
                       </TableRow>
                       ))
                   ) : (
-                      users.map((user) => (
+                      users?.map((user) => (
                       <TableRow key={user.id}>
                           <TableCell className="font-medium">{user.name}</TableCell>
                           <TableCell>{user.email}</TableCell>
@@ -239,7 +220,7 @@ export default function AdminPage() {
                       </TableRow>
                       ))
                   ) : (
-                      roles.map((role) => (
+                      roles?.map((role) => (
                       <TableRow key={role.id}>
                           <TableCell className="font-medium">{role.name}</TableCell>
                           <TableCell className="text-sm text-muted-foreground">{role.permissions.join(', ')}</TableCell>
@@ -267,7 +248,7 @@ export default function AdminPage() {
           isOpen={isAddRoleSheetOpen}
           onClose={() => setIsAddRoleSheetOpen(false)}
           onAddRole={handleAddRole}
-          roles={roles}
+          roles={roles || []}
         />
       </div>
       
@@ -275,7 +256,7 @@ export default function AdminPage() {
         isOpen={!!deleteTarget}
         onClose={() => setDeleteTarget(null)}
         onConfirm={handleConfirmDelete}
-        title={`Supprimer ${deleteTarget?.type === 'user' ? 'l\'Utilisateur' : 'le Rôle'}`}
+        title={`Supprimer ${deleteTarget?.type === 'user' ? "l'Utilisateur" : "le Rôle"}`}
         description={`Êtes-vous sûr de vouloir supprimer "${deleteTarget?.name}" ? Cette action est irréversible.`}
       />
     </>

@@ -1,8 +1,9 @@
 
 "use client";
 
-import { useState, useEffect, useMemo, useRef } from "react";
-import { PlusCircle, Search, Download, Printer, Loader2 } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import Link from "next/link";
+import { PlusCircle, Search, Download, Printer, Eye, Pencil, Trash2, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -10,23 +11,22 @@ import { Badge } from "@/components/ui/badge";
 import type { Employe } from "@/lib/data";
 import { AddEmployeeSheet } from "@/components/employees/add-employee-sheet";
 import { PrintDialog } from "@/components/employees/print-dialog";
-import { subscribeToEmployees, addEmployee, updateEmployee, deleteEmployee, getOrganizationSettings } from "@/services/employee-service";
+import { subscribeToEmployees, addEmployee, deleteEmployee, getOrganizationSettings } from "@/services/employee-service";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import Papa from "papaparse";
-import Image from "next/image";
-import { InlineEditRow } from "@/components/employees/inline-edit-row";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 
-type Status = 'Active' | 'On Leave' | 'Terminated';
+type Status = 'Actif' | 'En congé' | 'Licencié';
 
 const statusVariantMap: Record<Status, "default" | "secondary" | "destructive"> = {
-  'Active': 'default',
-  'On Leave': 'secondary',
-  'Terminated': 'destructive',
+  'Actif': 'default',
+  'En congé': 'secondary',
+  'Licencié': 'destructive',
 };
 
 export const departments = ["Engineering", "Marketing", "Sales", "HR", "Operations", "Informatique", "Secretariat Général", "Communication", "Direction Administrative", "Direction des Affaires financière et du patrimoine", "Protocole", "Cabinet", "Direction des Affaires sociales", "Directoire", "Comités Régionaux", "Other", "Sous Direction Patrimoine", "Direction Etudes et Documentation", "Rois & Chefs", "Gardes", "Manoeuvres", "Gendarmerie", "Garde Republicaine"];
@@ -46,7 +46,6 @@ export default function EmployeesPage() {
   const [employees, setEmployees] = useState<Employe[]>([]);
   const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
   const [isPrintDialogOpen, setIsPrintDialogOpen] = useState(false);
-  const [editingEmployeeId, setEditingEmployeeId] = useState<string | null>(null);
   
   const [loading, setLoading] = useState(true);
   const [isPrinting, setIsPrinting] = useState(false);
@@ -100,34 +99,6 @@ export default function EmployeesPage() {
     } catch (err) {
         console.error("Failed to add employee:", err);
         throw err; // Re-throw to be caught in the sheet
-    }
-  };
-
-  const handleUpdateEmployee = async (employeeId: string, updatedEmployeeData: Partial<Employe>) => {
-    try {
-      const originalEmployee = employees.find(e => e.id === employeeId);
-      if (!originalEmployee) throw new Error("Employé non trouvé");
-
-      // Merge original data with updated data to prevent overwriting fields not in the form
-      const dataToUpdate = { ...originalEmployee, ...updatedEmployeeData };
-       if(dataToUpdate.firstName || dataToUpdate.lastName) {
-        dataToUpdate.name = `${dataToUpdate.firstName || ''} ${dataToUpdate.lastName || ''}`.trim();
-      }
-      
-      await updateEmployee(employeeId, dataToUpdate);
-      setEditingEmployeeId(null);
-      toast({
-        title: "Employé mis à jour",
-        description: `Les informations de ${dataToUpdate.name} ont été mises à jour.`,
-      });
-    } catch (err) {
-      console.error("Failed to update employee:", err);
-      toast({
-        variant: "destructive",
-        title: "Erreur de mise à jour",
-        description: err instanceof Error ? err.message : "Une erreur est survenue.",
-      });
-      throw err;
     }
   };
   
@@ -347,18 +318,64 @@ export default function EmployeesPage() {
                                 </TableRow>
                             ))
                             ) : (
-                            filteredEmployees.map((employee) => (
-                               <InlineEditRow 
-                                 key={employee.id} 
-                                 employee={employee}
-                                 isEditing={editingEmployeeId === employee.id}
-                                 onEdit={() => setEditingEmployeeId(employee.id)}
-                                 onCancel={() => setEditingEmployeeId(null)}
-                                 onSave={handleUpdateEmployee}
-                                 onDelete={handleDeleteEmployee}
-                                 statusVariantMap={statusVariantMap}
-                                />
-                            ))
+                                filteredEmployees.map((employee) => (
+                                   <TableRow key={employee.id}>
+                                        <TableCell>
+                                            <Avatar>
+                                                <AvatarImage src={employee.photoUrl} alt={employee.name} data-ai-hint="employee photo" />
+                                                <AvatarFallback>{employee.name?.charAt(0) || 'E'}</AvatarFallback>
+                                            </Avatar>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="font-medium">{`${employee.lastName || ''} ${employee.firstName || ''}`.trim()}</div>
+                                            {employee.skills && employee.skills.length > 0 && (
+                                                <div className="flex flex-wrap gap-1 mt-1">
+                                                    {employee.skills.slice(0, 3).map(skill => (
+                                                        <Badge key={skill} variant="secondary" className="font-normal">{skill}</Badge>
+                                                    ))}
+                                                    {employee.skills.length > 3 && (
+                                                        <Badge variant="outline">+{employee.skills.length - 3}</Badge>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </TableCell>
+                                        <TableCell>{employee.matricule}</TableCell>
+                                        <TableCell>{employee.poste}</TableCell>
+                                        <TableCell>{employee.department}</TableCell>
+                                        <TableCell>
+                                            <Badge variant={statusVariantMap[employee.status as Status] || 'default'}>{employee.status}</Badge>
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                             <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button aria-haspopup="true" size="icon" variant="ghost">
+                                                        <MoreHorizontal className="h-4 w-4" />
+                                                        <span className="sr-only">Ouvrir le menu</span>
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end">
+                                                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                                    <DropdownMenuItem asChild>
+                                                        <Link href={`/employees/${employee.id}`}>
+                                                            <Eye className="mr-2 h-4 w-4" />
+                                                            Voir les détails
+                                                        </Link>
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem asChild>
+                                                         <Link href={`/employees/${employee.id}/edit`}>
+                                                            <Pencil className="mr-2 h-4 w-4" />
+                                                            Modifier
+                                                        </Link>
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem onClick={() => handleDeleteEmployee(employee.id)} className="text-destructive focus:text-destructive">
+                                                        <Trash2 className="mr-2 h-4 w-4" />
+                                                        Supprimer
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </TableCell>
+                                    </TableRow>
+                                ))
                             )}
                         </TableBody>
                         </Table>
@@ -416,11 +433,11 @@ export default function EmployeesPage() {
                         </tr>
                     </thead>
                     <tbody>
-                        {filteredEmployees.filter(e => e.status === 'Active').map((employee, index) => (
+                        {filteredEmployees.filter(e => e.status === 'Actif').map((employee, index) => (
                             <tr key={employee.id}>
                                 <td className="border border-black p-1 text-center">{index + 1}</td>
                                 {columnsToPrint.map(key => {
-                                    let value: React.ReactNode = employee[key as keyof Employee] as string || '';
+                                    let value: React.ReactNode = employee[key as keyof Employe] as string || '';
                                     if (key === 'name' && (employee.firstName || employee.lastName)) {
                                         value = `${employee.lastName || ''} ${employee.firstName || ''}`.trim();
                                     }

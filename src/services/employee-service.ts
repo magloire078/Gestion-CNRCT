@@ -32,6 +32,7 @@ export async function getEmployees(): Promise<Employe[]> {
 }
 
 export async function getEmployee(id: string): Promise<Employe | null> {
+    if (!id) return null;
     const employeeRef = doc(db, 'employees', id);
     const employeeSnap = await getDoc(employeeRef);
     if(employeeSnap.exists()){
@@ -85,6 +86,7 @@ export async function batchAddEmployees(employees: Omit<Employe, 'id'>[]): Promi
 
 
 export async function updateEmployee(employeeId: string, employeeDataToUpdate: Partial<Employe>): Promise<void> {
+    if (!employeeId) throw new Error("ID de l'employé non fourni.");
     const employeeRef = doc(db, 'employees', employeeId);
     await updateDoc(employeeRef, employeeDataToUpdate);
 }

@@ -1,0 +1,239 @@
+
+"use client";
+
+import { useState, useEffect, useMemo } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { getEmployee, updateEmployee } from "@/services/employee-service";
+import type { Employe } from "@/lib/data";
+import { departments } from "../../../employees/page";
+
+import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { ArrowLeft, Loader2, User, Briefcase, BadgeCheck, FloppyDisk } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+
+type Status = 'Actif' | 'En congé' | 'Licencié';
+
+export default function EmployeeEditPage() {
+    const params = useParams();
+    const router = useRouter();
+    const { id } = params;
+    const { toast } = useToast();
+
+    const [employee, setEmployee] = useState<Partial<Employe> | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [isSaving, setIsSaving] = useState(false);
+    const [skillsString, setSkillsString] = useState("");
+
+    useEffect(() => {
+        if (typeof id !== 'string') return;
+        async function fetchEmployee() {
+            try {
+                const data = await getEmployee(id);
+                setEmployee(data);
+                if (data?.skills) {
+                    setSkillsString(data.skills.join(', '));
+                }
+            } catch (error) {
+                console.error("Failed to fetch employee", error);
+                toast({ variant: "destructive", title: "Erreur", description: "Impossible de charger les données de l'employé." });
+            } finally {
+                setLoading(false);
+            }
+        }
+        fetchEmployee();
+    }, [id, toast]);
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const { name, value } = e.target;
+        setEmployee(prev => (prev ? { ...prev, [name]: value } : null));
+    };
+
+    const handleSelectChange = (name: string, value: string) => {
+        setEmployee(prev => (prev ? { ...prev, [name]: value } : null));
+    };
+
+    const handleSave = async () => {
+        if (!employee || typeof id !== 'string') return;
+        setIsSaving(true);
+        try {
+            const fullName = `${employee.firstName || ''} ${employee.lastName || ''}`.trim();
+            const updatedData = {
+                ...employee,
+                name: fullName,
+                skills: skillsString.split(',').map(s => s.trim()).filter(s => s)
+            };
+            await updateEmployee(id, updatedData);
+            toast({ title: "Succès", description: "Les informations de l'employé ont été mises à jour." });
+            router.push(`/employees/${id}`);
+        } catch (error) {
+            console.error("Failed to save employee", error);
+            toast({ variant: "destructive", title: "Erreur", description: "Impossible d'enregistrer les modifications." });
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const fullName = useMemo(() => {
+        if (!employee) return "";
+        return `${employee.firstName || ''} ${employee.lastName || ''}`.trim() || employee.name || "Chargement...";
+    }, [employee]);
+
+
+    if (loading) {
+        return <EmployeeEditSkeleton />;
+    }
+
+    if (!employee) {
+        return <div className="text-center py-10">Employé non trouvé.</div>;
+    }
+
+    return (
+         <div className="max-w-4xl mx-auto flex flex-col gap-6">
+            <div className="flex items-center gap-4">
+                 <Button variant="outline" size="icon" onClick={() => router.back()}>
+                    <ArrowLeft className="h-4 w-4" />
+                    <span className="sr-only">Retour</span>
+                 </Button>
+                 <div>
+                    <h1 className="text-2xl font-bold tracking-tight">Modifier l'Employé</h1>
+                    <p className="text-muted-foreground">{fullName}</p>
+                 </div>
+                 <Button onClick={handleSave} disabled={isSaving} className="ml-auto">
+                    {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <FloppyDisk className="mr-2 h-4 w-4" />}
+                    Enregistrer
+                </Button>
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Personal Info */}
+                <Card className="lg:col-span-3">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2"><User className="h-5 w-5 text-primary"/> Informations Personnelles</CardTitle>
+                    </CardHeader>
+                    <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="lastName">Nom</Label>
+                            <Input id="lastName" name="lastName" value={employee.lastName || ''} onChange={handleInputChange} />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="firstName">Prénom(s)</Label>
+                            <Input id="firstName" name="firstName" value={employee.firstName || ''} onChange={handleInputChange} />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="email">Email</Label>
+                            <Input id="email" name="email" type="email" value={employee.email || ''} onChange={handleInputChange} />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="mobile">Téléphone</Label>
+                            <Input id="mobile" name="mobile" value={employee.mobile || ''} onChange={handleInputChange} />
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* Professional Info */}
+                <Card className="lg:col-span-3">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2"><Briefcase className="h-5 w-5 text-primary"/> Informations Professionnelles</CardTitle>
+                    </CardHeader>
+                     <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="matricule">Matricule</Label>
+                            <Input id="matricule" name="matricule" value={employee.matricule || ''} onChange={handleInputChange} />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="poste">Poste</Label>
+                            <Input id="poste" name="poste" value={employee.poste || ''} onChange={handleInputChange} />
+                        </div>
+                         <div className="space-y-2">
+                            <Label htmlFor="dateEmbauche">Date d'embauche</Label>
+                            <Input id="dateEmbauche" name="dateEmbauche" type="date" value={employee.dateEmbauche || ''} onChange={handleInputChange} />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="department">Département</Label>
+                            <Select name="department" value={employee.department || ''} onValueChange={(v) => handleSelectChange('department', v)}>
+                                <SelectTrigger><SelectValue placeholder="Sélectionnez..." /></SelectTrigger>
+                                <SelectContent>
+                                    {departments.map(dep => <SelectItem key={dep} value={dep}>{dep}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="status">Statut</Label>
+                             <Select name="status" value={employee.status || ''} onValueChange={(v) => handleSelectChange('status', v)}>
+                                <SelectTrigger><SelectValue placeholder="Sélectionnez..." /></SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="Actif">Actif</SelectItem>
+                                    <SelectItem value="En congé">En congé</SelectItem>
+                                    <SelectItem value="Licencié">Licencié</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* Skills */}
+                 <Card className="lg:col-span-3">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2"><BadgeCheck className="h-5 w-5 text-primary"/> Compétences</CardTitle>
+                        <CardDescription>Séparez les compétences par une virgule.</CardDescription>
+                    </CardHeader>
+                     <CardContent>
+                         <Textarea 
+                            name="skills"
+                            value={skillsString}
+                            onChange={(e) => setSkillsString(e.target.value)}
+                            rows={3}
+                            placeholder="Gestion de projet, Leadership, Communication..."
+                         />
+                    </CardContent>
+                </Card>
+            </div>
+        </div>
+    );
+}
+
+function EmployeeEditSkeleton() {
+    return (
+         <div className="max-w-4xl mx-auto flex flex-col gap-6">
+            <div className="flex items-center gap-4">
+                <Skeleton className="h-10 w-10" />
+                <div className="space-y-2">
+                    <Skeleton className="h-6 w-48" />
+                    <Skeleton className="h-4 w-32" />
+                </div>
+                <Skeleton className="h-10 w-32 ml-auto" />
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <Card className="lg:col-span-3">
+                    <CardHeader><Skeleton className="h-6 w-1/3" /></CardHeader>
+                    <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <Skeleton className="h-16 w-full" />
+                        <Skeleton className="h-16 w-full" />
+                        <Skeleton className="h-16 w-full" />
+                        <Skeleton className="h-16 w-full" />
+                    </CardContent>
+                </Card>
+                 <Card className="lg:col-span-3">
+                    <CardHeader><Skeleton className="h-6 w-1/3" /></CardHeader>
+                    <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <Skeleton className="h-16 w-full" />
+                        <Skeleton className="h-16 w-full" />
+                        <Skeleton className="h-16 w-full" />
+                    </CardContent>
+                </Card>
+                 <Card className="lg:col-span-3">
+                    <CardHeader><Skeleton className="h-6 w-1/3" /></CardHeader>
+                    <CardContent>
+                        <Skeleton className="h-24 w-full" />
+                    </CardContent>
+                </Card>
+            </div>
+        </div>
+    )
+}

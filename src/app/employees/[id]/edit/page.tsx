@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Loader2, User, Briefcase, BadgeCheck, FloppyDisk } from "lucide-react";
+import { ArrowLeft, Loader2, User, Briefcase, BadgeCheck, Save } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 type Status = 'Actif' | 'En congé' | 'Licencié';
@@ -105,7 +105,7 @@ export default function EmployeeEditPage() {
                     <p className="text-muted-foreground">{fullName}</p>
                  </div>
                  <Button onClick={handleSave} disabled={isSaving} className="ml-auto">
-                    {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <FloppyDisk className="mr-2 h-4 w-4" />}
+                    {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4" />}
                     Enregistrer
                 </Button>
             </div>
@@ -237,3 +237,5 @@ function EmployeeEditSkeleton() {
         </div>
     )
 }
+
+    

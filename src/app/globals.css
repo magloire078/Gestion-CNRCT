@@ -75,11 +75,14 @@
 
   @media print {
     @page {
-        size: landscape;
+        size: a4 portrait;
         margin: 1cm;
     }
     .print-hidden {
         display: none !important;
+    }
+    body, html {
+      background-color: #fff; /* Ensure a white background for printing */
     }
     body * {
         visibility: hidden;
@@ -92,6 +95,10 @@
         left: 0;
         top: 0;
         width: 100%;
+        margin: 0;
+        padding: 0;
+        border: none;
+        box-shadow: none;
     }
   }
 }

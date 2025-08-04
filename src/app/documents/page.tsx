@@ -6,6 +6,8 @@ import { useFormStatus } from "react-dom";
 import { generateDocumentAction, FormState } from "./actions";
 import { getEmployees } from "@/services/employee-service";
 import type { Employe } from "@/lib/data";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 
 
 import { Button } from "@/components/ui/button";
@@ -14,7 +16,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Terminal, FileText, Bot, Loader2, Printer } from "lucide-react";
+import { Terminal, FileText, Bot, Loader2, Printer, Download } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const initialState: FormState = {
@@ -39,6 +41,7 @@ export default function DocumentGeneratorPage() {
   const [documentType, setDocumentType] = useState('');
   const [documentContent, setDocumentContent] = useState('');
   const [isPrinting, setIsPrinting] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
@@ -127,6 +130,53 @@ export default function DocumentGeneratorPage() {
     }
   };
 
+  const handleDownloadPdf = async () => {
+    if (!state.document) return;
+    const printElement = document.getElementById("print-section");
+    if (!printElement) return;
+
+    setIsDownloading(true);
+
+    try {
+        const canvas = await html2canvas(printElement, { scale: 2 });
+        const imgData = canvas.toDataURL('image/png');
+        
+        const pdf = new jsPDF({
+            orientation: 'p',
+            unit: 'mm',
+            format: 'a4'
+        });
+
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
+        const canvasWidth = canvas.width;
+        const canvasHeight = canvas.height;
+        const ratio = canvasWidth / canvasHeight;
+        const width = pdfWidth;
+        const height = width / ratio;
+
+        pdf.addImage(imgData, 'PNG', 0, 0, width, height > pdfHeight ? pdfHeight : height);
+        
+        // Handle multi-page content if needed
+        let position = height;
+        if(position > pdfHeight) {
+            let remainingHeight = canvasHeight - (pdfHeight * canvas.width / pdfWidth);
+            while(remainingHeight > 0) {
+                pdf.addPage();
+                pdf.addImage(imgData, 'PNG', 0, -position, width, height);
+                position += pdfHeight;
+                remainingHeight -= (pdfHeight * canvas.width / pdfWidth);
+            }
+        }
+        
+        pdf.save(`${documentType.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`);
+    } catch(error) {
+        console.error("Failed to generate PDF", error);
+    } finally {
+        setIsDownloading(false);
+    }
+  };
+
   return (
     <>
       <div className={isPrinting ? 'print-hidden' : ''}>
@@ -211,11 +261,11 @@ export default function DocumentGeneratorPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2"><FileText className="h-5 w-5" />Document Généré</CardTitle>
-                <CardDescription>Le contenu généré par l'IA apparaîtra ici. Copiez le contenu ou imprimez la page.</CardDescription>
+                <CardDescription>Le contenu généré par l'IA apparaîtra ici. Copiez le contenu ou imprimez/téléchargez.</CardDescription>
               </CardHeader>
               <CardContent>
                 {state.document ? (
-                   <div className="whitespace-pre-wrap p-4 text-sm rounded-md bg-muted/50 border font-serif h-[400px] overflow-auto">
+                   <div id="generated-document-display" className="whitespace-pre-wrap p-4 text-sm rounded-md bg-muted/50 border font-serif h-[400px] overflow-auto">
                     {state.document}
                    </div>
                 ) : (
@@ -225,10 +275,14 @@ export default function DocumentGeneratorPage() {
                   </div>
                 )}
               </CardContent>
-               <CardFooter>
-                <Button variant="outline" onClick={handlePrint} disabled={!state.document}>
+               <CardFooter className="gap-2">
+                <Button variant="outline" onClick={handlePrint} disabled={!state.document || isPrinting}>
                     <Printer className="mr-2 h-4 w-4" />
                     Imprimer
+                </Button>
+                <Button variant="outline" onClick={handleDownloadPdf} disabled={!state.document || isDownloading}>
+                    {isDownloading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+                    Télécharger en PDF
                 </Button>
               </CardFooter>
             </Card>
@@ -236,13 +290,14 @@ export default function DocumentGeneratorPage() {
         </div>
       </div>
       
-      {isPrinting && state.document && (
-        <div id="print-section" className="bg-white text-black p-8 font-serif print:shadow-none print:border-none print:p-0">
+      {/* This element is used for both printing and PDF generation */}
+      <div className={isPrinting ? '' : 'absolute -left-full'}>
+        <div id="print-section" className="bg-white text-black p-8 font-serif w-[210mm] min-h-[297mm]">
           <pre className="whitespace-pre-wrap text-sm">
             {state.document}
           </pre>
         </div>
-      )}
+      </div>
     </>
   );
 }

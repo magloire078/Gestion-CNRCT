@@ -24,6 +24,7 @@ import {
 import type { Employe } from "@/lib/data";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Upload } from "lucide-react";
+import { Textarea } from "../ui/textarea";
 
 interface AddEmployeeSheetProps {
   isOpen: boolean;
@@ -40,6 +41,7 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
   const [department, setDepartment] = useState("");
   const [status, setStatus] = useState<Employe['status']>('Actif');
   const [photoUrl, setPhotoUrl] = useState(`https://placehold.co/100x100.png`);
+  const [skills, setSkills] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -51,6 +53,7 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
     setEmail("");
     setPoste("");
     setDepartment("");
+    setSkills("");
     setStatus("Actif");
     setPhotoUrl(`https://placehold.co/100x100.png`);
     setError("");
@@ -85,7 +88,8 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
     setIsSubmitting(true);
     setError("");
     try {
-      await onAddEmployee({ matricule, firstName, lastName, email, poste, department, status, photoUrl, name: `${firstName} ${lastName}` });
+      const skillsArray = skills.split(',').map(s => s.trim()).filter(s => s);
+      await onAddEmployee({ matricule, firstName, lastName, email, poste, department, status, photoUrl, name: `${firstName} ${lastName}`, skills: skillsArray });
       handleClose();
     } catch(err) {
       setError(err instanceof Error ? err.message : "Échec de l'ajout de l'employé. Veuillez réessayer.");
@@ -200,6 +204,19 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
                       <SelectItem value="Licencié">Licencié</SelectItem>
                   </SelectContent>
                </Select>
+            </div>
+            <div className="grid grid-cols-4 items-start gap-4">
+              <Label htmlFor="skills" className="text-right pt-2">
+                Compétences
+              </Label>
+              <Textarea
+                id="skills"
+                value={skills}
+                onChange={(e) => setSkills(e.target.value)}
+                className="col-span-3"
+                rows={3}
+                placeholder="Séparer les compétences par une virgule..."
+              />
             </div>
             {error && <p className="text-sm text-destructive col-span-4 text-center">{error}</p>}
           </div>

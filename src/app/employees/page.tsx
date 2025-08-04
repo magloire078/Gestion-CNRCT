@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import type { Employee } from "@/lib/data";
+import type { Employe } from "@/lib/data";
 import { AddEmployeeSheet } from "@/components/employees/add-employee-sheet";
 import { PrintDialog } from "@/components/employees/print-dialog";
 import { subscribeToEmployees, addEmployee, updateEmployee, deleteEmployee, getOrganizationSettings } from "@/services/employee-service";
@@ -43,7 +43,7 @@ export type ColumnKeys = keyof typeof allColumns;
 
 
 export default function EmployeesPage() {
-  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [employees, setEmployees] = useState<Employe[]>([]);
   const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
   const [isPrintDialogOpen, setIsPrintDialogOpen] = useState(false);
   const [editingEmployeeId, setEditingEmployeeId] = useState<string | null>(null);
@@ -86,7 +86,7 @@ export default function EmployeesPage() {
   }, [isPrinting]);
 
 
-  const handleAddEmployee = async (newEmployeeData: Omit<Employee, 'id'>) => {
+  const handleAddEmployee = async (newEmployeeData: Omit<Employe, 'id'>) => {
     try {
         const { firstName, lastName } = newEmployeeData;
         const name = `${firstName} ${lastName}`;
@@ -103,7 +103,7 @@ export default function EmployeesPage() {
     }
   };
 
-  const handleUpdateEmployee = async (employeeId: string, updatedEmployeeData: Partial<Employee>) => {
+  const handleUpdateEmployee = async (employeeId: string, updatedEmployeeData: Partial<Employe>) => {
     try {
       const originalEmployee = employees.find(e => e.id === employeeId);
       if (!originalEmployee) throw new Error("Employé non trouvé");
@@ -325,7 +325,7 @@ export default function EmployeesPage() {
                         <TableHeader>
                             <TableRow>
                             <TableHead className="w-[80px]">Photo</TableHead>
-                            <TableHead>Nom Complet</TableHead>
+                            <TableHead>Nom Complet & Compétences</TableHead>
                             <TableHead>Matricule</TableHead>
                             <TableHead>Poste</TableHead>
                             <TableHead>Service</TableHead>
@@ -451,4 +451,3 @@ export default function EmployeesPage() {
     </>
   );
 }
-

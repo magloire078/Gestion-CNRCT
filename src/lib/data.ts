@@ -1,6 +1,5 @@
 
 
-
 export type Employe = {
   id: string; // Firestore document ID
   civilite?: string;
@@ -78,6 +77,7 @@ export type Employe = {
   dateEmbauche?: string; // YYYY-MM-DD
   paymentLocation?: string;
   paymentDate?: string; // "Mercredi 30 Avril 2025"
+  skills?: string[];
 };
 
 export type Leave = {

@@ -25,7 +25,7 @@ interface InlineEditRowProps {
 }
 
 export function InlineEditRow({ employee, isEditing, onEdit, onSave, onCancel, onDelete, statusVariantMap }: InlineEditRowProps) {
-    const [editData, setEditData] = useState<Partial<Employe>>({});
+    const [editData, setEditData] = useState<Partial<Employe> & { skillsString?: string }>({});
 
     useEffect(() => {
         if (isEditing) {
@@ -35,7 +35,9 @@ export function InlineEditRow({ employee, isEditing, onEdit, onSave, onCancel, o
                 matricule: employee.matricule,
                 poste: employee.poste,
                 department: employee.department,
-                status: employee.status
+                status: employee.status,
+                skills: employee.skills || [],
+                skillsString: (employee.skills || []).join(', ')
             });
         }
     }, [isEditing, employee]);
@@ -48,13 +50,19 @@ export function InlineEditRow({ employee, isEditing, onEdit, onSave, onCancel, o
     const handleSelectChange = (name: string, value: string) => {
         setEditData(prev => ({ ...prev, [name]: value }));
     };
+    
+    const handleSkillsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setEditData(prev => ({ ...prev, skillsString: e.target.value }));
+    };
 
     const handleSaveClick = async () => {
-        await onSave(employee.id, editData);
+        const skillsArray = editData.skillsString?.split(',').map(s => s.trim()).filter(s => s) || [];
+        await onSave(employee.id, { ...editData, skills: skillsArray });
     };
 
     if (isEditing) {
         return (
+            <>
             <TableRow className="bg-muted/50">
                 <TableCell>
                     <Avatar>
@@ -109,6 +117,20 @@ export function InlineEditRow({ employee, isEditing, onEdit, onSave, onCancel, o
                     </div>
                 </TableCell>
             </TableRow>
+             <TableRow className="bg-muted/50">
+                <TableCell colSpan={7} className="py-2">
+                     <Label htmlFor="skillsEdit" className="text-xs font-semibold">Compétences</Label>
+                     <Input 
+                        id="skillsEdit"
+                        name="skillsString" 
+                        placeholder="Compétence 1, Compétence 2, ..." 
+                        value={editData.skillsString || ''} 
+                        onChange={handleSkillsChange} 
+                        className="h-8 mt-1" 
+                    />
+                </TableCell>
+            </TableRow>
+            </>
         );
     }
 
@@ -120,7 +142,19 @@ export function InlineEditRow({ employee, isEditing, onEdit, onSave, onCancel, o
                     <AvatarFallback>{employee.name?.charAt(0) || 'E'}</AvatarFallback>
                 </Avatar>
             </TableCell>
-            <TableCell className="font-medium">{`${employee.lastName || ''} ${employee.firstName || ''}`.trim()}</TableCell>
+            <TableCell>
+                <div className="font-medium">{`${employee.lastName || ''} ${employee.firstName || ''}`.trim()}</div>
+                 {employee.skills && employee.skills.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1">
+                        {employee.skills.slice(0, 3).map(skill => (
+                            <Badge key={skill} variant="secondary" className="font-normal">{skill}</Badge>
+                        ))}
+                         {employee.skills.length > 3 && (
+                            <Badge variant="outline">+{employee.skills.length - 3}</Badge>
+                        )}
+                    </div>
+                 )}
+            </TableCell>
             <TableCell>{employee.matricule}</TableCell>
             <TableCell>{employee.poste}</TableCell>
             <TableCell>{employee.department}</TableCell>
@@ -142,4 +176,3 @@ export function InlineEditRow({ employee, isEditing, onEdit, onSave, onCancel, o
         </TableRow>
     );
 }
-

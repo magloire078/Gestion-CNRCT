@@ -26,9 +26,9 @@ export function subscribeToEmployees(
 
 export async function getEmployees(): Promise<Employe[]> {
   const employeesCollection = collection(db, 'employees');
-  const employeeSnapshot = await getDocs(employeesCollection);
+  const employeeSnapshot = await getDocs(query(employeesCollection, orderBy("name", "asc")));
   const employeeList = employeeSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Employe));
-  return employeeList.sort((a, b) => a.name.localeCompare(b.name));
+  return employeeList;
 }
 
 export async function getEmployee(id: string): Promise<Employe | null> {

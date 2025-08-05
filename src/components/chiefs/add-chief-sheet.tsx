@@ -213,10 +213,10 @@ export function AddChiefSheet({ isOpen, onClose, onAddChief }: AddChiefSheetProp
             </div>
              <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="parentChief" className="text-right">Chef Supérieur</Label>
-              <Select value={parentChiefId || ""} onValueChange={(v) => setParentChiefId(v || null)}>
+              <Select value={parentChiefId ?? 'none'} onValueChange={(v) => setParentChiefId(v === 'none' ? null : v)}>
                 <SelectTrigger className="col-span-3"><SelectValue placeholder="Aucun (optionnel)" /></SelectTrigger>
                 <SelectContent>
-                    <SelectItem value="">Aucun</SelectItem>
+                    <SelectItem value="none">Aucun</SelectItem>
                     {allChiefs.map(c => <SelectItem key={c.id} value={c.id}>{c.name} ({c.title})</SelectItem>)}
                 </SelectContent>
               </Select>

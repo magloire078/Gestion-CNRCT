@@ -203,6 +203,8 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
                       <SelectItem value="Actif">Actif</SelectItem>
                       <SelectItem value="En congé">En congé</SelectItem>
                       <SelectItem value="Licencié">Licencié</SelectItem>
+                      <SelectItem value="Retraité">Retraité</SelectItem>
+                      <SelectItem value="Décédé">Décédé</SelectItem>
                   </SelectContent>
                </Select>
             </div>

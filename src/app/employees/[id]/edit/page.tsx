@@ -18,7 +18,7 @@ import { useToast } from "@/hooks/use-toast";
 
 const departmentList = ["Informatique", "Secretariat Général", "Communication", "Direction Administrative", "Direction des Affaires financières et du patrimoine", "Protocole", "Cabinet", "Direction des Affaires sociales", "Directoire", "Comités Régionaux", "Engineering", "Marketing", "Sales", "HR", "Operations", "Other"];
 
-type Status = 'Actif' | 'En congé' | 'Licencié';
+type Status = 'Actif' | 'En congé' | 'Licencié' | 'Retraité' | 'Décédé';
 
 export default function EmployeeEditPage() {
     const params = useParams();
@@ -172,6 +172,8 @@ export default function EmployeeEditPage() {
                                     <SelectItem value="Actif">Actif</SelectItem>
                                     <SelectItem value="En congé">En congé</SelectItem>
                                     <SelectItem value="Licencié">Licencié</SelectItem>
+                                    <SelectItem value="Retraité">Retraité</SelectItem>
+                                    <SelectItem value="Décédé">Décédé</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>

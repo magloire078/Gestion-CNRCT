@@ -8,7 +8,7 @@ export type Employe = {
   lastName?: string;
   poste: string;
   department: string;
-  status: 'Actif' | 'En congé' | 'Licencié';
+  status: 'Actif' | 'En congé' | 'Licencié' | 'Retraité' | 'Décédé';
   photoUrl: string;
 
   // Personal Info

@@ -21,12 +21,14 @@ import Papa from "papaparse";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 
-type Status = 'Actif' | 'En congé' | 'Licencié';
+type Status = 'Actif' | 'En congé' | 'Licencié' | 'Retraité' | 'Décédé';
 
-const statusVariantMap: Record<Status, "default" | "secondary" | "destructive"> = {
+const statusVariantMap: Record<Status, "default" | "secondary" | "destructive" | "outline"> = {
   'Actif': 'default',
   'En congé': 'secondary',
   'Licencié': 'destructive',
+  'Retraité': 'outline',
+  'Décédé': 'outline',
 };
 
 export const allColumns = {
@@ -288,6 +290,8 @@ export default function EmployeesPage() {
                             <SelectItem value="Actif">Actif</SelectItem>
                             <SelectItem value="En congé">En congé</SelectItem>
                             <SelectItem value="Licencié">Licencié</SelectItem>
+                            <SelectItem value="Retraité">Retraité</SelectItem>
+                            <SelectItem value="Décédé">Décédé</SelectItem>
                         </SelectContent>
                         </Select>
                     </div>

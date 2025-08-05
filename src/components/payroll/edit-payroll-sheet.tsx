@@ -218,5 +218,3 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
     </Sheet>
   );
 }
-
-    

@@ -237,5 +237,3 @@ function EmployeeEditSkeleton() {
         </div>
     )
 }
-
-    

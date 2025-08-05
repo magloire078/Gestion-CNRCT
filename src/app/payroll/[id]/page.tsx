@@ -64,6 +64,7 @@ export default function PayslipPage() {
     }
 
     const { employeeInfo, earnings, deductions, totals, employerContributions, organizationLogos } = payslipDetails;
+    const fullName = `${employeeInfo.lastName || ''} ${employeeInfo.firstName || ''}`.trim() || employeeInfo.name;
 
     return (
         <>
@@ -108,7 +109,7 @@ export default function PayslipPage() {
                     </div>
                     <div className="col-span-7 border rounded-lg p-3 print:p-2">
                          <div className="grid grid-cols-3 gap-x-2 gap-y-1">
-                            <span className="font-bold">NOM & PRENOMS</span><span className="col-span-2">: {employeeInfo.name}</span>
+                            <span className="font-bold">NOM & PRENOMS</span><span className="col-span-2">: {fullName}</span>
                             <span className="font-bold">MATRICULE</span><span className="col-span-2">: {employeeInfo.matricule}</span>
                             <span className="font-bold">SITUATION MATRIMONIALE</span><span className="col-span-2">: {employeeInfo.situationMatrimoniale}</span>
                             <span className="font-bold">BANQUE</span><span className="col-span-2">: {employeeInfo.banque}</span>
@@ -269,5 +270,3 @@ export default function PayslipPage() {
         </>
     );
 }
-
-    

@@ -10,7 +10,7 @@ export function subscribeToEmployees(
     onError: (error: Error) => void
 ): Unsubscribe {
     const employeesCollection = collection(db, 'employees');
-    const q = query(employeesCollection, orderBy("name", "asc"));
+    const q = query(employeesCollection, orderBy("lastName", "asc"), orderBy("firstName", "asc"));
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
         const employeeList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Employe));
@@ -26,7 +26,7 @@ export function subscribeToEmployees(
 
 export async function getEmployees(): Promise<Employe[]> {
   const employeesCollection = collection(db, 'employees');
-  const employeeSnapshot = await getDocs(query(employeesCollection, orderBy("name", "asc")));
+  const employeeSnapshot = await getDocs(query(employeesCollection, orderBy("lastName", "asc"), orderBy("firstName", "asc")));
   const employeeList = employeeSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Employe));
   return employeeList;
 }

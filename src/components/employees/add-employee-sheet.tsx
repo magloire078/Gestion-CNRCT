@@ -99,7 +99,7 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
           department, 
           status, 
           photoUrl, 
-          name: `${firstName} ${lastName}`, 
+          name: `${firstName} ${lastName}`.trim(), 
           skills: skillsArray,
       });
       handleClose();

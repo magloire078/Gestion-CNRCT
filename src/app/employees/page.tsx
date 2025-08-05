@@ -88,7 +88,7 @@ export default function EmployeesPage() {
   const handleAddEmployee = async (newEmployeeData: Omit<Employe, 'id'>) => {
     try {
         const { firstName, lastName } = newEmployeeData;
-        const name = `${firstName} ${lastName}`;
+        const name = `${firstName} ${lastName}`.trim();
         await addEmployee({ ...newEmployeeData, firstName, lastName, name });
         // No need to update state here, onSnapshot will do it
         setIsAddSheetOpen(false);
@@ -122,7 +122,7 @@ export default function EmployeesPage() {
 
   const filteredEmployees = useMemo(() => {
     return employees.filter(employee => {
-      const fullName = (employee.firstName && employee.lastName) ? `${employee.firstName} ${employee.lastName}`.toLowerCase() : (employee.name || '').toLowerCase();
+      const fullName = (employee.firstName && employee.lastName) ? `${employee.lastName} ${employee.firstName}`.toLowerCase() : (employee.name || '').toLowerCase();
       const matchesSearchTerm = fullName.includes(searchTerm.toLowerCase()) || (employee.matricule || '').toLowerCase().includes(searchTerm.toLowerCase());
       const matchesDepartment = departmentFilter === 'all' || employee.department === departmentFilter;
       const matchesStatus = statusFilter === 'all' || employee.status === statusFilter;
@@ -149,7 +149,7 @@ export default function EmployeesPage() {
     }
     const csvData = Papa.unparse(filteredEmployees.map(e => ({
         matricule: e.matricule, 
-        name: e.firstName ? `${e.firstName} ${e.lastName}` : e.name, 
+        name: e.firstName && e.lastName ? `${e.lastName} ${e.firstName}` : e.name, 
         email: e.email, 
         poste: e.poste, 
         department: e.department, 

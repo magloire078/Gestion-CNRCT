@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useRef, useMemo } from "react";
+import { useState, useRef, useMemo, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,7 +21,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { Chief } from "@/lib/data";
+import type { Chief, ChiefRole } from "@/lib/data";
+import { getChiefs } from "@/services/chief-service";
 import { divisions } from "@/lib/ivory-coast-divisions";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Upload } from "lucide-react";
@@ -36,6 +37,7 @@ interface AddChiefSheetProps {
 export function AddChiefSheet({ isOpen, onClose, onAddChief }: AddChiefSheetProps) {
   const [name, setName] = useState("");
   const [title, setTitle] = useState("");
+  const [role, setRole] = useState<ChiefRole>("Chef de Village");
   const [contact, setContact] = useState("");
   const [bio, setBio] = useState("");
   const [photoUrl, setPhotoUrl] = useState(`https://placehold.co/100x100.png`);
@@ -44,10 +46,26 @@ export function AddChiefSheet({ isOpen, onClose, onAddChief }: AddChiefSheetProp
   const [selectedDepartment, setSelectedDepartment] = useState("");
   const [selectedSubPrefecture, setSelectedSubPrefecture] = useState("");
   const [selectedVillage, setSelectedVillage] = useState("");
+  const [parentChiefId, setParentChiefId] = useState<string | null>(null);
 
+  const [allChiefs, setAllChiefs] = useState<Chief[]>([]);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  useEffect(() => {
+    if (isOpen) {
+        async function fetchChiefs() {
+            try {
+                const fetchedChiefs = await getChiefs();
+                setAllChiefs(fetchedChiefs);
+            } catch (err) {
+                console.error("Failed to fetch chiefs list for parent selection", err);
+            }
+        }
+        fetchChiefs();
+    }
+  }, [isOpen]);
 
   const departments = useMemo(() => selectedRegion ? Object.keys(divisions[selectedRegion]) : [], [selectedRegion]);
   const subPrefectures = useMemo(() => selectedRegion && selectedDepartment ? Object.keys(divisions[selectedRegion][selectedDepartment]) : [], [selectedRegion, selectedDepartment]);
@@ -56,6 +74,7 @@ export function AddChiefSheet({ isOpen, onClose, onAddChief }: AddChiefSheetProp
   const resetForm = () => {
     setName("");
     setTitle("");
+    setRole("Chef de Village");
     setContact("");
     setBio("");
     setPhotoUrl(`https://placehold.co/100x100.png`);
@@ -63,6 +82,7 @@ export function AddChiefSheet({ isOpen, onClose, onAddChief }: AddChiefSheetProp
     setSelectedDepartment("");
     setSelectedSubPrefecture("");
     setSelectedVillage("");
+    setParentChiefId(null);
     setError("");
     if(fileInputRef.current) {
         fileInputRef.current.value = "";
@@ -106,8 +126,8 @@ export function AddChiefSheet({ isOpen, onClose, onAddChief }: AddChiefSheetProp
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!name || !title || !selectedRegion || !selectedDepartment || !selectedSubPrefecture || !selectedVillage) {
-      setError("Veuillez remplir tous les champs de localisation (Région, Département, etc.).");
+    if (!name || !title || !role || !selectedRegion || !selectedDepartment || !selectedSubPrefecture || !selectedVillage) {
+      setError("Veuillez remplir tous les champs obligatoires (nom, titre, rôle, localisation).");
       return;
     }
     setIsSubmitting(true);
@@ -116,13 +136,15 @@ export function AddChiefSheet({ isOpen, onClose, onAddChief }: AddChiefSheetProp
       await onAddChief({ 
           name, 
           title, 
+          role,
           region: selectedRegion, 
           department: selectedDepartment,
           subPrefecture: selectedSubPrefecture,
           village: selectedVillage,
           contact, 
           bio, 
-          photoUrl 
+          photoUrl,
+          parentChiefId,
         });
       handleClose();
     } catch(err) {
@@ -143,7 +165,7 @@ export function AddChiefSheet({ isOpen, onClose, onAddChief }: AddChiefSheetProp
               Remplissez les détails ci-dessous pour ajouter une nouvelle autorité traditionnelle.
             </SheetDescription>
           </SheetHeader>
-          <div className="grid gap-4 py-4">
+          <div className="grid gap-4 py-4 max-h-[85vh] overflow-y-auto pr-4">
             <div className="grid grid-cols-4 items-center gap-4">
               <Label className="text-right">
                 Photo
@@ -176,7 +198,28 @@ export function AddChiefSheet({ isOpen, onClose, onAddChief }: AddChiefSheetProp
               <Label htmlFor="title" className="text-right">
                 Titre
               </Label>
-              <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} className="col-span-3" placeholder="Ex: Roi des N'zima, Chef de canton" required />
+              <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} className="col-span-3" placeholder="Ex: Roi des N'zima" required />
+            </div>
+             <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="role" className="text-right">Rôle</Label>
+              <Select value={role} onValueChange={(v: ChiefRole) => setRole(v)} required>
+                <SelectTrigger className="col-span-3"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="Chef de Village">Chef de Village</SelectItem>
+                    <SelectItem value="Chef de Canton">Chef de Canton</SelectItem>
+                    <SelectItem value="Roi">Roi</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+             <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="parentChief" className="text-right">Chef Supérieur</Label>
+              <Select value={parentChiefId || ""} onValueChange={(v) => setParentChiefId(v || null)}>
+                <SelectTrigger className="col-span-3"><SelectValue placeholder="Aucun (optionnel)" /></SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="">Aucun</SelectItem>
+                    {allChiefs.map(c => <SelectItem key={c.id} value={c.id}>{c.name} ({c.title})</SelectItem>)}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="grid grid-cols-4 items-center gap-4">
@@ -221,7 +264,7 @@ export function AddChiefSheet({ isOpen, onClose, onAddChief }: AddChiefSheetProp
             </div>
             {error && <p className="text-sm text-destructive col-span-4 text-center">{error}</p>}
           </div>
-          <SheetFooter>
+          <SheetFooter className="border-t pt-4">
             <SheetClose asChild>
               <Button type="button" variant="outline" onClick={handleClose}>
                 Annuler

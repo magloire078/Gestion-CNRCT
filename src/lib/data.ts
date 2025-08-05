@@ -182,10 +182,13 @@ export type PayslipDetails = {
     }
 };
 
+export type ChiefRole = "Chef de Village" | "Chef de Canton" | "Roi";
+
 export type Chief = {
   id: string; // Firestore document ID
   name: string;
   title: string; // e.g., "Roi des N'zima", "Chef de Canton"
+  role: ChiefRole;
   region: string;
   department: string;
   subPrefecture: string;
@@ -195,4 +198,5 @@ export type Chief = {
   photoUrl: string;
   latitude?: number;
   longitude?: number;
+  parentChiefId?: string | null;
 };

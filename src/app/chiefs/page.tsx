@@ -33,6 +33,7 @@ import { useToast } from "@/hooks/use-toast";
 import type { Chief } from "@/lib/data";
 import { subscribeToChiefs, addChief, deleteChief } from "@/services/chief-service";
 import { AddChiefSheet } from "@/components/chiefs/add-chief-sheet";
+import { Badge } from "@/components/ui/badge";
 
 export default function ChiefsPage() {
   const [chiefs, setChiefs] = useState<Chief[]>([]);
@@ -135,6 +136,7 @@ export default function ChiefsPage() {
                 <TableRow>
                   <TableHead className="w-[80px]">Photo</TableHead>
                   <TableHead>Nom & Titre</TableHead>
+                  <TableHead>Rôle</TableHead>
                   <TableHead>Localisation</TableHead>
                   <TableHead>Contact</TableHead>
                   <TableHead className="w-[100px] text-right">Actions</TableHead>
@@ -146,6 +148,7 @@ export default function ChiefsPage() {
                     <TableRow key={i}>
                       <TableCell><Skeleton className="h-10 w-10 rounded-full" /></TableCell>
                       <TableCell><Skeleton className="h-4 w-48" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                       <TableCell><Skeleton className="h-4 w-48" /></TableCell>
                       <TableCell><Skeleton className="h-4 w-40" /></TableCell>
                       <TableCell><div className="flex justify-end"><Skeleton className="h-8 w-8" /></div></TableCell>
@@ -163,6 +166,9 @@ export default function ChiefsPage() {
                       <TableCell>
                         <div className="font-medium">{chief.name}</div>
                         <div className="text-sm text-muted-foreground">{chief.title}</div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="secondary">{chief.role}</Badge>
                       </TableCell>
                        <TableCell>
                         <div className="font-medium">{chief.village}</div>

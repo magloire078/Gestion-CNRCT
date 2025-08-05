@@ -89,5 +89,3 @@ export async function getPayslipDetails(employee: Employe): Promise<PayslipDetai
         organizationLogos
     };
 }
-
-    

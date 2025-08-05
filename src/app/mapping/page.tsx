@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -23,7 +23,7 @@ export default function MappingPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const { toast } = useToast();
 
-  useState(() => {
+  useEffect(() => {
     async function fetchChiefs() {
       try {
         const data = await getChiefs();
@@ -41,7 +41,7 @@ export default function MappingPage() {
       }
     }
     fetchChiefs();
-  });
+  }, [toast]); // useEffect will run once on component mount
 
   const filteredChiefs = useMemo(() => {
     if (!searchTerm) {

@@ -1,15 +1,12 @@
 
 "use client";
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useToast } from '@/hooks/use-toast';
-import type { Chief } from '@/lib/data';
-import { getChiefs } from '@/services/chief-service';
 
 // Dynamically import the map component to avoid SSR issues
 const MapComponent = dynamic(() => import('@/components/mapping/map-component'), {
@@ -18,43 +15,7 @@ const MapComponent = dynamic(() => import('@/components/mapping/map-component'),
 });
 
 export default function MappingPage() {
-  const [chiefs, setChiefs] = useState<Chief[]>([]);
-  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const { toast } = useToast();
-
-  useEffect(() => {
-    async function fetchChiefs() {
-      try {
-        const data = await getChiefs();
-        const chiefsWithCoords = data.filter(c => c.latitude && c.longitude);
-        setChiefs(chiefsWithCoords);
-      } catch (error) {
-        console.error('Failed to load chiefs for map', error);
-        toast({
-          variant: 'destructive',
-          title: 'Erreur',
-          description: 'Impossible de charger les données des chefs pour la carte.',
-        });
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchChiefs();
-  }, [toast]); // useEffect will run once on component mount
-
-  const filteredChiefs = useMemo(() => {
-    if (!searchTerm) {
-      return chiefs;
-    }
-    const lowercasedTerm = searchTerm.toLowerCase();
-    return chiefs.filter(
-      (chief) =>
-        chief.name.toLowerCase().includes(lowercasedTerm) ||
-        chief.village.toLowerCase().includes(lowercasedTerm) ||
-        chief.region.toLowerCase().includes(lowercasedTerm)
-    );
-  }, [chiefs, searchTerm]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -77,7 +38,7 @@ export default function MappingPage() {
             />
           </div>
           <div className="h-[600px] w-full rounded-lg border overflow-hidden">
-             <MapComponent chiefs={filteredChiefs} />
+             <MapComponent searchTerm={searchTerm} />
           </div>
         </CardContent>
       </Card>

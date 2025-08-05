@@ -23,7 +23,6 @@ import {
 } from "@/components/ui/select";
 import type { Chief, ChiefRole } from "@/lib/data";
 import { getChiefs } from "@/services/chief-service";
-import { divisions } from "@/lib/ivory-coast-divisions";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Upload } from "lucide-react";
 import { Textarea } from "../ui/textarea";
@@ -42,10 +41,10 @@ export function AddChiefSheet({ isOpen, onClose, onAddChief }: AddChiefSheetProp
   const [bio, setBio] = useState("");
   const [photoUrl, setPhotoUrl] = useState(`https://placehold.co/100x100.png`);
   
-  const [selectedRegion, setSelectedRegion] = useState("");
-  const [selectedDepartment, setSelectedDepartment] = useState("");
-  const [selectedSubPrefecture, setSelectedSubPrefecture] = useState("");
-  const [selectedVillage, setSelectedVillage] = useState("");
+  const [region, setRegion] = useState("");
+  const [department, setDepartment] = useState("");
+  const [subPrefecture, setSubPrefecture] = useState("");
+  const [village, setVillage] = useState("");
   const [parentChiefId, setParentChiefId] = useState<string | null>(null);
 
   const [dateOfBirth, setDateOfBirth] = useState("");
@@ -71,10 +70,6 @@ export function AddChiefSheet({ isOpen, onClose, onAddChief }: AddChiefSheetProp
     }
   }, [isOpen]);
 
-  const departments = useMemo(() => selectedRegion ? Object.keys(divisions[selectedRegion]) : [], [selectedRegion]);
-  const subPrefectures = useMemo(() => selectedRegion && selectedDepartment ? Object.keys(divisions[selectedRegion][selectedDepartment]) : [], [selectedRegion, selectedDepartment]);
-  const villages = useMemo(() => selectedRegion && selectedDepartment && selectedSubPrefecture ? divisions[selectedRegion][selectedDepartment][selectedSubPrefecture] : [], [selectedRegion, selectedDepartment, selectedSubPrefecture]);
-
   const resetForm = () => {
     setName("");
     setTitle("");
@@ -82,10 +77,10 @@ export function AddChiefSheet({ isOpen, onClose, onAddChief }: AddChiefSheetProp
     setContact("");
     setBio("");
     setPhotoUrl(`https://placehold.co/100x100.png`);
-    setSelectedRegion("");
-    setSelectedDepartment("");
-    setSelectedSubPrefecture("");
-    setSelectedVillage("");
+    setRegion("");
+    setDepartment("");
+    setSubPrefecture("");
+    setVillage("");
     setParentChiefId(null);
     setDateOfBirth("");
     setRegencyStartDate("");
@@ -112,28 +107,10 @@ export function AddChiefSheet({ isOpen, onClose, onAddChief }: AddChiefSheetProp
     }
   };
 
-  const handleRegionChange = (value: string) => {
-    setSelectedRegion(value);
-    setSelectedDepartment("");
-    setSelectedSubPrefecture("");
-    setSelectedVillage("");
-  };
-
-  const handleDepartmentChange = (value: string) => {
-    setSelectedDepartment(value);
-    setSelectedSubPrefecture("");
-    setSelectedVillage("");
-  };
-  
-  const handleSubPrefectureChange = (value: string) => {
-    setSelectedSubPrefecture(value);
-    setSelectedVillage("");
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!name || !title || !role || !selectedRegion || !selectedDepartment || !selectedSubPrefecture || !selectedVillage) {
+    if (!name || !title || !role || !region || !department || !subPrefecture || !village) {
       setError("Veuillez remplir tous les champs obligatoires (nom, titre, rôle, localisation).");
       return;
     }
@@ -144,10 +121,10 @@ export function AddChiefSheet({ isOpen, onClose, onAddChief }: AddChiefSheetProp
           name, 
           title, 
           role,
-          region: selectedRegion, 
-          department: selectedDepartment,
-          subPrefecture: selectedSubPrefecture,
-          village: selectedVillage,
+          region: region, 
+          department: department,
+          subPrefecture: subPrefecture,
+          village: village,
           contact, 
           bio, 
           photoUrl,
@@ -233,35 +210,23 @@ export function AddChiefSheet({ isOpen, onClose, onAddChief }: AddChiefSheetProp
             </div>
 
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="region" className="text-right">Région</Label>
-              <Select value={selectedRegion} onValueChange={handleRegionChange} required>
-                <SelectTrigger className="col-span-3"><SelectValue placeholder="Sélectionnez une région..." /></SelectTrigger>
-                <SelectContent>{Object.keys(divisions).sort().map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}</SelectContent>
-              </Select>
+                <Label htmlFor="region" className="text-right">Région</Label>
+                <Input id="region" value={region} onChange={(e) => setRegion(e.target.value)} className="col-span-3" required placeholder="Ex: Agnéby-Tiassa"/>
             </div>
 
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="department" className="text-right">Département</Label>
-              <Select value={selectedDepartment} onValueChange={handleDepartmentChange} disabled={!selectedRegion} required>
-                <SelectTrigger className="col-span-3"><SelectValue placeholder="Sélectionnez un département..." /></SelectTrigger>
-                <SelectContent>{departments.sort().map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
-              </Select>
+                <Label htmlFor="department" className="text-right">Département</Label>
+                <Input id="department" value={department} onChange={(e) => setDepartment(e.target.value)} className="col-span-3" required placeholder="Ex: Agboville"/>
             </div>
 
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="subPrefecture" className="text-right">Sous-préfecture</Label>
-              <Select value={selectedSubPrefecture} onValueChange={handleSubPrefectureChange} disabled={!selectedDepartment} required>
-                <SelectTrigger className="col-span-3"><SelectValue placeholder="Sélectionnez une sous-préfecture..." /></SelectTrigger>
-                <SelectContent>{subPrefectures.sort().map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
-              </Select>
+                <Label htmlFor="subPrefecture" className="text-right">Sous-préfecture</Label>
+                <Input id="subPrefecture" value={subPrefecture} onChange={(e) => setSubPrefecture(e.target.value)} className="col-span-3" required placeholder="Ex: Agboville"/>
             </div>
 
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="village" className="text-right">Village</Label>
-              <Select value={selectedVillage} onValueChange={setSelectedVillage} disabled={!selectedSubPrefecture} required>
-                <SelectTrigger className="col-span-3"><SelectValue placeholder="Sélectionnez un village..." /></SelectTrigger>
-                <SelectContent>{villages.sort().map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}</SelectContent>
-              </Select>
+                <Label htmlFor="village" className="text-right">Village</Label>
+                <Input id="village" value={village} onChange={(e) => setVillage(e.target.value)} className="col-span-3" required placeholder="Ex: Ananguié"/>
             </div>
 
              <div className="grid grid-cols-4 items-center gap-4">

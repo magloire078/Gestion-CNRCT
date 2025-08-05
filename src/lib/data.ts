@@ -199,4 +199,7 @@ export type Chief = {
   latitude?: number;
   longitude?: number;
   parentChiefId?: string | null;
+  dateOfBirth?: string;
+  regencyStartDate?: string;
+  regencyEndDate?: string;
 };

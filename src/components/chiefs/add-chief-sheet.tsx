@@ -48,6 +48,10 @@ export function AddChiefSheet({ isOpen, onClose, onAddChief }: AddChiefSheetProp
   const [selectedVillage, setSelectedVillage] = useState("");
   const [parentChiefId, setParentChiefId] = useState<string | null>(null);
 
+  const [dateOfBirth, setDateOfBirth] = useState("");
+  const [regencyStartDate, setRegencyStartDate] = useState("");
+  const [regencyEndDate, setRegencyEndDate] = useState("");
+
   const [allChiefs, setAllChiefs] = useState<Chief[]>([]);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -83,6 +87,9 @@ export function AddChiefSheet({ isOpen, onClose, onAddChief }: AddChiefSheetProp
     setSelectedSubPrefecture("");
     setSelectedVillage("");
     setParentChiefId(null);
+    setDateOfBirth("");
+    setRegencyStartDate("");
+    setRegencyEndDate("");
     setError("");
     if(fileInputRef.current) {
         fileInputRef.current.value = "";
@@ -145,6 +152,9 @@ export function AddChiefSheet({ isOpen, onClose, onAddChief }: AddChiefSheetProp
           bio, 
           photoUrl,
           parentChiefId,
+          dateOfBirth: dateOfBirth || undefined,
+          regencyStartDate: regencyStartDate || undefined,
+          regencyEndDate: regencyEndDate || undefined,
         });
       handleClose();
     } catch(err) {
@@ -252,6 +262,19 @@ export function AddChiefSheet({ isOpen, onClose, onAddChief }: AddChiefSheetProp
                 <SelectTrigger className="col-span-3"><SelectValue placeholder="Sélectionnez un village..." /></SelectTrigger>
                 <SelectContent>{villages.sort().map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}</SelectContent>
               </Select>
+            </div>
+
+             <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="dateOfBirth" className="text-right">Date de Naissance</Label>
+                <Input id="dateOfBirth" type="date" value={dateOfBirth} onChange={(e) => setDateOfBirth(e.target.value)} className="col-span-3" />
+            </div>
+             <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="regencyStartDate" className="text-right">Début de Régence</Label>
+                <Input id="regencyStartDate" type="date" value={regencyStartDate} onChange={(e) => setRegencyStartDate(e.target.value)} className="col-span-3" />
+            </div>
+             <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="regencyEndDate" className="text-right">Fin de Régence / Décès</Label>
+                <Input id="regencyEndDate" type="date" value={regencyEndDate} onChange={(e) => setRegencyEndDate(e.target.value)} className="col-span-3" />
             </div>
 
             <div className="grid grid-cols-4 items-center gap-4">

@@ -299,7 +299,7 @@ export default function EmployeesPage() {
                         <TableHeader>
                             <TableRow>
                             <TableHead className="w-[80px]">Photo</TableHead>
-                            <TableHead>Nom Complet & Compétences</TableHead>
+                            <TableHead>Nom & Prénoms</TableHead>
                             <TableHead>Matricule</TableHead>
                             <TableHead>Poste</TableHead>
                             <TableHead>Service</TableHead>
@@ -331,16 +331,6 @@ export default function EmployeesPage() {
                                         </TableCell>
                                         <TableCell>
                                             <div className="font-medium">{`${employee.lastName || ''} ${employee.firstName || ''}`.trim()}</div>
-                                            {employee.skills && employee.skills.length > 0 && (
-                                                <div className="flex flex-wrap gap-1 mt-1">
-                                                    {employee.skills.slice(0, 3).map(skill => (
-                                                        <Badge key={skill} variant="secondary" className="font-normal">{skill}</Badge>
-                                                    ))}
-                                                    {employee.skills.length > 3 && (
-                                                        <Badge variant="outline">+{employee.skills.length - 3}</Badge>
-                                                    )}
-                                                </div>
-                                            )}
                                         </TableCell>
                                         <TableCell>{employee.matricule}</TableCell>
                                         <TableCell>{employee.poste}</TableCell>
@@ -471,3 +461,5 @@ export default function EmployeesPage() {
     </>
   );
 }
+
+    

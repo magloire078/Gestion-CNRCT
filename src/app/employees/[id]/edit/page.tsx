@@ -5,7 +5,6 @@ import { useState, useEffect, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { getEmployee, updateEmployee } from "@/services/employee-service";
 import type { Employe } from "@/lib/data";
-import { departments } from "../../../employees/page";
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -16,6 +15,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, Loader2, User, Briefcase, BadgeCheck, Save } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+
+const departmentList = ["Informatique", "Secretariat Général", "Communication", "Direction Administrative", "Direction des Affaires financières et du patrimoine", "Protocole", "Cabinet", "Direction des Affaires sociales", "Directoire", "Comités Régionaux", "Engineering", "Marketing", "Sales", "HR", "Operations", "Other"];
 
 type Status = 'Actif' | 'En congé' | 'Licencié';
 
@@ -159,7 +160,7 @@ export default function EmployeeEditPage() {
                             <Select name="department" value={employee.department || ''} onValueChange={(v) => handleSelectChange('department', v)}>
                                 <SelectTrigger><SelectValue placeholder="Sélectionnez..." /></SelectTrigger>
                                 <SelectContent>
-                                    {departments.map(dep => <SelectItem key={dep} value={dep}>{dep}</SelectItem>)}
+                                    {departmentList.sort().map(dep => <SelectItem key={dep} value={dep}>{dep}</SelectItem>)}
                                 </SelectContent>
                             </Select>
                         </div>

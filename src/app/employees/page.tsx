@@ -29,9 +29,7 @@ const statusVariantMap: Record<Status, "default" | "secondary" | "destructive"> 
   'Licencié': 'destructive',
 };
 
-export const departments = ["Engineering", "Marketing", "Sales", "HR", "Operations", "Informatique", "Secretariat Général", "Communication", "Direction Administrative", "Direction des Affaires financière et du patrimoine", "Protocole", "Cabinet", "Direction des Affaires sociales", "Directoire", "Comités Régionaux", "Other", "Sous Direction Patrimoine", "Direction Etudes et Documentation", "Rois & Chefs", "Gardes", "Manoeuvres", "Gendarmerie", "Garde Republicaine"];
-
-const allColumns = {
+export const allColumns = {
   matricule: "N° MAT",
   name: "NOM ET PRENOMS",
   poste: "POSTE",
@@ -119,6 +117,11 @@ export default function EmployeesPage() {
           }
       }
   };
+  
+  const departments = useMemo(() => {
+    const allDepartments = employees.map(e => e.department).filter(Boolean);
+    return [...new Set(allDepartments)].sort();
+  }, [employees]);
 
   const filteredEmployees = useMemo(() => {
     return employees.filter(employee => {

@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -31,6 +31,8 @@ interface AddEmployeeSheetProps {
   onClose: () => void;
   onAddEmployee: (employee: Omit<Employe, "id">) => Promise<void>;
 }
+
+const departmentList = ["Informatique", "Secretariat Général", "Communication", "Direction Administrative", "Direction des Affaires financières et du patrimoine", "Protocole", "Cabinet", "Direction des Affaires sociales", "Directoire", "Comités Régionaux", "Engineering", "Marketing", "Sales", "HR", "Operations", "Other"];
 
 export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployeeSheetProps) {
   const [matricule, setMatricule] = useState("");
@@ -183,22 +185,9 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
                   <SelectValue placeholder="Sélectionnez..." />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Informatique">Informatique</SelectItem>
-                  <SelectItem value="Secretariat Général">Secrétariat Général</SelectItem>
-                  <SelectItem value="Communication">Communication</SelectItem>
-                  <SelectItem value="Direction Administrative">Direction Administrative</SelectItem>
-                  <SelectItem value="Direction des Affaires financières et du patrimoine">Direction des Affaires financières et du patrimoine</SelectItem>
-                  <SelectItem value="Protocole">Protocole</SelectItem>
-                  <SelectItem value="Cabinet">Cabinet</SelectItem>
-                  <SelectItem value="Direction des Affaires sociales">Direction des Affaires sociales</SelectItem>
-                  <SelectItem value="Directoire">Directoire</SelectItem>
-                  <SelectItem value="Comités Régionaux">Comités Régionaux</SelectItem>
-                   <SelectItem value="Engineering">Ingénierie</SelectItem>
-                  <SelectItem value="Marketing">Marketing</SelectItem>
-                  <SelectItem value="Sales">Ventes</SelectItem>
-                  <SelectItem value="HR">RH</SelectItem>
-                  <SelectItem value="Operations">Opérations</SelectItem>
-                  <SelectItem value="Other">Autre</SelectItem>
+                  {departmentList.sort().map(dep => (
+                    <SelectItem key={dep} value={dep}>{dep}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

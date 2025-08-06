@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { useSearchParams } from 'next/navigation';
 import Link from "next/link";
 import { PlusCircle, Search, Download, Printer, Eye, Pencil, Trash2, MoreHorizontal, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -52,14 +53,42 @@ export default function EmployeesPage() {
   const [isPrinting, setIsPrinting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
+  
+  const searchParams = useSearchParams();
+  const initialFilter = searchParams.get('filter');
 
   const [searchTerm, setSearchTerm] = useState("");
   const [departmentFilter, setDepartmentFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [cnpsFilter, setCnpsFilter] = useState<boolean | 'all'>('all');
+  const [sexeFilter, setSexeFilter] = useState('all');
+
   const [columnsToPrint, setColumnsToPrint] = useState<ColumnKeys[]>(Object.keys(allColumns) as ColumnKeys[]);
   const [organizationLogos, setOrganizationLogos] = useState({ mainLogoUrl: '', secondaryLogoUrl: '' });
 
   const [printDate, setPrintDate] = useState('');
+
+  // Handle initial filter from URL
+  useEffect(() => {
+    if (initialFilter) {
+      switch (initialFilter) {
+        case 'actif':
+          setStatusFilter('Actif');
+          break;
+        case 'cnps':
+          setCnpsFilter(true);
+          break;
+        case 'directoire':
+          setDepartmentFilter('Directoire');
+          break;
+        case 'sexe':
+           // This case can be left as-is, maybe default to showing Homme or just open the filter.
+           // For simplicity, we'll let the user select.
+           break;
+      }
+    }
+  }, [initialFilter]);
+
 
   useEffect(() => {
     const unsubscribe = subscribeToEmployees((fetchedEmployees) => {
@@ -132,9 +161,11 @@ export default function EmployeesPage() {
       const matchesSearchTerm = fullName.includes(searchTerm.toLowerCase()) || (employee.matricule || '').toLowerCase().includes(searchTerm.toLowerCase());
       const matchesDepartment = departmentFilter === 'all' || employee.department === departmentFilter;
       const matchesStatus = statusFilter === 'all' || employee.status === statusFilter;
-      return matchesSearchTerm && matchesDepartment && matchesStatus;
+      const matchesCnps = cnpsFilter === 'all' || employee.CNPS === cnpsFilter;
+      const matchesSexe = sexeFilter === 'all' || employee.sexe === sexeFilter;
+      return matchesSearchTerm && matchesDepartment && matchesStatus && matchesCnps && matchesSexe;
     });
-  }, [employees, searchTerm, departmentFilter, statusFilter]);
+  }, [employees, searchTerm, departmentFilter, statusFilter, cnpsFilter, sexeFilter]);
   
   const downloadFile = (content: string, fileName: string, contentType: string) => {
       const blob = new Blob([content], { type: contentType });
@@ -263,8 +294,8 @@ export default function EmployeesPage() {
                     <CardDescription>Une liste complète de tous les employés de l'entreprise.</CardDescription>
                     </CardHeader>
                     <CardContent>
-                    <div className="flex flex-col sm:flex-row gap-4 mb-4">
-                        <div className="relative flex-1">
+                    <div className="flex flex-col sm:flex-row gap-2 mb-4 flex-wrap">
+                        <div className="relative flex-1 min-w-[200px]">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                         <Input
                             placeholder="Rechercher par nom, matricule..."
@@ -274,16 +305,16 @@ export default function EmployeesPage() {
                         />
                         </div>
                         <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
-                        <SelectTrigger className="w-full sm:w-[180px]">
-                            <SelectValue placeholder="Filtrer par département" />
+                        <SelectTrigger className="flex-1 min-w-[180px]">
+                            <SelectValue placeholder="Filtrer par service" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="all">Tous les départements</SelectItem>
+                            <SelectItem value="all">Tous les services</SelectItem>
                             {departments.map(dep => <SelectItem key={dep} value={dep}>{dep}</SelectItem>)}
                         </SelectContent>
                         </Select>
                         <Select value={statusFilter} onValueChange={setStatusFilter}>
-                        <SelectTrigger className="w-full sm:w-[180px]">
+                        <SelectTrigger className="flex-1 min-w-[180px]">
                             <SelectValue placeholder="Filtrer par statut" />
                         </SelectTrigger>
                         <SelectContent>
@@ -294,6 +325,26 @@ export default function EmployeesPage() {
                             <SelectItem value="Retraité">Retraité</SelectItem>
                             <SelectItem value="Décédé">Décédé</SelectItem>
                         </SelectContent>
+                        </Select>
+                        <Select value={String(cnpsFilter)} onValueChange={(val) => setCnpsFilter(val === 'all' ? 'all' : val === 'true')}>
+                          <SelectTrigger className="flex-1 min-w-[150px]">
+                            <SelectValue placeholder="Filter par CNPS" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">Tous (CNPS)</SelectItem>
+                            <SelectItem value="true">Déclaré</SelectItem>
+                            <SelectItem value="false">Non Déclaré</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <Select value={sexeFilter} onValueChange={setSexeFilter}>
+                          <SelectTrigger className="flex-1 min-w-[150px]">
+                            <SelectValue placeholder="Filter par Sexe" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">Tous les sexes</SelectItem>
+                            <SelectItem value="Homme">Homme</SelectItem>
+                            <SelectItem value="Femme">Femme</SelectItem>
+                          </SelectContent>
                         </Select>
                     </div>
                     

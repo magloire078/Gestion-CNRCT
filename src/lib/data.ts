@@ -18,6 +18,7 @@ export type Employe = {
   Lieu_Naissance?: string;
   situationMatrimoniale?: string; // 'Célibataire', 'Marié(e)', etc.
   enfants?: number;
+  sexe?: 'Homme' | 'Femme' | 'Autre';
   
   // Professional Info
   dateEmbauche?: string; // YYYY-MM-DD
@@ -59,7 +60,6 @@ export type Employe = {
   // Other potential fields from CSV
   skills?: string[];
   civilite?: string;
-  sexe?: string;
   groupe_1?: string;
   groupe_2?: string;
   Region?: string;

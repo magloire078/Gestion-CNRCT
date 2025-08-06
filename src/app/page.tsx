@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import {
   Card,
   CardHeader,
@@ -11,7 +12,7 @@ import {
 } from '@/components/ui/card';
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, FileWarning, Laptop, Car, Download } from 'lucide-react';
+import { Users, FileWarning, Laptop, Car, Download, ShieldCheck, User as UserIcon, Building } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { EmployeeDistributionChart } from '@/components/charts/employee-distribution-chart';
 import { AssetStatusChart } from '@/components/charts/asset-status-chart';
@@ -22,6 +23,36 @@ import { subscribeToAssets } from '@/services/asset-service';
 import { subscribeToVehicles } from '@/services/fleet-service';
 import type { Employe, Leave, Asset, Fleet } from '@/lib/data';
 import { Skeleton } from '@/components/ui/skeleton';
+
+interface StatCardProps {
+  title: string;
+  value: number;
+  icon: React.ElementType;
+  description?: string;
+  href?: string;
+  loading: boolean;
+}
+
+const StatCard = ({ title, value, icon: Icon, description, href, loading }: StatCardProps) => {
+  const cardContent = (
+    <Card className="hover:shadow-lg transition-shadow">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium">{title}</CardTitle>
+        <Icon className="h-5 w-5 text-muted-foreground" />
+      </CardHeader>
+      <CardContent>
+        {loading ? <Skeleton className="h-10 w-16 mt-1" /> : <div className="text-4xl font-bold">{value}</div>}
+        {description && <p className="text-xs text-muted-foreground">{description}</p>}
+      </CardContent>
+    </Card>
+  );
+
+  if (href) {
+    return <Link href={href}>{cardContent}</Link>;
+  }
+  return cardContent;
+};
+
 
 export default function DashboardPage() {
     const [employees, setEmployees] = useState<Employe[]>([]);
@@ -49,38 +80,15 @@ export default function DashboardPage() {
         };
     }, []);
 
-  const onLeaveCount = employees.filter(e => e.status === 'En congé').length;
-  const pendingLeaveCount = leaves.filter(l => l.status === 'En attente').length;
+  const activeEmployees = employees.filter(e => e.status === 'Actif');
+  const cnpsEmployeesCount = employees.filter(e => e.CNPS === true && e.status === 'Actif').length;
+  const maleEmployeesCount = activeEmployees.filter(e => e.sexe === 'Homme').length;
+  const femaleEmployeesCount = activeEmployees.filter(e => e.sexe === 'Femme').length;
+  const directoireCount = activeEmployees.filter(e => e.department === 'Directoire').length;
+
   const recentLeaves = leaves.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()).slice(0, 3);
   const newHires = employees.sort((a,b) => new Date(b.dateEmbauche || 0).getTime() - new Date(a.dateEmbauche || 0).getTime()).slice(0,3);
   
-  const stats = [
-    {
-      title: 'Total des employés',
-      value: employees.length,
-      icon: Users,
-      description: `${onLeaveCount} en congé`,
-    },
-    {
-      title: 'Approbations en attente',
-      value: pendingLeaveCount,
-      icon: FileWarning,
-      description: 'Demandes de congé',
-    },
-    {
-      title: 'Actifs Informatiques',
-      value: assets.length,
-      icon: Laptop,
-      description: 'Matériel et logiciels suivis',
-    },
-    {
-      title: 'Véhicules de la Flotte',
-      value: fleet.length,
-      icon: Car,
-      description: 'Voitures et camionnettes de société',
-    },
-  ];
-
   return (
     <div className="flex flex-col gap-6">
       <h1 className="text-3xl font-bold tracking-tight">Tableau de Bord</h1>
@@ -103,18 +111,35 @@ export default function DashboardPage() {
         </div>
         <TabsContent value="overview" className="space-y-4">
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-                {stats.map((stat, index) => (
-                <Card key={index} className="hover:shadow-lg transition-shadow">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
-                    <stat.icon className="h-5 w-5 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                    {loading ? <Skeleton className="h-10 w-16 mt-1"/> : <div className="text-4xl font-bold">{stat.value}</div>}
-                    <p className="text-xs text-muted-foreground">{stat.description}</p>
-                    </CardContent>
-                </Card>
-                ))}
+                <StatCard 
+                  title="Employés Actifs"
+                  value={activeEmployees.length}
+                  icon={Users}
+                  href="/employees?filter=actif"
+                  loading={loading}
+                />
+                 <StatCard 
+                  title="Déclarés à la CNPS"
+                  value={cnpsEmployeesCount}
+                  icon={ShieldCheck}
+                  href="/employees?filter=cnps"
+                  loading={loading}
+                />
+                <StatCard 
+                  title="Hommes / Femmes"
+                  value={maleEmployeesCount}
+                  description={`${femaleEmployeesCount} Femmes`}
+                  icon={UserIcon}
+                  href="/employees?filter=sexe"
+                  loading={loading}
+                />
+                 <StatCard 
+                  title="Membres du Directoire"
+                  value={directoireCount}
+                  icon={Building}
+                  href="/employees?filter=directoire"
+                  loading={loading}
+                />
             </div>
             <div className="grid gap-6 lg:grid-cols-2">
                 <Card>

@@ -92,7 +92,7 @@ export function ImportDataCard() {
                 status: String(row.statut) === '1' || String(row.statut).toLowerCase() === 'actif' ? 'Actif' : 'Licencié',
                 
                 civilite: String(row.civilite || ''),
-                sexe: String(row.sexe || ''),
+                sexe: String(row.sexe || 'Autre') as Employe['sexe'],
                 mobile: String(row.mobile || ''),
                 email: String(row.email || ''),
                 

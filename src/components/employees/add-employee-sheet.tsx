@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useRef, useMemo } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,8 +23,10 @@ import {
 } from "@/components/ui/select";
 import type { Employe } from "@/lib/data";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Upload } from "lucide-react";
+import { Upload, Sparkles, Loader2 } from "lucide-react";
 import { Textarea } from "../ui/textarea";
+import { generateAvatar } from "@/ai/flows/generate-avatar-flow";
+import { useToast } from "@/hooks/use-toast";
 
 interface AddEmployeeSheetProps {
   isOpen: boolean;
@@ -49,6 +51,10 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const [avatarPrompt, setAvatarPrompt] = useState("");
+  const [isGeneratingAvatar, setIsGeneratingAvatar] = useState(false);
+  const { toast } = useToast();
+
   const resetForm = () => {
     setMatricule("");
     setFirstName("");
@@ -59,6 +65,7 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
     setSkills("");
     setStatus("Actif");
     setPhotoUrl(`https://placehold.co/100x100.png`);
+    setAvatarPrompt("");
     setError("");
     if(fileInputRef.current) {
         fileInputRef.current.value = "";
@@ -78,6 +85,23 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
         setPhotoUrl(reader.result as string);
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  const handleGenerateAvatar = async () => {
+    if (!avatarPrompt) {
+        toast({ variant: 'destructive', title: 'Champ requis', description: 'Veuillez entrer une description pour générer un avatar.' });
+        return;
+    }
+    setIsGeneratingAvatar(true);
+    try {
+        const generatedDataUri = await generateAvatar(avatarPrompt);
+        setPhotoUrl(generatedDataUri);
+    } catch (err) {
+        console.error("Avatar generation failed:", err);
+        toast({ variant: 'destructive', title: "Erreur de l'IA", description: "Impossible de générer l'avatar." });
+    } finally {
+        setIsGeneratingAvatar(false);
     }
   };
 
@@ -146,6 +170,23 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
                     />
               </div>
             </div>
+
+            <div className="grid grid-cols-4 items-start gap-4">
+                <Label htmlFor="avatarPrompt" className="text-right pt-2">Avatar IA</Label>
+                <div className="col-span-3 space-y-2">
+                    <Input 
+                        id="avatarPrompt" 
+                        value={avatarPrompt} 
+                        onChange={e => setAvatarPrompt(e.target.value)} 
+                        placeholder="Ex: Femme d'affaire souriante"
+                    />
+                    <Button type="button" variant="secondary" onClick={handleGenerateAvatar} disabled={isGeneratingAvatar}>
+                        {isGeneratingAvatar ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                        Générer avec l'IA
+                    </Button>
+                </div>
+            </div>
+
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="matricule" className="text-right">
                 Matricule

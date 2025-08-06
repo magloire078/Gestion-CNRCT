@@ -21,10 +21,11 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import type { Evaluation } from "@/lib/data";
-import { subscribeToEvaluations } from "@/services/evaluation-service";
+import { subscribeToEvaluations, addEvaluation } from "@/services/evaluation-service";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
+import { AddEvaluationSheet } from "@/components/evaluations/add-evaluation-sheet";
 
 type Status = "Draft" | "Pending Manager Review" | "Pending Employee Sign-off" | "Completed";
 
@@ -39,6 +40,7 @@ export default function EvaluationsPage() {
   const [evaluations, setEvaluations] = useState<Evaluation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -57,6 +59,20 @@ export default function EvaluationsPage() {
     );
     return () => unsubscribe();
   }, []);
+  
+  const handleAddEvaluation = async (newEvaluationData: Omit<Evaluation, "id">) => {
+    try {
+        await addEvaluation(newEvaluationData);
+        setIsSheetOpen(false);
+        toast({
+            title: "Évaluation lancée",
+            description: `Une nouvelle évaluation a été créée pour ${newEvaluationData.employeeName}.`,
+        });
+    } catch (err) {
+        console.error(err);
+        throw err;
+    }
+  };
 
   const filteredEvaluations = useMemo(() => {
     return evaluations.filter(e => 
@@ -66,12 +82,13 @@ export default function EvaluationsPage() {
   }, [evaluations, searchTerm]);
 
   return (
+    <>
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight">
           Évaluations de Performance
         </h1>
-        <Button disabled>
+        <Button onClick={() => setIsSheetOpen(true)}>
           <PlusCircle className="mr-2 h-4 w-4" />
           Lancer une évaluation
         </Button>
@@ -145,5 +162,11 @@ export default function EvaluationsPage() {
         </CardContent>
       </Card>
     </div>
+    <AddEvaluationSheet
+        isOpen={isSheetOpen}
+        onClose={() => setIsSheetOpen(false)}
+        onAddEvaluation={handleAddEvaluation}
+    />
+    </>
   );
 }

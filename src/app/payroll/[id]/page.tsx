@@ -80,28 +80,28 @@ export default function PayslipPage() {
                     </Button>
                 </div>
             </div>
-            <div id="print-section" className="w-full max-w-4xl mx-auto bg-white p-4 sm:p-8 border rounded-lg text-black print:shadow-none print:border-none print:p-0">
+            <div id="print-section" className="w-full max-w-4xl mx-auto bg-white p-4 sm:p-8 border rounded-lg text-black print:shadow-none print:border-none print:p-0 print:text-xs">
                 {/* Header */}
                 <header className="flex justify-between items-start pb-4 border-b">
                     <div className="text-center">
-                        <h2 className="font-bold print:text-sm">Chambre Nationale des Rois</h2>
-                        <h2 className="font-bold print:text-sm">et Chefs Traditionnels</h2>
+                        <h2 className="font-bold">Chambre Nationale des Rois</h2>
+                        <h2 className="font-bold">et Chefs Traditionnels</h2>
                         {organizationLogos.mainLogoUrl && <img src={organizationLogos.mainLogoUrl} alt="Logo CNRCT" width={80} height={80} className="mx-auto mt-2 print:w-16 print:h-16" />}
-                        <p className="font-bold mt-1 print:text-xs">UN CHEF NOUVEAU</p>
+                        <p className="font-bold mt-1">UN CHEF NOUVEAU</p>
                     </div>
                     <div className="text-center">
-                        <h2 className="font-bold print:text-sm">République de Côte d'Ivoire</h2>
+                        <h2 className="font-bold">République de Côte d'Ivoire</h2>
                          {organizationLogos.secondaryLogoUrl && <img src={organizationLogos.secondaryLogoUrl} alt="Logo Cote d'Ivoire" width={80} height={80} className="mx-auto mt-2 print:w-16 print:h-16" />}
-                        <p className="mt-1 print:text-xs">Union - Discipline - Travail</p>
+                        <p className="mt-1">Union - Discipline - Travail</p>
                     </div>
                 </header>
 
-                <div className="text-center my-4 p-1 bg-gray-200 font-bold print:text-sm print:my-2">
+                <div className="text-center my-4 p-1 bg-gray-200 font-bold text-sm print:my-2">
                     BULLETIN DE PAIE CNRCT : Période de {new Date(employeeInfo.nextPayDate || Date.now()).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
                 </div>
 
                 {/* Employee Info */}
-                <section className="grid grid-cols-12 gap-4 text-sm print:text-xs">
+                <section className="grid grid-cols-12 gap-4 text-xs">
                     <div className="col-span-5 space-y-1">
                         <p><span className="font-bold">N° CNPS EMPLOYEUR :</span> {employeeInfo.cnpsEmployeur}</p>
                         <p><span className="font-bold">N° CNPS EMPLOYE :</span> {employeeInfo.cnpsEmploye}</p>
@@ -126,7 +126,7 @@ export default function PayslipPage() {
                 </section>
                 
                 {/* Job Info Table */}
-                 <table className="w-full text-sm border-collapse border mt-4 print:text-xs print:mt-2">
+                 <table className="w-full border-collapse border mt-4 text-xs print:mt-2">
                     <thead>
                         <tr className="bg-gray-200 font-bold">
                             <td className="border p-1">EMPLOI</td>
@@ -149,7 +149,7 @@ export default function PayslipPage() {
                 {/* Earnings & Deductions */}
                 <div className="grid grid-cols-12 mt-1">
                     <div className="col-span-9 border-r">
-                         <table className="w-full text-sm border-collapse border print:text-xs">
+                         <table className="w-full border-collapse border text-xs">
                             <thead>
                                 <tr className="bg-gray-200 font-bold">
                                     <td className="border p-1 w-2/3">ELEMENTS</td>
@@ -175,7 +175,7 @@ export default function PayslipPage() {
                         </table>
                     </div>
                     <div className="col-span-3">
-                         <table className="w-full text-sm border-collapse border print:text-xs">
+                         <table className="w-full border-collapse border text-xs">
                             <thead>
                                 <tr className="bg-gray-200 font-bold">
                                     <td className="border p-1 text-center">RETENUES</td>
@@ -184,18 +184,18 @@ export default function PayslipPage() {
                             <tbody>
                                 {earnings.map(item => (
                                      <tr key={item.label}>
-                                        <td className="border p-1 text-right font-mono h-[29px] print:h-auto print:leading-tight">{item.deduction > 0 ? item.deduction.toLocaleString('fr-FR') : ''}</td>
+                                        <td className="border p-1 text-right font-mono h-[28px] print:h-auto print:leading-tight">{item.deduction > 0 ? item.deduction.toLocaleString('fr-FR') : ''}</td>
                                     </tr>
                                 ))}
-                                <tr className="font-bold h-[29px] print:h-auto print:leading-tight"><td className="border p-1"></td></tr>
-                                <tr className="h-[29px] print:h-auto print:leading-tight"><td className="border p-1"></td></tr>
+                                <tr className="font-bold h-[28px] print:h-auto print:leading-tight"><td className="border p-1"></td></tr>
+                                <tr className="h-[28px] print:h-auto print:leading-tight"><td className="border p-1"></td></tr>
                             </tbody>
                          </table>
                     </div>
                 </div>
                  <div className="grid grid-cols-12 mt-[-1px]">
                      <div className="col-span-9">
-                        <table className="w-full text-sm border-collapse border print:text-xs">
+                        <table className="w-full border-collapse border text-xs">
                             <tbody>
                                 {deductions.map(item => (
                                     <tr key={item.label}>
@@ -211,20 +211,20 @@ export default function PayslipPage() {
                         </table>
                      </div>
                      <div className="col-span-3">
-                         <table className="w-full text-sm border-collapse border print:text-xs">
+                         <table className="w-full border-collapse border text-xs">
                              <tbody>
                                 {deductions.map(item => (
                                     <tr key={item.label}>
-                                        <td className="border p-1 text-right font-mono h-[29px] print:h-auto print:leading-tight">{item.amount > 0 ? item.amount.toLocaleString('fr-FR') : '0'}</td>
+                                        <td className="border p-1 text-right font-mono h-[28px] print:h-auto print:leading-tight">{item.amount > 0 ? item.amount.toLocaleString('fr-FR') : '0'}</td>
                                     </tr>
                                 ))}
-                                 <tr><td className="border p-1 h-[29px] print:h-auto print:leading-tight"></td></tr>
+                                 <tr><td className="border p-1 h-[28px] print:h-auto print:leading-tight"></td></tr>
                             </tbody>
                          </table>
                      </div>
                  </div>
 
-                 <div className="grid grid-cols-12 mt-[-1px] border print:text-xs">
+                 <div className="grid grid-cols-12 mt-[-1px] border text-xs">
                     <div className="col-span-9 p-1 flex justify-between items-center font-bold">
                         <span>NET A PAYER</span>
                         <span>{totals.netAPayerInWords}</span>
@@ -235,8 +235,8 @@ export default function PayslipPage() {
                  {/* Employer Contributions */}
                  <div className="grid grid-cols-12 mt-4 border rounded-b-lg print:mt-2">
                     <div className="col-span-9 p-2">
-                        <p className="font-bold text-center underline mb-2 print:text-sm">Impôts à la charge de l'employeur</p>
-                        <table className="w-full text-sm print:text-xs">
+                        <p className="font-bold text-center underline mb-2 text-sm">Impôts à la charge de l'employeur</p>
+                        <table className="w-full text-xs">
                             <tbody>
                                 {employerContributions.map(item => (
                                      <tr key={item.label}>
@@ -251,7 +251,7 @@ export default function PayslipPage() {
                     </div>
                      <div className="col-span-3 flex flex-col justify-between items-center p-2 border-l">
                         <div></div>
-                         <div className="text-center print:text-xs">
+                         <div className="text-center text-xs">
                              <p className="font-bold">Payé à {employeeInfo.paymentLocation} le</p>
                              <p>{employeeInfo.paymentDate}</p>
                          </div>
@@ -260,7 +260,7 @@ export default function PayslipPage() {
                  </div>
 
                 {/* Footer */}
-                <footer className="text-center text-xs pt-4 border-t print:pt-2 print:text-[8px]">
+                <footer className="text-center pt-4 border-t print:pt-2 print:text-[8px]">
                     <p className="font-bold">Chambre Nationale de Rois et Chefs Traditionnels (CNRCT)</p>
                     <p>Yamoussoukro, Riviera - BP 201 Yamoussoukro | Tél : (225) 30 64 06 60 | Fax : (+255) 30 64 06 63</p>
                     <p>www.cnrct.ci - Email : info@cnrct.ci</p>
@@ -270,5 +270,3 @@ export default function PayslipPage() {
         </>
     );
 }
-
-    

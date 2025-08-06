@@ -9,6 +9,7 @@ import type { Employe } from "@/lib/data";
 import { getEmployee } from "@/services/employee-service";
 import { getPayslipDetails, PayslipDetails } from "@/services/payslip-details-service";
 import { ArrowLeft, Printer } from "lucide-react";
+import Barcode from 'react-barcode';
 
 export default function PayslipPage() {
     const params = useParams();
@@ -65,6 +66,8 @@ export default function PayslipPage() {
 
     const { employeeInfo, earnings, deductions, totals, employerContributions, organizationLogos } = payslipDetails;
     const fullName = `${employeeInfo.lastName || ''} ${employeeInfo.firstName || ''}`.trim() || employeeInfo.name;
+    const barcodeValue = `${fullName} | ${employeeInfo.matricule} | ${employeeInfo.department}`;
+
 
     return (
         <>
@@ -80,7 +83,7 @@ export default function PayslipPage() {
                     </Button>
                 </div>
             </div>
-            <div id="print-section" className="w-full max-w-4xl mx-auto bg-white p-4 sm:p-8 border rounded-lg text-black print:shadow-none print:border-none print:p-0 print:text-xs">
+            <div id="print-section" className="w-full max-w-4xl mx-auto bg-white p-4 sm:p-8 border rounded-lg text-black print:shadow-none print:border-none print:p-0 print:text-[8px]">
                 {/* Header */}
                 <header className="flex justify-between items-start pb-4 border-b">
                     <div className="text-center">
@@ -105,7 +108,9 @@ export default function PayslipPage() {
                     <div className="col-span-5 space-y-1">
                         <p><span className="font-bold">N° CNPS EMPLOYEUR :</span> {employeeInfo.cnpsEmployeur}</p>
                         <p><span className="font-bold">N° CNPS EMPLOYE :</span> {employeeInfo.cnpsEmploye}</p>
-                        <img src="https://placehold.co/80x80.png" alt="QR Code" width={80} height={80} className="mt-2 print:w-16 print:h-16" data-ai-hint="qr code"/>
+                        <div className="mt-2">
+                          <Barcode value={barcodeValue} height={40} displayValue={false} margin={0} />
+                        </div>
                     </div>
                     <div className="col-span-7 border rounded-lg p-3 print:p-2">
                          <div className="grid grid-cols-3 gap-x-2 gap-y-1">

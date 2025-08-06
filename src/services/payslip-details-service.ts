@@ -75,8 +75,13 @@ export async function getPayslipDetails(employee: Employe): Promise<PayslipDetai
     
     const organizationLogos = await getOrganizationSettings();
 
+    const employeeInfoWithStaticData: Employe = {
+        ...employee,
+        cnpsEmployeur: "320491", // Static CNPS number
+    };
+
     return {
-        employeeInfo: employee,
+        employeeInfo: employeeInfoWithStaticData,
         earnings,
         deductions: otherDeductions,
         totals: {

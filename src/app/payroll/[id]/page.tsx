@@ -9,7 +9,7 @@ import type { Employe } from "@/lib/data";
 import { getEmployee } from "@/services/employee-service";
 import { getPayslipDetails, PayslipDetails } from "@/services/payslip-details-service";
 import { ArrowLeft, Printer } from "lucide-react";
-import Barcode from 'react-barcode';
+import QRCode from "react-qr-code";
 
 export default function PayslipPage() {
     const params = useParams();
@@ -66,7 +66,7 @@ export default function PayslipPage() {
 
     const { employeeInfo, earnings, deductions, totals, employerContributions, organizationLogos } = payslipDetails;
     const fullName = `${employeeInfo.lastName || ''} ${employeeInfo.firstName || ''}`.trim() || employeeInfo.name;
-    const barcodeValue = `${fullName} | ${employeeInfo.matricule} | ${employeeInfo.department}`;
+    const qrCodeValue = `${fullName} | ${employeeInfo.matricule} | ${employeeInfo.department}`;
 
 
     return (
@@ -108,8 +108,8 @@ export default function PayslipPage() {
                     <div className="col-span-5 space-y-1">
                         <p><span className="font-bold">N° CNPS EMPLOYEUR :</span> {employeeInfo.cnpsEmployeur}</p>
                         <p><span className="font-bold">N° CNPS EMPLOYE :</span> {employeeInfo.cnpsEmploye}</p>
-                        <div className="mt-2">
-                          <Barcode value={barcodeValue} height={40} displayValue={false} margin={0} />
+                        <div className="mt-2 bg-white p-1 w-fit">
+                          <QRCode value={qrCodeValue} size={64} />
                         </div>
                     </div>
                     <div className="col-span-7 border rounded-lg p-3 print:p-2">

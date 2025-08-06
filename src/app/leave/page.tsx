@@ -162,7 +162,7 @@ export default function LeavePage() {
                 </CardDescription>
                 </CardHeader>
                 <CardContent>
-                <div className="flex flex-col sm:flex-row gap-4 mb-6">
+                <div className="flex flex-col sm:flex-row gap-4 mb-4">
                     <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                     <Input
@@ -192,6 +192,9 @@ export default function LeavePage() {
                         <SelectItem value="Rejeté">Rejeté</SelectItem>
                     </SelectContent>
                     </Select>
+                </div>
+                 <div className="mb-4 text-sm text-muted-foreground">
+                    {filteredLeaves.length} résultat(s) trouvé(s).
                 </div>
                 {error && <p className="text-destructive text-center py-4">{error}</p>}
                 <div className="hidden md:block">

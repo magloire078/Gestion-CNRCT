@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
@@ -109,7 +110,7 @@ export default function SuppliesPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-           <div className="flex flex-col sm:flex-row gap-4 mb-6">
+           <div className="flex flex-col sm:flex-row gap-4 mb-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <Input
@@ -129,6 +130,9 @@ export default function SuppliesPage() {
               </SelectContent>
             </Select>
           </div>
+            <div className="mb-4 text-sm text-muted-foreground">
+              {filteredSupplies.length} résultat(s) trouvé(s).
+            </div>
           {error && <p className="text-destructive text-center py-4">{error}</p>}
            <div className="overflow-x-auto">
             <Table>

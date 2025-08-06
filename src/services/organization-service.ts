@@ -1,7 +1,7 @@
 
 import { db } from '@/lib/firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { getStorage, ref, uploadString, getDownloadURL, deleteObject } from "firebase/storage";
+import { getStorage, ref, uploadString, getDownloadURL } from "firebase/storage";
 
 export type OrganizationSettings = {
     mainLogoUrl: string;
@@ -51,12 +51,11 @@ export async function getOrganizationSettings(): Promise<OrganizationSettings> {
  */
 export async function saveOrganizationSettings(settings: OrganizationSettingsInput): Promise<void> {
     const storage = getStorage();
-    const currentSettings = await getOrganizationSettings();
 
-    const processLogo = async (newLogoData: string, existingLogoUrl: string, storagePath: string): Promise<string> => {
-        // If the new data is not a data URI, it's an existing URL, so no change.
+    const processLogo = async (newLogoData: string, storagePath: string): Promise<string> => {
+        // If the new data is not a data URI, it's an existing URL, so no change is needed.
         if (!newLogoData || !newLogoData.startsWith('data:image')) {
-            return newLogoData || existingLogoUrl;
+            return newLogoData;
         }
 
         // It's a new file, upload it to storage
@@ -69,8 +68,8 @@ export async function saveOrganizationSettings(settings: OrganizationSettingsInp
         return await getDownloadURL(storageRef);
     };
 
-    const newMainLogoUrl = await processLogo(settings.mainLogoUrl, currentSettings.mainLogoUrl, 'organization/main_logo');
-    const newSecondaryLogoUrl = await processLogo(settings.secondaryLogoUrl, currentSettings.secondaryLogoUrl, 'organization/secondary_logo');
+    const newMainLogoUrl = await processLogo(settings.mainLogoUrl, 'organization/main_logo');
+    const newSecondaryLogoUrl = await processLogo(settings.secondaryLogoUrl, 'organization/secondary_logo');
 
     const finalSettings: OrganizationSettings = {
         mainLogoUrl: newMainLogoUrl,

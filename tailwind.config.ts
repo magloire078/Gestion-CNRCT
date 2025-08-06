@@ -11,6 +11,7 @@ export default {
     extend: {
       fontFamily: {
         body: ['Inter', 'sans-serif'],
+        arial: ['Arial', 'sans-serif'],
       },
       colors: {
         background: 'hsl(var(--background))',
@@ -95,3 +96,5 @@ export default {
   },
   plugins: [require('tailwindcss-animate')],
 } satisfies Config;
+
+    

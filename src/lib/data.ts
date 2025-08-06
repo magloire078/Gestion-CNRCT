@@ -203,3 +203,24 @@ export type Chief = {
   regencyStartDate?: string;
   regencyEndDate?: string;
 };
+
+export type Evaluation = {
+  id: string;
+  employeeId: string;
+  employeeName: string; // Denormalized for easy display
+  managerId: string;
+  managerName: string; // Denormalized for easy display
+  reviewPeriod: string; // e.g., "Annuel 2024", "Q3 2024"
+  status: 'Draft' | 'Pending Manager Review' | 'Pending Employee Sign-off' | 'Completed';
+  scores: Record<string, number>; // e.g., { "communication": 4, "leadership": 3 }
+  strengths: string;
+  areasForImprovement: string;
+  managerComments: string;
+  employeeComments?: string;
+  goals: {
+    title: string;
+    description: string;
+    status: 'Not Started' | 'In Progress' | 'Completed';
+  }[];
+  evaluationDate: string; // YYYY-MM-DD
+};

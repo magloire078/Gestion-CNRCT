@@ -26,6 +26,7 @@ import {
   Package,
   Crown,
   Map as MapIcon,
+  ClipboardCheck,
 } from "lucide-react";
 
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
@@ -54,6 +55,7 @@ const allMenuItems = [
   { href: "/mapping", label: "Cartographie", icon: MapIcon, permission: "page:mapping:view" },
   { href: "/payroll", label: "Paie", icon: Landmark, permission: "page:payroll:view" },
   { href: "/leave", label: "Congés", icon: CalendarOff, permission: "page:leave:view" },
+  { href: "/evaluations", label: "Évaluations", icon: ClipboardCheck, permission: "page:evaluations:view" },
   { href: "/missions", label: "Missions", icon: Briefcase, permission: "page:missions:view" },
   { href: "/conflicts", label: "Conflits", icon: Scale, permission: "page:conflicts:view" },
   { href: "/supplies", label: "Fournitures", icon: Package, permission: "page:supplies:view" },

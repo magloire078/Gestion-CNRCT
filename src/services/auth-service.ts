@@ -170,7 +170,7 @@ async function getFullUserProfile(firebaseUser: FirebaseUser): Promise<User | nu
             "page:leave:view", "page:missions:view", "page:conflicts:view", 
             "page:supplies:view", "page:it-assets:view", "page:fleet:view", 
             "page:documents:view", "page:assistant:view", "page:admin:view",
-            "page:chiefs:view", "page:mapping:view"
+            "page:chiefs:view", "page:mapping:view", "page:evaluations:view"
         ];
         const adminRoleRef = doc(db, "roles", "administrateur");
         const adminRoleDoc = await getDoc(adminRoleRef);

@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { PlusCircle, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -40,6 +40,7 @@ export default function EvaluationsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     const unsubscribe = subscribeToEvaluations(
@@ -56,6 +57,13 @@ export default function EvaluationsPage() {
     );
     return () => unsubscribe();
   }, []);
+
+  const filteredEvaluations = useMemo(() => {
+    return evaluations.filter(e => 
+      e.employeeName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      e.managerName.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [evaluations, searchTerm]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -76,16 +84,20 @@ export default function EvaluationsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-           <div className="flex flex-col sm:flex-row gap-4 mb-6">
+           <div className="flex flex-col sm:flex-row gap-4 mb-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <Input
                 placeholder="Rechercher par employé, manager..."
                 className="pl-10"
-                disabled
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
           </div>
+            <div className="mb-4 text-sm text-muted-foreground">
+              {filteredEvaluations.length} résultat(s) trouvé(s).
+            </div>
           {error && <p className="text-destructive text-center py-4">{error}</p>}
            <div className="overflow-x-auto">
             <Table>
@@ -110,7 +122,7 @@ export default function EvaluationsPage() {
                         </TableRow>
                     ))
                 ) : (
-                    evaluations.map((evaluation) => (
+                    filteredEvaluations.map((evaluation) => (
                         <TableRow key={evaluation.id}>
                           <TableCell className="font-medium">{evaluation.employeeName}</TableCell>
                           <TableCell>{evaluation.managerName}</TableCell>
@@ -125,7 +137,7 @@ export default function EvaluationsPage() {
                 </TableBody>
             </Table>
             </div>
-          {!loading && evaluations.length === 0 && (
+          {!loading && filteredEvaluations.length === 0 && (
             <div className="text-center py-10 text-muted-foreground">
                 Aucune évaluation trouvée.
             </div>

@@ -113,7 +113,7 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
                             </div>
                             <div className="space-y-2 md:col-span-1">
                                 <Label htmlFor="payFrequency">Fréquence</Label>
-                                <Select value={formState.payFrequency} onValueChange={(v: 'Mensuel' | 'Bi-hebdomadaire') => handleSelectChange('payFrequency', v)} required>
+                                <Select value={formState.payFrequency} onValueChange={(v) => handleSelectChange('payFrequency', v)} required>
                                     <SelectTrigger><SelectValue /></SelectTrigger>
                                     <SelectContent>
                                     <SelectItem value="Mensuel">Mensuel</SelectItem>

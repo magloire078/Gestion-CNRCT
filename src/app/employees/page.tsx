@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { PlusCircle, Search, Download, Printer, Eye, Pencil, Trash2, MoreHorizontal } from "lucide-react";
+import { PlusCircle, Search, Download, Printer, Eye, Pencil, Trash2, MoreHorizontal, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -38,6 +38,7 @@ export const allColumns = {
   department: "SERVICE", 
   email: "CONTACT",
   status: "Statut",
+  CNPS: "CNPS",
 };
 export type ColumnKeys = keyof typeof allColumns;
 
@@ -312,6 +313,7 @@ export default function EmployeesPage() {
                             <TableHead>Poste</TableHead>
                             <TableHead>Service</TableHead>
                             <TableHead>Statut</TableHead>
+                            <TableHead>CNPS</TableHead>
                             <TableHead className="w-[100px] text-right">Actions</TableHead>
                             </TableRow>
                         </TableHeader>
@@ -325,7 +327,8 @@ export default function EmployeesPage() {
                                 <TableCell><Skeleton className="h-4 w-32" /></TableCell>
                                 <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                                 <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
-                                <TableCell><div className="flex gap-2 justify-end"><Skeleton className="h-8 w-8" /><Skeleton className="h-8 w-8" /></div></TableCell>
+                                <TableCell><Skeleton className="h-6 w-6 rounded-full" /></TableCell>
+                                <TableCell><div className="flex gap-2 justify-end"><Skeleton className="h-8 w-8" /></div></TableCell>
                                 </TableRow>
                             ))
                             ) : (
@@ -345,6 +348,9 @@ export default function EmployeesPage() {
                                         <TableCell>{employee.department}</TableCell>
                                         <TableCell>
                                             <Badge variant={statusVariantMap[employee.status as Status] || 'default'}>{employee.status}</Badge>
+                                        </TableCell>
+                                        <TableCell className="text-center">
+                                            {employee.CNPS && <ShieldCheck className="h-5 w-5 text-green-600" />}
                                         </TableCell>
                                         <TableCell className="text-right">
                                              <DropdownMenu>
@@ -441,6 +447,9 @@ export default function EmployeesPage() {
                                     let value: React.ReactNode = employee[key as keyof Employe] as string || '';
                                     if (key === 'name' && (employee.firstName || employee.lastName)) {
                                         value = `${employee.lastName || ''} ${employee.firstName || ''}`.trim();
+                                    }
+                                    if (key === 'CNPS') {
+                                        value = employee.CNPS ? 'Oui' : 'Non';
                                     }
                                     return <td key={key} className="border border-black p-1">{value}</td>
                                })}

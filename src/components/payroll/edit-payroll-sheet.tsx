@@ -27,6 +27,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Checkbox } from "@/components/ui/checkbox";
 import type { Employe } from "@/lib/data";
 
 interface EditPayrollSheetProps {
@@ -56,6 +57,10 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
       const { id, value, type } = e.target;
       setFormState(prev => ({ ...prev, [id]: type === 'number' ? parseFloat(value) || 0 : value }));
   };
+
+  const handleCheckboxChange = (id: string, checked: boolean) => {
+      setFormState(prev => ({ ...prev, [id]: checked }));
+  }
 
   const handleSelectChange = (id: string, value: string) => {
       setFormState(prev => ({ ...prev, [id]: value }));
@@ -154,6 +159,14 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
                     <AccordionTrigger>Détails du Bulletin de Paie</AccordionTrigger>
                     <AccordionContent className="space-y-4 pt-2">
                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                             <div className="flex items-center space-x-2 md:col-span-2">
+                                <Checkbox 
+                                    id="CNPS" 
+                                    checked={formState.CNPS || false} 
+                                    onCheckedChange={(checked) => handleCheckboxChange('CNPS', Boolean(checked))}
+                                />
+                                <Label htmlFor="CNPS">Enregistré à la CNPS</Label>
+                            </div>
                             <div className="space-y-2">
                                 <Label htmlFor="cnpsEmployeur">CNPS Employeur</Label>
                                 <Input id="cnpsEmployeur" value={formState.cnpsEmployeur || ''} onChange={handleInputChange} />

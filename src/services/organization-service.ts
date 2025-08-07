@@ -52,10 +52,11 @@ export async function getOrganizationSettings(): Promise<OrganizationSettings> {
 export async function saveOrganizationSettings(settings: OrganizationSettingsInput): Promise<void> {
     const storage = getStorage();
 
-    const processLogo = async (newLogoData: string, storagePath: string): Promise<string> => {
-        // If the new data is not a data URI, it's an existing URL, so no change is needed.
+    const processLogo = async (newLogoData: string, storagePath: string, currentUrl: string): Promise<string> => {
+        // If the new data is not a data URI, it's an existing URL.
+        // We check if it's different from the current one, but in most cases, we just return it.
         if (!newLogoData || !newLogoData.startsWith('data:image')) {
-            return newLogoData;
+            return currentUrl;
         }
 
         // It's a new file, upload it to storage
@@ -68,8 +69,11 @@ export async function saveOrganizationSettings(settings: OrganizationSettingsInp
         return await getDownloadURL(storageRef);
     };
 
-    const newMainLogoUrl = await processLogo(settings.mainLogoUrl, 'organization/main_logo');
-    const newSecondaryLogoUrl = await processLogo(settings.secondaryLogoUrl, 'organization/secondary_logo');
+    // Fetch current settings to compare against
+    const currentSettings = await getOrganizationSettings();
+
+    const newMainLogoUrl = await processLogo(settings.mainLogoUrl, 'organization/main_logo.png', currentSettings.mainLogoUrl);
+    const newSecondaryLogoUrl = await processLogo(settings.secondaryLogoUrl, 'organization/secondary_logo.png', currentSettings.secondaryLogoUrl);
 
     const finalSettings: OrganizationSettings = {
         mainLogoUrl: newMainLogoUrl,

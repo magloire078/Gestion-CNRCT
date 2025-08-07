@@ -140,6 +140,18 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
                                 <Label htmlFor="indemniteTransportImposable">Ind. Transport (Imposable)</Label>
                                 <Input id="indemniteTransportImposable" type="number" value={formState.indemniteTransportImposable || 0} onChange={handleInputChange} />
                             </div>
+                             <div className="space-y-2">
+                                <Label htmlFor="indemniteSujetion">Ind. Sujétion</Label>
+                                <Input id="indemniteSujetion" type="number" value={formState.indemniteSujetion || 0} onChange={handleInputChange} />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="indemniteCommunication">Ind. Communication</Label>
+                                <Input id="indemniteCommunication" type="number" value={formState.indemniteCommunication || 0} onChange={handleInputChange} />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="indemniteRepresentation">Ind. Représentation</Label>
+                                <Input id="indemniteRepresentation" type="number" value={formState.indemniteRepresentation || 0} onChange={handleInputChange} />
+                            </div>
                             <div className="space-y-2">
                                 <Label htmlFor="indemniteResponsabilite">Ind. Responsabilité</Label>
                                 <Input id="indemniteResponsabilite" type="number" value={formState.indemniteResponsabilite || 0} onChange={handleInputChange} />

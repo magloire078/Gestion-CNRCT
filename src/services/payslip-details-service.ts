@@ -40,17 +40,18 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
     const seniorityInfo = calculateSeniority(employee.dateEmbauche || '', payslipDate);
     
     // --- Seniority Bonus Calculation ---
-    let primeAnciennete = 0;
-    if (seniorityInfo.years >= 2) {
-        // Example: 1% per year after the first year, capped at 25%
-        const bonusRate = Math.min(0.25, (seniorityInfo.years - 1) * 0.01); 
+    let primeAnciennete = employee.primeAnciennete || 0;
+    if (seniorityInfo.years >= 2 && !employee.primeAnciennete) { // Check if not manually overridden
+        const bonusRate = Math.min(0.25, (seniorityInfo.years) * 0.01); 
         primeAnciennete = baseSalary * bonusRate;
     }
-
 
     const indemniteTransportImposable = employee.indemniteTransportImposable || 0;
     const indemniteResponsabilite = employee.indemniteResponsabilite || 0;
     const indemniteLogement = employee.indemniteLogement || 0;
+    const indemniteSujetion = employee.indemniteSujetion || 0;
+    const indemniteCommunication = employee.indemniteCommunication || 0;
+    const indemniteRepresentation = employee.indemniteRepresentation || 0;
     const transportNonImposable = employee.transportNonImposable || 0;
     const parts = employee.parts || 1;
 
@@ -59,9 +60,12 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
         { label: 'SALAIRE DE BASE', amount: baseSalary, deduction: 0 },
         { label: 'PRIME D\'ANCIENNETE', amount: primeAnciennete, deduction: 0 },
         { label: 'INDEMNITE DE TRANSPORT IMPOSABLE', amount: indemniteTransportImposable, deduction: 0 },
+        { label: 'INDEMNITE DE SUJETION', amount: indemniteSujetion, deduction: 0 },
+        { label: 'INDEMNITE DE COMMUNICATION', amount: indemniteCommunication, deduction: 0 },
+        { label: 'INDEMNITE DE REPRESENTATION', amount: indemniteRepresentation, deduction: 0 },
         { label: 'INDEMNITE DE RESPONSABILITE', amount: indemniteResponsabilite, deduction: 0 },
         { label: 'INDEMNITE DE LOGEMENT', amount: indemniteLogement, deduction: 0 },
-    ];
+    ].filter(e => e.amount > 0); // Only show non-zero earnings
 
     const brutImposable = earnings.reduce((sum, item) => sum + item.amount, 0);
 
@@ -70,7 +74,7 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
     const cnps = brutImposable * 0.063; // 6.3%
     const itsBase = brutImposable * 0.8; // ITS is on 80% of brut
     const its = itsBase * 0.012;  // 1.2% on the 80% base
-    const igr = Math.max(0, (brutImposable - cnps - its) * 0.1 * parts); // Very simplified IGR, ensure non-negative
+    const igr = Math.max(0, (brutImposable - cnps - its) * 0.1 / parts); // Very simplified IGR, ensure non-negative
     const cn = brutImposable * 0.015; // 1.5%
     
     const deductions: PayslipDeduction[] = [

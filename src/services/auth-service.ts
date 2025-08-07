@@ -58,7 +58,7 @@ export async function signIn(email: string, password: string): Promise<User> {
         try {
             const defaultRoleId = "employe"; // Use the hardcoded ID for the default role
             const newUserProfileData = {
-                name: firebaseUser.displayName || email.split('@')[0],
+                name: firebaseUser.displayName || email.split('@')[0] || 'Nouvel utilisateur',
                 email: firebaseUser.email!,
                 roleId: defaultRoleId,
             };

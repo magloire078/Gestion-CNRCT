@@ -106,13 +106,9 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
                             <Label>Employé</Label>
                             <p className="font-medium text-muted-foreground">{`${employee.lastName || ''} ${employee.firstName || ''}`.trim()}</p>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div className="space-y-2 md:col-span-1">
-                                <Label htmlFor="baseSalary">Salaire de Base</Label>
-                                <Input id="baseSalary" type="number" value={formState.baseSalary} onChange={handleInputChange} required />
-                            </div>
-                            <div className="space-y-2 md:col-span-1">
-                                <Label htmlFor="payFrequency">Fréquence</Label>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="payFrequency">Fréquence de Paie</Label>
                                 <Select value={formState.payFrequency} onValueChange={(v) => handleSelectChange('payFrequency', v)} required>
                                     <SelectTrigger><SelectValue /></SelectTrigger>
                                     <SelectContent>
@@ -121,8 +117,8 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
                                     </SelectContent>
                                 </Select>
                             </div>
-                            <div className="space-y-2 md:col-span-1">
-                                <Label htmlFor="nextPayDate">Prochaine Paie</Label>
+                            <div className="space-y-2">
+                                <Label htmlFor="nextPayDate">Prochaine Date de Paie</Label>
                                 <Input id="nextPayDate" type="date" value={formState.nextPayDate} onChange={handleInputChange} required />
                             </div>
                         </div>
@@ -132,6 +128,10 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
                     <AccordionTrigger>Gains & Indemnités</AccordionTrigger>
                     <AccordionContent className="space-y-4 pt-2">
                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="baseSalary">Salaire de Base</Label>
+                                <Input id="baseSalary" type="number" value={formState.baseSalary} onChange={handleInputChange} required />
+                            </div>
                             <div className="space-y-2">
                                 <Label htmlFor="primeAnciennete">Prime Ancienneté</Label>
                                 <Input id="primeAnciennete" type="number" value={formState.primeAnciennete || 0} onChange={handleInputChange} />

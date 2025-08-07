@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -65,6 +65,27 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
   const handleSelectChange = (id: string, value: string) => {
       setFormState(prev => ({ ...prev, [id]: value }));
   };
+
+  const { brutImposable, netAPayer } = useMemo(() => {
+    const earnings = [
+        formState.baseSalary, formState.primeAnciennete, formState.indemniteTransportImposable,
+        formState.indemniteSujetion, formState.indemniteCommunication, formState.indemniteRepresentation,
+        formState.indemniteResponsabilite, formState.indemniteLogement
+    ].reduce((sum, val) => sum + (val || 0), 0);
+    
+    const parts = formState.parts || 1;
+    const transportNonImposable = formState.transportNonImposable || 0;
+
+    const cnps = earnings * 0.063;
+    const its = (earnings * 0.8) * 0.012;
+    const igr = Math.max(0, (earnings - cnps - its) * 0.1 / parts);
+    const cn = earnings * 0.015;
+    const totalDeductions = cnps + its + igr + cn;
+
+    const net = earnings + transportNonImposable - totalDeductions;
+    
+    return { brutImposable: earnings, netAPayer: net };
+  }, [formState]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -130,7 +151,7 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             <div className="space-y-2">
                                 <Label htmlFor="baseSalary">Salaire de Base</Label>
-                                <Input id="baseSalary" type="number" value={formState.baseSalary} onChange={handleInputChange} required />
+                                <Input id="baseSalary" type="number" value={formState.baseSalary || 0} onChange={handleInputChange} required />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="primeAnciennete">Prime Ancienneté</Label>
@@ -163,6 +184,16 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
                             <div className="space-y-2">
                                 <Label htmlFor="transportNonImposable">Transport (Non Imposable)</Label>
                                 <Input id="transportNonImposable" type="number" value={formState.transportNonImposable || 0} onChange={handleInputChange} />
+                            </div>
+                        </div>
+                        <div className="mt-4 pt-4 border-t grid grid-cols-1 md:grid-cols-2 gap-4">
+                           <div className="space-y-2">
+                                <Label>Salaire Brut Imposable</Label>
+                                <Input value={brutImposable.toLocaleString("fr-FR") + " XOF"} readOnly className="font-bold bg-muted" />
+                            </div>
+                             <div className="space-y-2">
+                                <Label>Net à Payer (Estimation)</Label>
+                                <Input value={netAPayer.toLocaleString("fr-FR", { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + " XOF"} readOnly className="font-bold bg-muted" />
                             </div>
                         </div>
                     </AccordionContent>

@@ -114,7 +114,7 @@ export default function PayslipPage() {
                     </div>
                     <div className="col-span-7 border rounded-lg p-3 print:p-2">
                          <div className="grid grid-cols-3 gap-x-2 gap-y-1">
-                            <span className="font-bold">NOM & PRENOMS</span><span className="col-span-2">: {fullName}</span>
+                            <span className="font-bold">NOM & PRENOMS</span><span className="col-span-2">: <span className="font-arial print:text-[5px]">{fullName}</span></span>
                             <span className="font-bold">MATRICULE</span><span className="col-span-2">: {employeeInfo.matricule}</span>
                             <span className="font-bold">SITUATION MARITALE</span><span className="col-span-2">: {employeeInfo.situationMatrimoniale}</span>
                             <span className="font-bold">BANQUE</span><span className="col-span-2">: {employeeInfo.banque}</span>
@@ -241,14 +241,14 @@ export default function PayslipPage() {
                  <div className="grid grid-cols-12 mt-4 border rounded-b-lg print:mt-2">
                     <div className="col-span-9 p-2">
                         <p className="font-bold text-center underline mb-2 text-sm">Impôts à la charge de l'employeur</p>
-                        <table className="w-full text-xs">
+                        <table className="w-full text-[6px]">
                             <tbody>
                                 {employerContributions.map(item => (
                                      <tr key={item.label}>
-                                        <td className="w-2/4">{item.label}</td>
-                                        <td className="w-1/4 font-mono">{item.base.toLocaleString('fr-FR')}</td>
-                                        <td className="w-1/4 text-right font-mono">{item.rate}</td>
-                                        <td className="w-1/4 text-right font-mono">{item.amount.toLocaleString('fr-FR')}</td>
+                                        <td className="w-[40%]">{item.label}</td>
+                                        <td className="w-[20%] text-right font-mono pr-2">{item.base.toLocaleString('fr-FR')}</td>
+                                        <td className="w-[15%] text-center font-mono">{item.rate}</td>
+                                        <td className="w-[25%] text-right font-mono">{item.amount.toLocaleString('fr-FR')}</td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -266,7 +266,7 @@ export default function PayslipPage() {
 
                 {/* Footer */}
                 <footer className="text-center pt-4 border-t print:pt-2">
-                    <div className="print:text-[5px]">
+                    <div className="print:text-[4px]">
                         <p className="font-bold">Chambre Nationale de Rois et Chefs Traditionnels (CNRCT)</p>
                         <p>Yamoussoukro, Riviera - BP 201 Yamoussoukro | Tél : (225) 30 64 06 60 | Fax : (+255) 30 64 06 63</p>
                         <p>www.cnrct.ci - Email : info@cnrct.ci</p>

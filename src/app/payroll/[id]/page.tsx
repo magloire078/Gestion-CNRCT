@@ -265,10 +265,12 @@ export default function PayslipPage() {
                  </div>
 
                 {/* Footer */}
-                <footer className="text-center pt-4 border-t print:pt-2 print:text-[6px]">
-                    <p className="font-bold">Chambre Nationale de Rois et Chefs Traditionnels (CNRCT)</p>
-                    <p>Yamoussoukro, Riviera - BP 201 Yamoussoukro | Tél : (225) 30 64 06 60 | Fax : (+255) 30 64 06 63</p>
-                    <p>www.cnrct.ci - Email : info@cnrct.ci</p>
+                <footer className="text-center pt-4 border-t print:pt-2">
+                    <div className="print:text-[5px]">
+                        <p className="font-bold">Chambre Nationale de Rois et Chefs Traditionnels (CNRCT)</p>
+                        <p>Yamoussoukro, Riviera - BP 201 Yamoussoukro | Tél : (225) 30 64 06 60 | Fax : (+255) 30 64 06 63</p>
+                        <p>www.cnrct.ci - Email : info@cnrct.ci</p>
+                    </div>
                 </footer>
 
             </div>

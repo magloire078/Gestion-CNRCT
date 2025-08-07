@@ -116,7 +116,7 @@ export default function PayslipPage() {
                          <div className="grid grid-cols-3 gap-x-2 gap-y-1">
                             <span className="font-bold">NOM & PRENOMS</span><span className="col-span-2">: {fullName}</span>
                             <span className="font-bold">MATRICULE</span><span className="col-span-2">: {employeeInfo.matricule}</span>
-                            <span className="font-bold">SITUATION MATRIMONIALE</span><span className="col-span-2">: {employeeInfo.situationMatrimoniale}</span>
+                            <span className="font-bold">SITUATION MARITALE</span><span className="col-span-2">: {employeeInfo.situationMatrimoniale}</span>
                             <span className="font-bold">BANQUE</span><span className="col-span-2">: {employeeInfo.banque}</span>
                             <span className="font-bold">NUMERO DE COMPTE</span><span className="col-span-2">: {employeeInfo.numeroCompte}</span>
                             <span className="font-bold">SERVICE</span><span className="col-span-2">: {employeeInfo.department}</span>

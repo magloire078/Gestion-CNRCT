@@ -176,7 +176,7 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
                                 <Input id="cnpsEmploye" value={formState.cnpsEmploye || ''} onChange={handleInputChange} />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="situationMatrimoniale">Sit. Matrimoniale</Label>
+                                <Label htmlFor="situationMatrimoniale">Sit. Maritale</Label>
                                 <Input id="situationMatrimoniale" value={formState.situationMatrimoniale || ''} onChange={handleInputChange} />
                             </div>
                             <div className="space-y-2">

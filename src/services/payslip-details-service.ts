@@ -10,13 +10,13 @@ import { differenceInYears, differenceInMonths, differenceInDays, addYears, addM
 // Note: Tax and contribution rates are simplified approximations.
 // A real-world application would require precise, up-to-date rates and regulations.
 
-function calculateSeniority(hireDateStr: string, payslipDateStr: string): string {
-    if (!hireDateStr || !payslipDateStr) return 'N/A';
+function calculateSeniority(hireDateStr: string, payslipDateStr: string): { text: string, years: number } {
+    if (!hireDateStr || !payslipDateStr) return { text: 'N/A', years: 0 };
     
     const hireDate = parseISO(hireDateStr);
     const payslipDate = parseISO(payslipDateStr);
 
-    if (!isValid(hireDate) || !isValid(payslipDate)) return 'Dates invalides';
+    if (!isValid(hireDate) || !isValid(payslipDate)) return { text: 'Dates invalides', years: 0 };
 
     const years = differenceInYears(payslipDate, hireDate);
     const dateAfterYears = addYears(hireDate, years);
@@ -26,14 +26,27 @@ function calculateSeniority(hireDateStr: string, payslipDateStr: string): string
 
     const days = differenceInDays(payslipDate, dateAfterMonths);
 
-    return `${years} an(s), ${months} mois, ${days} jour(s)`;
+    return {
+        text: `${years} an(s), ${months} mois, ${days} jour(s)`,
+        years: years
+    };
 }
 
 
 export async function getPayslipDetails(employee: Employe, payslipDate: string): Promise<PayslipDetails> {
     
     const baseSalary = employee.baseSalary || 0;
-    const primeAnciennete = employee.primeAnciennete || 0;
+    
+    const seniorityInfo = calculateSeniority(employee.dateEmbauche || '', payslipDate);
+    
+    // --- Seniority Bonus Calculation ---
+    let primeAnciennete = 0;
+    if (seniorityInfo.years >= 2) {
+        const bonusRate = (seniorityInfo.years - 1) * 0.01; // 1% for 2 years, 2% for 3 years, etc.
+        primeAnciennete = baseSalary * bonusRate;
+    }
+
+
     const indemniteTransportImposable = employee.indemniteTransportImposable || 0;
     const indemniteResponsabilite = employee.indemniteResponsabilite || 0;
     const indemniteLogement = employee.indemniteLogement || 0;
@@ -99,7 +112,7 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
     const employeeInfoWithStaticData: Employe = {
         ...employee,
         cnpsEmployeur: "320491", // Static CNPS number
-        anciennete: calculateSeniority(employee.dateEmbauche || '', payslipDate),
+        anciennete: seniorityInfo.text,
         paymentDate: payslipDate,
     };
 

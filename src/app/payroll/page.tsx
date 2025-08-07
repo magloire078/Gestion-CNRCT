@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -37,6 +38,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import type { Employe } from "@/lib/data";
 import { subscribeToEmployees, updateEmployee } from "@/services/employee-service";
+import { getPayslipDetails } from "@/services/payslip-details-service";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { EditPayrollSheet } from "@/components/payroll/edit-payroll-sheet";
@@ -45,8 +47,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { lastDayOfMonth } from "date-fns";
 
+type EmployeeWithNetSalary = Employe & { netSalary?: number };
+
 export default function PayrollPage() {
-  const [employees, setEmployees] = useState<Employe[]>([]);
+  const [employees, setEmployees] = useState<EmployeeWithNetSalary[]>([]);
   const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<Employe | null>(null);
   const [loading, setLoading] = useState(true);
@@ -63,10 +67,25 @@ export default function PayrollPage() {
   useEffect(() => {
     setLoading(true);
     const unsubscribe = subscribeToEmployees(
-      (fetchedEmployees) => {
+      async (fetchedEmployees) => {
         // Filter for employees who should be on payroll
         const payrollEmployees = fetchedEmployees.filter(e => e.status === 'Actif' || e.status === 'En congé');
-        setEmployees(payrollEmployees);
+        
+        // Calculate net salary for each employee for the current month
+        const today = new Date();
+        const lastDayOfCurrentMonth = lastDayOfMonth(today).toISOString().split('T')[0];
+        const employeesWithSalary = await Promise.all(
+            payrollEmployees.map(async (emp) => {
+                try {
+                    const details = await getPayslipDetails(emp, lastDayOfCurrentMonth);
+                    return { ...emp, netSalary: details.totals.netAPayer };
+                } catch {
+                    return { ...emp, netSalary: 0 }; // Default to 0 if calculation fails
+                }
+            })
+        );
+        
+        setEmployees(employeesWithSalary);
         setError(null);
         setLoading(false);
       },
@@ -152,7 +171,7 @@ export default function PayrollPage() {
                 <TableRow>
                     <TableHead>Employé</TableHead>
                     <TableHead>Poste</TableHead>
-                    <TableHead className="text-right">Salaire de Base</TableHead>
+                    <TableHead className="text-right">Salaire Net</TableHead>
                     <TableHead>Fréquence</TableHead>
                     <TableHead>Prochaine Date de Paie</TableHead>
                     <TableHead><span className="sr-only">Actions</span></TableHead>
@@ -176,7 +195,7 @@ export default function PayrollPage() {
                         <TableCell className="font-medium">{`${employee.lastName || ''} ${employee.firstName || ''}`.trim()}</TableCell>
                         <TableCell>{employee.poste}</TableCell>
                         <TableCell className="text-right font-mono">
-                        {(employee.baseSalary || 0).toLocaleString("fr-FR", {
+                        {(employee.netSalary || 0).toLocaleString("fr-FR", {
                             style: "currency",
                             currency: "XOF",
                         })}
@@ -247,7 +266,7 @@ export default function PayrollPage() {
                                 </DropdownMenu>
                             </div>
                             <div className="mt-2 space-y-1">
-                                <p className="text-sm"><span className="font-medium">Salaire:</span> {(employee.baseSalary || 0).toLocaleString("fr-FR", { style: "currency", currency: "XOF",})}</p>
+                                <p className="text-sm"><span className="font-medium">Salaire Net:</span> {(employee.netSalary || 0).toLocaleString("fr-FR", { style: "currency", currency: "XOF",})}</p>
                                 <p className="text-sm"><span className="font-medium">Prochaine paie:</span> {employee.nextPayDate || 'N/D'}</p>
                                 <Badge variant="outline">{employee.payFrequency || 'N/D'}</Badge>
                             </div>

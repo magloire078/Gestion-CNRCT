@@ -42,7 +42,8 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
     // --- Seniority Bonus Calculation ---
     let primeAnciennete = 0;
     if (seniorityInfo.years >= 2) {
-        const bonusRate = (seniorityInfo.years - 1) * 0.01; // 1% for 2 years, 2% for 3 years, etc.
+        // Example: 1% per year after the first year, capped at 25%
+        const bonusRate = Math.min(0.25, (seniorityInfo.years - 1) * 0.01); 
         primeAnciennete = baseSalary * bonusRate;
     }
 
@@ -72,28 +73,14 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
     const igr = Math.max(0, (brutImposable - cnps - its) * 0.1 * parts); // Very simplified IGR, ensure non-negative
     const cn = brutImposable * 0.015; // 1.5%
     
-    // Align deductions with earnings for table layout
-    // Find the corresponding earnings and set the deduction value
-    const cnpsEarning = earnings.find(e => e.label === 'SALAIRE DE BASE');
-    if(cnpsEarning) cnpsEarning.deduction = cnps;
-
-    const itsEarning = earnings.find(e => e.label === 'PRIME D\'ANCIENNETE');
-    if(itsEarning) itsEarning.deduction = its;
-    
-    const igrEarning = earnings.find(e => e.label === 'INDEMNITE DE TRANSPORT IMPOSABLE');
-    if(igrEarning) igrEarning.deduction = igr;
-
-    const cnEarning = earnings.find(e => e.label === 'INDEMNITE DE LOGEMENT');
-    if(cnEarning) cnEarning.deduction = cn;
-
-
-    const otherDeductions: PayslipDeduction[] = [
+    const deductions: PayslipDeduction[] = [
+        { label: 'RETRAITE (CNPS)', amount: cnps },
         { label: 'IMPOT SUR SALAIRE (ITS)', amount: its },
         { label: 'IMPOT GENERAL SUR LE REVENU (IGR)', amount: igr },
         { label: 'CONTRIBUTION NATIONALE (CN)', amount: cn },
     ];
     
-    const totalDeductions = cnps + otherDeductions.reduce((sum, item) => sum + item.amount, 0);
+    const totalDeductions = deductions.reduce((sum, item) => sum + item.amount, 0);
     
     const netAPayer = brutImposable + transportNonImposable - totalDeductions;
     const netAPayerInWords = numberToWords(Math.floor(netAPayer)) + " FRANCS CFA";
@@ -119,7 +106,7 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
     return {
         employeeInfo: employeeInfoWithStaticData,
         earnings,
-        deductions: otherDeductions,
+        deductions,
         totals: {
             brutImposable,
             transportNonImposable: { label: 'INDEMNITE DE TRANSPORT NON IMPOSABLE', amount: transportNonImposable },

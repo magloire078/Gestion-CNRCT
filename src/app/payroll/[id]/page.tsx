@@ -256,7 +256,7 @@ export default function PayslipPage() {
                  <div className="grid grid-cols-12 mt-4 border rounded-b-lg print:mt-2">
                     <div className="col-span-9 p-2">
                         <p className="font-bold text-center underline mb-2 text-sm">Impôts à la charge de l'employeur</p>
-                        <table className="w-full text-[6px]">
+                        <table className="w-full text-xs">
                             <tbody>
                                 {employerContributions.map(item => (
                                      <tr key={item.label}>

@@ -71,7 +71,7 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
 
     // --- Deductions Calculation ---
     // Note: These calculations are highly simplified for demonstration.
-    const cnps = brutImposable * 0.063; // 6.3%
+    const cnps = employee.CNPS ? (brutImposable * 0.063) : 0; // Conditional CNPS deduction
     const itsBase = brutImposable * 0.8; // ITS is on 80% of brut
     const its = itsBase * 0.012;  // 1.2% on the 80% base
     const igr = Math.max(0, (brutImposable - cnps - its) * 0.1 / parts); // Very simplified IGR, ensure non-negative

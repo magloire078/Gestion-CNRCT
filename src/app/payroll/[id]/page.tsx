@@ -248,7 +248,7 @@ export default function PayslipPage() {
                  <div className="grid grid-cols-12 mt-[-1px] border text-xs">
                     <div className="col-span-9 p-1 flex justify-between items-center font-bold">
                         <span>NET A PAYER</span>
-                        <span className="italic font-normal text-[10px] print:text-[7px]">{totals.netAPayerInWords}</span>
+                        <span className="italic font-normal text-[9px] print:text-[6px]">{totals.netAPayerInWords}</span>
                     </div>
                     <div className="col-span-3 p-1 text-right font-bold font-mono bg-gray-200">{totals.netAPayer.toLocaleString('fr-FR')}</div>
                  </div>
@@ -282,7 +282,7 @@ export default function PayslipPage() {
 
                 {/* Footer */}
                 <footer className="text-center pt-4 border-t print:pt-2">
-                    <div className="text-[6px] leading-tight print:text-[5px] print:leading-tight">
+                    <div className="text-xs leading-tight print:text-[8px] print:leading-tight">
                         <p className="font-bold">Chambre Nationale de Rois et Chefs Traditionnels (CNRCT)</p>
                         <p>Yamoussoukro, Riviera - BP 201 Yamoussoukro | Tél : (225) 30 64 06 60 | Fax : (+255) 30 64 06 63</p>
                         <p>www.cnrct.ci - Email : info@cnrct.ci</p>

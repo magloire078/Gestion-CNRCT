@@ -105,6 +105,8 @@ export default function PayslipPage() {
                         <h2 className="font-bold">Chambre Nationale des Rois</h2>
                         <h2 className="font-bold">et Chefs Traditionnels</h2>
                         {organizationLogos.mainLogoUrl && <img src={organizationLogos.mainLogoUrl} alt="Logo CNRCT" width={80} height={80} className="mx-auto mt-2 print:w-16 print:h-16" />}
+                        <p className="text-xs mt-4">LE DIRECTOIRE</p>
+                        <p className="text-xs">LE CABINET / LE SERVICE INFORMATIQUE</p>
                     </div>
                     <div className="text-center">
                         <h2 className="font-bold">République de Côte d'Ivoire</h2>
@@ -246,7 +248,7 @@ export default function PayslipPage() {
                  <div className="grid grid-cols-12 mt-[-1px] border text-xs">
                     <div className="col-span-9 p-1 flex justify-between items-center font-bold">
                         <span>NET A PAYER</span>
-                        <span>{totals.netAPayerInWords}</span>
+                        <span className="italic font-normal text-[10px] print:text-[7px]">{totals.netAPayerInWords}</span>
                     </div>
                     <div className="col-span-3 p-1 text-right font-bold font-mono bg-gray-200">{totals.netAPayer.toLocaleString('fr-FR')}</div>
                  </div>
@@ -255,14 +257,14 @@ export default function PayslipPage() {
                  <div className="grid grid-cols-12 mt-4 border rounded-b-lg print:mt-2">
                     <div className="col-span-9 p-2">
                         <p className="font-bold text-center underline mb-2">Impôts à la charge de l'employeur</p>
-                        <table className="w-full text-xs">
+                         <table className="w-full text-xs">
                             <tbody>
                                 {employerContributions.map(item => (
                                      <tr key={item.label}>
-                                        <td className="w-2/5 pr-2">{item.label}</td>
-                                        <td className="w-1/4 text-right font-mono pr-2">{item.base.toLocaleString('fr-FR')}</td>
-                                        <td className="w-[15%] text-center font-mono">{item.rate}</td>
-                                        <td className="w-1/4 text-right font-mono">{item.amount.toLocaleString('fr-FR')}</td>
+                                        <td className="w-[45%] pr-2">{item.label}</td>
+                                        <td className="w-[25%] text-right font-mono pr-2">{item.base.toLocaleString('fr-FR')}</td>
+                                        <td className="w-[10%] text-center font-mono">{item.rate}</td>
+                                        <td className="w-[20%] text-right font-mono">{item.amount.toLocaleString('fr-FR')}</td>
                                     </tr>
                                 ))}
                             </tbody>

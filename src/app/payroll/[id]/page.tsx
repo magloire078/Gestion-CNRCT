@@ -255,7 +255,7 @@ export default function PayslipPage() {
                  {/* Employer Contributions */}
                  <div className="grid grid-cols-12 mt-4 border rounded-b-lg print:mt-2">
                     <div className="col-span-9 p-2">
-                        <p className="font-bold text-center underline mb-2 text-sm">Impôts à la charge de l'employeur</p>
+                        <p className="font-bold text-center underline mb-2">Impôts à la charge de l'employeur</p>
                         <table className="w-full text-xs">
                             <tbody>
                                 {employerContributions.map(item => (
@@ -281,7 +281,7 @@ export default function PayslipPage() {
 
                 {/* Footer */}
                 <footer className="text-center pt-4 border-t print:pt-2">
-                    <div className="print:text-[4px]">
+                    <div className="text-[6px] leading-tight print:text-[4px] print:leading-tight">
                         <p className="font-bold">Chambre Nationale de Rois et Chefs Traditionnels (CNRCT)</p>
                         <p>Yamoussoukro, Riviera - BP 201 Yamoussoukro | Tél : (225) 30 64 06 60 | Fax : (+255) 30 64 06 63</p>
                         <p>www.cnrct.ci - Email : info@cnrct.ci</p>

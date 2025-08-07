@@ -105,7 +105,6 @@ export default function PayslipPage() {
                         <h2 className="font-bold">Chambre Nationale des Rois</h2>
                         <h2 className="font-bold">et Chefs Traditionnels</h2>
                         {organizationLogos.mainLogoUrl && <img src={organizationLogos.mainLogoUrl} alt="Logo CNRCT" width={80} height={80} className="mx-auto mt-2 print:w-16 print:h-16" />}
-                        <p className="font-bold mt-1">UN CHEF NOUVEAU</p>
                     </div>
                     <div className="text-center">
                         <h2 className="font-bold">République de Côte d'Ivoire</h2>
@@ -281,7 +280,7 @@ export default function PayslipPage() {
 
                 {/* Footer */}
                 <footer className="text-center pt-4 border-t print:pt-2">
-                    <div className="text-[6px] leading-tight print:text-[4px] print:leading-tight">
+                    <div className="text-[6px] leading-tight print:text-[5px] print:leading-tight">
                         <p className="font-bold">Chambre Nationale de Rois et Chefs Traditionnels (CNRCT)</p>
                         <p>Yamoussoukro, Riviera - BP 201 Yamoussoukro | Tél : (225) 30 64 06 60 | Fax : (+255) 30 64 06 63</p>
                         <p>www.cnrct.ci - Email : info@cnrct.ci</p>

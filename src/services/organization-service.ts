@@ -1,6 +1,6 @@
 
 import { db } from '@/lib/firebase';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { getStorage, ref, uploadString, getDownloadURL } from "firebase/storage";
 
 export type OrganizationSettings = {
@@ -8,11 +8,11 @@ export type OrganizationSettings = {
     secondaryLogoUrl: string;
 };
 
-// Internal type to handle both URL strings and new file data URIs
-export type OrganizationSettingsInput = {
+// Use Partial for input to allow updating one logo at a time
+export type OrganizationSettingsInput = Partial<{
     mainLogoUrl: string; // Can be a gs://, https://, or data: URL
     secondaryLogoUrl: string; // Can be a gs://, https://, or data: URL
-};
+}>;
 
 
 const defaultSettings: OrganizationSettings = {
@@ -33,7 +33,7 @@ export async function getOrganizationSettings(): Promise<OrganizationSettings> {
         if (docSnap.exists()) {
             return docSnap.data() as OrganizationSettings;
         } else {
-            // If the document doesn't exist, you might want to create it with defaults
+            // If the document doesn't exist, create it with defaults
             await setDoc(settingsDocRef, defaultSettings);
             return defaultSettings;
         }
@@ -44,41 +44,40 @@ export async function getOrganizationSettings(): Promise<OrganizationSettings> {
 }
 
 /**
- * Saves the organization settings to Firestore.
- * Handles uploading new logos (passed as data URIs) to Firebase Storage.
- * @param {OrganizationSettingsInput} settings The settings to save.
- * @returns {Promise<void>}
+ * Saves organization settings. Can save one or both logos.
+ * @param {OrganizationSettingsInput} settingsToUpdate The settings to save (can be partial).
+ * @returns {Promise<OrganizationSettings>} The final, saved settings.
  */
-export async function saveOrganizationSettings(settings: OrganizationSettingsInput): Promise<void> {
+export async function saveOrganizationSettings(settingsToUpdate: OrganizationSettingsInput): Promise<OrganizationSettings> {
     const storage = getStorage();
-
-    const processLogo = async (newLogoData: string, storagePath: string, currentUrl: string): Promise<string> => {
-        // If the new data is not a data URI, it's an existing URL.
-        // We check if it's different from the current one, but in most cases, we just return it.
-        if (!newLogoData || !newLogoData.startsWith('data:image')) {
-            return currentUrl;
-        }
-
-        // It's a new file, upload it to storage
-        const storageRef = ref(storage, storagePath);
-        
-        // Upload the new logo
-        await uploadString(storageRef, newLogoData, 'data_url');
-        
-        // Return the new download URL
-        return await getDownloadURL(storageRef);
-    };
-
-    // Fetch current settings to compare against
     const currentSettings = await getOrganizationSettings();
+    let finalSettings = { ...currentSettings };
 
-    const newMainLogoUrl = await processLogo(settings.mainLogoUrl, 'organization/main_logo.png', currentSettings.mainLogoUrl);
-    const newSecondaryLogoUrl = await processLogo(settings.secondaryLogoUrl, 'organization/secondary_logo.png', currentSettings.secondaryLogoUrl);
-
-    const finalSettings: OrganizationSettings = {
-        mainLogoUrl: newMainLogoUrl,
-        secondaryLogoUrl: newSecondaryLogoUrl,
+    const processLogo = async (logoData: string | undefined, storagePath: string): Promise<string | undefined> => {
+        // Only process if it's a new file (data URI)
+        if (logoData && logoData.startsWith('data:image')) {
+            const storageRef = ref(storage, storagePath);
+            await uploadString(storageRef, logoData, 'data_url');
+            return getDownloadURL(storageRef);
+        }
+        // If it's not a data URI, it's either an existing URL or undefined.
+        // If undefined, it means this logo is not being updated, so we keep the old value.
+        // If it's an existing URL, it means no new file was chosen, so we also keep the old value.
+        return undefined; // Indicates no change to be made to this field
     };
+    
+    const newMainLogoUrl = await processLogo(settingsToUpdate.mainLogoUrl, 'organization/main_logo.png');
+    if (newMainLogoUrl) {
+        finalSettings.mainLogoUrl = newMainLogoUrl;
+    }
 
+    const newSecondaryLogoUrl = await processLogo(settingsToUpdate.secondaryLogoUrl, 'organization/secondary_logo.png');
+    if (newSecondaryLogoUrl) {
+        finalSettings.secondaryLogoUrl = newSecondaryLogoUrl;
+    }
+    
+    // Update the document in Firestore
     await setDoc(settingsDocRef, finalSettings, { merge: true });
+
+    return finalSettings;
 }

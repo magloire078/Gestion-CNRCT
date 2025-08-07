@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Eye, MoreHorizontal, Pencil } from "lucide-react";
+import { Eye, MoreHorizontal, Pencil, CalendarClock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -25,13 +25,25 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+
 import { Badge } from "@/components/ui/badge";
 import type { Employe } from "@/lib/data";
 import { subscribeToEmployees, updateEmployee } from "@/services/employee-service";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { EditPayrollSheet } from "@/components/payroll/edit-payroll-sheet";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { lastDayOfMonth } from "date-fns";
 
 export default function PayrollPage() {
   const [employees, setEmployees] = useState<Employe[]>([]);
@@ -40,6 +52,13 @@ export default function PayrollPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
+  const router = useRouter();
+
+  // State for the new date selection dialog
+  const [isDateDialogOpen, setIsDateDialogOpen] = useState(false);
+  const [year, setYear] = useState<string>(new Date().getFullYear().toString());
+  const [month, setMonth] = useState<string>((new Date().getMonth() + 1).toString());
+
 
   useEffect(() => {
     setLoading(true);
@@ -65,6 +84,22 @@ export default function PayrollPage() {
     setIsEditSheetOpen(true);
   };
   
+  const openDateDialog = (employee: Employe) => {
+    setSelectedEmployee(employee);
+    setIsDateDialogOpen(true);
+  };
+
+  const handleNavigateToPayslip = () => {
+    if (!selectedEmployee) return;
+
+    const selectedDate = new Date(parseInt(year), parseInt(month) - 1, 1);
+    const lastDay = lastDayOfMonth(selectedDate);
+    const formattedDate = lastDay.toISOString().split('T')[0]; // YYYY-MM-DD
+
+    setIsDateDialogOpen(false);
+    router.push(`/payroll/${selectedEmployee.id}?payslipDate=${formattedDate}`);
+  };
+
   const handleUpdatePayroll = async (employeeId: string, updatedPayrollData: Partial<Employe>) => {
     try {
       if(updatedPayrollData.firstName || updatedPayrollData.lastName) {
@@ -84,9 +119,20 @@ export default function PayrollPage() {
       throw err;
     }
   };
+  
+  const years = Array.from({ length: 10 }, (_, i) => (new Date().getFullYear() - i).toString());
+  const months = [
+    { value: "1", label: "Janvier" }, { value: "2", label: "Février" },
+    { value: "3", label: "Mars" }, { value: "4", label: "Avril" },
+    { value: "5", label: "Mai" }, { value: "6", label: "Juin" },
+    { value: "7", label: "Juillet" }, { value: "8", label: "Août" },
+    { value: "9", label: "Septembre" }, { value: "10", label: "Octobre" },
+    { value: "11", label: "Novembre" }, { value: "12", label: "Décembre" },
+  ];
 
 
   return (
+    <>
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight">Gestion de la Paie</h1>
@@ -153,11 +199,9 @@ export default function PayrollPage() {
                                         <Pencil className="mr-2 h-4 w-4" />
                                         Modifier les infos de paie
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem asChild>
-                                       <Link href={`/payroll/${employee.id}`}>
-                                            <Eye className="mr-2 h-4 w-4" />
-                                            Afficher le bulletin
-                                        </Link>
+                                    <DropdownMenuItem onClick={() => openDateDialog(employee)}>
+                                       <Eye className="mr-2 h-4 w-4" />
+                                       Afficher le bulletin
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
@@ -195,11 +239,9 @@ export default function PayrollPage() {
                                             <Pencil className="mr-2 h-4 w-4" />
                                             Modifier les infos de paie
                                         </DropdownMenuItem>
-                                        <DropdownMenuItem asChild>
-                                            <Link href={`/payroll/${employee.id}`}>
-                                                <Eye className="mr-2 h-4 w-4" />
-                                                Afficher le bulletin
-                                            </Link>
+                                        <DropdownMenuItem onClick={() => openDateDialog(employee)}>
+                                           <Eye className="mr-2 h-4 w-4" />
+                                           Afficher le bulletin
                                         </DropdownMenuItem>
                                     </DropdownMenuContent>
                                 </DropdownMenu>
@@ -221,6 +263,8 @@ export default function PayrollPage() {
           )}
         </CardContent>
       </Card>
+    </div>
+       
        {selectedEmployee && (
         <EditPayrollSheet
             isOpen={isEditSheetOpen}
@@ -229,6 +273,40 @@ export default function PayrollPage() {
             employee={selectedEmployee}
         />
        )}
-    </div>
+        <Dialog open={isDateDialogOpen} onOpenChange={setIsDateDialogOpen}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Choisir la Période du Bulletin</DialogTitle>
+                    <DialogDescription>
+                        Sélectionnez le mois et l'année pour générer le bulletin de paie de {selectedEmployee?.name}.
+                    </DialogDescription>
+                </DialogHeader>
+                <div className="grid grid-cols-2 gap-4 py-4">
+                    <div className="grid gap-2">
+                        <Label htmlFor="year">Année</Label>
+                        <Select value={year} onValueChange={setYear}>
+                            <SelectTrigger id="year"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                                {years.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="month">Mois</Label>
+                        <Select value={month} onValueChange={setMonth}>
+                            <SelectTrigger id="month"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                                {months.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
+                <DialogFooter>
+                    <Button variant="outline" onClick={() => setIsDateDialogOpen(false)}>Annuler</Button>
+                    <Button onClick={handleNavigateToPayslip}>Générer le Bulletin</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    </>
   );
 }

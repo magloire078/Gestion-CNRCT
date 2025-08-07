@@ -3,13 +3,34 @@
 import type { Employe, PayslipDetails, PayslipEarning, PayslipDeduction, PayslipEmployerContribution } from '@/lib/data';
 import { numberToWords } from '@/lib/utils';
 import { getOrganizationSettings } from './organization-service';
+import { differenceInYears, differenceInMonths, differenceInDays, addYears, addMonths, parseISO, isValid } from 'date-fns';
 
 
 // This service calculates payslip details based on an employee object.
 // Note: Tax and contribution rates are simplified approximations.
 // A real-world application would require precise, up-to-date rates and regulations.
 
-export async function getPayslipDetails(employee: Employe): Promise<PayslipDetails> {
+function calculateSeniority(hireDateStr: string, payslipDateStr: string): string {
+    if (!hireDateStr || !payslipDateStr) return 'N/A';
+    
+    const hireDate = parseISO(hireDateStr);
+    const payslipDate = parseISO(payslipDateStr);
+
+    if (!isValid(hireDate) || !isValid(payslipDate)) return 'Dates invalides';
+
+    const years = differenceInYears(payslipDate, hireDate);
+    const dateAfterYears = addYears(hireDate, years);
+    
+    const months = differenceInMonths(payslipDate, dateAfterYears);
+    const dateAfterMonths = addMonths(dateAfterYears, months);
+
+    const days = differenceInDays(payslipDate, dateAfterMonths);
+
+    return `${years} an(s), ${months} mois, ${days} jour(s)`;
+}
+
+
+export async function getPayslipDetails(employee: Employe, payslipDate: string): Promise<PayslipDetails> {
     
     const baseSalary = employee.baseSalary || 0;
     const primeAnciennete = employee.primeAnciennete || 0;
@@ -78,6 +99,8 @@ export async function getPayslipDetails(employee: Employe): Promise<PayslipDetai
     const employeeInfoWithStaticData: Employe = {
         ...employee,
         cnpsEmployeur: "320491", // Static CNPS number
+        anciennete: calculateSeniority(employee.dateEmbauche || '', payslipDate),
+        paymentDate: payslipDate,
     };
 
     return {

@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Employe } from "@/lib/data";
@@ -10,15 +10,21 @@ import { getEmployee } from "@/services/employee-service";
 import { getPayslipDetails, PayslipDetails } from "@/services/payslip-details-service";
 import { ArrowLeft, Printer } from "lucide-react";
 import QRCode from "react-qr-code";
+import { format } from "date-fns";
+import { fr } from 'date-fns/locale';
 
 export default function PayslipPage() {
     const params = useParams();
     const router = useRouter();
+    const searchParams = useSearchParams();
     const { id } = params;
+    
     const [employee, setEmployee] = useState<Employe | null>(null);
     const [payslipDetails, setPayslipDetails] = useState<PayslipDetails | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    const payslipDate = searchParams.get('payslipDate');
 
     useEffect(() => {
         async function fetchData() {
@@ -27,6 +33,12 @@ export default function PayslipPage() {
                 setError("ID d'employé invalide.");
                 return;
             }
+            if (!payslipDate) {
+                setLoading(false);
+                setError("Date du bulletin non spécifiée. Veuillez retourner et sélectionner une date.");
+                return;
+            }
+
             try {
                 const employeeData = await getEmployee(id);
                 if (!employeeData) {
@@ -35,7 +47,7 @@ export default function PayslipPage() {
                     return;
                 }
                 setEmployee(employeeData);
-                const details = await getPayslipDetails(employeeData);
+                const details = await getPayslipDetails(employeeData, payslipDate);
                 setPayslipDetails(details);
             } catch (err) {
                 console.error(err);
@@ -45,7 +57,7 @@ export default function PayslipPage() {
             }
         }
         fetchData();
-    }, [id]);
+    }, [id, payslipDate]);
 
     const handlePrint = () => {
         window.print();
@@ -61,13 +73,16 @@ export default function PayslipPage() {
     }
 
     if (error || !employee || !payslipDetails) {
-        return <div className="text-center text-destructive">{error || "Bulletin de paie non trouvé."}</div>;
+        return <div className="text-center text-destructive p-8">{error || "Bulletin de paie non trouvé."}</div>;
     }
 
     const { employeeInfo, earnings, deductions, totals, employerContributions, organizationLogos } = payslipDetails;
     const fullName = `${employeeInfo.lastName || ''} ${employeeInfo.firstName || ''}`.trim() || employeeInfo.name;
     const qrCodeValue = `${fullName} | ${employeeInfo.matricule} | ${employeeInfo.department}`;
 
+    const formattedPayslipDate = new Date(payslipDate!);
+    const periodDisplay = format(formattedPayslipDate, "MMMM yyyy", { locale: fr });
+    const paymentDateDisplay = format(formattedPayslipDate, "EEEE dd MMMM yyyy", { locale: fr });
 
     return (
         <>
@@ -100,7 +115,7 @@ export default function PayslipPage() {
                 </header>
 
                 <div className="text-center my-4 p-1 bg-gray-200 font-bold text-sm print:my-2">
-                    BULLETIN DE PAIE CNRCT : Période de {new Date(employeeInfo.nextPayDate || Date.now()).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
+                    BULLETIN DE PAIE CNRCT : Période de {periodDisplay}
                 </div>
 
                 {/* Employee Info */}
@@ -245,10 +260,10 @@ export default function PayslipPage() {
                             <tbody>
                                 {employerContributions.map(item => (
                                      <tr key={item.label}>
-                                        <td className="w-[40%]">{item.label}</td>
-                                        <td className="w-[20%] text-right font-mono pr-2">{item.base.toLocaleString('fr-FR')}</td>
+                                        <td className="w-2/5 pr-2">{item.label}</td>
+                                        <td className="w-1/4 text-right font-mono pr-2">{item.base.toLocaleString('fr-FR')}</td>
                                         <td className="w-[15%] text-center font-mono">{item.rate}</td>
-                                        <td className="w-[25%] text-right font-mono">{item.amount.toLocaleString('fr-FR')}</td>
+                                        <td className="w-1/4 text-right font-mono">{item.amount.toLocaleString('fr-FR')}</td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -257,8 +272,8 @@ export default function PayslipPage() {
                      <div className="col-span-3 flex flex-col justify-between items-center p-2 border-l">
                         <div></div>
                          <div className="text-center text-xs">
-                             <p className="font-bold">Payé à {employeeInfo.paymentLocation} le</p>
-                             <p>{employeeInfo.paymentDate}</p>
+                             <p className="font-bold">Payé à {employeeInfo.paymentLocation || 'Abidjan'} le</p>
+                             <p className="capitalize">{paymentDateDisplay}</p>
                          </div>
                          <div className="text-xs"></div>
                      </div>

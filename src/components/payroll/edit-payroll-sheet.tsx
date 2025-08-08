@@ -30,7 +30,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import type { Employe } from "@/lib/data";
 import { differenceInYears, differenceInMonths, differenceInDays, addYears, addMonths, parseISO, isValid } from 'date-fns';
-import { Calculator } from "lucide-react";
+import { Calculator, Undo2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface EditPayrollSheetProps {
@@ -68,6 +68,7 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [desiredNetSalary, setDesiredNetSalary] = useState<number | string>('');
+  const [originalBaseSalary, setOriginalBaseSalary] = useState<number | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -77,7 +78,8 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
         baseSalary: employee.baseSalary || 0,
         nextPayDate: employee.nextPayDate || '',
       });
-      setDesiredNetSalary(''); // Reset simulator field
+      setDesiredNetSalary('');
+      setOriginalBaseSalary(null);
     }
   }, [employee]);
 
@@ -154,6 +156,8 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
         });
         return;
     }
+
+    setOriginalBaseSalary(formState.baseSalary || 0);
     
     const otherIndemnities = [
         formState.indemniteTransportImposable, formState.indemniteSujetion, formState.indemniteCommunication,
@@ -184,6 +188,7 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
             title: "Calcul Impossible",
             description: "Le salaire net souhaité est trop bas pour couvrir les indemnités. Le salaire de base serait négatif."
         });
+        setOriginalBaseSalary(null); // Cancel the simulation state change
         return;
     }
 
@@ -194,6 +199,14 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
     });
   }
   
+  const handleRevertSalary = () => {
+    if (originalBaseSalary !== null) {
+      setFormState(prev => ({ ...prev, baseSalary: originalBaseSalary }));
+      setOriginalBaseSalary(null);
+      toast({ title: "Annulé", description: "Le salaire de base a été rétabli." });
+    }
+  }
+
   const formatCurrency = (value: number) => {
     return value.toLocaleString('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + " FCFA";
   }
@@ -272,7 +285,14 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
 
                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             <div className="space-y-2">
-                                <Label htmlFor="baseSalary">Salaire de Base</Label>
+                                <div className="flex justify-between items-center">
+                                    <Label htmlFor="baseSalary">Salaire de Base</Label>
+                                    {originalBaseSalary !== null && (
+                                        <Button type="button" variant="link" size="sm" className="h-auto p-0 text-xs" onClick={handleRevertSalary}>
+                                            <Undo2 className="mr-1 h-3 w-3" /> Rétablir
+                                        </Button>
+                                    )}
+                                </div>
                                 <Input id="baseSalary" type="number" value={formState.baseSalary || 0} onChange={handleInputChange} required />
                             </div>
                             <div className="space-y-2">

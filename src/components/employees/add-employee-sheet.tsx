@@ -23,10 +23,8 @@ import {
 } from "@/components/ui/select";
 import type { Employe } from "@/lib/data";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Upload, Sparkles, Loader2 } from "lucide-react";
+import { Upload } from "lucide-react";
 import { Textarea } from "../ui/textarea";
-import { generateAvatar } from "@/ai/flows/generate-avatar-flow";
-import { useToast } from "@/hooks/use-toast";
 
 interface AddEmployeeSheetProps {
   isOpen: boolean;
@@ -44,16 +42,14 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
   const [poste, setPoste] = useState("");
   const [department, setDepartment] = useState("");
   const [status, setStatus] = useState<Employe['status']>('Actif');
-  const [photoUrl, setPhotoUrl] = useState(`https://placehold.co/100x100.png`);
+  const [sexe, setSexe] = useState<Employe['sexe'] | undefined>(undefined);
+  const [photoUrl, setPhotoUrl] = useState<string | undefined>(undefined);
+  const [photoPreview, setPhotoPreview] = useState(`https://placehold.co/100x100.png`);
   const [skills, setSkills] = useState("");
   
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const [avatarPrompt, setAvatarPrompt] = useState("");
-  const [isGeneratingAvatar, setIsGeneratingAvatar] = useState(false);
-  const { toast } = useToast();
 
   const resetForm = () => {
     setMatricule("");
@@ -64,8 +60,9 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
     setDepartment("");
     setSkills("");
     setStatus("Actif");
-    setPhotoUrl(`https://placehold.co/100x100.png`);
-    setAvatarPrompt("");
+    setSexe(undefined);
+    setPhotoUrl(undefined);
+    setPhotoPreview(`https://placehold.co/100x100.png`);
     setError("");
     if(fileInputRef.current) {
         fileInputRef.current.value = "";
@@ -82,26 +79,11 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setPhotoUrl(reader.result as string);
+        const dataUri = reader.result as string;
+        setPhotoUrl(dataUri);
+        setPhotoPreview(dataUri);
       };
       reader.readAsDataURL(file);
-    }
-  };
-
-  const handleGenerateAvatar = async () => {
-    if (!avatarPrompt) {
-        toast({ variant: 'destructive', title: 'Champ requis', description: 'Veuillez entrer une description pour générer un avatar.' });
-        return;
-    }
-    setIsGeneratingAvatar(true);
-    try {
-        const generatedDataUri = await generateAvatar(avatarPrompt);
-        setPhotoUrl(generatedDataUri);
-    } catch (err) {
-        console.error("Avatar generation failed:", err);
-        toast({ variant: 'destructive', title: "Erreur de l'IA", description: "Impossible de générer l'avatar." });
-    } finally {
-        setIsGeneratingAvatar(false);
     }
   };
 
@@ -124,9 +106,10 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
           poste, 
           department, 
           status, 
-          photoUrl, 
+          photoUrl: photoUrl || '', 
           name: `${firstName} ${lastName}`.trim(), 
           skills: skillsArray,
+          sexe,
       });
       handleClose();
     } catch(err) {
@@ -154,7 +137,7 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
               </Label>
               <div className="col-span-3 flex items-center gap-4">
                   <Avatar className="h-16 w-16">
-                     <AvatarImage src={photoUrl} alt="Aperçu de la photo" data-ai-hint="employee photo" />
+                     <AvatarImage src={photoPreview} alt="Aperçu de la photo" data-ai-hint="employee photo" />
                      <AvatarFallback>{firstName ? firstName.charAt(0) : 'E'}</AvatarFallback>
                   </Avatar>
                   <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>
@@ -169,22 +152,6 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
                     onChange={handlePhotoChange}
                     />
               </div>
-            </div>
-
-            <div className="grid grid-cols-4 items-start gap-4">
-                <Label htmlFor="avatarPrompt" className="text-right pt-2">Avatar IA</Label>
-                <div className="col-span-3 space-y-2">
-                    <Input 
-                        id="avatarPrompt" 
-                        value={avatarPrompt} 
-                        onChange={e => setAvatarPrompt(e.target.value)} 
-                        placeholder="Ex: Femme d'affaire souriante"
-                    />
-                    <Button type="button" variant="secondary" onClick={handleGenerateAvatar} disabled={isGeneratingAvatar}>
-                        {isGeneratingAvatar ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
-                        Générer avec l'IA
-                    </Button>
-                </div>
             </div>
 
             <div className="grid grid-cols-4 items-center gap-4">
@@ -249,7 +216,21 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
                   </SelectContent>
                </Select>
             </div>
-
+             <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="sexe" className="text-right">
+                Sexe
+              </Label>
+               <Select value={sexe} onValueChange={(value: Employe['sexe']) => setSexe(value)}>
+                  <SelectTrigger className="col-span-3">
+                      <SelectValue placeholder="Sélectionnez un sexe" />
+                  </SelectTrigger>
+                  <SelectContent>
+                      <SelectItem value="Homme">Homme</SelectItem>
+                      <SelectItem value="Femme">Femme</SelectItem>
+                      <SelectItem value="Autre">Autre</SelectItem>
+                  </SelectContent>
+               </Select>
+            </div>
             <div className="grid grid-cols-4 items-start gap-4">
               <Label htmlFor="skills" className="text-right pt-2">
                 Compétences

@@ -258,6 +258,14 @@ export default function EmployeesPage() {
     setIsPrinting(true);
   };
 
+  const getAvatarBgClass = (sexe?: 'Homme' | 'Femme' | 'Autre') => {
+    switch (sexe) {
+      case 'Homme': return 'bg-blue-200 dark:bg-blue-800';
+      case 'Femme': return 'bg-pink-200 dark:bg-pink-800';
+      default: return 'bg-muted';
+    }
+  };
+
   return (
     <>
         <div className={isPrinting ? 'print-hidden' : ''}>
@@ -387,8 +395,10 @@ export default function EmployeesPage() {
                                    <TableRow key={employee.id}>
                                         <TableCell>
                                             <Avatar>
-                                                <AvatarImage src={employee.photoUrl} alt={employee.name} data-ai-hint="employee photo" />
-                                                <AvatarFallback>{employee.name?.charAt(0) || 'E'}</AvatarFallback>
+                                                <AvatarImage src={employee.photoUrl || ''} alt={employee.name} data-ai-hint="employee photo" />
+                                                <AvatarFallback className={getAvatarBgClass(employee.sexe)}>
+                                                    {employee.lastName?.charAt(0) || ''}{employee.firstName?.charAt(0) || ''}
+                                                </AvatarFallback>
                                             </Avatar>
                                         </TableCell>
                                         <TableCell>

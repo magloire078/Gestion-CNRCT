@@ -66,6 +66,14 @@ export default function EmployeeDetailPage() {
         fetchData();
     }, [id]);
 
+    const getAvatarBgClass = (sexe?: 'Homme' | 'Femme' | 'Autre') => {
+        switch (sexe) {
+          case 'Homme': return 'bg-blue-200 dark:bg-blue-800';
+          case 'Femme': return 'bg-pink-200 dark:bg-pink-800';
+          default: return 'bg-muted';
+        }
+    };
+
     if (loading) {
         return <EmployeeDetailSkeleton />;
     }
@@ -98,7 +106,9 @@ export default function EmployeeDetailPage() {
                         <CardHeader className="flex flex-col md:flex-row items-start md:items-center gap-6">
                             <Avatar className="h-24 w-24 border">
                                 <AvatarImage src={employee.photoUrl} alt={fullName} data-ai-hint="employee photo"/>
-                                <AvatarFallback className="text-3xl">{fullName.charAt(0)}</AvatarFallback>
+                                <AvatarFallback className={`text-3xl ${getAvatarBgClass(employee.sexe)}`}>
+                                    {employee.lastName?.charAt(0) || ''}{employee.firstName?.charAt(0) || ''}
+                                </AvatarFallback>
                             </Avatar>
                             <div className="flex-1">
                                 <CardTitle className="text-3xl">{fullName}</CardTitle>

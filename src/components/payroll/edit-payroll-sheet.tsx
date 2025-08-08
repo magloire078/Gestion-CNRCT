@@ -90,7 +90,7 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
       setFormState(prev => ({ ...prev, [id]: value }));
   };
 
-  const { brutImposable, netAPayer, primeAncienneteRate, cnpsEmploye, cnpsEmployeur, baseCalculCotisations } = useMemo(() => {
+  const { brutImposable, netAPayer, primeAncienneteRate, primeAncienneteValue, cnpsEmploye, cnpsEmployeur, baseCalculCotisations } = useMemo(() => {
     const baseSalary = formState.baseSalary || 0;
     const seniorityInfo = calculateSeniority(formState.dateEmbauche, new Date().toISOString());
 
@@ -126,11 +126,16 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
         brutImposable: earnings, 
         netAPayer: net,
         primeAncienneteRate,
+        primeAncienneteValue: primeAnciennete,
         cnpsEmploye,
         cnpsEmployeur,
         baseCalculCotisations: brutTotal
     };
   }, [formState]);
+  
+  const formatCurrency = (value: number) => {
+    return value.toLocaleString('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + " XOF";
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -201,7 +206,7 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
                             <div className="space-y-2">
                                 <Label htmlFor="primeAnciennete">Prime Ancienneté</Label>
                                 <Input id="primeAnciennete" type="number" value={formState.primeAnciennete || 0} onChange={handleInputChange} />
-                                 {primeAncienneteRate > 0 && <p className="text-xs text-muted-foreground">Calculée à {primeAncienneteRate}%</p>}
+                                {primeAncienneteRate > 0 && <p className="text-xs text-muted-foreground">Auto-calculée: {formatCurrency(primeAncienneteValue)} ({primeAncienneteRate}%)</p>}
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="indemniteTransportImposable">Ind. Transport (Imposable)</Label>
@@ -240,25 +245,25 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             <div className="space-y-2">
                                 <Label>CNPS Employé</Label>
-                                <Input value={cnpsEmploye.toLocaleString("fr-FR") + " XOF"} readOnly className="font-mono bg-muted" />
+                                <Input value={formatCurrency(cnpsEmploye)} readOnly className="font-mono bg-muted" />
                             </div>
                             <div className="space-y-2">
                                 <Label>CNPS Employeur</Label>
-                                <Input value={cnpsEmployeur.toLocaleString("fr-FR") + " XOF"} readOnly className="font-mono bg-muted" />
+                                <Input value={formatCurrency(cnpsEmployeur)} readOnly className="font-mono bg-muted" />
                             </div>
                             <div className="space-y-2">
                                 <Label>Base de calcul</Label>
-                                <Input value={baseCalculCotisations.toLocaleString("fr-FR") + " XOF"} readOnly className="font-mono bg-muted" />
+                                <Input value={formatCurrency(baseCalculCotisations)} readOnly className="font-mono bg-muted" />
                             </div>
                         </div>
                         <div className="mt-4 pt-4 border-t grid grid-cols-1 md:grid-cols-2 gap-4">
                            <div className="space-y-2">
                                 <Label>Salaire Brut Imposable</Label>
-                                <Input value={brutImposable.toLocaleString("fr-FR") + " XOF"} readOnly className="font-bold bg-muted" />
+                                <Input value={formatCurrency(brutImposable)} readOnly className="font-bold bg-muted" />
                             </div>
                              <div className="space-y-2">
                                 <Label>Net à Payer</Label>
-                                <Input value={netAPayer.toLocaleString("fr-FR", { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + " XOF"} readOnly className="font-bold bg-muted" />
+                                <Input value={formatCurrency(netAPayer)} readOnly className="font-bold bg-muted" />
                             </div>
                         </div>
                      </AccordionContent>

@@ -149,6 +149,11 @@ export default function PayrollPage() {
     { value: "11", label: "Novembre" }, { value: "12", label: "Décembre" },
   ];
 
+  const formatCurrency = (value: number | undefined) => {
+      if (value === undefined) return 'N/A';
+      return value.toLocaleString('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + " FCFA";
+  }
+
 
   return (
     <>
@@ -195,10 +200,7 @@ export default function PayrollPage() {
                         <TableCell className="font-medium">{`${employee.lastName || ''} ${employee.firstName || ''}`.trim()}</TableCell>
                         <TableCell>{employee.poste}</TableCell>
                         <TableCell className="text-right font-mono">
-                        {(employee.netSalary || 0).toLocaleString("fr-FR", {
-                            style: "currency",
-                            currency: "XOF",
-                        })}
+                         {formatCurrency(employee.netSalary)}
                         </TableCell>
                         <TableCell>
                         <Badge variant="outline">{employee.payFrequency || 'N/D'}</Badge>
@@ -266,7 +268,7 @@ export default function PayrollPage() {
                                 </DropdownMenu>
                             </div>
                             <div className="mt-2 space-y-1">
-                                <p className="text-sm"><span className="font-medium">Salaire Net:</span> {(employee.netSalary || 0).toLocaleString("fr-FR", { style: "currency", currency: "XOF",})}</p>
+                                <p className="text-sm"><span className="font-medium">Salaire Net:</span> {formatCurrency(employee.netSalary)}</p>
                                 <p className="text-sm"><span className="font-medium">Prochaine paie:</span> {employee.nextPayDate || 'N/D'}</p>
                                 <Badge variant="outline">{employee.payFrequency || 'N/D'}</Badge>
                             </div>

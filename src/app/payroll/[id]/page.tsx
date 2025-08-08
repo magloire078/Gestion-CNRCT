@@ -76,6 +76,10 @@ export default function PayslipPage() {
         return <div className="text-center text-destructive p-8">{error || "Bulletin de paie non trouvé."}</div>;
     }
 
+    const formatCurrency = (value: number) => {
+        return value.toLocaleString('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+    }
+
     const { employeeInfo, earnings, deductions, totals, employerContributions, organizationLogos } = payslipDetails;
     const fullName = `${employeeInfo.lastName || ''} ${employeeInfo.firstName || ''}`.trim() || employeeInfo.name;
     const qrCodeValue = `${fullName} | ${employeeInfo.matricule} | ${employeeInfo.department}`;
@@ -181,16 +185,16 @@ export default function PayslipPage() {
                                 {earnings.map(item => (
                                     <tr key={item.label}>
                                         <td className="border p-1">{item.label}</td>
-                                        <td className="border p-1 text-right font-mono">{item.amount > 0 ? item.amount.toLocaleString('fr-FR') : ''}</td>
+                                        <td className="border p-1 text-right font-mono">{item.amount > 0 ? formatCurrency(item.amount) : ''}</td>
                                     </tr>
                                 ))}
                                 <tr className="font-bold">
                                     <td className="border p-1">BRUT IMPOSABLE</td>
-                                    <td className="border p-1 text-right font-mono bg-gray-200">{totals.brutImposable.toLocaleString('fr-FR')}</td>
+                                    <td className="border p-1 text-right font-mono bg-gray-200">{formatCurrency(totals.brutImposable)}</td>
                                 </tr>
                                  <tr>
                                     <td className="border p-1">{totals.transportNonImposable.label}</td>
-                                    <td className="border p-1 text-right font-mono">{totals.transportNonImposable.amount.toLocaleString('fr-FR')}</td>
+                                    <td className="border p-1 text-right font-mono">{formatCurrency(totals.transportNonImposable.amount)}</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -205,7 +209,7 @@ export default function PayslipPage() {
                             <tbody>
                                 {earnings.map(item => (
                                      <tr key={item.label}>
-                                        <td className="border p-1 text-right font-mono h-[28px] print:h-auto print:leading-tight">{item.deduction > 0 ? item.deduction.toLocaleString('fr-FR') : ''}</td>
+                                        <td className="border p-1 text-right font-mono h-[28px] print:h-auto print:leading-tight">{item.deduction > 0 ? formatCurrency(item.deduction) : ''}</td>
                                     </tr>
                                 ))}
                                 <tr className="font-bold h-[28px] print:h-auto print:leading-tight"><td className="border p-1"></td></tr>
@@ -236,7 +240,7 @@ export default function PayslipPage() {
                              <tbody>
                                 {deductions.map(item => (
                                     <tr key={item.label}>
-                                        <td className="border p-1 text-right font-mono h-[28px] print:h-auto print:leading-tight">{item.amount > 0 ? item.amount.toLocaleString('fr-FR') : '0'}</td>
+                                        <td className="border p-1 text-right font-mono h-[28px] print:h-auto print:leading-tight">{item.amount > 0 ? formatCurrency(item.amount) : '0'}</td>
                                     </tr>
                                 ))}
                                  <tr><td className="border p-1 h-[28px] print:h-auto print:leading-tight"></td></tr>
@@ -250,7 +254,7 @@ export default function PayslipPage() {
                         <span>NET A PAYER</span>
                         <span className="italic font-normal text-[9px] print:text-[6px]">{totals.netAPayerInWords}</span>
                     </div>
-                    <div className="col-span-3 p-1 text-right font-bold font-mono bg-gray-200">{totals.netAPayer.toLocaleString('fr-FR')}</div>
+                    <div className="col-span-3 p-1 text-right font-bold font-mono bg-gray-200">{formatCurrency(totals.netAPayer)}</div>
                  </div>
                 
                  {/* Employer Contributions */}
@@ -262,9 +266,9 @@ export default function PayslipPage() {
                                 {employerContributions.map(item => (
                                      <tr key={item.label}>
                                         <td className="w-[45%] pr-2">{item.label}</td>
-                                        <td className="w-[25%] text-right font-mono pr-2">{item.base.toLocaleString('fr-FR')}</td>
+                                        <td className="w-[25%] text-right font-mono pr-2">{formatCurrency(item.base)}</td>
                                         <td className="w-[10%] text-center font-mono">{item.rate}</td>
-                                        <td className="w-[20%] text-right font-mono">{item.amount.toLocaleString('fr-FR')}</td>
+                                        <td className="w-[20%] text-right font-mono">{formatCurrency(item.amount)}</td>
                                     </tr>
                                 ))}
                             </tbody>

@@ -12,7 +12,6 @@ import { ArrowLeft, Printer } from "lucide-react";
 import QRCode from "react-qr-code";
 import { format } from "date-fns";
 import { fr } from 'date-fns/locale';
-import Image from "next/image";
 
 export default function PayslipPage() {
     const params = useParams();
@@ -78,6 +77,7 @@ export default function PayslipPage() {
     }
 
     const formatCurrency = (value: number) => {
+        if (value === 0) return '0';
         return value.toLocaleString('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
     }
 
@@ -103,166 +103,148 @@ export default function PayslipPage() {
                     </Button>
                 </div>
             </div>
-            <div id="print-section" className="w-full max-w-4xl mx-auto bg-white p-4 sm:p-8 border rounded-lg text-black print:shadow-none print:border-none print:p-0 font-arial text-[12px] leading-tight">
+            <div id="print-section" className="w-full max-w-4xl mx-auto bg-white p-6 border rounded-lg text-black print:shadow-none print:border-none print:p-0 font-arial text-[10px] leading-tight">
                 {/* Header */}
-                <header className="flex justify-between items-start pb-2 border-b-2 border-gray-200">
-                    <div className="text-center">
-                        {organizationLogos.mainLogoUrl && <img src={organizationLogos.mainLogoUrl} alt="Logo CNRCT" className="mx-auto my-1 h-[70px] w-auto" />}
+                <header className="flex justify-between items-center pb-2">
+                    <div className="w-1/3 text-center">
+                        <h2 className="font-bold text-sm">Chambre Nationale des Rois</h2>
+                        <h2 className="font-bold text-sm">et Chefs Traditionnels</h2>
+                        {organizationLogos.mainLogoUrl && <img src={organizationLogos.mainLogoUrl} alt="Logo CNRCT" className="mx-auto mt-1 h-[70px] w-auto" />}
                     </div>
-                    <div className="text-center pt-2">
-                        <h2 className="font-bold text-sm">Chambre Nationale des Rois et Chefs Traditionnels</h2>
-                        <p className="text-xs mt-4">LE DIRECTOIRE</p>
-                        <p className="text-xs">LE CABINET / LE SERVICE INFORMATIQUE</p>
-                    </div>
-                    <div className="text-center">
-                         {organizationLogos.secondaryLogoUrl && <img src={organizationLogos.secondaryLogoUrl} alt="Emblème de la Côte d'Ivoire" className="mx-auto my-1 h-[70px] w-auto" />}
+                    <div className="w-1/3"></div>
+                    <div className="w-1/3 text-center">
                         <h2 className="font-bold text-sm">République de Côte d'Ivoire</h2>
+                         {organizationLogos.secondaryLogoUrl && <img src={organizationLogos.secondaryLogoUrl} alt="Emblème de la Côte d'Ivoire" className="mx-auto mt-1 h-[70px] w-auto" />}
                         <p className="mt-1">Union - Discipline - Travail</p>
                     </div>
                 </header>
 
-                <div className="text-center my-2 p-1 bg-gray-100/80 font-bold rounded-md text-sm">
+                 <div className="text-center my-2 p-1 bg-gray-200 font-bold rounded-md text-sm">
                     BULLETIN DE PAIE CNRCT : Période de {periodDisplay}
                 </div>
-
+                
                 {/* Employee Info */}
-                <section className="grid grid-cols-12 gap-x-4 text-xs">
-                    <div className="col-span-5 space-y-1">
+                <section className="flex">
+                    <div className="w-1/3 space-y-1">
                         <p><span className="font-bold">N° CNPS EMPLOYEUR :</span> {employeeInfo.cnpsEmployeur}</p>
                         <p><span className="font-bold">N° CNPS EMPLOYE :</span> {employeeInfo.cnpsEmploye}</p>
-                        <div className="mt-1 bg-white p-1 w-fit">
+                        <div className="mt-2 bg-white p-1 w-fit">
                           <QRCode value={qrCodeValue} size={60} />
                         </div>
                     </div>
-                    <div className="col-span-7 border-2 border-gray-200/80 rounded-lg p-2">
-                         <div className="grid grid-cols-3 gap-x-2 gap-y-1">
-                            <span className="font-bold">NOM & PRENOMS</span><span className="col-span-2">: {fullName}</span>
-                            <span className="font-bold">MATRICULE</span><span className="col-span-2">: {employeeInfo.matricule}</span>
-                            <span className="font-bold">SITUATION MARITALE</span><span className="col-span-2">: {employeeInfo.situationMatrimoniale}</span>
-                            <span className="font-bold">BANQUE</span><span className="col-span-2">: {employeeInfo.banque}</span>
-                            <span className="font-bold">NUMERO DE COMPTE</span><span className="col-span-2">: {employeeInfo.numeroCompte}</span>
-                            <span className="font-bold">SERVICE</span><span className="col-span-2">: {employeeInfo.department}</span>
-                            <span className="font-bold">DATE DE CONGE</span><span className="col-span-2">: {employeeInfo.dateConge}</span>
+                    <div className="w-2/3 pl-4">
+                        <div className="border border-black rounded-md p-2">
+                             <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                                <p><span className="font-bold">NOM & PRENOMS</span> : {fullName}</p>
+                                <p><span className="font-bold">MATRICULE</span> : {employeeInfo.matricule}</p>
+                                <p><span className="font-bold">SITUATION MATRIMONIALE</span> : {employeeInfo.situationMatrimoniale}</p>
+                                <p><span className="font-bold">BANQUE</span> : {employeeInfo.banque}</p>
+                                <p className="col-span-2"><span className="font-bold">NUMERO DE COMPTE</span> : {employeeInfo.numeroCompte}</p>
+                                <p className="col-span-2"><span className="font-bold">SERVICE</span> : {employeeInfo.department}</p>
+                                <p className="col-span-2"><span className="font-bold">DATE DE CONGE</span> : __/__/____</p>
+                            </div>
+                        </div>
+                         <div className="mt-1 grid grid-cols-2 gap-x-4">
+                            <p><span className="font-bold">ANCIENNETE :</span> {employeeInfo.anciennete}</p>
+                            <p><span className="font-bold">CATEGORIE :</span> {employeeInfo.categorie}</p>
+                             <p><span className="font-bold">ENFANT(S) :</span> {employeeInfo.enfants}</p>
                         </div>
                     </div>
-                     <div className="col-span-12 grid grid-cols-7 gap-x-2 text-right pr-4 mt-1">
-                        <span className="col-start-3 col-span-2 font-bold">ANCIENNETE :</span><span className="col-span-3 text-left">{employeeInfo.anciennete}</span>
-                        <span className="col-start-3 col-span-2 font-bold">CATEGORIE :</span><span className="col-span-3 text-left">{employeeInfo.categorie}</span>
-                        <span className="col-start-3 col-span-2 font-bold">ENFANT(S) :</span><span className="col-span-3 text-left">{employeeInfo.enfants}</span>
-                    </div>
                 </section>
-                
+
                 {/* Job Info Table */}
-                 <table className="w-full border-collapse border-2 border-gray-200/80 rounded-lg mt-2 text-xs">
-                    <thead className="bg-gray-100/80 font-bold">
+                 <table className="w-full border-collapse border-2 border-black rounded-lg mt-2 text-[9px]">
+                    <thead className="bg-gray-200 font-bold text-center">
                         <tr>
-                            <td className="p-1 rounded-tl-lg">EMPLOI</td>
-                            <td className="p-1">MATRICULE</td>
-                            <td className="p-1">NBRE DE PARTS</td>
-                            <td className="p-1 rounded-tr-lg">DATE D'EMBAUCHE</td>
+                            <td className="p-1 border-r border-black">EMPLOI</td>
+                            <td className="p-1 border-r border-black">MATRICULE</td>
+                            <td className="p-1 border-r border-black">NBRE DE PARTS</td>
+                            <td className="p-1">DATE D'EMBAUCHE</td>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="text-center">
                         <tr>
-                            <td className="p-1">{employeeInfo.poste}</td>
-                            <td className="p-1">{employeeInfo.matricule}</td>
-                            <td className="p-1">{employeeInfo.parts}</td>
+                            <td className="p-1 border-r border-black">{employeeInfo.poste}</td>
+                            <td className="p-1 border-r border-black">{employeeInfo.matricule}</td>
+                            <td className="p-1 border-r border-black">{employeeInfo.parts}</td>
                             <td className="p-1">{employeeInfo.dateEmbauche}</td>
                         </tr>
                     </tbody>
                 </table>
-
-
-                {/* Earnings & Deductions */}
-                <div className="grid grid-cols-12 mt-1 border-2 border-gray-200/80 rounded-lg text-xs">
-                    <div className="col-span-9">
-                         <table className="w-full">
-                            <thead className="bg-gray-100/80 font-bold">
-                                <tr>
-                                    <td className="p-1 w-2/3 rounded-tl-lg">ELEMENTS</td>
-                                    <td className="p-1 text-center w-1/3">GAINS</td>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {earnings.map(item => (
-                                    <tr key={item.label} className="h-[20px]">
-                                        <td className="pl-1">{item.label}</td>
-                                        <td className="pr-1 text-right font-mono">{item.amount > 0 ? formatCurrency(item.amount) : ''}</td>
-                                    </tr>
-                                ))}
-                                <tr className="font-bold h-[20px]">
-                                    <td className="pl-1">BRUT IMPOSABLE</td>
-                                    <td className="pr-1 text-right font-mono bg-gray-100/80">{formatCurrency(totals.brutImposable)}</td>
-                                </tr>
-                                 <tr className="h-[20px]">
-                                    <td className="pl-1">{totals.transportNonImposable.label}</td>
-                                    <td className="pr-1 text-right font-mono">{formatCurrency(totals.transportNonImposable.amount)}</td>
-                                </tr>
-                                {deductions.map(item => (
-                                    <tr key={item.label} className="h-[20px]">
-                                        <td className="pl-1 w-2/3">{item.label}</td>
-                                        <td className="pr-1 text-right font-mono w-1/3"></td>
-                                    </tr>
-                                ))}
-                                 <tr className="h-[20px]">
-                                     <td className="pl-1">NBR JRS IMPOSABLES :</td>
-                                     <td className="pr-1 text-right font-mono"></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div className="col-span-3">
-                         <table className="w-full">
-                            <thead className="bg-gray-100/80 font-bold">
-                                <tr>
-                                    <td className="p-1 text-center rounded-tr-lg">RETENUES</td>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {earnings.map(item => (
-                                     <tr key={item.label} className="h-[20px]">
-                                        <td className="pr-1 text-right font-mono">{item.deduction > 0 ? formatCurrency(item.deduction) : ''}</td>
-                                    </tr>
-                                ))}
-                                <tr className="font-bold h-[20px]"><td className="p-1"></td></tr>
-                                <tr className="h-[20px]"><td className="p-1"></td></tr>
-                                {deductions.map(item => (
-                                    <tr key={item.label} className="h-[20px]">
-                                        <td className="pr-1 text-right font-mono">{item.amount > 0 ? formatCurrency(item.amount) : '0'}</td>
-                                    </tr>
-                                ))}
-                                 <tr className="h-[20px]"><td className="p-1"></td></tr>
-                            </tbody>
-                         </table>
-                    </div>
-                 </div>
-
-                 <div className="grid grid-cols-12 -mt-px border-2 border-t-0 border-gray-200/80 rounded-lg">
-                    <div className="col-span-9 p-1 flex justify-between items-center font-bold">
-                        <span className="text-sm">NET A PAYER</span>
-                        <span className="italic font-normal text-[10px] px-2">{totals.netAPayerInWords}</span>
-                    </div>
-                    <div className="col-span-3 p-1 text-right font-bold font-mono bg-gray-100/80 rounded-br-lg text-sm">{formatCurrency(totals.netAPayer)}</div>
-                 </div>
                 
-                 {/* Employer Contributions */}
-                 <div className="grid grid-cols-12 mt-2 border-2 border-gray-200/80 rounded-lg text-xs">
-                    <div className="col-span-8 p-2">
-                        <p className="font-bold text-center underline mb-1">Impôts à la charge de l'employeur</p>
-                         <table className="w-full">
-                            <tbody>
-                                {employerContributions.map(item => (
-                                     <tr key={item.label}>
-                                        <td className="w-[45%] pr-2">{item.label}</td>
-                                        <td className="w-[25%] text-right font-mono pr-2">{formatCurrency(item.base)}</td>
-                                        <td className="w-[10%] text-center font-mono">{item.rate}</td>
-                                        <td className="w-[20%] text-right font-mono">{formatCurrency(item.amount)}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                {/* Earnings & Deductions */}
+                <div className="border-2 border-black rounded-lg mt-2 text-[9px]">
+                    <table className="w-full border-collapse">
+                        <thead className="bg-gray-200 font-bold">
+                            <tr>
+                                <th className="p-1 text-left w-[50%] border-r border-black">ELEMENTS</th>
+                                <th className="p-1 text-center w-[25%] border-r border-black">GAINS</th>
+                                <th className="p-1 text-center w-[25%]">RETENUES</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {earnings.map(item => (
+                                <tr key={item.label}>
+                                    <td className="pl-1 h-[20px]">{item.label}</td>
+                                    <td className="pr-1 text-right font-mono border-l border-black">{item.amount > 0 ? formatCurrency(item.amount) : ''}</td>
+                                    <td className="pr-1 text-right font-mono border-l border-black"></td>
+                                </tr>
+                            ))}
+                            <tr className="font-bold bg-gray-200">
+                                <td className="pl-1 h-[20px]">BRUT IMPOSABLE</td>
+                                <td className="pr-1 text-right font-mono border-l border-black">{formatCurrency(totals.brutImposable)}</td>
+                                <td className="border-l border-black"></td>
+                            </tr>
+                            <tr>
+                                <td className="pl-1 h-[20px]">{totals.transportNonImposable.label}</td>
+                                <td className="pr-1 text-right font-mono border-l border-black">{formatCurrency(totals.transportNonImposable.amount)}</td>
+                                <td className="border-l border-black"></td>
+                            </tr>
+                            
+                             {deductions.map(item => (
+                                <tr key={item.label}>
+                                    <td className="pl-1 h-[20px]">{item.label}</td>
+                                    <td className="border-l border-black"></td>
+                                    <td className="pr-1 text-right font-mono border-l border-black">{formatCurrency(item.amount)}</td>
+                                </tr>
+                            ))}
+                            <tr>
+                                 <td className="pl-1 h-[20px]">NBR JRS IMPOSABLES :</td>
+                                 <td className="border-l border-black"></td>
+                                 <td className="border-l border-black"></td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                     <div className="flex justify-between items-center font-bold bg-gray-200 border-t border-black">
+                        <div className="w-[50%] p-1 italic font-normal text-[8px] text-center">
+                            {totals.netAPayerInWords}
+                        </div>
+                        <div className="w-[25%] p-1 text-left border-l border-black">NET A PAYER</div>
+                        <div className="w-[25%] p-1 text-right font-mono pr-1 border-l border-black text-sm">{formatCurrency(totals.netAPayer)}</div>
                     </div>
-                     <div className="col-span-4 flex flex-col justify-end items-center p-1">
+                 </div>
+                 
+                 {/* Employer Contributions */}
+                 <div className="grid grid-cols-12 mt-2">
+                    <div className="col-span-8">
+                        <p className="font-bold text-center underline mb-1">Impôts à la charge de l'employeur</p>
+                        <div className="border border-black rounded-md p-1 text-[9px]">
+                             <table className="w-full">
+                                <tbody>
+                                    {employerContributions.map(item => (
+                                         <tr key={item.label}>
+                                            <td className="w-[45%] pr-2">{item.label}</td>
+                                            <td className="w-[25%] text-right font-mono pr-2">{formatCurrency(item.base)}</td>
+                                            <td className="w-[10%] text-center font-mono">{item.rate}</td>
+                                            <td className="w-[20%] text-right font-mono">{formatCurrency(item.amount)}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                     <div className="col-span-4 flex flex-col justify-center items-center p-1">
                          <div className="text-center pb-1">
                              <p className="font-bold">Payé à Yamoussoukro le</p>
                              <p className="capitalize">{paymentDateDisplay}</p>
@@ -273,15 +255,15 @@ export default function PayslipPage() {
                  </div>
 
                 {/* Footer */}
-                <footer className="text-center pt-2 border-t-2 border-gray-200 mt-2 text-[10px]">
+                <footer className="text-center pt-2 border-t-2 border-black mt-2 text-[9px]">
                     <div className="leading-tight">
                         <p className="font-bold">Chambre Nationale de Rois et Chefs Traditionnels (CNRCT)</p>
                         <p>Yamoussoukro, Riviera - BP 201 Yamoussoukro | Tél : (225) 30 64 06 60 | Fax : (+255) 30 64 06 63</p>
                         <p>www.cnrct.ci - Email : info@cnrct.ci</p>
                     </div>
                 </footer>
-
             </div>
         </>
     );
-}
+
+    

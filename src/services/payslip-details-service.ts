@@ -10,7 +10,7 @@ import { differenceInYears, differenceInMonths, differenceInDays, addYears, addM
 // Note: Tax and contribution rates are simplified approximations.
 // A real-world application would require precise, up-to-date rates and regulations.
 
-function calculateSeniority(hireDateStr: string, payslipDateStr: string): { text: string, years: number } {
+function calculateSeniority(hireDateStr: string | undefined, payslipDateStr: string): { text: string, years: number } {
     if (!hireDateStr || !payslipDateStr) return { text: 'N/A', years: 0 };
     
     const hireDate = parseISO(hireDateStr);
@@ -77,7 +77,7 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
         { label: 'INDEMNITE DE REPRESENTATION', amount: indemniteRepresentation, deduction: 0 },
         { label: 'INDEMNITE DE RESPONSABILITE', amount: indemniteResponsabilite, deduction: 0 },
         { label: 'INDEMNITE DE LOGEMENT', amount: indemniteLogement, deduction: 0 },
-    ].filter(e => e.amount > 0); // Only show non-zero earnings
+    ].filter(e => e.amount > 0 || e.label === 'SALAIRE DE BASE'); // Always show base salary
 
     const brutImposable = earnings.reduce((sum, item) => sum + item.amount, 0);
 
@@ -88,10 +88,10 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
     const cn = 0;   // Exonerated as per request
     
     const deductions: PayslipDeduction[] = [
-        { label: 'RETRAITE (CNPS)', amount: cnps },
-        { label: 'IMPOT SUR SALAIRE (ITS)', amount: its },
-        { label: 'IMPOT GENERAL SUR LE REVENU (IGR)', amount: igr },
-        { label: 'CONTRIBUTION NATIONALE (CN)', amount: cn },
+        { label: 'ITS', amount: its },
+        { label: 'CN', amount: cn },
+        { label: 'IGR', amount: igr },
+        { label: 'CNPS', amount: cnps },
     ];
     
     const totalDeductions = deductions.reduce((sum, item) => sum + item.amount, 0);
@@ -100,14 +100,16 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
     const netAPayerInWords = numberToWords(Math.floor(netAPayer)) + " FRANCS CFA";
 
     // --- Employer Contributions ---
-    const baseCalculCotisations = brutImposable + transportNonImposable;
+    const baseCalculCotisations = brutImposable;
     const isCnpsRegistered = employee.CNPS === true;
 
     const employerContributions: PayslipEmployerContribution[] = [
-        { label: 'PRESTATION FAMILIALE', base: baseCalculCotisations, rate: '5.75%', amount: isCnpsRegistered ? (baseCalculCotisations * 0.0575) : 0 },
-        { label: 'ACCIDENT DE TRAVAIL', base: baseCalculCotisations, rate: '3.00%', amount: isCnpsRegistered ? (baseCalculCotisations * 0.03) : 0 },
-        { label: 'TAXE APPRENTISSAGE', base: baseCalculCotisations, rate: '0.40%', amount: isCnpsRegistered ? (baseCalculCotisations * 0.004) : 0 },
-        { label: 'TAXE FORMATION CONTINUE', base: baseCalculCotisations, rate: '0.60%', amount: isCnpsRegistered ? (baseCalculCotisations * 0.006) : 0 },
+        { label: 'ITS PART PATRONALE', base: brutImposable, rate: '1,2%', amount: isCnpsRegistered ? (brutImposable * 0.012) : 0 },
+        { label: 'TAXE D\'APPRENTISSAGE', base: brutImposable, rate: '4,0%', amount: isCnpsRegistered ? (brutImposable * 0.004) : 0 }, // Should be 0.4% not 4.0%
+        { label: 'TAXE FPC', base: brutImposable, rate: '1,2%', amount: isCnpsRegistered ? (brutImposable * 0.006) : 0 }, // Should be 0.6% not 1.2%
+        { label: 'PRESTATION FAMILIALE', base: Math.min(brutImposable, 70000), rate: '5,8%', amount: isCnpsRegistered ? (Math.min(brutImposable, 70000) * 0.0575) : 0 }, // Rate is 5.75%
+        { label: 'ACCIDENT DE TRAVAIL', base: Math.min(brutImposable, 70000), rate: '2.0%', amount: isCnpsRegistered ? (Math.min(brutImposable, 70000) * 0.02) : 0 },
+        { label: 'REGIME DE RETRAITE', base: brutImposable, rate: '7,7%', amount: isCnpsRegistered ? (brutImposable * 0.077) : 0 },
     ];
     
     const organizationLogos = await getOrganizationSettings();
@@ -120,6 +122,8 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
         anciennete: seniorityInfo.text,
         paymentDate: paymentDateObject.toISOString(),
         paymentLocation: 'Yamoussoukro',
+        categorie: employee.categorie || 'Catégorie',
+        parts: employee.parts || 3.0
     };
 
     return {

@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { PlusCircle, Search } from "lucide-react";
+import { PlusCircle, Search, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -26,6 +26,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { AddEvaluationSheet } from "@/components/evaluations/add-evaluation-sheet";
+import { useRouter } from "next/navigation";
 
 type Status = "Draft" | "Pending Manager Review" | "Pending Employee Sign-off" | "Completed";
 
@@ -43,6 +44,7 @@ export default function EvaluationsPage() {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
+  const router = useRouter();
 
   useEffect(() => {
     const unsubscribe = subscribeToEvaluations(
@@ -62,12 +64,13 @@ export default function EvaluationsPage() {
   
   const handleAddEvaluation = async (newEvaluationData: Omit<Evaluation, "id">) => {
     try {
-        await addEvaluation(newEvaluationData);
+        const newEval = await addEvaluation(newEvaluationData);
         setIsSheetOpen(false);
         toast({
             title: "Évaluation lancée",
             description: `Une nouvelle évaluation a été créée pour ${newEvaluationData.employeeName}.`,
         });
+        router.push(`/evaluations/${newEval.id}`);
     } catch (err) {
         console.error(err);
         throw err;
@@ -125,6 +128,7 @@ export default function EvaluationsPage() {
                     <TableHead>Période</TableHead>
                     <TableHead>Date d'évaluation</TableHead>
                     <TableHead>Statut</TableHead>
+                    <TableHead><span className="sr-only">Actions</span></TableHead>
                 </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -136,17 +140,24 @@ export default function EvaluationsPage() {
                             <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                             <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                             <TableCell><Skeleton className="h-6 w-32 rounded-full" /></TableCell>
+                            <TableCell><Skeleton className="h-8 w-8" /></TableCell>
                         </TableRow>
                     ))
                 ) : (
                     filteredEvaluations.map((evaluation) => (
-                        <TableRow key={evaluation.id}>
+                        <TableRow key={evaluation.id} className="cursor-pointer" onClick={() => router.push(`/evaluations/${evaluation.id}`)}>
                           <TableCell className="font-medium">{evaluation.employeeName}</TableCell>
                           <TableCell>{evaluation.managerName}</TableCell>
                           <TableCell>{evaluation.reviewPeriod}</TableCell>
                           <TableCell>{evaluation.evaluationDate}</TableCell>
                           <TableCell>
                              <Badge variant={statusVariantMap[evaluation.status] || 'default'}>{evaluation.status}</Badge>
+                          </TableCell>
+                           <TableCell>
+                              <Button variant="ghost" size="icon">
+                                <Eye className="h-4 w-4" />
+                                <span className="sr-only">Voir</span>
+                              </Button>
                           </TableCell>
                         </TableRow>
                     ))

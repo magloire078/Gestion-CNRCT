@@ -214,9 +214,16 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formState.baseSalary || !formState.nextPayDate) {
-      setError("Le salaire et la prochaine date de paie sont obligatoires.");
+    const isCnpsRegistered = formState.CNPS === true;
+
+    if (isCnpsRegistered && !formState.baseSalary) {
+      setError("Le salaire de base est obligatoire pour les employés déclarés à la CNPS.");
       return;
+    }
+
+    if (!formState.nextPayDate) {
+        setError("La prochaine date de paie est obligatoire.");
+        return;
     }
     
     setIsSubmitting(true);
@@ -293,7 +300,7 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
                                         </Button>
                                     )}
                                 </div>
-                                <Input id="baseSalary" type="number" value={formState.baseSalary || 0} onChange={handleInputChange} required />
+                                <Input id="baseSalary" type="number" value={formState.baseSalary || 0} onChange={handleInputChange} />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="primeAnciennete">Prime Ancienneté</Label>

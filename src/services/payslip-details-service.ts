@@ -89,11 +89,13 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
 
     // --- Employer Contributions ---
     const baseCalculCotisations = brutImposable + transportNonImposable;
+    const isCnpsRegistered = employee.CNPS === true;
+
     const employerContributions: PayslipEmployerContribution[] = [
-        { label: 'PRESTATION FAMILIALE', base: baseCalculCotisations, rate: '5.75%', amount: baseCalculCotisations * 0.0575 },
-        { label: 'ACCIDENT DE TRAVAIL', base: baseCalculCotisations, rate: '3.00%', amount: baseCalculCotisations * 0.03 },
-        { label: 'TAXE APPRENTISSAGE', base: baseCalculCotisations, rate: '0.40%', amount: baseCalculCotisations * 0.004 },
-        { label: 'TAXE FORMATION CONTINUE', base: baseCalculCotisations, rate: '0.60%', amount: baseCalculCotisations * 0.006 },
+        { label: 'PRESTATION FAMILIALE', base: baseCalculCotisations, rate: '5.75%', amount: isCnpsRegistered ? (baseCalculCotisations * 0.0575) : 0 },
+        { label: 'ACCIDENT DE TRAVAIL', base: baseCalculCotisations, rate: '3.00%', amount: isCnpsRegistered ? (baseCalculCotisations * 0.03) : 0 },
+        { label: 'TAXE APPRENTISSAGE', base: baseCalculCotisations, rate: '0.40%', amount: isCnpsRegistered ? (baseCalculCotisations * 0.004) : 0 },
+        { label: 'TAXE FORMATION CONTINUE', base: baseCalculCotisations, rate: '0.60%', amount: isCnpsRegistered ? (baseCalculCotisations * 0.006) : 0 },
     ];
     
     const organizationLogos = await getOrganizationSettings();

@@ -18,6 +18,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Separator } from "@/components/ui/separator";
 import { getOrganizationSettings, saveOrganizationSettings } from "@/services/organization-service";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Progress } from "@/components/ui/progress";
 
 export default function OrganizationSettingsPage() {
   const { toast } = useToast();
@@ -28,6 +29,9 @@ export default function OrganizationSettingsPage() {
   const [mainLogoData, setMainLogoData] = useState("");
   const [secondaryLogoData, setSecondaryLogoData] = useState("");
 
+  const [mainLogoFile, setMainLogoFile] = useState<File | null>(null);
+  const [secondaryLogoFile, setSecondaryLogoFile] = useState<File | null>(null);
+
   const [hasMainLogoChanged, setHasMainLogoChanged] = useState(false);
   const [hasSecondaryLogoChanged, setHasSecondaryLogoChanged] = useState(false);
   
@@ -35,6 +39,9 @@ export default function OrganizationSettingsPage() {
   const [isSavingMain, setIsSavingMain] = useState(false);
   const [isSavingSecondary, setIsSavingSecondary] = useState(false);
   
+  const [mainLogoProgress, setMainLogoProgress] = useState<number | null>(null);
+  const [secondaryLogoProgress, setSecondaryLogoProgress] = useState<number | null>(null);
+
   const mainLogoInputRef = useRef<HTMLInputElement>(null);
   const secondaryLogoInputRef = useRef<HTMLInputElement>(null);
 
@@ -64,7 +71,7 @@ export default function OrganizationSettingsPage() {
   const handleFileChange = (
     e: React.ChangeEvent<HTMLInputElement>,
     setPreview: React.Dispatch<React.SetStateAction<string>>,
-    setData: React.Dispatch<React.SetStateAction<string>>,
+    setFile: React.Dispatch<React.SetStateAction<File | null>>,
     setChanged: React.Dispatch<React.SetStateAction<boolean>>
   ) => {
     const file = e.target.files?.[0];
@@ -77,12 +84,11 @@ export default function OrganizationSettingsPage() {
         });
         return;
       }
+      setFile(file);
+      setChanged(true);
       const reader = new FileReader();
       reader.onloadend = () => {
-        const dataUri = reader.result as string;
-        setPreview(dataUri);
-        setData(dataUri);
-        setChanged(true);
+        setPreview(reader.result as string);
       };
       reader.readAsDataURL(file);
     }
@@ -90,22 +96,26 @@ export default function OrganizationSettingsPage() {
   
   const handleSave = async (logoType: 'main' | 'secondary') => {
       const isMain = logoType === 'main';
-      const data = isMain ? mainLogoData : secondaryLogoData;
-      const settingsToSave = isMain ? { mainLogoUrl: data } : { secondaryLogoUrl: data };
+      const file = isMain ? mainLogoFile : secondaryLogoFile;
+      const settingsToSave = isMain ? { mainLogoFile: file } : { secondaryLogoFile: file };
+      const setProgress = isMain ? setMainLogoProgress : setSecondaryLogoProgress;
       
+      if (!file) return;
+
       if (isMain) setIsSavingMain(true);
       else setIsSavingSecondary(true);
+      setProgress(0);
 
       try {
-          const newSettings = await saveOrganizationSettings(settingsToSave);
+          const newSettings = await saveOrganizationSettings(settingsToSave, setProgress);
           if (isMain) {
-              setMainLogoData(newSettings.mainLogoUrl);
               setMainLogoPreview(newSettings.mainLogoUrl);
               setHasMainLogoChanged(false);
+              setMainLogoFile(null);
           } else {
-              setSecondaryLogoData(newSettings.secondaryLogoUrl);
               setSecondaryLogoPreview(newSettings.secondaryLogoUrl);
               setHasSecondaryLogoChanged(false);
+              setSecondaryLogoFile(null);
           }
 
           toast({
@@ -122,6 +132,7 @@ export default function OrganizationSettingsPage() {
       } finally {
           if (isMain) setIsSavingMain(false);
           else setIsSavingSecondary(false);
+          setProgress(null);
       }
   };
 
@@ -166,8 +177,14 @@ export default function OrganizationSettingsPage() {
                         type="file"
                         className="hidden"
                         accept="image/png, image/jpeg, image/svg+xml"
-                        onChange={(e) => handleFileChange(e, setMainLogoPreview, setMainLogoData, setHasMainLogoChanged)}
+                        onChange={(e) => handleFileChange(e, setMainLogoPreview, setMainLogoFile, setHasMainLogoChanged)}
                       />
+                      {mainLogoProgress !== null && (
+                        <div className="mt-2 space-y-1">
+                            <Label className="text-xs">Téléversement...</Label>
+                            <Progress value={mainLogoProgress} className="h-2" />
+                        </div>
+                      )}
                   </div>
                 </div>
                 <div className="flex justify-end">
@@ -204,8 +221,14 @@ export default function OrganizationSettingsPage() {
                         type="file"
                         className="hidden"
                         accept="image/png, image/jpeg, image/svg+xml"
-                        onChange={(e) => handleFileChange(e, setSecondaryLogoPreview, setSecondaryLogoData, setHasSecondaryLogoChanged)}
+                        onChange={(e) => handleFileChange(e, setSecondaryLogoPreview, setSecondaryLogoFile, setHasSecondaryLogoChanged)}
                       />
+                       {secondaryLogoProgress !== null && (
+                        <div className="mt-2 space-y-1">
+                            <Label className="text-xs">Téléversement...</Label>
+                            <Progress value={secondaryLogoProgress} className="h-2" />
+                        </div>
+                      )}
                   </div>
                 </div>
                  <div className="flex justify-end">

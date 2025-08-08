@@ -1,6 +1,6 @@
 
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { getStorage, ref, uploadString, getDownloadURL, deleteObject } from "firebase/storage";
+import { getStorage, ref, getDownloadURL, uploadBytesResumable } from "firebase/storage";
 import { db } from '@/lib/firebase';
 
 const SETTINGS_DOC_ID = 'organization_settings';
@@ -12,27 +12,41 @@ export type OrganizationSettings = {
 };
 
 export type OrganizationSettingsInput = Partial<{
-    mainLogoUrl: string; // Can be a data URI for new uploads or existing URL
-    secondaryLogoUrl: string; // Can be a data URI for new uploads or existing URL
+    mainLogoFile: File | null;
+    secondaryLogoFile: File | null;
 }>;
 
-async function uploadLogo(logoDataUri: string, logoName: 'mainLogo' | 'secondaryLogo'): Promise<string> {
-    // If it's not a data URI, it's an existing URL. Just return it.
-    if (!logoDataUri || !logoDataUri.startsWith('data:image')) {
-        return logoDataUri; 
-    }
-    
+
+async function uploadLogoWithProgress(
+    file: File, 
+    logoName: 'mainLogo' | 'secondaryLogo',
+    onProgress: (progress: number) => void
+): Promise<string> {
     const storage = getStorage();
     const logoRef = ref(storage, `organization/${logoName}`);
 
-    try {
-        const snapshot = await uploadString(logoRef, logoDataUri, 'data_url');
-        const downloadUrl = await getDownloadURL(snapshot.ref);
-        return downloadUrl;
-    } catch (error) {
-        console.error(`Failed to upload ${logoName}:`, error);
-        throw new Error(`Failed to upload logo ${logoName}.`);
-    }
+    return new Promise((resolve, reject) => {
+        const uploadTask = uploadBytesResumable(logoRef, file);
+
+        uploadTask.on('state_changed',
+            (snapshot) => {
+                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                onProgress(progress);
+            },
+            (error) => {
+                console.error(`Failed to upload ${logoName}:`, error);
+                reject(new Error(`Failed to upload logo ${logoName}.`));
+            },
+            async () => {
+                try {
+                    const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
+                    resolve(downloadUrl);
+                } catch (error) {
+                    reject(error);
+                }
+            }
+        );
+    });
 }
 
 
@@ -45,20 +59,21 @@ export async function getOrganizationSettings(): Promise<OrganizationSettings> {
     return { mainLogoUrl: '', secondaryLogoUrl: '' };
 }
 
-export async function saveOrganizationSettings(settingsToUpdate: OrganizationSettingsInput): Promise<OrganizationSettings> {
+export async function saveOrganizationSettings(
+    settingsToUpdate: OrganizationSettingsInput,
+    onProgress: (progress: number) => void
+): Promise<OrganizationSettings> {
     const updateData: Partial<OrganizationSettings> = {};
 
-    if (settingsToUpdate.mainLogoUrl) {
-        updateData.mainLogoUrl = await uploadLogo(settingsToUpdate.mainLogoUrl, 'mainLogo');
+    if (settingsToUpdate.mainLogoFile) {
+        updateData.mainLogoUrl = await uploadLogoWithProgress(settingsToUpdate.mainLogoFile, 'mainLogo', onProgress);
     }
-    if (settingsToUpdate.secondaryLogoUrl) {
-        updateData.secondaryLogoUrl = await uploadLogo(settingsToUpdate.secondaryLogoUrl, 'secondaryLogo');
+    if (settingsToUpdate.secondaryLogoFile) {
+        updateData.secondaryLogoUrl = await uploadLogoWithProgress(settingsToUpdate.secondaryLogoFile, 'secondaryLogo', onProgress);
     }
     
-    // Use setDoc with merge:true to create the doc if it doesn't exist, or update it if it does
     await setDoc(settingsDocRef, updateData, { merge: true });
 
-    // Return the updated settings from the database
     const docSnap = await getDoc(settingsDocRef);
     return docSnap.data() as OrganizationSettings;
 }

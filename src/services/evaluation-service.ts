@@ -3,42 +3,39 @@ import { db } from '@/lib/firebase';
 import { collection, getDocs, addDoc, onSnapshot, Unsubscribe, query, orderBy, doc, updateDoc } from 'firebase/firestore';
 import type { Evaluation } from '@/lib/data';
 
+// --- Mock Data ---
+const mockEvaluations: Evaluation[] = [
+    { id: 'eval1', employeeId: '1', employeeName: 'Koffi Jean-Luc', managerId: '2', managerName: 'Amoin Thérèse', reviewPeriod: 'Annuel 2023', evaluationDate: '2024-01-15', status: 'Completed', scores: { communication: 5, leadership: 4 }, strengths: 'Excellent problem solver', areasForImprovement: 'Time management', managerComments: 'Great year', employeeComments: 'Agree', goals: [] },
+    { id: 'eval2', employeeId: '4', employeeName: 'Brou Adjoua', managerId: '2', managerName: 'Amoin Thérèse', reviewPeriod: 'Q2 2024', evaluationDate: '2024-07-05', status: 'Pending Employee Sign-off', scores: { communication: 4, leadership: 3 }, strengths: 'Very organized', areasForImprovement: 'Proactivity', managerComments: 'Good quarter', employeeComments: '', goals: [] },
+    { id: 'eval3', employeeId: '3', employeeName: 'N\'Guessan Paul', managerId: '2', managerName: 'Amoin Thérèse', reviewPeriod: 'H1 2024', evaluationDate: '2024-07-20', status: 'Draft', scores: {}, strengths: '', areasForImprovement: '', managerComments: '', employeeComments: '', goals: [] },
+];
+// --- End Mock Data ---
+
 export function subscribeToEvaluations(
     callback: (evaluations: Evaluation[]) => void,
     onError: (error: Error) => void
 ): Unsubscribe {
-    const evaluationsCollection = collection(db, 'evaluations');
-    const q = query(evaluationsCollection, orderBy("evaluationDate", "desc"));
-
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-        const evaluationList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Evaluation));
-        callback(evaluationList);
-    }, (error) => {
-        console.error("Error subscribing to evaluations:", error);
-        onError(error);
-    });
-
-    return unsubscribe;
+    const interval = setInterval(() => callback([...mockEvaluations]), 3000);
+    return () => clearInterval(interval);
 }
 
 export async function getEvaluations(): Promise<Evaluation[]> {
-  const evaluationsCollection = collection(db, 'evaluations');
-  const evaluationSnapshot = await getDocs(query(evaluationsCollection, orderBy("evaluationDate", "desc")));
-  const evaluationList = evaluationSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Evaluation));
-  return evaluationList;
+    return Promise.resolve([...mockEvaluations]);
 }
 
 export async function addEvaluation(evaluationDataToAdd: Omit<Evaluation, 'id'>): Promise<Evaluation> {
-    const evaluationsCollection = collection(db, 'evaluations');
-    const docRef = await addDoc(evaluationsCollection, evaluationDataToAdd);
     const newEvaluation: Evaluation = { 
-        id: docRef.id, 
+        id: `eval-${Date.now()}`, 
         ...evaluationDataToAdd 
     };
-    return newEvaluation;
+    mockEvaluations.push(newEvaluation);
+    return Promise.resolve(newEvaluation);
 }
 
 export async function updateEvaluation(evaluationId: string, dataToUpdate: Partial<Evaluation>): Promise<void> {
-    const evaluationRef = doc(db, 'evaluations', evaluationId);
-    await updateDoc(evaluationRef, dataToUpdate);
+    const index = mockEvaluations.findIndex(e => e.id === evaluationId);
+    if (index > -1) {
+        mockEvaluations[index] = { ...mockEvaluations[index], ...dataToUpdate };
+    }
+    return Promise.resolve();
 }

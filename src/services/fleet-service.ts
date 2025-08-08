@@ -1,39 +1,34 @@
 
-import { db } from '@/lib/firebase';
 import { collection, getDocs, addDoc, doc, setDoc, onSnapshot, Unsubscribe, query, orderBy } from 'firebase/firestore';
 import type { Fleet } from '@/lib/data';
+// import { db } from '@/lib/firebase'; // Temporarily disabled
+
+// --- Mock Data ---
+const mockFleet: Fleet[] = [
+  { plate: 'AB-123-CI', makeModel: 'Toyota Hilux', assignedTo: 'Équipe Terrain', maintenanceDue: '2024-09-15' },
+  { plate: 'CD-456-CI', makeModel: 'Hyundai Grand i10', assignedTo: 'Service Courrier', maintenanceDue: '2024-08-30' },
+  { plate: 'EF-789-CI', makeModel: 'Toyota Prado', assignedTo: 'Direction', maintenanceDue: '2025-01-20' },
+  { plate: 'GH-012-CI', makeModel: 'Renault Duster', assignedTo: 'Amoin Thérèse', maintenanceDue: '2024-11-10' },
+];
+// --- End Mock Data ---
+
 
 export function subscribeToVehicles(
     callback: (vehicles: Fleet[]) => void,
     onError: (error: Error) => void
 ): Unsubscribe {
-    const fleetCollection = collection(db, 'fleet');
-    const q = query(fleetCollection, orderBy("makeModel", "asc"));
-
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-        const vehicleList = snapshot.docs.map(doc => ({ plate: doc.id, ...doc.data() } as Fleet));
-        callback(vehicleList);
-    }, (error) => {
-        console.error("Error subscribing to vehicles:", error);
-        onError(error);
-    });
-
-    return unsubscribe;
+    const interval = setInterval(() => callback(mockFleet), 5000);
+    return () => clearInterval(interval);
 }
 
-
 export async function getVehicles(): Promise<Fleet[]> {
-  const fleetCollection = collection(db, 'fleet');
-  const vehicleSnapshot = await getDocs(fleetCollection);
-  const vehicleList = vehicleSnapshot.docs.map(doc => ({ plate: doc.id, ...doc.data() } as Fleet));
-  return vehicleList;
+  return Promise.resolve(mockFleet);
 }
 
 export async function addVehicle(vehicleDataToAdd: Omit<Fleet, 'id'> & { plate: string }): Promise<Fleet> {
-    const { plate, ...data } = vehicleDataToAdd;
-    const vehicleRef = doc(db, 'fleet', plate);
-    await setDoc(vehicleRef, data);
-    return { plate, ...data };
+    const newVehicle: Fleet = { ...vehicleDataToAdd };
+    mockFleet.push(newVehicle);
+    return Promise.resolve(newVehicle);
 }
 
 export async function searchVehicles(query: string): Promise<Fleet[]> {

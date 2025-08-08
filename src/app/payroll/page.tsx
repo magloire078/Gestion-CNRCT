@@ -1,8 +1,8 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
-import { Eye, MoreHorizontal, Pencil, CalendarClock } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import { Eye, MoreHorizontal, Pencil, CalendarClock, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -34,8 +34,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-
-import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import type { Employe } from "@/lib/data";
 import { subscribeToEmployees, updateEmployee } from "@/services/employee-service";
 import { getPayslipDetails } from "@/services/payslip-details-service";
@@ -58,7 +57,12 @@ export default function PayrollPage() {
   const { toast } = useToast();
   const router = useRouter();
 
-  // State for the new date selection dialog
+  // State for search and filters
+  const [searchTerm, setSearchTerm] = useState("");
+  const [departmentFilter, setDepartmentFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
+
+  // State for the date selection dialog
   const [isDateDialogOpen, setIsDateDialogOpen] = useState(false);
   const [year, setYear] = useState<string>(new Date().getFullYear().toString());
   const [month, setMonth] = useState<string>((new Date().getMonth() + 1).toString());
@@ -138,6 +142,21 @@ export default function PayrollPage() {
       throw err;
     }
   };
+
+  const departments = useMemo(() => {
+    const allDepartments = employees.map(e => e.department).filter(Boolean);
+    return [...new Set(allDepartments)].sort();
+  }, [employees]);
+
+  const filteredEmployees = useMemo(() => {
+    return employees.filter(employee => {
+      const fullName = (employee.firstName && employee.lastName) ? `${employee.lastName} ${employee.firstName}`.toLowerCase() : (employee.name || '').toLowerCase();
+      const matchesSearchTerm = fullName.includes(searchTerm.toLowerCase()) || (employee.matricule || '').toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesDepartment = departmentFilter === 'all' || employee.department === departmentFilter;
+      const matchesStatus = statusFilter === 'all' || employee.status === statusFilter;
+      return matchesSearchTerm && matchesDepartment && matchesStatus;
+    });
+  }, [employees, searchTerm, departmentFilter, statusFilter]);
   
   const years = Array.from({ length: 10 }, (_, i) => (new Date().getFullYear() - i).toString());
   const months = [
@@ -169,6 +188,41 @@ export default function PayrollPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          <div className="flex flex-col sm:flex-row gap-2 mb-4 flex-wrap">
+              <div className="relative flex-1 min-w-[200px]">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Input
+                    placeholder="Rechercher par nom, matricule..."
+                    className="pl-10"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+              <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
+              <SelectTrigger className="flex-1 min-w-[180px]">
+                  <SelectValue placeholder="Filtrer par service" />
+              </SelectTrigger>
+              <SelectContent>
+                  <SelectItem value="all">Tous les services</SelectItem>
+                  {departments.map(dep => <SelectItem key={dep} value={dep}>{dep}</SelectItem>)}
+              </SelectContent>
+              </Select>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="flex-1 min-w-[180px]">
+                  <SelectValue placeholder="Filtrer par statut" />
+              </SelectTrigger>
+              <SelectContent>
+                  <SelectItem value="all">Tous les statuts</SelectItem>
+                  <SelectItem value="Actif">Actif</SelectItem>
+                  <SelectItem value="En congé">En congé</SelectItem>
+              </SelectContent>
+              </Select>
+          </div>
+
+          <div className="mb-4 text-sm text-muted-foreground">
+              {filteredEmployees.length} résultat(s) trouvé(s).
+          </div>
+          
           {error && <p className="text-destructive text-center py-4">{error}</p>}
           <div className="hidden md:block">
             <Table>
@@ -194,8 +248,8 @@ export default function PayrollPage() {
                         <TableCell><Skeleton className="h-8 w-8 rounded-md" /></TableCell>
                     </TableRow>
                     ))
-                ) : employees.length > 0 ? (
-                    employees.map((employee) => (
+                ) : filteredEmployees.length > 0 ? (
+                    filteredEmployees.map((employee) => (
                     <TableRow key={employee.id}>
                         <TableCell className="font-medium">{`${employee.lastName || ''} ${employee.firstName || ''}`.trim()}</TableCell>
                         <TableCell>{employee.poste}</TableCell>
@@ -238,8 +292,8 @@ export default function PayrollPage() {
                 Array.from({ length: 5 }).map((_, i) => (
                   <Card key={i}><CardContent className="p-4"><Skeleton className="h-20 w-full" /></CardContent></Card>
                 ))
-             ) : employees.length > 0 ? (
-                employees.map((employee) => (
+             ) : filteredEmployees.length > 0 ? (
+                filteredEmployees.map((employee) => (
                     <Card key={employee.id}>
                         <CardContent className="p-4">
                              <div className="flex justify-between items-start">
@@ -277,9 +331,9 @@ export default function PayrollPage() {
                 ))
              ) : null}
            </div>
-           {!loading && employees.length === 0 && !error && (
+           {!loading && filteredEmployees.length === 0 && !error && (
             <div className="text-center py-10 text-muted-foreground">
-                Aucun employé actif trouvé.
+                Aucun employé correspondant aux filtres.
             </div>
           )}
         </CardContent>

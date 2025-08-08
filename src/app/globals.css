@@ -76,13 +76,15 @@
   @media print {
     @page {
         size: a4 portrait;
-        margin: 0;
+        margin: 1.5cm;
     }
     .print-hidden {
         display: none !important;
     }
     body, html {
       background-color: #fff !important; /* Ensure a white background for printing */
+      width: 100%;
+      height: 100%;
     }
     body * {
         visibility: hidden;
@@ -94,7 +96,9 @@
         position: absolute;
         left: 0;
         top: 0;
+        right: 0;
         width: 100%;
+        height: 100%;
         margin: 0;
         padding: 0;
         border: none;

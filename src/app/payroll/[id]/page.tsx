@@ -103,21 +103,19 @@ export default function PayslipPage() {
                     </Button>
                 </div>
             </div>
-            <div id="print-section" className="w-full max-w-4xl mx-auto bg-white text-black print:shadow-none print:border-none font-arial text-[11px] leading-tight">
+            <div id="print-section" className="w-full max-w-4xl mx-auto bg-white text-black print:shadow-none print:border-none font-arial text-xs leading-tight">
                 {/* Header */}
-                <header className="flex justify-between items-start pb-2 border-b-2 border-gray-400">
-                    <div className="w-1/4 text-center">
-                        {organizationLogos.mainLogoUrl && <img src={organizationLogos.mainLogoUrl} alt="Logo CNRCT" className="mx-auto my-1 h-[70px] w-auto" />}
+                 <header className="flex justify-between items-start pb-2 border-b-2 border-gray-400">
+                    <div className="w-1/4 text-center flex justify-center items-center h-24">
+                        {organizationLogos.mainLogoUrl && <img src={organizationLogos.mainLogoUrl} alt="Logo CNRCT" className="max-h-full max-w-full h-auto w-auto" />}
                     </div>
                     <div className="w-2/4 text-center pt-2">
                         <h2 className="font-bold text-sm">Chambre Nationale des Rois et Chefs Traditionnels</h2>
                         <p className="text-xs mt-2">LE DIRECTOIRE</p>
                         <p className="text-xs">LE CABINET / LE SERVICE INFORMATIQUE</p>
                     </div>
-                    <div className="w-1/4 text-center">
-                         {organizationLogos.secondaryLogoUrl && <img src={organizationLogos.secondaryLogoUrl} alt="Emblème de la Côte d'Ivoire" className="mx-auto my-1 h-[70px] w-auto" />}
-                        <h2 className="font-bold text-sm">République de Côte d'Ivoire</h2>
-                        <p className="mt-1 text-xs">Union - Discipline - Travail</p>
+                    <div className="w-1/4 text-center flex justify-center items-center h-24">
+                         {organizationLogos.secondaryLogoUrl && <img src={organizationLogos.secondaryLogoUrl} alt="Emblème de la Côte d'Ivoire" className="max-h-full max-w-full h-auto w-auto" />}
                     </div>
                 </header>
 
@@ -135,7 +133,7 @@ export default function PayslipPage() {
                         </div>
                     </div>
                     <div className="w-2/3 pl-4">
-                        <div className="border border-gray-400 rounded-lg p-2 text-[10px]">
+                        <div className="border border-gray-400 rounded-lg p-2 text-xs">
                              <div className="grid grid-cols-2 gap-x-4 gap-y-1">
                                 <p><span className="font-bold">NOM & PRENOMS</span> : {fullName}</p>
                                 <p><span className="font-bold">MATRICULE</span> : {employeeInfo.matricule}</p>
@@ -146,7 +144,7 @@ export default function PayslipPage() {
                                 <p className="col-span-2"><span className="font-bold">DATE DE CONGE</span> : __/__/____</p>
                             </div>
                         </div>
-                         <div className="mt-1 grid grid-cols-2 gap-x-4 text-[10px]">
+                         <div className="mt-1 grid grid-cols-2 gap-x-4 text-xs">
                             <p><span className="font-bold">ANCIENNETE :</span> {employeeInfo.anciennete}</p>
                             <p><span className="font-bold">CATEGORIE :</span> {employeeInfo.categorie}</p>
                              <p><span className="font-bold">ENFANT(S) :</span> {employeeInfo.enfants}</p>
@@ -155,7 +153,7 @@ export default function PayslipPage() {
                 </section>
 
                 {/* Job Info Table */}
-                 <table className="w-full border-collapse border-2 border-gray-400 rounded-lg mt-2 text-[10px]">
+                 <table className="w-full border-collapse border-2 border-gray-400 rounded-lg mt-2 text-xs">
                     <thead className="bg-gray-200 font-bold text-center">
                         <tr>
                             <td className="p-1 border-r border-gray-400">EMPLOI</td>
@@ -175,7 +173,7 @@ export default function PayslipPage() {
                 </table>
                 
                 {/* Earnings & Deductions */}
-                <div className="border-2 border-gray-400 rounded-lg mt-2 text-[10px]">
+                <div className="border-2 border-gray-400 rounded-lg mt-2 text-xs">
                     <table className="w-full border-collapse">
                         <thead className="bg-gray-200 font-bold">
                             <tr>
@@ -219,7 +217,7 @@ export default function PayslipPage() {
                         </tbody>
                     </table>
                      <div className="flex justify-between items-center font-bold bg-gray-200 border-t border-gray-400">
-                        <div className="w-[50%] p-1 italic font-normal text-[9px] text-center">
+                        <div className="w-[50%] p-1 italic font-normal text-xs text-center">
                             {totals.netAPayerInWords}
                         </div>
                         <div className="w-[25%] p-1 text-left border-l border-gray-400">NET A PAYER</div>
@@ -230,8 +228,8 @@ export default function PayslipPage() {
                  {/* Employer Contributions */}
                  <div className="grid grid-cols-12 mt-2">
                     <div className="col-span-8">
-                        <p className="font-bold text-center underline mb-1 text-[11px]">Impôts à la charge de l'employeur</p>
-                        <div className="border border-gray-400 rounded-lg p-1 text-[10px]">
+                        <p className="font-bold text-center underline mb-1 text-sm">Impôts à la charge de l'employeur</p>
+                        <div className="border border-gray-400 rounded-lg p-1 text-xs">
                              <table className="w-full">
                                 <tbody>
                                     {employerContributions.map(item => (
@@ -249,7 +247,7 @@ export default function PayslipPage() {
                      <div className="col-span-4 flex flex-col justify-center items-center p-1">
                          <div className="text-center pb-1">
                              <p className="font-bold">Payé à Yamoussoukro le</p>
-                             <p className="capitalize text-[10px]">{paymentDateDisplay}</p>
+                             <p className="capitalize text-xs">{paymentDateDisplay}</p>
                              <div className="h-10"></div>
                              <p className="border-t border-gray-400 pt-1">Signature</p>
                          </div>
@@ -257,7 +255,7 @@ export default function PayslipPage() {
                  </div>
 
                 {/* Footer */}
-                <footer className="text-center pt-2 border-t-2 border-black mt-2 text-[10px]">
+                <footer className="text-center pt-2 border-t-2 border-black mt-2 text-xs">
                     <div className="leading-tight">
                         <p className="font-bold">Chambre Nationale de Rois et Chefs Traditionnels (CNRCT)</p>
                         <p>Yamoussoukro, Riviera - BP 201 Yamoussoukro | Tél : (225) 30 64 06 60 | Fax : (+255) 30 64 06 63</p>
@@ -269,3 +267,4 @@ export default function PayslipPage() {
     );
 
     
+

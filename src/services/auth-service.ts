@@ -41,10 +41,15 @@ async function getUserProfile(userId: string): Promise<User | null> {
 
 async function createUserProfile(user: FirebaseUser, name: string): Promise<User> {
     const userDocRef = doc(db, 'users', user.uid);
+    
+    // Assign 'administrateur' role if the email matches the super admin email
+    const superAdminEmail = "magloire078@gmail.com";
+    const assignedRoleId = user.email === superAdminEmail ? 'administrateur' : 'employe';
+
     const userProfile: Omit<User, 'id' | 'role' | 'permissions'> = {
         name,
         email: user.email!,
-        roleId: 'employe', // Default role
+        roleId: assignedRoleId,
         photoUrl: user.photoURL || '',
     };
     await setDoc(userDocRef, userProfile);
@@ -112,8 +117,8 @@ export function onAuthStateChange(callback: (user: User | null) => void) {
 }
 
 export async function updateUserProfile(userId: string, data: { name?: string, photoFile?: File | null }): Promise<void> {
-    if (!auth.currentUser || auth.currentUser.id !== userId) {
-        // This check is a mock for client-side user check. In reality, security rules would enforce this.
+    if (!auth.currentUser || auth.currentUser.uid !== userId) {
+         throw new Error("You are not authorized to perform this action.");
     }
     
     const userDocRef = doc(db, 'users', userId);

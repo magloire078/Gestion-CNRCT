@@ -3,7 +3,7 @@
 import type { Employe, PayslipDetails, PayslipEarning, PayslipDeduction, PayslipEmployerContribution } from '@/lib/data';
 import { numberToWords } from '@/lib/utils';
 import { getOrganizationSettings } from './organization-service';
-import { differenceInYears, differenceInMonths, differenceInDays, addYears, addMonths, parseISO, isValid } from 'date-fns';
+import { differenceInYears, differenceInMonths, differenceInDays, addYears, addMonths, parseISO, isValid, lastDayOfMonth, getDay } from 'date-fns';
 
 
 // This service calculates payslip details based on an employee object.
@@ -30,6 +30,18 @@ function calculateSeniority(hireDateStr: string, payslipDateStr: string): { text
         text: `${years} an(s), ${months} mois, ${days} jour(s)`,
         years: years
     };
+}
+
+function getLastWorkingDay(date: Date): Date {
+    let lastDay = lastDayOfMonth(date);
+    let dayOfWeek = getDay(lastDay); // 0 = Sunday, 6 = Saturday
+
+    if (dayOfWeek === 6) { // Saturday
+        lastDay.setDate(lastDay.getDate() - 1);
+    } else if (dayOfWeek === 0) { // Sunday
+        lastDay.setDate(lastDay.getDate() - 2);
+    }
+    return lastDay;
 }
 
 
@@ -99,12 +111,15 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
     ];
     
     const organizationLogos = await getOrganizationSettings();
+    
+    const paymentDateObject = getLastWorkingDay(parseISO(payslipDate));
 
     const employeeInfoWithStaticData: Employe = {
         ...employee,
         cnpsEmployeur: "320491", // Static CNPS number
         anciennete: seniorityInfo.text,
-        paymentDate: payslipDate,
+        paymentDate: paymentDateObject.toISOString(),
+        paymentLocation: 'Yamoussoukro',
     };
 
     return {
@@ -121,3 +136,5 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
         organizationLogos
     };
 }
+
+    

@@ -85,9 +85,9 @@ export default function PayslipPage() {
     const fullName = `${employeeInfo.lastName || ''} ${employeeInfo.firstName || ''}`.trim() || employeeInfo.name;
     const qrCodeValue = `${fullName} | ${employeeInfo.matricule} | ${employeeInfo.department}`;
 
-    const formattedPayslipDate = new Date(payslipDate!);
-    const periodDisplay = format(formattedPayslipDate, "MMMM yyyy", { locale: fr });
-    const paymentDateDisplay = format(formattedPayslipDate, "EEEE dd MMMM yyyy", { locale: fr });
+    const parsedPayslipDate = new Date(payslipDate!);
+    const periodDisplay = format(parsedPayslipDate, "MMMM yyyy", { locale: fr });
+    const paymentDateDisplay = format(new Date(employeeInfo.paymentDate || payslipDate!), "EEEE dd MMMM yyyy", { locale: fr });
 
     return (
         <>
@@ -103,13 +103,13 @@ export default function PayslipPage() {
                     </Button>
                 </div>
             </div>
-            <div id="print-section" className="w-full max-w-4xl mx-auto bg-white p-4 sm:p-8 border rounded-lg text-black print:shadow-none print:border-none print:p-0 font-arial text-[10px] leading-tight">
+            <div id="print-section" className="w-full max-w-4xl mx-auto bg-white p-4 sm:p-8 border rounded-lg text-black print:shadow-none print:border-none print:p-0 font-arial text-[9px] leading-tight">
                 {/* Header */}
                 <header className="flex justify-between items-start pb-2 border-b-2 border-black">
                     <div className="text-center">
                         <h2 className="font-bold">Chambre Nationale des Rois</h2>
                         <h2 className="font-bold">et Chefs Traditionnels</h2>
-                        {organizationLogos.mainLogoUrl && <img src={organizationLogos.mainLogoUrl} alt="Logo CNRCT" width={60} height={60} className="mx-auto my-1" />}
+                        <img src="https://i.ibb.co/CBRS8gH/logo-cnrct.png" alt="Logo CNRCT" width={60} height={60} className="mx-auto my-1" />
                         <img src="https://i.ibb.co/3Wf2zYb/un-chef-nouveau.png" alt="Embleme Un Chef Nouveau" width={70} height={70} className="mx-auto mt-1"/>
                     </div>
                     <div className="text-center">
@@ -178,28 +178,28 @@ export default function PayslipPage() {
                             <thead className="bg-gray-200 font-bold">
                                 <tr>
                                     <td className="p-1 w-2/3">ELEMENTS</td>
-                                    <td className="p-1 text-center">GAINS</td>
+                                    <td className="p-1 text-center w-1/3">GAINS</td>
                                 </tr>
                             </thead>
                             <tbody>
                                 {earnings.map(item => (
-                                    <tr key={item.label}>
+                                    <tr key={item.label} className="h-[18px]">
                                         <td className="p-1">{item.label}</td>
                                         <td className="p-1 text-right font-mono">{item.amount > 0 ? formatCurrency(item.amount) : ''}</td>
                                     </tr>
                                 ))}
-                                <tr className="font-bold">
+                                <tr className="font-bold h-[18px]">
                                     <td className="p-1">BRUT IMPOSABLE</td>
                                     <td className="p-1 text-right font-mono bg-gray-200">{formatCurrency(totals.brutImposable)}</td>
                                 </tr>
-                                 <tr>
+                                 <tr className="h-[18px]">
                                     <td className="p-1">{totals.transportNonImposable.label}</td>
                                     <td className="p-1 text-right font-mono">{formatCurrency(totals.transportNonImposable.amount)}</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
-                    <div className="col-span-3 border-2 border-l-0 border-black">
+                    <div className="col-span-3 border-2 border-black">
                          <table className="w-full border-collapse">
                             <thead className="bg-gray-200 font-bold">
                                 <tr>
@@ -208,12 +208,12 @@ export default function PayslipPage() {
                             </thead>
                             <tbody>
                                 {earnings.map(item => (
-                                     <tr key={item.label}>
-                                        <td className="p-1 text-right font-mono h-[19px]">{item.deduction > 0 ? formatCurrency(item.deduction) : ''}</td>
+                                     <tr key={item.label} className="h-[18px]">
+                                        <td className="p-1 text-right font-mono">{item.deduction > 0 ? formatCurrency(item.deduction) : ''}</td>
                                     </tr>
                                 ))}
-                                <tr className="font-bold h-[19px]"><td className="p-1"></td></tr>
-                                <tr className="h-[19px]"><td className="p-1"></td></tr>
+                                <tr className="font-bold h-[18px]"><td className="p-1"></td></tr>
+                                <tr className="h-[18px]"><td className="p-1"></td></tr>
                             </tbody>
                          </table>
                     </div>
@@ -223,27 +223,27 @@ export default function PayslipPage() {
                         <table className="w-full border-collapse">
                             <tbody>
                                 {deductions.map(item => (
-                                    <tr key={item.label}>
+                                    <tr key={item.label} className="h-[18px]">
                                         <td className="p-1 w-2/3">{item.label}</td>
                                         <td className="p-1 text-right font-mono w-1/3"></td>
                                     </tr>
                                 ))}
-                                <tr>
+                                <tr className="h-[18px]">
                                      <td className="p-1">NBR JRS IMPOSABLES :</td>
                                      <td className="p-1 text-right font-mono"></td>
                                 </tr>
                             </tbody>
                         </table>
                      </div>
-                     <div className="col-span-3 border-2 border-t-0 border-l-0 border-black">
+                     <div className="col-span-3 border-2 border-l-0 border-t-0 border-black">
                          <table className="w-full border-collapse">
                              <tbody>
                                 {deductions.map(item => (
-                                    <tr key={item.label}>
-                                        <td className="p-1 text-right font-mono h-[19px]">{item.amount > 0 ? formatCurrency(item.amount) : '0'}</td>
+                                    <tr key={item.label} className="h-[18px]">
+                                        <td className="p-1 text-right font-mono">{item.amount > 0 ? formatCurrency(item.amount) : '0'}</td>
                                     </tr>
                                 ))}
-                                 <tr><td className="p-1 h-[19px]"></td></tr>
+                                 <tr className="h-[18px]"><td className="p-1"></td></tr>
                             </tbody>
                          </table>
                      </div>
@@ -276,9 +276,11 @@ export default function PayslipPage() {
                     </div>
                      <div className="col-span-3 flex flex-col justify-between items-center p-1">
                         <div></div>
-                         <div className="text-center">
-                             <p className="font-bold">Payé à {employeeInfo.paymentLocation || 'Abidjan'} le</p>
+                         <div className="text-center pb-4">
+                             <p className="font-bold">Payé à Yamoussoukro le</p>
                              <p className="capitalize">{paymentDateDisplay}</p>
+                             <div className="h-8"></div>
+                             <p>Signature</p>
                          </div>
                          <div></div>
                      </div>
@@ -297,3 +299,5 @@ export default function PayslipPage() {
         </>
     );
 }
+
+    

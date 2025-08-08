@@ -27,6 +27,9 @@ export default function OrganizationSettingsPage() {
 
   const [mainLogoData, setMainLogoData] = useState("");
   const [secondaryLogoData, setSecondaryLogoData] = useState("");
+
+  const [hasMainLogoChanged, setHasMainLogoChanged] = useState(false);
+  const [hasSecondaryLogoChanged, setHasSecondaryLogoChanged] = useState(false);
   
   const [loading, setLoading] = useState(true);
   const [isSavingMain, setIsSavingMain] = useState(false);
@@ -61,7 +64,8 @@ export default function OrganizationSettingsPage() {
   const handleFileChange = (
     e: React.ChangeEvent<HTMLInputElement>,
     setPreview: React.Dispatch<React.SetStateAction<string>>,
-    setData: React.Dispatch<React.SetStateAction<string>>
+    setData: React.Dispatch<React.SetStateAction<string>>,
+    setChanged: React.Dispatch<React.SetStateAction<boolean>>
   ) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -78,6 +82,7 @@ export default function OrganizationSettingsPage() {
         const dataUri = reader.result as string;
         setPreview(dataUri);
         setData(dataUri);
+        setChanged(true);
       };
       reader.readAsDataURL(file);
     }
@@ -96,9 +101,11 @@ export default function OrganizationSettingsPage() {
           if (isMain) {
               setMainLogoData(newSettings.mainLogoUrl);
               setMainLogoPreview(newSettings.mainLogoUrl);
+              setHasMainLogoChanged(false);
           } else {
               setSecondaryLogoData(newSettings.secondaryLogoUrl);
               setSecondaryLogoPreview(newSettings.secondaryLogoUrl);
+              setHasSecondaryLogoChanged(false);
           }
 
           toast({
@@ -159,7 +166,7 @@ export default function OrganizationSettingsPage() {
                         type="file"
                         className="hidden"
                         accept="image/png, image/jpeg, image/svg+xml"
-                        onChange={(e) => handleFileChange(e, setMainLogoPreview, setMainLogoData)}
+                        onChange={(e) => handleFileChange(e, setMainLogoPreview, setMainLogoData, setHasMainLogoChanged)}
                       />
                   </div>
                 </div>
@@ -167,7 +174,7 @@ export default function OrganizationSettingsPage() {
                     <Button 
                         type="button" 
                         onClick={() => handleSave('main')} 
-                        disabled={isSavingMain || !mainLogoData.startsWith('data:image')}
+                        disabled={isSavingMain || !hasMainLogoChanged}
                     >
                         {isSavingMain ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                         Enregistrer
@@ -197,7 +204,7 @@ export default function OrganizationSettingsPage() {
                         type="file"
                         className="hidden"
                         accept="image/png, image/jpeg, image/svg+xml"
-                        onChange={(e) => handleFileChange(e, setSecondaryLogoPreview, setSecondaryLogoData)}
+                        onChange={(e) => handleFileChange(e, setSecondaryLogoPreview, setSecondaryLogoData, setHasSecondaryLogoChanged)}
                       />
                   </div>
                 </div>
@@ -205,7 +212,7 @@ export default function OrganizationSettingsPage() {
                     <Button 
                         type="button" 
                         onClick={() => handleSave('secondary')} 
-                        disabled={isSavingSecondary || !secondaryLogoData.startsWith('data:image')}
+                        disabled={isSavingSecondary || !hasSecondaryLogoChanged}
                     >
                         {isSavingSecondary ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                         Enregistrer

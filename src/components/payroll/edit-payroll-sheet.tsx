@@ -166,7 +166,6 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
     // Let B = baseSalary. Brut Imposable (BI) = B * (1 + primeRate) + otherIndemnities
     // Net = BI * (1 - cnpsRate) + transportNonImposable
     // Net = (B * (1 + primeRate) + otherIndemnities) * (1 - cnpsRate) + T_NI
-    // Net - T_NI = (B * (1 + primeRate) + otherIndemnities) * (1 - cnpsRate)
     // (Net - T_NI) / (1 - cnpsRate) = B * (1 + primeRate) + otherIndemnities
     // (Net - T_NI) / (1 - cnpsRate) - otherIndemnities = B * (1 + primeRate)
     // B = ((Net - T_NI) / (1 - cnpsRate) - otherIndemnities) / (1 + primeRate)
@@ -196,7 +195,7 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
   }
   
   const formatCurrency = (value: number) => {
-    return value.toLocaleString('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + " XOF";
+    return value.toLocaleString('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + " FCFA";
   }
 
   const handleSubmit = async (e: React.FormEvent) => {

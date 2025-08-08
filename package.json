@@ -1,10 +1,9 @@
-
 {
   "name": "nextn",
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "firebase emulators:start --import=./firebase-export --export-on-exit & next dev --turbopack -p 9002",
+    "dev": "firebase emulators:start --import=./firebase-export --export-on-exit & next dev --turbopack -p 9002 -H 0.0.0.0",
     "dev:emulators": "firebase emulators:start --import=./firebase-export --export-on-exit & next dev --turbopack -p 9002",
     "genkit:dev": "genkit start -- tsx src/ai/dev.ts",
     "genkit:watch": "genkit start -- tsx --watch src/ai/dev.ts",

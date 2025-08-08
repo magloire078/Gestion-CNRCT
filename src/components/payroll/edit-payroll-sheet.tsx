@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/accordion";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { Employe } from "@/lib/data";
+import { differenceInYears, differenceInMonths, differenceInDays, addYears, addMonths, parseISO, isValid } from 'date-fns';
 
 interface EditPayrollSheetProps {
   isOpen: boolean;
@@ -36,6 +37,29 @@ interface EditPayrollSheetProps {
   onUpdatePayroll: (employeeId: string, payroll: Partial<Employe>) => Promise<void>;
   employee: Employe;
 }
+
+function calculateSeniority(hireDateStr: string | undefined, payslipDateStr: string): { text: string, years: number } {
+    if (!hireDateStr || !payslipDateStr) return { text: 'N/A', years: 0 };
+    
+    const hireDate = parseISO(hireDateStr);
+    const payslipDate = parseISO(payslipDateStr);
+
+    if (!isValid(hireDate) || !isValid(payslipDate)) return { text: 'Dates invalides', years: 0 };
+
+    const years = differenceInYears(payslipDate, hireDate);
+    const dateAfterYears = addYears(hireDate, years);
+    
+    const months = differenceInMonths(payslipDate, dateAfterYears);
+    const dateAfterMonths = addMonths(dateAfterYears, months);
+
+    const days = differenceInDays(payslipDate, dateAfterMonths);
+
+    return {
+        text: `${years} an(s), ${months} mois, ${days} jour(s)`,
+        years: years
+    };
+}
+
 
 export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }: EditPayrollSheetProps) {
   const [formState, setFormState] = useState<Partial<Employe>>(employee);
@@ -66,25 +90,46 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
       setFormState(prev => ({ ...prev, [id]: value }));
   };
 
-  const { brutImposable, netAPayer } = useMemo(() => {
+  const { brutImposable, netAPayer, primeAncienneteRate, cnpsEmploye, cnpsEmployeur, baseCalculCotisations } = useMemo(() => {
+    const baseSalary = formState.baseSalary || 0;
+    const seniorityInfo = calculateSeniority(formState.dateEmbauche, new Date().toISOString());
+
+    let primeAnciennete = formState.primeAnciennete || 0;
+    let primeAncienneteRate = 0;
+    if (seniorityInfo.years >= 2 && !formState.primeAnciennete) { // Check if not manually overridden
+        primeAncienneteRate = Math.min(25, (seniorityInfo.years));
+        primeAnciennete = baseSalary * (primeAncienneteRate / 100);
+    }
+
     const earnings = [
-        formState.baseSalary, formState.primeAnciennete, formState.indemniteTransportImposable,
+        baseSalary, primeAnciennete, formState.indemniteTransportImposable,
         formState.indemniteSujetion, formState.indemniteCommunication, formState.indemniteRepresentation,
         formState.indemniteResponsabilite, formState.indemniteLogement
     ].reduce((sum, val) => sum + (val || 0), 0);
     
-    const parts = formState.parts || 1;
     const transportNonImposable = formState.transportNonImposable || 0;
+    const brutTotal = earnings + transportNonImposable;
 
-    const cnps = earnings * 0.063;
-    const its = (earnings * 0.8) * 0.012;
-    const igr = Math.max(0, (earnings - cnps - its) * 0.1 / parts);
-    const cn = earnings * 0.015;
-    const totalDeductions = cnps + its + igr + cn;
+    const cnpsBase = earnings;
+    const cnpsEmploye = formState.CNPS ? cnpsBase * 0.063 : 0;
+    const cnpsEmployeur = formState.CNPS ? cnpsBase * 0.138 : 0; // Prestation familiale (5.75) + Accident Travail (3) + Retraite (5.05)
+    
+    // Taxes are now zero as per request
+    const its = 0;
+    const igr = 0;
+    const cn = 0;
+    const totalDeductions = cnpsEmploye + its + igr + cn;
 
     const net = earnings + transportNonImposable - totalDeductions;
     
-    return { brutImposable: earnings, netAPayer: net };
+    return { 
+        brutImposable: earnings, 
+        netAPayer: net,
+        primeAncienneteRate,
+        cnpsEmploye,
+        cnpsEmployeur,
+        baseCalculCotisations: brutTotal
+    };
   }, [formState]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -156,6 +201,7 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
                             <div className="space-y-2">
                                 <Label htmlFor="primeAnciennete">Prime Ancienneté</Label>
                                 <Input id="primeAnciennete" type="number" value={formState.primeAnciennete || 0} onChange={handleInputChange} />
+                                 {primeAncienneteRate > 0 && <p className="text-xs text-muted-foreground">Calculée à {primeAncienneteRate}%</p>}
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="indemniteTransportImposable">Ind. Transport (Imposable)</Label>
@@ -186,17 +232,36 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
                                 <Input id="transportNonImposable" type="number" value={formState.transportNonImposable || 0} onChange={handleInputChange} />
                             </div>
                         </div>
+                    </AccordionContent>
+                </AccordionItem>
+                <AccordionItem value="item-4">
+                     <AccordionTrigger>Cotisations & Totaux (Estimations)</AccordionTrigger>
+                     <AccordionContent className="space-y-4 pt-2">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div className="space-y-2">
+                                <Label>CNPS Employé</Label>
+                                <Input value={cnpsEmploye.toLocaleString("fr-FR") + " XOF"} readOnly className="font-mono bg-muted" />
+                            </div>
+                            <div className="space-y-2">
+                                <Label>CNPS Employeur</Label>
+                                <Input value={cnpsEmployeur.toLocaleString("fr-FR") + " XOF"} readOnly className="font-mono bg-muted" />
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Base de calcul</Label>
+                                <Input value={baseCalculCotisations.toLocaleString("fr-FR") + " XOF"} readOnly className="font-mono bg-muted" />
+                            </div>
+                        </div>
                         <div className="mt-4 pt-4 border-t grid grid-cols-1 md:grid-cols-2 gap-4">
                            <div className="space-y-2">
                                 <Label>Salaire Brut Imposable</Label>
                                 <Input value={brutImposable.toLocaleString("fr-FR") + " XOF"} readOnly className="font-bold bg-muted" />
                             </div>
                              <div className="space-y-2">
-                                <Label>Net à Payer (Estimation)</Label>
+                                <Label>Net à Payer</Label>
                                 <Input value={netAPayer.toLocaleString("fr-FR", { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + " XOF"} readOnly className="font-bold bg-muted" />
                             </div>
                         </div>
-                    </AccordionContent>
+                     </AccordionContent>
                 </AccordionItem>
                  <AccordionItem value="item-3">
                     <AccordionTrigger>Détails du Bulletin de Paie</AccordionTrigger>

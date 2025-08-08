@@ -20,27 +20,19 @@ if (!getApps().length) {
   app = getApps()[0];
 }
 
-// The app is now configured to use mock data, so we don't initialize Firestore/Auth/Storage.
-// To re-enable Firebase, uncomment the lines below and in the individual service files.
+const db = getFirestore(app);
+const auth = getAuth(app);
+const storage = getStorage(app);
 
-// const db = getFirestore(app);
-// const auth = getAuth(app);
-// const storage = getStorage(app);
-
-// if (process.env.NODE_ENV === 'development') {
-//     try {
-//       connectAuthEmulator(auth, "http://127.0.0.1:9099", { disableWarnings: true });
-//       connectFirestoreEmulator(db, '127.0.0.1', 8080);
-//       connectStorageEmulator(storage, '127.0.0.1', 9199);
-//     } catch (e) {
-//       console.error("Could not connect to emulators", e);
-//     }
-// }
-
-// We export dummy objects to avoid breaking the app structure.
-const db = {};
-const auth = {};
-const storage = {};
+if (process.env.NODE_ENV === 'development') {
+    try {
+      connectAuthEmulator(auth, "http://127.0.0.1:9099", { disableWarnings: true });
+      connectFirestoreEmulator(db, '127.0.0.1', 8080);
+      connectStorageEmulator(storage, '127.0.0.1', 9199);
+    } catch (e) {
+      console.error("Could not connect to emulators", e);
+    }
+}
 
 
 export { app, db, auth, storage };

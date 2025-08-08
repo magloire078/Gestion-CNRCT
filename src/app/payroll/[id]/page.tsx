@@ -109,8 +109,6 @@ export default function PayslipPage() {
                         <h2 className="font-bold">Chambre Nationale des Rois</h2>
                         <h2 className="font-bold">et Chefs Traditionnels</h2>
                         {organizationLogos.mainLogoUrl && <img src={organizationLogos.mainLogoUrl} alt="Logo CNRCT" width={80} height={80} className="mx-auto mt-2 print:w-16 print:h-16" />}
-                        <p className="text-xs mt-4">LE DIRECTOIRE</p>
-                        <p className="text-xs">LE CABINET / LE SERVICE INFORMATIQUE</p>
                     </div>
                     <div className="text-center">
                         <h2 className="font-bold">République de Côte d'Ivoire</h2>

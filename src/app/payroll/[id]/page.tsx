@@ -103,22 +103,26 @@ export default function PayslipPage() {
                     </Button>
                 </div>
             </div>
-            <div id="print-section" className="w-full max-w-4xl mx-auto bg-white p-4 sm:p-8 border rounded-lg text-black print:shadow-none print:border-none print:p-0 font-arial text-xs leading-normal">
+            <div id="print-section" className="w-full max-w-4xl mx-auto bg-white p-4 sm:p-8 border rounded-lg text-black print:shadow-none print:border-none print:p-0 font-arial text-[13px] leading-normal">
                 {/* Header */}
-                <header className="flex justify-between items-start pb-2 border-b-2 border-gray-300">
+                <header className="flex justify-between items-start pb-2 border-b-2 border-gray-200">
                     <div className="text-center">
+                        <img src={organizationLogos.mainLogoUrl || "https://placehold.co/80x80.png"} alt="Logo CNRCT" width={70} height={70} className="mx-auto my-1" />
+                    </div>
+                    <div className="text-center pt-2">
                         <h2 className="font-bold">Chambre Nationale des Rois</h2>
                         <h2 className="font-bold">et Chefs Traditionnels</h2>
-                        <img src="https://i.ibb.co/CBRS8gH/logo-cnrct.png" alt="Logo CNRCT" width={60} height={60} className="mx-auto my-1" />
+                        <p className="text-xs mt-4">LE DIRECTOIRE</p>
+                        <p className="text-xs">LE CABINET / LE SERVICE INFORMATIQUE</p>
                     </div>
                     <div className="text-center">
+                         <img src={organizationLogos.secondaryLogoUrl || "https://placehold.co/80x80.png"} alt="Emblème de la Côte d'Ivoire" width={70} height={70} className="mx-auto my-1" />
                         <h2 className="font-bold">République de Côte d'Ivoire</h2>
-                         <img src="https://i.ibb.co/6r0M3Gv/Coat-of-arms-of-Ivory-Coast-svg.png" alt="Emblème de la Côte d'Ivoire" width={60} height={60} className="mx-auto my-1" />
                         <p className="mt-1">Union - Discipline - Travail</p>
                     </div>
                 </header>
 
-                <div className="text-center my-2 p-1 bg-gray-200 font-bold rounded-md">
+                <div className="text-center my-2 p-1 bg-gray-100 font-bold rounded-md text-sm">
                     BULLETIN DE PAIE CNRCT : Période de {periodDisplay}
                 </div>
 
@@ -131,7 +135,7 @@ export default function PayslipPage() {
                           <QRCode value={qrCodeValue} size={60} />
                         </div>
                     </div>
-                    <div className="col-span-7 border-2 border-gray-300 rounded-lg p-2">
+                    <div className="col-span-7 border-2 border-gray-200 rounded-lg p-2">
                          <div className="grid grid-cols-3 gap-x-2">
                             <span className="font-bold">NOM & PRENOMS</span><span className="col-span-2">: {fullName}</span>
                             <span className="font-bold">MATRICULE</span><span className="col-span-2">: {employeeInfo.matricule}</span>
@@ -150,8 +154,8 @@ export default function PayslipPage() {
                 </section>
                 
                 {/* Job Info Table */}
-                 <table className="w-full border-collapse border-2 border-gray-300 rounded-lg mt-2">
-                    <thead className="bg-gray-200 font-bold">
+                 <table className="w-full border-collapse border-2 border-gray-200 rounded-lg mt-2">
+                    <thead className="bg-gray-100 font-bold">
                         <tr>
                             <td className="p-1 rounded-tl-lg">EMPLOI</td>
                             <td className="p-1">MATRICULE</td>
@@ -171,10 +175,10 @@ export default function PayslipPage() {
 
 
                 {/* Earnings & Deductions */}
-                <div className="grid grid-cols-12 mt-1 border-2 border-gray-300 rounded-lg">
-                    <div className="col-span-9 border-r-2 border-gray-300">
+                <div className="grid grid-cols-12 mt-1 border-2 border-gray-200 rounded-lg">
+                    <div className="col-span-9">
                          <table className="w-full">
-                            <thead className="bg-gray-200 font-bold">
+                            <thead className="bg-gray-100 font-bold">
                                 <tr>
                                     <td className="p-1 w-2/3 rounded-tl-lg">ELEMENTS</td>
                                     <td className="p-1 text-center w-1/3">GAINS</td>
@@ -182,69 +186,69 @@ export default function PayslipPage() {
                             </thead>
                             <tbody>
                                 {earnings.map(item => (
-                                    <tr key={item.label} className="h-[18px]">
-                                        <td className="p-1">{item.label}</td>
-                                        <td className="p-1 text-right font-mono">{item.amount > 0 ? formatCurrency(item.amount) : ''}</td>
+                                    <tr key={item.label} className="h-[20px]">
+                                        <td className="pl-1">{item.label}</td>
+                                        <td className="pr-1 text-right font-mono">{item.amount > 0 ? formatCurrency(item.amount) : ''}</td>
                                     </tr>
                                 ))}
-                                <tr className="font-bold h-[18px]">
-                                    <td className="p-1">BRUT IMPOSABLE</td>
-                                    <td className="p-1 text-right font-mono bg-gray-200">{formatCurrency(totals.brutImposable)}</td>
+                                <tr className="font-bold h-[20px]">
+                                    <td className="pl-1">BRUT IMPOSABLE</td>
+                                    <td className="pr-1 text-right font-mono bg-gray-100">{formatCurrency(totals.brutImposable)}</td>
                                 </tr>
-                                 <tr className="h-[18px]">
-                                    <td className="p-1">{totals.transportNonImposable.label}</td>
-                                    <td className="p-1 text-right font-mono">{formatCurrency(totals.transportNonImposable.amount)}</td>
+                                 <tr className="h-[20px]">
+                                    <td className="pl-1">{totals.transportNonImposable.label}</td>
+                                    <td className="pr-1 text-right font-mono">{formatCurrency(totals.transportNonImposable.amount)}</td>
                                 </tr>
                                 {deductions.map(item => (
-                                    <tr key={item.label} className="h-[18px]">
-                                        <td className="p-1 w-2/3">{item.label}</td>
-                                        <td className="p-1 text-right font-mono w-1/3"></td>
+                                    <tr key={item.label} className="h-[20px]">
+                                        <td className="pl-1 w-2/3">{item.label}</td>
+                                        <td className="pr-1 text-right font-mono w-1/3"></td>
                                     </tr>
                                 ))}
-                                <tr className="h-[18px]">
-                                     <td className="p-1">NBR JRS IMPOSABLES :</td>
-                                     <td className="p-1 text-right font-mono"></td>
+                                <tr className="h-[20px]">
+                                     <td className="pl-1">NBR JRS IMPOSABLES :</td>
+                                     <td className="pr-1 text-right font-mono"></td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
                     <div className="col-span-3">
                          <table className="w-full">
-                            <thead className="bg-gray-200 font-bold">
+                            <thead className="bg-gray-100 font-bold">
                                 <tr>
                                     <td className="p-1 text-center rounded-tr-lg">RETENUES</td>
                                 </tr>
                             </thead>
                             <tbody>
                                 {earnings.map(item => (
-                                     <tr key={item.label} className="h-[18px]">
-                                        <td className="p-1 text-right font-mono">{item.deduction > 0 ? formatCurrency(item.deduction) : ''}</td>
+                                     <tr key={item.label} className="h-[20px]">
+                                        <td className="pr-1 text-right font-mono">{item.deduction > 0 ? formatCurrency(item.deduction) : ''}</td>
                                     </tr>
                                 ))}
-                                <tr className="font-bold h-[18px]"><td className="p-1"></td></tr>
-                                <tr className="h-[18px]"><td className="p-1"></td></tr>
+                                <tr className="font-bold h-[20px]"><td className="p-1"></td></tr>
+                                <tr className="h-[20px]"><td className="p-1"></td></tr>
                                 {deductions.map(item => (
-                                    <tr key={item.label} className="h-[18px]">
-                                        <td className="p-1 text-right font-mono">{item.amount > 0 ? formatCurrency(item.amount) : '0'}</td>
+                                    <tr key={item.label} className="h-[20px]">
+                                        <td className="pr-1 text-right font-mono">{item.amount > 0 ? formatCurrency(item.amount) : '0'}</td>
                                     </tr>
                                 ))}
-                                 <tr className="h-[18px]"><td className="p-1"></td></tr>
+                                 <tr className="h-[20px]"><td className="p-1"></td></tr>
                             </tbody>
                          </table>
                     </div>
                  </div>
 
-                 <div className="grid grid-cols-12 -mt-px border-2 border-t-0 border-gray-300 rounded-b-lg">
+                 <div className="grid grid-cols-12 -mt-px border-2 border-t-0 border-gray-200 rounded-lg">
                     <div className="col-span-9 p-1 flex justify-between items-center font-bold">
                         <span>NET A PAYER</span>
-                        <span className="italic font-normal">{totals.netAPayerInWords}</span>
+                        <span className="italic font-normal text-[11px] px-2">{totals.netAPayerInWords}</span>
                     </div>
-                    <div className="col-span-3 p-1 text-right font-bold font-mono bg-gray-200 rounded-br-lg">{formatCurrency(totals.netAPayer)}</div>
+                    <div className="col-span-3 p-1 text-right font-bold font-mono bg-gray-100 rounded-br-lg">{formatCurrency(totals.netAPayer)}</div>
                  </div>
                 
                  {/* Employer Contributions */}
-                 <div className="grid grid-cols-12 mt-2 border-2 border-gray-300 rounded-lg">
-                    <div className="col-span-9 p-2">
+                 <div className="grid grid-cols-12 mt-2 border-2 border-gray-200 rounded-lg">
+                    <div className="col-span-8 p-2">
                         <p className="font-bold text-center underline mb-1">Impôts à la charge de l'employeur</p>
                          <table className="w-full">
                             <tbody>
@@ -259,18 +263,18 @@ export default function PayslipPage() {
                             </tbody>
                         </table>
                     </div>
-                     <div className="col-span-3 flex flex-col justify-end items-center p-1">
-                         <div className="text-center pb-4">
+                     <div className="col-span-4 flex flex-col justify-end items-center p-1">
+                         <div className="text-center pb-1">
                              <p className="font-bold">Payé à Yamoussoukro le</p>
                              <p className="capitalize">{paymentDateDisplay}</p>
-                             <div className="h-8"></div>
-                             <p>Signature</p>
+                             <div className="h-10"></div>
+                             <p className="border-t border-gray-400 pt-1">Signature</p>
                          </div>
                      </div>
                  </div>
 
                 {/* Footer */}
-                <footer className="text-center pt-2 border-t border-gray-300 mt-2">
+                <footer className="text-center pt-2 border-t-2 border-gray-200 mt-2">
                     <div className="leading-tight">
                         <p className="font-bold">Chambre Nationale de Rois et Chefs Traditionnels (CNRCT)</p>
                         <p>Yamoussoukro, Riviera - BP 201 Yamoussoukro | Tél : (225) 30 64 06 60 | Fax : (+255) 30 64 06 63</p>

@@ -30,6 +30,8 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import type { Employe } from "@/lib/data";
 import { differenceInYears, differenceInMonths, differenceInDays, addYears, addMonths, parseISO, isValid } from 'date-fns';
+import { Calculator } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface EditPayrollSheetProps {
   isOpen: boolean;
@@ -65,15 +67,17 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
   const [formState, setFormState] = useState<Partial<Employe>>(employee);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [desiredNetSalary, setDesiredNetSalary] = useState<number | string>('');
+  const { toast } = useToast();
 
   useEffect(() => {
     if (employee) {
       setFormState({
         ...employee,
-        payFrequency: 'Mensuel', // Standardize to monthly
         baseSalary: employee.baseSalary || 0,
         nextPayDate: employee.nextPayDate || '',
       });
+      setDesiredNetSalary(''); // Reset simulator field
     }
   }, [employee]);
 
@@ -90,48 +94,106 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
       setFormState(prev => ({ ...prev, [id]: value }));
   };
 
-  const { brutImposable, netAPayer, primeAncienneteRate, primeAncienneteValue, cnpsEmploye, cnpsEmployeur, baseCalculCotisations } = useMemo(() => {
-    const baseSalary = formState.baseSalary || 0;
-    const seniorityInfo = calculateSeniority(formState.dateEmbauche, new Date().toISOString());
+  const seniorityInfo = useMemo(() => {
+    return calculateSeniority(formState.dateEmbauche, new Date().toISOString());
+  }, [formState.dateEmbauche]);
 
+  const primeAncienneteRate = useMemo(() => {
+    if (seniorityInfo.years >= 2) {
+      return Math.min(25, seniorityInfo.years);
+    }
+    return 0;
+  }, [seniorityInfo.years]);
+
+  const { brutImposable, netAPayer, cnpsEmploye, cnpsEmployeur, baseCalculCotisations, primeAncienneteValue } = useMemo(() => {
+    const baseSalary = formState.baseSalary || 0;
+    
     let primeAnciennete = formState.primeAnciennete || 0;
-    let primeAncienneteRate = 0;
-    if (seniorityInfo.years >= 2 && !formState.primeAnciennete) { // Check if not manually overridden
-        primeAncienneteRate = Math.min(25, (seniorityInfo.years));
+    if (seniorityInfo.years >= 2 && !formState.primeAnciennete) {
         primeAnciennete = baseSalary * (primeAncienneteRate / 100);
     }
-
-    const earnings = [
-        baseSalary, primeAnciennete, formState.indemniteTransportImposable,
-        formState.indemniteSujetion, formState.indemniteCommunication, formState.indemniteRepresentation,
-        formState.indemniteResponsabilite, formState.indemniteLogement
+    
+    const otherIndemnities = [
+        formState.indemniteTransportImposable, formState.indemniteSujetion, formState.indemniteCommunication, 
+        formState.indemniteRepresentation, formState.indemniteResponsabilite, formState.indemniteLogement
     ].reduce((sum, val) => sum + (val || 0), 0);
+
+    const earnings = baseSalary + primeAnciennete + otherIndemnities;
     
     const transportNonImposable = formState.transportNonImposable || 0;
     const brutTotal = earnings + transportNonImposable;
 
     const cnpsBase = earnings;
-    const cnpsEmploye = formState.CNPS ? cnpsBase * 0.063 : 0;
-    const cnpsEmployeur = formState.CNPS ? cnpsBase * 0.138 : 0; // Prestation familiale (5.75) + Accident Travail (3) + Retraite (5.05)
+    const cnpsEmployeCalc = formState.CNPS ? cnpsBase * 0.063 : 0;
+    const cnpsEmployeurCalc = formState.CNPS ? cnpsBase * 0.138 : 0;
     
-    // Taxes are now zero as per request
     const its = 0;
     const igr = 0;
     const cn = 0;
-    const totalDeductions = cnpsEmploye + its + igr + cn;
+    const totalDeductions = cnpsEmployeCalc + its + igr + cn;
 
     const net = earnings + transportNonImposable - totalDeductions;
     
     return { 
         brutImposable: earnings, 
         netAPayer: net,
-        primeAncienneteRate,
+        cnpsEmploye: cnpsEmployeCalc,
+        cnpsEmployeur: cnpsEmployeurCalc,
+        baseCalculCotisations: brutTotal,
         primeAncienneteValue: primeAnciennete,
-        cnpsEmploye,
-        cnpsEmployeur,
-        baseCalculCotisations: brutTotal
     };
-  }, [formState]);
+  }, [formState, seniorityInfo.years, primeAncienneteRate]);
+
+  const handleSimulation = () => {
+    const netTarget = typeof desiredNetSalary === 'string' ? parseFloat(desiredNetSalary) : desiredNetSalary;
+    if (!netTarget || netTarget <= 0) {
+        toast({
+            variant: "destructive",
+            title: "Valeur Invalide",
+            description: "Veuillez entrer un salaire net valide pour la simulation."
+        });
+        return;
+    }
+    
+    const otherIndemnities = [
+        formState.indemniteTransportImposable, formState.indemniteSujetion, formState.indemniteCommunication,
+        formState.indemniteRepresentation, formState.indemniteResponsabilite, formState.indemniteLogement
+    ].reduce((sum, val) => sum + (val || 0), 0);
+    
+    const transportNonImposable = formState.transportNonImposable || 0;
+    const cnpsRate = formState.CNPS ? 0.063 : 0;
+    
+    // Let B = baseSalary. Brut Imposable (BI) = B * (1 + primeRate) + otherIndemnities
+    // Net = BI * (1 - cnpsRate) + transportNonImposable
+    // Net = (B * (1 + primeRate) + otherIndemnities) * (1 - cnpsRate) + T_NI
+    // Net - T_NI = (B * (1 + primeRate) + otherIndemnities) * (1 - cnpsRate)
+    // (Net - T_NI) / (1 - cnpsRate) = B * (1 + primeRate) + otherIndemnities
+    // (Net - T_NI) / (1 - cnpsRate) - otherIndemnities = B * (1 + primeRate)
+    // B = ((Net - T_NI) / (1 - cnpsRate) - otherIndemnities) / (1 + primeRate)
+
+    const primeRate = primeAncienneteRate / 100;
+
+    let baseSalary = 0;
+    if ((1 - cnpsRate) > 0 && (1 + primeRate) > 0) {
+         const tempBrut = (netTarget - transportNonImposable) / (1 - cnpsRate);
+         baseSalary = (tempBrut - otherIndemnities) / (1 + primeRate);
+    }
+
+    if (baseSalary < 0) {
+        toast({
+            variant: "destructive",
+            title: "Calcul Impossible",
+            description: "Le salaire net souhaité est trop bas pour couvrir les indemnités. Le salaire de base serait négatif."
+        });
+        return;
+    }
+
+    setFormState(prev => ({...prev, baseSalary: Math.round(baseSalary), primeAnciennete: 0 })); // Reset manual prime to allow recalculation
+    toast({
+        title: "Simulation Réussie",
+        description: `Le salaire de base a été ajusté à ${formatCurrency(Math.round(baseSalary))}.`
+    });
+  }
   
   const formatCurrency = (value: number) => {
     return value.toLocaleString('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + " XOF";
@@ -192,6 +254,23 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
                 <AccordionItem value="item-2">
                     <AccordionTrigger>Gains & Indemnités</AccordionTrigger>
                     <AccordionContent className="space-y-4 pt-2">
+                        <div className="p-4 border rounded-md bg-muted/50 space-y-2">
+                            <Label htmlFor="netSimulator">Simuler à partir du Net</Label>
+                            <div className="flex gap-2">
+                                <Input 
+                                    id="netSimulator" 
+                                    type="number" 
+                                    placeholder="Entrez le net souhaité..." 
+                                    value={desiredNetSalary}
+                                    onChange={(e) => setDesiredNetSalary(e.target.value)}
+                                />
+                                <Button type="button" variant="secondary" onClick={handleSimulation}>
+                                    <Calculator className="mr-2 h-4 w-4"/>
+                                    Calculer
+                                </Button>
+                            </div>
+                        </div>
+
                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             <div className="space-y-2">
                                 <Label htmlFor="baseSalary">Salaire de Base</Label>

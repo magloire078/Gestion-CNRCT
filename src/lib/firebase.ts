@@ -24,15 +24,17 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 const storage = getStorage(app);
 
-if (process.env.NODE_ENV === 'development') {
-    try {
-      connectAuthEmulator(auth, "http://127.0.0.1:9099", { disableWarnings: true });
-      connectFirestoreEmulator(db, '127.0.0.1', 8080);
-      connectStorageEmulator(storage, '127.0.0.1', 9199);
-    } catch (e) {
-      console.error("Could not connect to emulators", e);
-    }
-}
+// NOTE: The emulator connection is disabled to use live Firebase services
+// and resolve network issues in the development environment.
+// if (process.env.NODE_ENV === 'development') {
+//     try {
+//       connectAuthEmulator(auth, "http://127.0.0.1:9099", { disableWarnings: true });
+//       connectFirestoreEmulator(db, '127.0.0.1', 8080);
+//       connectStorageEmulator(storage, '127.0.0.1', 9199);
+//     } catch (e) {
+//       console.error("Could not connect to emulators", e);
+//     }
+// }
 
 
 export { app, db, auth, storage };

@@ -232,7 +232,6 @@ export default function PayrollPage() {
                     <TableHead>Poste</TableHead>
                     <TableHead className="text-right">Salaire Brut</TableHead>
                     <TableHead className="text-right">Salaire Net</TableHead>
-                    <TableHead>Prochaine Date de Paie</TableHead>
                     <TableHead><span className="sr-only">Actions</span></TableHead>
                 </TableRow>
                 </TableHeader>
@@ -244,7 +243,6 @@ export default function PayrollPage() {
                         <TableCell><Skeleton className="h-4 w-32" /></TableCell>
                         <TableCell><Skeleton className="h-4 w-24 ml-auto" /></TableCell>
                         <TableCell><Skeleton className="h-4 w-24 ml-auto" /></TableCell>
-                        <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                         <TableCell><Skeleton className="h-8 w-8 rounded-md" /></TableCell>
                     </TableRow>
                     ))
@@ -259,7 +257,6 @@ export default function PayrollPage() {
                         <TableCell className="text-right font-mono">
                          {formatCurrency(employee.netSalary)}
                         </TableCell>
-                        <TableCell>{employee.nextPayDate || 'N/D'}</TableCell>
                         <TableCell className="text-right">
                            <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
@@ -324,7 +321,6 @@ export default function PayrollPage() {
                             <div className="mt-2 space-y-1">
                                 <p className="text-sm"><span className="font-medium">Salaire Brut:</span> {formatCurrency(employee.grossSalary)}</p>
                                 <p className="text-sm"><span className="font-medium">Salaire Net:</span> {formatCurrency(employee.netSalary)}</p>
-                                <p className="text-sm"><span className="font-medium">Prochaine paie:</span> {employee.nextPayDate || 'N/D'}</p>
                             </div>
                         </CardContent>
                     </Card>

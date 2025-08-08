@@ -76,7 +76,6 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
       setFormState({
         ...employee,
         baseSalary: employee.baseSalary || 0,
-        nextPayDate: employee.nextPayDate || '',
       });
       setDesiredNetSalary('');
       setOriginalBaseSalary(null);
@@ -220,11 +219,6 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
       setError("Le salaire de base est obligatoire pour les employés déclarés à la CNPS.");
       return;
     }
-
-    if (!formState.nextPayDate) {
-        setError("La prochaine date de paie est obligatoire.");
-        return;
-    }
     
     setIsSubmitting(true);
     setError("");
@@ -258,15 +252,9 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
                             <Label>Employé</Label>
                             <p className="font-medium text-muted-foreground">{`${employee.lastName || ''} ${employee.firstName || ''}`.trim()}</p>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                           <div className="space-y-2">
-                                <Label>Fréquence de Paie</Label>
-                                <Input value="Mensuel" readOnly className="bg-muted" />
-                           </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="nextPayDate">Prochaine Date de Paie</Label>
-                                <Input id="nextPayDate" type="date" value={formState.nextPayDate} onChange={handleInputChange} required />
-                            </div>
+                        <div className="space-y-2">
+                           <Label>Fréquence de Paie</Label>
+                           <Input value="Mensuel" readOnly className="bg-muted" />
                         </div>
                     </AccordionContent>
                 </AccordionItem>

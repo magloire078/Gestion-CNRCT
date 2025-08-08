@@ -114,7 +114,7 @@ export default function PayslipPage() {
                     </div>
                     <div className="text-center">
                         <h2 className="font-bold">République de Côte d'Ivoire</h2>
-                         {organizationLogos.secondaryLogoUrl && <img src={organizationLogos.secondaryLogoUrl} alt="Logo Cote d'Ivoire" width={80} height={80} className="mx-auto mt-2 print:w-16 print:h-16" />}
+                         <img src="https://i.ibb.co/6r0M3Gv/Coat-of-arms-of-Ivory-Coast-svg.png" alt="Emblème de la Côte d'Ivoire" width={80} height={80} className="mx-auto my-2 print:w-16 print:h-16" />
                         <p className="mt-1">Union - Discipline - Travail</p>
                     </div>
                 </header>

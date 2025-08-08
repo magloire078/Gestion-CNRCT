@@ -76,13 +76,13 @@
   @media print {
     @page {
         size: a4 portrait;
-        margin: 1cm;
+        margin: 0;
     }
     .print-hidden {
         display: none !important;
     }
     body, html {
-      background-color: #fff; /* Ensure a white background for printing */
+      background-color: #fff !important; /* Ensure a white background for printing */
     }
     body * {
         visibility: hidden;
@@ -99,6 +99,12 @@
         padding: 0;
         border: none;
         box-shadow: none;
+    }
+    .print-page-break {
+      page-break-after: always;
+    }
+    .print-page-break:last-child {
+      page-break-after: auto;
     }
   }
 }

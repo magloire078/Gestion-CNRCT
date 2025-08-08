@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { Eye, MoreHorizontal, Pencil, CalendarClock, Search } from "lucide-react";
+import { Eye, MoreHorizontal, Pencil, Search, Printer, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -35,7 +35,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import type { Employe } from "@/lib/data";
+import type { Employe, PayslipDetails } from "@/lib/data";
 import { subscribeToEmployees, updateEmployee } from "@/services/employee-service";
 import { getPayslipDetails } from "@/services/payslip-details-service";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -44,7 +44,10 @@ import { EditPayrollSheet } from "@/components/payroll/edit-payroll-sheet";
 import { useRouter } from "next/navigation";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { lastDayOfMonth } from "date-fns";
+import { lastDayOfMonth, format } from "date-fns";
+import { fr } from "date-fns/locale";
+import QRCode from "react-qr-code";
+
 
 type EmployeeWithDetails = Employe & { netSalary?: number; grossSalary?: number };
 
@@ -67,6 +70,10 @@ export default function PayrollPage() {
   const [year, setYear] = useState<string>(new Date().getFullYear().toString());
   const [month, setMonth] = useState<string>((new Date().getMonth() + 1).toString());
 
+  // State for bulk printing
+  const [isBulkPrintDialogOpen, setIsBulkPrintDialogOpen] = useState(false);
+  const [isPreparingPrint, setIsPreparingPrint] = useState(false);
+  const [bulkPayslips, setBulkPayslips] = useState<PayslipDetails[]>([]);
 
   useEffect(() => {
     setLoading(true);
@@ -101,6 +108,16 @@ export default function PayrollPage() {
     );
      return () => unsubscribe();
   }, []);
+
+  useEffect(() => {
+    if (isPreparingPrint && bulkPayslips.length > 0) {
+      setTimeout(() => {
+        window.print();
+        setIsPreparingPrint(false);
+        setBulkPayslips([]);
+      }, 500);
+    }
+  }, [isPreparingPrint, bulkPayslips]);
   
   const openEditSheet = (employee: Employe) => {
     setSelectedEmployee(employee);
@@ -173,132 +190,130 @@ export default function PayrollPage() {
       return value.toLocaleString('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + " FCFA";
   }
 
+  const handleBulkPrint = async () => {
+    if (filteredEmployees.length === 0) {
+      toast({
+        variant: "destructive",
+        title: "Aucun employé sélectionné",
+        description: "Veuillez filtrer la liste pour sélectionner les employés à imprimer.",
+      });
+      return;
+    }
+
+    setIsPreparingPrint(true);
+    setIsBulkPrintDialogOpen(false);
+    
+    try {
+        const selectedDate = new Date(parseInt(year), parseInt(month) - 1, 1);
+        const lastDay = lastDayOfMonth(selectedDate);
+        const formattedDate = lastDay.toISOString().split('T')[0];
+
+        const payslipPromises = filteredEmployees.map(emp => getPayslipDetails(emp, formattedDate));
+        const allPayslips = await Promise.all(payslipPromises);
+        
+        setBulkPayslips(allPayslips);
+    } catch(err) {
+        console.error("Failed to prepare bulk payslips:", err);
+        toast({
+            variant: "destructive",
+            title: "Erreur d'impression",
+            description: "Impossible de générer les bulletins de paie."
+        });
+        setIsPreparingPrint(false);
+    }
+  };
+
 
   return (
     <>
-    <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">Gestion de la Paie</h1>
-      </div>
-      <Card>
-        <CardHeader>
-          <CardTitle>Employés sur la Paie</CardTitle>
-          <CardDescription>
-            Gérez le salaire et les informations financières de tous les employés actifs.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col sm:flex-row gap-2 mb-4 flex-wrap">
-              <div className="relative flex-1 min-w-[200px]">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                <Input
-                    placeholder="Rechercher par nom, matricule..."
-                    className="pl-10"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                />
+      <div className={isPreparingPrint ? 'print-hidden' : ''}>
+        <div className="flex flex-col gap-6">
+          <div className="flex items-center justify-between">
+            <h1 className="text-3xl font-bold tracking-tight">Gestion de la Paie</h1>
+             <Button onClick={() => setIsBulkPrintDialogOpen(true)} disabled={filteredEmployees.length === 0}>
+                <Printer className="mr-2 h-4 w-4" />
+                Imprimer la Sélection
+            </Button>
+          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Employés sur la Paie</CardTitle>
+              <CardDescription>
+                Gérez le salaire et les informations financières de tous les employés actifs.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col sm:flex-row gap-2 mb-4 flex-wrap">
+                  <div className="relative flex-1 min-w-[200px]">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                    <Input
+                        placeholder="Rechercher par nom, matricule..."
+                        className="pl-10"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                  </div>
+                  <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
+                  <SelectTrigger className="flex-1 min-w-[180px]">
+                      <SelectValue placeholder="Filtrer par service" />
+                  </SelectTrigger>
+                  <SelectContent>
+                      <SelectItem value="all">Tous les services</SelectItem>
+                      {departments.map(dep => <SelectItem key={dep} value={dep}>{dep}</SelectItem>)}
+                  </SelectContent>
+                  </Select>
+                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="flex-1 min-w-[180px]">
+                      <SelectValue placeholder="Filtrer par statut" />
+                  </SelectTrigger>
+                  <SelectContent>
+                      <SelectItem value="all">Tous les statuts</SelectItem>
+                      <SelectItem value="Actif">Actif</SelectItem>
+                      <SelectItem value="En congé">En congé</SelectItem>
+                  </SelectContent>
+                  </Select>
               </div>
-              <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
-              <SelectTrigger className="flex-1 min-w-[180px]">
-                  <SelectValue placeholder="Filtrer par service" />
-              </SelectTrigger>
-              <SelectContent>
-                  <SelectItem value="all">Tous les services</SelectItem>
-                  {departments.map(dep => <SelectItem key={dep} value={dep}>{dep}</SelectItem>)}
-              </SelectContent>
-              </Select>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="flex-1 min-w-[180px]">
-                  <SelectValue placeholder="Filtrer par statut" />
-              </SelectTrigger>
-              <SelectContent>
-                  <SelectItem value="all">Tous les statuts</SelectItem>
-                  <SelectItem value="Actif">Actif</SelectItem>
-                  <SelectItem value="En congé">En congé</SelectItem>
-              </SelectContent>
-              </Select>
-          </div>
 
-          <div className="mb-4 text-sm text-muted-foreground">
-              {filteredEmployees.length} résultat(s) trouvé(s).
-          </div>
-          
-          {error && <p className="text-destructive text-center py-4">{error}</p>}
-          <div className="hidden md:block">
-            <Table>
-                <TableHeader>
-                <TableRow>
-                    <TableHead>Employé</TableHead>
-                    <TableHead>Poste</TableHead>
-                    <TableHead className="text-right">Salaire Brut</TableHead>
-                    <TableHead className="text-right">Salaire Net</TableHead>
-                    <TableHead><span className="sr-only">Actions</span></TableHead>
-                </TableRow>
-                </TableHeader>
-                <TableBody>
-                {loading ? (
-                    Array.from({ length: 5 }).map((_, i) => (
-                    <TableRow key={i}>
-                        <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                        <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                        <TableCell><Skeleton className="h-4 w-24 ml-auto" /></TableCell>
-                        <TableCell><Skeleton className="h-4 w-24 ml-auto" /></TableCell>
-                        <TableCell><Skeleton className="h-8 w-8 rounded-md" /></TableCell>
+              <div className="mb-4 text-sm text-muted-foreground">
+                  {filteredEmployees.length} résultat(s) trouvé(s).
+              </div>
+              
+              {error && <p className="text-destructive text-center py-4">{error}</p>}
+              <div className="hidden md:block">
+                <Table>
+                    <TableHeader>
+                    <TableRow>
+                        <TableHead>Employé</TableHead>
+                        <TableHead>Poste</TableHead>
+                        <TableHead className="text-right">Salaire Brut</TableHead>
+                        <TableHead className="text-right">Salaire Net</TableHead>
+                        <TableHead><span className="sr-only">Actions</span></TableHead>
                     </TableRow>
-                    ))
-                ) : filteredEmployees.length > 0 ? (
-                    filteredEmployees.map((employee) => (
-                    <TableRow key={employee.id}>
-                        <TableCell className="font-medium">{`${employee.lastName || ''} ${employee.firstName || ''}`.trim()}</TableCell>
-                        <TableCell>{employee.poste}</TableCell>
-                         <TableCell className="text-right font-mono">
-                         {formatCurrency(employee.grossSalary)}
-                        </TableCell>
-                        <TableCell className="text-right font-mono">
-                         {formatCurrency(employee.netSalary)}
-                        </TableCell>
-                        <TableCell className="text-right">
-                           <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button aria-haspopup="true" size="icon" variant="ghost">
-                                        <MoreHorizontal className="h-4 w-4" />
-                                        <span className="sr-only">Toggle menu</span>
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                    <DropdownMenuItem onClick={() => openEditSheet(employee)}>
-                                        <Pencil className="mr-2 h-4 w-4" />
-                                        Modifier les infos de paie
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => openDateDialog(employee)}>
-                                       <Eye className="mr-2 h-4 w-4" />
-                                       Afficher le bulletin
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        </TableCell>
-                    </TableRow>
-                    ))
-                ) : null}
-                </TableBody>
-            </Table>
-           </div>
-           <div className="grid grid-cols-1 gap-4 md:hidden">
-             {loading ? (
-                Array.from({ length: 5 }).map((_, i) => (
-                  <Card key={i}><CardContent className="p-4"><Skeleton className="h-20 w-full" /></CardContent></Card>
-                ))
-             ) : filteredEmployees.length > 0 ? (
-                filteredEmployees.map((employee) => (
-                    <Card key={employee.id}>
-                        <CardContent className="p-4">
-                             <div className="flex justify-between items-start">
-                                <div>
-                                    <p className="font-bold">{`${employee.lastName || ''} ${employee.firstName || ''}`.trim()}</p>
-                                    <p className="text-sm text-muted-foreground">{employee.poste}</p>
-                                </div>
-                                 <DropdownMenu>
+                    </TableHeader>
+                    <TableBody>
+                    {loading ? (
+                        Array.from({ length: 5 }).map((_, i) => (
+                        <TableRow key={i}>
+                            <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                            <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                            <TableCell><Skeleton className="h-4 w-24 ml-auto" /></TableCell>
+                            <TableCell><Skeleton className="h-4 w-24 ml-auto" /></TableCell>
+                            <TableCell><Skeleton className="h-8 w-8 rounded-md" /></TableCell>
+                        </TableRow>
+                        ))
+                    ) : filteredEmployees.length > 0 ? (
+                        filteredEmployees.map((employee) => (
+                        <TableRow key={employee.id}>
+                            <TableCell className="font-medium">{`${employee.lastName || ''} ${employee.firstName || ''}`.trim()}</TableCell>
+                            <TableCell>{employee.poste}</TableCell>
+                            <TableCell className="text-right font-mono">
+                            {formatCurrency(employee.grossSalary)}
+                            </TableCell>
+                            <TableCell className="text-right font-mono">
+                            {formatCurrency(employee.netSalary)}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
                                         <Button aria-haspopup="true" size="icon" variant="ghost">
                                             <MoreHorizontal className="h-4 w-4" />
@@ -312,38 +327,79 @@ export default function PayrollPage() {
                                             Modifier les infos de paie
                                         </DropdownMenuItem>
                                         <DropdownMenuItem onClick={() => openDateDialog(employee)}>
-                                           <Eye className="mr-2 h-4 w-4" />
-                                           Afficher le bulletin
+                                          <Eye className="mr-2 h-4 w-4" />
+                                          Afficher le bulletin
                                         </DropdownMenuItem>
                                     </DropdownMenuContent>
                                 </DropdownMenu>
-                            </div>
-                            <div className="mt-2 space-y-1">
-                                <p className="text-sm"><span className="font-medium">Salaire Brut:</span> {formatCurrency(employee.grossSalary)}</p>
-                                <p className="text-sm"><span className="font-medium">Salaire Net:</span> {formatCurrency(employee.netSalary)}</p>
-                            </div>
-                        </CardContent>
-                    </Card>
-                ))
-             ) : null}
-           </div>
-           {!loading && filteredEmployees.length === 0 && !error && (
-            <div className="text-center py-10 text-muted-foreground">
-                Aucun employé correspondant aux filtres.
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
-       
-       {selectedEmployee && (
-        <EditPayrollSheet
-            isOpen={isEditSheetOpen}
-            onClose={() => setIsEditSheetOpen(false)}
-            onUpdatePayroll={handleUpdatePayroll}
-            employee={selectedEmployee}
-        />
-       )}
+                            </TableCell>
+                        </TableRow>
+                        ))
+                    ) : null}
+                    </TableBody>
+                </Table>
+              </div>
+              <div className="grid grid-cols-1 gap-4 md:hidden">
+                {loading ? (
+                    Array.from({ length: 5 }).map((_, i) => (
+                      <Card key={i}><CardContent className="p-4"><Skeleton className="h-20 w-full" /></CardContent></Card>
+                    ))
+                ) : filteredEmployees.length > 0 ? (
+                    filteredEmployees.map((employee) => (
+                        <Card key={employee.id}>
+                            <CardContent className="p-4">
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <p className="font-bold">{`${employee.lastName || ''} ${employee.firstName || ''}`.trim()}</p>
+                                        <p className="text-sm text-muted-foreground">{employee.poste}</p>
+                                    </div>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button aria-haspopup="true" size="icon" variant="ghost">
+                                                <MoreHorizontal className="h-4 w-4" />
+                                                <span className="sr-only">Toggle menu</span>
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                            <DropdownMenuItem onClick={() => openEditSheet(employee)}>
+                                                <Pencil className="mr-2 h-4 w-4" />
+                                                Modifier les infos de paie
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => openDateDialog(employee)}>
+                                              <Eye className="mr-2 h-4 w-4" />
+                                              Afficher le bulletin
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </div>
+                                <div className="mt-2 space-y-1">
+                                    <p className="text-sm"><span className="font-medium">Salaire Brut:</span> {formatCurrency(employee.grossSalary)}</p>
+                                    <p className="text-sm"><span className="font-medium">Salaire Net:</span> {formatCurrency(employee.netSalary)}</p>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    ))
+                ) : null}
+              </div>
+              {!loading && filteredEmployees.length === 0 && !error && (
+                <div className="text-center py-10 text-muted-foreground">
+                    Aucun employé correspondant aux filtres.
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+        
+        {selectedEmployee && (
+          <EditPayrollSheet
+              isOpen={isEditSheetOpen}
+              onClose={() => setIsEditSheetOpen(false)}
+              onUpdatePayroll={handleUpdatePayroll}
+              employee={selectedEmployee}
+          />
+        )}
+        
         <Dialog open={isDateDialogOpen} onOpenChange={setIsDateDialogOpen}>
             <DialogContent>
                 <DialogHeader>
@@ -378,6 +434,249 @@ export default function PayrollPage() {
                 </DialogFooter>
             </DialogContent>
         </Dialog>
+        
+        <Dialog open={isBulkPrintDialogOpen} onOpenChange={setIsBulkPrintDialogOpen}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Imprimer les bulletins de la sélection</DialogTitle>
+                    <DialogDescription>
+                        Vous êtes sur le point d'imprimer {filteredEmployees.length} bulletin(s) de paie. Veuillez choisir la période.
+                    </DialogDescription>
+                </DialogHeader>
+                <div className="grid grid-cols-2 gap-4 py-4">
+                    <div className="grid gap-2">
+                        <Label htmlFor="bulk-year">Année</Label>
+                        <Select value={year} onValueChange={setYear}>
+                            <SelectTrigger id="bulk-year"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                                {years.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="bulk-month">Mois</Label>
+                        <Select value={month} onValueChange={setMonth}>
+                            <SelectTrigger id="bulk-month"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                                {months.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
+                <DialogFooter>
+                    <Button variant="outline" onClick={() => setIsBulkPrintDialogOpen(false)}>Annuler</Button>
+                    <Button onClick={handleBulkPrint} disabled={isPreparingPrint}>
+                        {isPreparingPrint ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Printer className="mr-2 h-4 w-4" />}
+                        Imprimer
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+      </div>
+
+       {isPreparingPrint && bulkPayslips.length > 0 && (
+         <div id="print-section" className="bg-white text-black print:shadow-none print:border-none print:p-0">
+           {bulkPayslips.map((payslip, index) => (
+             <PayslipTemplate key={index} payslipDetails={payslip} />
+           ))}
+         </div>
+       )}
     </>
   );
+}
+
+
+// A self-contained component for rendering a single payslip, for reuse in bulk printing.
+function PayslipTemplate({ payslipDetails }: { payslipDetails: PayslipDetails }) {
+    const { employeeInfo, earnings, deductions, totals, employerContributions, organizationLogos } = payslipDetails;
+    const fullName = `${employeeInfo.lastName || ''} ${employeeInfo.firstName || ''}`.trim() || employeeInfo.name;
+    const qrCodeValue = `${fullName} | ${employeeInfo.matricule} | ${employeeInfo.department}`;
+
+    const payslipDate = lastDayOfMonth(new Date(payslipDetails.employeeInfo.paymentDate || ''));
+    const periodDisplay = format(payslipDate, "MMMM yyyy", { locale: fr });
+    const paymentDateDisplay = format(new Date(payslipDetails.employeeInfo.paymentDate!), "EEEE dd MMMM yyyy", { locale: fr });
+    
+    const formatCurrency = (value: number) => value.toLocaleString('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+
+    return (
+        <div className="w-full max-w-4xl mx-auto bg-white p-6 border-b border-gray-300 text-black font-arial text-[9px] leading-tight print-page-break">
+            {/* Header */}
+            <header className="flex justify-between items-start pb-2 border-b-2 border-gray-200">
+                <div className="text-center w-1/4">
+                    {organizationLogos.mainLogoUrl && <img src={organizationLogos.mainLogoUrl} alt="Logo CNRCT" className="mx-auto my-1 h-[60px] w-auto" />}
+                </div>
+                <div className="text-center w-2/4 pt-2">
+                    <h2 className="font-bold text-[10px]">Chambre Nationale des Rois et Chefs Traditionnels</h2>
+                    <p className="text-[8px] mt-2">LE DIRECTOIRE</p>
+                    <p className="text-[8px]">LE CABINET / LE SERVICE INFORMATIQUE</p>
+                </div>
+                <div className="text-center w-1/4">
+                        {organizationLogos.secondaryLogoUrl && <img src={organizationLogos.secondaryLogoUrl} alt="Emblème de la Côte d'Ivoire" className="mx-auto my-1 h-[60px] w-auto" />}
+                    <h2 className="font-bold text-[10px]">République de Côte d'Ivoire</h2>
+                    <p className="mt-1 text-[9px]">Union - Discipline - Travail</p>
+                </div>
+            </header>
+
+            <div className="text-center my-2 p-1 bg-gray-100 font-bold rounded-md text-[10px]">
+                BULLETIN DE PAIE CNRCT : Période de {periodDisplay}
+            </div>
+
+            {/* Employee Info */}
+            <section className="grid grid-cols-12 gap-x-2 text-[9px]">
+                <div className="col-span-5 space-y-0.5">
+                    <p><span className="font-bold">N° CNPS EMPLOYEUR :</span> {employeeInfo.cnpsEmployeur}</p>
+                    <p><span className="font-bold">N° CNPS EMPLOYE :</span> {employeeInfo.cnpsEmploye}</p>
+                    <div className="mt-0.5 bg-white p-1 w-fit">
+                        <QRCode value={qrCodeValue} size={50} />
+                    </div>
+                </div>
+                <div className="col-span-7 border border-gray-300 rounded-md p-1.5">
+                        <div className="grid grid-cols-3 gap-x-1 gap-y-0.5">
+                        <span className="font-bold">NOM & PRENOMS</span><span className="col-span-2">: {fullName}</span>
+                        <span className="font-bold">MATRICULE</span><span className="col-span-2">: {employeeInfo.matricule}</span>
+                        <span className="font-bold">SITUATION MARITALE</span><span className="col-span-2">: {employeeInfo.situationMatrimoniale}</span>
+                        <span className="font-bold">BANQUE</span><span className="col-span-2">: {employeeInfo.banque}</span>
+                        <span className="font-bold">NUMERO DE COMPTE</span><span className="col-span-2">: {employeeInfo.numeroCompte}</span>
+                        <span className="font-bold">SERVICE</span><span className="col-span-2">: {employeeInfo.department}</span>
+                        <span className="font-bold">DATE DE CONGE</span><span className="col-span-2">: {employeeInfo.dateConge}</span>
+                    </div>
+                </div>
+                    <div className="col-span-12 grid grid-cols-7 gap-x-2 text-right pr-4 mt-0.5">
+                    <span className="col-start-3 col-span-2 font-bold">ANCIENNETE :</span><span className="col-span-3 text-left">{employeeInfo.anciennete}</span>
+                    <span className="col-start-3 col-span-2 font-bold">CATEGORIE :</span><span className="col-span-3 text-left">{employeeInfo.categorie}</span>
+                    <span className="col-start-3 col-span-2 font-bold">ENFANT(S) :</span><span className="col-span-3 text-left">{employeeInfo.enfants}</span>
+                </div>
+            </section>
+            
+            {/* Job Info Table */}
+                <table className="w-full border-collapse border border-gray-300 rounded-lg mt-1.5 text-[9px]">
+                <thead className="bg-gray-100 font-bold">
+                    <tr>
+                        <td className="p-0.5 rounded-tl-md">EMPLOI</td>
+                        <td className="p-0.5">MATRICULE</td>
+                        <td className="p-0.5">NBRE DE PARTS</td>
+                        <td className="p-0.5 rounded-tr-md">DATE D'EMBAUCHE</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td className="p-0.5">{employeeInfo.poste}</td>
+                        <td className="p-0.5">{employeeInfo.matricule}</td>
+                        <td className="p-0.5">{employeeInfo.parts}</td>
+                        <td className="p-0.5">{employeeInfo.dateEmbauche}</td>
+                    </tr>
+                </tbody>
+            </table>
+
+
+            {/* Earnings & Deductions */}
+            <div className="grid grid-cols-12 mt-1 border border-gray-300 rounded-lg text-[9px]">
+                <div className="col-span-9">
+                        <table className="w-full">
+                        <thead className="bg-gray-100 font-bold">
+                            <tr>
+                                <td className="p-0.5 w-2/3 rounded-tl-md">ELEMENTS</td>
+                                <td className="p-0.5 text-center w-1/3">GAINS</td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {earnings.map(item => (
+                                <tr key={item.label} className="h-[18px]">
+                                    <td className="pl-1">{item.label}</td>
+                                    <td className="pr-1 text-right font-mono">{item.amount > 0 ? formatCurrency(item.amount) : ''}</td>
+                                </tr>
+                            ))}
+                            <tr className="font-bold h-[18px]">
+                                <td className="pl-1">BRUT IMPOSABLE</td>
+                                <td className="pr-1 text-right font-mono bg-gray-100">{formatCurrency(totals.brutImposable)}</td>
+                            </tr>
+                                <tr className="h-[18px]">
+                                <td className="pl-1">{totals.transportNonImposable.label}</td>
+                                <td className="pr-1 text-right font-mono">{formatCurrency(totals.transportNonImposable.amount)}</td>
+                            </tr>
+                            {deductions.map(item => (
+                                <tr key={item.label} className="h-[18px]">
+                                    <td className="pl-1 w-2/3">{item.label}</td>
+                                    <td className="pr-1 text-right font-mono w-1/3"></td>
+                                </tr>
+                            ))}
+                                <tr className="h-[18px]">
+                                    <td className="pl-1">NBR JRS IMPOSABLES :</td>
+                                    <td className="pr-1 text-right font-mono"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div className="col-span-3">
+                        <table className="w-full">
+                        <thead className="bg-gray-100 font-bold">
+                            <tr>
+                                <td className="p-0.5 text-center rounded-tr-md">RETENUES</td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {earnings.map(item => (
+                                    <tr key={item.label} className="h-[18px]">
+                                    <td className="pr-1 text-right font-mono">{item.deduction > 0 ? formatCurrency(item.deduction) : ''}</td>
+                                </tr>
+                            ))}
+                            <tr className="font-bold h-[18px]"><td className="p-0.5"></td></tr>
+                            <tr className="h-[18px]"><td className="p-0.5"></td></tr>
+                            {deductions.map(item => (
+                                <tr key={item.label} className="h-[18px]">
+                                    <td className="pr-1 text-right font-mono">{item.amount > 0 ? formatCurrency(item.amount) : '0'}</td>
+                                </tr>
+                            ))}
+                                <tr className="h-[18px]"><td className="p-0.5"></td></tr>
+                        </tbody>
+                        </table>
+                </div>
+                </div>
+
+                <div className="grid grid-cols-12 -mt-px border border-t-0 border-gray-300 rounded-lg text-[9px]">
+                <div className="col-span-9 p-1 flex justify-between items-center font-bold">
+                    <span className="text-[10px]">NET A PAYER</span>
+                    <span className="italic font-normal text-[8px] px-2">{totals.netAPayerInWords}</span>
+                </div>
+                <div className="col-span-3 p-1 text-right font-bold font-mono bg-gray-100 rounded-br-lg text-[10px]">{formatCurrency(totals.netAPayer)}</div>
+                </div>
+            
+            {/* Employer Contributions */}
+            <div className="grid grid-cols-12 mt-1.5 border border-gray-300 rounded-lg text-[9px]">
+                <div className="col-span-8 p-1">
+                    <p className="font-bold text-center underline mb-1 text-[10px]">Impôts à la charge de l'employeur</p>
+                        <table className="w-full">
+                        <tbody>
+                            {employerContributions.map(item => (
+                                    <tr key={item.label}>
+                                    <td className="w-[45%] pr-2">{item.label}</td>
+                                    <td className="w-[25%] text-right font-mono pr-2">{formatCurrency(item.base)}</td>
+                                    <td className="w-[10%] text-center font-mono">{item.rate}</td>
+                                    <td className="w-[20%] text-right font-mono">{formatCurrency(item.amount)}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+                    <div className="col-span-4 flex flex-col justify-end items-center p-1">
+                        <div className="text-center pb-1">
+                            <p className="font-bold">Payé à Yamoussoukro le</p>
+                            <p className="capitalize text-[8px]">{paymentDateDisplay}</p>
+                            <div className="h-8"></div>
+                            <p className="border-t border-gray-400 pt-1">Signature</p>
+                        </div>
+                    </div>
+                </div>
+
+            {/* Footer */}
+            <footer className="text-center pt-2 border-t-2 border-gray-200 mt-2 text-[8px]">
+                <div className="leading-tight">
+                    <p className="font-bold">Chambre Nationale de Rois et Chefs Traditionnels (CNRCT)</p>
+                    <p>Yamoussoukro, Riviera - BP 201 Yamoussoukro | Tél : (225) 30 64 06 60 | Fax : (+255) 30 64 06 63</p>
+                    <p>www.cnrct.ci - Email : info@cnrct.ci</p>
+                </div>
+            </footer>
+
+        </div>
+    );
 }

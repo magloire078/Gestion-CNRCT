@@ -103,18 +103,18 @@ export default function PayslipPage() {
                     </Button>
                 </div>
             </div>
-            <div id="print-section" className="w-full max-w-4xl mx-auto bg-white p-4 sm:p-8 border rounded-lg text-black print:shadow-none print:border-none print:p-0 print:text-[9px]">
+            <div id="print-section" className="w-full max-w-4xl mx-auto bg-white p-4 sm:p-8 border rounded-lg text-black print:shadow-none print:border-none print:p-0 font-arial text-[10px] leading-tight">
                 {/* Header */}
-                <header className="flex justify-between items-start pb-2 border-b">
+                <header className="flex justify-between items-start pb-2 border-b-2 border-black">
                     <div className="text-center">
                         <h2 className="font-bold">Chambre Nationale des Rois</h2>
                         <h2 className="font-bold">et Chefs Traditionnels</h2>
-                        {organizationLogos.mainLogoUrl && <img src={organizationLogos.mainLogoUrl} alt="Logo CNRCT" width={70} height={70} className="mx-auto my-1 print:w-14 print:h-14" />}
-                        <img src="https://i.ibb.co/3Wf2zYb/un-chef-nouveau.png" alt="Embleme Un Chef Nouveau" width={80} height={80} className="mx-auto mt-1 print:w-16 print:h-16"/>
+                        {organizationLogos.mainLogoUrl && <img src={organizationLogos.mainLogoUrl} alt="Logo CNRCT" width={60} height={60} className="mx-auto my-1" />}
+                        <img src="https://i.ibb.co/3Wf2zYb/un-chef-nouveau.png" alt="Embleme Un Chef Nouveau" width={70} height={70} className="mx-auto mt-1"/>
                     </div>
                     <div className="text-center">
                         <h2 className="font-bold">République de Côte d'Ivoire</h2>
-                         <img src="https://i.ibb.co/6r0M3Gv/Coat-of-arms-of-Ivory-Coast-svg.png" alt="Emblème de la Côte d'Ivoire" width={70} height={70} className="mx-auto my-1 print:w-14 print:h-14" />
+                         <img src="https://i.ibb.co/6r0M3Gv/Coat-of-arms-of-Ivory-Coast-svg.png" alt="Emblème de la Côte d'Ivoire" width={60} height={60} className="mx-auto my-1" />
                         <p className="mt-1">Union - Discipline - Travail</p>
                     </div>
                 </header>
@@ -129,12 +129,12 @@ export default function PayslipPage() {
                         <p><span className="font-bold">N° CNPS EMPLOYEUR :</span> {employeeInfo.cnpsEmployeur}</p>
                         <p><span className="font-bold">N° CNPS EMPLOYE :</span> {employeeInfo.cnpsEmploye}</p>
                         <div className="mt-1 bg-white p-1 w-fit">
-                          <QRCode value={qrCodeValue} size={64} />
+                          <QRCode value={qrCodeValue} size={60} />
                         </div>
                     </div>
-                    <div className="col-span-7 border rounded-lg p-2">
-                         <div className="grid grid-cols-3 gap-x-2 gap-y-1">
-                            <span className="font-bold">NOM & PRENOMS</span><span className="col-span-2 font-arial">: {fullName}</span>
+                    <div className="col-span-7 border-2 border-black rounded-lg p-2">
+                         <div className="grid grid-cols-3 gap-x-2">
+                            <span className="font-bold">NOM & PRENOMS</span><span className="col-span-2">: {fullName}</span>
                             <span className="font-bold">MATRICULE</span><span className="col-span-2">: {employeeInfo.matricule}</span>
                             <span className="font-bold">SITUATION MARITALE</span><span className="col-span-2">: {employeeInfo.situationMatrimoniale}</span>
                             <span className="font-bold">BANQUE</span><span className="col-span-2">: {employeeInfo.banque}</span>
@@ -143,7 +143,7 @@ export default function PayslipPage() {
                             <span className="font-bold">DATE DE CONGE</span><span className="col-span-2">: {employeeInfo.dateConge}</span>
                         </div>
                     </div>
-                     <div className="col-span-12 grid grid-cols-7 gap-x-2 text-right pr-4">
+                     <div className="col-span-12 grid grid-cols-7 gap-x-2 text-right pr-4 mt-1">
                         <span className="col-start-3 col-span-2 font-bold">ANCIENNETE :</span><span className="col-span-3 text-left">{employeeInfo.anciennete}</span>
                         <span className="col-start-3 col-span-2 font-bold">CATEGORIE :</span><span className="col-span-3 text-left">{employeeInfo.categorie}</span>
                         <span className="col-start-3 col-span-2 font-bold">ENFANT(S) :</span><span className="col-span-3 text-left">{employeeInfo.enfants}</span>
@@ -151,21 +151,21 @@ export default function PayslipPage() {
                 </section>
                 
                 {/* Job Info Table */}
-                 <table className="w-full border-collapse border mt-2">
+                 <table className="w-full border-collapse border-2 border-black mt-2">
                     <thead className="bg-gray-200 font-bold">
                         <tr>
-                            <td className="border p-1">EMPLOI</td>
-                            <td className="border p-1">MATRICULE</td>
-                            <td className="border p-1">NBRE DE PARTS</td>
-                            <td className="border p-1">DATE D'EMBAUCHE</td>
+                            <td className="p-1 border-r border-black">EMPLOI</td>
+                            <td className="p-1 border-r border-black">MATRICULE</td>
+                            <td className="p-1 border-r border-black">NBRE DE PARTS</td>
+                            <td className="p-1">DATE D'EMBAUCHE</td>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td className="border p-1">{employeeInfo.poste}</td>
-                            <td className="border p-1">{employeeInfo.matricule}</td>
-                            <td className="border p-1">{employeeInfo.parts}</td>
-                            <td className="border p-1">{employeeInfo.dateEmbauche}</td>
+                            <td className="p-1 border-r border-black">{employeeInfo.poste}</td>
+                            <td className="p-1 border-r border-black">{employeeInfo.matricule}</td>
+                            <td className="p-1 border-r border-black">{employeeInfo.parts}</td>
+                            <td className="p-1">{employeeInfo.dateEmbauche}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -173,95 +173,95 @@ export default function PayslipPage() {
 
                 {/* Earnings & Deductions */}
                 <div className="grid grid-cols-12 mt-1">
-                    <div className="col-span-9 border-r">
-                         <table className="w-full border-collapse border">
+                    <div className="col-span-9 border-r border-l-2 border-t-2 border-b-2 border-black">
+                         <table className="w-full border-collapse">
                             <thead className="bg-gray-200 font-bold">
-                                <tr>
-                                    <td className="border p-1 w-2/3">ELEMENTS</td>
-                                    <td className="border p-1 text-center">GAINS</td>
+                                <tr className="border-b border-black">
+                                    <td className="p-1 w-2/3">ELEMENTS</td>
+                                    <td className="p-1 text-center border-l border-black">GAINS</td>
                                 </tr>
                             </thead>
                             <tbody>
                                 {earnings.map(item => (
                                     <tr key={item.label}>
-                                        <td className="border p-1">{item.label}</td>
-                                        <td className="border p-1 text-right font-mono">{item.amount > 0 ? formatCurrency(item.amount) : ''}</td>
+                                        <td className="p-1">{item.label}</td>
+                                        <td className="p-1 text-right font-mono border-l border-black">{item.amount > 0 ? formatCurrency(item.amount) : ''}</td>
                                     </tr>
                                 ))}
-                                <tr className="font-bold">
-                                    <td className="border p-1">BRUT IMPOSABLE</td>
-                                    <td className="border p-1 text-right font-mono bg-gray-200">{formatCurrency(totals.brutImposable)}</td>
+                                <tr className="font-bold border-t border-black">
+                                    <td className="p-1">BRUT IMPOSABLE</td>
+                                    <td className="p-1 text-right font-mono bg-gray-200 border-l border-black">{formatCurrency(totals.brutImposable)}</td>
                                 </tr>
                                  <tr>
-                                    <td className="border p-1">{totals.transportNonImposable.label}</td>
-                                    <td className="border p-1 text-right font-mono">{formatCurrency(totals.transportNonImposable.amount)}</td>
+                                    <td className="p-1">{totals.transportNonImposable.label}</td>
+                                    <td className="p-1 text-right font-mono border-l border-black">{formatCurrency(totals.transportNonImposable.amount)}</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
-                    <div className="col-span-3">
-                         <table className="w-full border-collapse border">
+                    <div className="col-span-3 border-r-2 border-t-2 border-b-2 border-black">
+                         <table className="w-full border-collapse">
                             <thead className="bg-gray-200 font-bold">
-                                <tr>
-                                    <td className="border p-1 text-center">RETENUES</td>
+                                <tr className="border-b border-black">
+                                    <td className="p-1 text-center">RETENUES</td>
                                 </tr>
                             </thead>
                             <tbody>
                                 {earnings.map(item => (
                                      <tr key={item.label}>
-                                        <td className="border p-1 text-right font-mono h-[21px] print:h-auto print:leading-tight">{item.deduction > 0 ? formatCurrency(item.deduction) : ''}</td>
+                                        <td className="p-1 text-right font-mono h-[19px]">{item.deduction > 0 ? formatCurrency(item.deduction) : ''}</td>
                                     </tr>
                                 ))}
-                                <tr className="font-bold h-[21px] print:h-auto print:leading-tight"><td className="border p-1"></td></tr>
-                                <tr className="h-[21px] print:h-auto print:leading-tight"><td className="border p-1"></td></tr>
+                                <tr className="font-bold h-[19px]"><td className="p-1"></td></tr>
+                                <tr className="h-[19px]"><td className="p-1"></td></tr>
                             </tbody>
                          </table>
                     </div>
                 </div>
-                 <div className="grid grid-cols-12 mt-[-1px]">
-                     <div className="col-span-9">
-                        <table className="w-full border-collapse border">
+                 <div className="grid grid-cols-12 -mt-px">
+                     <div className="col-span-9 border-r border-l-2 border-b-2 border-black">
+                        <table className="w-full border-collapse">
                             <tbody>
                                 {deductions.map(item => (
                                     <tr key={item.label}>
-                                        <td className="border p-1 w-2/3">{item.label}</td>
-                                        <td className="border p-1 text-right font-mono w-1/3"></td>
+                                        <td className="p-1 w-2/3">{item.label}</td>
+                                        <td className="p-1 text-right font-mono w-1/3 border-l border-black"></td>
                                     </tr>
                                 ))}
                                 <tr>
-                                     <td className="border p-1">NBR JRS IMPOSABLES :</td>
-                                     <td className="border p-1 text-right font-mono"></td>
+                                     <td className="p-1">NBR JRS IMPOSABLES :</td>
+                                     <td className="p-1 text-right font-mono border-l border-black"></td>
                                 </tr>
                             </tbody>
                         </table>
                      </div>
-                     <div className="col-span-3">
-                         <table className="w-full border-collapse border">
+                     <div className="col-span-3 border-r-2 border-b-2 border-black">
+                         <table className="w-full border-collapse">
                              <tbody>
                                 {deductions.map(item => (
                                     <tr key={item.label}>
-                                        <td className="border p-1 text-right font-mono h-[21px] print:h-auto print:leading-tight">{item.amount > 0 ? formatCurrency(item.amount) : '0'}</td>
+                                        <td className="p-1 text-right font-mono h-[19px]">{item.amount > 0 ? formatCurrency(item.amount) : '0'}</td>
                                     </tr>
                                 ))}
-                                 <tr><td className="border p-1 h-[21px] print:h-auto print:leading-tight"></td></tr>
+                                 <tr><td className="p-1 h-[19px]"></td></tr>
                             </tbody>
                          </table>
                      </div>
                  </div>
 
-                 <div className="grid grid-cols-12 mt-[-1px] border">
+                 <div className="grid grid-cols-12 -mt-px border-l-2 border-r-2 border-b-2 border-black">
                     <div className="col-span-9 p-1 flex justify-between items-center font-bold">
                         <span>NET A PAYER</span>
-                        <span className="italic font-normal text-[8px] print:text-[7px]">{totals.netAPayerInWords}</span>
+                        <span className="italic font-normal text-[8px]">{totals.netAPayerInWords}</span>
                     </div>
-                    <div className="col-span-3 p-1 text-right font-bold font-mono bg-gray-200">{formatCurrency(totals.netAPayer)}</div>
+                    <div className="col-span-3 p-1 text-right font-bold font-mono bg-gray-200 border-l border-black">{formatCurrency(totals.netAPayer)}</div>
                  </div>
                 
                  {/* Employer Contributions */}
-                 <div className="grid grid-cols-12 mt-2 border rounded-b-lg">
+                 <div className="grid grid-cols-12 mt-2 border-2 border-black rounded-b-lg">
                     <div className="col-span-9 p-2">
                         <p className="font-bold text-center underline mb-1">Impôts à la charge de l'employeur</p>
-                         <table>
+                         <table className="w-full">
                             <tbody>
                                 {employerContributions.map(item => (
                                      <tr key={item.label}>
@@ -274,7 +274,7 @@ export default function PayslipPage() {
                             </tbody>
                         </table>
                     </div>
-                     <div className="col-span-3 flex flex-col justify-between items-center p-1 border-l">
+                     <div className="col-span-3 flex flex-col justify-between items-center p-1 border-l border-black">
                         <div></div>
                          <div className="text-center">
                              <p className="font-bold">Payé à {employeeInfo.paymentLocation || 'Abidjan'} le</p>
@@ -297,4 +297,3 @@ export default function PayslipPage() {
         </>
     );
 }
-

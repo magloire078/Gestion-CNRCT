@@ -47,10 +47,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { lastDayOfMonth } from "date-fns";
 
-type EmployeeWithNetSalary = Employe & { netSalary?: number };
+type EmployeeWithDetails = Employe & { netSalary?: number; grossSalary?: number };
 
 export default function PayrollPage() {
-  const [employees, setEmployees] = useState<EmployeeWithNetSalary[]>([]);
+  const [employees, setEmployees] = useState<EmployeeWithDetails[]>([]);
   const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<Employe | null>(null);
   const [loading, setLoading] = useState(true);
@@ -78,9 +78,9 @@ export default function PayrollPage() {
             payrollEmployees.map(async (emp) => {
                 try {
                     const details = await getPayslipDetails(emp, lastDayOfCurrentMonth);
-                    return { ...emp, netSalary: details.totals.netAPayer };
+                    return { ...emp, netSalary: details.totals.netAPayer, grossSalary: details.totals.brutImposable };
                 } catch {
-                    return { ...emp, netSalary: 0 }; // Default to 0 if calculation fails
+                    return { ...emp, netSalary: 0, grossSalary: 0 }; // Default to 0 if calculation fails
                 }
             })
         );
@@ -176,8 +176,8 @@ export default function PayrollPage() {
                 <TableRow>
                     <TableHead>Employé</TableHead>
                     <TableHead>Poste</TableHead>
+                    <TableHead className="text-right">Salaire Brut</TableHead>
                     <TableHead className="text-right">Salaire Net</TableHead>
-                    <TableHead>Fréquence</TableHead>
                     <TableHead>Prochaine Date de Paie</TableHead>
                     <TableHead><span className="sr-only">Actions</span></TableHead>
                 </TableRow>
@@ -189,7 +189,7 @@ export default function PayrollPage() {
                         <TableCell><Skeleton className="h-4 w-32" /></TableCell>
                         <TableCell><Skeleton className="h-4 w-32" /></TableCell>
                         <TableCell><Skeleton className="h-4 w-24 ml-auto" /></TableCell>
-                        <TableCell><Skeleton className="h-6 w-24 rounded-full" /></TableCell>
+                        <TableCell><Skeleton className="h-4 w-24 ml-auto" /></TableCell>
                         <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                         <TableCell><Skeleton className="h-8 w-8 rounded-md" /></TableCell>
                     </TableRow>
@@ -199,11 +199,11 @@ export default function PayrollPage() {
                     <TableRow key={employee.id}>
                         <TableCell className="font-medium">{`${employee.lastName || ''} ${employee.firstName || ''}`.trim()}</TableCell>
                         <TableCell>{employee.poste}</TableCell>
+                         <TableCell className="text-right font-mono">
+                         {formatCurrency(employee.grossSalary)}
+                        </TableCell>
                         <TableCell className="text-right font-mono">
                          {formatCurrency(employee.netSalary)}
-                        </TableCell>
-                        <TableCell>
-                        <Badge variant="outline">{employee.payFrequency || 'N/D'}</Badge>
                         </TableCell>
                         <TableCell>{employee.nextPayDate || 'N/D'}</TableCell>
                         <TableCell className="text-right">
@@ -268,9 +268,9 @@ export default function PayrollPage() {
                                 </DropdownMenu>
                             </div>
                             <div className="mt-2 space-y-1">
+                                <p className="text-sm"><span className="font-medium">Salaire Brut:</span> {formatCurrency(employee.grossSalary)}</p>
                                 <p className="text-sm"><span className="font-medium">Salaire Net:</span> {formatCurrency(employee.netSalary)}</p>
                                 <p className="text-sm"><span className="font-medium">Prochaine paie:</span> {employee.nextPayDate || 'N/D'}</p>
-                                <Badge variant="outline">{employee.payFrequency || 'N/D'}</Badge>
                             </div>
                         </CardContent>
                     </Card>

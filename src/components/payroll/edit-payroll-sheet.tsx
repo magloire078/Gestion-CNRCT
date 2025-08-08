@@ -70,7 +70,7 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
     if (employee) {
       setFormState({
         ...employee,
-        payFrequency: employee.payFrequency || 'Mensuel',
+        payFrequency: 'Mensuel', // Standardize to monthly
         baseSalary: employee.baseSalary || 0,
         nextPayDate: employee.nextPayDate || '',
       });
@@ -149,7 +149,7 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
     setError("");
 
     try {
-      await onUpdatePayroll(employee.id, formState);
+      await onUpdatePayroll(employee.id, { ...formState, payFrequency: 'Mensuel' });
       onClose();
     } catch(err) {
       setError(err instanceof Error ? err.message : "Échec de la mise à jour de l'entrée de paie.");
@@ -178,16 +178,10 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
                             <p className="font-medium text-muted-foreground">{`${employee.lastName || ''} ${employee.firstName || ''}`.trim()}</p>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="payFrequency">Fréquence de Paie</Label>
-                                <Select value={formState.payFrequency} onValueChange={(v) => handleSelectChange('payFrequency', v)} required>
-                                    <SelectTrigger><SelectValue /></SelectTrigger>
-                                    <SelectContent>
-                                    <SelectItem value="Mensuel">Mensuel</SelectItem>
-                                    <SelectItem value="Bi-hebdomadaire">Bi-hebdomadaire</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
+                           <div className="space-y-2">
+                                <Label>Fréquence de Paie</Label>
+                                <Input value="Mensuel" readOnly className="bg-muted" />
+                           </div>
                             <div className="space-y-2">
                                 <Label htmlFor="nextPayDate">Prochaine Date de Paie</Label>
                                 <Input id="nextPayDate" type="date" value={formState.nextPayDate} onChange={handleInputChange} required />

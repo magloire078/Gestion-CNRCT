@@ -21,7 +21,11 @@ const defaultRoles: Role[] = [
         id: 'employe',
         name: 'Employé', 
         permissions: [
-            "page:dashboard:view", "page:leave:view", "page:documents:view", "page:assistant:view"
+            "page:dashboard:view", "page:employees:view", "page:payroll:view",
+            "page:leave:view", "page:missions:view", "page:conflicts:view",
+            "page:supplies:view", "page:it-assets:view", "page:fleet:view",
+            "page:documents:view", "page:assistant:view", "page:admin:view",
+            "page:chiefs:view", "page:mapping:view", "page:evaluations:view"
         ] 
     },
     {

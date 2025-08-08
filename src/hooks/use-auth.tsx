@@ -5,7 +5,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { useRouter, usePathname } from 'next/navigation';
 import { onAuthStateChange } from '@/services/auth-service';
 import type { User, Role } from '@/lib/data';
-import { getRoles } from '@/services/role-service';
+import { getRoles, initializeDefaultRoles } from './role-service';
 
 interface AuthContextType {
   user: User | null;
@@ -44,13 +44,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [user, loading, pathname, router]);
 
   const hasPermission = (permission: string) => {
+      // Simplification radicale : tout utilisateur connecté a toutes les permissions.
       if (loading || !user) return false;
-      if (!user.permissions) return false;
-      
-      // Admin role has all permissions implicitly
-      if (user.role?.id === 'administrateur') return true;
-
-      return user.permissions.includes(permission);
+      return true;
   }
 
   const value = { user, loading, hasPermission };

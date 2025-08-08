@@ -1,6 +1,6 @@
 
 import { initializeApp, getApps, type FirebaseOptions } from "firebase/app";
-import { getFirestore, connectFirestoreEmulator, initializeFirestore } from "firebase/firestore";
+import { getFirestore, connectFirestoreEmulator, initializeFirestore, memoryLocalCache } from "firebase/firestore";
 import { getAuth, connectAuthEmulator } from "firebase/auth";
 import { getStorage, connectStorageEmulator } from "firebase/storage";
 
@@ -34,7 +34,9 @@ if (!getApps().length) {
   app = getApps()[0];
 }
 
-const db = getFirestore(app);
+const db = initializeFirestore(app, {
+    localCache: memoryLocalCache(),
+});
 const auth = getAuth(app);
 const storage = getStorage(app);
 

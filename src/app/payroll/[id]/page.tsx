@@ -126,8 +126,8 @@ export default function PayslipPage() {
                 {/* Employee Info */}
                 <section className="flex">
                     <div className="w-1/3 space-y-1">
-                        <p className="text-[9px]"><span className="font-bold">N° CNPS EMPLOYEUR</span> : {employeeInfo.cnpsEmployeur}</p>
-                        <p className="text-[9px]"><span className="font-bold">N° CNPS EMPLOYE</span> : {employeeInfo.cnpsEmploye}</p>
+                        <p className="text-[9px]"><span className="font-bold">N° CNPS EMPLOYEUR</span>: {employeeInfo.cnpsEmployeur}</p>
+                        <p className="text-[9px]"><span className="font-bold">N° CNPS EMPLOYE</span>: {employeeInfo.cnpsEmploye}</p>
                         <div className="mt-2 bg-white p-1 w-fit">
                           <QRCode value={qrCodeValue} size={32} />
                         </div>

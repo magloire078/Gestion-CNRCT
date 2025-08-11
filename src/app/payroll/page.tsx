@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
@@ -529,11 +530,6 @@ function PayslipTemplate({ payslipDetails }: { payslipDetails: PayslipDetails })
                     <div className="mt-2 bg-white p-1 w-fit">
                         <QRCode value={qrCodeValue} size={32} />
                     </div>
-                    <div className="text-[9px] pt-1 space-y-1">
-                        <p><span className="font-bold inline-block w-[60px]">ANCIENNETE</span>: {employeeInfo.anciennete}</p>
-                        <p><span className="font-bold inline-block w-[60px]">ENFANT(S)</span>: {employeeInfo.enfants}</p>
-                        <p><span className="font-bold inline-block w-[60px]">CATEGORIE</span>: {employeeInfo.categorie}</p>
-                    </div>
                 </div>
                 <div className="w-2/3 pl-4">
                     <div className="border border-gray-400 rounded-lg p-2 text-[9px] grid grid-cols-1 gap-y-1">
@@ -544,6 +540,9 @@ function PayslipTemplate({ payslipDetails }: { payslipDetails: PayslipDetails })
                         <p><span className="font-bold inline-block w-[140px]">NUMERO DE COMPTE</span>: {employeeInfo.numeroCompte}</p>
                         <p><span className="font-bold inline-block w-[140px]">SERVICE</span>: {employeeInfo.department}</p>
                         <p><span className="font-bold inline-block w-[140px]">DATE DE CONGE</span>: __/__/____</p>
+                        <p><span className="font-bold inline-block w-[140px]">ANCIENNETE</span>: {employeeInfo.anciennete}</p>
+                        <p><span className="font-bold inline-block w-[140px]">ENFANT(S)</span>: {employeeInfo.enfants}</p>
+                        <p><span className="font-bold inline-block w-[140px]">CATEGORIE</span>: {employeeInfo.categorie}</p>
                     </div>
                 </div>
             </section>

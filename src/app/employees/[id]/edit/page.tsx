@@ -1,10 +1,11 @@
 
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { getEmployee, updateEmployee } from "@/services/employee-service";
-import type { Employe } from "@/lib/data";
+import type { Employe, Department } from "@/lib/data";
+import { getDepartments } from "@/services/department-service";
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -16,8 +17,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, Loader2, User, Briefcase, BadgeCheck, Save } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-const departmentList = ["Informatique", "Secretariat Général", "Communication", "Direction Administrative", "Direction des Affaires financières et du patrimoine", "Protocole", "Cabinet", "Direction des Affaires sociales", "Directoire", "Comités Régionaux", "Engineering", "Marketing", "Sales", "HR", "Operations", "Other"];
-
 type Status = 'Actif' | 'En congé' | 'Licencié' | 'Retraité' | 'Décédé';
 
 export default function EmployeeEditPage() {
@@ -27,6 +26,7 @@ export default function EmployeeEditPage() {
     const { toast } = useToast();
 
     const [employee, setEmployee] = useState<Partial<Employe> | null>(null);
+    const [departmentList, setDepartmentList] = useState<Department[]>([]);
     const [loading, setLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [skillsString, setSkillsString] = useState("");
@@ -35,8 +35,12 @@ export default function EmployeeEditPage() {
         if (typeof id !== 'string') return;
         async function fetchEmployee() {
             try {
-                const data = await getEmployee(id);
+                const [data, depts] = await Promise.all([
+                  getEmployee(id),
+                  getDepartments()
+                ]);
                 setEmployee(data);
+                setDepartmentList(depts);
                 if (data?.skills) {
                     setSkillsString(data.skills.join(', '));
                 }
@@ -80,10 +84,7 @@ export default function EmployeeEditPage() {
         }
     };
 
-    const fullName = useMemo(() => {
-        if (!employee) return "";
-        return `${employee.firstName || ''} ${employee.lastName || ''}`.trim() || employee.name || "Chargement...";
-    }, [employee]);
+    const fullName = employee ? `${employee.firstName || ''} ${employee.lastName || ''}`.trim() || employee.name || "Chargement..." : "Chargement...";
 
 
     if (loading) {
@@ -160,7 +161,7 @@ export default function EmployeeEditPage() {
                             <Select name="department" value={employee.department || ''} onValueChange={(v) => handleSelectChange('department', v)}>
                                 <SelectTrigger><SelectValue placeholder="Sélectionnez..." /></SelectTrigger>
                                 <SelectContent>
-                                    {departmentList.sort().map(dep => <SelectItem key={dep} value={dep}>{dep}</SelectItem>)}
+                                    {departmentList.map(dep => <SelectItem key={dep.id} value={dep.name}>{dep.name}</SelectItem>)}
                                 </SelectContent>
                             </Select>
                         </div>

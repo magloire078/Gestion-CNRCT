@@ -224,3 +224,8 @@ export type Evaluation = {
   }[];
   evaluationDate: string; // YYYY-MM-DD
 };
+
+export type Department = {
+  id: string;
+  name: string;
+};

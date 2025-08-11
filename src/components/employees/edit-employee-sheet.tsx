@@ -22,7 +22,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import type { Employe } from "@/lib/data";
+import type { Employe, Department } from "@/lib/data";
+import { getDepartments } from "@/services/department-service";
 
 interface EditEmployeeSheetProps {
   isOpen: boolean;
@@ -31,12 +32,12 @@ interface EditEmployeeSheetProps {
   employee: Employe;
 }
 
-const departmentList = ["Informatique", "Secretariat Général", "Communication", "Direction Administrative", "Direction des Affaires financières et du patrimoine", "Protocole", "Cabinet", "Direction des Affaires sociales", "Directoire", "Comités Régionaux", "Engineering", "Marketing", "Sales", "HR", "Operations", "Other"];
 type Status = 'Actif' | 'En congé' | 'Licencié' | 'Retraité' | 'Décédé';
 
 export function EditEmployeeSheet({ isOpen, onClose, onUpdateEmployee, employee }: EditEmployeeSheetProps) {
   const [formState, setFormState] = useState<Partial<Employe>>({});
   const [skillsString, setSkillsString] = useState("");
+  const [departmentList, setDepartmentList] = useState<Department[]>([]);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -45,7 +46,19 @@ export function EditEmployeeSheet({ isOpen, onClose, onUpdateEmployee, employee 
       setFormState(employee);
       setSkillsString(employee.skills?.join(', ') || "");
     }
-  }, [employee]);
+    if (isOpen) {
+      async function fetchDepartments() {
+        try {
+          const depts = await getDepartments();
+          setDepartmentList(depts);
+        } catch (err) {
+          console.error("Failed to fetch departments", err);
+          setError("Impossible de charger la liste des départements.");
+        }
+      }
+      fetchDepartments();
+    }
+  }, [employee, isOpen]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -129,7 +142,7 @@ export function EditEmployeeSheet({ isOpen, onClose, onUpdateEmployee, employee 
                     <Select name="department" value={formState.department || ''} onValueChange={(v) => handleSelectChange('department', v)}>
                         <SelectTrigger><SelectValue placeholder="Sélectionnez..." /></SelectTrigger>
                         <SelectContent>
-                            {departmentList.sort().map(dep => <SelectItem key={dep} value={dep}>{dep}</SelectItem>)}
+                            {departmentList.map(dep => <SelectItem key={dep.id} value={dep.name}>{dep.name}</SelectItem>)}
                         </SelectContent>
                     </Select>
                 </div>

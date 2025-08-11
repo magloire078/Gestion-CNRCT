@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,7 +21,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { Employe } from "@/lib/data";
+import type { Employe, Department } from "@/lib/data";
+import { getDepartments } from "@/services/department-service";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Upload } from "lucide-react";
 import { Textarea } from "../ui/textarea";
@@ -32,8 +33,6 @@ interface AddEmployeeSheetProps {
   onAddEmployee: (employee: Omit<Employe, "id">) => Promise<void>;
 }
 
-const departmentList = ["Informatique", "Secretariat Général", "Communication", "Direction Administrative", "Direction des Affaires financières et du patrimoine", "Protocole", "Cabinet", "Direction des Affaires sociales", "Directoire", "Comités Régionaux", "Engineering", "Marketing", "Sales", "HR", "Operations", "Other"];
-
 export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployeeSheetProps) {
   const [matricule, setMatricule] = useState("");
   const [firstName, setFirstName] = useState("");
@@ -41,6 +40,7 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
   const [email, setEmail] = useState("");
   const [poste, setPoste] = useState("");
   const [department, setDepartment] = useState("");
+  const [departmentList, setDepartmentList] = useState<Department[]>([]);
   const [status, setStatus] = useState<Employe['status']>('Actif');
   const [sexe, setSexe] = useState<Employe['sexe'] | undefined>(undefined);
   const [photoUrl, setPhotoUrl] = useState<string | undefined>(undefined);
@@ -50,6 +50,21 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      async function fetchDepartments() {
+        try {
+          const depts = await getDepartments();
+          setDepartmentList(depts);
+        } catch (err) {
+          console.error("Failed to fetch departments", err);
+          setError("Impossible de charger la liste des départements.");
+        }
+      }
+      fetchDepartments();
+    }
+  }, [isOpen]);
 
   const resetForm = () => {
     setMatricule("");
@@ -193,8 +208,8 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
                   <SelectValue placeholder="Sélectionnez..." />
                 </SelectTrigger>
                 <SelectContent>
-                  {departmentList.sort().map(dep => (
-                    <SelectItem key={dep} value={dep}>{dep}</SelectItem>
+                  {departmentList.map(dep => (
+                    <SelectItem key={dep.id} value={dep.name}>{dep.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>

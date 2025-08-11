@@ -89,11 +89,11 @@ export default function OrganizationSettingsPage() {
   ) => {
     const file = e.target.files?.[0];
     if (file) {
-      if(file.size > 2 * 1024 * 1024) {
+      if(file.size > 4 * 1024 * 1024) { // Increased limit for processing
         toast({
           variant: "destructive",
           title: "Fichier trop volumineux",
-          description: "Veuillez sélectionner une image de moins de 2 Mo.",
+          description: "Veuillez sélectionner une image de moins de 4 Mo.",
         });
         return;
       }
@@ -110,12 +110,13 @@ export default function OrganizationSettingsPage() {
   const handleSaveName = async () => {
     setIsSaving(true);
     try {
-      await saveOrganizationSettings({ organizationName: name }, () => {});
+      await saveOrganizationSettings({ organizationName: name }, () => {}, () => {});
+      setSettings(prev => prev ? { ...prev, organizationName: name } : { organizationName: name, mainLogoUrl: '', secondaryLogoUrl: '', faviconUrl: '' });
       setHasNameChanged(false);
       toast({
         title: "Nom de l'organisation mis à jour",
       });
-      window.location.reload();
+      // No reload to keep UI state
     } catch (error) {
        toast({ variant: "destructive", title: "Erreur", description: "Impossible de sauvegarder le nom." });
     } finally {
@@ -165,16 +166,19 @@ export default function OrganizationSettingsPage() {
 
           switch(logoType) {
             case 'main':
+              setSettings(prev => ({...prev!, mainLogoUrl: newSettings.mainLogoUrl}));
               setMainLogoPreview(newSettings.mainLogoUrl);
               setHasMainLogoChanged(false);
               setMainLogoFile(null);
               break;
             case 'secondary':
+               setSettings(prev => ({...prev!, secondaryLogoUrl: newSettings.secondaryLogoUrl}));
               setSecondaryLogoPreview(newSettings.secondaryLogoUrl);
               setHasSecondaryLogoChanged(false);
               setSecondaryLogoFile(null);
               break;
             case 'favicon':
+               setSettings(prev => ({...prev!, faviconUrl: newSettings.faviconUrl}));
               setFaviconPreview(newSettings.faviconUrl);
               setHasFaviconChanged(false);
               setFaviconFile(null);
@@ -190,7 +194,7 @@ export default function OrganizationSettingsPage() {
               toast({
                   variant: "destructive",
                   title: "Erreur de sauvegarde",
-                  description: "Une erreur est survenue lors de la sauvegarde.",
+                  description: "Une erreur est survenue lors du téléversement ou du traitement de l'image.",
               });
               console.error(error);
           } else {
@@ -275,7 +279,7 @@ export default function OrganizationSettingsPage() {
                         <Upload className="mr-2 h-4 w-4" />
                         Changer le logo
                       </Button>
-                      <p className="text-xs text-muted-foreground mt-2">Taille max : 2 Mo.</p>
+                      <p className="text-xs text-muted-foreground mt-2">Taille max : 4 Mo. L'IA supprimera l'arrière-plan.</p>
                       <Input 
                         ref={mainLogoInputRef}
                         type="file"
@@ -325,7 +329,7 @@ export default function OrganizationSettingsPage() {
                         <Upload className="mr-2 h-4 w-4" />
                         Changer le logo
                       </Button>
-                      <p className="text-xs text-muted-foreground mt-2">Taille max : 2 Mo.</p>
+                      <p className="text-xs text-muted-foreground mt-2">Taille max : 4 Mo. L'IA supprimera l'arrière-plan.</p>
                       <Input 
                         ref={secondaryLogoInputRef}
                         type="file"
@@ -375,7 +379,7 @@ export default function OrganizationSettingsPage() {
                         <Upload className="mr-2 h-4 w-4" />
                         Changer le favicon
                       </Button>
-                      <p className="text-xs text-muted-foreground mt-2">Taille max : 2 Mo.</p>
+                      <p className="text-xs text-muted-foreground mt-2">Taille max : 4 Mo.</p>
                       <Input 
                         ref={faviconInputRef}
                         type="file"

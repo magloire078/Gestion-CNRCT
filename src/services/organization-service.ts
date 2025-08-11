@@ -1,8 +1,9 @@
 
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
-import { getStorage, ref, getDownloadURL, uploadBytesResumable, type UploadTask } from "firebase/storage";
+import { getStorage, ref, getDownloadURL, uploadBytesResumable, type UploadTask, uploadString } from "firebase/storage";
 import { db } from '@/lib/firebase';
 import type { OrganizationSettings } from '@/lib/data';
+import { processLogo } from '@/ai/flows/process-logo-flow';
 
 const SETTINGS_DOC_ID = 'organization_settings';
 const settingsDocRef = doc(db, 'settings', SETTINGS_DOC_ID);
@@ -19,40 +20,43 @@ export type UploadTaskController = {
     cancel: () => void;
 }
 
-function uploadLogoWithProgress(
-    file: File, 
+// Helper to read file as data URL
+function fileToDataUrl(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = error => reject(error);
+        reader.readAsDataURL(file);
+    });
+}
+
+function uploadProcessedLogo(
+    dataUrl: string, 
     logoName: 'mainLogo' | 'secondaryLogo' | 'favicon',
     onProgress: (progress: number) => void,
     onControllerReady: (controller: UploadTaskController) => void,
 ): Promise<string> {
     const storage = getStorage();
-    const logoRef = ref(storage, `organization/${logoName}`);
+    // Always upload as PNG to preserve transparency
+    const logoRef = ref(storage, `organization/${logoName}.png`);
 
     return new Promise((resolve, reject) => {
-        const uploadTask = uploadBytesResumable(logoRef, file);
+        const uploadTask = uploadString(logoRef, dataUrl, 'data_url');
         
         onControllerReady({
             cancel: () => uploadTask.cancel()
         });
 
-        uploadTask.on('state_changed',
-            (snapshot) => {
-                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                onProgress(progress);
-            },
-            (error) => {
+        uploadTask.then(async (snapshot) => {
+            onProgress(100);
+            const downloadUrl = await getDownloadURL(snapshot.ref);
+            resolve(downloadUrl);
+        }).catch((error) => {
+            if (error.code !== 'storage/canceled') {
                 console.error(`Failed to upload ${logoName}:`, error);
-                reject(error);
-            },
-            async () => {
-                try {
-                    const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
-                    resolve(downloadUrl);
-                } catch (error) {
-                    reject(error);
-                }
             }
-        );
+            reject(error);
+        });
     });
 }
 
@@ -79,14 +83,27 @@ export function saveOrganizationSettings(
             updateData.organizationName = settingsToUpdate.organizationName;
         }
 
+        const uploadFile = async (file: File, logoName: 'mainLogo' | 'secondaryLogo' | 'favicon') => {
+            const dataUrl = await fileToDataUrl(file);
+            onProgress(10); // Initial progress
+            
+            // Process the logo to make background transparent (unless it's a favicon)
+            const processedDataUrl = logoName === 'favicon' ? dataUrl : await processLogo(dataUrl);
+            onProgress(50); // Progress after AI processing
+            
+            const downloadUrl = await uploadProcessedLogo(processedDataUrl, logoName, (p) => onProgress(50 + p / 2), onControllerReady);
+            onProgress(100); // Final progress
+            return downloadUrl;
+        };
+
         if (settingsToUpdate.mainLogoFile) {
-            updateData.mainLogoUrl = await uploadLogoWithProgress(settingsToUpdate.mainLogoFile, 'mainLogo', onProgress, onControllerReady);
+            updateData.mainLogoUrl = await uploadFile(settingsToUpdate.mainLogoFile, 'mainLogo');
         }
         if (settingsToUpdate.secondaryLogoFile) {
-            updateData.secondaryLogoUrl = await uploadLogoWithProgress(settingsToUpdate.secondaryLogoFile, 'secondaryLogo', onProgress, onControllerReady);
+            updateData.secondaryLogoUrl = await uploadFile(settingsToUpdate.secondaryLogoFile, 'secondaryLogo');
         }
         if (settingsToUpdate.faviconFile) {
-            updateData.faviconUrl = await uploadLogoWithProgress(settingsToUpdate.faviconFile, 'favicon', onProgress, onControllerReady);
+            updateData.faviconUrl = await uploadFile(settingsToUpdate.faviconFile, 'favicon');
         }
         
         await setDoc(settingsDocRef, updateData, { merge: true });

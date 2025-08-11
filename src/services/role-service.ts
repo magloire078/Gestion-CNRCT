@@ -1,5 +1,5 @@
 
-import { collection, getDocs, addDoc, deleteDoc, doc, onSnapshot, Unsubscribe, query, orderBy, setDoc, writeBatch } from 'firebase/firestore';
+import { collection, getDocs, addDoc, deleteDoc, doc, onSnapshot, Unsubscribe, query, orderBy, setDoc, writeBatch, updateDoc } from 'firebase/firestore';
 import type { Role } from '@/lib/data';
 import { db } from '@/lib/firebase';
 
@@ -91,6 +91,11 @@ export async function getRoles(): Promise<Role[]> {
 export async function addRole(roleDataToAdd: Omit<Role, 'id'>): Promise<Role> {
     const docRef = await addDoc(rolesCollection, roleDataToAdd);
     return { id: docRef.id, ...roleDataToAdd };
+}
+
+export async function updateRole(roleId: string, roleData: Partial<Role>): Promise<void> {
+    const roleDocRef = doc(db, 'roles', roleId);
+    await updateDoc(roleDocRef, roleData);
 }
 
 export async function deleteRole(roleId: string): Promise<void> {

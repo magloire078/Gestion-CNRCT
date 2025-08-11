@@ -24,7 +24,7 @@ import { useToast } from "@/hooks/use-toast";
 
 import type { User, Role, Department } from "@/lib/data";
 import { subscribeToUsers, deleteUser, updateUser } from "@/services/user-service";
-import { subscribeToRoles, deleteRole } from "@/services/role-service";
+import { subscribeToRoles, deleteRole, updateRole } from "@/services/role-service";
 import { subscribeToDepartments, addDepartment, updateDepartment, deleteDepartment } from "@/services/department-service";
 
 import { AddUserSheet } from "@/components/admin/add-user-sheet";
@@ -33,6 +33,7 @@ import { ImportDataCard } from "@/components/admin/import-data-card";
 import { ConfirmationDialog } from "@/components/common/confirmation-dialog";
 import { DepartmentDialog } from "@/components/admin/department-dialog";
 import { EditUserRoleDialog } from "@/components/admin/edit-user-role-dialog";
+import { EditRoleSheet } from "@/components/admin/edit-role-sheet";
 
 export default function AdminPage() {
   const [users, setUsers] = useState<User[] | null>(null);
@@ -44,11 +45,13 @@ export default function AdminPage() {
 
   const [isAddUserSheetOpen, setIsAddUserSheetOpen] = useState(false);
   const [isAddRoleSheetOpen, setIsAddRoleSheetOpen] = useState(false);
+  const [isEditRoleSheetOpen, setIsEditRoleSheetOpen] = useState(false);
   const [isDepartmentDialogOpen, setIsDepartmentDialogOpen] = useState(false);
   const [isEditUserDialogOpen, setIsEditUserDialogOpen] = useState(false);
 
   const [editingDepartment, setEditingDepartment] = useState<Department | null>(null);
   const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [editingRole, setEditingRole] = useState<Role | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; type: 'user' | 'role' | 'department'; name: string } | null>(null);
 
   useEffect(() => {
@@ -97,6 +100,17 @@ export default function AdminPage() {
      toast({ title: "Rôle ajouté", description: `Le rôle ${newRole.name} a été ajouté avec succès.` });
   };
   
+  const handleUpdateRole = async (roleId: string, updatedPermissions: string[]) => {
+    try {
+      await updateRole(roleId, { permissions: updatedPermissions });
+      setIsEditRoleSheetOpen(false);
+      toast({ title: "Rôle mis à jour", description: "Les permissions du rôle ont été modifiées." });
+    } catch (err) {
+      toast({ variant: "destructive", title: "Erreur", description: "Impossible de mettre à jour le rôle." });
+      throw err;
+    }
+  };
+
   const handleSaveDepartment = async (name: string) => {
     try {
       if (editingDepartment) {
@@ -174,14 +188,19 @@ export default function AdminPage() {
                 <CardContent>
                 <div className="flex justify-end mb-4"><Button onClick={() => setIsAddRoleSheetOpen(true)}><PlusCircle className="mr-2 h-4 w-4" />Ajouter un rôle</Button></div>
                 {error && <p className="text-destructive text-center py-4">{error}</p>}
-                <Table><TableHeader><TableRow><TableHead>Rôle</TableHead><TableHead>Permissions</TableHead><TableHead><span className="sr-only">Actions</span></TableHead></TableRow></TableHeader>
+                <Table><TableHeader><TableRow><TableHead>Rôle</TableHead><TableHead>Permissions</TableHead><TableHead className="text-right w-[100px]">Actions</TableHead></TableRow></TableHeader>
                     <TableBody>
                     {loading ? Array.from({ length: 2 }).map((_, i) => (
                         <TableRow key={i}><TableCell><Skeleton className="h-4 w-24" /></TableCell><TableCell><Skeleton className="h-4 w-64" /></TableCell><TableCell><Skeleton className="h-8 w-8" /></TableCell></TableRow>
                     )) : (roles?.map((role) => (
-                        <TableRow key={role.id}><TableCell className="font-medium">{role.name}</TableCell><TableCell className="text-sm text-muted-foreground">{role.permissions.join(', ')}</TableCell><TableCell>
-                            <Button variant="ghost" size="icon" onClick={() => setDeleteTarget({ id: role.id, type: 'role', name: role.name })}><Trash2 className="h-4 w-4" /><span className="sr-only">Supprimer</span></Button>
-                        </TableCell></TableRow>
+                        <TableRow key={role.id}>
+                            <TableCell className="font-medium">{role.name}</TableCell>
+                            <TableCell className="text-sm text-muted-foreground max-w-xs truncate">{role.permissions.join(', ')}</TableCell>
+                            <TableCell className="text-right">
+                                <Button variant="ghost" size="icon" onClick={() => { setEditingRole(role); setIsEditRoleSheetOpen(true); }}><Pencil className="h-4 w-4" /></Button>
+                                <Button variant="ghost" size="icon" onClick={() => setDeleteTarget({ id: role.id, type: 'role', name: role.name })}><Trash2 className="h-4 w-4" /></Button>
+                            </TableCell>
+                        </TableRow>
                     )))}
                     </TableBody>
                 </Table>
@@ -212,6 +231,7 @@ export default function AdminPage() {
 
         <AddUserSheet isOpen={isAddUserSheetOpen} onClose={() => setIsAddUserSheetOpen(false)} onAddUser={handleAddUser} />
         <AddRoleSheet isOpen={isAddRoleSheetOpen} onClose={() => setIsAddRoleSheetOpen(false)} onAddRole={handleAddRole} roles={roles || []} />
+        {editingRole && <EditRoleSheet isOpen={isEditRoleSheetOpen} onClose={() => setIsEditRoleSheetOpen(false)} onUpdateRole={handleUpdateRole} role={editingRole} />}
         <DepartmentDialog isOpen={isDepartmentDialogOpen} onClose={() => setIsDepartmentDialogOpen(false)} onConfirm={handleSaveDepartment} department={editingDepartment} />
         <EditUserRoleDialog isOpen={isEditUserDialogOpen} onClose={() => setIsEditUserDialogOpen(false)} onConfirm={handleUpdateUserRole} user={editingUser} roles={roles || []} />
       </div>

@@ -496,14 +496,17 @@ function PayslipTemplate({ payslipDetails }: { payslipDetails: PayslipDetails })
     const periodDisplay = format(payslipDate, "MMMM yyyy", { locale: fr });
     const paymentDateDisplay = format(new Date(payslipDetails.employeeInfo.paymentDate!), "EEEE dd MMMM yyyy", { locale: fr });
     
-    const formatCurrency = (value: number) => value.toLocaleString('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+    const formatCurrency = (value: number) => {
+        if (value === 0) return '0';
+        return value.toLocaleString('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+    }
 
     return (
-        <div className="w-full max-w-4xl mx-auto bg-white p-6 border-b border-gray-300 text-black font-arial text-xs leading-tight print-page-break">
-            {/* Header */}
-            <header className="flex justify-between items-start pb-2 border-b-2 border-gray-200">
+        <div className="w-full max-w-4xl mx-auto bg-white p-6 border-b border-gray-300 text-black font-arial text-[11px] leading-tight print-page-break">
+           {/* Header */}
+            <header className="flex justify-between items-start pb-2 border-b-2 border-gray-400">
                 <div className="w-1/4 text-center flex justify-center items-center h-24">
-                    {organizationLogos.mainLogoUrl && <img src={organizationLogos.mainLogoUrl} alt="Logo CNRCT" className="max-h-full max-w-full h-auto w-auto" />}
+                     {organizationLogos.secondaryLogoUrl && <img src={organizationLogos.secondaryLogoUrl} alt="Emblème de la Côte d'Ivoire" className="max-h-full max-w-full h-auto w-auto" />}
                 </div>
                 <div className="text-center w-2/4 pt-2">
                     <h2 className="font-bold text-sm">Chambre Nationale des Rois et Chefs Traditionnels</h2>
@@ -511,11 +514,11 @@ function PayslipTemplate({ payslipDetails }: { payslipDetails: PayslipDetails })
                     <p className="text-xs">LE CABINET / LE SERVICE INFORMATIQUE</p>
                 </div>
                 <div className="w-1/4 text-center flex justify-center items-center h-24">
-                    {organizationLogos.secondaryLogoUrl && <img src={organizationLogos.secondaryLogoUrl} alt="Emblème de la Côte d'Ivoire" className="max-h-full max-w-full h-auto w-auto" />}
+                   {organizationLogos.mainLogoUrl && <img src={organizationLogos.mainLogoUrl} alt="Logo CNRCT" className="max-h-full max-w-full h-auto w-auto" />}
                 </div>
             </header>
 
-            <div className="text-center my-2 p-1 bg-gray-100 font-bold rounded-lg text-sm">
+            <div className="text-center my-2 p-1 bg-gray-200 font-bold rounded-md text-sm">
                 BULLETIN DE PAIE CNRCT : Période de {periodDisplay}
             </div>
 
@@ -525,31 +528,37 @@ function PayslipTemplate({ payslipDetails }: { payslipDetails: PayslipDetails })
                     <p className="text-[10px]"><span className="font-bold">N° CNPS EMPLOYEUR :</span> {employeeInfo.cnpsEmployeur}</p>
                     <p className="text-[10px]"><span className="font-bold">N° CNPS EMPLOYE :</span> {employeeInfo.cnpsEmploye}</p>
                     <div className="mt-2 bg-white p-1 w-fit">
-                        <QRCode value={qrCodeValue} size={60} />
+                        <QRCode value={qrCodeValue} size={50} />
                     </div>
                 </div>
                 <div className="w-2/3 pl-4">
                     <div className="border border-gray-400 rounded-lg p-2 text-xs">
-                            <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-                            <p><span className="font-bold">NOM & PRENOMS</span> : {fullName}</p>
-                            <p><span className="font-bold">MATRICULE</span> : {employeeInfo.matricule}</p>
+                         <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                            <div className="col-span-2">
+                                <p><span className="font-bold">NOM & PRENOMS</span> : {fullName}</p>
+                                <p><span className="font-bold">MATRICULE</span> : {employeeInfo.matricule}</p>
+                            </div>
                             <p><span className="font-bold">SITUATION MATRIMONIALE</span> : {employeeInfo.situationMatrimoniale}</p>
-                            <p><span className="font-bold">BANQUE</span> : {employeeInfo.banque}</p>
-                            <p className="col-span-2"><span className="font-bold">NUMERO DE COMPTE</span> : {employeeInfo.numeroCompte}</p>
+                            <div>
+                                <p><span className="font-bold">BANQUE</span> : {employeeInfo.banque}</p>
+                                <p><span className="font-bold">NUMERO DE COMPTE</span> : {employeeInfo.numeroCompte}</p>
+                            </div>
                             <p className="col-span-2"><span className="font-bold">SERVICE</span> : {employeeInfo.department}</p>
                             <p className="col-span-2"><span className="font-bold">DATE DE CONGE</span> : __/__/____</p>
                         </div>
                     </div>
-                        <div className="mt-1 grid grid-cols-2 gap-x-4 text-xs">
+                    <div className="mt-1 grid grid-cols-2 gap-x-4 text-xs">
                         <p><span className="font-bold">ANCIENNETE :</span> {employeeInfo.anciennete}</p>
-                        <p><span className="font-bold">CATEGORIE :</span> {employeeInfo.categorie}</p>
+                        <div>
                             <p><span className="font-bold">ENFANT(S) :</span> {employeeInfo.enfants}</p>
+                            <p><span className="font-bold">CATEGORIE :</span> {employeeInfo.categorie}</p>
+                        </div>
                     </div>
                 </div>
             </section>
             
             {/* Job Info Table */}
-            <table className="w-full border-collapse border-2 border-gray-400 rounded-lg mt-2 text-xs">
+            <table className="w-full border-collapse border border-gray-400 rounded-lg mt-2 text-xs">
                 <thead className="bg-gray-200 font-bold text-center">
                     <tr>
                         <td className="p-1 border-r border-gray-400">EMPLOI</td>
@@ -570,7 +579,7 @@ function PayslipTemplate({ payslipDetails }: { payslipDetails: PayslipDetails })
 
 
             {/* Earnings & Deductions */}
-            <div className="border-2 border-gray-400 rounded-lg mt-2 text-xs">
+            <div className="border border-gray-400 rounded-lg mt-2 text-xs">
                     <table className="w-full border-collapse">
                         <thead className="bg-gray-200 font-bold">
                             <tr>
@@ -614,7 +623,7 @@ function PayslipTemplate({ payslipDetails }: { payslipDetails: PayslipDetails })
                         </tbody>
                     </table>
                      <div className="flex justify-between items-center font-bold bg-gray-200 border-t border-gray-400">
-                        <div className="w-[50%] p-1 italic font-normal text-xs text-center">
+                        <div className="w-[50%] p-1 italic font-normal text-[10px] text-center">
                             {totals.netAPayerInWords}
                         </div>
                         <div className="w-[25%] p-1 text-left border-l border-gray-400">NET A PAYER</div>
@@ -645,8 +654,8 @@ function PayslipTemplate({ payslipDetails }: { payslipDetails: PayslipDetails })
                         <div className="text-center pb-1">
                             <p className="font-bold">Payé à Yamoussoukro le</p>
                             <p className="capitalize text-xs">{paymentDateDisplay}</p>
-                            <div className="h-8"></div>
-                            <p className="border-t border-gray-400 pt-1">Signature</p>
+                            <div className="h-12"></div>
+                            <p className="border-t border-gray-400 pt-1 opacity-75">Signature</p>
                         </div>
                     </div>
                 </div>
@@ -663,4 +672,3 @@ function PayslipTemplate({ payslipDetails }: { payslipDetails: PayslipDetails })
         </div>
     );
 }
-

@@ -62,6 +62,14 @@ export async function updateChief(id: string, chiefData: Partial<Omit<Chief, 'id
         updateData.photoUrl = photoUrl;
     }
 
+    // Ensure numeric values are stored as numbers
+    if (updateData.latitude !== undefined) {
+        updateData.latitude = Number(updateData.latitude);
+    }
+     if (updateData.longitude !== undefined) {
+        updateData.longitude = Number(updateData.longitude);
+    }
+
     await updateDoc(chiefDocRef, updateData);
 }
 

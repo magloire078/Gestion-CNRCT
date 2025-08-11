@@ -92,6 +92,9 @@ export default function ChiefDetailPage() {
                             <InfoItem label="Département" value={chief.department} icon={Building} />
                             <InfoItem label="Sous-préfecture" value={chief.subPrefecture} />
                             <InfoItem label="Village / Commune" value={chief.village} />
+                            {(chief.latitude && chief.longitude) && 
+                                <InfoItem label="Coordonnées" value={`${chief.latitude}, ${chief.longitude}`} />
+                            }
                         </CardContent>
                     </Card>
 

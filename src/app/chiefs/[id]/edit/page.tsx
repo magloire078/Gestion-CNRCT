@@ -58,8 +58,8 @@ export default function ChiefEditPage() {
     }, [id, toast]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        const { name, value } = e.target;
-        setChief(prev => (prev ? { ...prev, [name]: value } : null));
+        const { name, value, type } = e.target;
+        setChief(prev => (prev ? { ...prev, [name]: type === 'number' ? (value === '' ? '' : parseFloat(value)) : value } : null));
     };
 
     const handleSelectChange = (name: string, value: string) => {
@@ -88,8 +88,13 @@ export default function ChiefEditPage() {
     const handleSave = async () => {
         if (!chief || typeof id !== 'string') return;
         setIsSaving(true);
+
+        const dataToSave: Partial<Chief> = { ...chief };
+        if (dataToSave.latitude === '') delete dataToSave.latitude;
+        if (dataToSave.longitude === '') delete dataToSave.longitude;
+        
         try {
-            await updateChief(id, chief, photoFile);
+            await updateChief(id, dataToSave, photoFile);
             toast({ title: "Succès", description: "Les informations du chef ont été mises à jour." });
             router.push(`/chiefs/${id}`);
         } catch (error) {
@@ -205,6 +210,14 @@ export default function ChiefEditPage() {
                             <SelectContent>{villages.map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}</SelectContent>
                         </Select>
                     </div>
+                     <div className="space-y-2">
+                        <Label htmlFor="latitude">Latitude</Label>
+                        <Input id="latitude" name="latitude" type="number" step="any" value={chief.latitude || ''} onChange={handleInputChange} />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="longitude">Longitude</Label>
+                        <Input id="longitude" name="longitude" type="number" step="any" value={chief.longitude || ''} onChange={handleInputChange} />
+                    </div>
                 </CardContent>
             </Card>
 
@@ -237,4 +250,3 @@ export default function ChiefEditPage() {
         </div>
     );
 }
-

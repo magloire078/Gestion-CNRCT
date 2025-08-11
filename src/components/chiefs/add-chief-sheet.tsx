@@ -51,6 +51,9 @@ export function AddChiefSheet({ isOpen, onClose, onAddChief }: AddChiefSheetProp
   const [selectedVillage, setSelectedVillage] = useState("");
   const [customVillage, setCustomVillage] = useState("");
 
+  const [latitude, setLatitude] = useState<number | ''>('');
+  const [longitude, setLongitude] = useState<number | ''>('');
+
   const [parentChiefId, setParentChiefId] = useState<string | null>(null);
 
   const [dateOfBirth, setDateOfBirth] = useState("");
@@ -88,6 +91,7 @@ export function AddChiefSheet({ isOpen, onClose, onAddChief }: AddChiefSheetProp
     setSelectedDepartment(""); setCustomDepartment("");
     setSelectedSubPrefecture(""); setCustomSubPrefecture("");
     setSelectedVillage(""); setCustomVillage("");
+    setLatitude(''); setLongitude('');
     setParentChiefId(null); setDateOfBirth("");
     setRegencyStartDate(""); setRegencyEndDate(""); setError("");
     if(fileInputRef.current) fileInputRef.current.value = "";
@@ -131,6 +135,8 @@ export function AddChiefSheet({ isOpen, onClose, onAddChief }: AddChiefSheetProp
           subPrefecture: finalSubPrefecture,
           village: finalVillage,
           contact, bio, photoUrl, parentChiefId,
+          latitude: latitude !== '' ? Number(latitude) : undefined,
+          longitude: longitude !== '' ? Number(longitude) : undefined,
           dateOfBirth: dateOfBirth || undefined,
           regencyStartDate: regencyStartDate || undefined,
           regencyEndDate: regencyEndDate || undefined,
@@ -180,6 +186,9 @@ export function AddChiefSheet({ isOpen, onClose, onAddChief }: AddChiefSheetProp
 
             <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="village" className="text-right">Village/Commune</Label><Select value={selectedVillage} onValueChange={setSelectedVillage} disabled={!selectedSubPrefecture || selectedSubPrefecture === 'AUTRE'} required><SelectTrigger className="col-span-3"><SelectValue placeholder="Sélectionnez un village..." /></SelectTrigger><SelectContent>{villages.map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}<SelectItem value="AUTRE">Autre...</SelectItem></SelectContent></Select></div>
             {selectedVillage === 'AUTRE' && <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="customVillage" className="text-right">Nouveau Village</Label><Input id="customVillage" value={customVillage} onChange={e => setCustomVillage(e.target.value)} className="col-span-3" placeholder="Nom du nouveau village" required /></div>}
+
+            <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="latitude" className="text-right">Latitude</Label><Input id="latitude" type="number" step="any" value={latitude} onChange={(e) => setLatitude(e.target.value === '' ? '' : parseFloat(e.target.value))} className="col-span-3" placeholder="Ex: 5.345" /></div>
+            <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="longitude" className="text-right">Longitude</Label><Input id="longitude" type="number" step="any" value={longitude} onChange={(e) => setLongitude(e.target.value === '' ? '' : parseFloat(e.target.value))} className="col-span-3" placeholder="Ex: -4.028" /></div>
             
             <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="dateOfBirth" className="text-right">Date de Naissance</Label><Input id="dateOfBirth" type="date" value={dateOfBirth} onChange={(e) => setDateOfBirth(e.target.value)} className="col-span-3" /></div>
             <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="regencyStartDate" className="text-right">Début de Régence</Label><Input id="regencyStartDate" type="date" value={regencyStartDate} onChange={(e) => setRegencyStartDate(e.target.value)} className="col-span-3" /></div>

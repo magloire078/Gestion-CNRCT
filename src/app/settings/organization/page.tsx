@@ -195,6 +195,8 @@ export default function OrganizationSettingsPage() {
                   description: "Une erreur est survenue lors de la sauvegarde.",
               });
               console.error(error);
+          } else {
+            console.log("Upload was canceled by the user.");
           }
       } finally {
          setProgress(null);
@@ -416,3 +418,4 @@ export default function OrganizationSettingsPage() {
     </div>
   );
 }
+

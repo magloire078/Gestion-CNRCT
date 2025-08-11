@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -14,9 +14,10 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { FileText, Eye, EyeOff, Loader2, AlertCircle } from "lucide-react";
+import { Building2, Eye, EyeOff, Loader2, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { signIn } from "@/services/auth-service";
+import { getOrganizationSettings } from "@/services/organization-service";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -25,6 +26,13 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [orgName, setOrgName] = useState("Gestion App");
+
+  useEffect(() => {
+    getOrganizationSettings().then(settings => {
+        setOrgName(settings.organizationName || "Gestion App");
+    })
+  }, []);
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -59,8 +67,8 @@ export default function LoginPage() {
       <Card className="w-full max-w-sm">
         <CardHeader>
           <div className="flex items-center justify-center gap-2 mb-4">
-              <FileText className="h-8 w-8 text-primary" />
-              <h1 className="text-xl font-semibold tracking-tight">Gestion CNRCT</h1>
+              <Building2 className="h-8 w-8 text-primary" />
+              <h1 className="text-xl font-semibold tracking-tight">{orgName}</h1>
           </div>
           <CardTitle className="text-2xl text-center">Connexion</CardTitle>
           <CardDescription className="text-center">

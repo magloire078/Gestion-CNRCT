@@ -7,17 +7,16 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { getOrganizationSettings } from '@/services/organization-service';
 
 
-// This function can be uncommented if you need dynamic metadata generation
-// export async function generateMetadata(): Promise<Metadata> {
-//   const settings = await getOrganizationSettings();
-//   return {
-//     title: 'Gestion CNRCT',
-//     description: 'Gestion des ressources humaines et matérielles',
-//     icons: {
-//       icon: settings.faviconUrl || '/favicon.ico',
-//     },
-//   };
-// }
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getOrganizationSettings();
+  return {
+    title: settings.organizationName || 'Gestion App',
+    description: `Application de gestion pour ${settings.organizationName}`,
+    icons: {
+      icon: settings.faviconUrl || '/favicon.ico',
+    },
+  };
+}
 
 export default async function RootLayout({
   children,
@@ -35,7 +34,6 @@ export default async function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Arial&display=swap"
           rel="stylesheet"
         />
-         {settings.faviconUrl && <link rel="icon" href={settings.faviconUrl} sizes="any" />}
       </head>
       <body className="font-body antialiased">
          <ThemeProvider
@@ -44,7 +42,7 @@ export default async function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <SiteLayout>
+            <SiteLayout settings={settings}>
                 {children}
             </SiteLayout>
             <Toaster />

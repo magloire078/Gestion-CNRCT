@@ -9,6 +9,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,10 +20,14 @@ import { Separator } from "@/components/ui/separator";
 import { getOrganizationSettings, saveOrganizationSettings } from "@/services/organization-service";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
+import type { OrganizationSettings } from "@/lib/data";
 
 export default function OrganizationSettingsPage() {
   const { toast } = useToast();
   
+  const [settings, setSettings] = useState<OrganizationSettings | null>(null);
+  const [name, setName] = useState("");
+
   const [mainLogoPreview, setMainLogoPreview] = useState("");
   const [secondaryLogoPreview, setSecondaryLogoPreview] = useState("");
   const [faviconPreview, setFaviconPreview] = useState("");
@@ -31,11 +36,13 @@ export default function OrganizationSettingsPage() {
   const [secondaryLogoFile, setSecondaryLogoFile] = useState<File | null>(null);
   const [faviconFile, setFaviconFile] = useState<File | null>(null);
 
+  const [hasNameChanged, setHasNameChanged] = useState(false);
   const [hasMainLogoChanged, setHasMainLogoChanged] = useState(false);
   const [hasSecondaryLogoChanged, setHasSecondaryLogoChanged] = useState(false);
   const [hasFaviconChanged, setHasFaviconChanged] = useState(false);
   
   const [loading, setLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const [isSavingMain, setIsSavingMain] = useState(false);
   const [isSavingSecondary, setIsSavingSecondary] = useState(false);
   const [isSavingFavicon, setIsSavingFavicon] = useState(false);
@@ -52,10 +59,12 @@ export default function OrganizationSettingsPage() {
     async function loadSettings() {
       setLoading(true);
       try {
-        const settings = await getOrganizationSettings();
-        setMainLogoPreview(settings.mainLogoUrl);
-        setSecondaryLogoPreview(settings.secondaryLogoUrl);
-        setFaviconPreview(settings.faviconUrl);
+        const loadedSettings = await getOrganizationSettings();
+        setSettings(loadedSettings);
+        setName(loadedSettings.organizationName);
+        setMainLogoPreview(loadedSettings.mainLogoUrl);
+        setSecondaryLogoPreview(loadedSettings.secondaryLogoUrl);
+        setFaviconPreview(loadedSettings.faviconUrl);
       } catch (error) {
         console.error("Failed to load organization settings:", error);
         toast({
@@ -95,8 +104,24 @@ export default function OrganizationSettingsPage() {
       reader.readAsDataURL(file);
     }
   };
+
+  const handleSaveName = async () => {
+    setIsSaving(true);
+    try {
+      await saveOrganizationSettings({ organizationName: name }, () => {});
+      setHasNameChanged(false);
+      toast({
+        title: "Nom de l'organisation mis à jour",
+      });
+      window.location.reload();
+    } catch (error) {
+       toast({ variant: "destructive", title: "Erreur", description: "Impossible de sauvegarder le nom." });
+    } finally {
+      setIsSaving(false);
+    }
+  };
   
-  const handleSave = async (logoType: 'main' | 'secondary' | 'favicon') => {
+  const handleSaveLogo = async (logoType: 'main' | 'secondary' | 'favicon') => {
       let file: File | null = null;
       let settingsToSave = {};
       let setProgress: React.Dispatch<React.SetStateAction<number | null>> = () => {};
@@ -133,6 +158,7 @@ export default function OrganizationSettingsPage() {
               setMainLogoPreview(newSettings.mainLogoUrl);
               setHasMainLogoChanged(false);
               setMainLogoFile(null);
+              window.location.reload();
               break;
             case 'secondary':
               setSecondaryLogoPreview(newSettings.secondaryLogoUrl);
@@ -143,7 +169,6 @@ export default function OrganizationSettingsPage() {
               setFaviconPreview(newSettings.faviconUrl);
               setHasFaviconChanged(false);
               setFaviconFile(null);
-              // Force reload to update the browser tab favicon
               window.location.reload(); 
               break;
           }
@@ -174,6 +199,36 @@ export default function OrganizationSettingsPage() {
     <div className="flex flex-col gap-6 max-w-2xl mx-auto">
       <h1 className="text-3xl font-bold tracking-tight">Paramètres de l'Organisation</h1>
       
+      {loading ? (
+        <Card>
+            <CardHeader><Skeleton className="h-6 w-1/2" /></CardHeader>
+            <CardContent><Skeleton className="h-32 w-full" /></CardContent>
+        </Card>
+      ) : (
+        <Card>
+            <CardHeader>
+            <CardTitle>Nom de l'Organisation</CardTitle>
+            <CardDescription>
+                Modifiez le nom de l'application affiché dans l'interface.
+            </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <Label htmlFor="org-name">Nom</Label>
+                <Input 
+                    id="org-name" 
+                    value={name} 
+                    onChange={e => { setName(e.target.value); setHasNameChanged(true); }}
+                />
+            </CardContent>
+            <CardFooter>
+                <Button onClick={handleSaveName} disabled={isSaving || !hasNameChanged}>
+                    {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                    Enregistrer le nom
+                </Button>
+            </CardFooter>
+        </Card>
+      )}
+
       <Card>
         <CardHeader>
           <CardTitle>Identité Visuelle</CardTitle>
@@ -201,7 +256,7 @@ export default function OrganizationSettingsPage() {
                   </Avatar>
                   <div className="flex-1">
                       <Label>Logo Principal (ex: CNRCT)</Label>
-                      <p className="text-xs text-muted-foreground mb-2">Utilisé sur la partie gauche des documents.</p>
+                      <p className="text-xs text-muted-foreground mb-2">Utilisé dans la barre latérale et sur les documents.</p>
                       <Button type="button" variant="outline" size="sm" onClick={() => mainLogoInputRef.current?.click()}>
                         <Upload className="mr-2 h-4 w-4" />
                         Changer le logo
@@ -225,7 +280,7 @@ export default function OrganizationSettingsPage() {
                 <div className="flex justify-end">
                     <Button 
                         type="button" 
-                        onClick={() => handleSave('main')} 
+                        onClick={() => handleSaveLogo('main')} 
                         disabled={isSavingMain || !hasMainLogoChanged}
                     >
                         {isSavingMain ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
@@ -269,7 +324,7 @@ export default function OrganizationSettingsPage() {
                  <div className="flex justify-end">
                     <Button 
                         type="button" 
-                        onClick={() => handleSave('secondary')} 
+                        onClick={() => handleSaveLogo('secondary')} 
                         disabled={isSavingSecondary || !hasSecondaryLogoChanged}
                     >
                         {isSavingSecondary ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
@@ -313,7 +368,7 @@ export default function OrganizationSettingsPage() {
                  <div className="flex justify-end">
                     <Button 
                         type="button" 
-                        onClick={() => handleSave('favicon')} 
+                        onClick={() => handleSaveLogo('favicon')} 
                         disabled={isSavingFavicon || !hasFaviconChanged}
                     >
                         {isSavingFavicon ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}

@@ -229,3 +229,10 @@ export type Department = {
   id: string;
   name: string;
 };
+
+export type OrganizationSettings = {
+    organizationName: string;
+    mainLogoUrl: string;
+    secondaryLogoUrl: string;
+    faviconUrl: string;
+};

@@ -31,6 +31,7 @@ import {
 
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { signOut } from "@/services/auth-service";
+import type { OrganizationSettings } from "@/lib/data";
 
 import {
   SidebarProvider,
@@ -102,7 +103,7 @@ function ProtectedPage({ children, permission }: { children: React.ReactNode, pe
 }
 
 
-function AppLayout({ children }: { children: React.ReactNode }) {
+function AppLayout({ children, settings }: { children: React.ReactNode, settings: OrganizationSettings }) {
   const pathname = usePathname();
   const router = useRouter();
   const { user, loading, hasPermission } = useAuth();
@@ -136,9 +137,12 @@ function AppLayout({ children }: { children: React.ReactNode }) {
         <Sidebar>
           <SidebarHeader>
             <div className="flex items-center gap-2">
-              <Building2 className="size-8 text-primary" />
+              <Avatar className="size-8 rounded-md">
+                <AvatarImage src={settings.mainLogoUrl} alt={settings.organizationName} />
+                <AvatarFallback><Building2 className="size-5" /></AvatarFallback>
+              </Avatar>
               <span className="text-lg font-semibold">
-                Gestion CNRCT
+                {settings.organizationName}
               </span>
             </div>
           </SidebarHeader>
@@ -216,7 +220,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function SiteLayout({ children }: { children: React.ReactNode }) {
+export function SiteLayout({ children, settings }: { children: React.ReactNode, settings: OrganizationSettings }) {
   const pathname = usePathname();
   
   const isPublicPage = ['/login', '/signup', '/forgot-password'].includes(pathname);
@@ -226,8 +230,8 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthProvider>
-        <AppLayout>
+    <AuthProvider settings={settings}>
+        <AppLayout settings={settings}>
             {children}
         </AppLayout>
     </AuthProvider>

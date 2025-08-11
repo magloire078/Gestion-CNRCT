@@ -4,19 +4,20 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { onAuthStateChange } from '@/services/auth-service';
-import type { User, Role } from '@/lib/data';
-import { getRoles, initializeDefaultRoles } from './role-service';
+import type { User, Role, OrganizationSettings } from '@/lib/data';
+import { getRoles, initializeDefaultRoles } from '@/services/role-service';
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
+  settings: OrganizationSettings;
   hasPermission: (permission: string) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+export function AuthProvider({ children, settings }: { children: ReactNode, settings: OrganizationSettings }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -44,12 +45,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [user, loading, pathname, router]);
 
   const hasPermission = (permission: string) => {
-      // Simplification radicale : tout utilisateur connecté a toutes les permissions.
       if (loading || !user) return false;
-      return true;
+      // Admins have all permissions
+      if (user.role?.id === 'administrateur') {
+        return true;
+      }
+      return user.permissions?.includes(permission) || false;
   }
 
-  const value = { user, loading, hasPermission };
+  const value = { user, loading, hasPermission, settings };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

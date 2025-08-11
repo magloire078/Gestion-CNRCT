@@ -1,18 +1,15 @@
 
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { getStorage, ref, getDownloadURL, uploadBytesResumable } from "firebase/storage";
 import { db } from '@/lib/firebase';
+import type { OrganizationSettings } from '@/lib/data';
 
 const SETTINGS_DOC_ID = 'organization_settings';
 const settingsDocRef = doc(db, 'settings', SETTINGS_DOC_ID);
 
-export type OrganizationSettings = {
-    mainLogoUrl: string;
-    secondaryLogoUrl: string;
-    faviconUrl: string;
-};
 
 export type OrganizationSettingsInput = Partial<{
+    organizationName: string;
     mainLogoFile: File | null;
     secondaryLogoFile: File | null;
     faviconFile: File | null;
@@ -58,7 +55,7 @@ export async function getOrganizationSettings(): Promise<OrganizationSettings> {
         return docSnap.data() as OrganizationSettings;
     }
     // Return default empty state if not found
-    return { mainLogoUrl: '', secondaryLogoUrl: '', faviconUrl: '' };
+    return { organizationName: 'Gestion CNRCT', mainLogoUrl: '', secondaryLogoUrl: '', faviconUrl: '' };
 }
 
 export async function saveOrganizationSettings(
@@ -66,6 +63,10 @@ export async function saveOrganizationSettings(
     onProgress: (progress: number) => void
 ): Promise<OrganizationSettings> {
     const updateData: Partial<OrganizationSettings> = {};
+
+    if (settingsToUpdate.organizationName) {
+        updateData.organizationName = settingsToUpdate.organizationName;
+    }
 
     if (settingsToUpdate.mainLogoFile) {
         updateData.mainLogoUrl = await uploadLogoWithProgress(settingsToUpdate.mainLogoFile, 'mainLogo', onProgress);

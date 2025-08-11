@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,15 +13,23 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { FileText, Loader2, AlertCircle, CheckCircle } from "lucide-react";
+import { Building2, Loader2, AlertCircle, CheckCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { sendPasswordReset } from "@/services/auth-service";
+import { getOrganizationSettings } from "@/services/organization-service";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [orgName, setOrgName] = useState("Gestion App");
+
+  useEffect(() => {
+    getOrganizationSettings().then(settings => {
+        setOrgName(settings.organizationName || "Gestion App");
+    })
+  }, []);
 
   const handleResetRequest = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -44,8 +52,8 @@ export default function ForgotPasswordPage() {
       <Card className="w-full max-w-sm">
         <CardHeader>
           <div className="flex items-center justify-center gap-2 mb-4">
-              <FileText className="h-8 w-8 text-primary" />
-              <h1 className="text-xl font-semibold tracking-tight">Gestion CNRCT</h1>
+              <Building2 className="h-8 w-8 text-primary" />
+              <h1 className="text-xl font-semibold tracking-tight">{orgName}</h1>
           </div>
           <CardTitle className="text-2xl text-center">Mot de passe oublié</CardTitle>
           <CardDescription className="text-center">

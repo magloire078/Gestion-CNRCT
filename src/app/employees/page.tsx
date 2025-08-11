@@ -522,7 +522,7 @@ export default function EmployeesPage() {
                 <footer className="mt-8 text-xs">
                     <div className="flex justify-between items-end">
                         <div>
-                            <p>{new Date().toLocaleString('fr-FR')}</p>
+                            
                         </div>
                         <div className="text-center">
                             <p className="font-bold">Chambre Nationale de Rois et Chefs Traditionnels (CNRCT)</p>
@@ -539,3 +539,4 @@ export default function EmployeesPage() {
     </>
   );
 }
+

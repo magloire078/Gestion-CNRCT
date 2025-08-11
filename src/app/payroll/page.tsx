@@ -525,34 +525,32 @@ function PayslipTemplate({ payslipDetails }: { payslipDetails: PayslipDetails })
             {/* Employee Info */}
             <section className="flex">
                 <div className="w-1/3 space-y-1">
-                    <p className="text-[9px]"><span className="font-bold">N° CNPS EMPLOYEUR :</span> {employeeInfo.cnpsEmployeur}</p>
-                    <p className="text-[9px]"><span className="font-bold">N° CNPS EMPLOYE :</span> {employeeInfo.cnpsEmploye}</p>
+                    <p className="text-[9px]"><span className="font-bold">N° CNPS EMPLOYEUR</span> : {employeeInfo.cnpsEmployeur}</p>
+                    <p className="text-[9px]"><span className="font-bold">N° CNPS EMPLOYE</span> : {employeeInfo.cnpsEmploye}</p>
                     <div className="mt-2 bg-white p-1 w-fit">
-                        <QRCode value={qrCodeValue} size={30} />
+                        <QRCode value={qrCodeValue} size={25} />
                     </div>
                      <div className="pt-1">
-                        <p><span className="font-bold">ANCIENNETE :</span> {employeeInfo.anciennete}</p>
-                        <p><span className="font-bold">ENFANT(S) :</span> {employeeInfo.enfants}</p>
-                        <p><span className="font-bold">CATEGORIE :</span> {employeeInfo.categorie}</p>
+                        <p><span className="font-bold">ANCIENNETE</span> : {employeeInfo.anciennete}</p>
+                        <p><span className="font-bold">ENFANT(S)</span> : {employeeInfo.enfants}</p>
+                        <p><span className="font-bold">CATEGORIE</span> : {employeeInfo.categorie}</p>
                     </div>
                 </div>
                 <div className="w-2/3 pl-4">
-                    <div className="border border-gray-400 rounded-lg p-2 text-[9px]">
-                            <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-                                <div className="col-span-2">
-                                  <p><span className="font-bold">NOM & PRENOMS</span> : {fullName}</p>
-                                  <p><span className="font-bold">MATRICULE</span> : {employeeInfo.matricule}</p>
-                                </div>
-                                <div>
-                                    <p><span className="font-bold">SITUATION MATRIMONIALE</span> : {employeeInfo.situationMatrimoniale}</p>
-                                </div>
-                                 <div>
-                                    <p><span className="font-bold">BANQUE</span> : {employeeInfo.banque}</p>
-                                    <p><span className="font-bold">NUMERO DE COMPTE</span> : {employeeInfo.numeroCompte}</p>
-                                </div>
-                                <p className="col-span-2"><span className="font-bold">SERVICE</span> : {employeeInfo.department}</p>
-                                <p className="col-span-2"><span className="font-bold">DATE DE CONGE</span> : __/__/____</p>
-                            </div>
+                     <div className="border border-gray-400 rounded-lg p-2 text-[9px] grid grid-cols-2 gap-x-4 gap-y-1">
+                        <div className="col-span-2 space-y-1">
+                            <div className="grid grid-cols-[max-content_auto]"><span className="font-bold pr-2">NOM & PRENOMS</span> : {fullName}</div>
+                            <div className="grid grid-cols-[max-content_auto]"><span className="font-bold pr-2">MATRICULE</span> : {employeeInfo.matricule}</div>
+                        </div>
+                        <div className="space-y-1">
+                            <div className="grid grid-cols-[max-content_auto]"><span className="font-bold pr-2">SITUATION MATRIMONIALE</span> : {employeeInfo.situationMatrimoniale}</div>
+                             <div className="grid grid-cols-[max-content_auto]"><span className="font-bold pr-2">BANQUE</span> : {employeeInfo.banque}</div>
+                            <div className="grid grid-cols-[max-content_auto]"><span className="font-bold pr-2">NUMERO DE COMPTE</span> : {employeeInfo.numeroCompte}</div>
+                        </div>
+                        <div className="space-y-1">
+                           <div className="grid grid-cols-[max-content_auto]"><span className="font-bold pr-2">SERVICE</span> : {employeeInfo.department}</div>
+                           <div className="grid grid-cols-[max-content_auto]"><span className="font-bold pr-2">DATE DE CONGE</span> : __/__/____</div>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -615,7 +613,7 @@ function PayslipTemplate({ payslipDetails }: { payslipDetails: PayslipDetails })
                                 </tr>
                             ))}
                             <tr>
-                                 <td className="pl-1 h-[21px]">NBR JRS IMPOSABLES :</td>
+                                 <td className="pl-1 h-[21px]"><span className="font-bold">NBR JRS IMPOSABLES :</span></td>
                                  <td className="border-l border-gray-400"></td>
                                  <td className="border-l border-gray-400"></td>
                             </tr>

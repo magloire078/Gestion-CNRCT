@@ -168,7 +168,6 @@ export default function OrganizationSettingsPage() {
               setMainLogoPreview(newSettings.mainLogoUrl);
               setHasMainLogoChanged(false);
               setMainLogoFile(null);
-              window.location.reload();
               break;
             case 'secondary':
               setSecondaryLogoPreview(newSettings.secondaryLogoUrl);
@@ -179,7 +178,6 @@ export default function OrganizationSettingsPage() {
               setFaviconPreview(newSettings.faviconUrl);
               setHasFaviconChanged(false);
               setFaviconFile(null);
-              window.location.reload(); 
               break;
           }
 
@@ -196,7 +194,7 @@ export default function OrganizationSettingsPage() {
               });
               console.error(error);
           } else {
-            console.log("Upload was canceled by the user.");
+            toast({ title: 'Téléversement annulé' });
           }
       } finally {
          setProgress(null);
@@ -207,7 +205,6 @@ export default function OrganizationSettingsPage() {
   const handleCancelUpload = (controller: UploadTaskController | null) => {
     if (controller) {
         controller.cancel();
-        toast({ title: 'Téléversement annulé' });
     }
   }
 
@@ -418,4 +415,3 @@ export default function OrganizationSettingsPage() {
     </div>
   );
 }
-

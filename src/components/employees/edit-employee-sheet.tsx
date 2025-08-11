@@ -82,7 +82,7 @@ export function EditEmployeeSheet({ isOpen, onClose, onUpdateEmployee, employee 
     <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <SheetContent className="sm:max-w-2xl">
         <form onSubmit={handleSubmit}>
-          <SheetHeader>
+          <SheetHeader className="text-center">
             <SheetTitle>Modifier l'Employé</SheetTitle>
             <SheetDescription>
               Mettez à jour les informations de {employee.name}.

@@ -21,11 +21,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import type { Employe, Department } from "@/lib/data";
 import { getDepartments } from "@/services/department-service";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Upload } from "lucide-react";
+import { Upload, Sparkles, Loader2 } from "lucide-react";
 import { Textarea } from "../ui/textarea";
+import { generateAvatar } from "@/ai/flows/generate-avatar-flow";
+import { useToast } from "@/hooks/use-toast";
 
 interface AddEmployeeSheetProps {
   isOpen: boolean;
@@ -50,6 +61,13 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // AI Avatar Generation State
+  const [isAvatarDialogOpen, setIsAvatarDialogOpen] = useState(false);
+  const [avatarPrompt, setAvatarPrompt] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedAvatar, setGeneratedAvatar] = useState<string | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (isOpen) {
@@ -79,6 +97,8 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
     setPhotoUrl(undefined);
     setPhotoPreview(`https://placehold.co/100x100.png`);
     setError("");
+    setAvatarPrompt("");
+    setGeneratedAvatar(null);
     if(fileInputRef.current) {
         fileInputRef.current.value = "";
     }
@@ -101,6 +121,33 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
       reader.readAsDataURL(file);
     }
   };
+
+  const handleGenerateAvatar = async () => {
+    if (!avatarPrompt) return;
+    setIsGenerating(true);
+    setGeneratedAvatar(null);
+    try {
+      const imageUrl = await generateAvatar(avatarPrompt);
+      setGeneratedAvatar(imageUrl);
+    } catch(err) {
+       toast({
+        variant: "destructive",
+        title: "Erreur de génération",
+        description: "Impossible de générer l'avatar. Veuillez réessayer.",
+      });
+      console.error(err);
+    } finally {
+      setIsGenerating(false);
+    }
+  }
+
+  const useGeneratedAvatar = () => {
+    if(generatedAvatar) {
+      setPhotoUrl(generatedAvatar);
+      setPhotoPreview(generatedAvatar);
+      setIsAvatarDialogOpen(false);
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -136,6 +183,7 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
   };
 
   return (
+    <>
     <Sheet open={isOpen} onOpenChange={(open) => { if (!open) handleClose(); }}>
       <SheetContent className="sm:max-w-lg">
         <form onSubmit={handleSubmit}>
@@ -155,10 +203,16 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
                      <AvatarImage src={photoPreview} alt="Aperçu de la photo" data-ai-hint="employee photo" />
                      <AvatarFallback>{firstName ? firstName.charAt(0) : 'E'}</AvatarFallback>
                   </Avatar>
-                  <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>
-                    <Upload className="mr-2 h-4 w-4" />
-                    Télécharger
-                  </Button>
+                  <div className="flex flex-col gap-2">
+                    <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
+                      <Upload className="mr-2 h-4 w-4" />
+                      Télécharger
+                    </Button>
+                    <Button type="button" variant="outline" size="sm" onClick={() => setIsAvatarDialogOpen(true)}>
+                      <Sparkles className="mr-2 h-4 w-4" />
+                      Générer avec IA
+                    </Button>
+                  </div>
                   <Input 
                     ref={fileInputRef}
                     type="file"
@@ -274,5 +328,53 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
         </form>
       </SheetContent>
     </Sheet>
+    
+    <Dialog open={isAvatarDialogOpen} onOpenChange={setIsAvatarDialogOpen}>
+        <DialogContent>
+            <DialogHeader>
+            <DialogTitle>Générer un avatar avec l'IA</DialogTitle>
+            <DialogDescription>
+                Décrivez l'avatar que vous souhaitez créer. Soyez simple et clair.
+            </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                    <Label htmlFor="avatar-prompt">Description de l'avatar</Label>
+                    <Input 
+                        id="avatar-prompt" 
+                        value={avatarPrompt} 
+                        onChange={(e) => setAvatarPrompt(e.target.value)} 
+                        placeholder="Ex: Homme d'affaires souriant" 
+                    />
+                </div>
+                {isGenerating && (
+                    <div className="flex justify-center items-center h-24">
+                        <Loader2 className="h-8 w-8 animate-spin text-primary"/>
+                    </div>
+                )}
+                {generatedAvatar && (
+                    <div className="flex flex-col items-center gap-4">
+                        <p className="text-sm font-medium">Résultat :</p>
+                        <Avatar className="h-24 w-24">
+                            <AvatarImage src={generatedAvatar} alt="Avatar généré" data-ai-hint="ai avatar" />
+                            <AvatarFallback>IA</AvatarFallback>
+                        </Avatar>
+                    </div>
+                )}
+            </div>
+            <DialogFooter>
+                <Button variant="outline" onClick={() => setIsAvatarDialogOpen(false)}>Fermer</Button>
+                 {generatedAvatar ? (
+                    <Button onClick={useGeneratedAvatar}>Utiliser cet avatar</Button>
+                 ) : (
+                    <Button onClick={handleGenerateAvatar} disabled={isGenerating || !avatarPrompt}>
+                        {isGenerating && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                        Générer
+                    </Button>
+                 )}
+            </DialogFooter>
+        </DialogContent>
+    </Dialog>
+    </>
   );
 }

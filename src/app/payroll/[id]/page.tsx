@@ -129,7 +129,7 @@ export default function PayslipPage() {
                         <p className="text-[9px]"><span className="font-bold">N° CNPS EMPLOYEUR</span> : {employeeInfo.cnpsEmployeur}</p>
                         <p className="text-[9px]"><span className="font-bold">N° CNPS EMPLOYE</span> : {employeeInfo.cnpsEmploye}</p>
                         <div className="mt-2 bg-white p-1 w-fit">
-                          <QRCode value={qrCodeValue} size={20} />
+                          <QRCode value={qrCodeValue} size={32} />
                         </div>
                     </div>
                     <div className="w-2/3 pl-4">
@@ -245,8 +245,8 @@ export default function PayslipPage() {
                          <div className="text-center pb-1">
                              <p className="font-bold">Payé à Yamoussoukro le</p>
                              <p className="capitalize text-xs">{paymentDateDisplay}</p>
-                             <div className="h-16"></div>
-                             <p className="border-t border-gray-400 pt-1 opacity-60">Signature</p>
+                             <div className="h-20"></div>
+                             <p className="border-t border-gray-400 pt-1 opacity-50">Signature</p>
                          </div>
                      </div>
                  </div>

@@ -9,17 +9,19 @@ const settingsDocRef = doc(db, 'settings', SETTINGS_DOC_ID);
 export type OrganizationSettings = {
     mainLogoUrl: string;
     secondaryLogoUrl: string;
+    faviconUrl: string;
 };
 
 export type OrganizationSettingsInput = Partial<{
     mainLogoFile: File | null;
     secondaryLogoFile: File | null;
+    faviconFile: File | null;
 }>;
 
 
 async function uploadLogoWithProgress(
     file: File, 
-    logoName: 'mainLogo' | 'secondaryLogo',
+    logoName: 'mainLogo' | 'secondaryLogo' | 'favicon',
     onProgress: (progress: number) => void
 ): Promise<string> {
     const storage = getStorage();
@@ -56,7 +58,7 @@ export async function getOrganizationSettings(): Promise<OrganizationSettings> {
         return docSnap.data() as OrganizationSettings;
     }
     // Return default empty state if not found
-    return { mainLogoUrl: '', secondaryLogoUrl: '' };
+    return { mainLogoUrl: '', secondaryLogoUrl: '', faviconUrl: '' };
 }
 
 export async function saveOrganizationSettings(
@@ -70,6 +72,9 @@ export async function saveOrganizationSettings(
     }
     if (settingsToUpdate.secondaryLogoFile) {
         updateData.secondaryLogoUrl = await uploadLogoWithProgress(settingsToUpdate.secondaryLogoFile, 'secondaryLogo', onProgress);
+    }
+    if (settingsToUpdate.faviconFile) {
+        updateData.faviconUrl = await uploadLogoWithProgress(settingsToUpdate.faviconFile, 'favicon', onProgress);
     }
     
     await setDoc(settingsDocRef, updateData, { merge: true });

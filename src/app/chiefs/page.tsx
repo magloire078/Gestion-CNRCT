@@ -3,6 +3,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { PlusCircle, Search, MoreHorizontal, Eye, Pencil, Trash2 } from "lucide-react";
+import Link from 'next/link';
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -189,11 +190,15 @@ export default function ChiefsPage() {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuItem>
-                               <Eye className="mr-2 h-4 w-4" /> Voir les détails
+                            <DropdownMenuItem asChild>
+                                <Link href={`/chiefs/${chief.id}`}>
+                                   <Eye className="mr-2 h-4 w-4" /> Voir les détails
+                                </Link>
                             </DropdownMenuItem>
-                            <DropdownMenuItem>
-                               <Pencil className="mr-2 h-4 w-4" /> Modifier
+                            <DropdownMenuItem asChild>
+                                <Link href={`/chiefs/${chief.id}/edit`}>
+                                   <Pencil className="mr-2 h-4 w-4" /> Modifier
+                                </Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleDeleteChief(chief)} className="text-destructive focus:text-destructive">
                               <Trash2 className="mr-2 h-4 w-4" />

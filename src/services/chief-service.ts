@@ -1,9 +1,11 @@
 
-import { collection, getDocs, addDoc, onSnapshot, Unsubscribe, query, orderBy, deleteDoc, doc } from 'firebase/firestore';
+import { collection, getDocs, addDoc, onSnapshot, Unsubscribe, query, orderBy, deleteDoc, doc, updateDoc, getDoc } from 'firebase/firestore';
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import type { Chief } from '@/lib/data';
 import { db } from '@/lib/firebase';
 
 const chiefsCollection = collection(db, 'chiefs');
+const storage = getStorage();
 
 export function subscribeToChiefs(
     callback: (chiefs: Chief[]) => void,
@@ -34,9 +36,33 @@ export async function getChiefs(): Promise<Chief[]> {
     } as Chief));
 }
 
+export async function getChief(id: string): Promise<Chief | null> {
+    if (!id) return null;
+    const chiefDocRef = doc(db, 'chiefs', id);
+    const docSnap = await getDoc(chiefDocRef);
+    if (docSnap.exists()) {
+        return { id: docSnap.id, ...docSnap.data() } as Chief;
+    }
+    return null;
+}
+
 export async function addChief(chiefData: Omit<Chief, 'id'>): Promise<Chief> {
     const docRef = await addDoc(chiefsCollection, chiefData);
     return { id: docRef.id, ...chiefData };
+}
+
+export async function updateChief(id: string, chiefData: Partial<Omit<Chief, 'id'>>, photoFile: File | null): Promise<void> {
+    const chiefDocRef = doc(db, 'chiefs', id);
+    const updateData = { ...chiefData };
+
+    if (photoFile) {
+        const photoRef = ref(storage, `chief_photos/${id}/${photoFile.name}`);
+        const snapshot = await uploadBytes(photoRef, photoFile);
+        const photoUrl = await getDownloadURL(snapshot.ref);
+        updateData.photoUrl = photoUrl;
+    }
+
+    await updateDoc(chiefDocRef, updateData);
 }
 
 export async function deleteChief(id: string): Promise<void> {

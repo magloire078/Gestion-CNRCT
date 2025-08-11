@@ -23,7 +23,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 
 import type { User, Role, Department } from "@/lib/data";
-import { subscribeToUsers, deleteUser } from "@/services/user-service";
+import { subscribeToUsers, deleteUser, updateUser } from "@/services/user-service";
 import { subscribeToRoles, deleteRole } from "@/services/role-service";
 import { subscribeToDepartments, addDepartment, updateDepartment, deleteDepartment } from "@/services/department-service";
 
@@ -32,6 +32,7 @@ import { AddRoleSheet } from "@/components/admin/add-role-sheet";
 import { ImportDataCard } from "@/components/admin/import-data-card";
 import { ConfirmationDialog } from "@/components/common/confirmation-dialog";
 import { DepartmentDialog } from "@/components/admin/department-dialog";
+import { EditUserRoleDialog } from "@/components/admin/edit-user-role-dialog";
 
 export default function AdminPage() {
   const [users, setUsers] = useState<User[] | null>(null);
@@ -44,8 +45,10 @@ export default function AdminPage() {
   const [isAddUserSheetOpen, setIsAddUserSheetOpen] = useState(false);
   const [isAddRoleSheetOpen, setIsAddRoleSheetOpen] = useState(false);
   const [isDepartmentDialogOpen, setIsDepartmentDialogOpen] = useState(false);
+  const [isEditUserDialogOpen, setIsEditUserDialogOpen] = useState(false);
 
   const [editingDepartment, setEditingDepartment] = useState<Department | null>(null);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; type: 'user' | 'role' | 'department'; name: string } | null>(null);
 
   useEffect(() => {
@@ -108,6 +111,16 @@ export default function AdminPage() {
     }
   };
 
+  const handleUpdateUserRole = async (userId: string, newRoleId: string) => {
+    try {
+        await updateUser(userId, { roleId: newRoleId });
+        toast({ title: "Rôle mis à jour", description: "Le rôle de l'utilisateur a été modifié avec succès." });
+        setIsEditUserDialogOpen(false);
+    } catch(err) {
+        toast({ variant: "destructive", title: "Erreur", description: "Impossible de mettre à jour le rôle de l'utilisateur." });
+    }
+  };
+
   const handleConfirmDelete = async () => {
     if (!deleteTarget) return;
 
@@ -135,7 +148,7 @@ export default function AdminPage() {
           <Card>
               <CardHeader>
               <CardTitle>Gestion des Utilisateurs</CardTitle>
-              <CardDescription>Ajoutez ou supprimez les utilisateurs de l'application.</CardDescription>
+              <CardDescription>Ajoutez, modifiez ou supprimez les utilisateurs de l'application.</CardDescription>
               </CardHeader>
               <CardContent>
               <div className="flex justify-end mb-4"><Button onClick={() => setIsAddUserSheetOpen(true)}><PlusCircle className="mr-2 h-4 w-4" />Ajouter un utilisateur</Button></div>
@@ -143,9 +156,10 @@ export default function AdminPage() {
               <Table><TableHeader><TableRow><TableHead>Nom</TableHead><TableHead>Email</TableHead><TableHead>Rôle</TableHead><TableHead><span className="sr-only">Actions</span></TableHead></TableRow></TableHeader>
                   <TableBody>
                   {loading ? Array.from({ length: 3 }).map((_, i) => (
-                      <TableRow key={i}><TableCell><Skeleton className="h-4 w-32" /></TableCell><TableCell><Skeleton className="h-4 w-48" /></TableCell><TableCell><Skeleton className="h-4 w-24" /></TableCell><TableCell><Skeleton className="h-8 w-8" /></TableCell></TableRow>
+                      <TableRow key={i}><TableCell><Skeleton className="h-4 w-32" /></TableCell><TableCell><Skeleton className="h-4 w-48" /></TableCell><TableCell><Skeleton className="h-4 w-24" /></TableCell><TableCell><div className="flex justify-end gap-2"><Skeleton className="h-8 w-8" /><Skeleton className="h-8 w-8" /></div></TableCell></TableRow>
                   )) : (users?.map((user) => (
-                      <TableRow key={user.id}><TableCell className="font-medium">{user.name}</TableCell><TableCell>{user.email}</TableCell><TableCell>{user.role?.name || 'Non assigné'}</TableCell><TableCell>
+                      <TableRow key={user.id}><TableCell className="font-medium">{user.name}</TableCell><TableCell>{user.email}</TableCell><TableCell>{user.role?.name || 'Non assigné'}</TableCell><TableCell className="text-right">
+                        <Button variant="ghost" size="icon" onClick={() => { setEditingUser(user); setIsEditUserDialogOpen(true); }}><Pencil className="h-4 w-4" /><span className="sr-only">Modifier</span></Button>
                         <Button variant="ghost" size="icon" onClick={() => setDeleteTarget({ id: user.id, type: 'user', name: user.name })}><Trash2 className="h-4 w-4" /><span className="sr-only">Supprimer</span></Button>
                       </TableCell></TableRow>
                   )))}
@@ -199,6 +213,7 @@ export default function AdminPage() {
         <AddUserSheet isOpen={isAddUserSheetOpen} onClose={() => setIsAddUserSheetOpen(false)} onAddUser={handleAddUser} />
         <AddRoleSheet isOpen={isAddRoleSheetOpen} onClose={() => setIsAddRoleSheetOpen(false)} onAddRole={handleAddRole} roles={roles || []} />
         <DepartmentDialog isOpen={isDepartmentDialogOpen} onClose={() => setIsDepartmentDialogOpen(false)} onConfirm={handleSaveDepartment} department={editingDepartment} />
+        <EditUserRoleDialog isOpen={isEditUserDialogOpen} onClose={() => setIsEditUserDialogOpen(false)} onConfirm={handleUpdateUserRole} user={editingUser} roles={roles || []} />
       </div>
       
        <ConfirmationDialog

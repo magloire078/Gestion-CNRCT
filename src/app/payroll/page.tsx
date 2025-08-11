@@ -530,26 +530,24 @@ function PayslipTemplate({ payslipDetails }: { payslipDetails: PayslipDetails })
                     <div className="mt-2 bg-white p-1 w-fit">
                         <QRCode value={qrCodeValue} size={25} />
                     </div>
-                     <div className="pt-1">
-                        <p><span className="font-bold">ANCIENNETE</span> : {employeeInfo.anciennete}</p>
-                        <p><span className="font-bold">ENFANT(S)</span> : {employeeInfo.enfants}</p>
-                        <p><span className="font-bold">CATEGORIE</span> : {employeeInfo.categorie}</p>
+                     <div className="pt-1 space-y-1">
+                        <div className="grid grid-cols-[max-content_1fr] items-baseline"><span className="font-bold pr-1">ANCIENNETE</span> : <span className="pl-1">{employeeInfo.anciennete}</span></div>
+                        <div className="grid grid-cols-[max-content_1fr] items-baseline"><span className="font-bold pr-1">ENFANT(S)</span> : <span className="pl-1">{employeeInfo.enfants}</span></div>
+                        <div className="grid grid-cols-[max-content_1fr] items-baseline"><span className="font-bold pr-1">CATEGORIE</span> : <span className="pl-1">{employeeInfo.categorie}</span></div>
                     </div>
                 </div>
                 <div className="w-2/3 pl-4">
                      <div className="border border-gray-400 rounded-lg p-2 text-[9px] grid grid-cols-2 gap-x-4 gap-y-1">
                         <div className="col-span-2 space-y-1">
-                            <div className="grid grid-cols-[max-content_auto]"><span className="font-bold pr-2">NOM & PRENOMS</span> : {fullName}</div>
-                            <div className="grid grid-cols-[max-content_auto]"><span className="font-bold pr-2">MATRICULE</span> : {employeeInfo.matricule}</div>
+                             <div className="grid grid-cols-[max-content_1fr] items-baseline"><span className="font-bold pr-1">NOM & PRENOMS</span> : <span className="pl-1">{fullName}</span></div>
+                             <div className="grid grid-cols-[max-content_1fr] items-baseline"><span className="font-bold pr-1">MATRICULE</span> : <span className="pl-1">{employeeInfo.matricule}</span></div>
                         </div>
-                        <div className="space-y-1">
-                            <div className="grid grid-cols-[max-content_auto]"><span className="font-bold pr-2">SITUATION MATRIMONIALE</span> : {employeeInfo.situationMatrimoniale}</div>
-                             <div className="grid grid-cols-[max-content_auto]"><span className="font-bold pr-2">BANQUE</span> : {employeeInfo.banque}</div>
-                            <div className="grid grid-cols-[max-content_auto]"><span className="font-bold pr-2">NUMERO DE COMPTE</span> : {employeeInfo.numeroCompte}</div>
-                        </div>
-                        <div className="space-y-1">
-                           <div className="grid grid-cols-[max-content_auto]"><span className="font-bold pr-2">SERVICE</span> : {employeeInfo.department}</div>
-                           <div className="grid grid-cols-[max-content_auto]"><span className="font-bold pr-2">DATE DE CONGE</span> : __/__/____</div>
+                        <div className="col-span-2 space-y-1">
+                             <div className="grid grid-cols-[max-content_1fr] items-baseline"><span className="font-bold pr-1">SITUATION MATRIMONIALE</span> : <span className="pl-1">{employeeInfo.situationMatrimoniale}</span></div>
+                             <div className="grid grid-cols-[max-content_1fr] items-baseline"><span className="font-bold pr-1">BANQUE</span> : <span className="pl-1">{employeeInfo.banque}</span></div>
+                             <div className="grid grid-cols-[max-content_1fr] items-baseline"><span className="font-bold pr-1">NUMERO DE COMPTE</span> : <span className="pl-1">{employeeInfo.numeroCompte}</span></div>
+                             <div className="grid grid-cols-[max-content_1fr] items-baseline"><span className="font-bold pr-1">SERVICE</span> : <span className="pl-1">{employeeInfo.department}</span></div>
+                             <div className="grid grid-cols-[max-content_1fr] items-baseline"><span className="font-bold pr-1">DATE DE CONGE</span> : <span className="pl-1">__/__/____</span></div>
                         </div>
                     </div>
                 </div>

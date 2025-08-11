@@ -1,6 +1,6 @@
 
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
-import { getStorage, ref, getDownloadURL, uploadBytesResumable } from "firebase/storage";
+import { getStorage, ref, getDownloadURL, uploadBytesResumable, type UploadTask } from "firebase/storage";
 import { db } from '@/lib/firebase';
 import type { OrganizationSettings } from '@/lib/data';
 
@@ -15,17 +15,25 @@ export type OrganizationSettingsInput = Partial<{
     faviconFile: File | null;
 }>;
 
+export type UploadTaskController = {
+    cancel: () => void;
+}
 
-async function uploadLogoWithProgress(
+function uploadLogoWithProgress(
     file: File, 
     logoName: 'mainLogo' | 'secondaryLogo' | 'favicon',
-    onProgress: (progress: number) => void
+    onProgress: (progress: number) => void,
+    onControllerReady: (controller: UploadTaskController) => void,
 ): Promise<string> {
     const storage = getStorage();
     const logoRef = ref(storage, `organization/${logoName}`);
 
     return new Promise((resolve, reject) => {
         const uploadTask = uploadBytesResumable(logoRef, file);
+        
+        onControllerReady({
+            cancel: () => uploadTask.cancel()
+        });
 
         uploadTask.on('state_changed',
             (snapshot) => {
@@ -34,7 +42,7 @@ async function uploadLogoWithProgress(
             },
             (error) => {
                 console.error(`Failed to upload ${logoName}:`, error);
-                reject(new Error(`Failed to upload logo ${logoName}.`));
+                reject(error);
             },
             async () => {
                 try {
@@ -58,28 +66,34 @@ export async function getOrganizationSettings(): Promise<OrganizationSettings> {
     return { organizationName: 'Gestion CNRCT', mainLogoUrl: '', secondaryLogoUrl: '', faviconUrl: '' };
 }
 
-export async function saveOrganizationSettings(
+export function saveOrganizationSettings(
     settingsToUpdate: OrganizationSettingsInput,
-    onProgress: (progress: number) => void
-): Promise<OrganizationSettings> {
-    const updateData: Partial<OrganizationSettings> = {};
+    onProgress: (progress: number) => void,
+    onControllerReady: (controller: UploadTaskController) => void
+): { taskPromise: Promise<OrganizationSettings> } {
 
-    if (settingsToUpdate.organizationName) {
-        updateData.organizationName = settingsToUpdate.organizationName;
-    }
+    const taskPromise = (async () => {
+        const updateData: Partial<OrganizationSettings> = {};
 
-    if (settingsToUpdate.mainLogoFile) {
-        updateData.mainLogoUrl = await uploadLogoWithProgress(settingsToUpdate.mainLogoFile, 'mainLogo', onProgress);
-    }
-    if (settingsToUpdate.secondaryLogoFile) {
-        updateData.secondaryLogoUrl = await uploadLogoWithProgress(settingsToUpdate.secondaryLogoFile, 'secondaryLogo', onProgress);
-    }
-    if (settingsToUpdate.faviconFile) {
-        updateData.faviconUrl = await uploadLogoWithProgress(settingsToUpdate.faviconFile, 'favicon', onProgress);
-    }
-    
-    await setDoc(settingsDocRef, updateData, { merge: true });
+        if (settingsToUpdate.organizationName) {
+            updateData.organizationName = settingsToUpdate.organizationName;
+        }
 
-    const docSnap = await getDoc(settingsDocRef);
-    return docSnap.data() as OrganizationSettings;
+        if (settingsToUpdate.mainLogoFile) {
+            updateData.mainLogoUrl = await uploadLogoWithProgress(settingsToUpdate.mainLogoFile, 'mainLogo', onProgress, onControllerReady);
+        }
+        if (settingsToUpdate.secondaryLogoFile) {
+            updateData.secondaryLogoUrl = await uploadLogoWithProgress(settingsToUpdate.secondaryLogoFile, 'secondaryLogo', onProgress, onControllerReady);
+        }
+        if (settingsToUpdate.faviconFile) {
+            updateData.faviconUrl = await uploadLogoWithProgress(settingsToUpdate.faviconFile, 'favicon', onProgress, onControllerReady);
+        }
+        
+        await setDoc(settingsDocRef, updateData, { merge: true });
+
+        const docSnap = await getDoc(settingsDocRef);
+        return docSnap.data() as OrganizationSettings;
+    })();
+
+    return { taskPromise };
 }

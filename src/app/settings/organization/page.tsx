@@ -14,10 +14,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Upload, Loader2, Save } from "lucide-react";
+import { Upload, Loader2, Save, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from "@/components/ui/separator";
-import { getOrganizationSettings, saveOrganizationSettings } from "@/services/organization-service";
+import { getOrganizationSettings, saveOrganizationSettings, type UploadTaskController } from "@/services/organization-service";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
 import type { OrganizationSettings } from "@/lib/data";
@@ -43,13 +43,15 @@ export default function OrganizationSettingsPage() {
   
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [isSavingMain, setIsSavingMain] = useState(false);
-  const [isSavingSecondary, setIsSavingSecondary] = useState(false);
-  const [isSavingFavicon, setIsSavingFavicon] = useState(false);
   
   const [mainLogoProgress, setMainLogoProgress] = useState<number | null>(null);
   const [secondaryLogoProgress, setSecondaryLogoProgress] = useState<number | null>(null);
   const [faviconProgress, setFaviconProgress] = useState<number | null>(null);
+
+  const [mainLogoController, setMainLogoController] = useState<UploadTaskController | null>(null);
+  const [secondaryLogoController, setSecondaryLogoController] = useState<UploadTaskController | null>(null);
+  const [faviconController, setFaviconController] = useState<UploadTaskController | null>(null);
+
 
   const mainLogoInputRef = useRef<HTMLInputElement>(null);
   const secondaryLogoInputRef = useRef<HTMLInputElement>(null);
@@ -125,25 +127,26 @@ export default function OrganizationSettingsPage() {
       let file: File | null = null;
       let settingsToSave = {};
       let setProgress: React.Dispatch<React.SetStateAction<number | null>> = () => {};
+      let setController: React.Dispatch<React.SetStateAction<UploadTaskController | null>> = () => {};
       
       switch(logoType) {
         case 'main':
           file = mainLogoFile;
           settingsToSave = { mainLogoFile: file };
           setProgress = setMainLogoProgress;
-          setIsSavingMain(true);
+          setController = setMainLogoController;
           break;
         case 'secondary':
           file = secondaryLogoFile;
           settingsToSave = { secondaryLogoFile: file };
           setProgress = setSecondaryLogoProgress;
-          setIsSavingSecondary(true);
+          setController = setSecondaryLogoController;
           break;
         case 'favicon':
           file = faviconFile;
           settingsToSave = { faviconFile: file };
           setProgress = setFaviconProgress;
-          setIsSavingFavicon(true);
+          setController = setFaviconController;
           break;
       }
       
@@ -152,7 +155,14 @@ export default function OrganizationSettingsPage() {
       setProgress(0);
 
       try {
-          const newSettings = await saveOrganizationSettings(settingsToSave, setProgress);
+          const { taskPromise } = saveOrganizationSettings(
+              settingsToSave, 
+              (p) => setProgress(p), 
+              (controller) => setController(controller)
+          );
+          
+          const newSettings = await taskPromise;
+
           switch(logoType) {
             case 'main':
               setMainLogoPreview(newSettings.mainLogoUrl);
@@ -177,22 +187,27 @@ export default function OrganizationSettingsPage() {
             title: "Sauvegarde réussie",
             description: `Le ${logoType === 'favicon' ? 'favicon' : 'logo'} a été mis à jour.`,
           });
-      } catch (error) {
-          toast({
-              variant: "destructive",
-              title: "Erreur de sauvegarde",
-              description: "Une erreur est survenue lors de la sauvegarde.",
-          });
-          console.error(error);
+      } catch (error: any) {
+          if (error.code !== 'storage/canceled') {
+              toast({
+                  variant: "destructive",
+                  title: "Erreur de sauvegarde",
+                  description: "Une erreur est survenue lors de la sauvegarde.",
+              });
+              console.error(error);
+          }
       } finally {
-         switch(logoType) {
-            case 'main': setIsSavingMain(false); break;
-            case 'secondary': setIsSavingSecondary(false); break;
-            case 'favicon': setIsSavingFavicon(false); break;
-         }
-          setProgress(null);
+         setProgress(null);
+         setController(null);
       }
   };
+
+  const handleCancelUpload = (controller: UploadTaskController | null) => {
+    if (controller) {
+        controller.cancel();
+        toast({ title: 'Téléversement annulé' });
+    }
+  }
 
 
   return (
@@ -272,7 +287,13 @@ export default function OrganizationSettingsPage() {
                       {mainLogoProgress !== null && (
                         <div className="mt-2 space-y-1">
                             <Label className="text-xs">Téléversement...</Label>
-                            <Progress value={mainLogoProgress} className="h-2" />
+                             <div className="flex items-center gap-2">
+                                <Progress value={mainLogoProgress} className="h-2 flex-1" />
+                                <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleCancelUpload(mainLogoController)}>
+                                    <X className="h-4 w-4" />
+                                    <span className="sr-only">Annuler</span>
+                                </Button>
+                             </div>
                         </div>
                       )}
                   </div>
@@ -281,9 +302,9 @@ export default function OrganizationSettingsPage() {
                     <Button 
                         type="button" 
                         onClick={() => handleSaveLogo('main')} 
-                        disabled={isSavingMain || !hasMainLogoChanged}
+                        disabled={mainLogoProgress !== null || !hasMainLogoChanged}
                     >
-                        {isSavingMain ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                        {mainLogoProgress !== null ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                         Enregistrer
                     </Button>
                 </div>
@@ -316,7 +337,13 @@ export default function OrganizationSettingsPage() {
                        {secondaryLogoProgress !== null && (
                         <div className="mt-2 space-y-1">
                             <Label className="text-xs">Téléversement...</Label>
-                            <Progress value={secondaryLogoProgress} className="h-2" />
+                             <div className="flex items-center gap-2">
+                                <Progress value={secondaryLogoProgress} className="h-2 flex-1" />
+                                <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleCancelUpload(secondaryLogoController)}>
+                                    <X className="h-4 w-4" />
+                                    <span className="sr-only">Annuler</span>
+                                </Button>
+                             </div>
                         </div>
                       )}
                   </div>
@@ -325,9 +352,9 @@ export default function OrganizationSettingsPage() {
                     <Button 
                         type="button" 
                         onClick={() => handleSaveLogo('secondary')} 
-                        disabled={isSavingSecondary || !hasSecondaryLogoChanged}
+                        disabled={secondaryLogoProgress !== null || !hasSecondaryLogoChanged}
                     >
-                        {isSavingSecondary ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                        {secondaryLogoProgress !== null ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                         Enregistrer
                     </Button>
                  </div>
@@ -360,7 +387,13 @@ export default function OrganizationSettingsPage() {
                        {faviconProgress !== null && (
                         <div className="mt-2 space-y-1">
                             <Label className="text-xs">Téléversement...</Label>
-                            <Progress value={faviconProgress} className="h-2" />
+                             <div className="flex items-center gap-2">
+                                <Progress value={faviconProgress} className="h-2 flex-1" />
+                                <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleCancelUpload(faviconController)}>
+                                    <X className="h-4 w-4" />
+                                    <span className="sr-only">Annuler</span>
+                                </Button>
+                             </div>
                         </div>
                       )}
                   </div>
@@ -369,9 +402,9 @@ export default function OrganizationSettingsPage() {
                     <Button 
                         type="button" 
                         onClick={() => handleSaveLogo('favicon')} 
-                        disabled={isSavingFavicon || !hasFaviconChanged}
+                        disabled={faviconProgress !== null || !hasFaviconChanged}
                     >
-                        {isSavingFavicon ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                        {faviconProgress !== null ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                         Enregistrer
                     </Button>
                  </div>

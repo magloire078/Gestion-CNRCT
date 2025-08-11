@@ -103,10 +103,10 @@ function ProtectedPage({ children, permission }: { children: React.ReactNode, pe
 }
 
 
-function AppLayout({ children, settings }: { children: React.ReactNode, settings: OrganizationSettings }) {
+function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { user, loading, hasPermission } = useAuth();
+  const { user, loading, hasPermission, settings } = useAuth();
   
   const handleLogout = async () => {
     await signOut();
@@ -138,11 +138,11 @@ function AppLayout({ children, settings }: { children: React.ReactNode, settings
           <SidebarHeader>
             <div className="flex items-center gap-2">
               <Avatar className="size-8 rounded-md">
-                <AvatarImage src={settings.mainLogoUrl} alt={settings.organizationName} />
+                <AvatarImage src={settings?.mainLogoUrl} alt={settings?.organizationName} />
                 <AvatarFallback><Building2 className="size-5" /></AvatarFallback>
               </Avatar>
               <span className="text-lg font-semibold">
-                {settings.organizationName}
+                {settings?.organizationName}
               </span>
             </div>
           </SidebarHeader>
@@ -231,7 +231,7 @@ export function SiteLayout({ children, settings }: { children: React.ReactNode, 
 
   return (
     <AuthProvider settings={settings}>
-        <AppLayout settings={settings}>
+        <AppLayout>
             {children}
         </AppLayout>
     </AuthProvider>

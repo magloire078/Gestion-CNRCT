@@ -2,6 +2,7 @@
 
 
 
+
 import type { Employe, PayslipDetails, PayslipEarning, PayslipDeduction, PayslipEmployerContribution } from '@/lib/data';
 import { numberToWords } from '@/lib/utils';
 import { getOrganizationSettings } from './organization-service';
@@ -79,7 +80,7 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
         { label: 'INDEMNITE DE REPRESENTATION', amount: indemniteRepresentation, deduction: 0 },
         { label: 'INDEMNITE DE RESPONSABILITE', amount: indemniteResponsabilite, deduction: 0 },
         { label: 'INDEMNITE DE LOGEMENT', amount: indemniteLogement, deduction: 0 },
-    ].filter(e => e.amount > 0 || e.label === 'SALAIRE DE BASE'); // Always show base salary
+    ];
 
     const brutImposable = earnings.reduce((sum, item) => sum + item.amount, 0);
 

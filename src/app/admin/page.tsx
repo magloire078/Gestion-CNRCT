@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -18,7 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { PlusCircle, Trash2, Pencil } from "lucide-react";
+import { PlusCircle, Trash2, Pencil, ChevronRight } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 
@@ -156,7 +157,26 @@ export default function AdminPage() {
       <div className="flex flex-col gap-6">
         <h1 className="text-3xl font-bold tracking-tight">Administration</h1>
         
-        <ImportDataCard />
+        <div className="grid gap-6 md:grid-cols-2">
+            <ImportDataCard />
+             <Card>
+                <CardHeader>
+                    <CardTitle>Paramètres Généraux</CardTitle>
+                    <CardDescription>
+                        Gérez les paramètres globaux de l'application.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Link href="/settings/organization" className="flex items-center justify-between p-4 rounded-lg hover:bg-muted/50 transition-colors -m-4">
+                        <div>
+                            <p className="font-medium">Organisation</p>
+                            <p className="text-sm text-muted-foreground">Gérez les logos et les informations de l'entreprise.</p>
+                        </div>
+                        <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                    </Link>
+                </CardContent>
+            </Card>
+        </div>
 
         <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
           <Card>

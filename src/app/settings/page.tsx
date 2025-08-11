@@ -32,24 +32,6 @@ export default function SettingsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Général</CardTitle>
-          <CardDescription>
-            Gérez les paramètres généraux de l'application.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-            <Link href="/settings/organization" className="flex items-center justify-between p-4 rounded-lg hover:bg-muted/50 transition-colors">
-                <div>
-                    <p className="font-medium">Organisation</p>
-                    <p className="text-sm text-muted-foreground">Gérez les logos et les informations de l'entreprise.</p>
-                </div>
-                <ChevronRight className="h-5 w-5 text-muted-foreground" />
-            </Link>
-        </CardContent>
-      </Card>
-      
-      <Card>
-        <CardHeader>
           <CardTitle>Apparence</CardTitle>
           <CardDescription>
             Personnalisez l'apparence de l'application.

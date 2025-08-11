@@ -1,8 +1,9 @@
 
-import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, onSnapshot, Unsubscribe, query, orderBy, where, writeBatch, getDoc } from 'firebase/firestore';
+import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, onSnapshot, Unsubscribe, query, orderBy, where, writeBatch, getDoc, setDoc } from 'firebase/firestore';
 import type { Employe } from '@/lib/data';
-import { db } from '@/lib/firebase';
+import { db, storage } from '@/lib/firebase';
 import { getOrganizationSettings } from './organization-service';
+import { ref, uploadString, getDownloadURL } from 'firebase/storage';
 
 const employeesCollection = collection(db, 'employees');
 
@@ -47,8 +48,19 @@ export async function getEmployee(id: string): Promise<Employe | null> {
 }
 
 export async function addEmployee(employeeDataToAdd: Omit<Employe, 'id'>): Promise<Employe> {
-    const docRef = await addDoc(employeesCollection, employeeDataToAdd);
-    return { id: docRef.id, ...employeeDataToAdd };
+    const { photoUrl, ...restOfData } = employeeDataToAdd;
+    let finalPhotoUrl = '';
+
+    if (photoUrl && photoUrl.startsWith('data:image')) {
+        const photoRef = ref(storage, `employee_photos/${Date.now()}`);
+        const snapshot = await uploadString(photoRef, photoUrl, 'data_url');
+        finalPhotoUrl = await getDownloadURL(snapshot.ref);
+    } else {
+        finalPhotoUrl = photoUrl || '';
+    }
+
+    const docRef = await addDoc(employeesCollection, { ...restOfData, photoUrl: finalPhotoUrl });
+    return { id: docRef.id, ...employeeDataToAdd, photoUrl: finalPhotoUrl };
 }
 
 export async function batchAddEmployees(employees: Omit<Employe, 'id'>[]): Promise<number> {

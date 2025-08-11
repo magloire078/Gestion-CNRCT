@@ -103,7 +103,7 @@ export default function PayslipPage() {
                     </Button>
                 </div>
             </div>
-            <div id="print-section" className="w-full max-w-4xl mx-auto bg-white text-black print:shadow-none print:border-none font-arial text-[11px] leading-tight">
+            <div id="print-section" className="w-full max-w-4xl mx-auto bg-white text-black print:shadow-none print:border-none font-arial text-[10px] leading-tight">
                 {/* Header */}
                  <header className="flex justify-between items-start pb-2 border-b-2 border-gray-400">
                     <div className="w-1/4 text-center flex justify-center items-center h-24">
@@ -126,40 +126,38 @@ export default function PayslipPage() {
                 {/* Employee Info */}
                 <section className="flex">
                     <div className="w-1/3 space-y-1">
-                        <p className="text-[10px]"><span className="font-bold">N° CNPS EMPLOYEUR :</span> {employeeInfo.cnpsEmployeur}</p>
-                        <p className="text-[10px]"><span className="font-bold">N° CNPS EMPLOYE :</span> {employeeInfo.cnpsEmploye}</p>
+                        <p className="text-[9px]"><span className="font-bold">N° CNPS EMPLOYEUR :</span> {employeeInfo.cnpsEmployeur}</p>
+                        <p className="text-[9px]"><span className="font-bold">N° CNPS EMPLOYE :</span> {employeeInfo.cnpsEmploye}</p>
                         <div className="mt-2 bg-white p-1 w-fit">
-                          <QRCode value={qrCodeValue} size={50} />
+                          <QRCode value={qrCodeValue} size={40} />
                         </div>
                     </div>
                     <div className="w-2/3 pl-4">
-                        <div className="border border-gray-400 rounded-lg p-2 text-xs">
-                             <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                        <div className="border border-gray-400 rounded-lg p-2 text-[10px]">
+                            <div className="grid grid-cols-2 gap-x-4 gap-y-1">
                                 <div className="col-span-2">
                                   <p><span className="font-bold">NOM & PRENOMS</span> : {fullName}</p>
                                   <p><span className="font-bold">MATRICULE</span> : {employeeInfo.matricule}</p>
                                 </div>
-                                <p><span className="font-bold">SITUATION MATRIMONIALE</span> : {employeeInfo.situationMatrimoniale}</p>
                                 <div>
+                                    <p><span className="font-bold">SITUATION MATRIMONIALE</span> : {employeeInfo.situationMatrimoniale}</p>
                                     <p><span className="font-bold">BANQUE</span> : {employeeInfo.banque}</p>
                                     <p><span className="font-bold">NUMERO DE COMPTE</span> : {employeeInfo.numeroCompte}</p>
+                                </div>
+                                <div>
+                                    <p><span className="font-bold">ANCIENNETE :</span> {employeeInfo.anciennete}</p>
+                                    <p><span className="font-bold">ENFANT(S) :</span> {employeeInfo.enfants}</p>
+                                    <p><span className="font-bold">CATEGORIE :</span> {employeeInfo.categorie}</p>
                                 </div>
                                 <p className="col-span-2"><span className="font-bold">SERVICE</span> : {employeeInfo.department}</p>
                                 <p className="col-span-2"><span className="font-bold">DATE DE CONGE</span> : __/__/____</p>
                             </div>
                         </div>
-                         <div className="mt-1 grid grid-cols-2 gap-x-4 text-xs">
-                            <p><span className="font-bold">ANCIENNETE :</span> {employeeInfo.anciennete}</p>
-                             <div>
-                                <p><span className="font-bold">ENFANT(S) :</span> {employeeInfo.enfants}</p>
-                                <p><span className="font-bold">CATEGORIE :</span> {employeeInfo.categorie}</p>
-                            </div>
-                        </div>
                     </div>
                 </section>
 
-                {/* Job Info Table */}
-                 <table className="w-full border-collapse border border-gray-400 rounded-lg mt-2 text-xs">
+                 {/* Job Info Table */}
+                 <table className="w-full border-collapse border border-gray-400 rounded-lg mt-2 text-[10px]">
                     <thead className="bg-gray-200 font-bold text-center">
                         <tr>
                             <td className="p-1 border-r border-gray-400">EMPLOI</td>
@@ -179,7 +177,7 @@ export default function PayslipPage() {
                 </table>
                 
                 {/* Earnings & Deductions */}
-                <div className="border border-gray-400 rounded-lg mt-2 text-xs">
+                <div className="border border-gray-400 rounded-lg mt-2 text-[10px]">
                     <table className="w-full border-collapse">
                         <thead className="bg-gray-200 font-bold">
                             <tr>
@@ -223,7 +221,7 @@ export default function PayslipPage() {
                         </tbody>
                     </table>
                      <div className="flex justify-between items-center font-bold bg-gray-200 border-t border-gray-400">
-                        <div className="w-[50%] p-1 italic font-normal text-[10px] text-center">
+                        <div className="w-[50%] p-1 italic font-normal text-[9px] text-center">
                             {totals.netAPayerInWords}
                         </div>
                         <div className="w-[25%] p-1 text-left border-l border-gray-400">NET A PAYER</div>
@@ -235,7 +233,7 @@ export default function PayslipPage() {
                  <div className="grid grid-cols-12 mt-2">
                     <div className="col-span-8">
                         <p className="font-bold text-center underline mb-1 text-sm">Impôts à la charge de l'employeur</p>
-                        <div className="border border-gray-400 rounded-lg p-1 text-xs">
+                        <div className="border border-gray-400 rounded-lg p-1 text-[10px]">
                              <table className="w-full">
                                 <tbody>
                                     {employerContributions.map(item => (
@@ -254,8 +252,8 @@ export default function PayslipPage() {
                          <div className="text-center pb-1">
                              <p className="font-bold">Payé à Yamoussoukro le</p>
                              <p className="capitalize text-xs">{paymentDateDisplay}</p>
-                             <div className="h-12"></div>
-                             <p className="border-t border-gray-400 pt-1 opacity-75">Signature</p>
+                             <div className="h-16"></div>
+                             <p className="border-t border-gray-400 pt-1 opacity-60">Signature</p>
                          </div>
                      </div>
                  </div>

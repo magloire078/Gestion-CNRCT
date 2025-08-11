@@ -533,16 +533,16 @@ function PayslipTemplate({ payslipDetails }: { payslipDetails: PayslipDetails })
                 </div>
                 <div className="w-2/3 pl-4">
                     <div className="border border-gray-400 rounded-lg p-2 text-[9px] grid grid-cols-1 gap-y-1">
-                        <div className="grid grid-cols-[140px_1fr] items-baseline"><span className="font-bold">NOM & PRENOMS</span>: <span className="pl-1">{fullName}</span></div>
-                        <div className="grid grid-cols-[140px_1fr] items-baseline"><span className="font-bold">MATRICULE</span>: <span className="pl-1">{employeeInfo.matricule}</span></div>
-                        <div className="grid grid-cols-[140px_1fr] items-baseline"><span className="font-bold">SITUATION MATRIMONIALE</span>: <span className="pl-1">{employeeInfo.situationMatrimoniale}</span></div>
-                        <div className="grid grid-cols-[140px_1fr] items-baseline"><span className="font-bold">BANQUE</span>: <span className="pl-1">{employeeInfo.banque}</span></div>
-                        <div className="grid grid-cols-[140px_1fr] items-baseline"><span className="font-bold">NUMERO DE COMPTE</span>: <span className="pl-1">{employeeInfo.numeroCompte}</span></div>
-                        <div className="grid grid-cols-[140px_1fr] items-baseline"><span className="font-bold">SERVICE</span>: <span className="pl-1">{employeeInfo.department}</span></div>
-                        <div className="grid grid-cols-[140px_1fr] items-baseline"><span className="font-bold">DATE DE CONGE</span>: <span className="pl-1">__/__/____</span></div>
-                        <div className="grid grid-cols-[140px_1fr] items-baseline"><span className="font-bold">ANCIENNETE</span>: <span className="pl-1">{employeeInfo.anciennete}</span></div>
-                        <div className="grid grid-cols-[140px_1fr] items-baseline"><span className="font-bold">ENFANT(S)</span>: <span className="pl-1">{employeeInfo.enfants}</span></div>
-                        <div className="grid grid-cols-[140px_1fr] items-baseline"><span className="font-bold">CATEGORIE</span>: <span className="pl-1">{employeeInfo.categorie}</span></div>
+                        <p><span className="font-bold inline-block w-[140px]">NOM & PRENOMS</span>: <span className="pl-1">{fullName}</span></p>
+                        <p><span className="font-bold inline-block w-[140px]">MATRICULE</span>: <span className="pl-1">{employeeInfo.matricule}</span></p>
+                        <p><span className="font-bold inline-block w-[140px]">SITUATION MATRIMONIALE</span>: <span className="pl-1">{employeeInfo.situationMatrimoniale}</span></p>
+                        <p><span className="font-bold inline-block w-[140px]">BANQUE</span>: <span className="pl-1">{employeeInfo.banque}</span></p>
+                        <p><span className="font-bold inline-block w-[140px]">NUMERO DE COMPTE</span>: <span className="pl-1">{employeeInfo.numeroCompte}</span></p>
+                        <p><span className="font-bold inline-block w-[140px]">SERVICE</span>: <span className="pl-1">{employeeInfo.department}</span></p>
+                        <p><span className="font-bold inline-block w-[140px]">DATE DE CONGE</span>: <span className="pl-1">__/__/____</span></p>
+                        <p><span className="font-bold inline-block w-[140px]">ANCIENNETE</span>: <span className="pl-1">{employeeInfo.anciennete}</span></p>
+                        <p><span className="font-bold inline-block w-[140px]">ENFANT(S)</span>: <span className="pl-1">{employeeInfo.enfants}</span></p>
+                        <p><span className="font-bold inline-block w-[140px]">CATEGORIE</span>: <span className="pl-1">{employeeInfo.categorie}</span></p>
                     </div>
                 </div>
             </section>

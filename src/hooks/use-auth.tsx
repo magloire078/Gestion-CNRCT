@@ -46,8 +46,8 @@ export function AuthProvider({ children, settings }: { children: ReactNode, sett
 
   const hasPermission = (permission: string) => {
       if (loading || !user) return false;
-      // Admins have all permissions
-      if (user.role?.id === 'administrateur') {
+      // Admins and Super Admins have all permissions
+      if (user.role?.name === 'Administrateur' || user.role?.name === 'Super Administrateur') {
         return true;
       }
       return user.permissions?.includes(permission) || false;

@@ -136,7 +136,7 @@ export function EditEmployeeSheet({ isOpen, onClose, onUpdateEmployee, employee 
                     <Input id="dateEmbauche" name="dateEmbauche" type="date" value={formState.dateEmbauche || ''} onChange={handleInputChange} />
                 </div>
             </div>
-             <div className="grid grid-cols-2 gap-4">
+             <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-2">
                     <Label htmlFor="department">Département</Label>
                     <Select name="department" value={formState.department || ''} onValueChange={(v) => handleSelectChange('department', v)}>
@@ -156,6 +156,17 @@ export function EditEmployeeSheet({ isOpen, onClose, onUpdateEmployee, employee 
                             <SelectItem value="Licencié">Licencié</SelectItem>
                             <SelectItem value="Retraité">Retraité</SelectItem>
                             <SelectItem value="Décédé">Décédé</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="sexe">Sexe</Label>
+                    <Select name="sexe" value={formState.sexe || ''} onValueChange={(v) => handleSelectChange('sexe', v)}>
+                        <SelectTrigger><SelectValue placeholder="Sélectionnez..." /></SelectTrigger>
+                        <SelectContent>
+                           <SelectItem value="Homme">Homme</SelectItem>
+                           <SelectItem value="Femme">Femme</SelectItem>
+                           <SelectItem value="Autre">Autre</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>

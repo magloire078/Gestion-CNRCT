@@ -95,7 +95,7 @@ export type Asset = {
   type: "Ordinateur portable" | "Moniteur" | "Clavier" | "Souris" | "Logiciel" | "Autre";
   model: string;
   assignedTo: string;
-  status: 'En Utilisation' | 'En Stock' | 'En Réparation' | 'Retiré' | 'Actif';
+  status: 'En utilisation' | 'En stock' | 'En réparation' | 'Retiré';
 }
 
 export type Fleet = {

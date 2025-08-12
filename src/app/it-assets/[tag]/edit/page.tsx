@@ -17,8 +17,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowLeft, Loader2, Save } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-const assetTypes = ["Ordinateur portable", "Moniteur", "Clavier", "Souris", "Logiciel", "Autre"];
-const assetStatuses: Asset['status'][] = ['En Utilisation', 'En Stock', 'En Réparation', 'Retiré', 'Actif'];
+const assetTypes: Asset['type'][] = ["Ordinateur portable", "Moniteur", "Clavier", "Souris", "Logiciel", "Autre"];
+const assetStatuses: Asset['status'][] = ['En utilisation', 'En stock', 'En réparation', 'Retiré'];
 
 
 export default function AssetEditPage() {
@@ -142,7 +142,7 @@ export default function AssetEditPage() {
                             <SelectTrigger><SelectValue placeholder="Non assigné" /></SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="Unassigned">Non assigné</SelectItem>
-                                <SelectItem value="En Stock">En Stock</SelectItem>
+                                <SelectItem value="En stock">En stock</SelectItem>
                                 {employees.map(emp => <SelectItem key={emp.id} value={emp.name}>{emp.name}</SelectItem>)}
                             </SelectContent>
                         </Select>

@@ -20,17 +20,17 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { useRouter } from "next/navigation";
 
 
-type Status = 'En Utilisation' | 'En Stock' | 'En Réparation' | 'Retiré' | 'Actif';
+type Status = 'En utilisation' | 'En stock' | 'En réparation' | 'Retiré';
 
 const statusVariantMap: Record<Status, "default" | "secondary" | "outline"> = {
-  'En Utilisation': 'default',
-  'Actif': 'default',
-  'En Stock': 'secondary',
-  'En Réparation': 'outline',
+  'En utilisation': 'default',
+  'En stock': 'secondary',
+  'En réparation': 'outline',
   'Retiré': 'outline',
 };
 
 const assetTypes = ["Ordinateur portable", "Moniteur", "Clavier", "Souris", "Logiciel", "Autre"];
+const assetStatuses: Asset['status'][] = ['En utilisation', 'En stock', 'En réparation', 'Retiré'];
 
 export default function ItAssetsPage() {
   const [assets, setAssets] = useState<Asset[]>([]);
@@ -142,11 +142,7 @@ export default function ItAssetsPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Tous les statuts</SelectItem>
-                  <SelectItem value="En Utilisation">En Utilisation</SelectItem>
-                  <SelectItem value="En Stock">En Stock</SelectItem>
-                  <SelectItem value="En Réparation">En Réparation</SelectItem>
-                  <SelectItem value="Retiré">Retiré</SelectItem>
-                  <SelectItem value="Actif">Actif</SelectItem>
+                  {assetStatuses.map(status => <SelectItem key={status} value={status}>{status}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>

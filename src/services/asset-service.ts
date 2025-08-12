@@ -45,9 +45,12 @@ export async function getAsset(tag: string): Promise<Asset | null> {
 }
 
 export async function addAsset(assetDataToAdd: Omit<Asset, 'tag'> & { tag?: string }): Promise<Asset> {
-    const assetTag = assetDataToAdd.tag || `IT-ASSET-${Date.now()}`;
+    const assetTag = assetDataToAdd.tag || `ACTIF-TI-${Date.now()}`;
     const assetRef = doc(db, 'assets', assetTag);
-    await setDoc(assetRef, assetDataToAdd);
+    const dataToSave = { ...assetDataToAdd };
+    delete dataToSave.tag;
+
+    await setDoc(assetRef, dataToSave);
     return { tag: assetTag, ...assetDataToAdd };
 }
 

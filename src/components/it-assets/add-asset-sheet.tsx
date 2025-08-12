@@ -30,11 +30,14 @@ interface AddAssetSheetProps {
   onAddAsset: (asset: Omit<Asset, 'tag'>) => Promise<void>;
 }
 
+const assetTypes: Asset['type'][] = ["Ordinateur portable", "Moniteur", "Clavier", "Souris", "Logiciel", "Autre"];
+const assetStatuses: Asset['status'][] = ['En utilisation', 'En stock', 'En réparation', 'Retiré'];
+
 export function AddAssetSheet({ isOpen, onClose, onAddAsset }: AddAssetSheetProps) {
-  const [type, setType] = useState("");
+  const [type, setType] = useState<Asset['type'] | "">("");
   const [model, setModel] = useState("");
-  const [assignedTo, setAssignedTo] = useState("Unassigned");
-  const [status, setStatus] = useState<Asset['status']>('In Stock');
+  const [assignedTo, setAssignedTo] = useState("En stock");
+  const [status, setStatus] = useState<Asset['status']>('En stock');
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
@@ -42,8 +45,8 @@ export function AddAssetSheet({ isOpen, onClose, onAddAsset }: AddAssetSheetProp
   const resetForm = () => {
     setType("");
     setModel("");
-    setAssignedTo("Unassigned");
-    setStatus("In Stock");
+    setAssignedTo("En stock");
+    setStatus("En stock");
     setError("");
   }
 
@@ -90,17 +93,12 @@ export function AddAssetSheet({ isOpen, onClose, onAddAsset }: AddAssetSheetProp
               <Label htmlFor="type" className="text-right">
                 Type
               </Label>
-              <Select value={type} onValueChange={setType} required>
+              <Select value={type} onValueChange={(value: Asset['type']) => setType(value)} required>
                 <SelectTrigger className="col-span-3">
                   <SelectValue placeholder="Sélectionnez un type..." />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Laptop">Ordinateur portable</SelectItem>
-                  <SelectItem value="Monitor">Moniteur</SelectItem>
-                  <SelectItem value="Keyboard">Clavier</SelectItem>
-                  <SelectItem value="Mouse">Souris</SelectItem>
-                  <SelectItem value="Software">Logiciel</SelectItem>
-                  <SelectItem value="Other">Autre</SelectItem>
+                  {assetTypes.map(type => <SelectItem key={type} value={type}>{type}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
@@ -125,10 +123,7 @@ export function AddAssetSheet({ isOpen, onClose, onAddAsset }: AddAssetSheetProp
                       <SelectValue placeholder="Sélectionnez un statut" />
                   </SelectTrigger>
                   <SelectContent>
-                      <SelectItem value="In Stock">En Stock</SelectItem>
-                      <SelectItem value="In Use">En Utilisation</SelectItem>
-                      <SelectItem value="In Repair">En Réparation</SelectItem>
-                      <SelectItem value="Retired">Retiré</SelectItem>
+                     {assetStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
                   </SelectContent>
                </Select>
             </div>

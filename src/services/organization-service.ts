@@ -99,7 +99,7 @@ export function saveOrganizationSettings(
                     onProgress(50); // Still update progress to show we are moving on
                 }
             } else {
-                 onProgress(50);
+                 onProgress(50); // Skip processing for favicon
             }
             
             const downloadUrl = await uploadProcessedLogo(processedDataUrl, logoName, (p) => onProgress(50 + p / 2), onControllerReady);

@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { PlusCircle, Search, MoreHorizontal, Eye, Pencil, Trash2 } from "lucide-react";
+import { PlusCircle, Search, MoreHorizontal, Eye, Pencil, Trash2, Download } from "lucide-react";
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
 import {
@@ -35,6 +35,8 @@ import type { Chief } from "@/lib/data";
 import { subscribeToChiefs, addChief, deleteChief } from "@/services/chief-service";
 import { AddChiefSheet } from "@/components/chiefs/add-chief-sheet";
 import { Badge } from "@/components/ui/badge";
+import Papa from "papaparse";
+import { ImportChiefsDataCard } from "@/components/chiefs/import-chiefs-data-card";
 
 export default function ChiefsPage() {
   const [chiefs, setChiefs] = useState<Chief[]>([]);
@@ -99,15 +101,92 @@ export default function ChiefsPage() {
       chief.title.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [chiefs, searchTerm]);
+  
+    const downloadFile = (content: string, fileName: string, contentType: string) => {
+      const blob = new Blob([content], { type: contentType });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', fileName);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+  };
+
+  const handleExportCsv = () => {
+    if (filteredChiefs.length === 0) {
+      toast({ variant: "destructive", title: "Aucune donnée à exporter" });
+      return;
+    }
+    const csvData = Papa.unparse(filteredChiefs, {
+        header: true,
+    });
+    downloadFile(csvData, 'export_chefs.csv', 'text/csv;charset=utf-8;');
+    toast({ title: "Exportation CSV réussie" });
+  };
+  
+  const handleExportJson = () => {
+    if (filteredChiefs.length === 0) {
+      toast({ variant: "destructive", title: "Aucune donnée à exporter" });
+      return;
+    }
+    const jsonData = JSON.stringify(filteredChiefs, null, 2);
+    downloadFile(jsonData, 'export_chefs.json', 'application/json;charset=utf-8;');
+    toast({ title: "Exportation JSON réussie" });
+  };
+  
+  const handleExportSql = () => {
+    if (filteredChiefs.length === 0) {
+      toast({ variant: "destructive", title: "Aucune donnée à exporter" });
+      return;
+    }
+
+    const escapeSql = (str: string | number | undefined | null) => {
+      if (str === null || str === undefined) return 'NULL';
+      if (typeof str === 'number') return str;
+      return `'${String(str).replace(/'/g, "''")}'`;
+    };
+
+    const tableName = 'chiefs';
+    const columns = ['id', 'name', 'title', 'role', 'region', 'department', 'subPrefecture', 'village', 'contact', 'bio', 'photoUrl', 'latitude', 'longitude', 'parentChiefId', 'dateOfBirth', 'regencyStartDate', 'regencyEndDate'];
+    
+    const sqlContent = filteredChiefs.map(chief => {
+      const values = columns.map(col => escapeSql(chief[col as keyof Chief])).join(', ');
+      return `INSERT INTO ${tableName} (${columns.join(', ')}) VALUES (${values});`;
+    }).join('\n');
+
+    downloadFile(sqlContent, 'export_chefs.sql', 'application/sql');
+    toast({ title: "Exportation SQL réussie" });
+  };
+
 
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight">Rois et Chefs Traditionnels</h1>
-        <Button onClick={() => setIsSheetOpen(true)}>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Ajouter un Chef
-        </Button>
+        <div className="flex gap-2">
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="w-full sm:w-auto">
+                    <Download className="mr-2 h-4 w-4" />
+                    Exporter
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={handleExportCsv}>Exporter en CSV</DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleExportJson}>Exporter en JSON</DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleExportSql}>Exporter en SQL</DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
+            <Button onClick={() => setIsSheetOpen(true)}>
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Ajouter un Chef
+            </Button>
+        </div>
+      </div>
+      <div className="mb-6">
+        <ImportChiefsDataCard />
       </div>
       <Card>
         <CardHeader>

@@ -1,5 +1,5 @@
 
-import { collection, getDocs, addDoc, onSnapshot, Unsubscribe, query, orderBy, deleteDoc, doc, updateDoc, getDoc } from 'firebase/firestore';
+import { collection, getDocs, addDoc, onSnapshot, Unsubscribe, query, orderBy, deleteDoc, doc, updateDoc, getDoc, writeBatch, where } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import type { Chief } from '@/lib/data';
 import { db } from '@/lib/firebase';
@@ -49,6 +49,30 @@ export async function getChief(id: string): Promise<Chief | null> {
 export async function addChief(chiefData: Omit<Chief, 'id'>): Promise<Chief> {
     const docRef = await addDoc(chiefsCollection, chiefData);
     return { id: docRef.id, ...chiefData };
+}
+
+export async function batchAddChiefs(chiefs: Omit<Chief, 'id'>[]): Promise<number> {
+    const batch = writeBatch(db);
+    const chiefNames = chiefs.map(c => c.name);
+    // Firestore 'in' query can have max 30 elements. If more, we need to split.
+    // For simplicity here, we assume less than 30 or we query one by one.
+    const existingChiefsQuery = query(chiefsCollection, where('name', 'in', chiefNames));
+    const existingSnapshot = await getDocs(existingChiefsQuery);
+    const existingNames = new Set(existingSnapshot.docs.map(d => d.data().name));
+
+    let addedCount = 0;
+    chiefs.forEach(chief => {
+        if (!existingNames.has(chief.name)) {
+            const newDocRef = doc(chiefsCollection); // Auto-generate ID
+            batch.set(newDocRef, chief);
+            addedCount++;
+        }
+    });
+
+    if (addedCount > 0) {
+        await batch.commit();
+    }
+    return addedCount;
 }
 
 export async function updateChief(id: string, chiefData: Partial<Omit<Chief, 'id'>>, photoFile: File | null): Promise<void> {

@@ -40,33 +40,48 @@ function uploadProcessedLogo(
     // Always upload as PNG to preserve transparency
     const logoRef = ref(storage, `organization/${logoName}.png`);
 
-    return new Promise((resolve, reject) => {
-        const uploadTask = uploadString(logoRef, dataUrl, 'data_url');
-        
-        onControllerReady({
-            cancel: () => uploadTask.cancel()
-        });
+    // Convert data URL to Blob for uploadBytesResumable which provides progress
+    const blob = (fetch(dataUrl).then(res => res.blob()));
 
-        uploadTask.then(async (snapshot) => {
-            onProgress(100);
-            const downloadUrl = await getDownloadURL(snapshot.ref);
-            resolve(downloadUrl);
-        }).catch((error) => {
-            if (error.code !== 'storage/canceled') {
-                console.error(`Failed to upload ${logoName}:`, error);
-            }
-            reject(error);
-        });
+    return new Promise((resolve, reject) => {
+        blob.then(b => {
+            const uploadTask = uploadBytesResumable(logoRef, b);
+
+            onControllerReady({
+                cancel: () => uploadTask.cancel()
+            });
+
+            uploadTask.on('state_changed',
+                (snapshot) => {
+                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                    onProgress(progress);
+                },
+                (error) => {
+                    if (error.code !== 'storage/canceled') {
+                        console.error(`Failed to upload ${logoName}:`, error);
+                    }
+                    reject(error);
+                },
+                async () => {
+                    const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
+                    resolve(downloadUrl);
+                }
+            );
+        }).catch(reject);
     });
 }
 
 
 export async function getOrganizationSettings(): Promise<OrganizationSettings> {
-    const docSnap = await getDoc(settingsDocRef);
-    if (docSnap.exists()) {
-        return docSnap.data() as OrganizationSettings;
+    try {
+        const docSnap = await getDoc(settingsDocRef);
+        if (docSnap.exists()) {
+            return docSnap.data() as OrganizationSettings;
+        }
+    } catch (e) {
+        console.error("Could not get organization settings from Firestore, returning default.", e);
     }
-    // Return default empty state if not found
+    // Return default empty state if not found or on error
     return { organizationName: 'Gestion CNRCT', mainLogoUrl: '', secondaryLogoUrl: '', faviconUrl: '' };
 }
 
@@ -85,24 +100,31 @@ export function saveOrganizationSettings(
 
         const uploadFile = async (file: File, logoName: 'mainLogo' | 'secondaryLogo' | 'favicon') => {
             const dataUrl = await fileToDataUrl(file);
-            onProgress(10); // Initial progress
+            onProgress(5); // Initial progress for reading file
             
             let processedDataUrl = dataUrl;
             if (logoName !== 'favicon') {
                 try {
                     processedDataUrl = await processLogo(dataUrl);
-                    onProgress(50); // Progress after AI processing
+                    onProgress(25); // Progress after AI processing
                 } catch (error) {
                     console.warn(`AI logo processing failed for ${logoName}. Falling back to original image. Error:`, error);
                     // Fallback to original dataUrl if AI processing fails
                     processedDataUrl = dataUrl;
-                    onProgress(50); // Still update progress to show we are moving on
+                    onProgress(25); // Still update progress to show we are moving on
                 }
             } else {
-                 onProgress(50); // Skip processing for favicon
+                 onProgress(25); // Skip processing for favicon
             }
             
-            const downloadUrl = await uploadProcessedLogo(processedDataUrl, logoName, (p) => onProgress(50 + p / 2), onControllerReady);
+            // Pass a sub-progress function that scales the upload progress (0-100) to the remaining 75% (25-100)
+            const downloadUrl = await uploadProcessedLogo(
+                processedDataUrl, 
+                logoName, 
+                (p) => onProgress(25 + (p * 0.75)), 
+                onControllerReady
+            );
+            
             onProgress(100); // Final progress
             return downloadUrl;
         };

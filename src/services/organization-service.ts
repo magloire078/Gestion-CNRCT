@@ -87,9 +87,20 @@ export function saveOrganizationSettings(
             const dataUrl = await fileToDataUrl(file);
             onProgress(10); // Initial progress
             
-            // Process the logo to make background transparent (unless it's a favicon)
-            const processedDataUrl = logoName === 'favicon' ? dataUrl : await processLogo(dataUrl);
-            onProgress(50); // Progress after AI processing
+            let processedDataUrl = dataUrl;
+            if (logoName !== 'favicon') {
+                try {
+                    processedDataUrl = await processLogo(dataUrl);
+                    onProgress(50); // Progress after AI processing
+                } catch (error) {
+                    console.warn(`AI logo processing failed for ${logoName}. Falling back to original image. Error:`, error);
+                    // Fallback to original dataUrl if AI processing fails
+                    processedDataUrl = dataUrl;
+                    onProgress(50); // Still update progress to show we are moving on
+                }
+            } else {
+                 onProgress(50);
+            }
             
             const downloadUrl = await uploadProcessedLogo(processedDataUrl, logoName, (p) => onProgress(50 + p / 2), onControllerReady);
             onProgress(100); // Final progress

@@ -9,7 +9,7 @@ export function subscribeToAssets(
     callback: (assets: Asset[]) => void,
     onError: (error: Error) => void
 ): Unsubscribe {
-    const q = query(assetsCollection, orderBy("model", "asc"));
+    const q = query(assetsCollection, orderBy("modele", "asc"));
     const unsubscribe = onSnapshot(q, 
         (snapshot) => {
             const assets = snapshot.docs.map(doc => ({
@@ -44,14 +44,12 @@ export async function getAsset(tag: string): Promise<Asset | null> {
     return null;
 }
 
-export async function addAsset(assetDataToAdd: Omit<Asset, 'tag'> & { tag?: string }): Promise<Asset> {
-    const assetTag = assetDataToAdd.tag || `ACTIF-TI-${Date.now()}`;
-    const assetRef = doc(db, 'assets', assetTag);
-    const dataToSave = { ...assetDataToAdd };
-    delete dataToSave.tag;
+export async function addAsset(assetDataToAdd: Omit<Asset, 'tag'> & { tag: string }): Promise<Asset> {
+    const { tag, ...dataToSave } = assetDataToAdd;
+    const assetRef = doc(db, 'assets', tag);
 
     await setDoc(assetRef, dataToSave);
-    return { tag: assetTag, ...assetDataToAdd };
+    return { tag, ...dataToSave };
 }
 
 export async function updateAsset(tag: string, assetData: Partial<Asset>): Promise<void> {

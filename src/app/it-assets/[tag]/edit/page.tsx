@@ -17,7 +17,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowLeft, Loader2, Save } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-const assetTypes: Asset['type'][] = ["Ordinateur portable", "Moniteur", "Clavier", "Souris", "Logiciel", "Autre"];
+const assetTypes: Asset['type'][] = ["Ordinateur", "Moniteur", "Clavier", "Souris", "Logiciel", "Autre"];
+const computerTypes: Asset['typeOrdinateur'][] = ["Portable", "De Bureau", "Serveur"];
 const assetStatuses: Asset['status'][] = ['En utilisation', 'En stock', 'En réparation', 'Retiré'];
 
 
@@ -67,7 +68,13 @@ export default function AssetEditPage() {
     };
 
     const handleSelectChange = (name: string, value: string) => {
-        setAsset(prev => (prev ? { ...prev, [name]: value } : null));
+        setAsset(prev => {
+            const newState = { ...(prev || {}), [name]: value };
+            if (name === 'type' && value !== 'Ordinateur') {
+                newState.typeOrdinateur = undefined;
+            }
+            return newState as Partial<Asset>;
+        });
     };
 
     const handleSave = async () => {
@@ -90,7 +97,7 @@ export default function AssetEditPage() {
         return (
             <div className="max-w-xl mx-auto flex flex-col gap-6">
                 <Skeleton className="h-10 w-48" />
-                <Card><CardContent className="p-6"><Skeleton className="h-64 w-full" /></CardContent></Card>
+                <Card><CardContent className="p-6"><Skeleton className="h-96 w-full" /></CardContent></Card>
             </div>
         );
     }
@@ -118,13 +125,13 @@ export default function AssetEditPage() {
             
             <Card>
                 <CardHeader><CardTitle>Détails de l'Actif</CardTitle></CardHeader>
-                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2 md:col-span-2">
-                        <Label htmlFor="tag">Étiquette d'Actif</Label>
+                <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="tag">N° d'Inventaire</Label>
                         <Input id="tag" name="tag" value={asset.tag || ''} disabled />
                     </div>
                      <div className="space-y-2">
-                        <Label htmlFor="type">Type</Label>
+                        <Label htmlFor="type">Type d'Actif</Label>
                         <Select value={asset.type || ''} onValueChange={(v) => handleSelectChange('type', v)}>
                             <SelectTrigger><SelectValue /></SelectTrigger>
                             <SelectContent>
@@ -132,9 +139,28 @@ export default function AssetEditPage() {
                             </SelectContent>
                         </Select>
                     </div>
+                    {asset.type === "Ordinateur" && (
+                        <div className="space-y-2">
+                            <Label htmlFor="typeOrdinateur">Type d'Ordinateur</Label>
+                            <Select value={asset.typeOrdinateur || ''} onValueChange={(v) => handleSelectChange('typeOrdinateur', v)}>
+                            <SelectTrigger><SelectValue placeholder="Sélectionnez..." /></SelectTrigger>
+                            <SelectContent>
+                                {computerTypes.map(ct => <SelectItem key={ct} value={ct}>{ct}</SelectItem>)}
+                            </SelectContent>
+                            </Select>
+                        </div>
+                    )}
+                     <div className="space-y-2">
+                        <Label htmlFor="fabricant">Fabricant</Label>
+                        <Input id="fabricant" name="fabricant" value={asset.fabricant || ''} onChange={handleInputChange} />
+                    </div>
                     <div className="space-y-2">
-                        <Label htmlFor="model">Modèle</Label>
-                        <Input id="model" name="model" value={asset.model || ''} onChange={handleInputChange} />
+                        <Label htmlFor="modele">Modèle</Label>
+                        <Input id="modele" name="modele" value={asset.modele || ''} onChange={handleInputChange} />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="numeroDeSerie">N° de Série</Label>
+                        <Input id="numeroDeSerie" name="numeroDeSerie" value={asset.numeroDeSerie || ''} onChange={handleInputChange} />
                     </div>
                      <div className="space-y-2">
                         <Label htmlFor="assignedTo">Assigné à</Label>

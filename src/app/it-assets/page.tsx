@@ -29,7 +29,7 @@ const statusVariantMap: Record<Status, "default" | "secondary" | "outline"> = {
   'Retiré': 'outline',
 };
 
-const assetTypes = ["Ordinateur portable", "Moniteur", "Clavier", "Souris", "Logiciel", "Autre"];
+const assetTypes: Asset['type'][] = ["Ordinateur", "Moniteur", "Clavier", "Souris", "Logiciel", "Autre"];
 const assetStatuses: Asset['status'][] = ['En utilisation', 'En stock', 'En réparation', 'Retiré'];
 
 export default function ItAssetsPage() {
@@ -67,7 +67,7 @@ export default function ItAssetsPage() {
       await addAsset(newAssetData);
       // State is managed by real-time subscription
       setIsSheetOpen(false);
-      toast({ title: 'Actif ajouté', description: `L'actif ${newAssetData.model} a été ajouté avec succès.` });
+      toast({ title: 'Actif ajouté', description: `L'actif ${newAssetData.modele} a été ajouté avec succès.` });
     } catch (err) {
       console.error("Failed to add asset:", err);
       throw err;
@@ -90,11 +90,14 @@ export default function ItAssetsPage() {
 
   const filteredAssets = useMemo(() => {
     return assets.filter(asset => {
-      if (!asset.model || !asset.assignedTo || !asset.tag) return false;
       const searchTermLower = searchTerm.toLowerCase();
-      const matchesSearch = asset.model.toLowerCase().includes(searchTermLower) ||
-                            asset.assignedTo.toLowerCase().includes(searchTermLower) ||
-                            asset.tag.toLowerCase().includes(searchTermLower);
+      const matchesSearch = 
+          asset.tag.toLowerCase().includes(searchTermLower) ||
+          (asset.fabricant || '').toLowerCase().includes(searchTermLower) ||
+          asset.modele.toLowerCase().includes(searchTermLower) ||
+          (asset.numeroDeSerie || '').toLowerCase().includes(searchTermLower) ||
+          asset.assignedTo.toLowerCase().includes(searchTermLower);
+
       const matchesType = typeFilter === 'all' || asset.type === typeFilter;
       const matchesStatus = statusFilter === 'all' || asset.status === statusFilter;
       return matchesSearch && matchesType && matchesStatus;
@@ -121,7 +124,7 @@ export default function ItAssetsPage() {
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input
-                  placeholder="Rechercher par étiquette, modèle, assigné..."
+                  placeholder="Rechercher par N° inventaire, modèle, série..."
                   className="pl-10"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
@@ -154,9 +157,10 @@ export default function ItAssetsPage() {
               <Table>
                   <TableHeader>
                   <TableRow>
-                      <TableHead>Étiquette d'actif</TableHead>
+                      <TableHead>N° Inventaire</TableHead>
                       <TableHead>Type</TableHead>
-                      <TableHead>Modèle</TableHead>
+                      <TableHead>Fabricant/Modèle</TableHead>
+                      <TableHead>N° de Série</TableHead>
                       <TableHead>Assigné à</TableHead>
                       <TableHead>Statut</TableHead>
                       <TableHead><span className="sr-only">Actions</span></TableHead>
@@ -169,6 +173,7 @@ export default function ItAssetsPage() {
                           <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                           <TableCell><Skeleton className="h-4 w-20" /></TableCell>
                           <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                          <TableCell><Skeleton className="h-4 w-32" /></TableCell>
                           <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                           <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
                           <TableCell><Skeleton className="h-8 w-8" /></TableCell>
@@ -179,7 +184,11 @@ export default function ItAssetsPage() {
                       <TableRow key={asset.tag}>
                           <TableCell className="font-medium">{asset.tag}</TableCell>
                           <TableCell>{asset.type}</TableCell>
-                          <TableCell>{asset.model}</TableCell>
+                          <TableCell>
+                            <div>{asset.fabricant}</div>
+                            <div className="text-sm text-muted-foreground">{asset.modele}</div>
+                          </TableCell>
+                          <TableCell>{asset.numeroDeSerie}</TableCell>
                           <TableCell>{asset.assignedTo}</TableCell>
                           <TableCell>
                           <Badge variant={statusVariantMap[asset.status as Status] || 'default'}>{asset.status}</Badge>
@@ -214,7 +223,7 @@ export default function ItAssetsPage() {
             <div className="grid grid-cols-1 gap-4 md:hidden">
                 {loading ? (
                   Array.from({ length: 5 }).map((_, i) => (
-                    <Card key={i}><CardContent className="p-4"><Skeleton className="h-20 w-full" /></CardContent></Card>
+                    <Card key={i}><CardContent className="p-4"><Skeleton className="h-24 w-full" /></CardContent></Card>
                   ))
                 ) : (
                   filteredAssets.map((asset) => (
@@ -222,12 +231,12 @@ export default function ItAssetsPage() {
                       <CardContent className="p-4 space-y-2">
                         <div className="flex justify-between items-start">
                           <div>
-                            <p className="font-bold">{asset.model}</p>
+                            <p className="font-bold">{asset.fabricant} {asset.modele}</p>
                             <p className="text-sm text-muted-foreground">{asset.type}</p>
                           </div>
                           <Badge variant={statusVariantMap[asset.status as Status] || 'default'}>{asset.status}</Badge>
                         </div>
-                        <p className="text-sm"><span className="font-medium">Tag:</span> {asset.tag}</p>
+                        <p className="text-sm"><span className="font-medium">N° Inventaire:</span> {asset.tag}</p>
                         <p className="text-sm"><span className="font-medium">Assigné à:</span> {asset.assignedTo}</p>
                       </CardContent>
                     </Card>
@@ -252,7 +261,7 @@ export default function ItAssetsPage() {
         onClose={() => setDeleteTarget(null)}
         onConfirm={handleDeleteAsset}
         title={`Supprimer l'actif : ${deleteTarget?.tag}`}
-        description={`Êtes-vous sûr de vouloir supprimer "${deleteTarget?.model} (${deleteTarget?.tag})" ? Cette action est irréversible.`}
+        description={`Êtes-vous sûr de vouloir supprimer "${deleteTarget?.modele} (${deleteTarget?.tag})" ? Cette action est irréversible.`}
       />
     </>
   );

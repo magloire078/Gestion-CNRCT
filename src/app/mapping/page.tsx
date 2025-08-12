@@ -1,12 +1,15 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { getChiefs } from '@/services/chief-service';
+import type { Chief } from '@/lib/data';
+import { useToast } from '@/hooks/use-toast';
 
 // Dynamically import the map component to avoid SSR issues
 const MapComponent = dynamic(() => import('@/components/mapping/map-component'), {
@@ -16,6 +19,30 @@ const MapComponent = dynamic(() => import('@/components/mapping/map-component'),
 
 export default function MappingPage() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [chiefs, setChiefs] = useState<Chief[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    async function fetchChiefs() {
+      try {
+        setLoading(true);
+        const data = await getChiefs();
+        const chiefsWithCoords = data.filter(c => c.latitude && c.longitude);
+        setChiefs(chiefsWithCoords);
+      } catch (error) {
+        console.error('Failed to load chiefs for map', error);
+        toast({
+          variant: 'destructive',
+          title: 'Erreur',
+          description: 'Impossible de charger les données des chefs pour la carte.',
+        });
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchChiefs();
+  }, [toast]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -38,7 +65,7 @@ export default function MappingPage() {
             />
           </div>
           <div className="h-[600px] w-full rounded-lg border overflow-hidden">
-             <MapComponent searchTerm={searchTerm} />
+             {loading ? <Skeleton className="h-[600px] w-full" /> : <MapComponent searchTerm={searchTerm} chiefs={chiefs} />}
           </div>
         </CardContent>
       </Card>

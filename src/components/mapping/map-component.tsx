@@ -5,10 +5,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import type { Chief } from '@/lib/data';
-import { useEffect, useState, useMemo } from 'react';
-import { getChiefs } from '@/services/chief-service';
-import { useToast } from '@/hooks/use-toast';
-import { Skeleton } from '../ui/skeleton';
+import { useEffect, useMemo } from 'react';
 
 // Fix for default Leaflet icon issue with Webpack
 const icon = L.icon({
@@ -23,6 +20,7 @@ const icon = L.icon({
 
 interface MapComponentProps {
   searchTerm: string;
+  chiefs: Chief[];
 }
 
 // Component to recenter map when filter results change
@@ -42,33 +40,8 @@ function MapUpdater({ chiefs }: { chiefs: Chief[] }) {
     return null;
 }
 
-export default function MapComponent({ searchTerm }: MapComponentProps) {
-  const [allChiefs, setAllChiefs] = useState<Chief[]>([]);
-  const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
-  
+export default function MapComponent({ searchTerm, chiefs: allChiefs }: MapComponentProps) {
   const position: L.LatLngExpression = [7.539989, -5.54708]; // Default center on Ivory Coast
-
-  useEffect(() => {
-    async function fetchChiefs() {
-      try {
-        setLoading(true);
-        const data = await getChiefs();
-        const chiefsWithCoords = data.filter(c => c.latitude && c.longitude);
-        setAllChiefs(chiefsWithCoords);
-      } catch (error) {
-        console.error('Failed to load chiefs for map', error);
-        toast({
-          variant: 'destructive',
-          title: 'Erreur',
-          description: 'Impossible de charger les données des chefs pour la carte.',
-        });
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchChiefs();
-  }, [toast]);
 
   const filteredChiefs = useMemo(() => {
     if (!searchTerm) {
@@ -83,10 +56,6 @@ export default function MapComponent({ searchTerm }: MapComponentProps) {
     );
   }, [allChiefs, searchTerm]);
   
-  if (loading) {
-    return <Skeleton className="h-[600px] w-full" />
-  }
-
   return (
     <MapContainer center={position} zoom={7} scrollWheelZoom={true} style={{ height: '100%', width: '100%' }}>
       <TileLayer

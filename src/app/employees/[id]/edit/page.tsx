@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { getEmployee, updateEmployee } from "@/services/employee-service";
 import type { Employe, Department, Direction, Service } from "@/lib/data";
@@ -17,8 +17,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Loader2, User, Briefcase, BadgeCheck, Save } from "lucide-react";
+import { ArrowLeft, Loader2, User, Briefcase, BadgeCheck, Save, Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 type Status = 'Actif' | 'En congé' | 'Licencié' | 'Retraité' | 'Décédé';
 
@@ -37,6 +38,10 @@ export default function EmployeeEditPage() {
     const [isSaving, setIsSaving] = useState(false);
     const [skillsString, setSkillsString] = useState("");
 
+    const [photoPreview, setPhotoPreview] = useState("");
+    const [photoFile, setPhotoFile] = useState<File | null>(null);
+    const photoInputRef = useRef<HTMLInputElement>(null);
+
     useEffect(() => {
         if (typeof id !== 'string') return;
         async function fetchEmployee() {
@@ -48,6 +53,9 @@ export default function EmployeeEditPage() {
                   getServices(),
                 ]);
                 setEmployee(data);
+                if (data?.photoUrl) {
+                    setPhotoPreview(data.photoUrl);
+                }
                 setDepartmentList(depts);
                 setDirectionList(dirs);
                 setServiceList(svcs);
@@ -77,6 +85,18 @@ export default function EmployeeEditPage() {
         setEmployee(prev => (prev ? { ...prev, [name]: value } : null));
     };
 
+     const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setPhotoFile(file);
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setPhotoPreview(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
     const handleSelectChange = (name: string, value: string) => {
         const newState: Partial<Employe> = { ...employee, [name]: value };
         if (name === 'department') {
@@ -99,7 +119,7 @@ export default function EmployeeEditPage() {
                 name: fullName,
                 skills: skillsString.split(',').map(s => s.trim()).filter(s => s)
             };
-            await updateEmployee(id, updatedData);
+            await updateEmployee(id, updatedData, photoFile);
             toast({ title: "Succès", description: "Les informations de l'employé ont été mises à jour." });
             router.push(`/employees/${id}`);
         } catch (error) {
@@ -146,6 +166,20 @@ export default function EmployeeEditPage() {
                     </CardHeader>
                     <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
+                           <Label>Photo</Label>
+                            <div className="flex items-center gap-4">
+                                 <Avatar className="h-20 w-20">
+                                    <AvatarImage src={photoPreview} alt={employee.name} data-ai-hint="employee photo" />
+                                    <AvatarFallback>{employee.name?.charAt(0) || 'E'}</AvatarFallback>
+                                 </Avatar>
+                                 <Button type="button" variant="outline" onClick={() => photoInputRef.current?.click()}>
+                                    <Upload className="mr-2 h-4 w-4" /> Changer
+                                 </Button>
+                                 <Input ref={photoInputRef} type="file" className="hidden" accept="image/*" onChange={handlePhotoChange}/>
+                            </div>
+                        </div>
+                         <div />
+                        <div className="space-y-2">
                             <Label htmlFor="lastName">Nom</Label>
                             <Input id="lastName" name="lastName" value={employee.lastName || ''} onChange={handleInputChange} />
                         </div>
@@ -181,6 +215,10 @@ export default function EmployeeEditPage() {
                          <div className="space-y-2">
                             <Label htmlFor="dateEmbauche">Date d'embauche</Label>
                             <Input id="dateEmbauche" name="dateEmbauche" type="date" value={employee.dateEmbauche || ''} onChange={handleInputChange} />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="Date_Immatriculation">Date d'immatriculation CNPS</Label>
+                            <Input id="Date_Immatriculation" name="Date_Immatriculation" type="date" value={employee.Date_Immatriculation || ''} onChange={handleInputChange} />
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="department">Département</Label>

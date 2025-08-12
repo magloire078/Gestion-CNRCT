@@ -3,7 +3,7 @@ import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, onSnapshot, Uns
 import type { Employe } from '@/lib/data';
 import { db, storage } from '@/lib/firebase';
 import { getOrganizationSettings } from './organization-service';
-import { ref, uploadString, getDownloadURL } from 'firebase/storage';
+import { ref, uploadString, getDownloadURL, uploadBytes } from 'firebase/storage';
 
 const employeesCollection = collection(db, 'employees');
 
@@ -84,9 +84,18 @@ export async function batchAddEmployees(employees: Omit<Employe, 'id'>[]): Promi
     return addedCount;
 }
 
-export async function updateEmployee(employeeId: string, employeeDataToUpdate: Partial<Employe>): Promise<void> {
+export async function updateEmployee(employeeId: string, employeeDataToUpdate: Partial<Employe>, photoFile: File | null = null): Promise<void> {
     const employeeDocRef = doc(db, 'employees', employeeId);
-    await updateDoc(employeeDocRef, employeeDataToUpdate);
+    
+    const updateData = { ...employeeDataToUpdate };
+
+    if (photoFile) {
+        const photoRef = ref(storage, `employee_photos/${employeeId}/${photoFile.name}`);
+        const snapshot = await uploadBytes(photoRef, photoFile);
+        updateData.photoUrl = await getDownloadURL(snapshot.ref);
+    }
+
+    await updateDoc(employeeDocRef, updateData);
 }
 
 export async function deleteEmployee(employeeId: string): Promise<void> {

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
@@ -404,7 +405,7 @@ export default function EmployeesPage() {
                                         </TableCell>
                                         <TableCell>{employee.matricule}</TableCell>
                                         <TableCell>{employee.poste}</TableCell>
-                                        <TableCell>{employee.department}</TableCell>
+                                        <TableCell>{employee.service || employee.direction || employee.department}</TableCell>
                                         <TableCell>
                                             <Badge variant={statusVariantMap[employee.status as Status] || 'default'}>{employee.status}</Badge>
                                         </TableCell>

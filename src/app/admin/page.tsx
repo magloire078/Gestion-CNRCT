@@ -164,13 +164,13 @@ export default function AdminPage() {
     }
   };
   
-  const handleSaveService = async (name: string, directionId: string) => {
+  const handleSaveService = async (serviceData: Omit<Service, 'id'>) => {
     try {
       if (editingService) {
-        await updateService(editingService.id, { name, directionId });
+        await updateService(editingService.id, serviceData);
         toast({ title: "Service mis à jour" });
       } else {
-        await addService({ name, directionId });
+        await addService(serviceData);
         toast({ title: "Service ajouté" });
       }
     } catch (err) {
@@ -321,19 +321,32 @@ export default function AdminPage() {
                     </CardContent>
                 </Card>
                  <Card>
-                    <CardHeader><CardTitle>Services</CardTitle><CardDescription>Unités opérationnelles des directions.</CardDescription></CardHeader>
+                    <CardHeader><CardTitle>Services</CardTitle><CardDescription>Unités opérationnelles.</CardDescription></CardHeader>
                     <CardContent>
-                    <div className="flex justify-end mb-4"><Button onClick={() => { setEditingService(null); setIsServiceDialogOpen(true); }} disabled={!directions || directions.length === 0}><PlusCircle className="mr-2 h-4 w-4" />Ajouter</Button></div>
-                    <Table><TableHeader><TableRow><TableHead>Nom</TableHead><TableHead>Direction</TableHead><TableHead className="w-[100px] text-right">Actions</TableHead></TableRow></TableHeader>
+                    <div className="flex justify-end mb-4"><Button onClick={() => { setEditingService(null); setIsServiceDialogOpen(true); }} disabled={(!directions || directions.length === 0) && (!departments || departments.length === 0)}><PlusCircle className="mr-2 h-4 w-4" />Ajouter</Button></div>
+                    <Table><TableHeader><TableRow><TableHead>Nom</TableHead><TableHead>Dépend de</TableHead><TableHead className="w-[100px] text-right">Actions</TableHead></TableRow></TableHeader>
                         <TableBody>
                         {loading ? Array.from({ length: 3 }).map((_, i) => (
                             <TableRow key={i}><TableCell><Skeleton className="h-4 w-full" /></TableCell><TableCell><Skeleton className="h-4 w-24" /></TableCell><TableCell><div className="flex justify-end gap-2"><Skeleton className="h-8 w-8" /><Skeleton className="h-8 w-8" /></div></TableCell></TableRow>
-                        )) : (services?.map((svc) => (
-                            <TableRow key={svc.id}><TableCell className="font-medium">{svc.name}</TableCell><TableCell className="text-sm text-muted-foreground">{directions?.find(d => d.id === svc.directionId)?.name}</TableCell><TableCell className="text-right">
-                                <Button variant="ghost" size="icon" onClick={() => { setEditingService(svc); setIsServiceDialogOpen(true); }}><Pencil className="h-4 w-4" /></Button>
-                                <Button variant="ghost" size="icon" onClick={() => setDeleteTarget({ id: svc.id, type: 'service', name: svc.name })}><Trash2 className="h-4 w-4" /></Button>
-                            </TableCell></TableRow>
-                        )))}
+                        )) : (services?.map((svc) => {
+                            const parent = svc.directionId 
+                                ? directions?.find(d => d.id === svc.directionId)
+                                : departments?.find(d => d.id === svc.departmentId);
+                            const parentName = parent?.name || 'N/A';
+                            const parentType = svc.directionId ? 'Direction' : 'Département';
+                            return (
+                                <TableRow key={svc.id}>
+                                    <TableCell className="font-medium">{svc.name}</TableCell>
+                                    <TableCell className="text-sm text-muted-foreground">
+                                        {parentName} <span className="text-xs opacity-70">({parentType})</span>
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        <Button variant="ghost" size="icon" onClick={() => { setEditingService(svc); setIsServiceDialogOpen(true); }}><Pencil className="h-4 w-4" /></Button>
+                                        <Button variant="ghost" size="icon" onClick={() => setDeleteTarget({ id: svc.id, type: 'service', name: svc.name })}><Trash2 className="h-4 w-4" /></Button>
+                                    </TableCell>
+                                </TableRow>
+                            )
+                        }))}
                         </TableBody>
                     </Table>
                     </CardContent>
@@ -347,7 +360,7 @@ export default function AdminPage() {
         {editingRole && <EditRoleSheet isOpen={isEditRoleSheetOpen} onClose={() => setIsEditRoleSheetOpen(false)} onUpdateRole={handleUpdateRole} role={editingRole} />}
         <DepartmentDialog isOpen={isDepartmentDialogOpen} onClose={() => setIsDepartmentDialogOpen(false)} onConfirm={handleSaveDepartment} department={editingDepartment} />
         <DirectionDialog isOpen={isDirectionDialogOpen} onClose={() => setIsDirectionDialogOpen(false)} onConfirm={handleSaveDirection} direction={editingDirection} departments={departments || []} />
-        <ServiceDialog isOpen={isServiceDialogOpen} onClose={() => setIsServiceDialogOpen(false)} onConfirm={handleSaveService} service={editingService} directions={directions || []} />
+        <ServiceDialog isOpen={isServiceDialogOpen} onClose={() => setIsServiceDialogOpen(false)} onConfirm={handleSaveService} service={editingService} directions={directions || []} departments={departments || []} />
         <EditUserRoleDialog isOpen={isEditUserDialogOpen} onClose={() => setIsEditUserDialogOpen(false)} onConfirm={handleUpdateUserRole} user={editingUser} roles={roles || []} />
       </div>
       

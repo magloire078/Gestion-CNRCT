@@ -20,19 +20,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { Service, Direction } from "@/lib/data";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import type { Service, Direction, Department } from "@/lib/data";
 
 interface ServiceDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (name: string, directionId: string) => Promise<void>;
+  onConfirm: (data: Omit<Service, 'id'>) => Promise<void>;
   service?: Service | null;
   directions: Direction[];
+  departments: Department[];
 }
 
-export function ServiceDialog({ isOpen, onClose, onConfirm, service, directions }: ServiceDialogProps) {
+export function ServiceDialog({ isOpen, onClose, onConfirm, service, directions, departments }: ServiceDialogProps) {
   const [name, setName] = useState("");
-  const [directionId, setDirectionId] = useState("");
+  const [parentType, setParentType] = useState<'direction' | 'department'>('direction');
+  const [parentId, setParentId] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -41,37 +44,55 @@ export function ServiceDialog({ isOpen, onClose, onConfirm, service, directions 
   useEffect(() => {
     if (service) {
       setName(service.name);
-      setDirectionId(service.directionId);
+      if (service.directionId) {
+        setParentType('direction');
+        setParentId(service.directionId);
+      } else if (service.departmentId) {
+        setParentType('department');
+        setParentId(service.departmentId);
+      }
     } else {
       setName("");
-      setDirectionId("");
+      setParentType('direction');
+      setParentId("");
     }
   }, [service]);
 
   const handleClose = () => {
     setName("");
-    setDirectionId("");
+    setParentType('direction');
+    setParentId("");
     setError("");
     onClose();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !directionId) {
-      setError("Le nom du service et la direction sont obligatoires.");
+    if (!name || !parentId) {
+      setError("Le nom du service et son entité parente sont obligatoires.");
       return;
     }
 
     setIsSubmitting(true);
     setError("");
     try {
-      await onConfirm(name, directionId);
+      const dataToSave: Omit<Service, 'id'> = {
+        name,
+        directionId: parentType === 'direction' ? parentId : undefined,
+        departmentId: parentType === 'department' ? parentId : undefined,
+      };
+      await onConfirm(dataToSave);
       handleClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Une erreur est survenue.");
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleParentTypeChange = (value: 'direction' | 'department') => {
+    setParentType(value);
+    setParentId(""); // Reset parent ID when type changes
   };
 
   return (
@@ -81,7 +102,7 @@ export function ServiceDialog({ isOpen, onClose, onConfirm, service, directions 
           <DialogHeader>
             <DialogTitle>{isEditMode ? 'Modifier le service' : 'Ajouter un service'}</DialogTitle>
             <DialogDescription>
-              {isEditMode ? 'Modifiez les informations de ce service.' : 'Ajoutez un nouveau service à une direction.'}
+              {isEditMode ? 'Modifiez les informations de ce service.' : 'Ajoutez un nouveau service.'}
             </DialogDescription>
           </DialogHeader>
           <div className="py-4 space-y-4">
@@ -94,18 +115,36 @@ export function ServiceDialog({ isOpen, onClose, onConfirm, service, directions 
                 placeholder="Nom du service"
               />
             </div>
+             <div>
+                <Label>Dépend de</Label>
+                <RadioGroup value={parentType} onValueChange={handleParentTypeChange} className="flex gap-4 mt-2">
+                    <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="direction" id="r-direction" />
+                        <Label htmlFor="r-direction">Direction</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="department" id="r-department" />
+                        <Label htmlFor="r-department">Département</Label>
+                    </div>
+                </RadioGroup>
+            </div>
             <div>
-              <Label htmlFor="directionId">Direction</Label>
-              <Select value={directionId} onValueChange={setDirectionId}>
-                <SelectTrigger id="directionId">
-                  <SelectValue placeholder="Sélectionnez une direction..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {directions.map((dir) => (
-                    <SelectItem key={dir.id} value={dir.id}>{dir.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                <Label htmlFor="parentId">{parentType === 'direction' ? 'Direction' : 'Département'}</Label>
+                <Select value={parentId} onValueChange={setParentId}>
+                    <SelectTrigger id="parentId">
+                    <SelectValue placeholder={`Sélectionnez ${parentType === 'direction' ? 'une direction' : 'un département'}...`} />
+                    </SelectTrigger>
+                    <SelectContent>
+                    {parentType === 'direction' ?
+                        directions.map((dir) => (
+                            <SelectItem key={dir.id} value={dir.id}>{dir.name}</SelectItem>
+                        )) :
+                        departments.map((dept) => (
+                            <SelectItem key={dept.id} value={dept.id}>{dept.name}</SelectItem>
+                        ))
+                    }
+                    </SelectContent>
+                </Select>
             </div>
             {error && <p className="text-sm text-destructive mt-2">{error}</p>}
           </div>
@@ -120,5 +159,3 @@ export function ServiceDialog({ isOpen, onClose, onConfirm, service, directions 
     </Dialog>
   );
 }
-
-    

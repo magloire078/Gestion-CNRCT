@@ -241,7 +241,8 @@ export type Direction = {
 export type Service = {
   id: string;
   name: string;
-  directionId: string;
+  directionId?: string; // A service can belong to a direction
+  departmentId?: string; // OR directly to a department
 };
 
 export type OrganizationSettings = {

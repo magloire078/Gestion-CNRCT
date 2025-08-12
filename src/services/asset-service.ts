@@ -1,5 +1,5 @@
 
-import { collection, getDocs, addDoc, doc, setDoc, onSnapshot, Unsubscribe, query, orderBy } from 'firebase/firestore';
+import { collection, getDocs, addDoc, doc, setDoc, onSnapshot, Unsubscribe, query, orderBy, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import type { Asset } from '@/lib/data';
 import { db } from '@/lib/firebase';
 
@@ -34,9 +34,29 @@ export async function getAssets(): Promise<Asset[]> {
   } as Asset));
 }
 
+export async function getAsset(tag: string): Promise<Asset | null> {
+    if (!tag) return null;
+    const assetDocRef = doc(db, 'assets', tag);
+    const docSnap = await getDoc(assetDocRef);
+    if (docSnap.exists()) {
+        return { tag: docSnap.id, ...docSnap.data() } as Asset;
+    }
+    return null;
+}
+
 export async function addAsset(assetDataToAdd: Omit<Asset, 'tag'> & { tag?: string }): Promise<Asset> {
     const assetTag = assetDataToAdd.tag || `IT-ASSET-${Date.now()}`;
     const assetRef = doc(db, 'assets', assetTag);
     await setDoc(assetRef, assetDataToAdd);
     return { tag: assetTag, ...assetDataToAdd };
+}
+
+export async function updateAsset(tag: string, assetData: Partial<Asset>): Promise<void> {
+    const assetDocRef = doc(db, 'assets', tag);
+    await updateDoc(assetDocRef, assetData);
+}
+
+export async function deleteAsset(tag: string): Promise<void> {
+    const assetDocRef = doc(db, 'assets', tag);
+    await deleteDoc(assetDocRef);
 }

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
@@ -11,7 +10,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import type { Employe } from "@/lib/data";
 import { AddEmployeeSheet } from "@/components/employees/add-employee-sheet";
-import { EditEmployeeSheet } from "@/components/employees/edit-employee-sheet";
 import { PrintDialog } from "@/components/employees/print-dialog";
 import { subscribeToEmployees, addEmployee, deleteEmployee, getOrganizationSettings, updateEmployee } from "@/services/employee-service";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -48,8 +46,6 @@ export type ColumnKeys = keyof typeof allColumns;
 export default function EmployeesPage() {
   const [employees, setEmployees] = useState<Employe[]>([]);
   const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
-  const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
-  const [selectedEmployee, setSelectedEmployee] = useState<Employe | null>(null);
   const [isPrintDialogOpen, setIsPrintDialogOpen] = useState(false);
   
   const [loading, setLoading] = useState(true);
@@ -117,11 +113,6 @@ export default function EmployeesPage() {
     }
   }, [isPrinting]);
 
-  const handleEditClick = (employee: Employe) => {
-    setSelectedEmployee(employee);
-    setIsEditSheetOpen(true);
-  };
-
   const handleAddEmployee = async (newEmployeeData: Omit<Employe, 'id'>) => {
     try {
         const { firstName, lastName } = newEmployeeData;
@@ -136,18 +127,6 @@ export default function EmployeesPage() {
     } catch (err) {
         console.error("Failed to add employee:", err);
         throw err; // Re-throw to be caught in the sheet
-    }
-  };
-
-  const handleUpdateEmployee = async (employeeId: string, updatedData: Partial<Employe>) => {
-     try {
-        await updateEmployee(employeeId, updatedData);
-        setIsEditSheetOpen(false);
-        toast({ title: "Succès", description: "Les informations de l'employé ont été mises à jour." });
-    } catch (error) {
-        console.error("Failed to save employee", error);
-        toast({ variant: "destructive", title: "Erreur", description: "Impossible d'enregistrer les modifications." });
-        throw error;
     }
   };
   
@@ -448,9 +427,11 @@ export default function EmployeesPage() {
                                                             Voir les détails
                                                         </Link>
                                                     </DropdownMenuItem>
-                                                    <DropdownMenuItem onClick={() => handleEditClick(employee)}>
+                                                    <DropdownMenuItem asChild>
+                                                      <Link href={`/employees/${employee.id}/edit`}>
                                                         <Pencil className="mr-2 h-4 w-4" />
                                                         Modifier
+                                                      </Link>
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem onClick={() => handleDeleteEmployee(employee.id)} className="text-destructive focus:text-destructive">
                                                         <Trash2 className="mr-2 h-4 w-4" />
@@ -478,14 +459,6 @@ export default function EmployeesPage() {
                     onClose={() => setIsAddSheetOpen(false)}
                     onAddEmployee={handleAddEmployee}
                 />
-                 {selectedEmployee && (
-                    <EditEmployeeSheet 
-                        isOpen={isEditSheetOpen}
-                        onClose={() => setIsEditSheetOpen(false)}
-                        onUpdateEmployee={handleUpdateEmployee}
-                        employee={selectedEmployee}
-                    />
-                 )}
                  <PrintDialog
                     isOpen={isPrintDialogOpen}
                     onClose={() => setIsPrintDialogOpen(false)}

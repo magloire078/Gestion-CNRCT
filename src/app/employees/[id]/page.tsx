@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -113,9 +112,11 @@ export default function EmployeeDetailPage() {
                             <div className="flex-1">
                                 <CardTitle className="text-3xl">{fullName}</CardTitle>
                                 <CardDescription className="text-lg text-muted-foreground">{employee.poste}</CardDescription>
-                                <div className="mt-2 flex gap-2">
+                                <div className="mt-2 flex gap-2 flex-wrap">
                                 <Badge variant={employee.status === 'Actif' ? 'default' : 'destructive'}>{employee.status}</Badge>
                                 <Badge variant="secondary">{employee.department}</Badge>
+                                {employee.direction && <Badge variant="outline">{employee.direction}</Badge>}
+                                {employee.service && <Badge variant="outline" className="bg-accent/50">{employee.service}</Badge>}
                                 </div>
                             </div>
                         </CardHeader>
@@ -193,7 +194,6 @@ export default function EmployeeDetailPage() {
                         <CardContent className="space-y-4">
                             <InfoItem label="Poste" value={employee.poste} />
                             <InfoItem label="Matricule" value={employee.matricule} />
-                            <InfoItem label="Service / Département" value={employee.department} />
                             <InfoItem label="Date d'embauche" value={employee.dateEmbauche} />
                             <InfoItem label="Numéro de décision" value={employee.Num_Decision} icon={FileText} />
                         </CardContent>
@@ -330,6 +330,3 @@ function EmployeeDetailSkeleton() {
         </div>
     )
 }
-
-
-    

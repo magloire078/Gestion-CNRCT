@@ -1,11 +1,13 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { getEmployee, updateEmployee } from "@/services/employee-service";
-import type { Employe, Department } from "@/lib/data";
+import type { Employe, Department, Direction, Service } from "@/lib/data";
 import { getDepartments } from "@/services/department-service";
+import { getDirections } from "@/services/direction-service";
+import { getServices } from "@/services/service-service";
+
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -27,6 +29,9 @@ export default function EmployeeEditPage() {
 
     const [employee, setEmployee] = useState<Partial<Employe> | null>(null);
     const [departmentList, setDepartmentList] = useState<Department[]>([]);
+    const [directionList, setDirectionList] = useState<Direction[]>([]);
+    const [serviceList, setServiceList] = useState<Service[]>([]);
+
     const [loading, setLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [skillsString, setSkillsString] = useState("");
@@ -35,12 +40,16 @@ export default function EmployeeEditPage() {
         if (typeof id !== 'string') return;
         async function fetchEmployee() {
             try {
-                const [data, depts] = await Promise.all([
+                const [data, depts, dirs, svcs] = await Promise.all([
                   getEmployee(id),
-                  getDepartments()
+                  getDepartments(),
+                  getDirections(),
+                  getServices(),
                 ]);
                 setEmployee(data);
                 setDepartmentList(depts);
+                setDirectionList(dirs);
+                setServiceList(svcs);
                 if (data?.skills) {
                     setSkillsString(data.skills.join(', '));
                 }
@@ -54,13 +63,29 @@ export default function EmployeeEditPage() {
         fetchEmployee();
     }, [id, toast]);
 
+    const filteredDirections = departmentList.find(d => d.name === employee?.department) 
+        ? directionList.filter(dir => dir.departmentId === departmentList.find(d => d.name === employee?.department)?.id)
+        : [];
+        
+    const filteredServices = directionList.find(d => d.name === employee?.direction)
+        ? serviceList.filter(svc => svc.directionId === directionList.find(d => d.name === employee?.direction)?.id)
+        : [];
+
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setEmployee(prev => (prev ? { ...prev, [name]: value } : null));
     };
 
     const handleSelectChange = (name: string, value: string) => {
-        setEmployee(prev => (prev ? { ...prev, [name]: value } : null));
+        const newState: Partial<Employe> = { ...employee, [name]: value };
+        if (name === 'department') {
+            newState.direction = '';
+            newState.service = '';
+        }
+        if (name === 'direction') {
+            newState.service = '';
+        }
+        setEmployee(newState);
     };
 
     const handleSave = async () => {
@@ -75,7 +100,7 @@ export default function EmployeeEditPage() {
             };
             await updateEmployee(id, updatedData);
             toast({ title: "Succès", description: "Les informations de l'employé ont été mises à jour." });
-            router.back();
+            router.push(`/employees/${id}`);
         } catch (error) {
             console.error("Failed to save employee", error);
             toast({ variant: "destructive", title: "Erreur", description: "Impossible d'enregistrer les modifications." });
@@ -166,6 +191,24 @@ export default function EmployeeEditPage() {
                             </Select>
                         </div>
                         <div className="space-y-2">
+                            <Label htmlFor="direction">Direction</Label>
+                            <Select name="direction" value={employee.direction || ''} onValueChange={(v) => handleSelectChange('direction', v)} disabled={!employee.department}>
+                                <SelectTrigger><SelectValue placeholder="Sélectionnez..." /></SelectTrigger>
+                                <SelectContent>
+                                    {filteredDirections.map(dir => <SelectItem key={dir.id} value={dir.name}>{dir.name}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="service">Service</Label>
+                            <Select name="service" value={employee.service || ''} onValueChange={(v) => handleSelectChange('service', v)} disabled={!employee.direction}>
+                                <SelectTrigger><SelectValue placeholder="Sélectionnez..." /></SelectTrigger>
+                                <SelectContent>
+                                    {filteredServices.map(svc => <SelectItem key={svc.id} value={svc.name}>{svc.name}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                         <div className="space-y-2">
                             <Label htmlFor="status">Statut</Label>
                              <Select name="status" value={employee.status || ''} onValueChange={(v) => handleSelectChange('status', v)}>
                                 <SelectTrigger><SelectValue placeholder="Sélectionnez..." /></SelectTrigger>
@@ -229,6 +272,7 @@ function EmployeeEditSkeleton() {
                         <Skeleton className="h-16 w-full" />
                         <Skeleton className="h-16 w-full" />
                         <Skeleton className="h-16 w-full" />
+                        <Skeleton className="h-16 w-full" />
                     </CardContent>
                 </Card>
                  <Card className="lg:col-span-3">
@@ -241,5 +285,3 @@ function EmployeeEditSkeleton() {
         </div>
     )
 }
-
-    

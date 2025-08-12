@@ -8,6 +8,8 @@ export type Employe = {
   lastName?: string;
   poste: string;
   department: string;
+  direction?: string;
+  service?: string;
   status: 'Actif' | 'En congé' | 'Licencié' | 'Retraité' | 'Décédé';
   photoUrl: string;
 
@@ -230,9 +232,23 @@ export type Department = {
   name: string;
 };
 
+export type Direction = {
+  id: string;
+  name: string;
+  departmentId: string;
+};
+
+export type Service = {
+  id: string;
+  name: string;
+  directionId: string;
+};
+
 export type OrganizationSettings = {
     organizationName: string;
     mainLogoUrl: string;
     secondaryLogoUrl: string;
     faviconUrl: string;
 };
+
+    

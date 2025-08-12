@@ -1,0 +1,53 @@
+
+import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, onSnapshot, Unsubscribe, query, orderBy } from 'firebase/firestore';
+import type { Direction } from '@/lib/data';
+import { db } from '@/lib/firebase';
+
+const directionsCollection = collection(db, 'directions');
+
+export function subscribeToDirections(
+    callback: (directions: Direction[]) => void,
+    onError: (error: Error) => void
+): Unsubscribe {
+    const q = query(directionsCollection, orderBy("name", "asc"));
+    const unsubscribe = onSnapshot(q, 
+        (snapshot) => {
+            const directions = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            } as Direction));
+            callback(directions);
+        },
+        (error) => {
+            console.error("Error subscribing to directions:", error);
+            onError(error);
+        }
+    );
+    return unsubscribe;
+}
+
+export async function getDirections(): Promise<Direction[]> {
+  const q = query(directionsCollection, orderBy("name", "asc"));
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  } as Direction));
+}
+
+export async function addDirection(directionData: Omit<Direction, 'id'>): Promise<Direction> {
+    const docRef = await addDoc(directionsCollection, directionData);
+    return { id: docRef.id, ...directionData };
+}
+
+export async function updateDirection(directionId: string, directionData: Partial<Direction>): Promise<void> {
+    const directionDocRef = doc(db, 'directions', directionId);
+    await updateDoc(directionDocRef, directionData);
+}
+
+export async function deleteDirection(directionId: string): Promise<void> {
+    const directionDocRef = doc(db, 'directions', directionId);
+    await deleteDoc(directionDocRef);
+}
+
+    

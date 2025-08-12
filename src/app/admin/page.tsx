@@ -23,10 +23,13 @@ import { PlusCircle, Trash2, Pencil, ChevronRight } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 
-import type { User, Role, Department } from "@/lib/data";
+import type { User, Role, Department, Direction, Service } from "@/lib/data";
 import { subscribeToUsers, deleteUser, updateUser } from "@/services/user-service";
 import { subscribeToRoles, deleteRole, updateRole } from "@/services/role-service";
 import { subscribeToDepartments, addDepartment, updateDepartment, deleteDepartment } from "@/services/department-service";
+import { subscribeToDirections, addDirection, updateDirection, deleteDirection } from "@/services/direction-service";
+import { subscribeToServices, addService, updateService, deleteService } from "@/services/service-service";
+
 
 import { AddUserSheet } from "@/components/admin/add-user-sheet";
 import { AddRoleSheet } from "@/components/admin/add-role-sheet";
@@ -35,11 +38,15 @@ import { ConfirmationDialog } from "@/components/common/confirmation-dialog";
 import { DepartmentDialog } from "@/components/admin/department-dialog";
 import { EditUserRoleDialog } from "@/components/admin/edit-user-role-dialog";
 import { EditRoleSheet } from "@/components/admin/edit-role-sheet";
+import { DirectionDialog } from "@/components/admin/direction-dialog";
+import { ServiceDialog } from "@/components/admin/service-dialog";
 
 export default function AdminPage() {
   const [users, setUsers] = useState<User[] | null>(null);
   const [roles, setRoles] = useState<Role[] | null>(null);
   const [departments, setDepartments] = useState<Department[] | null>(null);
+  const [directions, setDirections] = useState<Direction[] | null>(null);
+  const [services, setServices] = useState<Service[] | null>(null);
 
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
@@ -48,12 +55,16 @@ export default function AdminPage() {
   const [isAddRoleSheetOpen, setIsAddRoleSheetOpen] = useState(false);
   const [isEditRoleSheetOpen, setIsEditRoleSheetOpen] = useState(false);
   const [isDepartmentDialogOpen, setIsDepartmentDialogOpen] = useState(false);
+  const [isDirectionDialogOpen, setIsDirectionDialogOpen] = useState(false);
+  const [isServiceDialogOpen, setIsServiceDialogOpen] = useState(false);
   const [isEditUserDialogOpen, setIsEditUserDialogOpen] = useState(false);
 
   const [editingDepartment, setEditingDepartment] = useState<Department | null>(null);
+  const [editingDirection, setEditingDirection] = useState<Direction | null>(null);
+  const [editingService, setEditingService] = useState<Service | null>(null);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [editingRole, setEditingRole] = useState<Role | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<{ id: string; type: 'user' | 'role' | 'department'; name: string } | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; type: 'user' | 'role' | 'department' | 'direction' | 'service'; name: string } | null>(null);
 
   useEffect(() => {
     const rolesMap = new Map<string, Role>();
@@ -81,15 +92,28 @@ export default function AdminPage() {
       (deptList) => { setDepartments(deptList); },
       (err) => { setError("Impossible de charger les départements."); console.error(err); }
     );
+    
+    const unsubDirections = subscribeToDirections(
+      (dirList) => { setDirections(dirList); },
+      (err) => { setError("Impossible de charger les directions."); console.error(err); }
+    );
+    
+    const unsubServices = subscribeToServices(
+      (svcList) => { setServices(svcList); },
+      (err) => { setError("Impossible de charger les services."); console.error(err); }
+    );
+
 
     return () => {
       unsubRoles();
       unsubUsers();
       unsubDepartments();
+      unsubDirections();
+      unsubServices();
     };
   }, []);
 
-  const loading = users === null || roles === null || departments === null;
+  const loading = users === null || roles === null || departments === null || directions === null || services === null;
 
   const handleAddUser = (newUser: User) => {
     setIsAddUserSheetOpen(false);
@@ -126,6 +150,34 @@ export default function AdminPage() {
     }
   };
 
+  const handleSaveDirection = async (name: string, departmentId: string) => {
+    try {
+      if (editingDirection) {
+        await updateDirection(editingDirection.id, { name, departmentId });
+        toast({ title: "Direction mise à jour" });
+      } else {
+        await addDirection({ name, departmentId });
+        toast({ title: "Direction ajoutée" });
+      }
+    } catch (err) {
+      toast({ variant: "destructive", title: "Erreur", description: "Impossible d'enregistrer la direction." });
+    }
+  };
+  
+  const handleSaveService = async (name: string, directionId: string) => {
+    try {
+      if (editingService) {
+        await updateService(editingService.id, { name, directionId });
+        toast({ title: "Service mis à jour" });
+      } else {
+        await addService({ name, directionId });
+        toast({ title: "Service ajouté" });
+      }
+    } catch (err) {
+      toast({ variant: "destructive", title: "Erreur", description: "Impossible d'enregistrer le service." });
+    }
+  };
+
   const handleUpdateUserRole = async (userId: string, newRoleId: string) => {
     try {
         await updateUser(userId, { roleId: newRoleId });
@@ -143,6 +195,8 @@ export default function AdminPage() {
         if (deleteTarget.type === 'user') await deleteUser(deleteTarget.id);
         else if (deleteTarget.type === 'role') await deleteRole(deleteTarget.id);
         else if (deleteTarget.type === 'department') await deleteDepartment(deleteTarget.id);
+        else if (deleteTarget.type === 'direction') await deleteDirection(deleteTarget.id);
+        else if (deleteTarget.type === 'service') await deleteService(deleteTarget.id);
         
         toast({ title: "Suppression réussie", description: `"${deleteTarget.name}" a été supprimé.` });
     } catch (err) {
@@ -202,57 +256,98 @@ export default function AdminPage() {
               </CardContent>
           </Card>
           
-          <div className="space-y-6">
-             <Card>
-                <CardHeader><CardTitle>Gestion des Rôles</CardTitle><CardDescription>Définissez les rôles et leurs permissions.</CardDescription></CardHeader>
-                <CardContent>
-                <div className="flex justify-end mb-4"><Button onClick={() => setIsAddRoleSheetOpen(true)}><PlusCircle className="mr-2 h-4 w-4" />Ajouter un rôle</Button></div>
-                {error && <p className="text-destructive text-center py-4">{error}</p>}
-                <Table><TableHeader><TableRow><TableHead>Rôle</TableHead><TableHead>Permissions</TableHead><TableHead className="text-right w-[100px]">Actions</TableHead></TableRow></TableHeader>
-                    <TableBody>
-                    {loading ? Array.from({ length: 2 }).map((_, i) => (
-                        <TableRow key={i}><TableCell><Skeleton className="h-4 w-24" /></TableCell><TableCell><Skeleton className="h-4 w-64" /></TableCell><TableCell><Skeleton className="h-8 w-8" /></TableCell></TableRow>
-                    )) : (roles?.map((role) => (
-                        <TableRow key={role.id}>
-                            <TableCell className="font-medium">{role.name}</TableCell>
-                            <TableCell className="text-sm text-muted-foreground max-w-xs truncate">{role.permissions.join(', ')}</TableCell>
-                            <TableCell className="text-right">
-                                <Button variant="ghost" size="icon" onClick={() => { setEditingRole(role); setIsEditRoleSheetOpen(true); }}><Pencil className="h-4 w-4" /></Button>
-                                <Button variant="ghost" size="icon" onClick={() => setDeleteTarget({ id: role.id, type: 'role', name: role.name })}><Trash2 className="h-4 w-4" /></Button>
-                            </TableCell>
-                        </TableRow>
-                    )))}
-                    </TableBody>
-                </Table>
-                </CardContent>
-            </Card>
-
-             <Card>
-                <CardHeader><CardTitle>Gestion des Départements</CardTitle><CardDescription>Gérez les départements de l'entreprise.</CardDescription></CardHeader>
-                <CardContent>
-                <div className="flex justify-end mb-4"><Button onClick={() => { setEditingDepartment(null); setIsDepartmentDialogOpen(true); }}><PlusCircle className="mr-2 h-4 w-4" />Ajouter un département</Button></div>
-                {error && <p className="text-destructive text-center py-4">{error}</p>}
-                <Table><TableHeader><TableRow><TableHead>Nom du département</TableHead><TableHead className="w-[100px] text-right">Actions</TableHead></TableRow></TableHeader>
-                    <TableBody>
-                    {loading ? Array.from({ length: 3 }).map((_, i) => (
-                        <TableRow key={i}><TableCell><Skeleton className="h-4 w-full" /></TableCell><TableCell><div className="flex justify-end gap-2"><Skeleton className="h-8 w-8" /><Skeleton className="h-8 w-8" /></div></TableCell></TableRow>
-                    )) : (departments?.map((dept) => (
-                        <TableRow key={dept.id}><TableCell className="font-medium">{dept.name}</TableCell><TableCell className="text-right">
-                            <Button variant="ghost" size="icon" onClick={() => { setEditingDepartment(dept); setIsDepartmentDialogOpen(true); }}><Pencil className="h-4 w-4" /></Button>
-                            <Button variant="ghost" size="icon" onClick={() => setDeleteTarget({ id: dept.id, type: 'department', name: dept.name })}><Trash2 className="h-4 w-4" /></Button>
-                        </TableCell></TableRow>
-                    )))}
-                    </TableBody>
-                </Table>
-                </CardContent>
-            </Card>
-          </div>
+          <Card>
+            <CardHeader><CardTitle>Gestion des Rôles</CardTitle><CardDescription>Définissez les rôles et leurs permissions.</CardDescription></CardHeader>
+            <CardContent>
+            <div className="flex justify-end mb-4"><Button onClick={() => setIsAddRoleSheetOpen(true)}><PlusCircle className="mr-2 h-4 w-4" />Ajouter un rôle</Button></div>
+            {error && <p className="text-destructive text-center py-4">{error}</p>}
+            <Table><TableHeader><TableRow><TableHead>Rôle</TableHead><TableHead>Permissions</TableHead><TableHead className="text-right w-[100px]">Actions</TableHead></TableRow></TableHeader>
+                <TableBody>
+                {loading ? Array.from({ length: 2 }).map((_, i) => (
+                    <TableRow key={i}><TableCell><Skeleton className="h-4 w-24" /></TableCell><TableCell><Skeleton className="h-4 w-64" /></TableCell><TableCell><Skeleton className="h-8 w-8" /></TableCell></TableRow>
+                )) : (roles?.map((role) => (
+                    <TableRow key={role.id}>
+                        <TableCell className="font-medium">{role.name}</TableCell>
+                        <TableCell className="text-sm text-muted-foreground max-w-xs truncate">{role.permissions.join(', ')}</TableCell>
+                        <TableCell className="text-right">
+                            <Button variant="ghost" size="icon" onClick={() => { setEditingRole(role); setIsEditRoleSheetOpen(true); }}><Pencil className="h-4 w-4" /></Button>
+                            <Button variant="ghost" size="icon" onClick={() => setDeleteTarget({ id: role.id, type: 'role', name: role.name })}><Trash2 className="h-4 w-4" /></Button>
+                        </TableCell>
+                    </TableRow>
+                )))}
+                </TableBody>
+            </Table>
+            </CardContent>
+          </Card>
         </div>
+
+        <div>
+            <h2 className="text-2xl font-bold tracking-tight mb-4">Structure Organisationnelle</h2>
+            <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-3">
+                 <Card>
+                    <CardHeader><CardTitle>Départements</CardTitle><CardDescription>Niveau le plus élevé de l'organisation.</CardDescription></CardHeader>
+                    <CardContent>
+                    <div className="flex justify-end mb-4"><Button onClick={() => { setEditingDepartment(null); setIsDepartmentDialogOpen(true); }}><PlusCircle className="mr-2 h-4 w-4" />Ajouter</Button></div>
+                    <Table><TableHeader><TableRow><TableHead>Nom</TableHead><TableHead className="w-[100px] text-right">Actions</TableHead></TableRow></TableHeader>
+                        <TableBody>
+                        {loading ? Array.from({ length: 3 }).map((_, i) => (
+                            <TableRow key={i}><TableCell><Skeleton className="h-4 w-full" /></TableCell><TableCell><div className="flex justify-end gap-2"><Skeleton className="h-8 w-8" /><Skeleton className="h-8 w-8" /></div></TableCell></TableRow>
+                        )) : (departments?.map((dept) => (
+                            <TableRow key={dept.id}><TableCell className="font-medium">{dept.name}</TableCell><TableCell className="text-right">
+                                <Button variant="ghost" size="icon" onClick={() => { setEditingDepartment(dept); setIsDepartmentDialogOpen(true); }}><Pencil className="h-4 w-4" /></Button>
+                                <Button variant="ghost" size="icon" onClick={() => setDeleteTarget({ id: dept.id, type: 'department', name: dept.name })}><Trash2 className="h-4 w-4" /></Button>
+                            </TableCell></TableRow>
+                        )))}
+                        </TableBody>
+                    </Table>
+                    </CardContent>
+                </Card>
+                 <Card>
+                    <CardHeader><CardTitle>Directions</CardTitle><CardDescription>Sous-divisions des départements.</CardDescription></CardHeader>
+                    <CardContent>
+                    <div className="flex justify-end mb-4"><Button onClick={() => { setEditingDirection(null); setIsDirectionDialogOpen(true); }} disabled={!departments || departments.length === 0}><PlusCircle className="mr-2 h-4 w-4" />Ajouter</Button></div>
+                    <Table><TableHeader><TableRow><TableHead>Nom</TableHead><TableHead>Département</TableHead><TableHead className="w-[100px] text-right">Actions</TableHead></TableRow></TableHeader>
+                        <TableBody>
+                        {loading ? Array.from({ length: 3 }).map((_, i) => (
+                            <TableRow key={i}><TableCell><Skeleton className="h-4 w-full" /></TableCell><TableCell><Skeleton className="h-4 w-24" /></TableCell><TableCell><div className="flex justify-end gap-2"><Skeleton className="h-8 w-8" /><Skeleton className="h-8 w-8" /></div></TableCell></TableRow>
+                        )) : (directions?.map((dir) => (
+                            <TableRow key={dir.id}><TableCell className="font-medium">{dir.name}</TableCell><TableCell className="text-sm text-muted-foreground">{departments?.find(d => d.id === dir.departmentId)?.name}</TableCell><TableCell className="text-right">
+                                <Button variant="ghost" size="icon" onClick={() => { setEditingDirection(dir); setIsDirectionDialogOpen(true); }}><Pencil className="h-4 w-4" /></Button>
+                                <Button variant="ghost" size="icon" onClick={() => setDeleteTarget({ id: dir.id, type: 'direction', name: dir.name })}><Trash2 className="h-4 w-4" /></Button>
+                            </TableCell></TableRow>
+                        )))}
+                        </TableBody>
+                    </Table>
+                    </CardContent>
+                </Card>
+                 <Card>
+                    <CardHeader><CardTitle>Services</CardTitle><CardDescription>Unités opérationnelles des directions.</CardDescription></CardHeader>
+                    <CardContent>
+                    <div className="flex justify-end mb-4"><Button onClick={() => { setEditingService(null); setIsServiceDialogOpen(true); }} disabled={!directions || directions.length === 0}><PlusCircle className="mr-2 h-4 w-4" />Ajouter</Button></div>
+                    <Table><TableHeader><TableRow><TableHead>Nom</TableHead><TableHead>Direction</TableHead><TableHead className="w-[100px] text-right">Actions</TableHead></TableRow></TableHeader>
+                        <TableBody>
+                        {loading ? Array.from({ length: 3 }).map((_, i) => (
+                            <TableRow key={i}><TableCell><Skeleton className="h-4 w-full" /></TableCell><TableCell><Skeleton className="h-4 w-24" /></TableCell><TableCell><div className="flex justify-end gap-2"><Skeleton className="h-8 w-8" /><Skeleton className="h-8 w-8" /></div></TableCell></TableRow>
+                        )) : (services?.map((svc) => (
+                            <TableRow key={svc.id}><TableCell className="font-medium">{svc.name}</TableCell><TableCell className="text-sm text-muted-foreground">{directions?.find(d => d.id === svc.directionId)?.name}</TableCell><TableCell className="text-right">
+                                <Button variant="ghost" size="icon" onClick={() => { setEditingService(svc); setIsServiceDialogOpen(true); }}><Pencil className="h-4 w-4" /></Button>
+                                <Button variant="ghost" size="icon" onClick={() => setDeleteTarget({ id: svc.id, type: 'service', name: svc.name })}><Trash2 className="h-4 w-4" /></Button>
+                            </TableCell></TableRow>
+                        )))}
+                        </TableBody>
+                    </Table>
+                    </CardContent>
+                </Card>
+            </div>
+        </div>
+
 
         <AddUserSheet isOpen={isAddUserSheetOpen} onClose={() => setIsAddUserSheetOpen(false)} onAddUser={handleAddUser} />
         <AddRoleSheet isOpen={isAddRoleSheetOpen} onClose={() => setIsAddRoleSheetOpen(false)} onAddRole={handleAddRole} roles={roles || []} />
         {editingRole && <EditRoleSheet isOpen={isEditRoleSheetOpen} onClose={() => setIsEditRoleSheetOpen(false)} onUpdateRole={handleUpdateRole} role={editingRole} />}
         <DepartmentDialog isOpen={isDepartmentDialogOpen} onClose={() => setIsDepartmentDialogOpen(false)} onConfirm={handleSaveDepartment} department={editingDepartment} />
+        <DirectionDialog isOpen={isDirectionDialogOpen} onClose={() => setIsDirectionDialogOpen(false)} onConfirm={handleSaveDirection} direction={editingDirection} departments={departments || []} />
+        <ServiceDialog isOpen={isServiceDialogOpen} onClose={() => setIsServiceDialogOpen(false)} onConfirm={handleSaveService} service={editingService} directions={directions || []} />
         <EditUserRoleDialog isOpen={isEditUserDialogOpen} onClose={() => setIsEditUserDialogOpen(false)} onConfirm={handleUpdateUserRole} user={editingUser} roles={roles || []} />
       </div>
       
@@ -266,3 +361,5 @@ export default function AdminPage() {
     </>
   );
 }
+
+    

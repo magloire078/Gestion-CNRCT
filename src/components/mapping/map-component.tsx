@@ -1,6 +1,6 @@
 "use client";
 
-import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import type { Chief } from '@/lib/data';
@@ -56,7 +56,6 @@ export default function MapComponent({ searchTerm, chiefs: allChiefs }: MapCompo
   }, [allChiefs, searchTerm]);
   
   // placeholder is a prop on MapContainer that expects a component to render while the map is loading.
-  // When it's not provided, react-leaflet renders a div with the message "Map container is not available."
   // By providing a div with the same message, we can avoid the error.
   const placeholder = <div style={{height: "100%", width: "100%", display: "flex", justifyContent: "center", alignItems: "center"}}>Map container is not available.</div>;
 

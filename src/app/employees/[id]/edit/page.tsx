@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -220,6 +221,10 @@ export default function EmployeeEditPage() {
                                     <SelectItem value="Décédé">Décédé</SelectItem>
                                 </SelectContent>
                             </Select>
+                        </div>
+                         <div className="space-y-2">
+                            <Label htmlFor="Date_Depart">Date de départ</Label>
+                            <Input id="Date_Depart" name="Date_Depart" type="date" value={employee.Date_Depart || ''} onChange={handleInputChange} />
                         </div>
                     </CardContent>
                 </Card>

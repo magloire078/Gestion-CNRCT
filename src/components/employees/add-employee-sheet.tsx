@@ -66,6 +66,7 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
   const [photoUrl, setPhotoUrl] = useState<string | undefined>(undefined);
   const [photoPreview, setPhotoPreview] = useState(`https://placehold.co/100x100.png`);
   const [skills, setSkills] = useState("");
+  const [dateDepart, setDateDepart] = useState("");
   
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -128,6 +129,7 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
     setError("");
     setAvatarPrompt("");
     setGeneratedAvatar(null);
+    setDateDepart("");
     if(fileInputRef.current) {
         fileInputRef.current.value = "";
     }
@@ -203,6 +205,7 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
           name: `${firstName} ${lastName}`.trim(), 
           skills: skillsArray,
           sexe,
+          Date_Depart: dateDepart || undefined,
       });
       handleClose();
     } catch(err) {
@@ -248,6 +251,7 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
             <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="service" className="text-right">Service</Label><Select value={service} onValueChange={setService} disabled={!direction}><SelectTrigger className="col-span-3"><SelectValue placeholder="Sélectionnez..." /></SelectTrigger><SelectContent>{filteredServices.map(svc => (<SelectItem key={svc.id} value={svc.name}>{svc.name}</SelectItem>))}</SelectContent></Select></div>
 
             <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="status" className="text-right">Statut</Label><Select value={status} onValueChange={(value: Employe['status']) => setStatus(value)} required><SelectTrigger className="col-span-3"><SelectValue placeholder="Sélectionnez un statut" /></SelectTrigger><SelectContent><SelectItem value="Actif">Actif</SelectItem><SelectItem value="En congé">En congé</SelectItem><SelectItem value="Licencié">Licencié</SelectItem><SelectItem value="Retraité">Retraité</SelectItem><SelectItem value="Décédé">Décédé</SelectItem></SelectContent></Select></div>
+             <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="dateDepart" className="text-right">Date de Départ</Label><Input id="dateDepart" type="date" value={dateDepart} onChange={(e) => setDateDepart(e.target.value)} className="col-span-3" /></div>
             <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="sexe" className="text-right">Sexe</Label><Select value={sexe} onValueChange={(value: Employe['sexe']) => setSexe(value)}><SelectTrigger className="col-span-3"><SelectValue placeholder="Sélectionnez un sexe" /></SelectTrigger><SelectContent><SelectItem value="Homme">Homme</SelectItem><SelectItem value="Femme">Femme</SelectItem><SelectItem value="Autre">Autre</SelectItem></SelectContent></Select></div>
             <div className="grid grid-cols-4 items-start gap-4"><Label htmlFor="skills" className="text-right pt-2">Compétences</Label><Textarea id="skills" value={skills} onChange={(e) => setSkills(e.target.value)} className="col-span-3" rows={3} placeholder="Séparer les compétences par une virgule..."/></div>
             

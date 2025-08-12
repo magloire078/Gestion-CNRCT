@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -195,6 +196,7 @@ export default function EmployeeDetailPage() {
                             <InfoItem label="Poste" value={employee.poste} />
                             <InfoItem label="Matricule" value={employee.matricule} />
                             <InfoItem label="Date d'embauche" value={employee.dateEmbauche} />
+                             <InfoItem label="Date de départ" value={employee.Date_Depart} />
                             <InfoItem label="Numéro de décision" value={employee.Num_Decision} icon={FileText} />
                         </CardContent>
                     </Card>

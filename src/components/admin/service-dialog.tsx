@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import type { Service, Direction, Department } from "@/lib/data";
+import { useToast } from "@/hooks/use-toast";
 
 interface ServiceDialogProps {
   isOpen: boolean;
@@ -38,30 +39,33 @@ export function ServiceDialog({ isOpen, onClose, onConfirm, service, directions,
   const [parentId, setParentId] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
 
   const isEditMode = !!service;
 
   useEffect(() => {
-    if (service) {
-      setName(service.name);
-      if (service.directionId) {
+    if (isOpen) {
+      if (service) {
+        setName(service.name);
+        if (service.directionId) {
+          setParentType('direction');
+          setParentId(service.directionId);
+        } else if (service.departmentId) {
+          setParentType('department');
+          setParentId(service.departmentId);
+        } else {
+            setParentType('direction');
+            setParentId('');
+        }
+      } else {
+        setName("");
         setParentType('direction');
-        setParentId(service.directionId);
-      } else if (service.departmentId) {
-        setParentType('department');
-        setParentId(service.departmentId);
+        setParentId("");
       }
-    } else {
-      setName("");
-      setParentType('direction');
-      setParentId("");
     }
-  }, [service]);
+  }, [service, isOpen]);
 
   const handleClose = () => {
-    setName("");
-    setParentType('direction');
-    setParentId("");
     setError("");
     onClose();
   };
@@ -84,7 +88,13 @@ export function ServiceDialog({ isOpen, onClose, onConfirm, service, directions,
       await onConfirm(dataToSave);
       handleClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Une erreur est survenue.");
+      const message = err instanceof Error ? err.message : "Une erreur est survenue lors de l'enregistrement.";
+      setError(message);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: message,
+      });
     } finally {
       setIsSubmitting(false);
     }

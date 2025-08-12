@@ -40,12 +40,12 @@ function uploadProcessedLogo(
     // Always upload as PNG to preserve transparency
     const logoRef = ref(storage, `organization/${logoName}.png`);
 
-    // Convert data URL to Blob for uploadBytesResumable which provides progress
-    const blob = (fetch(dataUrl).then(res => res.blob()));
+    // Convert data URL back to Blob for uploadBytesResumable which provides progress
+    const blobPromise = fetch(dataUrl).then(res => res.blob());
 
     return new Promise((resolve, reject) => {
-        blob.then(b => {
-            const uploadTask = uploadBytesResumable(logoRef, b);
+        blobPromise.then(blob => {
+            const uploadTask = uploadBytesResumable(logoRef, blob, { contentType: 'image/png' });
 
             onControllerReady({
                 cancel: () => uploadTask.cancel()
@@ -93,53 +93,48 @@ export function saveOrganizationSettings(
 
     const taskPromise = (async () => {
         const updateData: Partial<OrganizationSettings> = {};
-
+        
+        // Handle name update separately and first
         if (settingsToUpdate.organizationName) {
             updateData.organizationName = settingsToUpdate.organizationName;
+             await setDoc(settingsDocRef, { organizationName: settingsToUpdate.organizationName }, { merge: true });
         }
+
 
         const uploadFile = async (file: File, logoName: 'mainLogo' | 'secondaryLogo' | 'favicon') => {
             const dataUrl = await fileToDataUrl(file);
-            onProgress(5); // Initial progress for reading file
-            
             let processedDataUrl = dataUrl;
+            
+            // AI processing step with fallback
             if (logoName !== 'favicon') {
                 try {
                     processedDataUrl = await processLogo(dataUrl);
-                    onProgress(25); // Progress after AI processing
                 } catch (error) {
                     console.warn(`AI logo processing failed for ${logoName}. Falling back to original image. Error:`, error);
-                    // Fallback to original dataUrl if AI processing fails
-                    processedDataUrl = dataUrl;
-                    onProgress(25); // Still update progress to show we are moving on
                 }
-            } else {
-                 onProgress(25); // Skip processing for favicon
             }
-            
-            // Pass a sub-progress function that scales the upload progress (0-100) to the remaining 75% (25-100)
+
             const downloadUrl = await uploadProcessedLogo(
                 processedDataUrl, 
                 logoName, 
-                (p) => onProgress(25 + (p * 0.75)), 
+                onProgress,
                 onControllerReady
             );
             
-            onProgress(100); // Final progress
             return downloadUrl;
         };
 
         if (settingsToUpdate.mainLogoFile) {
             updateData.mainLogoUrl = await uploadFile(settingsToUpdate.mainLogoFile, 'mainLogo');
-        }
-        if (settingsToUpdate.secondaryLogoFile) {
+        } else if (settingsToUpdate.secondaryLogoFile) {
             updateData.secondaryLogoUrl = await uploadFile(settingsToUpdate.secondaryLogoFile, 'secondaryLogo');
-        }
-        if (settingsToUpdate.faviconFile) {
+        } else if (settingsToUpdate.faviconFile) {
             updateData.faviconUrl = await uploadFile(settingsToUpdate.faviconFile, 'favicon');
         }
         
-        await setDoc(settingsDocRef, updateData, { merge: true });
+        if (Object.keys(updateData).length > 0 && !updateData.organizationName) {
+            await setDoc(settingsDocRef, updateData, { merge: true });
+        }
 
         const docSnap = await getDoc(settingsDocRef);
         return docSnap.data() as OrganizationSettings;

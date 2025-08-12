@@ -42,7 +42,7 @@ export default function OrganizationSettingsPage() {
   const [hasFaviconChanged, setHasFaviconChanged] = useState(false);
   
   const [loading, setLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
+  const [isSavingName, setIsSavingName] = useState(false);
   
   const [mainLogoProgress, setMainLogoProgress] = useState<number | null>(null);
   const [secondaryLogoProgress, setSecondaryLogoProgress] = useState<number | null>(null);
@@ -108,25 +108,27 @@ export default function OrganizationSettingsPage() {
   };
 
   const handleSaveName = async () => {
-    setIsSaving(true);
+    setIsSavingName(true);
     try {
-      await saveOrganizationSettings({ organizationName: name }, () => {}, () => {});
+      const { taskPromise } = saveOrganizationSettings({ organizationName: name }, () => {}, () => {});
+      await taskPromise;
       setSettings(prev => prev ? { ...prev, organizationName: name } : { organizationName: name, mainLogoUrl: '', secondaryLogoUrl: '', faviconUrl: '' });
       setHasNameChanged(false);
       toast({
         title: "Nom de l'organisation mis à jour",
       });
-      // No reload to keep UI state
+      // Force reload to update app-wide settings like title
+      window.location.reload();
     } catch (error) {
        toast({ variant: "destructive", title: "Erreur", description: "Impossible de sauvegarder le nom." });
     } finally {
-      setIsSaving(false);
+      setIsSavingName(false);
     }
   };
   
   const handleSaveLogo = async (logoType: 'main' | 'secondary' | 'favicon') => {
       let file: File | null = null;
-      let settingsToSave = {};
+      let settingsToSave: OrganizationSettingsInput = {};
       let setProgress: React.Dispatch<React.SetStateAction<number | null>> = () => {};
       let setController: React.Dispatch<React.SetStateAction<UploadTaskController | null>> = () => {};
       
@@ -159,7 +161,7 @@ export default function OrganizationSettingsPage() {
           const { taskPromise } = saveOrganizationSettings(
               settingsToSave, 
               (p) => setProgress(p), 
-              (controller) => setController(controller)
+              (c) => setController(c)
           );
           
           const newSettings = await taskPromise;
@@ -239,8 +241,8 @@ export default function OrganizationSettingsPage() {
                 />
             </CardContent>
             <CardFooter>
-                <Button onClick={handleSaveName} disabled={isSaving || !hasNameChanged}>
-                    {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                <Button onClick={handleSaveName} disabled={isSavingName || !hasNameChanged}>
+                    {isSavingName ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                     Enregistrer le nom
                 </Button>
             </CardFooter>

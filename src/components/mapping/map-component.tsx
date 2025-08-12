@@ -5,7 +5,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import type { Chief } from '@/lib/data';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState }from 'react';
 
 // Fix for default Leaflet icon issue with Webpack
 const icon = L.icon({
@@ -41,7 +41,6 @@ function MapUpdater({ chiefs }: { chiefs: Chief[] }) {
 }
 
 export default function MapComponent({ searchTerm, chiefs: allChiefs }: MapComponentProps) {
-  const [map, setMap] = useState<L.Map | null>(null);
   const position: L.LatLngExpression = [7.539989, -5.54708]; // Default center on Ivory Coast
 
   const filteredChiefs = useMemo(() => {
@@ -57,13 +56,12 @@ export default function MapComponent({ searchTerm, chiefs: allChiefs }: MapCompo
     );
   }, [allChiefs, searchTerm]);
   
-  const displayMap = useMemo(() => (
+  return (
     <MapContainer 
       center={position} 
       zoom={7} 
       scrollWheelZoom={true} 
       style={{ height: '100%', width: '100%' }}
-      whenCreated={setMap}
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -89,11 +87,5 @@ export default function MapComponent({ searchTerm, chiefs: allChiefs }: MapCompo
       ))}
       <MapUpdater chiefs={filteredChiefs} />
     </MapContainer>
-  ), [filteredChiefs]); // Only re-render the map internals when chiefs change
-
-  return (
-    <div id="map" style={{ height: '100%', width: '100%' }}>
-      {displayMap}
-    </div>
-  );
+  )
 }

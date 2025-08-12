@@ -163,20 +163,6 @@ export default function AdminPage() {
       toast({ variant: "destructive", title: "Erreur", description: "Impossible d'enregistrer la direction." });
     }
   };
-  
-  const handleSaveService = async (serviceData: Omit<Service, 'id'>) => {
-    try {
-      if (editingService) {
-        await updateService(editingService.id, serviceData);
-        toast({ title: "Service mis à jour" });
-      } else {
-        await addService(serviceData);
-        toast({ title: "Service ajouté" });
-      }
-    } catch (err) {
-      toast({ variant: "destructive", title: "Erreur", description: "Impossible d'enregistrer le service." });
-    }
-  };
 
   const handleUpdateUserRole = async (userId: string, newRoleId: string) => {
     try {
@@ -360,7 +346,7 @@ export default function AdminPage() {
         {editingRole && <EditRoleSheet isOpen={isEditRoleSheetOpen} onClose={() => setIsEditRoleSheetOpen(false)} onUpdateRole={handleUpdateRole} role={editingRole} />}
         <DepartmentDialog isOpen={isDepartmentDialogOpen} onClose={() => setIsDepartmentDialogOpen(false)} onConfirm={handleSaveDepartment} department={editingDepartment} />
         <DirectionDialog isOpen={isDirectionDialogOpen} onClose={() => setIsDirectionDialogOpen(false)} onConfirm={handleSaveDirection} direction={editingDirection} departments={departments || []} />
-        <ServiceDialog isOpen={isServiceDialogOpen} onClose={() => setIsServiceDialogOpen(false)} onConfirm={handleSaveService} service={editingService} directions={directions || []} departments={departments || []} />
+        <ServiceDialog isOpen={isServiceDialogOpen} onClose={() => setIsServiceDialogOpen(false)} service={editingService} directions={directions || []} departments={departments || []} />
         <EditUserRoleDialog isOpen={isEditUserDialogOpen} onClose={() => setIsEditUserDialogOpen(false)} onConfirm={handleUpdateUserRole} user={editingUser} roles={roles || []} />
       </div>
       
@@ -374,5 +360,3 @@ export default function AdminPage() {
     </>
   );
 }
-
-    

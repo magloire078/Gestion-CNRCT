@@ -23,17 +23,18 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import type { Service, Direction, Department } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
+import { addService, updateService } from "@/services/service-service";
+
 
 interface ServiceDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (data: Omit<Service, 'id'>) => Promise<void>;
   service?: Service | null;
   directions: Direction[];
   departments: Department[];
 }
 
-export function ServiceDialog({ isOpen, onClose, onConfirm, service, directions, departments }: ServiceDialogProps) {
+export function ServiceDialog({ isOpen, onClose, service, directions, departments }: ServiceDialogProps) {
   const [name, setName] = useState("");
   const [parentType, setParentType] = useState<'direction' | 'department'>('direction');
   const [parentId, setParentId] = useState("");
@@ -79,13 +80,22 @@ export function ServiceDialog({ isOpen, onClose, onConfirm, service, directions,
 
     setIsSubmitting(true);
     setError("");
+    
     try {
       const dataToSave: Omit<Service, 'id'> = {
         name,
         directionId: parentType === 'direction' ? parentId : undefined,
         departmentId: parentType === 'department' ? parentId : undefined,
       };
-      await onConfirm(dataToSave);
+
+      if (isEditMode) {
+        await updateService(service.id, dataToSave);
+        toast({ title: "Service mis à jour" });
+      } else {
+        await addService(dataToSave);
+        toast({ title: "Service ajouté" });
+      }
+      
       handleClose();
     } catch (err) {
       const message = err instanceof Error ? err.message : "Une erreur est survenue lors de l'enregistrement.";

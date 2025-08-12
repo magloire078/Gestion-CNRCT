@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Sheet,
   SheetClose,
@@ -18,6 +18,8 @@ import {
 import type { Role } from "@/lib/data";
 import { addRole } from "@/services/role-service";
 import { useToast } from "@/hooks/use-toast";
+import { allPermissions, type PermissionValue } from "@/lib/permissions";
+import { ScrollArea } from "../ui/scroll-area";
 
 interface AddRoleSheetProps {
   isOpen: boolean;
@@ -28,14 +30,14 @@ interface AddRoleSheetProps {
 
 export function AddRoleSheet({ isOpen, onClose, onAddRole, roles }: AddRoleSheetProps) {
   const [name, setName] = useState('');
-  const [permissions, setPermissions] = useState("");
+  const [selectedPermissions, setSelectedPermissions] = useState<PermissionValue[]>([]);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
   const resetForm = () => {
     setName("");
-    setPermissions("");
+    setSelectedPermissions([]);
     setError("");
   };
 
@@ -43,12 +45,22 @@ export function AddRoleSheet({ isOpen, onClose, onAddRole, roles }: AddRoleSheet
     resetForm();
     onClose();
   };
+  
+  const handlePermissionChange = (permission: PermissionValue, checked: boolean) => {
+    setSelectedPermissions(prev => 
+      checked ? [...prev, permission] : prev.filter(p => p !== permission)
+    );
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !permissions) {
-      setError("Le nom du rôle et les permissions sont obligatoires.");
+    if (!name) {
+      setError("Le nom du rôle est obligatoire.");
       return;
+    }
+    if (selectedPermissions.length === 0) {
+        setError("Veuillez sélectionner au moins une permission.");
+        return;
     }
 
     if (roles.some(role => role.name.toLowerCase() === name.toLowerCase())) {
@@ -59,8 +71,7 @@ export function AddRoleSheet({ isOpen, onClose, onAddRole, roles }: AddRoleSheet
     setIsSubmitting(true);
     setError("");
     try {
-      const permissionArray = permissions.split(',').map(p => p.trim());
-      const newRole = await addRole({ name, permissions: permissionArray });
+      const newRole = await addRole({ name, permissions: selectedPermissions });
       onAddRole(newRole);
       toast({ title: "Rôle ajouté", description: `Le rôle ${name} a été ajouté.` });
       handleClose();
@@ -73,30 +84,37 @@ export function AddRoleSheet({ isOpen, onClose, onAddRole, roles }: AddRoleSheet
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <SheetContent className="sm:max-w-lg">
-        <form onSubmit={handleSubmit}>
+      <SheetContent className="sm:max-w-lg flex flex-col">
+        <form onSubmit={handleSubmit} className="flex flex-col h-full">
           <SheetHeader>
             <SheetTitle>Ajouter un nouveau rôle</SheetTitle>
             <SheetDescription>
               Définissez un nouveau rôle et ses permissions associées.
             </SheetDescription>
           </SheetHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="name" className="text-right">Nom du Rôle</Label>
-              <Input id="name" value={name} onChange={(e) => setName(e.target.value)} className="col-span-3" />
+          <div className="flex-1 py-4 space-y-4 overflow-hidden">
+            <div className="px-1">
+              <Label htmlFor="name">Nom du Rôle</Label>
+              <Input id="name" value={name} onChange={(e) => setName(e.target.value)} className="mt-2" />
             </div>
-            <div className="grid grid-cols-4 items-start gap-4">
-              <Label htmlFor="permissions" className="text-right pt-2">Permissions</Label>
-              <Textarea
-                id="permissions"
-                value={permissions}
-                onChange={(e) => setPermissions(e.target.value)}
-                className="col-span-3"
-                placeholder="Séparez les permissions par une virgule. Ex: Gérer les utilisateurs, Approuver les congés"
-              />
+            <div className="px-1">
+              <Label>Permissions</Label>
             </div>
-            {error && <p className="text-sm text-destructive col-span-4 text-center">{error}</p>}
+             <ScrollArea className="h-[calc(100%-120px)] border rounded-md p-4">
+                <div className="space-y-4">
+                    {Object.entries(allPermissions).map(([label, value]) => (
+                        <div key={value} className="flex items-center space-x-2">
+                             <Checkbox 
+                                id={`add-${value}`}
+                                checked={selectedPermissions.includes(value)}
+                                onCheckedChange={(checked) => handlePermissionChange(value, !!checked)}
+                            />
+                            <Label htmlFor={`add-${value}`} className="font-normal">{label}</Label>
+                        </div>
+                    ))}
+                </div>
+            </ScrollArea>
+            {error && <p className="text-sm text-destructive px-1 text-center">{error}</p>}
           </div>
           <SheetFooter>
             <SheetClose asChild>

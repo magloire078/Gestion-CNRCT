@@ -1,11 +1,10 @@
 
 "use client";
 
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import type { Chief } from '@/lib/data';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 
 // Fix for default Leaflet icon issue with Webpack
 const icon = L.icon({
@@ -23,25 +22,10 @@ interface MapComponentProps {
   chiefs: Chief[];
 }
 
-// Component to recenter map when filter results change
-function MapUpdater({ chiefs }: { chiefs: Chief[] }) {
-    const map = useMap();
-    useEffect(() => {
-        if (chiefs && chiefs.length > 0) {
-            const firstChief = chiefs[0];
-            if (firstChief.latitude && firstChief.longitude) {
-                 map.setView([firstChief.latitude, firstChief.longitude], 8);
-            }
-        } else if (chiefs) {
-            // If no results, zoom out to country view
-            map.setView([7.539989, -5.54708], 7);
-        }
-    }, [chiefs, map]);
-    return null;
-}
-
 export default function MapComponent({ searchTerm, chiefs: allChiefs }: MapComponentProps) {
-  const position: L.LatLngExpression = [7.539989, -5.54708]; // Default center on Ivory Coast
+  const mapRef = useRef<L.Map | null>(null);
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+  const markersRef = useRef<L.LayerGroup>(new L.LayerGroup());
 
   const filteredChiefs = useMemo(() => {
     if (!searchTerm) {
@@ -55,53 +39,60 @@ export default function MapComponent({ searchTerm, chiefs: allChiefs }: MapCompo
         chief.region.toLowerCase().includes(lowercasedTerm)
     );
   }, [allChiefs, searchTerm]);
-  
-  const placeholder = (
-    <div
-      style={{
-        height: "100%",
-        width: "100%",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        background: "#f0f0f0",
-      }}
-    >
-      Chargement de la carte...
-    </div>
-  );
 
-  return (
-    <MapContainer 
-      center={position} 
-      zoom={7} 
-      scrollWheelZoom={true} 
-      style={{ height: '100%', width: '100%' }}
-      placeholder={placeholder}
-    >
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
-      {filteredChiefs.map(chief => (
-        (chief.latitude && chief.longitude) && (
-          <Marker 
-            key={chief.id} 
-            position={[chief.latitude, chief.longitude]}
-            icon={icon}
-          >
-            <Popup>
-              <div className="font-sans">
-                <h3 className="font-bold text-base mb-1">{chief.name}</h3>
-                <p className="text-sm text-muted-foreground m-0">{chief.title}</p>
-                <p className="text-sm m-0">{chief.village}, {chief.region}</p>
-                {chief.contact && <p className="text-sm m-0">Contact: {chief.contact}</p>}
-              </div>
-            </Popup>
-          </Marker>
-        )
-      ))}
-      <MapUpdater chiefs={filteredChiefs} />
-    </MapContainer>
-  )
+  useEffect(() => {
+    if (mapContainerRef.current && !mapRef.current) {
+        mapRef.current = L.map(mapContainerRef.current).setView([7.539989, -5.54708], 7);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(mapRef.current);
+        markersRef.current.addTo(mapRef.current);
+    }
+    
+    return () => {
+        if (mapRef.current) {
+            mapRef.current.remove();
+            mapRef.current = null;
+        }
+    };
+  }, []);
+
+  useEffect(() => {
+      const map = mapRef.current;
+      if (!map) return;
+
+      // Clear existing markers
+      markersRef.current.clearLayers();
+
+      // Add new markers
+      filteredChiefs.forEach(chief => {
+        if (chief.latitude && chief.longitude) {
+            const marker = L.marker([chief.latitude, chief.longitude], { icon });
+            marker.bindPopup(`
+                <div class="font-sans">
+                    <h3 class="font-bold text-base mb-1">${chief.name}</h3>
+                    <p class="text-sm text-muted-foreground m-0">${chief.title}</p>
+                    <p class="text-sm m-0">${chief.village}, ${chief.region}</p>
+                    ${chief.contact ? `<p class="text-sm m-0">Contact: ${chief.contact}</p>`: ''}
+                </div>
+            `);
+            markersRef.current.addLayer(marker);
+        }
+      });
+      
+      // Recenter map
+       if (filteredChiefs && filteredChiefs.length > 0) {
+            const firstChief = filteredChiefs[0];
+            if (firstChief.latitude && firstChief.longitude) {
+                 map.setView([firstChief.latitude, firstChief.longitude], 8);
+            }
+        } else if (filteredChiefs) {
+            // If no results, zoom out to country view
+            map.setView([7.539989, -5.54708], 7);
+        }
+
+  }, [filteredChiefs]);
+
+
+  return <div ref={mapContainerRef} style={{ height: '100%', width: '100%' }} />;
 }

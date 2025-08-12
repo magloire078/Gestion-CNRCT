@@ -17,7 +17,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Upload, Loader2, Save, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from "@/components/ui/separator";
-import { getOrganizationSettings, saveOrganizationSettings, type UploadTaskController } from "@/services/organization-service";
+import { getOrganizationSettings, saveOrganizationName, uploadOrganizationFile, type UploadTaskController } from "@/services/organization-service";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
 import type { OrganizationSettings } from "@/lib/data";
@@ -89,7 +89,7 @@ export default function OrganizationSettingsPage() {
   ) => {
     const file = e.target.files?.[0];
     if (file) {
-      if(file.size > 4 * 1024 * 1024) { // Increased limit for processing
+      if(file.size > 4 * 1024 * 1024) { 
         toast({
           variant: "destructive",
           title: "Fichier trop volumineux",
@@ -110,8 +110,7 @@ export default function OrganizationSettingsPage() {
   const handleSaveName = async () => {
     setIsSavingName(true);
     try {
-      const { taskPromise } = saveOrganizationSettings({ organizationName: name }, () => {}, () => {});
-      await taskPromise;
+      await saveOrganizationName(name);
       setSettings(prev => prev ? { ...prev, organizationName: name } : { organizationName: name, mainLogoUrl: '', secondaryLogoUrl: '', faviconUrl: '' });
       setHasNameChanged(false);
       toast({
@@ -128,28 +127,36 @@ export default function OrganizationSettingsPage() {
   
   const handleSaveLogo = async (logoType: 'main' | 'secondary' | 'favicon') => {
       let file: File | null = null;
-      let settingsToSave: OrganizationSettingsInput = {};
       let setProgress: React.Dispatch<React.SetStateAction<number | null>> = () => {};
       let setController: React.Dispatch<React.SetStateAction<UploadTaskController | null>> = () => {};
-      
+      let setHasChanged: React.Dispatch<React.SetStateAction<boolean>> = () => {};
+      let setFileState: React.Dispatch<React.SetStateAction<File | null>> = () => {};
+      let setPreviewState: React.Dispatch<React.SetStateAction<string>> = () => {};
+
       switch(logoType) {
         case 'main':
           file = mainLogoFile;
-          settingsToSave = { mainLogoFile: file };
           setProgress = setMainLogoProgress;
           setController = setMainLogoController;
+          setHasChanged = setHasMainLogoChanged;
+          setFileState = setMainLogoFile;
+          setPreviewState = setMainLogoPreview;
           break;
         case 'secondary':
           file = secondaryLogoFile;
-          settingsToSave = { secondaryLogoFile: file };
           setProgress = setSecondaryLogoProgress;
           setController = setSecondaryLogoController;
+          setHasChanged = setHasSecondaryLogoChanged;
+          setFileState = setSecondaryLogoFile;
+          setPreviewState = setSecondaryLogoPreview;
           break;
         case 'favicon':
           file = faviconFile;
-          settingsToSave = { faviconFile: file };
           setProgress = setFaviconProgress;
           setController = setFaviconController;
+          setHasChanged = setHasFaviconChanged;
+          setFileState = setFaviconFile;
+          setPreviewState = setFaviconPreview;
           break;
       }
       
@@ -158,39 +165,26 @@ export default function OrganizationSettingsPage() {
       setProgress(0);
 
       try {
-          const { taskPromise } = saveOrganizationSettings(
-              settingsToSave, 
+          const { taskPromise } = uploadOrganizationFile(
+              logoType,
+              file,
               (p) => setProgress(p), 
               (c) => setController(c)
           );
           
-          const newSettings = await taskPromise;
-
-          switch(logoType) {
-            case 'main':
-              setSettings(prev => ({...prev!, mainLogoUrl: newSettings.mainLogoUrl}));
-              setMainLogoPreview(newSettings.mainLogoUrl);
-              setHasMainLogoChanged(false);
-              setMainLogoFile(null);
-              break;
-            case 'secondary':
-               setSettings(prev => ({...prev!, secondaryLogoUrl: newSettings.secondaryLogoUrl}));
-              setSecondaryLogoPreview(newSettings.secondaryLogoUrl);
-              setHasSecondaryLogoChanged(false);
-              setSecondaryLogoFile(null);
-              break;
-            case 'favicon':
-               setSettings(prev => ({...prev!, faviconUrl: newSettings.faviconUrl}));
-              setFaviconPreview(newSettings.faviconUrl);
-              setHasFaviconChanged(false);
-              setFaviconFile(null);
-              break;
-          }
+          const newUrl = await taskPromise;
+          
+          setSettings(prev => ({...prev!, [`${logoType}LogoUrl`]: newUrl}));
+          setPreviewState(newUrl);
+          setHasChanged(false);
+          setFileState(null);
 
           toast({
             title: "Sauvegarde réussie",
             description: `Le ${logoType === 'favicon' ? 'favicon' : 'logo'} a été mis à jour.`,
           });
+           if(logoType === 'favicon') window.location.reload();
+
       } catch (error: any) {
           if (error.code !== 'storage/canceled') {
               toast({

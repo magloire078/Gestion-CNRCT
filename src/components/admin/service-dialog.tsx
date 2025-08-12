@@ -82,17 +82,21 @@ export function ServiceDialog({ isOpen, onClose, service, directions, department
     setError("");
     
     try {
-      const dataToSave: Omit<Service, 'id'> = {
+      const dataToSave: { name: string; directionId?: string; departmentId?: string; } = {
         name,
-        directionId: parentType === 'direction' ? parentId : undefined,
-        departmentId: parentType === 'department' ? parentId : undefined,
       };
+
+      if(parentType === 'direction') {
+        dataToSave.directionId = parentId;
+      } else {
+        dataToSave.departmentId = parentId;
+      }
 
       if (isEditMode) {
         await updateService(service.id, dataToSave);
         toast({ title: "Service mis à jour" });
       } else {
-        await addService(dataToSave);
+        await addService(dataToSave as Omit<Service, 'id'>);
         toast({ title: "Service ajouté" });
       }
       

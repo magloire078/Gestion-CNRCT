@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/card';
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, FileWarning, Laptop, Car, Download, ShieldCheck, User as UserIcon, Building, Cake, Printer, Crown } from 'lucide-react';
+import { Users, FileWarning, Laptop, Car, Download, ShieldCheck, User as UserIcon, Building, Cake, Printer, Crown, LogOut as LogOutIcon } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { EmployeeDistributionChart } from '@/components/charts/employee-distribution-chart';
 import { AssetStatusChart } from '@/components/charts/asset-status-chart';
@@ -74,10 +74,11 @@ export default function DashboardPage() {
 
 
     const [isPrintingAnniversaries, setIsPrintingAnniversaries] = useState(false);
+    const [isPrintingRetirements, setIsPrintingRetirements] = useState(false);
     const [organizationLogos, setOrganizationLogos] = useState<OrganizationSettings | null>(null);
 
     const anniversaryYears = Array.from({ length: 10 }, (_, i) => (new Date().getFullYear() - i).toString());
-    const retirementYears = Array.from({ length: 10 }, (_, i) => (new Date().getFullYear() + i).toString());
+    const retirementYears = Array.from({ length: 15 }, (_, i) => (new Date().getFullYear() - 5 + i).toString()).reverse();
     
     const monthsForSelect = [
         { value: "0", label: "Janvier" }, { value: "1", label: "Février" }, { value: "2", label: "Mars" },
@@ -85,7 +86,7 @@ export default function DashboardPage() {
         { value: "6", label: "Juillet" }, { value: "7", label: "Août" }, { value: "8", label: "Septembre" },
         { value: "9", label: "Octobre" }, { value: "10", label: "Novembre" }, { value: "11", label: "Décembre" },
     ];
-    const selectedPeriodText = `${monthsForSelect[parseInt(selectedAnniversaryMonth)].label} ${selectedAnniversaryYear}`;
+    const selectedAnniversaryPeriodText = `${monthsForSelect[parseInt(selectedAnniversaryMonth)].label} ${selectedAnniversaryYear}`;
 
     useEffect(() => {
         setLoading(true);
@@ -153,18 +154,25 @@ export default function DashboardPage() {
     }, [employees, selectedAnniversaryMonth, selectedAnniversaryYear, selectedRetirementYear]);
     
     useEffect(() => {
-        if (isPrintingAnniversaries) {
+        if (isPrintingAnniversaries || isPrintingRetirements) {
             setTimeout(() => {
                 window.print();
                 setIsPrintingAnniversaries(false);
+                setIsPrintingRetirements(false);
             }, 500);
         }
-    }, [isPrintingAnniversaries]);
+    }, [isPrintingAnniversaries, isPrintingRetirements]);
 
     const handlePrintAnniversaries = async () => {
         const logos = await getOrganizationSettings();
         setOrganizationLogos(logos);
         setIsPrintingAnniversaries(true);
+    };
+    
+    const handlePrintRetirements = async () => {
+        const logos = await getOrganizationSettings();
+        setOrganizationLogos(logos);
+        setIsPrintingRetirements(true);
     };
 
     const getGenderBreakdown = (list: (Employe | Chief)[]) => {
@@ -178,11 +186,10 @@ export default function DashboardPage() {
     const directoireEmployees = activeEmployees.filter(e => e.department === 'Directoire');
 
     const recentLeaves = leaves.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()).slice(0, 3);
-    const newHires = employees.sort((a,b) => new Date(b.dateEmbauche || 0).getTime() - new Date(a.dateEmbauche || 0).getTime()).slice(0,3);
   
   return (
     <>
-    <div className={isPrintingAnniversaries ? 'print-hidden' : ''}>
+    <div className={isPrintingAnniversaries || isPrintingRetirements ? 'print-hidden' : ''}>
         <div className="flex flex-col gap-6">
         <h1 className="text-3xl font-bold tracking-tight">Tableau de Bord</h1>
         
@@ -295,13 +302,19 @@ export default function DashboardPage() {
                                 <CardTitle>Départs à la Retraite</CardTitle>
                                 <CardDescription>Employés partant pour l'année choisie.</CardDescription>
                             </div>
-                             <div className="w-28">
-                                <Select value={selectedRetirementYear} onValueChange={setSelectedRetirementYear}>
-                                    <SelectTrigger id="retirement-year"><SelectValue/></SelectTrigger>
-                                    <SelectContent>
-                                        {retirementYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
-                                    </SelectContent>
-                                </Select>
+                             <div className="flex items-center gap-2">
+                                <div className="w-28">
+                                    <Select value={selectedRetirementYear} onValueChange={setSelectedRetirementYear}>
+                                        <SelectTrigger id="retirement-year"><SelectValue/></SelectTrigger>
+                                        <SelectContent>
+                                            {retirementYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <Button variant="outline" size="icon" className="h-9 w-9" onClick={handlePrintRetirements} disabled={upcomingRetirements.length === 0}>
+                                    <Printer className="h-4 w-4" />
+                                    <span className="sr-only">Imprimer</span>
+                                </Button>
                             </div>
                         </div>
                     </CardHeader>
@@ -406,7 +419,10 @@ export default function DashboardPage() {
         </div>
     </div>
     {isPrintingAnniversaries && organizationLogos && (
-        <AnniversaryPrintLayout logos={organizationLogos} employees={seniorityAnniversaries} period={selectedPeriodText} year={selectedAnniversaryYear}/>
+        <AnniversaryPrintLayout logos={organizationLogos} employees={seniorityAnniversaries} period={selectedAnniversaryPeriodText} year={selectedAnniversaryYear}/>
+    )}
+    {isPrintingRetirements && organizationLogos && (
+        <RetirementPrintLayout logos={organizationLogos} employees={upcomingRetirements} year={selectedRetirementYear} />
     )}
     </>
   );
@@ -459,6 +475,67 @@ function AnniversaryPrintLayout({ logos, employees, period, year }: { logos: Org
                             </tr>
                         )
                     })}
+                </tbody>
+            </table>
+
+            <footer className="mt-8 text-xs">
+                <div className="flex justify-between items-end">
+                    <div></div>
+                    <div className="text-center">
+                        <p className="font-bold">Chambre Nationale de Rois et Chefs Traditionnels (CNRCT)</p>
+                        <p>Yamoussoukro, Riviera - BP 201 Yamoussoukro | Tél : (225) 30 64 06 60 | Fax : (+255) 30 64 06 63</p>
+                        <p>www.cnrct.ci - Email : info@cnrct.ci</p>
+                    </div>
+                    <div><p>1</p></div>
+                </div>
+            </footer>
+        </div>
+    );
+}
+
+function RetirementPrintLayout({ logos, employees, year }: { logos: OrganizationSettings, employees: (Employe & { calculatedRetirementDate: Date })[], year: string }) {
+    return (
+        <div id="print-section" className="bg-white text-black p-8 w-full print:shadow-none print:border-none print:p-0">
+            <header className="flex justify-between items-start mb-8">
+                <div className="text-center">
+                    <h2 className="font-bold">Chambre Nationale des Rois</h2>
+                    <h2 className="font-bold">et Chefs Traditionnels</h2>
+                    {logos.mainLogoUrl && <img src={logos.mainLogoUrl} alt="Logo CNRCT" width={80} height={80} className="mx-auto mt-2" />}
+                    <p className="font-bold mt-1 text-sm">UN CHEF NOUVEAU</p>
+                    <p className="text-xs mt-4">LE DIRECTOIRE</p>
+                    <p className="text-xs">LE CABINET / LE SERVICE INFORMATIQUE</p>
+                </div>
+                <div className="text-center">
+                    <h2 className="font-bold">République de Côte d'Ivoire</h2>
+                    {logos.secondaryLogoUrl && <img src={logos.secondaryLogoUrl} alt="Logo Cote d'Ivoire" width={80} height={80} className="mx-auto mt-2" />}
+                    <p className="mt-1">Union - Discipline - Travail</p>
+                </div>
+            </header>
+
+            <div className="text-center my-6">
+                <h1 className="text-lg font-bold underline">LISTE DES EMPLOYÉS PARTANT À LA RETRAITE EN {year}</h1>
+            </div>
+            
+            <table className="w-full text-sm border-collapse border border-black">
+                <thead>
+                    <tr className="bg-gray-200">
+                        <th className="border border-black p-2 text-left font-bold">N°</th>
+                        <th className="border border-black p-2 text-left font-bold">Nom &amp; Prénoms</th>
+                        <th className="border border-black p-2 text-left font-bold">Poste</th>
+                        <th className="border border-black p-2 text-left font-bold">Date de Naissance</th>
+                        <th className="border border-black p-2 text-center font-bold">Date de Départ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {employees.map((employee, index) => (
+                        <tr key={employee.id}>
+                            <td className="border border-black p-2 text-center">{index + 1}</td>
+                            <td className="border border-black p-2">{employee.name}</td>
+                            <td className="border border-black p-2">{employee.poste}</td>
+                            <td className="border border-black p-2">{employee.Date_Naissance}</td>
+                            <td className="border border-black p-2 text-center">{format(employee.calculatedRetirementDate, 'dd/MM/yyyy')}</td>
+                        </tr>
+                    ))}
                 </tbody>
             </table>
 

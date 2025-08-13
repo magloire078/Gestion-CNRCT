@@ -114,16 +114,14 @@ export default function EmployeesPage() {
     }
   }, [isPrinting]);
 
-  const handleAddEmployee = async (newEmployeeData: Omit<Employe, 'id'>) => {
+  const handleAddEmployee = async (newEmployeeData: Omit<Employe, 'id' | 'photoUrl'>, photoFile: File | null) => {
     try {
-        const { firstName, lastName } = newEmployeeData;
-        const name = `${firstName} ${lastName}`.trim();
-        await addEmployee({ ...newEmployeeData, firstName, lastName, name });
+        await addEmployee(newEmployeeData, photoFile);
         // No need to update state here, onSnapshot will do it
         setIsAddSheetOpen(false);
         toast({
           title: "Employé ajouté",
-          description: `${name} a été ajouté avec succès.`,
+          description: `${newEmployeeData.name} a été ajouté avec succès.`,
         });
     } catch (err) {
         console.error("Failed to add employee:", err);

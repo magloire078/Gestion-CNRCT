@@ -50,7 +50,7 @@ export async function getEmployee(id: string): Promise<Employe | null> {
 
 export async function addEmployee(employeeDataToAdd: Omit<Employe, 'id' | 'photoUrl'>, photoFile: File | null): Promise<Employe> {
     const { ...restOfData } = employeeDataToAdd;
-    let finalPhotoUrl = 'https://placehold.co/100x100.png'; // Default placeholder
+    let finalPhotoUrl = 'https://placehold.co/100x100.png';
 
     const docRef = doc(collection(db, "employees"));
 
@@ -60,8 +60,10 @@ export async function addEmployee(employeeDataToAdd: Omit<Employe, 'id' | 'photo
         finalPhotoUrl = await getDownloadURL(snapshot.ref);
     }
 
-    await setDoc(docRef, { ...restOfData, photoUrl: finalPhotoUrl });
-    return { id: docRef.id, ...restOfData, photoUrl: finalPhotoUrl };
+    const employeeData = { ...restOfData, photoUrl: finalPhotoUrl };
+    await setDoc(docRef, employeeData);
+    
+    return { id: docRef.id, ...employeeData };
 }
 
 export async function batchAddEmployees(employees: Omit<Employe, 'id'>[]): Promise<number> {
@@ -97,11 +99,6 @@ export async function updateEmployee(employeeId: string, employeeDataToUpdate: P
     }
 
     await updateDoc(employeeDocRef, updateData);
-}
-
-export async function deleteEmployee(employeeId: string): Promise<void> {
-    const employeeDocRef = doc(db, 'employees', employeeId);
-    await deleteDoc(employeeDocRef);
 }
 
 export async function searchEmployees(query: string): Promise<Employe[]> {

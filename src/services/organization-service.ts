@@ -49,24 +49,25 @@ export function uploadOrganizationFile(
 ): { taskPromise: Promise<string> } {
 
     const taskPromise = (async (): Promise<string> => {
-        let dataUrl = await fileToDataUrl(file);
-        let finalDataUrl = dataUrl;
+        const storage = getStorage();
+        const logoName = `${fileType}_${new Date().getTime()}_${file.name}`;
+        const logoRef = ref(storage, `organization/${logoName}`);
+        
+        let fileToUpload = file;
 
         // AI processing for logos, not for favicon
         if (fileType !== 'favicon') {
             try {
-                finalDataUrl = await processLogo(dataUrl);
+                const dataUrl = await fileToDataUrl(file);
+                const processedDataUrl = await processLogo(dataUrl);
+                const blob = await fetch(processedDataUrl).then(res => res.blob());
+                fileToUpload = new File([blob], file.name, { type: 'image/png' });
             } catch (error) {
                 console.warn(`AI logo processing failed for ${fileType} logo. Falling back to original image. Error:`, error);
             }
         }
         
-        const storage = getStorage();
-        const logoName = `${fileType}Logo.png`; // Always save as PNG for consistency
-        const logoRef = ref(storage, `organization/${logoName}`);
-
-        const blob = await fetch(finalDataUrl).then(res => res.blob());
-        const uploadTask = uploadBytesResumable(logoRef, blob, { contentType: 'image/png' });
+        const uploadTask = uploadBytesResumable(logoRef, fileToUpload);
 
         onControllerReady({ cancel: () => uploadTask.cancel() });
         

@@ -114,7 +114,7 @@ export default function EmployeesPage() {
     }
   }, [isPrinting]);
 
-  const handleAddEmployee = async (newEmployeeData: Omit<Employe, 'id' | 'photoUrl'>, photoFile: File | null) => {
+  const handleAddEmployee = async (newEmployeeData: Omit<Employe, 'id'>, photoFile: File | null) => {
     try {
         await addEmployee(newEmployeeData, photoFile);
         // No need to update state here, onSnapshot will do it

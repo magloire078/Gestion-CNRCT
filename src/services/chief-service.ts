@@ -1,11 +1,10 @@
 
-import { collection, getDocs, addDoc, onSnapshot, Unsubscribe, query, orderBy, deleteDoc, doc, updateDoc, getDoc, writeBatch, where } from 'firebase/firestore';
+import { collection, getDocs, addDoc, onSnapshot, Unsubscribe, query, orderBy, deleteDoc, doc, updateDoc, getDoc, writeBatch, where, setDoc } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import type { Chief } from '@/lib/data';
-import { db } from '@/lib/firebase';
+import { db, storage } from '@/lib/firebase';
 
 const chiefsCollection = collection(db, 'chiefs');
-const storage = getStorage();
 
 export function subscribeToChiefs(
     callback: (chiefs: Chief[]) => void,
@@ -46,9 +45,19 @@ export async function getChief(id: string): Promise<Chief | null> {
     return null;
 }
 
-export async function addChief(chiefData: Omit<Chief, 'id'>): Promise<Chief> {
-    const docRef = await addDoc(chiefsCollection, chiefData);
-    return { id: docRef.id, ...chiefData };
+export async function addChief(chiefData: Omit<Chief, 'id'>, photoFile: File | null): Promise<Chief> {
+    let photoUrl = 'https://placehold.co/100x100.png';
+    const docRef = doc(collection(db, "chiefs"));
+
+    if (photoFile) {
+        const photoRef = ref(storage, `chief_photos/${docRef.id}/${photoFile.name}`);
+        const snapshot = await uploadBytes(photoRef, photoFile);
+        photoUrl = await getDownloadURL(snapshot.ref);
+    }
+
+    const finalChiefData = { ...chiefData, photoUrl };
+    await setDoc(docRef, finalChiefData);
+    return { id: docRef.id, ...finalChiefData };
 }
 
 export async function batchAddChiefs(chiefs: Omit<Chief, 'id'>[]): Promise<number> {

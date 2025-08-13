@@ -31,7 +31,7 @@ import { divisions } from "@/lib/ivory-coast-divisions";
 interface AddChiefSheetProps {
   isOpen: boolean;
   onClose: () => void;
-  onAddChief: (chief: Omit<Chief, "id">) => Promise<void>;
+  onAddChief: (chief: Omit<Chief, "id">, photoFile: File | null) => Promise<void>;
 }
 
 export function AddChiefSheet({ isOpen, onClose, onAddChief }: AddChiefSheetProps) {
@@ -41,7 +41,8 @@ export function AddChiefSheet({ isOpen, onClose, onAddChief }: AddChiefSheetProp
   const [sexe, setSexe] = useState<Chief['sexe'] | "">("");
   const [contact, setContact] = useState("");
   const [bio, setBio] = useState("");
-  const [photoUrl, setPhotoUrl] = useState(`https://placehold.co/100x100.png`);
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState(`https://placehold.co/100x100.png`);
   
   const [selectedRegion, setSelectedRegion] = useState("");
   const [customRegion, setCustomRegion] = useState("");
@@ -87,7 +88,7 @@ export function AddChiefSheet({ isOpen, onClose, onAddChief }: AddChiefSheetProp
 
   const resetForm = () => {
     setName(""); setTitle(""); setRole("Chef de Village"); setSexe(""); setContact("");
-    setBio(""); setPhotoUrl(`https://placehold.co/100x100.png`);
+    setBio(""); setPhotoFile(null); setPhotoPreview(`https://placehold.co/100x100.png`);
     setSelectedRegion(""); setCustomRegion("");
     setSelectedDepartment(""); setCustomDepartment("");
     setSelectedSubPrefecture(""); setCustomSubPrefecture("");
@@ -106,9 +107,10 @@ export function AddChiefSheet({ isOpen, onClose, onAddChief }: AddChiefSheetProp
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setPhotoFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
-        setPhotoUrl(reader.result as string);
+        setPhotoPreview(reader.result as string);
       };
       reader.readAsDataURL(file);
     }
@@ -129,19 +131,21 @@ export function AddChiefSheet({ isOpen, onClose, onAddChief }: AddChiefSheetProp
     setIsSubmitting(true);
     setError("");
     try {
-      await onAddChief({ 
+      const chiefData = { 
           name, title, role, sexe: sexe as Chief['sexe'],
           region: finalRegion, 
           department: finalDepartment,
           subPrefecture: finalSubPrefecture,
           village: finalVillage,
-          contact, bio, photoUrl, parentChiefId,
+          contact, bio, parentChiefId,
+          photoUrl: '', // This will be set by the service after upload
           latitude: latitude !== '' ? Number(latitude) : undefined,
           longitude: longitude !== '' ? Number(longitude) : undefined,
           dateOfBirth: dateOfBirth || undefined,
           regencyStartDate: regencyStartDate || undefined,
           regencyEndDate: regencyEndDate || undefined,
-        });
+        };
+      await onAddChief(chiefData, photoFile);
       handleClose();
     } catch(err) {
       setError(err instanceof Error ? err.message : "Échec de l'ajout du chef.");
@@ -165,7 +169,7 @@ export function AddChiefSheet({ isOpen, onClose, onAddChief }: AddChiefSheetProp
             <div className="grid grid-cols-4 items-center gap-4">
               <Label className="text-right">Photo</Label>
               <div className="col-span-3 flex items-center gap-4">
-                  <Avatar className="h-16 w-16"><AvatarImage src={photoUrl} alt="Aperçu de la photo" data-ai-hint="chief portrait" /><AvatarFallback>{name ? name.charAt(0) : 'C'}</AvatarFallback></Avatar>
+                  <Avatar className="h-16 w-16"><AvatarImage src={photoPreview} alt="Aperçu de la photo" data-ai-hint="chief portrait" /><AvatarFallback>{name ? name.charAt(0) : 'C'}</AvatarFallback></Avatar>
                   <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}><Upload className="mr-2 h-4 w-4" />Télécharger</Button>
                   <Input ref={fileInputRef} type="file" className="hidden" accept="image/*" onChange={handlePhotoChange}/>
               </div>

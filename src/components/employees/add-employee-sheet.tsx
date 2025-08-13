@@ -43,7 +43,7 @@ import { useToast } from "@/hooks/use-toast";
 interface AddEmployeeSheetProps {
   isOpen: boolean;
   onClose: () => void;
-  onAddEmployee: (employeeData: Omit<Employe, "id" | "photoUrl">, photoFile: File | null) => Promise<void>;
+  onAddEmployee: (employeeData: Omit<Employe, "id">, photoFile: File | null) => Promise<void>;
 }
 
 export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployeeSheetProps) {
@@ -222,6 +222,7 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
           skills: skillsArray,
           sexe: sexe as Employe['sexe'],
           Date_Depart: dateDepart || undefined,
+          photoUrl: '', // This will be set by the service after upload
       };
       await onAddEmployee(employeeData, photoFile);
       handleClose();

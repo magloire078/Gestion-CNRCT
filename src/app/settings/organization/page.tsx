@@ -125,7 +125,7 @@ export default function OrganizationSettingsPage() {
     }
   };
   
-  const handleSaveLogo = async (logoType: 'main' | 'secondary' | 'favicon') => {
+  const handleSaveFile = async (fileType: 'main' | 'secondary' | 'favicon') => {
       let file: File | null = null;
       let setProgress: React.Dispatch<React.SetStateAction<number | null>> = () => {};
       let setController: React.Dispatch<React.SetStateAction<UploadTaskController | null>> = () => {};
@@ -133,7 +133,7 @@ export default function OrganizationSettingsPage() {
       let setFileState: React.Dispatch<React.SetStateAction<File | null>> = () => {};
       let setPreviewState: React.Dispatch<React.SetStateAction<string>> = () => {};
 
-      switch(logoType) {
+      switch(fileType) {
         case 'main':
           file = mainLogoFile;
           setProgress = setMainLogoProgress;
@@ -165,25 +165,23 @@ export default function OrganizationSettingsPage() {
       setProgress(0);
 
       try {
-          const { taskPromise } = uploadOrganizationFile(
-              logoType,
+          const newUrl = await uploadOrganizationFile(
+              fileType,
               file,
               (p) => setProgress(p), 
               (c) => setController(c)
           );
           
-          const newUrl = await taskPromise;
-          
-          setSettings(prev => ({...prev!, [`${logoType}LogoUrl`]: newUrl}));
+          setSettings(prev => ({...prev!, [`${fileType}LogoUrl`]: newUrl}));
           setPreviewState(newUrl);
           setHasChanged(false);
           setFileState(null);
 
           toast({
             title: "Sauvegarde réussie",
-            description: `Le ${logoType === 'favicon' ? 'favicon' : 'logo'} a été mis à jour.`,
+            description: `Le ${fileType === 'favicon' ? 'favicon' : 'logo'} a été mis à jour.`,
           });
-           if(logoType === 'favicon') window.location.reload();
+           if(fileType === 'favicon') window.location.reload();
 
       } catch (error: any) {
           if (error.code !== 'storage/canceled') {
@@ -300,7 +298,7 @@ export default function OrganizationSettingsPage() {
                 <div className="flex justify-end">
                     <Button 
                         type="button" 
-                        onClick={() => handleSaveLogo('main')} 
+                        onClick={() => handleSaveFile('main')} 
                         disabled={mainLogoProgress !== null || !hasMainLogoChanged}
                     >
                         {mainLogoProgress !== null ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
@@ -350,7 +348,7 @@ export default function OrganizationSettingsPage() {
                  <div className="flex justify-end">
                     <Button 
                         type="button" 
-                        onClick={() => handleSaveLogo('secondary')} 
+                        onClick={() => handleSaveFile('secondary')} 
                         disabled={secondaryLogoProgress !== null || !hasSecondaryLogoChanged}
                     >
                         {secondaryLogoProgress !== null ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
@@ -400,7 +398,7 @@ export default function OrganizationSettingsPage() {
                  <div className="flex justify-end">
                     <Button 
                         type="button" 
-                        onClick={() => handleSaveLogo('favicon')} 
+                        onClick={() => handleSaveFile('favicon')} 
                         disabled={faviconProgress !== null || !hasFaviconChanged}
                     >
                         {faviconProgress !== null ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}

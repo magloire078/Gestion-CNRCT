@@ -48,10 +48,8 @@ export async function getEmployee(id: string): Promise<Employe | null> {
     return null;
 }
 
-export async function addEmployee(employeeDataToAdd: Omit<Employe, 'id' | 'photoUrl'>, photoFile: File | null): Promise<Employe> {
-    const { ...restOfData } = employeeDataToAdd;
+export async function addEmployee(employeeData: Omit<Employe, 'id'>, photoFile: File | null): Promise<Employe> {
     let finalPhotoUrl = 'https://placehold.co/100x100.png';
-
     const docRef = doc(collection(db, "employees"));
 
     if (photoFile) {
@@ -59,12 +57,13 @@ export async function addEmployee(employeeDataToAdd: Omit<Employe, 'id' | 'photo
         const snapshot = await uploadBytes(photoRef, photoFile);
         finalPhotoUrl = await getDownloadURL(snapshot.ref);
     }
-
-    const employeeData = { ...restOfData, photoUrl: finalPhotoUrl };
-    await setDoc(docRef, employeeData);
     
-    return { id: docRef.id, ...employeeData };
+    const finalEmployeeData = { ...employeeData, photoUrl: finalPhotoUrl };
+    await setDoc(docRef, finalEmployeeData);
+    
+    return { id: docRef.id, ...finalEmployeeData };
 }
+
 
 export async function batchAddEmployees(employees: Omit<Employe, 'id'>[]): Promise<number> {
     const batch = writeBatch(db);

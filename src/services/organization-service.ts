@@ -1,13 +1,12 @@
 
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { getStorage, ref, getDownloadURL, uploadBytesResumable, type UploadTask } from "firebase/storage";
-import { db } from '@/lib/firebase';
+import { db, storage } from '@/lib/firebase';
 import type { OrganizationSettings } from '@/lib/data';
 import { processLogo } from '@/ai/flows/process-logo-flow';
 
 const SETTINGS_DOC_ID = 'organization_settings';
 const settingsDocRef = doc(db, 'settings', SETTINGS_DOC_ID);
-
 
 export type UploadTaskController = {
     cancel: () => void;
@@ -40,59 +39,52 @@ export async function saveOrganizationName(name: string): Promise<void> {
     await setDoc(settingsDocRef, { organizationName: name }, { merge: true });
 }
 
-
-export function uploadOrganizationFile(
+export async function uploadOrganizationFile(
     fileType: 'main' | 'secondary' | 'favicon',
     file: File,
     onProgress: (progress: number) => void,
     onControllerReady: (controller: UploadTaskController) => void
-): { taskPromise: Promise<string> } {
+): Promise<string> {
 
-    const taskPromise = (async (): Promise<string> => {
-        const storage = getStorage();
-        const logoName = `${fileType}_${new Date().getTime()}_${file.name}`;
-        const logoRef = ref(storage, `organization/${logoName}`);
-        
-        let fileToUpload = file;
+    const logoName = `${fileType}_${new Date().getTime()}_${file.name}`;
+    const logoRef = ref(storage, `organization/${logoName}`);
+    
+    let fileToUpload = file;
 
-        // AI processing for logos, not for favicon
-        if (fileType !== 'favicon') {
-            try {
-                const dataUrl = await fileToDataUrl(file);
-                const processedDataUrl = await processLogo(dataUrl);
-                const blob = await fetch(processedDataUrl).then(res => res.blob());
-                fileToUpload = new File([blob], file.name, { type: 'image/png' });
-            } catch (error) {
-                console.warn(`AI logo processing failed for ${fileType} logo. Falling back to original image. Error:`, error);
-            }
+    // AI processing for logos, not for favicon
+    if (fileType !== 'favicon') {
+        try {
+            const dataUrl = await fileToDataUrl(file);
+            const processedDataUrl = await processLogo(dataUrl);
+            const blob = await fetch(processedDataUrl).then(res => res.blob());
+            fileToUpload = new File([blob], file.name, { type: 'image/png' });
+        } catch (error) {
+            console.warn(`AI logo processing failed for ${fileType} logo. Falling back to original image. Error:`, error);
         }
-        
-        const uploadTask = uploadBytesResumable(logoRef, fileToUpload);
+    }
+    
+    const uploadTask = uploadBytesResumable(logoRef, fileToUpload);
 
-        onControllerReady({ cancel: () => uploadTask.cancel() });
-        
-        return new Promise((resolve, reject) => {
-            uploadTask.on('state_changed',
-                (snapshot) => {
-                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                    onProgress(progress);
-                },
-                (error) => {
-                    if (error.code !== 'storage/canceled') {
-                        console.error(`Upload failed for ${logoName}:`, error);
-                    }
-                    reject(error);
-                },
-                async () => {
-                    const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
-                    const fieldToUpdate = fileType === 'main' ? 'mainLogoUrl' : (fileType === 'secondary' ? 'secondaryLogoUrl' : 'faviconUrl');
-                    await setDoc(settingsDocRef, { [fieldToUpdate]: downloadUrl }, { merge: true });
-                    resolve(downloadUrl);
+    onControllerReady({ cancel: () => uploadTask.cancel() });
+    
+    return new Promise((resolve, reject) => {
+        uploadTask.on('state_changed',
+            (snapshot) => {
+                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                onProgress(progress);
+            },
+            (error) => {
+                if (error.code !== 'storage/canceled') {
+                    console.error(`Upload failed for ${logoName}:`, error);
                 }
-            );
-        });
-
-    })();
-
-    return { taskPromise };
+                reject(error);
+            },
+            async () => {
+                const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
+                const fieldToUpdate = fileType === 'main' ? 'mainLogoUrl' : (fileType === 'secondary' ? 'secondaryLogoUrl' : 'faviconUrl');
+                await setDoc(settingsDocRef, { [fieldToUpdate]: downloadUrl }, { merge: true });
+                resolve(downloadUrl);
+            }
+        );
+    });
 }

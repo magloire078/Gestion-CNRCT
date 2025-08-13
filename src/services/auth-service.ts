@@ -118,12 +118,14 @@ export function onAuthStateChange(callback: (user: User | null) => void) {
 }
 
 export async function updateUserProfile(userId: string, data: { name?: string, photoFile?: File | null }): Promise<void> {
-    if (!auth.currentUser || auth.currentUser.uid !== userId) {
-         throw new Error("You are not authorized to perform this action.");
+    const user = auth.currentUser;
+    if (!user || user.uid !== userId) {
+         throw new Error("Vous n'êtes pas autorisé à effectuer cette action.");
     }
     
     const userDocRef = doc(db, 'users', userId);
     const updateData: Partial<User> = {};
+    let newPhotoURL: string | undefined = undefined;
 
     if (data.name) {
         updateData.name = data.name;
@@ -133,21 +135,21 @@ export async function updateUserProfile(userId: string, data: { name?: string, p
         const storage = getStorage();
         const photoRef = ref(storage, `user_photos/${userId}/${data.photoFile.name}`);
         const snapshot = await uploadBytes(photoRef, data.photoFile);
-        const photoUrl = await getDownloadURL(snapshot.ref);
-        updateData.photoUrl = photoUrl;
+        newPhotoURL = await getDownloadURL(snapshot.ref);
+        updateData.photoUrl = newPhotoURL;
     }
     
-    await updateDoc(userDocRef, updateData);
-
+    if (Object.keys(updateData).length > 0) {
+        await updateDoc(userDocRef, updateData);
+    }
+    
     // Also update the auth profile if possible
-    if(auth.currentUser){
-       const authUpdate: {displayName?: string, photoURL?: string} = {};
-       if (updateData.name) authUpdate.displayName = updateData.name;
-       if (updateData.photoUrl) authUpdate.photoURL = updateData.photoUrl;
+    const authUpdate: {displayName?: string, photoURL?: string} = {};
+    if (updateData.name) authUpdate.displayName = updateData.name;
+    if (newPhotoURL) authUpdate.photoURL = newPhotoURL;
 
-       if (Object.keys(authUpdate).length > 0) {
-            await updateProfile(auth.currentUser, authUpdate);
-       }
+    if (Object.keys(authUpdate).length > 0) {
+        await updateProfile(user, authUpdate);
     }
 }
 

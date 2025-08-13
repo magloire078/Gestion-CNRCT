@@ -23,7 +23,7 @@ import { subscribeToAssets } from '@/services/asset-service';
 import { subscribeToVehicles } from '@/services/fleet-service';
 import type { Employe, Leave, Asset, Fleet, OrganizationSettings } from '@/lib/data';
 import { Skeleton } from '@/components/ui/skeleton';
-import { differenceInYears, parseISO } from 'date-fns';
+import { differenceInYears, parseISO, format, addMonths } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 
@@ -64,6 +64,7 @@ export default function DashboardPage() {
     const [fleet, setFleet] = useState<Fleet[]>([]);
     const [loading, setLoading] = useState(true);
     const [seniorityAnniversaries, setSeniorityAnniversaries] = useState<Employe[]>([]);
+    const [upcomingRetirements, setUpcomingRetirements] = useState<Employe[]>([]);
     
     const [selectedAnniversaryMonth, setSelectedAnniversaryMonth] = useState<string>((new Date().getMonth()).toString());
     const [selectedAnniversaryYear, setSelectedAnniversaryYear] = useState<string>(new Date().getFullYear().toString());
@@ -98,6 +99,7 @@ export default function DashboardPage() {
     }, []);
 
     useEffect(() => {
+        // Anniversaries
         const month = parseInt(selectedAnniversaryMonth);
         const year = parseInt(selectedAnniversaryYear);
 
@@ -109,8 +111,6 @@ export default function DashboardPage() {
                 const isAnniversaryMonth = hireMonth === month;
                 const yearsOfService = year - hireDate.getFullYear();
                 
-                // Only count if it's not the year of hiring (anniversary means at least 1 year)
-                // and the anniversary date is not in the future for the current year.
                 if (yearsOfService <= 0) return false;
 
                 return isAnniversaryMonth;
@@ -120,6 +120,30 @@ export default function DashboardPage() {
             }
         });
         setSeniorityAnniversaries(anniversaries);
+
+        // Retirements
+        const today = new Date();
+        const reminderLimit = addMonths(today, 6);
+        const retirements = employees
+          .map(emp => {
+              if (!emp.Date_Naissance) return null;
+              try {
+                  const birthDate = parseISO(emp.Date_Naissance);
+                  const retirementYear = birthDate.getFullYear() + 60;
+                  const retirementDate = new Date(retirementYear, 11, 31); // Dec 31
+                  return { ...emp, calculatedRetirementDate: retirementDate };
+              } catch {
+                  return null;
+              }
+          })
+          .filter((emp): emp is Employe & { calculatedRetirementDate: Date } => {
+              if (!emp || emp.status === 'Retraité' || emp.status === 'Décédé') return false;
+              return emp.calculatedRetirementDate >= today && emp.calculatedRetirementDate <= reminderLimit;
+          })
+          .sort((a,b) => a.calculatedRetirementDate.getTime() - b.calculatedRetirementDate.getTime());
+        
+        setUpcomingRetirements(retirements);
+
     }, [employees, selectedAnniversaryMonth, selectedAnniversaryYear]);
     
     useEffect(() => {
@@ -251,15 +275,15 @@ export default function DashboardPage() {
                         )}
                     </CardContent>
                     </Card>
-                    <Card>
+                     <Card>
                     <CardHeader>
-                        <CardTitle>Nouvelles Recrues</CardTitle>
-                        <CardDescription>Bienvenue aux nouveaux membres de notre équipe.</CardDescription>
+                        <CardTitle>Départs à la Retraite Prochains</CardTitle>
+                        <CardDescription>Employés approchant de la retraite (6 prochains mois).</CardDescription>
                     </CardHeader>
                     <CardContent>
                         {loading ? <Skeleton className="h-24 w-full" /> : (
                         <div className="space-y-4">
-                        {newHires.map(emp => (
+                        {upcomingRetirements.length > 0 ? upcomingRetirements.map(emp => (
                             <div key={emp.id} className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
                                 <Avatar>
@@ -275,9 +299,9 @@ export default function DashboardPage() {
                                 <p className="text-sm text-muted-foreground">{emp.poste}</p>
                                 </div>
                             </div>
-                            <span className="text-sm text-muted-foreground">{emp.department}</span>
+                            <span className="text-sm text-muted-foreground">{emp.calculatedRetirementDate && format(emp.calculatedRetirementDate, 'dd/MM/yyyy')}</span>
                             </div>
-                        ))}
+                        )) : <p className="text-sm text-muted-foreground text-center py-8">Aucun départ prévu dans les 6 prochains mois.</p>}
                         </div>
                         )}
                     </CardContent>
@@ -427,5 +451,7 @@ function AnniversaryPrintLayout({ logos, employees, period, year }: { logos: Org
         </div>
     );
 }
+
+    
 
     

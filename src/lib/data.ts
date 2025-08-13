@@ -79,6 +79,7 @@ export type Employe = {
   bActif?: boolean;
   Salaire_Brut?: number; // Can be calculated or stored
   Salaire_Net?: number; // Can be calculated or stored
+  calculatedRetirementDate?: Date; // For UI display only
 };
 
 export type Leave = {
@@ -254,3 +255,5 @@ export type OrganizationSettings = {
     secondaryLogoUrl: string;
     faviconUrl: string;
 };
+
+    

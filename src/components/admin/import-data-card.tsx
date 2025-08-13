@@ -43,7 +43,7 @@ export function ImportDataCard() {
     Papa.parse<EmployeeCsvRow>(file, {
       header: true,
       skipEmptyLines: 'greedy',
-      dynamicTyping: true,
+      dynamicTyping: false, // Turn off dynamic typing to treat all values as strings initially
       transformHeader: header => header.trim().toLowerCase(),
       complete: async (results) => {
         // Filter for critical errors only
@@ -110,7 +110,7 @@ export function ImportDataCard() {
                 CB: String(row.cb || ''),
                 CG: String(row.cg || ''),
                 Cle_RIB: String(row.cle_rib || ''),
-                CNPS: String(row.cnps) === '1',
+                CNPS: String(row.cnps) === '1' || String(row.cnps).toLowerCase() === 'true',
                 cnpsEmploye: String(row.num_cnps || ''),
                 Num_Decision: String(row.num_decision || ''),
                 

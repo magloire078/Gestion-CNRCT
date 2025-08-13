@@ -394,19 +394,19 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="CB">Code Banque</Label>
-                                    <Input id="CB" value={formState.CB || ''} onChange={handleInputChange} />
+                                    <Input id="CB" type="text" value={formState.CB || ''} onChange={handleInputChange} />
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="CG">Code Guichet</Label>
-                                    <Input id="CG" value={formState.CG || ''} onChange={handleInputChange} />
+                                    <Input id="CG" type="text" value={formState.CG || ''} onChange={handleInputChange} />
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="numeroCompte">N° Compte</Label>
-                                    <Input id="numeroCompte" value={formState.numeroCompte || ''} onChange={handleInputChange} />
+                                    <Input id="numeroCompte" type="text" value={formState.numeroCompte || ''} onChange={handleInputChange} />
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="Cle_RIB">Clé RIB</Label>
-                                    <Input id="Cle_RIB" value={formState.Cle_RIB || ''} onChange={handleInputChange} />
+                                    <Input id="Cle_RIB" type="text" value={formState.Cle_RIB || ''} onChange={handleInputChange} />
                                 </div>
                              </div>
                          </div>

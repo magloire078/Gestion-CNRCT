@@ -62,7 +62,7 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
   const [service, setService] = useState("");
 
   const [status, setStatus] = useState<Employe['status']>('Actif');
-  const [sexe, setSexe] = useState<Employe['sexe'] | undefined>(undefined);
+  const [sexe, setSexe] = useState<Employe['sexe'] | "">("");
   const [photoUrl, setPhotoUrl] = useState<string | undefined>(undefined);
   const [photoPreview, setPhotoPreview] = useState(`https://placehold.co/100x100.png`);
   const [skills, setSkills] = useState("");
@@ -123,7 +123,7 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
     setService("");
     setSkills("");
     setStatus("Actif");
-    setSexe(undefined);
+    setSexe("");
     setPhotoUrl(undefined);
     setPhotoPreview(`https://placehold.co/100x100.png`);
     setError("");
@@ -204,7 +204,7 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
           photoUrl: photoUrl || '', 
           name: `${firstName} ${lastName}`.trim(), 
           skills: skillsArray,
-          sexe,
+          sexe: sexe as Employe['sexe'],
           Date_Depart: dateDepart || undefined,
       });
       handleClose();

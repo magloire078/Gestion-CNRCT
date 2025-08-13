@@ -195,6 +195,17 @@ export default function EmployeeEditPage() {
                             <Label htmlFor="mobile">Téléphone</Label>
                             <Input id="mobile" name="mobile" value={employee.mobile || ''} onChange={handleInputChange} />
                         </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="sexe">Sexe</Label>
+                             <Select name="sexe" value={employee.sexe || ''} onValueChange={(v) => handleSelectChange('sexe', v)}>
+                                <SelectTrigger><SelectValue placeholder="Sélectionnez..." /></SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="Homme">Homme</SelectItem>
+                                    <SelectItem value="Femme">Femme</SelectItem>
+                                    <SelectItem value="Autre">Autre</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </CardContent>
                 </Card>
 

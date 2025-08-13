@@ -25,6 +25,7 @@ export type Employe = {
   // Professional Info
   dateEmbauche?: string; // YYYY-MM-DD
   Date_Depart?: string; // YYYY-MM-DD
+  Date_Immatriculation?: string;
   Num_Decision?: string;
   
   // Payroll Info
@@ -46,7 +47,10 @@ export type Employe = {
 
   // Bank Info
   banque?: string;
-  numeroCompte?: string;
+  numeroCompte?: string; // Core account number
+  CB?: string; // Code Banque
+  CG?: string; // Code Guichet
+  Cle_RIB?: string; // RIB Key
 
   // Payslip specific details (can be calculated or stored)
   cnpsEmployeur?: string;
@@ -68,11 +72,7 @@ export type Employe = {
   Departement?: string;
   Commune?: string;
   Village?: string;
-  CB?: string;
-  CG?: string;
-  Cle_RIB?: string;
   CNPS?: boolean;
-  Date_Immatriculation?: string;
   Photo?: string;
   solde_conges?: number;
   Droit?: number;
@@ -171,7 +171,7 @@ export type PayslipEmployerContribution = {
 
 // Type for the full payslip details
 export type PayslipDetails = {
-    employeeInfo: Employe;
+    employeeInfo: Employe & { numeroCompteComplet?: string };
     earnings: PayslipEarning[];
     deductions: PayslipDeduction[];
     totals: {

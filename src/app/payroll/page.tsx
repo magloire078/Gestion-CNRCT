@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
@@ -537,7 +538,7 @@ function PayslipTemplate({ payslipDetails }: { payslipDetails: PayslipDetails })
                         <p><span className="font-bold inline-block w-[140px]">MATRICULE</span>: {employeeInfo.matricule}</p>
                         <p><span className="font-bold inline-block w-[140px]">SITUATION MATRIMONIALE</span>: {employeeInfo.situationMatrimoniale}</p>
                         <p><span className="font-bold inline-block w-[140px]">BANQUE</span>: {employeeInfo.banque}</p>
-                        <p><span className="font-bold inline-block w-[140px]">NUMERO DE COMPTE</span>: {employeeInfo.numeroCompte}</p>
+                        <p><span className="font-bold inline-block w-[140px]">NUMERO DE COMPTE</span>: {employeeInfo.numeroCompteComplet || employeeInfo.numeroCompte}</p>
                         <p><span className="font-bold inline-block w-[140px]">SERVICE</span>: {employeeInfo.department}</p>
                         <p><span className="font-bold inline-block w-[140px]">DATE DE CONGE</span>: __/__/____</p>
                         <p><span className="font-bold inline-block w-[140px]">ANCIENNETE</span>: {employeeInfo.anciennete}</p>

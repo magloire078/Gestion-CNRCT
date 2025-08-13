@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
@@ -380,28 +381,43 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
                                 <Input id="situationMatrimoniale" value={formState.situationMatrimoniale || ''} onChange={handleInputChange} />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="banque">Banque</Label>
-                                <Input id="banque" value={formState.banque || ''} onChange={handleInputChange} />
+                                <Label htmlFor="enfants">Enfants</Label>
+                                <Input id="enfants" type="number" value={formState.enfants || 0} onChange={handleInputChange} />
                             </div>
-                            <div className="space-y-2 md:col-span-2">
-                                <Label htmlFor="numeroCompte">N° Compte</Label>
-                                <Input id="numeroCompte" value={formState.numeroCompte || ''} onChange={handleInputChange} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="department">Service</Label>
-                                <Input id="department" value={formState.department || ''} onChange={handleInputChange} />
-                            </div>
-                            <div className="space-y-2">
+                         </div>
+                         <div className="pt-4 mt-4 border-t">
+                             <h4 className="text-sm font-medium mb-2">Informations Bancaires</h4>
+                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-2 md:col-span-2">
+                                    <Label htmlFor="banque">Banque</Label>
+                                    <Input id="banque" value={formState.banque || ''} onChange={handleInputChange} />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="CB">Code Banque</Label>
+                                    <Input id="CB" value={formState.CB || ''} onChange={handleInputChange} />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="CG">Code Guichet</Label>
+                                    <Input id="CG" value={formState.CG || ''} onChange={handleInputChange} />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="numeroCompte">N° Compte</Label>
+                                    <Input id="numeroCompte" value={formState.numeroCompte || ''} onChange={handleInputChange} />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="Cle_RIB">Clé RIB</Label>
+                                    <Input id="Cle_RIB" value={formState.Cle_RIB || ''} onChange={handleInputChange} />
+                                </div>
+                             </div>
+                         </div>
+                         <div className="pt-4 mt-4 border-t grid grid-cols-1 md:grid-cols-2 gap-4">
+                             <div className="space-y-2">
                                 <Label htmlFor="anciennete">Ancienneté</Label>
                                 <Input id="anciennete" value={formState.anciennete || ''} onChange={handleInputChange} />
                             </div>
-                            <div className="space-y-2">
+                             <div className="space-y-2">
                                 <Label htmlFor="categorie">Catégorie</Label>
                                 <Input id="categorie" value={formState.categorie || ''} onChange={handleInputChange} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="enfants">Enfants</Label>
-                                <Input id="enfants" type="number" value={formState.enfants || 0} onChange={handleInputChange} />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="parts">Parts</Label>
@@ -411,7 +427,7 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
                                 <Label htmlFor="dateEmbauche">Date d'embauche</Label>
                                 <Input id="dateEmbauche" type="date" value={formState.dateEmbauche || ''} onChange={handleInputChange} />
                             </div>
-                        </div>
+                         </div>
                     </AccordionContent>
                 </AccordionItem>
             </Accordion>

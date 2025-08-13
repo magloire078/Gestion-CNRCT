@@ -3,6 +3,7 @@
 
 
 
+
 import type { Employe, PayslipDetails, PayslipEarning, PayslipDeduction, PayslipEmployerContribution } from '@/lib/data';
 import { numberToWords } from '@/lib/utils';
 import { getOrganizationSettings } from './organization-service';
@@ -118,15 +119,18 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
     const organizationLogos = await getOrganizationSettings();
     
     const paymentDateObject = getLastWorkingDay(parseISO(payslipDate));
+    
+    const numeroCompteComplet = [employee.CB, employee.CG, employee.numeroCompte, employee.Cle_RIB].filter(Boolean).join(' ');
 
-    const employeeInfoWithStaticData: Employe = {
+    const employeeInfoWithStaticData: Employe & { numeroCompteComplet?: string } = {
         ...employee,
         cnpsEmployeur: "320491", // Static CNPS number
         anciennete: seniorityInfo.text,
         paymentDate: paymentDateObject.toISOString(),
         paymentLocation: 'Yamoussoukro',
         categorie: employee.categorie || 'Catégorie',
-        parts: employee.parts || 3.0
+        parts: employee.parts || 3.0,
+        numeroCompteComplet: numeroCompteComplet
     };
 
     return {

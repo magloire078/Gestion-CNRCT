@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/card';
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, FileWarning, Laptop, Car, Download, ShieldCheck, User as UserIcon, Building } from 'lucide-react';
+import { Users, FileWarning, Laptop, Car, Download, ShieldCheck, User as UserIcon, Building, Cake } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { EmployeeDistributionChart } from '@/components/charts/employee-distribution-chart';
 import { AssetStatusChart } from '@/components/charts/asset-status-chart';
@@ -23,6 +23,8 @@ import { subscribeToAssets } from '@/services/asset-service';
 import { subscribeToVehicles } from '@/services/fleet-service';
 import type { Employe, Leave, Asset, Fleet } from '@/lib/data';
 import { Skeleton } from '@/components/ui/skeleton';
+import { differenceInYears, parseISO } from 'date-fns';
+
 
 interface StatCardProps {
   title: string;
@@ -60,11 +62,26 @@ export default function DashboardPage() {
     const [assets, setAssets] = useState<Asset[]>([]);
     const [fleet, setFleet] = useState<Fleet[]>([]);
     const [loading, setLoading] = useState(true);
+    const [seniorityAnniversaries, setSeniorityAnniversaries] = useState<Employe[]>([]);
 
     useEffect(() => {
         setLoading(true);
         const unsubscribers = [
-            subscribeToEmployees(setEmployees, console.error),
+            subscribeToEmployees((emps) => {
+                setEmployees(emps);
+                const currentMonth = new Date().getMonth();
+                const anniversaries = emps.filter(emp => {
+                    if (!emp.dateEmbauche) return false;
+                    try {
+                        const hireDate = parseISO(emp.dateEmbauche);
+                        // Check if hire month is current month, and it's not their first year
+                        return hireDate.getMonth() === currentMonth && differenceInYears(new Date(), hireDate) > 0;
+                    } catch {
+                        return false;
+                    }
+                });
+                setSeniorityAnniversaries(anniversaries);
+            }, console.error),
             subscribeToLeaves(setLeaves, console.error),
             subscribeToAssets(setAssets, console.error),
             subscribeToVehicles(setFleet, console.error),
@@ -161,7 +178,7 @@ export default function DashboardPage() {
                 </CardContent>
                 </Card>
             </div>
-            <div className="grid gap-6 lg:grid-cols-2">
+            <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
                 <Card>
                 <CardHeader>
                     <CardTitle>Demandes de Congé Récentes</CardTitle>
@@ -219,6 +236,36 @@ export default function DashboardPage() {
                         <span className="text-sm text-muted-foreground">{emp.department}</span>
                         </div>
                     ))}
+                    </div>
+                    )}
+                </CardContent>
+                </Card>
+                <Card>
+                <CardHeader>
+                    <CardTitle>Anniversaires d'Ancienneté</CardTitle>
+                    <CardDescription>Employés atteignant un anniversaire d'embauche ce mois-ci.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    {loading ? <Skeleton className="h-24 w-full" /> : (
+                    <div className="space-y-4">
+                    {seniorityAnniversaries.length > 0 ? seniorityAnniversaries.map(emp => {
+                        const years = differenceInYears(new Date(), parseISO(emp.dateEmbauche!));
+                        return (
+                        <div key={emp.id} className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                            <Avatar>
+                                <AvatarImage src={emp.photoUrl} alt={emp.name} data-ai-hint="user avatar"/>
+                                <AvatarFallback><Cake className="h-4 w-4" /></AvatarFallback>
+                            </Avatar>
+                            <div>
+                                <p className="font-medium">{emp.name}</p>
+                                <p className="text-sm text-muted-foreground">{emp.poste}</p>
+                            </div>
+                            </div>
+                            <span className="text-sm font-semibold text-primary">{years} an{years > 1 ? 's' : ''}</span>
+                        </div>
+                        )
+                    }) : <p className="text-sm text-muted-foreground text-center py-8">Aucun anniversaire ce mois-ci.</p>}
                     </div>
                     )}
                 </CardContent>

@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/card';
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, FileWarning, Laptop, Car, Download, ShieldCheck, User as UserIcon, Building, Cake, Printer } from 'lucide-react';
+import { Users, FileWarning, Laptop, Car, Download, ShieldCheck, User as UserIcon, Building, Cake, Printer, Crown } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { EmployeeDistributionChart } from '@/components/charts/employee-distribution-chart';
 import { AssetStatusChart } from '@/components/charts/asset-status-chart';
@@ -21,7 +21,8 @@ import { subscribeToEmployees, getOrganizationSettings } from '@/services/employ
 import { subscribeToLeaves } from '@/services/leave-service';
 import { subscribeToAssets } from '@/services/asset-service';
 import { subscribeToVehicles } from '@/services/fleet-service';
-import type { Employe, Leave, Asset, Fleet, OrganizationSettings } from '@/lib/data';
+import { subscribeToChiefs } from '@/services/chief-service';
+import type { Employe, Leave, Asset, Fleet, OrganizationSettings, Chief } from '@/lib/data';
 import { Skeleton } from '@/components/ui/skeleton';
 import { differenceInYears, parseISO, format, addMonths } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -62,6 +63,7 @@ export default function DashboardPage() {
     const [leaves, setLeaves] = useState<Leave[]>([]);
     const [assets, setAssets] = useState<Asset[]>([]);
     const [fleet, setFleet] = useState<Fleet[]>([]);
+    const [chiefs, setChiefs] = useState<Chief[]>([]);
     const [loading, setLoading] = useState(true);
     const [seniorityAnniversaries, setSeniorityAnniversaries] = useState<Employe[]>([]);
     const [upcomingRetirements, setUpcomingRetirements] = useState<Employe[]>([]);
@@ -92,6 +94,7 @@ export default function DashboardPage() {
             subscribeToLeaves(setLeaves, console.error),
             subscribeToAssets(setAssets, console.error),
             subscribeToVehicles(setFleet, console.error),
+            subscribeToChiefs(setChiefs, console.error),
         ];
         
         const loadingTimeout = setTimeout(() => setLoading(false), 2000);
@@ -164,14 +167,18 @@ export default function DashboardPage() {
         setIsPrintingAnniversaries(true);
     };
 
-  const activeEmployees = employees.filter(e => e.status === 'Actif');
-  const cnpsEmployeesCount = employees.filter(e => e.CNPS === true && e.status === 'Actif').length;
-  const maleEmployeesCount = activeEmployees.filter(e => e.sexe === 'Homme').length;
-  const femaleEmployeesCount = activeEmployees.filter(e => e.sexe === 'Femme').length;
-  const directoireCount = activeEmployees.filter(e => e.department === 'Directoire').length;
+    const getGenderBreakdown = (employeeList: Employe[]) => {
+      const men = employeeList.filter(e => e.sexe === 'Homme').length;
+      const women = employeeList.filter(e => e.sexe === 'Femme').length;
+      return `${men} H / ${women} F`;
+    };
+    
+    const activeEmployees = employees.filter(e => e.status === 'Actif');
+    const cnpsEmployees = activeEmployees.filter(e => e.CNPS === true);
+    const directoireEmployees = activeEmployees.filter(e => e.department === 'Directoire');
 
-  const recentLeaves = leaves.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()).slice(0, 3);
-  const newHires = employees.sort((a,b) => new Date(b.dateEmbauche || 0).getTime() - new Date(a.dateEmbauche || 0).getTime()).slice(0,3);
+    const recentLeaves = leaves.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()).slice(0, 3);
+    const newHires = employees.sort((a,b) => new Date(b.dateEmbauche || 0).getTime() - new Date(a.dateEmbauche || 0).getTime()).slice(0,3);
   
   return (
     <>
@@ -198,33 +205,35 @@ export default function DashboardPage() {
             <TabsContent value="overview" className="space-y-4">
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
                     <StatCard 
-                    title="Employés Actifs"
-                    value={activeEmployees.length}
-                    icon={Users}
-                    href="/employees?filter=actif"
-                    loading={loading}
+                        title="Employés Actifs"
+                        value={activeEmployees.length}
+                        icon={Users}
+                        href="/employees?filter=actif"
+                        loading={loading}
+                        description={getGenderBreakdown(activeEmployees)}
                     />
                     <StatCard 
-                    title="Déclarés à la CNPS"
-                    value={cnpsEmployeesCount}
-                    icon={ShieldCheck}
-                    href="/employees?filter=cnps"
-                    loading={loading}
+                        title="Déclarés à la CNPS"
+                        value={cnpsEmployees.length}
+                        icon={ShieldCheck}
+                        href="/employees?filter=cnps"
+                        loading={loading}
+                        description={getGenderBreakdown(cnpsEmployees)}
                     />
                     <StatCard 
-                    title="Hommes / Femmes"
-                    value={maleEmployeesCount}
-                    description={`${femaleEmployeesCount} Femmes`}
-                    icon={UserIcon}
-                    href="/employees?filter=sexe"
-                    loading={loading}
+                        title="Rois &amp; Chefs"
+                        value={chiefs.length}
+                        icon={Crown}
+                        href="/chiefs"
+                        loading={loading}
                     />
                     <StatCard 
-                    title="Membres du Directoire"
-                    value={directoireCount}
-                    icon={Building}
-                    href="/employees?filter=directoire"
-                    loading={loading}
+                        title="Membres du Directoire"
+                        value={directoireEmployees.length}
+                        icon={Building}
+                        href="/employees?filter=directoire"
+                        loading={loading}
+                        description={getGenderBreakdown(directoireEmployees)}
                     />
                 </div>
                 <div className="grid gap-6 lg:grid-cols-2">
@@ -466,7 +475,5 @@ function AnniversaryPrintLayout({ logos, employees, period, year }: { logos: Org
         </div>
     );
 }
-
-    
 
     

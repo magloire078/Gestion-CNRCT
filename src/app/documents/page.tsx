@@ -18,6 +18,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Terminal, FileText, Bot, Loader2, Printer, Download } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { DocumentLayout } from "@/components/common/document-layout";
+import { getOrganizationSettings } from "@/services/organization-service";
+import type { OrganizationSettings } from "@/lib/data";
 
 const initialState: FormState = {
   message: "",
@@ -42,20 +45,25 @@ export default function DocumentGeneratorPage() {
   const [documentContent, setDocumentContent] = useState('');
   const [isPrinting, setIsPrinting] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [organizationLogos, setOrganizationLogos] = useState<OrganizationSettings | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
-    async function fetchEmployees() {
+    async function fetchInitialData() {
         try {
-            const fetchedEmployees = await getEmployees();
+            const [fetchedEmployees, settings] = await Promise.all([
+                getEmployees(),
+                getOrganizationSettings()
+            ]);
             setEmployees(fetchedEmployees);
+            setOrganizationLogos(settings);
         } catch (error) {
-            console.error("Failed to fetch employees:", error);
+            console.error("Failed to fetch initial data:", error);
         } finally {
             setLoadingEmployees(false);
         }
     }
-    fetchEmployees();
+    fetchInitialData();
   }, []);
 
   const prefillContent = (employee: Employe, type: string) => {
@@ -292,10 +300,14 @@ export default function DocumentGeneratorPage() {
       
       {/* This element is used for both printing and PDF generation */}
       <div className={isPrinting ? '' : 'absolute -left-full'}>
-        <div id="print-section" className="bg-white text-black p-8 font-serif w-[210mm] min-h-[297mm]">
-          <pre className="whitespace-pre-wrap text-sm">
-            {state.document}
-          </pre>
+        <div id="print-section">
+            {organizationLogos && (
+                 <DocumentLayout logos={organizationLogos}>
+                    <pre className="whitespace-pre-wrap text-sm font-serif">
+                      {state.document}
+                    </pre>
+                 </DocumentLayout>
+            )}
         </div>
       </div>
     </>

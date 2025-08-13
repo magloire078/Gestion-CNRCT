@@ -1,9 +1,10 @@
 
+
 import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, onSnapshot, Unsubscribe, query, orderBy, where, writeBatch, getDoc, setDoc } from 'firebase/firestore';
 import type { Employe } from '@/lib/data';
 import { db, storage } from '@/lib/firebase';
 import { getOrganizationSettings } from './organization-service';
-import { ref, uploadString, getDownloadURL, uploadBytes } from 'firebase/storage';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 const employeesCollection = collection(db, 'employees');
 
@@ -47,20 +48,20 @@ export async function getEmployee(id: string): Promise<Employe | null> {
     return null;
 }
 
-export async function addEmployee(employeeDataToAdd: Omit<Employe, 'id'>): Promise<Employe> {
-    const { photoUrl, ...restOfData } = employeeDataToAdd;
-    let finalPhotoUrl = '';
+export async function addEmployee(employeeDataToAdd: Omit<Employe, 'id' | 'photoUrl'>, photoFile: File | null): Promise<Employe> {
+    const { ...restOfData } = employeeDataToAdd;
+    let finalPhotoUrl = 'https://placehold.co/100x100.png'; // Default placeholder
 
-    if (photoUrl && photoUrl.startsWith('data:image')) {
-        const photoRef = ref(storage, `employee_photos/${Date.now()}`);
-        const snapshot = await uploadString(photoRef, photoUrl, 'data_url');
+    const docRef = doc(collection(db, "employees"));
+
+    if (photoFile) {
+        const photoRef = ref(storage, `employee_photos/${docRef.id}/${photoFile.name}`);
+        const snapshot = await uploadBytes(photoRef, photoFile);
         finalPhotoUrl = await getDownloadURL(snapshot.ref);
-    } else {
-        finalPhotoUrl = photoUrl || '';
     }
 
-    const docRef = await addDoc(employeesCollection, { ...restOfData, photoUrl: finalPhotoUrl });
-    return { id: docRef.id, ...employeeDataToAdd, photoUrl: finalPhotoUrl };
+    await setDoc(docRef, { ...restOfData, photoUrl: finalPhotoUrl });
+    return { id: docRef.id, ...restOfData, photoUrl: finalPhotoUrl };
 }
 
 export async function batchAddEmployees(employees: Omit<Employe, 'id'>[]): Promise<number> {

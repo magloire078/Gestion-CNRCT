@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { auth, db } from '@/lib/firebase';
@@ -140,7 +141,13 @@ export async function updateUserProfile(userId: string, data: { name?: string, p
 
     // Also update the auth profile if possible
     if(auth.currentUser){
-       await updateProfile(auth.currentUser, { displayName: data.name, photoURL: updateData.photoUrl });
+       const authUpdate: {displayName?: string, photoURL?: string} = {};
+       if (updateData.name) authUpdate.displayName = updateData.name;
+       if (updateData.photoUrl) authUpdate.photoURL = updateData.photoUrl;
+
+       if (Object.keys(authUpdate).length > 0) {
+            await updateProfile(auth.currentUser, authUpdate);
+       }
     }
 }
 

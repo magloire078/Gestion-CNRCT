@@ -43,7 +43,7 @@ import { useToast } from "@/hooks/use-toast";
 interface AddEmployeeSheetProps {
   isOpen: boolean;
   onClose: () => void;
-  onAddEmployee: (employee: Omit<Employe, "id">) => Promise<void>;
+  onAddEmployee: (employeeData: Omit<Employe, "id" | "photoUrl">, photoFile: File | null) => Promise<void>;
 }
 
 export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployeeSheetProps) {
@@ -63,7 +63,7 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
 
   const [status, setStatus] = useState<Employe['status']>('Actif');
   const [sexe, setSexe] = useState<Employe['sexe'] | "">("");
-  const [photoUrl, setPhotoUrl] = useState<string | undefined>(undefined);
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState(`https://placehold.co/100x100.png`);
   const [skills, setSkills] = useState("");
   const [dateDepart, setDateDepart] = useState("");
@@ -130,7 +130,7 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
     setSkills("");
     setStatus("Actif");
     setSexe("");
-    setPhotoUrl(undefined);
+    setPhotoFile(null);
     setPhotoPreview(`https://placehold.co/100x100.png`);
     setError("");
     setAvatarPrompt("");
@@ -149,11 +149,10 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setPhotoFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
-        const dataUri = reader.result as string;
-        setPhotoUrl(dataUri);
-        setPhotoPreview(dataUri);
+        setPhotoPreview(reader.result as string);
       };
       reader.readAsDataURL(file);
     }
@@ -178,11 +177,23 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
     }
   }
 
-  const useGeneratedAvatar = () => {
+  const useGeneratedAvatar = async () => {
     if(generatedAvatar) {
-      setPhotoUrl(generatedAvatar);
-      setPhotoPreview(generatedAvatar);
-      setIsAvatarDialogOpen(false);
+        try {
+            const response = await fetch(generatedAvatar);
+            const blob = await response.blob();
+            const file = new File([blob], "ai_avatar.png", { type: blob.type });
+            setPhotoFile(file);
+            setPhotoPreview(generatedAvatar);
+            setIsAvatarDialogOpen(false);
+        } catch (error) {
+            toast({
+                variant: "destructive",
+                title: "Erreur d'utilisation",
+                description: "Impossible d'utiliser l'avatar généré. Veuillez réessayer.",
+            });
+            console.error("Error converting data URL to file:", error);
+        }
     }
   }
 
@@ -197,7 +208,7 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
     setError("");
     try {
       const skillsArray = skills.split(',').map(s => s.trim()).filter(s => s);
-      await onAddEmployee({ 
+      const employeeData = { 
           matricule, 
           firstName, 
           lastName, 
@@ -207,12 +218,12 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
           direction,
           service,
           status, 
-          photoUrl: photoUrl || '', 
           name: `${firstName} ${lastName}`.trim(), 
           skills: skillsArray,
           sexe: sexe as Employe['sexe'],
           Date_Depart: dateDepart || undefined,
-      });
+      };
+      await onAddEmployee(employeeData, photoFile);
       handleClose();
     } catch(err) {
       setError(err instanceof Error ? err.message : "Échec de l'ajout de l'employé. Veuillez réessayer.");

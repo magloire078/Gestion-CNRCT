@@ -24,6 +24,7 @@ import { subscribeToVehicles } from '@/services/fleet-service';
 import type { Employe, Leave, Asset, Fleet, OrganizationSettings } from '@/lib/data';
 import { Skeleton } from '@/components/ui/skeleton';
 import { differenceInYears, parseISO } from 'date-fns';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 
 interface StatCardProps {
@@ -64,34 +65,30 @@ export default function DashboardPage() {
     const [loading, setLoading] = useState(true);
     const [seniorityAnniversaries, setSeniorityAnniversaries] = useState<Employe[]>([]);
     
+    const [selectedAnniversaryMonth, setSelectedAnniversaryMonth] = useState<string>((new Date().getMonth()).toString());
+    const [selectedAnniversaryYear, setSelectedAnniversaryYear] = useState<string>(new Date().getFullYear().toString());
+
     const [isPrintingAnniversaries, setIsPrintingAnniversaries] = useState(false);
     const [organizationLogos, setOrganizationLogos] = useState<OrganizationSettings | null>(null);
+
+    const yearsForSelect = Array.from({ length: 10 }, (_, i) => (new Date().getFullYear() - i).toString());
+    const monthsForSelect = [
+        { value: "0", label: "Janvier" }, { value: "1", label: "Février" }, { value: "2", label: "Mars" },
+        { value: "3", label: "Avril" }, { value: "4", label: "Mai" }, { value: "5", label: "Juin" },
+        { value: "6", label: "Juillet" }, { value: "7", label: "Août" }, { value: "8", label: "Septembre" },
+        { value: "9", label: "Octobre" }, { value: "10", label: "Novembre" }, { value: "11", label: "Décembre" },
+    ];
+    const selectedPeriodText = `${monthsForSelect[parseInt(selectedAnniversaryMonth)].label} ${selectedAnniversaryYear}`;
 
     useEffect(() => {
         setLoading(true);
         const unsubscribers = [
-            subscribeToEmployees((emps) => {
-                setEmployees(emps);
-                const currentMonth = new Date().getMonth();
-                const anniversaries = emps.filter(emp => {
-                    if (!emp.dateEmbauche || emp.CNPS !== true) return false;
-                    try {
-                        const hireDate = parseISO(emp.dateEmbauche);
-                        // Check if hire month is current month, and it's not their first year
-                        return hireDate.getMonth() === currentMonth && differenceInYears(new Date(), hireDate) > 0;
-                    } catch {
-                        return false;
-                    }
-                });
-                setSeniorityAnniversaries(anniversaries);
-            }, console.error),
+            subscribeToEmployees(setEmployees, console.error),
             subscribeToLeaves(setLeaves, console.error),
             subscribeToAssets(setAssets, console.error),
             subscribeToVehicles(setFleet, console.error),
         ];
         
-        // A simple way to check if all initial data has loaded.
-        // This could be improved with more granular loading states.
         const loadingTimeout = setTimeout(() => setLoading(false), 2000);
 
         return () => {
@@ -99,6 +96,31 @@ export default function DashboardPage() {
             clearTimeout(loadingTimeout);
         };
     }, []);
+
+    useEffect(() => {
+        const month = parseInt(selectedAnniversaryMonth);
+        const year = parseInt(selectedAnniversaryYear);
+
+        const anniversaries = employees.filter(emp => {
+            if (!emp.dateEmbauche || emp.CNPS !== true) return false;
+            try {
+                const hireDate = parseISO(emp.dateEmbauche);
+                const hireMonth = hireDate.getMonth();
+                const isAnniversaryMonth = hireMonth === month;
+                const yearsOfService = year - hireDate.getFullYear();
+                
+                // Only count if it's not the year of hiring (anniversary means at least 1 year)
+                // and the anniversary date is not in the future for the current year.
+                if (yearsOfService <= 0) return false;
+
+                return isAnniversaryMonth;
+
+            } catch {
+                return false;
+            }
+        });
+        setSeniorityAnniversaries(anniversaries);
+    }, [employees, selectedAnniversaryMonth, selectedAnniversaryYear]);
     
     useEffect(() => {
         if (isPrintingAnniversaries) {
@@ -261,10 +283,10 @@ export default function DashboardPage() {
                     </CardContent>
                     </Card>
                     <Card>
-                    <CardHeader className="flex flex-row items-center justify-between">
-                        <div>
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                        <div className="flex-1">
                             <CardTitle>Anniversaires d'Ancienneté</CardTitle>
-                            <CardDescription>Employés atteignant un anniversaire d'embauche ce mois-ci.</CardDescription>
+                            <CardDescription>Employés atteignant un anniversaire d'embauche.</CardDescription>
                         </div>
                         <Button variant="outline" size="icon" onClick={handlePrintAnniversaries} disabled={seniorityAnniversaries.length === 0}>
                             <Printer className="h-4 w-4" />
@@ -272,10 +294,25 @@ export default function DashboardPage() {
                         </Button>
                     </CardHeader>
                     <CardContent>
+                        <div className="flex gap-2 my-4">
+                            <Select value={selectedAnniversaryMonth} onValueChange={setSelectedAnniversaryMonth}>
+                                <SelectTrigger><SelectValue/></SelectTrigger>
+                                <SelectContent>
+                                    {monthsForSelect.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                            <Select value={selectedAnniversaryYear} onValueChange={setSelectedAnniversaryYear}>
+                                <SelectTrigger><SelectValue/></SelectTrigger>
+                                <SelectContent>
+                                    {yearsForSelect.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        </div>
+
                         {loading ? <Skeleton className="h-24 w-full" /> : (
                         <div className="space-y-4">
                         {seniorityAnniversaries.length > 0 ? seniorityAnniversaries.map(emp => {
-                            const years = differenceInYears(new Date(), parseISO(emp.dateEmbauche!));
+                            const years = differenceInYears(new Date(parseInt(selectedAnniversaryYear), parseInt(selectedAnniversaryMonth)), parseISO(emp.dateEmbauche!));
                             return (
                             <div key={emp.id} className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
@@ -291,7 +328,7 @@ export default function DashboardPage() {
                                 <span className="text-sm font-semibold text-primary">{years} an{years > 1 ? 's' : ''}</span>
                             </div>
                             )
-                        }) : <p className="text-sm text-muted-foreground text-center py-8">Aucun anniversaire ce mois-ci.</p>}
+                        }) : <p className="text-sm text-muted-foreground text-center py-8">Aucun anniversaire pour cette période.</p>}
                         </div>
                         )}
                     </CardContent>
@@ -320,13 +357,13 @@ export default function DashboardPage() {
         </div>
     </div>
     {isPrintingAnniversaries && organizationLogos && (
-        <AnniversaryPrintLayout logos={organizationLogos} employees={seniorityAnniversaries} />
+        <AnniversaryPrintLayout logos={organizationLogos} employees={seniorityAnniversaries} period={selectedPeriodText} year={selectedAnniversaryYear}/>
     )}
     </>
   );
 }
 
-function AnniversaryPrintLayout({ logos, employees }: { logos: OrganizationSettings, employees: Employe[] }) {
+function AnniversaryPrintLayout({ logos, employees, period, year }: { logos: OrganizationSettings, employees: Employe[], period: string, year: string }) {
     return (
         <div id="print-section" className="bg-white text-black p-8 w-full print:shadow-none print:border-none print:p-0">
             <header className="flex justify-between items-start mb-8">
@@ -347,7 +384,7 @@ function AnniversaryPrintLayout({ logos, employees }: { logos: OrganizationSetti
 
             <div className="text-center my-6">
                 <h1 className="text-lg font-bold underline">LISTE DES EMPLOYÉS ATTEIGNANT UN ANNIVERSAIRE D'ANCIENNETÉ</h1>
-                <h2 className="text-md font-bold mt-4">Mois de {new Date().toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}</h2>
+                <h2 className="text-md font-bold mt-4 uppercase">{period}</h2>
             </div>
             
             <table className="w-full text-sm border-collapse border border-black">
@@ -362,7 +399,7 @@ function AnniversaryPrintLayout({ logos, employees }: { logos: OrganizationSetti
                 </thead>
                 <tbody>
                     {employees.map((employee, index) => {
-                        const years = differenceInYears(new Date(), parseISO(employee.dateEmbauche!));
+                        const years = differenceInYears(new Date(parseInt(year), new Date().getMonth()), parseISO(employee.dateEmbauche!));
                         return (
                             <tr key={employee.id}>
                                 <td className="border border-black p-2 text-center">{index + 1}</td>

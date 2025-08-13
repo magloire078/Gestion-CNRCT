@@ -99,17 +99,23 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
     }
   }, [isOpen]);
 
+  const selectedDepartmentObject = useMemo(() => departmentList.find(d => d.name === department), [department, departmentList]);
+
   const filteredDirections = useMemo(() => {
-    if (!department) return [];
-    const selectedDept = departmentList.find(d => d.name === department);
-    return selectedDept ? directionList.filter(d => d.departmentId === selectedDept.id) : [];
-  }, [department, directionList, departmentList]);
+    if (!selectedDepartmentObject) return [];
+    return directionList.filter(d => d.departmentId === selectedDepartmentObject.id);
+  }, [selectedDepartmentObject, directionList]);
 
   const filteredServices = useMemo(() => {
-    if (!direction) return [];
     const selectedDir = directionList.find(d => d.name === direction);
-    return selectedDir ? serviceList.filter(s => s.directionId === selectedDir.id) : [];
-  }, [direction, serviceList, directionList]);
+    if (selectedDir) {
+      return serviceList.filter(s => s.directionId === selectedDir.id);
+    }
+    if (selectedDepartmentObject) {
+      return serviceList.filter(s => s.departmentId === selectedDepartmentObject.id);
+    }
+    return [];
+  }, [direction, selectedDepartmentObject, directionList, serviceList]);
 
 
   const resetForm = () => {
@@ -248,7 +254,7 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
             
             <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="department" className="text-right">Département</Label><Select value={department} onValueChange={(value) => { setDepartment(value); setDirection(''); setService(''); }} required><SelectTrigger className="col-span-3"><SelectValue placeholder="Sélectionnez..." /></SelectTrigger><SelectContent>{departmentList.map(dep => (<SelectItem key={dep.id} value={dep.name}>{dep.name}</SelectItem>))}</SelectContent></Select></div>
             <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="direction" className="text-right">Direction</Label><Select value={direction} onValueChange={(value) => { setDirection(value); setService(''); }} disabled={!department}><SelectTrigger className="col-span-3"><SelectValue placeholder="Sélectionnez..." /></SelectTrigger><SelectContent>{filteredDirections.map(dir => (<SelectItem key={dir.id} value={dir.name}>{dir.name}</SelectItem>))}</SelectContent></Select></div>
-            <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="service" className="text-right">Service</Label><Select value={service} onValueChange={setService} disabled={!direction}><SelectTrigger className="col-span-3"><SelectValue placeholder="Sélectionnez..." /></SelectTrigger><SelectContent>{filteredServices.map(svc => (<SelectItem key={svc.id} value={svc.name}>{svc.name}</SelectItem>))}</SelectContent></Select></div>
+            <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="service" className="text-right">Service</Label><Select value={service} onValueChange={setService} disabled={!department || filteredServices.length === 0}><SelectTrigger className="col-span-3"><SelectValue placeholder="Sélectionnez..." /></SelectTrigger><SelectContent>{filteredServices.map(svc => (<SelectItem key={svc.id} value={svc.name}>{svc.name}</SelectItem>))}</SelectContent></Select></div>
 
             <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="status" className="text-right">Statut</Label><Select value={status} onValueChange={(value: Employe['status']) => setStatus(value)} required><SelectTrigger className="col-span-3"><SelectValue placeholder="Sélectionnez un statut" /></SelectTrigger><SelectContent><SelectItem value="Actif">Actif</SelectItem><SelectItem value="En congé">En congé</SelectItem><SelectItem value="Licencié">Licencié</SelectItem><SelectItem value="Retraité">Retraité</SelectItem><SelectItem value="Décédé">Décédé</SelectItem></SelectContent></Select></div>
              <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="dateDepart" className="text-right">Date de Départ</Label><Input id="dateDepart" type="date" value={dateDepart} onChange={(e) => setDateDepart(e.target.value)} className="col-span-3" /></div>
@@ -314,5 +320,3 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
     </>
   );
 }
-
-    

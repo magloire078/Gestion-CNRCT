@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { getEmployee, updateEmployee } from "@/services/employee-service";
 import type { Employe, Department, Direction, Service } from "@/lib/data";
@@ -72,13 +72,26 @@ export default function EmployeeEditPage() {
         fetchEmployee();
     }, [id, toast]);
 
-    const filteredDirections = departmentList.find(d => d.name === employee?.department) 
-        ? directionList.filter(dir => dir.departmentId === departmentList.find(d => d.name === employee?.department)?.id)
-        : [];
+    const selectedDepartmentObject = useMemo(() => {
+        if (!employee?.department) return null;
+        return departmentList.find(d => d.name === employee.department);
+    }, [employee?.department, departmentList]);
+
+    const filteredDirections = useMemo(() => {
+        if (!selectedDepartmentObject) return [];
+        return directionList.filter(dir => dir.departmentId === selectedDepartmentObject.id);
+    }, [selectedDepartmentObject, directionList]);
         
-    const filteredServices = directionList.find(d => d.name === employee?.direction)
-        ? serviceList.filter(svc => svc.directionId === directionList.find(d => d.name === employee?.direction)?.id)
-        : [];
+    const filteredServices = useMemo(() => {
+        const selectedDir = directionList.find(d => d.name === employee?.direction);
+        if (selectedDir) {
+            return serviceList.filter(s => s.directionId === selectedDir.id);
+        }
+        if (selectedDepartmentObject) {
+            return serviceList.filter(s => s.departmentId === selectedDepartmentObject.id);
+        }
+        return [];
+    }, [employee?.direction, selectedDepartmentObject, directionList, serviceList]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
@@ -251,7 +264,7 @@ export default function EmployeeEditPage() {
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="service">Service</Label>
-                            <Select name="service" value={employee.service || ''} onValueChange={(v) => handleSelectChange('service', v)} disabled={!employee.direction}>
+                            <Select name="service" value={employee.service || ''} onValueChange={(v) => handleSelectChange('service', v)} disabled={!employee.department || filteredServices.length === 0}>
                                 <SelectTrigger><SelectValue placeholder="Sélectionnez..." /></SelectTrigger>
                                 <SelectContent>
                                     {filteredServices.map(svc => <SelectItem key={svc.id} value={svc.name}>{svc.name}</SelectItem>)}

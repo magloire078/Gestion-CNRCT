@@ -195,6 +195,7 @@ export type Chief = {
   name: string;
   title: string; // e.g., "Roi des N'zima", "Chef de Canton"
   role: ChiefRole;
+  sexe?: 'Homme' | 'Femme' | 'Autre';
   region: string;
   department: string;
   subPrefecture: string;
@@ -255,5 +256,3 @@ export type OrganizationSettings = {
     secondaryLogoUrl: string;
     faviconUrl: string;
 };
-
-    

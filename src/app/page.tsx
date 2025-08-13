@@ -167,10 +167,10 @@ export default function DashboardPage() {
         setIsPrintingAnniversaries(true);
     };
 
-    const getGenderBreakdown = (employeeList: Employe[]) => {
-      const men = employeeList.filter(e => e.sexe === 'Homme').length;
-      const women = employeeList.filter(e => e.sexe === 'Femme').length;
-      return `${men} H / ${women} F`;
+    const getGenderBreakdown = (list: (Employe | Chief)[]) => {
+      const men = list.filter(p => p.sexe === 'Homme').length;
+      const women = list.filter(p => p.sexe === 'Femme').length;
+      return `${men} Hommes / ${women} Femmes`;
     };
     
     const activeEmployees = employees.filter(e => e.status === 'Actif');
@@ -221,11 +221,12 @@ export default function DashboardPage() {
                         description={getGenderBreakdown(cnpsEmployees)}
                     />
                     <StatCard 
-                        title="Rois &amp; Chefs"
+                        title="Rois & Chefs"
                         value={chiefs.length}
                         icon={Crown}
                         href="/chiefs"
                         loading={loading}
+                        description={getGenderBreakdown(chiefs)}
                     />
                     <StatCard 
                         title="Membres du Directoire"

@@ -68,11 +68,15 @@ export default function DashboardPage() {
     
     const [selectedAnniversaryMonth, setSelectedAnniversaryMonth] = useState<string>((new Date().getMonth()).toString());
     const [selectedAnniversaryYear, setSelectedAnniversaryYear] = useState<string>(new Date().getFullYear().toString());
+    const [selectedRetirementYear, setSelectedRetirementYear] = useState<string>(new Date().getFullYear().toString());
+
 
     const [isPrintingAnniversaries, setIsPrintingAnniversaries] = useState(false);
     const [organizationLogos, setOrganizationLogos] = useState<OrganizationSettings | null>(null);
 
-    const yearsForSelect = Array.from({ length: 10 }, (_, i) => (new Date().getFullYear() - i).toString());
+    const anniversaryYears = Array.from({ length: 10 }, (_, i) => (new Date().getFullYear() - i).toString());
+    const retirementYears = Array.from({ length: 10 }, (_, i) => (new Date().getFullYear() + i).toString());
+    
     const monthsForSelect = [
         { value: "0", label: "Janvier" }, { value: "1", label: "Février" }, { value: "2", label: "Mars" },
         { value: "3", label: "Avril" }, { value: "4", label: "Mai" }, { value: "5", label: "Juin" },
@@ -122,8 +126,7 @@ export default function DashboardPage() {
         setSeniorityAnniversaries(anniversaries);
 
         // Retirements
-        const today = new Date();
-        const reminderLimit = addMonths(today, 6);
+        const yearToFilter = parseInt(selectedRetirementYear);
         const retirements = employees
           .map(emp => {
               if (!emp.Date_Naissance) return null;
@@ -138,13 +141,13 @@ export default function DashboardPage() {
           })
           .filter((emp): emp is Employe & { calculatedRetirementDate: Date } => {
               if (!emp || emp.status === 'Retraité' || emp.status === 'Décédé') return false;
-              return emp.calculatedRetirementDate >= today && emp.calculatedRetirementDate <= reminderLimit;
+              return emp.calculatedRetirementDate.getFullYear() === yearToFilter;
           })
           .sort((a,b) => a.calculatedRetirementDate.getTime() - b.calculatedRetirementDate.getTime());
         
         setUpcomingRetirements(retirements);
 
-    }, [employees, selectedAnniversaryMonth, selectedAnniversaryYear]);
+    }, [employees, selectedAnniversaryMonth, selectedAnniversaryYear, selectedRetirementYear]);
     
     useEffect(() => {
         if (isPrintingAnniversaries) {
@@ -276,9 +279,21 @@ export default function DashboardPage() {
                     </CardContent>
                     </Card>
                      <Card>
-                    <CardHeader>
-                        <CardTitle>Départs à la Retraite Prochains</CardTitle>
-                        <CardDescription>Employés approchant de la retraite (6 prochains mois).</CardDescription>
+                     <CardHeader>
+                        <div className="flex justify-between items-start">
+                            <div>
+                                <CardTitle>Départs à la Retraite</CardTitle>
+                                <CardDescription>Employés partant pour l'année choisie.</CardDescription>
+                            </div>
+                             <div className="w-28">
+                                <Select value={selectedRetirementYear} onValueChange={setSelectedRetirementYear}>
+                                    <SelectTrigger id="retirement-year"><SelectValue/></SelectTrigger>
+                                    <SelectContent>
+                                        {retirementYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
                     </CardHeader>
                     <CardContent>
                         {loading ? <Skeleton className="h-24 w-full" /> : (
@@ -301,13 +316,13 @@ export default function DashboardPage() {
                             </div>
                             <span className="text-sm text-muted-foreground">{emp.calculatedRetirementDate && format(emp.calculatedRetirementDate, 'dd/MM/yyyy')}</span>
                             </div>
-                        )) : <p className="text-sm text-muted-foreground text-center py-8">Aucun départ prévu dans les 6 prochains mois.</p>}
+                        )) : <p className="text-sm text-muted-foreground text-center py-8">Aucun départ prévu pour {selectedRetirementYear}.</p>}
                         </div>
                         )}
                     </CardContent>
                     </Card>
                     <Card>
-                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                    <CardHeader className="flex flex-row items-start justify-between pb-2">
                         <div className="flex-1">
                             <CardTitle>Anniversaires d'Ancienneté</CardTitle>
                             <CardDescription>Employés atteignant un anniversaire d'embauche.</CardDescription>
@@ -328,7 +343,7 @@ export default function DashboardPage() {
                             <Select value={selectedAnniversaryYear} onValueChange={setSelectedAnniversaryYear}>
                                 <SelectTrigger><SelectValue/></SelectTrigger>
                                 <SelectContent>
-                                    {yearsForSelect.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
+                                    {anniversaryYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
                                 </SelectContent>
                             </Select>
                         </div>

@@ -74,7 +74,7 @@ export default function DashboardPage() {
                 setEmployees(emps);
                 const currentMonth = new Date().getMonth();
                 const anniversaries = emps.filter(emp => {
-                    if (!emp.dateEmbauche) return false;
+                    if (!emp.dateEmbauche || emp.CNPS !== true) return false;
                     try {
                         const hireDate = parseISO(emp.dateEmbauche);
                         // Check if hire month is current month, and it's not their first year
@@ -354,7 +354,7 @@ function AnniversaryPrintLayout({ logos, employees }: { logos: OrganizationSetti
                 <thead>
                     <tr className="bg-gray-200">
                         <th className="border border-black p-2 text-left font-bold">N°</th>
-                        <th className="border border-black p-2 text-left font-bold">Nom & Prénoms</th>
+                        <th className="border border-black p-2 text-left font-bold">Nom &amp; Prénoms</th>
                         <th className="border border-black p-2 text-left font-bold">Poste</th>
                         <th className="border border-black p-2 text-left font-bold">Date d'embauche</th>
                         <th className="border border-black p-2 text-center font-bold">Ancienneté</th>
@@ -390,3 +390,5 @@ function AnniversaryPrintLayout({ logos, employees }: { logos: OrganizationSetti
         </div>
     );
 }
+
+    

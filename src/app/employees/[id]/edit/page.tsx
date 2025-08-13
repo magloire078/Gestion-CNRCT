@@ -201,6 +201,14 @@ export default function EmployeeEditPage() {
                             <Input id="firstName" name="firstName" value={employee.firstName || ''} onChange={handleInputChange} />
                         </div>
                         <div className="space-y-2">
+                            <Label htmlFor="Date_Naissance">Date de Naissance</Label>
+                            <Input id="Date_Naissance" name="Date_Naissance" type="date" value={employee.Date_Naissance || ''} onChange={handleInputChange} />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="Lieu_Naissance">Lieu de Naissance</Label>
+                            <Input id="Lieu_Naissance" name="Lieu_Naissance" value={employee.Lieu_Naissance || ''} onChange={handleInputChange} />
+                        </div>
+                        <div className="space-y-2">
                             <Label htmlFor="email">Email</Label>
                             <Input id="email" name="email" type="email" value={employee.email || ''} onChange={handleInputChange} />
                         </div>

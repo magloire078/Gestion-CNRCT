@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Pencil, User, Briefcase, Mail, Phone, MapPin, BadgeCheck, FileText, Calendar, Laptop, Rocket, FolderArchive } from "lucide-react";
+import { ArrowLeft, Pencil, User, Briefcase, Mail, Phone, MapPin, BadgeCheck, FileText, Calendar, Laptop, Rocket, FolderArchive, LogOut } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
@@ -83,6 +83,13 @@ export default function EmployeeDetailPage() {
     }
 
     const fullName = `${employee.firstName || ''} ${employee.lastName || ''}`.trim() || employee.name;
+    
+    let retirementDate = null;
+    if(employee.Date_Naissance && employee.status === 'Actif') {
+        const birthDate = new Date(employee.Date_Naissance);
+        retirementDate = new Date(birthDate.getFullYear() + 60, birthDate.getMonth(), birthDate.getDate()).toLocaleDateString('fr-FR');
+    }
+
 
     return (
         <div className="flex flex-col gap-6">
@@ -205,8 +212,9 @@ export default function EmployeeDetailPage() {
                              <CardTitle className="flex items-center gap-2 text-lg"><User className="h-5 w-5 text-primary"/> Info Personnelle</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
+                            <InfoItem label="Date de naissance" value={employee.Date_Naissance} icon={Calendar} />
                             <InfoItem label="Lieu de naissance" value={employee.Lieu_Naissance} icon={MapPin} />
-                            <InfoItem label="Date de naissance" value={employee.Date_Naissance} />
+                            {retirementDate && <InfoItem label="Date de retraite estimée" value={retirementDate} icon={LogOut}/>}
                              <InfoItem label="Compétences" icon={BadgeCheck}>
                                 {employee.skills && employee.skills.length > 0 ? (
                                     <div className="flex flex-wrap gap-2 pt-1">
@@ -229,7 +237,7 @@ export default function EmployeeDetailPage() {
                                 <ul className="space-y-2">
                                 {assets.map(asset => (
                                     <li key={asset.tag} className="text-sm flex justify-between">
-                                        <span>{asset.model}</span>
+                                        <span>{asset.modele}</span>
                                         <span className="text-muted-foreground">({asset.tag})</span>
                                     </li>
                                 ))}

@@ -176,6 +176,17 @@ export default function ChiefEditPage() {
                             </SelectContent>
                         </Select>
                     </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="sexe">Sexe</Label>
+                         <Select value={chief.sexe || ''} onValueChange={(v) => handleSelectChange('sexe', v)}>
+                            <SelectTrigger id="sexe"><SelectValue placeholder="Sélectionnez..." /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="Homme">Homme</SelectItem>
+                                <SelectItem value="Femme">Femme</SelectItem>
+                                <SelectItem value="Autre">Autre</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
                 </CardContent>
             </Card>
 

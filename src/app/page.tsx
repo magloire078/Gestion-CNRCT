@@ -12,16 +12,16 @@ import {
 } from '@/components/ui/card';
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, FileWarning, Laptop, Car, Download, ShieldCheck, User as UserIcon, Building, Cake } from 'lucide-react';
+import { Users, FileWarning, Laptop, Car, Download, ShieldCheck, User as UserIcon, Building, Cake, Printer } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { EmployeeDistributionChart } from '@/components/charts/employee-distribution-chart';
 import { AssetStatusChart } from '@/components/charts/asset-status-chart';
 import { EmployeeActivityReport } from '@/components/reports/employee-activity-report';
-import { subscribeToEmployees } from '@/services/employee-service';
+import { subscribeToEmployees, getOrganizationSettings } from '@/services/employee-service';
 import { subscribeToLeaves } from '@/services/leave-service';
 import { subscribeToAssets } from '@/services/asset-service';
 import { subscribeToVehicles } from '@/services/fleet-service';
-import type { Employe, Leave, Asset, Fleet } from '@/lib/data';
+import type { Employe, Leave, Asset, Fleet, OrganizationSettings } from '@/lib/data';
 import { Skeleton } from '@/components/ui/skeleton';
 import { differenceInYears, parseISO } from 'date-fns';
 
@@ -63,6 +63,9 @@ export default function DashboardPage() {
     const [fleet, setFleet] = useState<Fleet[]>([]);
     const [loading, setLoading] = useState(true);
     const [seniorityAnniversaries, setSeniorityAnniversaries] = useState<Employe[]>([]);
+    
+    const [isPrintingAnniversaries, setIsPrintingAnniversaries] = useState(false);
+    const [organizationLogos, setOrganizationLogos] = useState<OrganizationSettings | null>(null);
 
     useEffect(() => {
         setLoading(true);
@@ -96,6 +99,21 @@ export default function DashboardPage() {
             clearTimeout(loadingTimeout);
         };
     }, []);
+    
+    useEffect(() => {
+        if (isPrintingAnniversaries) {
+            setTimeout(() => {
+                window.print();
+                setIsPrintingAnniversaries(false);
+            }, 500);
+        }
+    }, [isPrintingAnniversaries]);
+
+    const handlePrintAnniversaries = async () => {
+        const logos = await getOrganizationSettings();
+        setOrganizationLogos(logos);
+        setIsPrintingAnniversaries(true);
+    };
 
   const activeEmployees = employees.filter(e => e.status === 'Actif');
   const cnpsEmployeesCount = employees.filter(e => e.CNPS === true && e.status === 'Actif').length;
@@ -107,190 +125,268 @@ export default function DashboardPage() {
   const newHires = employees.sort((a,b) => new Date(b.dateEmbauche || 0).getTime() - new Date(a.dateEmbauche || 0).getTime()).slice(0,3);
   
   return (
-    <div className="flex flex-col gap-6">
-      <h1 className="text-3xl font-bold tracking-tight">Tableau de Bord</h1>
-      
-      <Tabs defaultValue="overview">
-        <div className="flex items-center">
-            <TabsList>
-            <TabsTrigger value="overview">Aperçu</TabsTrigger>
-            <TabsTrigger value="analytics">Analyses</TabsTrigger>
-            <TabsTrigger value="reports">Rapports</TabsTrigger>
-            </TabsList>
-            <div className="ml-auto flex items-center gap-2">
-            <Button size="sm" variant="outline" className="h-7 gap-1">
-                <Download className="h-3.5 w-3.5" />
-                <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                Télécharger
-                </span>
-            </Button>
+    <>
+    <div className={isPrintingAnniversaries ? 'print-hidden' : ''}>
+        <div className="flex flex-col gap-6">
+        <h1 className="text-3xl font-bold tracking-tight">Tableau de Bord</h1>
+        
+        <Tabs defaultValue="overview">
+            <div className="flex items-center">
+                <TabsList>
+                <TabsTrigger value="overview">Aperçu</TabsTrigger>
+                <TabsTrigger value="analytics">Analyses</TabsTrigger>
+                <TabsTrigger value="reports">Rapports</TabsTrigger>
+                </TabsList>
+                <div className="ml-auto flex items-center gap-2">
+                <Button size="sm" variant="outline" className="h-7 gap-1">
+                    <Download className="h-3.5 w-3.5" />
+                    <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                    Télécharger
+                    </span>
+                </Button>
+                </div>
             </div>
-        </div>
-        <TabsContent value="overview" className="space-y-4">
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-                <StatCard 
-                  title="Employés Actifs"
-                  value={activeEmployees.length}
-                  icon={Users}
-                  href="/employees?filter=actif"
-                  loading={loading}
-                />
-                 <StatCard 
-                  title="Déclarés à la CNPS"
-                  value={cnpsEmployeesCount}
-                  icon={ShieldCheck}
-                  href="/employees?filter=cnps"
-                  loading={loading}
-                />
-                <StatCard 
-                  title="Hommes / Femmes"
-                  value={maleEmployeesCount}
-                  description={`${femaleEmployeesCount} Femmes`}
-                  icon={UserIcon}
-                  href="/employees?filter=sexe"
-                  loading={loading}
-                />
-                 <StatCard 
-                  title="Membres du Directoire"
-                  value={directoireCount}
-                  icon={Building}
-                  href="/employees?filter=directoire"
-                  loading={loading}
-                />
-            </div>
-            <div className="grid gap-6 lg:grid-cols-2">
-                <Card>
-                <CardHeader>
-                    <CardTitle>Répartition des Employés</CardTitle>
-                    <CardDescription>Distribution des employés par département.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <EmployeeDistributionChart />
-                </CardContent>
-                </Card>
-                <Card>
-                <CardHeader>
-                    <CardTitle>État des Actifs Informatiques</CardTitle>
-                    <CardDescription>Aperçu du statut actuel de tous les actifs informatiques.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <AssetStatusChart />
-                </CardContent>
-                </Card>
-            </div>
-            <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
-                <Card>
-                <CardHeader>
-                    <CardTitle>Demandes de Congé Récentes</CardTitle>
-                    <CardDescription>Un aperçu rapide des dernières demandes de congé.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    {loading ? <Skeleton className="h-24 w-full" /> : (
-                    <div className="space-y-4">
-                    {recentLeaves.map(leave => (
-                        <div key={leave.id} className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <Avatar>
-                            <AvatarImage
-                                src={`https://placehold.co/40x40.png`}
-                                data-ai-hint="user avatar"
-                            />
-                            <AvatarFallback>{leave.employee.charAt(0)}</AvatarFallback>
-                            </Avatar>
-                            <div>
-                            <p className="font-medium">{leave.employee}</p>
-                            <p className="text-sm text-muted-foreground">{leave.type}</p>
-                            </div>
-                        </div>
-                        <span className="text-sm text-muted-foreground">{leave.status}</span>
-                        </div>
-                    ))}
-                    </div>
-                    )}
-                </CardContent>
-                </Card>
-                <Card>
-                <CardHeader>
-                    <CardTitle>Nouvelles Recrues</CardTitle>
-                    <CardDescription>Bienvenue aux nouveaux membres de notre équipe.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    {loading ? <Skeleton className="h-24 w-full" /> : (
-                    <div className="space-y-4">
-                    {newHires.map(emp => (
-                        <div key={emp.id} className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <Avatar>
-                            <AvatarImage
-                                src={emp.photoUrl}
-                                alt={emp.name}
-                                data-ai-hint="user avatar"
-                            />
-                            <AvatarFallback>{emp.name?.charAt(0) || 'E'}</AvatarFallback>
-                            </Avatar>
-                            <div>
-                            <p className="font-medium">{emp.name}</p>
-                            <p className="text-sm text-muted-foreground">{emp.poste}</p>
-                            </div>
-                        </div>
-                        <span className="text-sm text-muted-foreground">{emp.department}</span>
-                        </div>
-                    ))}
-                    </div>
-                    )}
-                </CardContent>
-                </Card>
-                <Card>
-                <CardHeader>
-                    <CardTitle>Anniversaires d'Ancienneté</CardTitle>
-                    <CardDescription>Employés atteignant un anniversaire d'embauche ce mois-ci.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    {loading ? <Skeleton className="h-24 w-full" /> : (
-                    <div className="space-y-4">
-                    {seniorityAnniversaries.length > 0 ? seniorityAnniversaries.map(emp => {
-                        const years = differenceInYears(new Date(), parseISO(emp.dateEmbauche!));
-                        return (
-                        <div key={emp.id} className="flex items-center justify-between">
+            <TabsContent value="overview" className="space-y-4">
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+                    <StatCard 
+                    title="Employés Actifs"
+                    value={activeEmployees.length}
+                    icon={Users}
+                    href="/employees?filter=actif"
+                    loading={loading}
+                    />
+                    <StatCard 
+                    title="Déclarés à la CNPS"
+                    value={cnpsEmployeesCount}
+                    icon={ShieldCheck}
+                    href="/employees?filter=cnps"
+                    loading={loading}
+                    />
+                    <StatCard 
+                    title="Hommes / Femmes"
+                    value={maleEmployeesCount}
+                    description={`${femaleEmployeesCount} Femmes`}
+                    icon={UserIcon}
+                    href="/employees?filter=sexe"
+                    loading={loading}
+                    />
+                    <StatCard 
+                    title="Membres du Directoire"
+                    value={directoireCount}
+                    icon={Building}
+                    href="/employees?filter=directoire"
+                    loading={loading}
+                    />
+                </div>
+                <div className="grid gap-6 lg:grid-cols-2">
+                    <Card>
+                    <CardHeader>
+                        <CardTitle>Répartition des Employés</CardTitle>
+                        <CardDescription>Distribution des employés par département.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <EmployeeDistributionChart />
+                    </CardContent>
+                    </Card>
+                    <Card>
+                    <CardHeader>
+                        <CardTitle>État des Actifs Informatiques</CardTitle>
+                        <CardDescription>Aperçu du statut actuel de tous les actifs informatiques.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <AssetStatusChart />
+                    </CardContent>
+                    </Card>
+                </div>
+                <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
+                    <Card>
+                    <CardHeader>
+                        <CardTitle>Demandes de Congé Récentes</CardTitle>
+                        <CardDescription>Un aperçu rapide des dernières demandes de congé.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        {loading ? <Skeleton className="h-24 w-full" /> : (
+                        <div className="space-y-4">
+                        {recentLeaves.map(leave => (
+                            <div key={leave.id} className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
-                            <Avatar>
-                                <AvatarImage src={emp.photoUrl} alt={emp.name} data-ai-hint="user avatar"/>
-                                <AvatarFallback><Cake className="h-4 w-4" /></AvatarFallback>
-                            </Avatar>
-                            <div>
+                                <Avatar>
+                                <AvatarImage
+                                    src={`https://placehold.co/40x40.png`}
+                                    data-ai-hint="user avatar"
+                                />
+                                <AvatarFallback>{leave.employee.charAt(0)}</AvatarFallback>
+                                </Avatar>
+                                <div>
+                                <p className="font-medium">{leave.employee}</p>
+                                <p className="text-sm text-muted-foreground">{leave.type}</p>
+                                </div>
+                            </div>
+                            <span className="text-sm text-muted-foreground">{leave.status}</span>
+                            </div>
+                        ))}
+                        </div>
+                        )}
+                    </CardContent>
+                    </Card>
+                    <Card>
+                    <CardHeader>
+                        <CardTitle>Nouvelles Recrues</CardTitle>
+                        <CardDescription>Bienvenue aux nouveaux membres de notre équipe.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        {loading ? <Skeleton className="h-24 w-full" /> : (
+                        <div className="space-y-4">
+                        {newHires.map(emp => (
+                            <div key={emp.id} className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <Avatar>
+                                <AvatarImage
+                                    src={emp.photoUrl}
+                                    alt={emp.name}
+                                    data-ai-hint="user avatar"
+                                />
+                                <AvatarFallback>{emp.name?.charAt(0) || 'E'}</AvatarFallback>
+                                </Avatar>
+                                <div>
                                 <p className="font-medium">{emp.name}</p>
                                 <p className="text-sm text-muted-foreground">{emp.poste}</p>
+                                </div>
                             </div>
+                            <span className="text-sm text-muted-foreground">{emp.department}</span>
                             </div>
-                            <span className="text-sm font-semibold text-primary">{years} an{years > 1 ? 's' : ''}</span>
+                        ))}
                         </div>
-                        )
-                    }) : <p className="text-sm text-muted-foreground text-center py-8">Aucun anniversaire ce mois-ci.</p>}
-                    </div>
-                    )}
-                </CardContent>
+                        )}
+                    </CardContent>
+                    </Card>
+                    <Card>
+                    <CardHeader className="flex flex-row items-center justify-between">
+                        <div>
+                            <CardTitle>Anniversaires d'Ancienneté</CardTitle>
+                            <CardDescription>Employés atteignant un anniversaire d'embauche ce mois-ci.</CardDescription>
+                        </div>
+                        <Button variant="outline" size="icon" onClick={handlePrintAnniversaries} disabled={seniorityAnniversaries.length === 0}>
+                            <Printer className="h-4 w-4" />
+                            <span className="sr-only">Imprimer</span>
+                        </Button>
+                    </CardHeader>
+                    <CardContent>
+                        {loading ? <Skeleton className="h-24 w-full" /> : (
+                        <div className="space-y-4">
+                        {seniorityAnniversaries.length > 0 ? seniorityAnniversaries.map(emp => {
+                            const years = differenceInYears(new Date(), parseISO(emp.dateEmbauche!));
+                            return (
+                            <div key={emp.id} className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                <Avatar>
+                                    <AvatarImage src={emp.photoUrl} alt={emp.name} data-ai-hint="user avatar"/>
+                                    <AvatarFallback><Cake className="h-4 w-4" /></AvatarFallback>
+                                </Avatar>
+                                <div>
+                                    <p className="font-medium">{emp.name}</p>
+                                    <p className="text-sm text-muted-foreground">{emp.poste}</p>
+                                </div>
+                                </div>
+                                <span className="text-sm font-semibold text-primary">{years} an{years > 1 ? 's' : ''}</span>
+                            </div>
+                            )
+                        }) : <p className="text-sm text-muted-foreground text-center py-8">Aucun anniversaire ce mois-ci.</p>}
+                        </div>
+                        )}
+                    </CardContent>
+                    </Card>
+                </div>
+            </TabsContent>
+            <TabsContent value="analytics" className="space-y-4">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Analyses</CardTitle>
+                        <CardDescription>
+                            Cette section contiendra des analyses détaillées et des visualisations de données.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="flex flex-col items-center justify-center h-64 text-center border-2 border-dashed rounded-lg">
+                            <p className="mt-4 text-muted-foreground">Contenu des analyses à venir.</p>
+                        </div>
+                    </CardContent>
                 </Card>
-            </div>
-        </TabsContent>
-         <TabsContent value="analytics" className="space-y-4">
-            <Card>
-                <CardHeader>
-                    <CardTitle>Analyses</CardTitle>
-                    <CardDescription>
-                        Cette section contiendra des analyses détaillées et des visualisations de données.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <div className="flex flex-col items-center justify-center h-64 text-center border-2 border-dashed rounded-lg">
-                        <p className="mt-4 text-muted-foreground">Contenu des analyses à venir.</p>
-                    </div>
-                </CardContent>
-            </Card>
-        </TabsContent>
-        <TabsContent value="reports" className="space-y-4">
-            <EmployeeActivityReport />
-        </TabsContent>
-      </Tabs>
+            </TabsContent>
+            <TabsContent value="reports" className="space-y-4">
+                <EmployeeActivityReport />
+            </TabsContent>
+        </Tabs>
+        </div>
     </div>
+    {isPrintingAnniversaries && organizationLogos && (
+        <AnniversaryPrintLayout logos={organizationLogos} employees={seniorityAnniversaries} />
+    )}
+    </>
   );
+}
+
+function AnniversaryPrintLayout({ logos, employees }: { logos: OrganizationSettings, employees: Employe[] }) {
+    return (
+        <div id="print-section" className="bg-white text-black p-8 w-full print:shadow-none print:border-none print:p-0">
+            <header className="flex justify-between items-start mb-8">
+                <div className="text-center">
+                    <h2 className="font-bold">Chambre Nationale des Rois</h2>
+                    <h2 className="font-bold">et Chefs Traditionnels</h2>
+                    {logos.mainLogoUrl && <img src={logos.mainLogoUrl} alt="Logo CNRCT" width={80} height={80} className="mx-auto mt-2" />}
+                    <p className="font-bold mt-1 text-sm">UN CHEF NOUVEAU</p>
+                    <p className="text-xs mt-4">LE DIRECTOIRE</p>
+                    <p className="text-xs">LE CABINET / LE SERVICE INFORMATIQUE</p>
+                </div>
+                <div className="text-center">
+                    <h2 className="font-bold">République de Côte d'Ivoire</h2>
+                    {logos.secondaryLogoUrl && <img src={logos.secondaryLogoUrl} alt="Logo Cote d'Ivoire" width={80} height={80} className="mx-auto mt-2" />}
+                    <p className="mt-1">Union - Discipline - Travail</p>
+                </div>
+            </header>
+
+            <div className="text-center my-6">
+                <h1 className="text-lg font-bold underline">LISTE DES EMPLOYÉS ATTEIGNANT UN ANNIVERSAIRE D'ANCIENNETÉ</h1>
+                <h2 className="text-md font-bold mt-4">Mois de {new Date().toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}</h2>
+            </div>
+            
+            <table className="w-full text-sm border-collapse border border-black">
+                <thead>
+                    <tr className="bg-gray-200">
+                        <th className="border border-black p-2 text-left font-bold">N°</th>
+                        <th className="border border-black p-2 text-left font-bold">Nom & Prénoms</th>
+                        <th className="border border-black p-2 text-left font-bold">Poste</th>
+                        <th className="border border-black p-2 text-left font-bold">Date d'embauche</th>
+                        <th className="border border-black p-2 text-center font-bold">Ancienneté</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {employees.map((employee, index) => {
+                        const years = differenceInYears(new Date(), parseISO(employee.dateEmbauche!));
+                        return (
+                            <tr key={employee.id}>
+                                <td className="border border-black p-2 text-center">{index + 1}</td>
+                                <td className="border border-black p-2">{employee.name}</td>
+                                <td className="border border-black p-2">{employee.poste}</td>
+                                <td className="border border-black p-2">{employee.dateEmbauche}</td>
+                                <td className="border border-black p-2 text-center">{years} ans</td>
+                            </tr>
+                        )
+                    })}
+                </tbody>
+            </table>
+
+            <footer className="mt-8 text-xs">
+                <div className="flex justify-between items-end">
+                    <div></div>
+                    <div className="text-center">
+                        <p className="font-bold">Chambre Nationale de Rois et Chefs Traditionnels (CNRCT)</p>
+                        <p>Yamoussoukro, Riviera - BP 201 Yamoussoukro | Tél : (225) 30 64 06 60 | Fax : (+255) 30 64 06 63</p>
+                        <p>www.cnrct.ci - Email : info@cnrct.ci</p>
+                    </div>
+                    <div><p>1</p></div>
+                </div>
+            </footer>
+        </div>
+    );
 }

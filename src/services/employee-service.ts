@@ -110,4 +110,9 @@ export async function searchEmployees(query: string): Promise<Employe[]> {
     );
 }
 
+export async function deleteEmployee(employeeId: string): Promise<void> {
+    const employeeDocRef = doc(db, 'employees', employeeId);
+    await deleteDoc(employeeDocRef);
+}
+
 export { getOrganizationSettings };

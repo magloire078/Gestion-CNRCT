@@ -84,7 +84,7 @@ export default function AssetEditPage() {
         try {
             await updateAsset(tag, asset);
             toast({ title: "Succès", description: "Les informations de l'actif ont été mises à jour." });
-            router.push(`/it-assets`);
+            router.back();
         } catch (error) {
             console.error("Failed to save asset", error);
             toast({ variant: "destructive", title: "Erreur", description: "Impossible d'enregistrer les modifications." });

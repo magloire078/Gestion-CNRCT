@@ -106,7 +106,7 @@ export default function ChiefEditPage() {
         try {
             await updateChief(id, dataToSave, photoFile);
             toast({ title: "Succès", description: "Les informations du chef ont été mises à jour." });
-            router.push(`/chiefs/${id}`);
+            router.back();
         } catch (error) {
             console.error("Failed to save chief", error);
             toast({ variant: "destructive", title: "Erreur", description: "Impossible d'enregistrer les modifications." });

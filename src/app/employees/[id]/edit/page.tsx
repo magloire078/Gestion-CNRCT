@@ -135,7 +135,7 @@ export default function EmployeeEditPage() {
             };
             await updateEmployee(id, updatedData, photoFile);
             toast({ title: "Succès", description: "Les informations de l'employé ont été mises à jour." });
-            router.push(`/employees/${id}`);
+            router.back();
         } catch (error) {
             console.error("Failed to save employee", error);
             toast({ variant: "destructive", title: "Erreur", description: "Impossible d'enregistrer les modifications." });

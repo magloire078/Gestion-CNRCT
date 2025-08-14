@@ -54,6 +54,7 @@ export default function EvaluationDetailPage() {
             const { strengths, areasForImprovement, managerComments } = evaluation;
             await updateEvaluation(id, { strengths, areasForImprovement, managerComments });
             toast({ title: "Succès", description: "L'évaluation a été mise à jour." });
+            router.back();
         } catch (error) {
             console.error("Failed to save evaluation", error);
             toast({ variant: "destructive", title: "Erreur", description: "Impossible d'enregistrer les modifications." });

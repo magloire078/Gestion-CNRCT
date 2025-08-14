@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -14,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Pencil, User, Briefcase, Mail, Phone, MapPin, BadgeCheck, FileText, Calendar, Laptop, Rocket, FolderArchive, LogOut } from "lucide-react";
+import { ArrowLeft, Pencil, User, Briefcase, Mail, Phone, MapPin, BadgeCheck, FileText, Calendar, Laptop, Rocket, FolderArchive, LogOut, Globe } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
@@ -214,6 +215,13 @@ export default function EmployeeDetailPage() {
                         <CardContent className="space-y-4">
                             <InfoItem label="Date de naissance" value={employee.Date_Naissance} icon={Calendar} />
                             <InfoItem label="Lieu de naissance" value={employee.Lieu_Naissance} icon={MapPin} />
+                            <InfoItem label="Localisation" icon={Globe}>
+                                {employee.Region || employee.Village ? (
+                                    <p className="text-base font-medium mt-1">{employee.Region}{employee.Village ? `, ${employee.Village}` : ''}</p>
+                                ) : (
+                                    <p className="text-muted-foreground text-sm font-normal">Non spécifiée</p>
+                                )}
+                            </InfoItem>
                             {retirementDate && <InfoItem label="Date de retraite estimée" value={retirementDate} icon={LogOut}/>}
                              <InfoItem label="Compétences" icon={BadgeCheck}>
                                 {employee.skills && employee.skills.length > 0 ? (

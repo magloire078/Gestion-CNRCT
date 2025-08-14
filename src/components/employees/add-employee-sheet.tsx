@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useRef, useEffect, useMemo } from "react";
@@ -68,6 +69,9 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
   const [skills, setSkills] = useState("");
   const [dateDepart, setDateDepart] = useState("");
   
+  const [region, setRegion] = useState("");
+  const [village, setVillage] = useState("");
+
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -136,6 +140,8 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
     setAvatarPrompt("");
     setGeneratedAvatar(null);
     setDateDepart("");
+    setRegion("");
+    setVillage("");
     if(fileInputRef.current) {
         fileInputRef.current.value = "";
     }
@@ -208,7 +214,7 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
     setError("");
     try {
       const skillsArray = skills.split(',').map(s => s.trim()).filter(s => s);
-      const employeeData = { 
+      const employeeData: Omit<Employe, "id"> = { 
           matricule, 
           firstName, 
           lastName, 
@@ -222,6 +228,8 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
           skills: skillsArray,
           sexe: sexe as Employe['sexe'],
           Date_Depart: dateDepart || undefined,
+          Region: region || undefined,
+          Village: village || undefined,
           photoUrl: '', // This will be set by the service after upload
       };
       await onAddEmployee(employeeData, photoFile);
@@ -268,6 +276,9 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
             <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="direction" className="text-right">Direction</Label><Select value={direction} onValueChange={(value) => { setDirection(value); setService(''); }} disabled={!department}><SelectTrigger className="col-span-3"><SelectValue placeholder="Sélectionnez..." /></SelectTrigger><SelectContent>{filteredDirections.map(dir => (<SelectItem key={dir.id} value={dir.name}>{dir.name}</SelectItem>))}</SelectContent></Select></div>
             <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="service" className="text-right">Service</Label><Select value={service} onValueChange={setService} disabled={!department || filteredServices.length === 0}><SelectTrigger className="col-span-3"><SelectValue placeholder="Sélectionnez..." /></SelectTrigger><SelectContent>{filteredServices.map(svc => (<SelectItem key={svc.id} value={svc.name}>{svc.name}</SelectItem>))}</SelectContent></Select></div>
 
+            <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="region" className="text-right">Région</Label><Input id="region" value={region} onChange={(e) => setRegion(e.target.value)} className="col-span-3" /></div>
+            <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="village" className="text-right">Village</Label><Input id="village" value={village} onChange={(e) => setVillage(e.target.value)} className="col-span-3" /></div>
+            
             <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="status" className="text-right">Statut</Label><Select value={status} onValueChange={(value: Employe['status']) => setStatus(value)} required><SelectTrigger className="col-span-3"><SelectValue placeholder="Sélectionnez un statut" /></SelectTrigger><SelectContent><SelectItem value="Actif">Actif</SelectItem><SelectItem value="En congé">En congé</SelectItem><SelectItem value="Licencié">Licencié</SelectItem><SelectItem value="Retraité">Retraité</SelectItem><SelectItem value="Décédé">Décédé</SelectItem></SelectContent></Select></div>
              <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="dateDepart" className="text-right">Date de Départ</Label><Input id="dateDepart" type="date" value={dateDepart} onChange={(e) => setDateDepart(e.target.value)} className="col-span-3" /></div>
             <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="sexe" className="text-right">Sexe</Label><Select value={sexe} onValueChange={(value: Employe['sexe']) => setSexe(value)}><SelectTrigger className="col-span-3"><SelectValue placeholder="Sélectionnez un sexe" /></SelectTrigger><SelectContent><SelectItem value="Homme">Homme</SelectItem><SelectItem value="Femme">Femme</SelectItem><SelectItem value="Autre">Autre</SelectItem></SelectContent></Select></div>

@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect, useRef, useMemo } from "react";
@@ -17,7 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Loader2, User, Briefcase, BadgeCheck, Save, Upload } from "lucide-react";
+import { ArrowLeft, Loader2, User, Briefcase, BadgeCheck, Save, Upload, MapPin } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -295,6 +296,24 @@ export default function EmployeeEditPage() {
                          <div className="space-y-2">
                             <Label htmlFor="Date_Depart">Date de départ</Label>
                             <Input id="Date_Depart" name="Date_Depart" type="date" value={employee.Date_Depart || ''} onChange={handleInputChange} />
+                        </div>
+                    </CardContent>
+                </Card>
+
+                 {/* Location Info for Board/Regional members */}
+                <Card className="lg:col-span-3">
+                     <CardHeader>
+                        <CardTitle className="flex items-center gap-2"><MapPin className="h-5 w-5 text-primary"/> Informations de Localisation</CardTitle>
+                        <CardDescription>Pertinent pour les membres du directoire et des comités régionaux.</CardDescription>
+                    </CardHeader>
+                     <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="Region">Région</Label>
+                            <Input id="Region" name="Region" value={employee.Region || ''} onChange={handleInputChange} />
+                        </div>
+                         <div className="space-y-2">
+                            <Label htmlFor="Village">Village</Label>
+                            <Input id="Village" name="Village" value={employee.Village || ''} onChange={handleInputChange} />
                         </div>
                     </CardContent>
                 </Card>

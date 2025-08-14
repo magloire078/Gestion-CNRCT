@@ -45,7 +45,7 @@ export async function getChief(id: string): Promise<Chief | null> {
     return null;
 }
 
-export async function addChief(chiefData: Omit<Chief, 'id'>, photoFile: File | null): Promise<Chief> {
+export async function addChief(chiefData: Omit<Chief, "id">, photoFile: File | null): Promise<Chief> {
     let photoUrl = 'https://placehold.co/100x100.png';
     const docRef = doc(collection(db, "chiefs"));
 
@@ -102,6 +102,13 @@ export async function updateChief(id: string, chiefData: Partial<Omit<Chief, 'id
      if (updateData.longitude !== undefined) {
         updateData.longitude = Number(updateData.longitude);
     }
+
+    // Remove any keys with undefined values before sending to Firestore
+    Object.keys(updateData).forEach(key => {
+        if (updateData[key as keyof typeof updateData] === undefined) {
+            delete updateData[key as keyof typeof updateData];
+        }
+    });
 
     await updateDoc(chiefDocRef, updateData);
 }

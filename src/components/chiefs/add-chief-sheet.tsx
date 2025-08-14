@@ -132,25 +132,31 @@ export function AddChiefSheet({ isOpen, onClose, onAddChief }: AddChiefSheetProp
     setIsSubmitting(true);
     setError("");
     try {
-      const chiefData = { 
-          name: `${firstName} ${lastName}`.trim(),
-          firstName,
-          lastName,
-          title, role, sexe: sexe as Chief['sexe'],
-          region: finalRegion, 
-          department: finalDepartment,
-          subPrefecture: finalSubPrefecture,
-          village: finalVillage,
-          contact, bio, parentChiefId,
-          photoUrl: '', // This will be set by the service after upload
-          latitude: latitude !== '' ? Number(latitude) : undefined,
-          longitude: longitude !== '' ? Number(longitude) : undefined,
-          dateOfBirth: dateOfBirth || undefined,
-          regencyStartDate: regencyStartDate || undefined,
-          regencyEndDate: regencyEndDate || undefined,
+        const chiefData: Omit<Chief, "id"> = {
+            name: `${firstName} ${lastName}`.trim(),
+            firstName,
+            lastName,
+            title,
+            role,
+            sexe: sexe as Chief['sexe'],
+            region: finalRegion,
+            department: finalDepartment,
+            subPrefecture: finalSubPrefecture,
+            village: finalVillage,
+            contact,
+            bio,
+            photoUrl: '', // This will be set by the service after upload
         };
-      await onAddChief(chiefData, photoFile);
-      handleClose();
+
+        if (parentChiefId) chiefData.parentChiefId = parentChiefId;
+        if (latitude !== '') chiefData.latitude = Number(latitude);
+        if (longitude !== '') chiefData.longitude = Number(longitude);
+        if (dateOfBirth) chiefData.dateOfBirth = dateOfBirth;
+        if (regencyStartDate) chiefData.regencyStartDate = regencyStartDate;
+        if (regencyEndDate) chiefData.regencyEndDate = regencyEndDate;
+
+        await onAddChief(chiefData, photoFile);
+        handleClose();
     } catch(err) {
       setError(err instanceof Error ? err.message : "Échec de l'ajout du chef.");
       console.error(err);

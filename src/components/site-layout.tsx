@@ -27,6 +27,8 @@ import {
   Crown,
   Map as MapIcon,
   ClipboardCheck,
+  Building,
+  Globe,
 } from "lucide-react";
 
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
@@ -52,6 +54,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/
 const allMenuItems = [
   { href: "/", label: "Tableau de Bord", icon: LayoutDashboard, permission: "page:dashboard:view" },
   { href: "/employees", label: "Employés", icon: Users, permission: "page:employees:view" },
+  { href: "/employees?filter=directoire", label: "Membres du directoire", icon: Building, permission: "page:board-members:view" },
+  { href: "/employees?filter=regional", label: "Comités régionaux", icon: Globe, permission: "page:regional-committees:view" },
   { href: "/chiefs", label: "Rois & Chefs", icon: Crown, permission: "page:chiefs:view" },
   { href: "/mapping", label: "Cartographie", icon: MapIcon, permission: "page:mapping:view" },
   { href: "/payroll", label: "Paie", icon: Landmark, permission: "page:payroll:view" },

@@ -4,7 +4,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useSearchParams } from 'next/navigation';
 import Link from "next/link";
-import { PlusCircle, Search, Download, Printer, Eye, Pencil, Trash2, MoreHorizontal, ShieldCheck } from "lucide-react";
+import { PlusCircle, Search, Download, Printer, Eye, Pencil, Trash2, MoreHorizontal, ShieldCheck, Globe, Building } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -62,6 +62,7 @@ export default function EmployeesPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [cnpsFilter, setCnpsFilter] = useState<boolean | 'all'>('all');
   const [sexeFilter, setSexeFilter] = useState('all');
+  const [isRegionalFilter, setIsRegionalFilter] = useState(false);
 
   const [columnsToPrint, setColumnsToPrint] = useState<ColumnKeys[]>(Object.keys(allColumns) as ColumnKeys[]);
   const [organizationLogos, setOrganizationLogos] = useState({ mainLogoUrl: '', secondaryLogoUrl: '' });
@@ -80,6 +81,9 @@ export default function EmployeesPage() {
           break;
         case 'directoire':
           setDepartmentFilter('Directoire');
+          break;
+        case 'regional':
+          setIsRegionalFilter(true);
           break;
         case 'sexe':
            // This case can be left as-is, maybe default to showing Homme or just open the filter.
@@ -160,9 +164,10 @@ export default function EmployeesPage() {
       const matchesStatus = statusFilter === 'all' || employee.status === statusFilter;
       const matchesCnps = cnpsFilter === 'all' || employee.CNPS === cnpsFilter;
       const matchesSexe = sexeFilter === 'all' || employee.sexe === sexeFilter;
-      return matchesSearchTerm && matchesDepartment && matchesStatus && matchesCnps && matchesSexe;
+      const matchesRegional = !isRegionalFilter || !!employee.Region;
+      return matchesSearchTerm && matchesDepartment && matchesStatus && matchesCnps && matchesSexe && matchesRegional;
     });
-  }, [employees, searchTerm, departmentFilter, statusFilter, cnpsFilter, sexeFilter]);
+  }, [employees, searchTerm, departmentFilter, statusFilter, cnpsFilter, sexeFilter, isRegionalFilter]);
   
   const downloadFile = (content: string, fileName: string, contentType: string) => {
       const blob = new Blob([content], { type: contentType });
@@ -309,7 +314,7 @@ export default function EmployeesPage() {
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                         </div>
-                        <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
+                        <Select value={departmentFilter} onValueChange={setDepartmentFilter} disabled={isRegionalFilter}>
                         <SelectTrigger className="flex-1 min-w-[180px]">
                             <SelectValue placeholder="Filtrer par service" />
                         </SelectTrigger>

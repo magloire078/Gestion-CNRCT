@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/card';
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, FileWarning, Laptop, Car, Download, ShieldCheck, User as UserIcon, Building, Cake, Printer, Crown, LogOut as LogOutIcon } from 'lucide-react';
+import { Users, FileWarning, Laptop, Car, Download, ShieldCheck, User as UserIcon, Building, Cake, Printer, Crown, LogOut as LogOutIcon, Globe } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { EmployeeDistributionChart } from '@/components/charts/employee-distribution-chart';
 import { AssetStatusChart } from '@/components/charts/asset-status-chart';
@@ -110,6 +110,7 @@ export default function DashboardPage() {
         // Anniversaries
         const month = parseInt(selectedAnniversaryMonth);
         const year = parseInt(selectedAnniversaryYear);
+        const referenceDate = new Date(year, month);
 
         const anniversaries = employees.filter(emp => {
             if (!emp.dateEmbauche || emp.CNPS !== true) return false;
@@ -117,9 +118,9 @@ export default function DashboardPage() {
                 const hireDate = parseISO(emp.dateEmbauche);
                 const hireMonth = hireDate.getMonth();
                 const isAnniversaryMonth = hireMonth === month;
-                const yearsOfService = year - hireDate.getFullYear();
+                const yearsOfService = differenceInYears(referenceDate, hireDate);
                 
-                if (yearsOfService <= 0) return false;
+                if (yearsOfService < 2) return false;
 
                 return isAnniversaryMonth;
 
@@ -154,13 +155,19 @@ export default function DashboardPage() {
     }, [employees, selectedAnniversaryMonth, selectedAnniversaryYear, selectedRetirementYear]);
     
     useEffect(() => {
-        if (isPrintingAnniversaries || isPrintingRetirements) {
-            setTimeout(() => {
-                window.print();
-                setIsPrintingAnniversaries(false);
-                setIsPrintingRetirements(false);
-            }, 500);
-        }
+      if (isPrintingAnniversaries) {
+          document.body.classList.add('print-landscape');
+      } else {
+          document.body.classList.remove('print-landscape');
+      }
+
+      if (isPrintingAnniversaries || isPrintingRetirements) {
+          setTimeout(() => {
+              window.print();
+              setIsPrintingAnniversaries(false);
+              setIsPrintingRetirements(false);
+          }, 500);
+      }
     }, [isPrintingAnniversaries, isPrintingRetirements]);
 
     const handlePrintAnniversaries = async () => {

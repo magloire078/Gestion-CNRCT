@@ -17,9 +17,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Upload, Loader2, Save, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from "@/components/ui/separator";
-import { getOrganizationSettings, saveOrganizationName, uploadOrganizationFile, type UploadTaskController } from "@/services/organization-service";
+import { getOrganizationSettings, saveOrganizationName, uploadOrganizationFile } from "@/services/organization-service";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Progress } from "@/components/ui/progress";
 import type { OrganizationSettings } from "@/lib/data";
 
 export default function OrganizationSettingsPage() {
@@ -43,16 +42,10 @@ export default function OrganizationSettingsPage() {
   
   const [loading, setLoading] = useState(true);
   const [isSavingName, setIsSavingName] = useState(false);
+  const [isSavingMainLogo, setIsSavingMainLogo] = useState(false);
+  const [isSavingSecondaryLogo, setIsSavingSecondaryLogo] = useState(false);
+  const [isSavingFavicon, setIsSavingFavicon] = useState(false);
   
-  const [mainLogoProgress, setMainLogoProgress] = useState<number | null>(null);
-  const [secondaryLogoProgress, setSecondaryLogoProgress] = useState<number | null>(null);
-  const [faviconProgress, setFaviconProgress] = useState<number | null>(null);
-
-  const [mainLogoController, setMainLogoController] = useState<UploadTaskController | null>(null);
-  const [secondaryLogoController, setSecondaryLogoController] = useState<UploadTaskController | null>(null);
-  const [faviconController, setFaviconController] = useState<UploadTaskController | null>(null);
-
-
   const mainLogoInputRef = useRef<HTMLInputElement>(null);
   const secondaryLogoInputRef = useRef<HTMLInputElement>(null);
   const faviconInputRef = useRef<HTMLInputElement>(null);
@@ -127,85 +120,61 @@ export default function OrganizationSettingsPage() {
   
   const handleSaveFile = async (fileType: 'main' | 'secondary' | 'favicon') => {
       let file: File | null = null;
-      let setProgress: React.Dispatch<React.SetStateAction<number | null>> = () => {};
-      let setController: React.Dispatch<React.SetStateAction<UploadTaskController | null>> = () => {};
-      let setHasChanged: React.Dispatch<React.SetStateAction<boolean>> = () => {};
-      let setFileState: React.Dispatch<React.SetStateAction<File | null>> = () => {};
-      let setPreviewState: React.Dispatch<React.SetStateAction<string>> = () => {};
-
+      let setIsSaving: React.Dispatch<React.SetStateAction<boolean>>;
+      let setHasChanged: React.Dispatch<React.SetStateAction<boolean>>;
+      
       switch(fileType) {
         case 'main':
           file = mainLogoFile;
-          setProgress = setMainLogoProgress;
-          setController = setMainLogoController;
+          setIsSaving = setIsSavingMainLogo;
           setHasChanged = setHasMainLogoChanged;
-          setFileState = setMainLogoFile;
-          setPreviewState = setMainLogoPreview;
           break;
         case 'secondary':
           file = secondaryLogoFile;
-          setProgress = setSecondaryLogoProgress;
-          setController = setSecondaryLogoController;
+          setIsSaving = setIsSavingSecondaryLogo;
           setHasChanged = setHasSecondaryLogoChanged;
-          setFileState = setSecondaryLogoFile;
-          setPreviewState = setSecondaryLogoPreview;
           break;
         case 'favicon':
           file = faviconFile;
-          setProgress = setFaviconProgress;
-          setController = setFaviconController;
+          setIsSaving = setIsSavingFavicon;
           setHasChanged = setHasFaviconChanged;
-          setFileState = setFaviconFile;
-          setPreviewState = setFaviconPreview;
           break;
       }
       
       if (!file) return;
 
-      setProgress(0);
+      setIsSaving(true);
 
       try {
-          const newUrl = await uploadOrganizationFile(
-              fileType,
-              file,
-              (p) => setProgress(p), 
-              (c) => setController(c)
-          );
+          const newUrl = await uploadOrganizationFile(fileType, file);
           
           setSettings(prev => ({...prev!, [`${fileType}LogoUrl`]: newUrl}));
-          setPreviewState(newUrl);
+          if (fileType === 'main') setMainLogoPreview(newUrl || mainLogoPreview);
+          if (fileType === 'secondary') setSecondaryLogoPreview(newUrl || secondaryLogoPreview);
+          if (fileType === 'favicon') setFaviconPreview(newUrl || faviconPreview);
+
           setHasChanged(false);
-          setFileState(null);
+          if (fileType === 'main') setMainLogoFile(null);
+          if (fileType === 'secondary') setSecondaryLogoFile(null);
+          if (fileType === 'favicon') setFaviconFile(null);
 
           toast({
             title: "Sauvegarde réussie",
             description: `Le ${fileType === 'favicon' ? 'favicon' : 'logo'} a été mis à jour.`,
           });
-           if(fileType === 'favicon') window.location.reload();
+           if(fileType === 'favicon' || fileType === 'main') window.location.reload();
 
       } catch (error: any) {
-          if (error.code !== 'storage/canceled') {
-              toast({
-                  variant: "destructive",
-                  title: "Erreur de sauvegarde",
-                  description: "Une erreur est survenue lors du téléversement ou du traitement de l'image.",
-              });
-              console.error(error);
-          } else {
-            toast({ title: 'Téléversement annulé' });
-          }
+          toast({
+              variant: "destructive",
+              title: "Erreur de sauvegarde",
+              description: "Une erreur est survenue lors du téléversement ou du traitement de l'image.",
+          });
+          console.error(error);
       } finally {
-         setProgress(null);
-         setController(null);
+         setIsSaving(false);
       }
   };
-
-  const handleCancelUpload = (controller: UploadTaskController | null) => {
-    if (controller) {
-        controller.cancel();
-    }
-  }
-
 
   return (
     <div className="flex flex-col gap-6 max-w-2xl mx-auto">
@@ -281,27 +250,15 @@ export default function OrganizationSettingsPage() {
                         accept="image/png, image/jpeg, image/svg+xml"
                         onChange={(e) => handleFileChange(e, setMainLogoPreview, setMainLogoFile, setHasMainLogoChanged)}
                       />
-                      {mainLogoProgress !== null && (
-                        <div className="mt-2 space-y-1">
-                            <Label className="text-xs">Téléversement...</Label>
-                             <div className="flex items-center gap-2">
-                                <Progress value={mainLogoProgress} className="h-2 flex-1" />
-                                <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleCancelUpload(mainLogoController)}>
-                                    <X className="h-4 w-4" />
-                                    <span className="sr-only">Annuler</span>
-                                </Button>
-                             </div>
-                        </div>
-                      )}
                   </div>
                 </div>
                 <div className="flex justify-end">
                     <Button 
                         type="button" 
                         onClick={() => handleSaveFile('main')} 
-                        disabled={mainLogoProgress !== null || !hasMainLogoChanged}
+                        disabled={isSavingMainLogo || !hasMainLogoChanged}
                     >
-                        {mainLogoProgress !== null ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                        {isSavingMainLogo ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                         Enregistrer
                     </Button>
                 </div>
@@ -331,27 +288,15 @@ export default function OrganizationSettingsPage() {
                         accept="image/png, image/jpeg, image/svg+xml"
                         onChange={(e) => handleFileChange(e, setSecondaryLogoPreview, setSecondaryLogoFile, setHasSecondaryLogoChanged)}
                       />
-                       {secondaryLogoProgress !== null && (
-                        <div className="mt-2 space-y-1">
-                            <Label className="text-xs">Téléversement...</Label>
-                             <div className="flex items-center gap-2">
-                                <Progress value={secondaryLogoProgress} className="h-2 flex-1" />
-                                <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleCancelUpload(secondaryLogoController)}>
-                                    <X className="h-4 w-4" />
-                                    <span className="sr-only">Annuler</span>
-                                </Button>
-                             </div>
-                        </div>
-                      )}
                   </div>
                 </div>
                  <div className="flex justify-end">
                     <Button 
                         type="button" 
                         onClick={() => handleSaveFile('secondary')} 
-                        disabled={secondaryLogoProgress !== null || !hasSecondaryLogoChanged}
+                        disabled={isSavingSecondaryLogo || !hasSecondaryLogoChanged}
                     >
-                        {secondaryLogoProgress !== null ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                        {isSavingSecondaryLogo ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                         Enregistrer
                     </Button>
                  </div>
@@ -381,27 +326,15 @@ export default function OrganizationSettingsPage() {
                         accept="image/x-icon, image/png, image/svg+xml"
                         onChange={(e) => handleFileChange(e, setFaviconPreview, setFaviconFile, setHasFaviconChanged)}
                       />
-                       {faviconProgress !== null && (
-                        <div className="mt-2 space-y-1">
-                            <Label className="text-xs">Téléversement...</Label>
-                             <div className="flex items-center gap-2">
-                                <Progress value={faviconProgress} className="h-2 flex-1" />
-                                <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleCancelUpload(faviconController)}>
-                                    <X className="h-4 w-4" />
-                                    <span className="sr-only">Annuler</span>
-                                </Button>
-                             </div>
-                        </div>
-                      )}
                   </div>
                 </div>
                  <div className="flex justify-end">
                     <Button 
                         type="button" 
                         onClick={() => handleSaveFile('favicon')} 
-                        disabled={faviconProgress !== null || !hasFaviconChanged}
+                        disabled={isSavingFavicon || !hasFaviconChanged}
                     >
-                        {faviconProgress !== null ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                        {isSavingFavicon ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                         Enregistrer
                     </Button>
                  </div>

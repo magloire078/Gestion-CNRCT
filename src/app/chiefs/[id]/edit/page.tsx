@@ -58,14 +58,25 @@ export default function ChiefEditPage() {
     }, [id, toast]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        const { name, value, type } = e.target;
-        setChief(prev => (prev ? { ...prev, [name]: type === 'number' ? (value === '' ? '' : parseFloat(value)) : value } : null));
+        const { name, value } = e.target;
+        setChief(prev => {
+            if (!prev) return null;
+            return { ...prev, [name]: value };
+        });
+    };
+    
+    const handleNumberInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setChief(prev => {
+            if (!prev) return null;
+            return { ...prev, [name]: value === '' ? undefined : parseFloat(value) };
+        });
     };
 
     const handleSelectChange = (name: string, value: string) => {
         setChief(prev => {
             if (!prev) return null;
-            const newState = { ...prev, [name]: value };
+            const newState: Partial<Chief> = { ...prev, [name]: value };
             if (name === 'region') { newState.department = ''; newState.subPrefecture = ''; newState.village = ''; }
             if (name === 'department') { newState.subPrefecture = ''; newState.village = ''; }
             if (name === 'subPrefecture') { newState.village = ''; }
@@ -89,10 +100,8 @@ export default function ChiefEditPage() {
         if (!chief || typeof id !== 'string') return;
         setIsSaving(true);
 
-        const dataToSave: Partial<Chief> = { ...chief };
-        if (dataToSave.latitude === '') delete dataToSave.latitude;
-        if (dataToSave.longitude === '') delete dataToSave.longitude;
-        
+        const { id: chiefId, ...dataToSave } = chief;
+
         try {
             await updateChief(id, dataToSave, photoFile);
             toast({ title: "Succès", description: "Les informations du chef ont été mises à jour." });
@@ -223,11 +232,11 @@ export default function ChiefEditPage() {
                     </div>
                      <div className="space-y-2">
                         <Label htmlFor="latitude">Latitude</Label>
-                        <Input id="latitude" name="latitude" type="number" step="any" value={chief.latitude || ''} onChange={handleInputChange} />
+                        <Input id="latitude" name="latitude" type="number" step="any" value={chief.latitude ?? ''} onChange={handleNumberInputChange} />
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="longitude">Longitude</Label>
-                        <Input id="longitude" name="longitude" type="number" step="any" value={chief.longitude || ''} onChange={handleInputChange} />
+                        <Input id="longitude" name="longitude" type="number" step="any" value={chief.longitude ?? ''} onChange={handleNumberInputChange} />
                     </div>
                 </CardContent>
             </Card>

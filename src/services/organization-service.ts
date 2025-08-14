@@ -41,10 +41,11 @@ export async function saveOrganizationName(name: string): Promise<void> {
 
 export async function uploadOrganizationFile(
     fileType: 'main' | 'secondary' | 'favicon',
-    file: File,
-    onProgress: (progress: number) => void,
-    onControllerReady: (controller: UploadTaskController) => void
-): Promise<string> {
+    file: File | null
+): Promise<string | undefined> {
+    if (!file) {
+        return undefined;
+    }
 
     const logoName = `${fileType}_${new Date().getTime()}_${file.name}`;
     const logoRef = ref(storage, `organization/${logoName}`);
@@ -63,28 +64,11 @@ export async function uploadOrganizationFile(
         }
     }
     
-    const uploadTask = uploadBytesResumable(logoRef, fileToUpload);
+    const snapshot = await uploadBytes(logoRef, fileToUpload);
+    const downloadUrl = await getDownloadURL(snapshot.ref);
 
-    onControllerReady({ cancel: () => uploadTask.cancel() });
+    const fieldToUpdate = fileType === 'main' ? 'mainLogoUrl' : (fileType === 'secondary' ? 'secondaryLogoUrl' : 'faviconUrl');
+    await setDoc(settingsDocRef, { [fieldToUpdate]: downloadUrl }, { merge: true });
     
-    return new Promise((resolve, reject) => {
-        uploadTask.on('state_changed',
-            (snapshot) => {
-                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                onProgress(progress);
-            },
-            (error) => {
-                if (error.code !== 'storage/canceled') {
-                    console.error(`Upload failed for ${logoName}:`, error);
-                }
-                reject(error);
-            },
-            async () => {
-                const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
-                const fieldToUpdate = fileType === 'main' ? 'mainLogoUrl' : (fileType === 'secondary' ? 'secondaryLogoUrl' : 'faviconUrl');
-                await setDoc(settingsDocRef, { [fieldToUpdate]: downloadUrl }, { merge: true });
-                resolve(downloadUrl);
-            }
-        );
-    });
+    return downloadUrl;
 }

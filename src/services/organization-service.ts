@@ -1,6 +1,6 @@
 
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { getStorage, ref, getDownloadURL, uploadBytesResumable, type UploadTask } from "firebase/storage";
+import { getStorage, ref, getDownloadURL, uploadBytes, type UploadTask } from "firebase/storage";
 import { db, storage } from '@/lib/firebase';
 import type { OrganizationSettings } from '@/lib/data';
 import { processLogo } from '@/ai/flows/process-logo-flow';

@@ -366,14 +366,6 @@ export const divisions: Division = {
       "Zouan-Hounien": ["Zouan-Hounien", "Banneu", "Bin-Houyé", "Goulaleu", "Téapleu", "Yelleu"]
     }
   },
-  "Tchologo": {
-    "Ferkessédougou": {
-      "Ferkessédougou": ["Ferkessédougou", "Koumbala", "Niafana", "Ouara"]
-    },
-    "Ouangolodougou": {
-      "Ouangolodougou": ["Ouangolodougou", "Diawala", "Kaouara", "Nielé", "Toumoukoro"]
-    }
-  },
   "Worodougou": {
     "Kani": {
       "Kani": ["Kani", "Djibrosso", "Fadiadougou", "Morondo"]

@@ -118,8 +118,8 @@ export default function DashboardPage() {
                 const hireDate = parseISO(emp.dateEmbauche);
                 const hireMonth = hireDate.getMonth();
                 const isAnniversaryMonth = hireMonth === month;
-                const yearsOfService = differenceInYears(referenceDate, hireDate);
                 
+                const yearsOfService = differenceInYears(referenceDate, hireDate);
                 if (yearsOfService < 2) return false;
 
                 return isAnniversaryMonth;
@@ -235,7 +235,7 @@ export default function DashboardPage() {
                         description={getGenderBreakdown(cnpsEmployees)}
                     />
                     <StatCard 
-                        title="Rois & Chefs"
+                        title="Rois &amp; Chefs"
                         value={chiefs.length}
                         icon={Crown}
                         href="/chiefs"

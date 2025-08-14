@@ -49,16 +49,16 @@ export async function getEmployee(id: string): Promise<Employe | null> {
 }
 
 export async function addEmployee(employeeData: Omit<Employe, 'id'>, photoFile: File | null): Promise<Employe> {
-    let finalPhotoUrl = 'https://placehold.co/100x100.png';
+    let photoUrl = 'https://placehold.co/100x100.png';
     const docRef = doc(collection(db, "employees"));
 
     if (photoFile) {
         const photoRef = ref(storage, `employee_photos/${docRef.id}/${photoFile.name}`);
         const snapshot = await uploadBytes(photoRef, photoFile);
-        finalPhotoUrl = await getDownloadURL(snapshot.ref);
+        photoUrl = await getDownloadURL(snapshot.ref);
     }
     
-    const finalEmployeeData = { ...employeeData, photoUrl: finalPhotoUrl };
+    const finalEmployeeData = { ...employeeData, photoUrl };
     await setDoc(docRef, finalEmployeeData);
     
     return { id: docRef.id, ...finalEmployeeData };
@@ -67,13 +67,16 @@ export async function addEmployee(employeeData: Omit<Employe, 'id'>, photoFile: 
 
 export async function batchAddEmployees(employees: Omit<Employe, 'id'>[]): Promise<number> {
     const batch = writeBatch(db);
-    const existingMatriculesQuery = query(employeesCollection, where('matricule', 'in', employees.map(e => e.matricule)));
+    const matricules = employees.map(e => e.matricule).filter(Boolean);
+    if (matricules.length === 0) return 0;
+    
+    const existingMatriculesQuery = query(employeesCollection, where('matricule', 'in', matricules));
     const existingSnapshot = await getDocs(existingMatriculesQuery);
     const existingMatricules = new Set(existingSnapshot.docs.map(d => d.data().matricule));
 
     let addedCount = 0;
     employees.forEach(employee => {
-        if (!existingMatricules.has(employee.matricule)) {
+        if (employee.matricule && !existingMatricules.has(employee.matricule)) {
             const newDocRef = doc(employeesCollection); // Auto-generate ID
             batch.set(newDocRef, employee);
             addedCount++;

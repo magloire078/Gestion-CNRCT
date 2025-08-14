@@ -100,7 +100,8 @@ export default function ChiefEditPage() {
         if (!chief || typeof id !== 'string') return;
         setIsSaving(true);
 
-        const { id: chiefId, ...dataToSave } = chief;
+        const fullName = `${chief.firstName || ''} ${chief.lastName || ''}`.trim();
+        const dataToSave = { ...chief, name: fullName };
 
         try {
             await updateChief(id, dataToSave, photoFile);
@@ -113,6 +114,8 @@ export default function ChiefEditPage() {
             setIsSaving(false);
         }
     };
+    
+    const fullName = chief ? `${chief.firstName || ''} ${chief.lastName || ''}`.trim() : "Chargement...";
 
     if (loading) {
         return <p>Chargement...</p>; // Replace with a proper skeleton loader
@@ -131,7 +134,7 @@ export default function ChiefEditPage() {
                  </Button>
                  <div>
                     <h1 className="text-2xl font-bold tracking-tight">Modifier le Profil du Chef</h1>
-                    <p className="text-muted-foreground">{chief.name}</p>
+                    <p className="text-muted-foreground">{fullName}</p>
                  </div>
                  <Button onClick={handleSave} disabled={isSaving} className="ml-auto">
                     {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4" />}
@@ -147,7 +150,7 @@ export default function ChiefEditPage() {
                         <div className="flex items-center gap-4">
                              <Avatar className="h-20 w-20">
                                 <AvatarImage src={photoPreview} alt={chief.name} data-ai-hint="chief portrait" />
-                                <AvatarFallback>{chief.name?.charAt(0) || 'C'}</AvatarFallback>
+                                <AvatarFallback>{chief.lastName?.charAt(0) || 'C'}</AvatarFallback>
                              </Avatar>
                              <Button type="button" variant="outline" onClick={() => photoInputRef.current?.click()}>
                                 <Upload className="mr-2 h-4 w-4" /> Changer
@@ -157,8 +160,12 @@ export default function ChiefEditPage() {
                     </div>
                     <div />
                     <div className="space-y-2">
-                        <Label htmlFor="name">Nom Complet</Label>
-                        <Input id="name" name="name" value={chief.name || ''} onChange={handleInputChange} />
+                        <Label htmlFor="lastName">Nom</Label>
+                        <Input id="lastName" name="lastName" value={chief.lastName || ''} onChange={handleInputChange} />
+                    </div>
+                     <div className="space-y-2">
+                        <Label htmlFor="firstName">Prénom(s)</Label>
+                        <Input id="firstName" name="firstName" value={chief.firstName || ''} onChange={handleInputChange} />
                     </div>
                      <div className="space-y-2">
                         <Label htmlFor="title">Titre</Label>

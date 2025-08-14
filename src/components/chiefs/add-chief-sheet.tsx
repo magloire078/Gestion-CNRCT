@@ -35,7 +35,8 @@ interface AddChiefSheetProps {
 }
 
 export function AddChiefSheet({ isOpen, onClose, onAddChief }: AddChiefSheetProps) {
-  const [name, setName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [title, setTitle] = useState("");
   const [role, setRole] = useState<ChiefRole>("Chef de Village");
   const [sexe, setSexe] = useState<Chief['sexe'] | "">("");
@@ -87,7 +88,7 @@ export function AddChiefSheet({ isOpen, onClose, onAddChief }: AddChiefSheetProp
 
 
   const resetForm = () => {
-    setName(""); setTitle(""); setRole("Chef de Village"); setSexe(""); setContact("");
+    setFirstName(""); setLastName(""); setTitle(""); setRole("Chef de Village"); setSexe(""); setContact("");
     setBio(""); setPhotoFile(null); setPhotoPreview(`https://placehold.co/100x100.png`);
     setSelectedRegion(""); setCustomRegion("");
     setSelectedDepartment(""); setCustomDepartment("");
@@ -124,15 +125,18 @@ export function AddChiefSheet({ isOpen, onClose, onAddChief }: AddChiefSheetProp
     const finalSubPrefecture = selectedSubPrefecture === 'AUTRE' ? customSubPrefecture : selectedSubPrefecture;
     const finalVillage = selectedVillage === 'AUTRE' ? customVillage : selectedVillage;
 
-    if (!name || !title || !role || !finalRegion || !finalDepartment || !finalSubPrefecture || !finalVillage) {
-      setError("Veuillez remplir tous les champs obligatoires (nom, titre, rôle, et toute la localisation).");
+    if (!firstName || !lastName || !title || !role || !finalRegion || !finalDepartment || !finalSubPrefecture || !finalVillage) {
+      setError("Veuillez remplir tous les champs obligatoires (noms, titre, rôle, et toute la localisation).");
       return;
     }
     setIsSubmitting(true);
     setError("");
     try {
       const chiefData = { 
-          name, title, role, sexe: sexe as Chief['sexe'],
+          name: `${firstName} ${lastName}`.trim(),
+          firstName,
+          lastName,
+          title, role, sexe: sexe as Chief['sexe'],
           region: finalRegion, 
           department: finalDepartment,
           subPrefecture: finalSubPrefecture,
@@ -169,12 +173,13 @@ export function AddChiefSheet({ isOpen, onClose, onAddChief }: AddChiefSheetProp
             <div className="grid grid-cols-4 items-center gap-4">
               <Label className="text-right">Photo</Label>
               <div className="col-span-3 flex items-center gap-4">
-                  <Avatar className="h-16 w-16"><AvatarImage src={photoPreview} alt="Aperçu de la photo" data-ai-hint="chief portrait" /><AvatarFallback>{name ? name.charAt(0) : 'C'}</AvatarFallback></Avatar>
+                  <Avatar className="h-16 w-16"><AvatarImage src={photoPreview} alt="Aperçu de la photo" data-ai-hint="chief portrait" /><AvatarFallback>{lastName ? lastName.charAt(0) : 'C'}</AvatarFallback></Avatar>
                   <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}><Upload className="mr-2 h-4 w-4" />Télécharger</Button>
                   <Input ref={fileInputRef} type="file" className="hidden" accept="image/*" onChange={handlePhotoChange}/>
               </div>
             </div>
-            <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="name" className="text-right">Nom Complet</Label><Input id="name" value={name} onChange={(e) => setName(e.target.value)} className="col-span-3" required /></div>
+            <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="lastName" className="text-right">Nom</Label><Input id="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} className="col-span-3" required /></div>
+            <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="firstName" className="text-right">Prénom(s)</Label><Input id="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} className="col-span-3" required /></div>
             <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="title" className="text-right">Titre</Label><Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} className="col-span-3" placeholder="Ex: Roi des N'zima" required /></div>
             <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="role" className="text-right">Rôle</Label><Select value={role} onValueChange={(v: ChiefRole) => setRole(v)} required><SelectTrigger className="col-span-3"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Chef de Village">Chef de Village</SelectItem><SelectItem value="Chef de Canton">Chef de Canton</SelectItem><SelectItem value="Roi">Roi</SelectItem></SelectContent></Select></div>
             <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="sexe" className="text-right">Sexe</Label><Select value={sexe} onValueChange={(value: Chief['sexe']) => setSexe(value)}><SelectTrigger className="col-span-3"><SelectValue placeholder="Sélectionnez..." /></SelectTrigger><SelectContent><SelectItem value="Homme">Homme</SelectItem><SelectItem value="Femme">Femme</SelectItem><SelectItem value="Autre">Autre</SelectItem></SelectContent></Select></div>

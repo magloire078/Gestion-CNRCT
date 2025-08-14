@@ -43,6 +43,9 @@ export default function ChiefDetailPage() {
         }
         fetchData();
     }, [id]);
+    
+    const fullName = chief ? `${chief.firstName || ''} ${chief.lastName || ''}`.trim() : "Chargement...";
+
 
     if (loading) {
         return <ChiefDetailSkeleton />;
@@ -73,10 +76,10 @@ export default function ChiefDetailPage() {
                      <Card>
                         <CardContent className="pt-6 flex flex-col items-center text-center">
                             <Avatar className="h-32 w-32 border-4 border-primary/20 mb-4">
-                                <AvatarImage src={chief.photoUrl} alt={chief.name} data-ai-hint="chief portrait" />
-                                <AvatarFallback className="text-4xl bg-muted">{chief.name?.charAt(0) || 'C'}</AvatarFallback>
+                                <AvatarImage src={chief.photoUrl} alt={fullName} data-ai-hint="chief portrait" />
+                                <AvatarFallback className="text-4xl bg-muted">{fullName.charAt(0) || 'C'}</AvatarFallback>
                             </Avatar>
-                            <h2 className="text-2xl font-bold">{chief.name}</h2>
+                            <h2 className="text-2xl font-bold">{fullName}</h2>
                             <p className="text-lg text-primary">{chief.title}</p>
                             <Badge variant="secondary" className="mt-2">{chief.role}</Badge>
                         </CardContent>

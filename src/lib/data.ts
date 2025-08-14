@@ -192,7 +192,9 @@ export type ChiefRole = "Chef de Village" | "Chef de Canton" | "Roi";
 
 export type Chief = {
   id: string; // Firestore document ID
-  name: string;
+  name: string; // Combined name
+  firstName?: string;
+  lastName?: string;
   title: string; // e.g., "Roi des N'zima", "Chef de Canton"
   role: ChiefRole;
   sexe?: 'Homme' | 'Femme' | 'Autre';

@@ -62,7 +62,7 @@ export default function EmployeesPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [cnpsFilter, setCnpsFilter] = useState<boolean | 'all'>('all');
   const [sexeFilter, setSexeFilter] = useState('all');
-  const [isRegionalFilter, setIsRegionalFilter] = useState(false);
+  const [personnelTypeFilter, setPersonnelTypeFilter] = useState('all');
 
   const [columnsToPrint, setColumnsToPrint] = useState<ColumnKeys[]>(Object.keys(allColumns) as ColumnKeys[]);
   const [organizationLogos, setOrganizationLogos] = useState({ mainLogoUrl: '', secondaryLogoUrl: '' });
@@ -72,6 +72,9 @@ export default function EmployeesPage() {
   // Handle initial filter from URL
   useEffect(() => {
     if (initialFilter) {
+      setPersonnelTypeFilter('all');
+      setDepartmentFilter('all');
+
       switch (initialFilter) {
         case 'actif':
           setStatusFilter('Actif');
@@ -83,11 +86,19 @@ export default function EmployeesPage() {
           setDepartmentFilter('Directoire');
           break;
         case 'regional':
-          setIsRegionalFilter(true);
+          setPersonnelTypeFilter('regional');
+          break;
+        case 'personnel':
+          setPersonnelTypeFilter('personnel');
+          break;
+        case 'militaire':
+          setPersonnelTypeFilter('militaire');
+          break;
+        case 'gendarme':
+          setPersonnelTypeFilter('gendarme');
           break;
         case 'sexe':
-           // This case can be left as-is, maybe default to showing Homme or just open the filter.
-           // For simplicity, we'll let the user select.
+           // Let user select
            break;
       }
     }
@@ -164,10 +175,33 @@ export default function EmployeesPage() {
       const matchesStatus = statusFilter === 'all' || employee.status === statusFilter;
       const matchesCnps = cnpsFilter === 'all' || employee.CNPS === cnpsFilter;
       const matchesSexe = sexeFilter === 'all' || employee.sexe === sexeFilter;
-      const matchesRegional = !isRegionalFilter || !!employee.Region;
-      return matchesSearchTerm && matchesDepartment && matchesStatus && matchesCnps && matchesSexe && matchesRegional;
+      
+      const isDirectoire = employee.department === 'Directoire';
+      const isRegional = !!employee.Region;
+      const isMilitaire = employee.department === 'Militaire';
+      const isGendarme = employee.department === 'Gendarme';
+
+      let matchesPersonnelType = true;
+      switch (personnelTypeFilter) {
+          case 'regional':
+              matchesPersonnelType = isRegional;
+              break;
+          case 'personnel':
+              matchesPersonnelType = !isDirectoire && !isRegional && !isMilitaire && !isGendarme;
+              break;
+          case 'militaire':
+              matchesPersonnelType = isMilitaire;
+              break;
+          case 'gendarme':
+              matchesPersonnelType = isGendarme;
+              break;
+          default:
+              break;
+      }
+      
+      return matchesSearchTerm && matchesDepartment && matchesStatus && matchesCnps && matchesSexe && matchesPersonnelType;
     });
-  }, [employees, searchTerm, departmentFilter, statusFilter, cnpsFilter, sexeFilter, isRegionalFilter]);
+  }, [employees, searchTerm, departmentFilter, statusFilter, cnpsFilter, sexeFilter, personnelTypeFilter]);
   
   const downloadFile = (content: string, fileName: string, contentType: string) => {
       const blob = new Blob([content], { type: contentType });
@@ -314,7 +348,7 @@ export default function EmployeesPage() {
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                         </div>
-                        <Select value={departmentFilter} onValueChange={setDepartmentFilter} disabled={isRegionalFilter}>
+                        <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
                         <SelectTrigger className="flex-1 min-w-[180px]">
                             <SelectValue placeholder="Filtrer par service" />
                         </SelectTrigger>

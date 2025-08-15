@@ -29,6 +29,9 @@ import {
   ClipboardCheck,
   Building,
   Globe,
+  ChevronDown,
+  UserSquare,
+  ShieldHalf,
 } from "lucide-react";
 
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
@@ -45,17 +48,32 @@ import {
   SidebarMenuButton,
   SidebarFooter,
   SidebarInset,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem
 } from "@/components/ui/sidebar";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel } from "./ui/dropdown-menu";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 
 const allMenuItems = [
   { href: "/", label: "Tableau de Bord", icon: LayoutDashboard, permission: "page:dashboard:view" },
-  { href: "/employees", label: "Employés", icon: Users, permission: "page:employees:view" },
-  { href: "/employees?filter=directoire", label: "Membres du directoire", icon: Building, permission: "page:board-members:view" },
-  { href: "/employees?filter=regional", label: "Comités régionaux", icon: Globe, permission: "page:regional-committees:view" },
+  { 
+    isCollapsible: true,
+    label: "Employés", 
+    icon: Users,
+    permission: "page:employees:view",
+    subItems: [
+        { href: "/employees?filter=directoire", label: "Membres du directoire", icon: Building, permission: "page:board-members:view" },
+        { href: "/employees?filter=regional", label: "Comités régionaux", icon: Globe, permission: "page:regional-committees:view" },
+        { href: "/employees?filter=personnel", label: "Agent/Personnel", icon: UserSquare, permission: "page:staff:view" },
+        { href: "/employees?filter=militaire", label: "Militaires", icon: ShieldHalf, permission: "page:military:view" },
+        { href: "/employees?filter=gendarme", label: "Gendarmes", icon: Shield, permission: "page:gendarmerie:view" },
+    ]
+  },
   { href: "/chiefs", label: "Rois & Chefs", icon: Crown, permission: "page:chiefs:view" },
   { href: "/mapping", label: "Cartographie", icon: MapIcon, permission: "page:mapping:view" },
   { href: "/payroll", label: "Paie", icon: Landmark, permission: "page:payroll:view" },
@@ -119,10 +137,17 @@ function AppLayout({ children }: { children: React.ReactNode }) {
 
   const menuItems = React.useMemo(() => {
     if (!hasPermission) return [];
-    return allMenuItems.filter(item => hasPermission(item.permission));
+    return allMenuItems.filter(item => {
+        if (item.isCollapsible) {
+            // Include parent if any child is visible
+            return item.subItems.some(subItem => hasPermission(subItem.permission));
+        }
+        return hasPermission(item.permission);
+    });
   }, [hasPermission]);
   
-  const currentPage = allMenuItems.find(item => item.href === pathname);
+  const currentPage = allMenuItems.find(item => !item.isCollapsible && item.href === pathname);
+  const isSubItemActive = (subItems: any[]) => subItems.some(item => pathname === item.href);
 
   if (loading) {
     return (
@@ -152,20 +177,52 @@ function AppLayout({ children }: { children: React.ReactNode }) {
           </SidebarHeader>
           <SidebarContent className="p-2">
             <SidebarMenu>
-              {menuItems.map((item) => (
+              {menuItems.map((item, index) => (
+                item.isCollapsible ? (
+                  <Collapsible key={index} asChild>
+                    <>
+                      <SidebarMenuItem>
+                        <CollapsibleTrigger asChild>
+                          <SidebarMenuButton
+                            isActive={isSubItemActive(item.subItems)}
+                            className="w-full justify-start hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                          >
+                            <item.icon className="mr-2 h-4 w-4" />
+                            {item.label}
+                            <ChevronDown className="ml-auto h-4 w-4 transition-transform [&[data-state=open]]:rotate-180" />
+                          </SidebarMenuButton>
+                        </CollapsibleTrigger>
+                      </SidebarMenuItem>
+                      <CollapsibleContent asChild>
+                        <SidebarMenuSub>
+                          {item.subItems.filter(sub => hasPermission(sub.permission)).map(subItem => (
+                            <SidebarMenuSubItem key={subItem.href}>
+                              <SidebarMenuSubButton asChild isActive={pathname === subItem.href}>
+                                <Link href={subItem.href}>
+                                    <subItem.icon className="mr-2 h-4 w-4" />
+                                    <span>{subItem.label}</span>
+                                </Link>
+                              </SidebarMenuSubButton>
+                            </SidebarMenuSubItem>
+                          ))}
+                        </SidebarMenuSub>
+                      </CollapsibleContent>
+                    </>
+                  </Collapsible>
+                ) : (
                 <SidebarMenuItem key={item.href}>
                   <SidebarMenuButton
                     asChild
                     isActive={pathname === item.href}
                     className="w-full justify-start hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                   >
-                    <Link href={item.href}>
+                    <Link href={item.href!}>
                       <item.icon className="mr-2 h-4 w-4" />
                       {item.label}
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
-              ))}
+              )))}
             </SidebarMenu>
           </SidebarContent>
           <SidebarFooter className="p-2 border-t border-sidebar-border">
@@ -215,6 +272,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
                         {children}
                     </ProtectedPage>
                 ) : (
+                    // Handle sub-pages and other pages not in the main menu
                     children
                 )}
             </div>

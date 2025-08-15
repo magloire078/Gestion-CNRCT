@@ -179,8 +179,8 @@ function AppLayout({ children }: { children: React.ReactNode }) {
             <SidebarMenu>
               {menuItems.map((item, index) => (
                 item.isCollapsible ? (
-                  <Collapsible key={index} asChild>
-                    <SidebarMenuItem>
+                  <SidebarMenuItem key={index}>
+                    <Collapsible>
                       <CollapsibleTrigger asChild>
                         <SidebarMenuButton
                           isActive={isSubItemActive(item.subItems)}
@@ -205,8 +205,8 @@ function AppLayout({ children }: { children: React.ReactNode }) {
                           ))}
                         </SidebarMenuSub>
                       </CollapsibleContent>
-                    </SidebarMenuItem>
-                  </Collapsible>
+                    </Collapsible>
+                  </SidebarMenuItem>
                 ) : (
                 <SidebarMenuItem key={item.href}>
                   <SidebarMenuButton

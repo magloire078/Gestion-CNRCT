@@ -180,19 +180,17 @@ function AppLayout({ children }: { children: React.ReactNode }) {
               {menuItems.map((item, index) => (
                 item.isCollapsible ? (
                   <Collapsible key={index} asChild>
-                    <>
-                      <SidebarMenuItem>
-                        <CollapsibleTrigger asChild>
-                          <SidebarMenuButton
-                            isActive={isSubItemActive(item.subItems)}
-                            className="w-full justify-start hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                          >
-                            <item.icon className="mr-2 h-4 w-4" />
-                            {item.label}
-                            <ChevronDown className="ml-auto h-4 w-4 transition-transform [&[data-state=open]]:rotate-180" />
-                          </SidebarMenuButton>
-                        </CollapsibleTrigger>
-                      </SidebarMenuItem>
+                    <SidebarMenuItem>
+                      <CollapsibleTrigger asChild>
+                        <SidebarMenuButton
+                          isActive={isSubItemActive(item.subItems)}
+                          className="w-full justify-start hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                        >
+                          <item.icon className="mr-2 h-4 w-4" />
+                          {item.label}
+                          <ChevronDown className="ml-auto h-4 w-4 transition-transform [&[data-state=open]]:rotate-180" />
+                        </SidebarMenuButton>
+                      </CollapsibleTrigger>
                       <CollapsibleContent asChild>
                         <SidebarMenuSub>
                           {item.subItems.filter(sub => hasPermission(sub.permission)).map(subItem => (
@@ -207,7 +205,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
                           ))}
                         </SidebarMenuSub>
                       </CollapsibleContent>
-                    </>
+                    </SidebarMenuItem>
                   </Collapsible>
                 ) : (
                 <SidebarMenuItem key={item.href}>

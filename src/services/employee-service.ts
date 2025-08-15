@@ -1,12 +1,46 @@
 
 
 import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, onSnapshot, Unsubscribe, query, orderBy, where, writeBatch, getDoc, setDoc } from 'firebase/firestore';
-import type { Employe } from '@/lib/data';
+import type { Employe, Chief } from '@/lib/data';
 import { db, storage } from '@/lib/firebase';
 import { getOrganizationSettings } from './organization-service';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 const employeesCollection = collection(db, 'employees');
+const chiefsCollection = collection(db, 'chiefs');
+
+async function createOrUpdateChiefFromEmployee(employee: Employe) {
+    if (employee.department === 'Directoire' || (employee.Region && employee.Village)) {
+        const chiefsQuery = query(chiefsCollection, where('name', '==', employee.name));
+        const snapshot = await getDocs(chiefsQuery);
+        
+        const chiefData: Partial<Chief> = {
+            name: employee.name,
+            firstName: employee.firstName,
+            lastName: employee.lastName,
+            title: employee.poste, // Use 'poste' as 'title'
+            role: 'Chef de Canton', // Default role, can be changed later
+            sexe: employee.sexe,
+            region: employee.Region,
+            department: employee.Departement,
+            village: employee.Village,
+            photoUrl: employee.photoUrl
+        };
+        
+        if (snapshot.empty) {
+            // Create new chief
+            const newChiefRef = doc(chiefsCollection);
+            await setDoc(newChiefRef, chiefData);
+            console.log(`Created new chief entry for employee: ${employee.name}`);
+        } else {
+            // Update existing chief
+            const chiefDocRef = snapshot.docs[0].ref;
+            await updateDoc(chiefDocRef, chiefData);
+            console.log(`Updated chief entry for employee: ${employee.name}`);
+        }
+    }
+}
+
 
 export function subscribeToEmployees(
     callback: (employees: Employe[]) => void,
@@ -61,7 +95,10 @@ export async function addEmployee(employeeData: Omit<Employe, 'id'>, photoFile: 
     const finalEmployeeData = { ...employeeData, photoUrl };
     await setDoc(docRef, finalEmployeeData);
     
-    return { id: docRef.id, ...finalEmployeeData };
+    const newEmployee = { id: docRef.id, ...finalEmployeeData };
+    await createOrUpdateChiefFromEmployee(newEmployee);
+    
+    return newEmployee;
 }
 
 
@@ -75,16 +112,23 @@ export async function batchAddEmployees(employees: Omit<Employe, 'id'>[]): Promi
     const existingMatricules = new Set(existingSnapshot.docs.map(d => d.data().matricule));
 
     let addedCount = 0;
+    const employeesToSyncToChiefs: Employe[] = [];
+
     employees.forEach(employee => {
         if (employee.matricule && !existingMatricules.has(employee.matricule)) {
             const newDocRef = doc(employeesCollection); // Auto-generate ID
             batch.set(newDocRef, employee);
+            employeesToSyncToChiefs.push({ id: newDocRef.id, ...employee });
             addedCount++;
         }
     });
 
     if (addedCount > 0) {
         await batch.commit();
+        // Sync to chiefs after commit
+        for (const emp of employeesToSyncToChiefs) {
+            await createOrUpdateChiefFromEmployee(emp);
+        }
     }
     return addedCount;
 }
@@ -101,6 +145,11 @@ export async function updateEmployee(employeeId: string, employeeDataToUpdate: P
     }
 
     await updateDoc(employeeDocRef, updateData);
+    
+    const updatedEmployee = await getEmployee(employeeId);
+    if (updatedEmployee) {
+        await createOrUpdateChiefFromEmployee(updatedEmployee);
+    }
 }
 
 export async function searchEmployees(query: string): Promise<Employe[]> {

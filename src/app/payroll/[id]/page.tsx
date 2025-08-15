@@ -106,25 +106,17 @@ export default function PayslipPage() {
             </div>
             <div id="print-section" className="w-full max-w-4xl mx-auto bg-white text-black print:shadow-none print:border-none font-arial text-[8px] leading-tight">
                 {/* Header */}
-                 <header className="flex justify-between items-start pb-2 border-b-2 border-gray-400">
-                    <div className="w-1/4 text-center flex flex-col justify-start items-center h-24">
-                        <p className="font-bold text-xs">REPUBLIQUE DE CÔTE D'IVOIRE</p>
-                        <p className="text-xs">Union - Discipline - Travail</p>
-                        <div className="flex-1 flex items-center">
-                        {organizationLogos.secondaryLogoUrl && <img src={organizationLogos.secondaryLogoUrl} alt="Emblème de la Côte d'Ivoire" className="max-h-16 max-w-full h-auto w-auto" />}
-                        </div>
-                    </div>
-                    <div className="w-2/4 text-center pt-2">
-                        <h2 className="font-bold text-sm">{organizationLogos.organizationName}</h2>
-                         <p className="text-xs mt-2">LE DIRECTOIRE</p>
-                        <p className="text-xs">LE CABINET / LE SERVICE INFORMATIQUE</p>
-                    </div>
-                     <div className="w-1/4 text-center flex flex-col justify-start items-center h-24">
+                 <header className="flex justify-between items-center pb-2 border-b-2 border-gray-400">
+                    <div className="w-1/4 text-center flex flex-col justify-center items-center h-24">
                         <p className="font-bold text-xs">CHAMBRE NATIONALE DES</p>
                         <p className="font-bold text-xs">ROIS ET CHEFS TRADITIONNELS</p>
-                        <div className="flex-1 flex items-center">
-                         {organizationLogos.mainLogoUrl && <img src={organizationLogos.mainLogoUrl} alt="Logo CNRCT" className="max-h-16 max-w-full h-auto w-auto" />}
-                        </div>
+                         {organizationLogos.mainLogoUrl && <img src={organizationLogos.mainLogoUrl} alt="Logo CNRCT" className="max-h-16 max-w-full h-auto w-auto mt-1" />}
+                    </div>
+                    
+                     <div className="w-1/4 text-center flex flex-col justify-center items-center h-24">
+                        <p className="font-bold text-xs">REPUBLIQUE DE CÔTE D'IVOIRE</p>
+                        <p className="text-xs">Union - Discipline - Travail</p>
+                        {organizationLogos.secondaryLogoUrl && <img src={organizationLogos.secondaryLogoUrl} alt="Emblème de la Côte d'Ivoire" className="max-h-16 max-w-full h-auto w-auto mt-1" />}
                     </div>
                 </header>
 

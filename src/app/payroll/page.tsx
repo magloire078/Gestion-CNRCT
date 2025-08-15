@@ -506,16 +506,24 @@ function PayslipTemplate({ payslipDetails }: { payslipDetails: PayslipDetails })
         <div className="w-full max-w-4xl mx-auto bg-white p-6 border-b border-gray-300 text-black font-arial text-[8px] leading-tight print-page-break">
            {/* Header */}
             <header className="flex justify-between items-start pb-2 border-b-2 border-gray-400">
-                <div className="w-1/4 text-center flex justify-center items-center h-24">
-                     {organizationLogos.secondaryLogoUrl && <img src={organizationLogos.secondaryLogoUrl} alt="Emblème de la Côte d'Ivoire" className="max-h-full max-w-full h-auto w-auto" />}
+                <div className="w-1/4 text-center flex flex-col justify-start items-center h-24">
+                    <p className="font-bold text-xs">REPUBLIQUE DE CÔTE D'IVOIRE</p>
+                    <p className="text-xs">Union - Discipline - Travail</p>
+                    <div className="flex-1 flex items-center">
+                    {organizationLogos.secondaryLogoUrl && <img src={organizationLogos.secondaryLogoUrl} alt="Emblème de la Côte d'Ivoire" className="max-h-16 max-w-full h-auto w-auto" />}
+                    </div>
                 </div>
                 <div className="text-center w-2/4 pt-2">
-                    <h2 className="font-bold text-sm">Chambre Nationale des Rois et Chefs Traditionnels</h2>
+                    <h2 className="font-bold text-sm">{organizationLogos.organizationName}</h2>
                     <p className="text-xs mt-2">LE DIRECTOIRE</p>
                     <p className="text-xs">LE CABINET / LE SERVICE INFORMATIQUE</p>
                 </div>
-                <div className="w-1/4 text-center flex justify-center items-center h-24">
-                   {organizationLogos.mainLogoUrl && <img src={organizationLogos.mainLogoUrl} alt="Logo CNRCT" className="max-h-full max-w-full h-auto w-auto" />}
+                <div className="w-1/4 text-center flex flex-col justify-start items-center h-24">
+                    <p className="font-bold text-xs">CHAMBRE NATIONALE DES</p>
+                    <p className="font-bold text-xs">ROIS ET CHEFS TRADITIONNELS</p>
+                    <div className="flex-1 flex items-center">
+                    {organizationLogos.mainLogoUrl && <img src={organizationLogos.mainLogoUrl} alt="Logo CNRCT" className="max-h-16 max-w-full h-auto w-auto" />}
+                    </div>
                 </div>
             </header>
 

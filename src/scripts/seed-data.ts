@@ -1,10 +1,11 @@
 
-import { collection, writeBatch } from 'firebase/firestore';
+import { collection, writeBatch, doc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { initializeDefaultRoles } from '../services/role-service';
+import type { Employe } from '@/lib/data';
 
 // Mock data (replace with your actual data structure and content)
-const employeesData = [
+const employeesData: Employe[] = [
     { id: '1', matricule: 'M001', name: 'Koffi Jean-Luc', firstName: 'Jean-Luc', lastName: 'Koffi', poste: 'Développeur Senior', department: 'Informatique', status: 'Actif', photoUrl: 'https://placehold.co/100x100.png', email: 'koffi.jl@example.com', dateEmbauche: '2020-01-15', baseSalary: 1200000, CNPS: true, sexe: 'Homme' },
     { id: '2', matricule: 'M002', name: 'Amoin Thérèse', firstName: 'Thérèse', lastName: 'Amoin', poste: 'Chef de projet', department: 'Directoire', status: 'Actif', photoUrl: 'https://placehold.co/100x100.png', email: 'amoin.t@example.com', dateEmbauche: '2018-05-20', baseSalary: 1800000, CNPS: true, sexe: 'Femme' },
     { id: '3', matricule: 'M003', name: 'N\'Guessan Paul', firstName: 'Paul', lastName: 'N\'Guessan', poste: 'Comptable', department: 'Direction des Affaires financières et du patrimoine', status: 'En congé', photoUrl: 'https://placehold.co/100x100.png', email: 'nguessan.p@example.com', dateEmbauche: '2022-11-01', baseSalary: 800000, CNPS: false, sexe: 'Homme' },
@@ -17,13 +18,39 @@ const chiefsData = [
     { id: '2', name: 'Sa Majesté Amon N\'Douffou V', title: 'Roi du Sanwi', role: 'Roi', region: 'Sud-Comoé', department: 'Aboisso', subPrefecture: 'Aboisso', village: 'Krindjabo', contact: '+225 0203040506', bio: 'Gardien des traditions Agni.', photoUrl: 'https://placehold.co/100x100.png', latitude: 5.485, longitude: -3.208 },
 ];
 
+// Automatically add employees from 'Directoire' or with 'Region' to the chiefs data
+const employeesToSyncAsChiefs = employeesData
+    .filter(emp => emp.department === 'Directoire' || (emp.Region && emp.Village))
+    .map(emp => ({
+        id: emp.id, // Use same ID for simplicity in seeding
+        name: emp.name,
+        firstName: emp.firstName,
+        lastName: emp.lastName,
+        title: emp.poste,
+        role: 'Chef de Canton',
+        sexe: emp.sexe,
+        region: emp.Region || '',
+        department: emp.Departement || '',
+        village: emp.Village || '',
+        photoUrl: emp.photoUrl || 'https://placehold.co/100x100.png',
+    }));
+
+const combinedChiefsData = [
+    ...chiefsData,
+    ...employeesToSyncAsChiefs,
+];
+
+// Remove duplicates by name
+const uniqueChiefsData = Array.from(new Map(combinedChiefsData.map(item => [item.name, item])).values());
+
+
 async function seedCollection(collectionName: string, data: any[]) {
     const batch = writeBatch(db);
     const collectionRef = collection(db, collectionName);
     
     console.log(`Seeding ${collectionName}...`);
     data.forEach(item => {
-        const docRef = collectionRef.doc(item.id || undefined);
+        const docRef = doc(collectionRef, item.id || undefined); // Use provided ID or generate a new one
         batch.set(docRef, item);
     });
     
@@ -37,7 +64,7 @@ async function main() {
         
         await initializeDefaultRoles();
         await seedCollection('employees', employeesData);
-        await seedCollection('chiefs', chiefsData);
+        await seedCollection('chiefs', uniqueChiefsData);
 
         // Add other collections to seed here...
         // e.g., await seedCollection('leaves', leavesData);

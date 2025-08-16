@@ -25,7 +25,7 @@ import {
   Lock,
   Package,
   Crown,
-  Map as MapIcon,
+  MapIcon,
   ClipboardCheck,
   Building,
   Globe,
@@ -180,7 +180,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
             <SidebarMenu>
               {menuItems.map((item, index) => (
                 item.isCollapsible ? (
-                   <Collapsible key={index}>
+                   <Collapsible key={index} asChild>
                      <SidebarMenuItem>
                         <CollapsibleTrigger asChild>
                             <SidebarMenuButton

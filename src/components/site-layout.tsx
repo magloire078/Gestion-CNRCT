@@ -3,7 +3,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   Car,
   FileText,
@@ -128,6 +128,7 @@ function ProtectedPage({ children, permission }: { children: React.ReactNode, pe
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const router = useRouter();
   const { user, loading, hasPermission, settings } = useAuth();
   
@@ -135,6 +136,12 @@ function AppLayout({ children }: { children: React.ReactNode }) {
     await signOut();
     router.push("/login");
   };
+  
+  const currentPath = React.useMemo(() => {
+    const paramsString = searchParams.toString();
+    return `${pathname}${paramsString ? `?${paramsString}` : ''}`;
+  }, [pathname, searchParams]);
+
 
   const menuItems = React.useMemo(() => {
     if (!hasPermission) return [];
@@ -147,8 +154,8 @@ function AppLayout({ children }: { children: React.ReactNode }) {
     });
   }, [hasPermission]);
   
-  const currentPage = allMenuItems.find(item => !item.isCollapsible && item.href === pathname);
-  const isSubItemActive = (subItems: any[]) => subItems.some(item => pathname === item.href);
+  const currentPage = allMenuItems.find(item => !item.isCollapsible && item.href === currentPath);
+  const isSubItemActive = (subItems: any[]) => subItems.some(item => currentPath === item.href);
 
   if (loading) {
     return (
@@ -196,7 +203,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
                             <SidebarMenuSub>
                             {item.subItems.filter(sub => hasPermission(sub.permission)).map(subItem => (
                                 <SidebarMenuSubItem key={subItem.href}>
-                                <SidebarMenuSubButton asChild isActive={pathname === subItem.href}>
+                                <SidebarMenuSubButton asChild isActive={currentPath === subItem.href}>
                                     <Link href={subItem.href!}>
                                         <subItem.icon className="mr-2 h-4 w-4" />
                                         <span>{subItem.label}</span>
@@ -212,7 +219,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
                 <SidebarMenuItem key={item.href}>
                   <SidebarMenuButton
                     asChild
-                    isActive={pathname === item.href}
+                    isActive={currentPath === item.href}
                     className="w-full justify-start hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                   >
                     <Link href={item.href!}>

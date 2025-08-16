@@ -78,6 +78,12 @@
         size: a4 portrait;
         margin: 1.5cm;
     }
+    body.print-landscape {
+      @page {
+        size: a4 landscape;
+        margin: 1cm;
+      }
+    }
     body {
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
@@ -116,3 +122,5 @@
     }
   }
 }
+
+    

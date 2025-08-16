@@ -27,6 +27,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Upload } from "lucide-react";
 import { Textarea } from "../ui/textarea";
 import { divisions } from "@/lib/ivory-coast-divisions";
+import { ScrollArea } from "../ui/scroll-area";
 
 interface AddChiefSheetProps {
   isOpen: boolean;
@@ -167,55 +168,58 @@ export function AddChiefSheet({ isOpen, onClose, onAddChief }: AddChiefSheetProp
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => { if (!open) handleClose(); }}>
-      <SheetContent className="sm:max-w-lg">
-        <form onSubmit={handleSubmit}>
-          <SheetHeader>
-            <SheetTitle>Ajouter un nouveau Chef</SheetTitle>
-            <SheetDescription>
-              Remplissez les détails ci-dessous pour ajouter une nouvelle autorité traditionnelle.
-            </SheetDescription>
-          </SheetHeader>
-          <div className="grid gap-4 py-4 max-h-[85vh] overflow-y-auto pr-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label className="text-right">Photo</Label>
-              <div className="col-span-3 flex items-center gap-4">
-                  <Avatar className="h-16 w-16"><AvatarImage src={photoPreview} alt="Aperçu de la photo" data-ai-hint="chief portrait" /><AvatarFallback>{lastName ? lastName.charAt(0) : 'C'}</AvatarFallback></Avatar>
-                  <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}><Upload className="mr-2 h-4 w-4" />Télécharger</Button>
-                  <Input ref={fileInputRef} type="file" className="hidden" accept="image/*" onChange={handlePhotoChange}/>
+      <SheetContent className="sm:max-w-lg flex flex-col">
+        <SheetHeader>
+          <SheetTitle>Ajouter un nouveau Chef</SheetTitle>
+          <SheetDescription>
+            Remplissez les détails ci-dessous pour ajouter une nouvelle autorité traditionnelle.
+          </SheetDescription>
+        </SheetHeader>
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+          <ScrollArea className="flex-1 pr-6 -mr-6">
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label className="text-right">Photo</Label>
+                <div className="col-span-3 flex items-center gap-4">
+                    <Avatar className="h-16 w-16"><AvatarImage src={photoPreview} alt="Aperçu de la photo" data-ai-hint="chief portrait" /><AvatarFallback>{lastName ? lastName.charAt(0) : 'C'}</AvatarFallback></Avatar>
+                    <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}><Upload className="mr-2 h-4 w-4" />Télécharger</Button>
+                    <Input ref={fileInputRef} type="file" className="hidden" accept="image/*" onChange={handlePhotoChange}/>
+                </div>
               </div>
+              <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="lastName" className="text-right">Nom</Label><Input id="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} className="col-span-3" required /></div>
+              <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="firstName" className="text-right">Prénom(s)</Label><Input id="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} className="col-span-3" required /></div>
+              <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="title" className="text-right">Titre</Label><Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} className="col-span-3" placeholder="Ex: Roi des N'zima" required /></div>
+              <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="role" className="text-right">Rôle</Label><Select value={role} onValueChange={(v: ChiefRole) => setRole(v)}><SelectTrigger className="col-span-3"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Chef de Village">Chef de Village</SelectItem><SelectItem value="Chef de Canton">Chef de Canton</SelectItem><SelectItem value="Roi">Roi</SelectItem></SelectContent></Select></div>
+              <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="sexe" className="text-right">Sexe</Label><Select value={sexe} onValueChange={(value: Chief['sexe']) => setSexe(value)}><SelectTrigger className="col-span-3"><SelectValue placeholder="Sélectionnez..." /></SelectTrigger><SelectContent><SelectItem value="Homme">Homme</SelectItem><SelectItem value="Femme">Femme</SelectItem><SelectItem value="Autre">Autre</SelectItem></SelectContent></Select></div>
+              <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="parentChief" className="text-right">Chef Supérieur</Label><Select value={parentChiefId ?? 'none'} onValueChange={(v) => setParentChiefId(v === 'none' ? null : v)}><SelectTrigger className="col-span-3"><SelectValue placeholder="Aucun (optionnel)" /></SelectTrigger><SelectContent><SelectItem value="none">Aucun</SelectItem>{allChiefs.map(c => <SelectItem key={c.id} value={c.id}>{c.name} ({c.title})</SelectItem>)}</SelectContent></Select></div>
+              
+              {/* Location Fields */}
+              <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="region" className="text-right">Région</Label><Select value={selectedRegion} onValueChange={v => {setSelectedRegion(v); setSelectedDepartment(''); setSelectedSubPrefecture(''); setSelectedVillage('');}}><SelectTrigger className="col-span-3"><SelectValue placeholder="Sélectionnez une région..." /></SelectTrigger><SelectContent>{Object.keys(divisions).map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}<SelectItem value="AUTRE">Autre...</SelectItem></SelectContent></Select></div>
+              {selectedRegion === 'AUTRE' && <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="customRegion" className="text-right">Nouvelle Région</Label><Input id="customRegion" value={customRegion} onChange={e => setCustomRegion(e.target.value)} className="col-span-3" placeholder="Nom de la nouvelle région" /></div>}
+
+              <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="department" className="text-right">Département</Label><Select value={selectedDepartment} onValueChange={v => {setSelectedDepartment(v); setSelectedSubPrefecture(''); setSelectedVillage('');}} disabled={!selectedRegion || selectedRegion === 'AUTRE'}><SelectTrigger className="col-span-3"><SelectValue placeholder="Sélectionnez un département..." /></SelectTrigger><SelectContent>{departments.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}<SelectItem value="AUTRE">Autre...</SelectItem></SelectContent></Select></div>
+              {selectedDepartment === 'AUTRE' && <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="customDepartment" className="text-right">Nouveau Dép.</Label><Input id="customDepartment" value={customDepartment} onChange={e => setCustomDepartment(e.target.value)} className="col-span-3" placeholder="Nom du nouveau département" /></div>}
+
+              <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="subPrefecture" className="text-right">Sous-préfecture</Label><Select value={selectedSubPrefecture} onValueChange={v => {setSelectedSubPrefecture(v); setSelectedVillage('');}} disabled={!selectedDepartment || selectedDepartment === 'AUTRE'}><SelectTrigger className="col-span-3"><SelectValue placeholder="Sélectionnez une sous-préfecture..." /></SelectTrigger><SelectContent>{subPrefectures.map(sp => <SelectItem key={sp} value={sp}>{sp}</SelectItem>)}<SelectItem value="AUTRE">Autre...</SelectItem></SelectContent></Select></div>
+              {selectedSubPrefecture === 'AUTRE' && <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="customSubPrefecture" className="text-right">Nouv. S-préfecture</Label><Input id="customSubPrefecture" value={customSubPrefecture} onChange={e => setCustomSubPrefecture(e.target.value)} className="col-span-3" placeholder="Nom de la nouvelle sous-préfecture" /></div>}
+
+              <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="village" className="text-right">Village/Commune</Label><Select value={selectedVillage} onValueChange={setSelectedVillage} disabled={!selectedSubPrefecture || selectedSubPrefecture === 'AUTRE'}><SelectTrigger className="col-span-3"><SelectValue placeholder="Sélectionnez un village..." /></SelectTrigger><SelectContent>{villages.map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}<SelectItem value="AUTRE">Autre...</SelectItem></SelectContent></Select></div>
+              {selectedVillage === 'AUTRE' && <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="customVillage" className="text-right">Nouveau Village</Label><Input id="customVillage" value={customVillage} onChange={e => setCustomVillage(e.target.value)} className="col-span-3" placeholder="Nom du nouveau village" /></div>}
+
+              <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="latitude" className="text-right">Latitude</Label><Input id="latitude" type="number" step="any" value={latitude} onChange={(e) => setLatitude(e.target.value === '' ? '' : parseFloat(e.target.value))} className="col-span-3" placeholder="Ex: 5.345" /></div>
+              <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="longitude" className="text-right">Longitude</Label><Input id="longitude" type="number" step="any" value={longitude} onChange={(e) => setLongitude(e.target.value === '' ? '' : parseFloat(e.target.value))} className="col-span-3" placeholder="Ex: -4.028" /></div>
+              
+              <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="dateOfBirth" className="text-right">Date de Naissance</Label><Input id="dateOfBirth" type="date" value={dateOfBirth} onChange={(e) => setDateOfBirth(e.target.value)} className="col-span-3" /></div>
+              <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="regencyStartDate" className="text-right">Début de Régence</Label><Input id="regencyStartDate" type="date" value={regencyStartDate} onChange={(e) => setRegencyStartDate(e.target.value)} className="col-span-3" /></div>
+              <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="regencyEndDate" className="text-right">Fin de Régence / Décès</Label><Input id="regencyEndDate" type="date" value={regencyEndDate} onChange={(e) => setRegencyEndDate(e.target.value)} className="col-span-3" /></div>
+              <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="contact" className="text-right">Contact</Label><Input id="contact" type="text" value={contact} onChange={(e) => setContact(e.target.value)} className="col-span-3" placeholder="Numéro de téléphone ou email" /></div>
+              <div className="grid grid-cols-4 items-start gap-4"><Label htmlFor="bio" className="text-right pt-2">Biographie</Label><Textarea id="bio" value={bio} onChange={(e) => setBio(e.target.value)} className="col-span-3" rows={3} placeholder="Brève biographie ou notes..."/></div>
             </div>
-            <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="lastName" className="text-right">Nom</Label><Input id="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} className="col-span-3" required /></div>
-            <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="firstName" className="text-right">Prénom(s)</Label><Input id="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} className="col-span-3" required /></div>
-            <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="title" className="text-right">Titre</Label><Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} className="col-span-3" placeholder="Ex: Roi des N'zima" required /></div>
-            <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="role" className="text-right">Rôle</Label><Select value={role} onValueChange={(v: ChiefRole) => setRole(v)}><SelectTrigger className="col-span-3"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Chef de Village">Chef de Village</SelectItem><SelectItem value="Chef de Canton">Chef de Canton</SelectItem><SelectItem value="Roi">Roi</SelectItem></SelectContent></Select></div>
-            <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="sexe" className="text-right">Sexe</Label><Select value={sexe} onValueChange={(value: Chief['sexe']) => setSexe(value)}><SelectTrigger className="col-span-3"><SelectValue placeholder="Sélectionnez..." /></SelectTrigger><SelectContent><SelectItem value="Homme">Homme</SelectItem><SelectItem value="Femme">Femme</SelectItem><SelectItem value="Autre">Autre</SelectItem></SelectContent></Select></div>
-            <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="parentChief" className="text-right">Chef Supérieur</Label><Select value={parentChiefId ?? 'none'} onValueChange={(v) => setParentChiefId(v === 'none' ? null : v)}><SelectTrigger className="col-span-3"><SelectValue placeholder="Aucun (optionnel)" /></SelectTrigger><SelectContent><SelectItem value="none">Aucun</SelectItem>{allChiefs.map(c => <SelectItem key={c.id} value={c.id}>{c.name} ({c.title})</SelectItem>)}</SelectContent></Select></div>
-            
-            {/* Location Fields */}
-            <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="region" className="text-right">Région</Label><Select value={selectedRegion} onValueChange={v => {setSelectedRegion(v); setSelectedDepartment(''); setSelectedSubPrefecture(''); setSelectedVillage('');}}><SelectTrigger className="col-span-3"><SelectValue placeholder="Sélectionnez une région..." /></SelectTrigger><SelectContent>{Object.keys(divisions).map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}<SelectItem value="AUTRE">Autre...</SelectItem></SelectContent></Select></div>
-            {selectedRegion === 'AUTRE' && <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="customRegion" className="text-right">Nouvelle Région</Label><Input id="customRegion" value={customRegion} onChange={e => setCustomRegion(e.target.value)} className="col-span-3" placeholder="Nom de la nouvelle région" /></div>}
-
-            <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="department" className="text-right">Département</Label><Select value={selectedDepartment} onValueChange={v => {setSelectedDepartment(v); setSelectedSubPrefecture(''); setSelectedVillage('');}} disabled={!selectedRegion || selectedRegion === 'AUTRE'}><SelectTrigger className="col-span-3"><SelectValue placeholder="Sélectionnez un département..." /></SelectTrigger><SelectContent>{departments.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}<SelectItem value="AUTRE">Autre...</SelectItem></SelectContent></Select></div>
-            {selectedDepartment === 'AUTRE' && <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="customDepartment" className="text-right">Nouveau Dép.</Label><Input id="customDepartment" value={customDepartment} onChange={e => setCustomDepartment(e.target.value)} className="col-span-3" placeholder="Nom du nouveau département" /></div>}
-
-            <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="subPrefecture" className="text-right">Sous-préfecture</Label><Select value={selectedSubPrefecture} onValueChange={v => {setSelectedSubPrefecture(v); setSelectedVillage('');}} disabled={!selectedDepartment || selectedDepartment === 'AUTRE'}><SelectTrigger className="col-span-3"><SelectValue placeholder="Sélectionnez une sous-préfecture..." /></SelectTrigger><SelectContent>{subPrefectures.map(sp => <SelectItem key={sp} value={sp}>{sp}</SelectItem>)}<SelectItem value="AUTRE">Autre...</SelectItem></SelectContent></Select></div>
-            {selectedSubPrefecture === 'AUTRE' && <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="customSubPrefecture" className="text-right">Nouv. S-préfecture</Label><Input id="customSubPrefecture" value={customSubPrefecture} onChange={e => setCustomSubPrefecture(e.target.value)} className="col-span-3" placeholder="Nom de la nouvelle sous-préfecture" /></div>}
-
-            <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="village" className="text-right">Village/Commune</Label><Select value={selectedVillage} onValueChange={setSelectedVillage} disabled={!selectedSubPrefecture || selectedSubPrefecture === 'AUTRE'}><SelectTrigger className="col-span-3"><SelectValue placeholder="Sélectionnez un village..." /></SelectTrigger><SelectContent>{villages.map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}<SelectItem value="AUTRE">Autre...</SelectItem></SelectContent></Select></div>
-            {selectedVillage === 'AUTRE' && <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="customVillage" className="text-right">Nouveau Village</Label><Input id="customVillage" value={customVillage} onChange={e => setCustomVillage(e.target.value)} className="col-span-3" placeholder="Nom du nouveau village" /></div>}
-
-            <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="latitude" className="text-right">Latitude</Label><Input id="latitude" type="number" step="any" value={latitude} onChange={(e) => setLatitude(e.target.value === '' ? '' : parseFloat(e.target.value))} className="col-span-3" placeholder="Ex: 5.345" /></div>
-            <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="longitude" className="text-right">Longitude</Label><Input id="longitude" type="number" step="any" value={longitude} onChange={(e) => setLongitude(e.target.value === '' ? '' : parseFloat(e.target.value))} className="col-span-3" placeholder="Ex: -4.028" /></div>
-            
-            <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="dateOfBirth" className="text-right">Date de Naissance</Label><Input id="dateOfBirth" type="date" value={dateOfBirth} onChange={(e) => setDateOfBirth(e.target.value)} className="col-span-3" /></div>
-            <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="regencyStartDate" className="text-right">Début de Régence</Label><Input id="regencyStartDate" type="date" value={regencyStartDate} onChange={(e) => setRegencyStartDate(e.target.value)} className="col-span-3" /></div>
-            <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="regencyEndDate" className="text-right">Fin de Régence / Décès</Label><Input id="regencyEndDate" type="date" value={regencyEndDate} onChange={(e) => setRegencyEndDate(e.target.value)} className="col-span-3" /></div>
-            <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="contact" className="text-right">Contact</Label><Input id="contact" type="text" value={contact} onChange={(e) => setContact(e.target.value)} className="col-span-3" placeholder="Numéro de téléphone ou email" /></div>
-            <div className="grid grid-cols-4 items-start gap-4"><Label htmlFor="bio" className="text-right pt-2">Biographie</Label><Textarea id="bio" value={bio} onChange={(e) => setBio(e.target.value)} className="col-span-3" rows={3} placeholder="Brève biographie ou notes..."/></div>
-            
-            {error && <p className="text-sm text-destructive col-span-4 text-center">{error}</p>}
-          </div>
-          <SheetFooter className="border-t pt-4">
+          </ScrollArea>
+          
+          {error && <p className="text-sm text-destructive text-center py-2">{error}</p>}
+          
+          <SheetFooter className="pt-4 mt-auto border-t">
             <SheetClose asChild><Button type="button" variant="outline" onClick={handleClose}>Annuler</Button></SheetClose>
             <Button type="submit" disabled={isSubmitting}>{isSubmitting ? "Enregistrement..." : "Enregistrer"}</Button>
           </SheetFooter>

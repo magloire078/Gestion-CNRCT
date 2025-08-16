@@ -70,7 +70,7 @@ export default function EmployeesPage() {
   const [printDate, setPrintDate] = useState('');
 
   const pageTitle = useMemo(() => {
-    switch (initialFilter) {
+    switch (personnelTypeFilter) {
       case 'directoire': return 'Membres du Directoire';
       case 'regional': return 'Comités Régionaux';
       case 'personnel': return 'Agents / Personnel';
@@ -78,7 +78,7 @@ export default function EmployeesPage() {
       case 'gendarme': return 'Gendarmes';
       default: return 'Effectif Global';
     }
-  }, [initialFilter]);
+  }, [personnelTypeFilter]);
 
   // Handle initial filter from URL
   useEffect(() => {
@@ -285,6 +285,8 @@ export default function EmployeesPage() {
       default: return 'bg-muted';
     }
   };
+  
+  const showDepartmentFilter = personnelTypeFilter === 'all' || personnelTypeFilter === 'personnel';
 
   return (
     <>
@@ -332,15 +334,17 @@ export default function EmployeesPage() {
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                         </div>
-                        <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
-                        <SelectTrigger className="flex-1 min-w-[180px]">
-                            <SelectValue placeholder="Filtrer par service" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">Tous les services</SelectItem>
-                            {departments.map(dep => <SelectItem key={dep} value={dep}>{dep}</SelectItem>)}
-                        </SelectContent>
-                        </Select>
+                        {showDepartmentFilter && (
+                           <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
+                           <SelectTrigger className="flex-1 min-w-[180px]">
+                               <SelectValue placeholder="Filtrer par service" />
+                           </SelectTrigger>
+                           <SelectContent>
+                               <SelectItem value="all">Tous les services</SelectItem>
+                               {departments.map(dep => <SelectItem key={dep} value={dep}>{dep}</SelectItem>)}
+                           </SelectContent>
+                           </Select>
+                        )}
                         <Select value={statusFilter} onValueChange={setStatusFilter}>
                         <SelectTrigger className="flex-1 min-w-[180px]">
                             <SelectValue placeholder="Filtrer par statut" />

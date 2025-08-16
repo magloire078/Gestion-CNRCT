@@ -82,37 +82,7 @@ export default function EmployeesPage() {
 
   // Handle initial filter from URL
   useEffect(() => {
-    if (initialFilter) {
-      setPersonnelTypeFilter('all');
-      setDepartmentFilter('all');
-
-      switch (initialFilter) {
-        case 'actif':
-          setStatusFilter('Actif');
-          break;
-        case 'cnps':
-          setCnpsFilter(true);
-          break;
-        case 'directoire':
-          setDepartmentFilter('Directoire');
-          break;
-        case 'regional':
-          setPersonnelTypeFilter('regional');
-          break;
-        case 'personnel':
-          setPersonnelTypeFilter('personnel');
-          break;
-        case 'militaire':
-          setPersonnelTypeFilter('militaire');
-          break;
-        case 'gendarme':
-          setPersonnelTypeFilter('gendarme');
-          break;
-        case 'sexe':
-           // Let user select
-           break;
-      }
-    }
+    setPersonnelTypeFilter(initialFilter || 'all');
   }, [initialFilter]);
 
 
@@ -194,6 +164,9 @@ export default function EmployeesPage() {
 
       let matchesPersonnelType = true;
       switch (personnelTypeFilter) {
+          case 'directoire':
+              matchesPersonnelType = isDirectoire;
+              break;
           case 'regional':
               matchesPersonnelType = isRegional;
               break;

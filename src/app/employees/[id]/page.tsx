@@ -15,9 +15,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Pencil, User, Briefcase, Mail, Phone, MapPin, BadgeCheck, FileText, Calendar, Laptop, Rocket, FolderArchive, LogOut, Globe } from "lucide-react";
+import { ArrowLeft, Pencil, User, Briefcase, Mail, Phone, MapPin, BadgeCheck, FileText, Calendar, Laptop, Rocket, FolderArchive, LogOut, Globe, Landmark } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { lastDayOfMonth } from 'date-fns';
 
 
 type Status = "Approuvé" | "En attente" | "Rejeté";
@@ -39,6 +43,10 @@ export default function EmployeeDetailPage() {
     const [assets, setAssets] = useState<Asset[]>([]);
     const [missions, setMissions] = useState<Mission[]>([]);
     const [loading, setLoading] = useState(true);
+
+    const [isDateDialogOpen, setIsDateDialogOpen] = useState(false);
+    const [year, setYear] = useState<string>(new Date().getFullYear().toString());
+    const [month, setMonth] = useState<string>((new Date().getMonth() + 1).toString());
 
     useEffect(() => {
         if (typeof id !== 'string') return;
@@ -74,6 +82,28 @@ export default function EmployeeDetailPage() {
           default: return 'bg-muted';
         }
     };
+    
+    const handleNavigateToPayslip = () => {
+        if (!employee) return;
+
+        const selectedDate = new Date(parseInt(year), parseInt(month) - 1, 1);
+        const lastDay = lastDayOfMonth(selectedDate);
+        const formattedDate = lastDay.toISOString().split('T')[0]; // YYYY-MM-DD
+
+        setIsDateDialogOpen(false);
+        router.push(`/payroll/${employee.id}?payslipDate=${formattedDate}`);
+    };
+    
+    const years = Array.from({ length: 10 }, (_, i) => (new Date().getFullYear() - i).toString());
+    const months = [
+        { value: "1", label: "Janvier" }, { value: "2", label: "Février" },
+        { value: "3", label: "Mars" }, { value: "4", label: "Avril" },
+        { value: "5", label: "Mai" }, { value: "6", label: "Juin" },
+        { value: "7", label: "Juillet" }, { value: "8", label: "Août" },
+        { value: "9", label: "Septembre" }, { value: "10", label: "Octobre" },
+        { value: "11", label: "Novembre" }, { value: "12", label: "Décembre" },
+    ];
+
 
     if (loading) {
         return <EmployeeDetailSkeleton />;
@@ -108,164 +138,231 @@ export default function EmployeeDetailPage() {
                 </Button>
             </div>
             
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2 space-y-6">
+            <Tabs defaultValue="info">
+                <TabsList className="mb-4">
+                    <TabsTrigger value="info">Informations Générales</TabsTrigger>
+                    <TabsTrigger value="payroll">Paie</TabsTrigger>
+                    <TabsTrigger value="activity">Activité</TabsTrigger>
+                </TabsList>
+                <TabsContent value="info">
+                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div className="lg:col-span-2 space-y-6">
+                            <Card>
+                                <CardHeader className="flex flex-col md:flex-row items-start md:items-center gap-6">
+                                    <Avatar className="h-24 w-24 border">
+                                        <AvatarImage src={employee.photoUrl} alt={fullName} data-ai-hint="employee photo"/>
+                                        <AvatarFallback className={`text-3xl ${getAvatarBgClass(employee.sexe)}`}>
+                                            {employee.lastName?.charAt(0) || ''}{employee.firstName?.charAt(0) || ''}
+                                        </AvatarFallback>
+                                    </Avatar>
+                                    <div className="flex-1">
+                                        <CardTitle className="text-3xl">{fullName}</CardTitle>
+                                        <CardDescription className="text-lg text-muted-foreground">{employee.poste}</CardDescription>
+                                        <div className="mt-2 flex gap-2 flex-wrap">
+                                        <Badge variant={employee.status === 'Actif' ? 'default' : 'destructive'}>{employee.status}</Badge>
+                                        <Badge variant="secondary">{employee.department}</Badge>
+                                        {employee.direction && <Badge variant="outline">{employee.direction}</Badge>}
+                                        {employee.service && <Badge variant="outline" className="bg-accent/50">{employee.service}</Badge>}
+                                        </div>
+                                    </div>
+                                </CardHeader>
+                                <CardContent>
+                                    <InfoSection title="Informations de Contact" icon={User}>
+                                        <InfoItem label="Email" value={employee.email} icon={Mail} />
+                                        <InfoItem label="Téléphone" value={employee.mobile} icon={Phone} />
+                                    </InfoSection>
+                                </CardContent>
+                            </Card>
+                        </div>
+                        <div className="lg:col-span-1 space-y-6">
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="flex items-center gap-2 text-lg"><Briefcase className="h-5 w-5 text-primary"/> Info Professionnelle</CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    <InfoItem label="Poste" value={employee.poste} />
+                                    <InfoItem label="Matricule" value={employee.matricule} />
+                                    <InfoItem label="Date d'embauche" value={employee.dateEmbauche} />
+                                    <InfoItem label="Date de départ" value={employee.Date_Depart} />
+                                    <InfoItem label="Numéro de décision" value={employee.Num_Decision} icon={FileText} />
+                                </CardContent>
+                            </Card>
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="flex items-center gap-2 text-lg"><User className="h-5 w-5 text-primary"/> Info Personnelle</CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    <InfoItem label="Date de naissance" value={employee.Date_Naissance} icon={Calendar} />
+                                    <InfoItem label="Lieu de naissance" value={employee.Lieu_Naissance} icon={MapPin} />
+                                    <InfoItem label="Localisation" icon={Globe}>
+                                        {employee.Region || employee.Village ? (
+                                            <p className="text-base font-medium mt-1">{employee.Region}{employee.Village ? `, ${employee.Village}` : ''}</p>
+                                        ) : (
+                                            <p className="text-muted-foreground text-sm font-normal">Non spécifiée</p>
+                                        )}
+                                    </InfoItem>
+                                    {retirementDate && <InfoItem label="Date de retraite estimée" value={retirementDate} icon={LogOut}/>}
+                                    <InfoItem label="Compétences" icon={BadgeCheck}>
+                                        {employee.skills && employee.skills.length > 0 ? (
+                                            <div className="flex flex-wrap gap-2 pt-1">
+                                                {employee.skills.map(skill => (
+                                                    <Badge key={skill} variant="outline">{skill}</Badge>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <p className="text-muted-foreground text-sm font-normal">Aucune</p>
+                                        )}
+                                    </InfoItem>
+                                </CardContent>
+                            </Card>
+                        </div>
+                    </div>
+                </TabsContent>
+                <TabsContent value="payroll">
                     <Card>
-                        <CardHeader className="flex flex-col md:flex-row items-start md:items-center gap-6">
-                            <Avatar className="h-24 w-24 border">
-                                <AvatarImage src={employee.photoUrl} alt={fullName} data-ai-hint="employee photo"/>
-                                <AvatarFallback className={`text-3xl ${getAvatarBgClass(employee.sexe)}`}>
-                                    {employee.lastName?.charAt(0) || ''}{employee.firstName?.charAt(0) || ''}
-                                </AvatarFallback>
-                            </Avatar>
-                            <div className="flex-1">
-                                <CardTitle className="text-3xl">{fullName}</CardTitle>
-                                <CardDescription className="text-lg text-muted-foreground">{employee.poste}</CardDescription>
-                                <div className="mt-2 flex gap-2 flex-wrap">
-                                <Badge variant={employee.status === 'Actif' ? 'default' : 'destructive'}>{employee.status}</Badge>
-                                <Badge variant="secondary">{employee.department}</Badge>
-                                {employee.direction && <Badge variant="outline">{employee.direction}</Badge>}
-                                {employee.service && <Badge variant="outline" className="bg-accent/50">{employee.service}</Badge>}
+                         <CardHeader>
+                            <CardTitle className="flex items-center gap-2"><Landmark className="h-5 w-5 text-primary" /> Gestion de la Paie</CardTitle>
+                            <CardDescription>Générez et consultez les bulletins de paie de l'employé.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="flex items-center justify-between p-4 border rounded-lg">
+                                <p>Générer un nouveau bulletin de paie pour une période spécifique.</p>
+                                <Button onClick={() => setIsDateDialogOpen(true)}>Générer un bulletin</Button>
+                            </div>
+                            <div>
+                                <h4 className="font-semibold mb-2">Historique des bulletins</h4>
+                                <div className="text-center text-sm text-muted-foreground p-8 border-2 border-dashed rounded-lg">
+                                    L'historique des bulletins de paie sera bientôt disponible ici.
                                 </div>
                             </div>
-                        </CardHeader>
-                        <CardContent>
-                             <InfoSection title="Informations de Contact" icon={User}>
-                                <InfoItem label="Email" value={employee.email} icon={Mail} />
-                                <InfoItem label="Téléphone" value={employee.mobile} icon={Phone} />
-                            </InfoSection>
                         </CardContent>
                     </Card>
-
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2"><Calendar className="h-5 w-5 text-primary" /> Historique des Congés</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            {leaves.length > 0 ? (
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead>Type</TableHead>
-                                            <TableHead>Début</TableHead>
-                                            <TableHead>Fin</TableHead>
-                                            <TableHead>Statut</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {leaves.map(leave => (
-                                            <TableRow key={leave.id}>
-                                                <TableCell>{leave.type}</TableCell>
-                                                <TableCell>{leave.startDate}</TableCell>
-                                                <TableCell>{leave.endDate}</TableCell>
-                                                <TableCell><Badge variant={statusVariantMap[leave.status as Status] || "default"}>{leave.status}</Badge></TableCell>
+                </TabsContent>
+                 <TabsContent value="activity">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2"><Calendar className="h-5 w-5 text-primary" /> Historique des Congés</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                {leaves.length > 0 ? (
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead>Type</TableHead>
+                                                <TableHead>Début</TableHead>
+                                                <TableHead>Fin</TableHead>
+                                                <TableHead>Statut</TableHead>
                                             </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                            ) : <p className="text-sm text-muted-foreground">Aucune demande de congé trouvée.</p>}
-                        </CardContent>
-                    </Card>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {leaves.map(leave => (
+                                                <TableRow key={leave.id}>
+                                                    <TableCell>{leave.type}</TableCell>
+                                                    <TableCell>{leave.startDate}</TableCell>
+                                                    <TableCell>{leave.endDate}</TableCell>
+                                                    <TableCell><Badge variant={statusVariantMap[leave.status as Status] || "default"}>{leave.status}</Badge></TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                ) : <p className="text-sm text-muted-foreground">Aucune demande de congé trouvée.</p>}
+                            </CardContent>
+                        </Card>
 
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2"><Rocket className="h-5 w-5 text-primary" /> Missions Récentes</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            {missions.length > 0 ? (
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead>Titre</TableHead>
-                                            <TableHead>Période</TableHead>
-                                            <TableHead>Statut</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {missions.map(mission => (
-                                            <TableRow key={mission.id}>
-                                                <TableCell>{mission.title}</TableCell>
-                                                <TableCell>{mission.startDate} - {mission.endDate}</TableCell>
-                                                <TableCell><Badge variant="secondary">{mission.status}</Badge></TableCell>
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2"><Rocket className="h-5 w-5 text-primary" /> Missions Récentes</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                {missions.length > 0 ? (
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead>Titre</TableHead>
+                                                <TableHead>Période</TableHead>
+                                                <TableHead>Statut</TableHead>
                                             </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                            ) : <p className="text-sm text-muted-foreground">Aucune mission récente.</p>}
-                        </CardContent>
-                    </Card>
-                </div>
-                <div className="lg:col-span-1 space-y-6">
-                    <Card>
-                         <CardHeader>
-                             <CardTitle className="flex items-center gap-2 text-lg"><Briefcase className="h-5 w-5 text-primary"/> Info Professionnelle</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <InfoItem label="Poste" value={employee.poste} />
-                            <InfoItem label="Matricule" value={employee.matricule} />
-                            <InfoItem label="Date d'embauche" value={employee.dateEmbauche} />
-                             <InfoItem label="Date de départ" value={employee.Date_Depart} />
-                            <InfoItem label="Numéro de décision" value={employee.Num_Decision} icon={FileText} />
-                        </CardContent>
-                    </Card>
-                     <Card>
-                         <CardHeader>
-                             <CardTitle className="flex items-center gap-2 text-lg"><User className="h-5 w-5 text-primary"/> Info Personnelle</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <InfoItem label="Date de naissance" value={employee.Date_Naissance} icon={Calendar} />
-                            <InfoItem label="Lieu de naissance" value={employee.Lieu_Naissance} icon={MapPin} />
-                            <InfoItem label="Localisation" icon={Globe}>
-                                {employee.Region || employee.Village ? (
-                                    <p className="text-base font-medium mt-1">{employee.Region}{employee.Village ? `, ${employee.Village}` : ''}</p>
-                                ) : (
-                                    <p className="text-muted-foreground text-sm font-normal">Non spécifiée</p>
-                                )}
-                            </InfoItem>
-                            {retirementDate && <InfoItem label="Date de retraite estimée" value={retirementDate} icon={LogOut}/>}
-                             <InfoItem label="Compétences" icon={BadgeCheck}>
-                                {employee.skills && employee.skills.length > 0 ? (
-                                    <div className="flex flex-wrap gap-2 pt-1">
-                                        {employee.skills.map(skill => (
-                                            <Badge key={skill} variant="outline">{skill}</Badge>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <p className="text-muted-foreground text-sm font-normal">Aucune</p>
-                                )}
-                            </InfoItem>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2"><Laptop className="h-5 w-5 text-primary" /> Actifs Assignés</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            {assets.length > 0 ? (
-                                <ul className="space-y-2">
-                                {assets.map(asset => (
-                                    <li key={asset.tag} className="text-sm flex justify-between">
-                                        <span>{asset.modele}</span>
-                                        <span className="text-muted-foreground">({asset.tag})</span>
-                                    </li>
-                                ))}
-                                </ul>
-                            ) : <p className="text-sm text-muted-foreground">Aucun actif assigné.</p>}
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2"><FolderArchive className="h-5 w-5 text-primary" /> Documents Associés</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                           <p className="text-sm text-muted-foreground text-center py-4">
-                                La fonctionnalité de gestion des documents sera bientôt disponible ici.
-                           </p>
-                        </CardContent>
-                    </Card>
-                </div>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {missions.map(mission => (
+                                                <TableRow key={mission.id}>
+                                                    <TableCell>{mission.title}</TableCell>
+                                                    <TableCell>{mission.startDate} - {mission.endDate}</TableCell>
+                                                    <TableCell><Badge variant="secondary">{mission.status}</Badge></TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                ) : <p className="text-sm text-muted-foreground">Aucune mission récente.</p>}
+                            </CardContent>
+                        </Card>
+                        
+                         <Card>
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2"><Laptop className="h-5 w-5 text-primary" /> Actifs Assignés</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                {assets.length > 0 ? (
+                                    <ul className="space-y-2">
+                                    {assets.map(asset => (
+                                        <li key={asset.tag} className="text-sm flex justify-between">
+                                            <span>{asset.modele}</span>
+                                            <span className="text-muted-foreground">({asset.tag})</span>
+                                        </li>
+                                    ))}
+                                    </ul>
+                                ) : <p className="text-sm text-muted-foreground">Aucun actif assigné.</p>}
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2"><FolderArchive className="h-5 w-5 text-primary" /> Documents Associés</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                            <p className="text-sm text-muted-foreground text-center py-4">
+                                    La fonctionnalité de gestion des documents sera bientôt disponible ici.
+                            </p>
+                            </CardContent>
+                        </Card>
+                    </div>
+                 </TabsContent>
+            </Tabs>
 
-            </div>
+            <Dialog open={isDateDialogOpen} onOpenChange={setIsDateDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Choisir la Période du Bulletin</DialogTitle>
+                        <DialogDescription>
+                            Sélectionnez le mois et l'année pour générer le bulletin de paie de {fullName}.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid grid-cols-2 gap-4 py-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="year">Année</Label>
+                            <Select value={year} onValueChange={setYear}>
+                                <SelectTrigger id="year"><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                    {years.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="month">Mois</Label>
+                            <Select value={month} onValueChange={setMonth}>
+                                <SelectTrigger id="month"><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                    {months.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsDateDialogOpen(false)}>Annuler</Button>
+                        <Button onClick={handleNavigateToPayslip}>Générer le Bulletin</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

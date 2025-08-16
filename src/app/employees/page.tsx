@@ -62,12 +62,23 @@ export default function EmployeesPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [cnpsFilter, setCnpsFilter] = useState<boolean | 'all'>('all');
   const [sexeFilter, setSexeFilter] = useState('all');
-  const [personnelTypeFilter, setPersonnelTypeFilter] = useState('all');
+  const [personnelTypeFilter, setPersonnelTypeFilter] = useState(initialFilter || 'all');
 
   const [columnsToPrint, setColumnsToPrint] = useState<ColumnKeys[]>(Object.keys(allColumns) as ColumnKeys[]);
   const [organizationLogos, setOrganizationLogos] = useState({ mainLogoUrl: '', secondaryLogoUrl: '' });
 
   const [printDate, setPrintDate] = useState('');
+
+  const pageTitle = useMemo(() => {
+    switch (initialFilter) {
+      case 'directoire': return 'Membres du Directoire';
+      case 'regional': return 'Comités Régionaux';
+      case 'personnel': return 'Agents / Personnel';
+      case 'militaire': return 'Militaires';
+      case 'gendarme': return 'Gendarmes';
+      default: return 'Effectif Global';
+    }
+  }, [initialFilter]);
 
   // Handle initial filter from URL
   useEffect(() => {
@@ -307,7 +318,7 @@ export default function EmployeesPage() {
         <div className={isPrinting ? 'print-hidden' : ''}>
             <div className="flex flex-col gap-6 main-content">
                 <div className="flex items-center justify-between">
-                    <h1 className="text-3xl font-bold tracking-tight">Gestion des Employés</h1>
+                    <h1 className="text-3xl font-bold tracking-tight">{pageTitle}</h1>
                     <div className="flex gap-2">
                         <Button variant="outline" className="w-full sm:w-auto" onClick={() => setIsPrintDialogOpen(true)}>
                           <Printer className="mr-2 h-4 w-4" />

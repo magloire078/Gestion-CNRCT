@@ -67,6 +67,7 @@ const allMenuItems = [
     icon: Users,
     permission: "page:employees:view",
     subItems: [
+        { href: "/employees", label: "Effectif Global", icon: Users, permission: "page:employees:view-all" },
         { href: "/employees?filter=directoire", label: "Membres du directoire", icon: Building, permission: "page:board-members:view" },
         { href: "/employees?filter=regional", label: "Comités régionaux", icon: Globe, permission: "page:regional-committees:view" },
         { href: "/employees?filter=personnel", label: "Agent/Personnel", icon: UserSquare, permission: "page:staff:view" },
@@ -179,8 +180,8 @@ function AppLayout({ children }: { children: React.ReactNode }) {
             <SidebarMenu>
               {menuItems.map((item, index) => (
                 item.isCollapsible ? (
-                  <SidebarMenuItem key={index}>
-                    <Collapsible>
+                  <Collapsible key={index}>
+                    <SidebarMenuItem>
                       <CollapsibleTrigger asChild>
                         <SidebarMenuButton
                           isActive={isSubItemActive(item.subItems)}
@@ -196,7 +197,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
                           {item.subItems.filter(sub => hasPermission(sub.permission)).map(subItem => (
                             <SidebarMenuSubItem key={subItem.href}>
                               <SidebarMenuSubButton asChild isActive={pathname === subItem.href}>
-                                <Link href={subItem.href}>
+                                <Link href={subItem.href!}>
                                     <subItem.icon className="mr-2 h-4 w-4" />
                                     <span>{subItem.label}</span>
                                 </Link>
@@ -205,8 +206,8 @@ function AppLayout({ children }: { children: React.ReactNode }) {
                           ))}
                         </SidebarMenuSub>
                       </CollapsibleContent>
-                    </Collapsible>
-                  </SidebarMenuItem>
+                    </SidebarMenuItem>
+                  </Collapsible>
                 ) : (
                 <SidebarMenuItem key={item.href}>
                   <SidebarMenuButton

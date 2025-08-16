@@ -3,6 +3,7 @@
 export const allPermissions = {
   "Accès au Tableau de Bord": "page:dashboard:view",
   "Gestion des Employés": "page:employees:view",
+  "Accès à l'Effectif Global": "page:employees:view-all",
   "Gestion des Membres du Directoire": "page:board-members:view",
   "Gestion des Comités Régionaux": "page:regional-committees:view",
   "Gestion des Agents/Personnel": "page:staff:view",

@@ -71,7 +71,7 @@ const allMenuItems = [
         { href: "/employees?filter=directoire", label: "Membres du directoire", icon: Building, permission: "page:board-members:view" },
         { href: "/employees?filter=regional", label: "Comités régionaux", icon: Globe, permission: "page:regional-committees:view" },
         { href: "/employees?filter=personnel", label: "Agent/Personnel", icon: UserSquare, permission: "page:staff:view" },
-        { href: "/employees?filter=militaire", label: "Militaires", icon: ShieldHalf, permission: "page:military:view" },
+        { href: "/employees?filter=garde-republicaine", label: "Garde Républicaine", icon: ShieldHalf, permission: "page:republican-guard:view" },
         { href: "/employees?filter=gendarme", label: "Gendarmes", icon: Shield, permission: "page:gendarmerie:view" },
     ]
   },
@@ -180,34 +180,34 @@ function AppLayout({ children }: { children: React.ReactNode }) {
             <SidebarMenu>
               {menuItems.map((item, index) => (
                 item.isCollapsible ? (
-                  <Collapsible key={index}>
-                    <SidebarMenuItem>
-                      <CollapsibleTrigger asChild>
-                        <SidebarMenuButton
-                          isActive={isSubItemActive(item.subItems)}
-                          className="w-full justify-start hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                        >
-                          <item.icon className="mr-2 h-4 w-4" />
-                          {item.label}
-                          <ChevronDown className="ml-auto h-4 w-4 transition-transform [&[data-state=open]]:rotate-180" />
-                        </SidebarMenuButton>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent asChild>
-                        <SidebarMenuSub>
-                          {item.subItems.filter(sub => hasPermission(sub.permission)).map(subItem => (
-                            <SidebarMenuSubItem key={subItem.href}>
-                              <SidebarMenuSubButton asChild isActive={pathname === subItem.href}>
-                                <Link href={subItem.href!}>
-                                    <subItem.icon className="mr-2 h-4 w-4" />
-                                    <span>{subItem.label}</span>
-                                </Link>
-                              </SidebarMenuSubButton>
-                            </SidebarMenuSubItem>
-                          ))}
-                        </SidebarMenuSub>
-                      </CollapsibleContent>
-                    </SidebarMenuItem>
-                  </Collapsible>
+                   <Collapsible key={index}>
+                     <SidebarMenuItem>
+                        <CollapsibleTrigger asChild>
+                            <SidebarMenuButton
+                            isActive={isSubItemActive(item.subItems)}
+                            className="w-full justify-start hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                            >
+                            <item.icon className="mr-2 h-4 w-4" />
+                            {item.label}
+                            <ChevronDown className="ml-auto h-4 w-4 transition-transform [&[data-state=open]]:rotate-180" />
+                            </SidebarMenuButton>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent asChild>
+                            <SidebarMenuSub>
+                            {item.subItems.filter(sub => hasPermission(sub.permission)).map(subItem => (
+                                <SidebarMenuSubItem key={subItem.href}>
+                                <SidebarMenuSubButton asChild isActive={pathname === subItem.href}>
+                                    <Link href={subItem.href!}>
+                                        <subItem.icon className="mr-2 h-4 w-4" />
+                                        <span>{subItem.label}</span>
+                                    </Link>
+                                </SidebarMenuSubButton>
+                                </SidebarMenuSubItem>
+                            ))}
+                            </SidebarMenuSub>
+                        </CollapsibleContent>
+                     </SidebarMenuItem>
+                   </Collapsible>
                 ) : (
                 <SidebarMenuItem key={item.href}>
                   <SidebarMenuButton

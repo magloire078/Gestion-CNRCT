@@ -7,7 +7,7 @@ export const allPermissions = {
   "Gestion des Membres du Directoire": "page:board-members:view",
   "Gestion des Comités Régionaux": "page:regional-committees:view",
   "Gestion des Agents/Personnel": "page:staff:view",
-  "Gestion des Militaires": "page:military:view",
+  "Gestion de la Garde Républicaine": "page:republican-guard:view",
   "Gestion des Gendarmes": "page:gendarmerie:view",
   "Gestion des Rois & Chefs": "page:chiefs:view",
   "Accès à la Cartographie": "page:mapping:view",

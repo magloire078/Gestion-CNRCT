@@ -74,7 +74,7 @@ export default function EmployeesPage() {
       case 'directoire': return 'Membres du Directoire';
       case 'regional': return 'Comités Régionaux';
       case 'personnel': return 'Agents / Personnel';
-      case 'militaire': return 'Militaires';
+      case 'garde-republicaine': return 'Garde Républicaine';
       case 'gendarme': return 'Gendarmes';
       default: return 'Effectif Global';
     }
@@ -159,7 +159,7 @@ export default function EmployeesPage() {
       
       const isDirectoire = employee.department === 'Directoire';
       const isRegional = !!employee.Region;
-      const isMilitaire = employee.department === 'Militaire';
+      const isGardeRepublicaine = employee.department === 'Garde Républicaine';
       const isGendarme = employee.department === 'Gendarme';
 
       let matchesPersonnelType = true;
@@ -171,10 +171,10 @@ export default function EmployeesPage() {
               matchesPersonnelType = isRegional;
               break;
           case 'personnel':
-              matchesPersonnelType = !isDirectoire && !isRegional && !isMilitaire && !isGendarme;
+              matchesPersonnelType = !isDirectoire && !isRegional && !isGardeRepublicaine && !isGendarme;
               break;
-          case 'militaire':
-              matchesPersonnelType = isMilitaire;
+          case 'garde-republicaine':
+              matchesPersonnelType = isGardeRepublicaine;
               break;
           case 'gendarme':
               matchesPersonnelType = isGendarme;

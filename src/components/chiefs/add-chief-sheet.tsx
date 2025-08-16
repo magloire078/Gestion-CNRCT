@@ -168,16 +168,16 @@ export function AddChiefSheet({ isOpen, onClose, onAddChief }: AddChiefSheetProp
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => { if (!open) handleClose(); }}>
-      <SheetContent className="sm:max-w-lg flex flex-col">
+      <SheetContent className="sm:max-w-lg">
         <SheetHeader>
           <SheetTitle>Ajouter un nouveau Chef</SheetTitle>
           <SheetDescription>
             Remplissez les détails ci-dessous pour ajouter une nouvelle autorité traditionnelle.
           </SheetDescription>
         </SheetHeader>
-        <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
-          <ScrollArea className="flex-1 pr-6 -mr-6">
-            <div className="grid gap-4 py-4">
+        <form onSubmit={handleSubmit} className="flex flex-col h-full overflow-hidden">
+          <ScrollArea className="flex-1 p-6">
+            <div className="grid gap-4">
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label className="text-right">Photo</Label>
                 <div className="col-span-3 flex items-center gap-4">
@@ -215,11 +215,10 @@ export function AddChiefSheet({ isOpen, onClose, onAddChief }: AddChiefSheetProp
               <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="contact" className="text-right">Contact</Label><Input id="contact" type="text" value={contact} onChange={(e) => setContact(e.target.value)} className="col-span-3" placeholder="Numéro de téléphone ou email" /></div>
               <div className="grid grid-cols-4 items-start gap-4"><Label htmlFor="bio" className="text-right pt-2">Biographie</Label><Textarea id="bio" value={bio} onChange={(e) => setBio(e.target.value)} className="col-span-3" rows={3} placeholder="Brève biographie ou notes..."/></div>
             </div>
+            {error && <p className="text-sm text-destructive text-center py-2">{error}</p>}
           </ScrollArea>
           
-          {error && <p className="text-sm text-destructive text-center py-2">{error}</p>}
-          
-          <SheetFooter className="pt-4 mt-auto border-t">
+          <SheetFooter>
             <SheetClose asChild><Button type="button" variant="outline" onClick={handleClose}>Annuler</Button></SheetClose>
             <Button type="submit" disabled={isSubmitting}>{isSubmitting ? "Enregistrement..." : "Enregistrer"}</Button>
           </SheetFooter>

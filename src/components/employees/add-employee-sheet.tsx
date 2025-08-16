@@ -40,6 +40,7 @@ import { Upload, Sparkles, Loader2 } from "lucide-react";
 import { Textarea } from "../ui/textarea";
 import { generateAvatar } from "@/ai/flows/generate-avatar-flow";
 import { useToast } from "@/hooks/use-toast";
+import { ScrollArea } from "../ui/scroll-area";
 
 interface AddEmployeeSheetProps {
   isOpen: boolean;
@@ -246,50 +247,52 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
     <>
     <Sheet open={isOpen} onOpenChange={(open) => { if (!open) handleClose(); }}>
       <SheetContent className="sm:max-w-xl">
-        <form onSubmit={handleSubmit}>
-          <SheetHeader>
-            <SheetTitle>Ajouter un nouvel employé</SheetTitle>
-            <SheetDescription>
-              Remplissez les détails ci-dessous pour ajouter un nouvel employé au système.
-            </SheetDescription>
-          </SheetHeader>
-          <div className="grid gap-4 py-4 max-h-[85vh] overflow-y-auto pr-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label className="text-right">Photo</Label>
-              <div className="col-span-3 flex items-center gap-4">
-                  <Avatar className="h-16 w-16"><AvatarImage src={photoPreview} alt="Aperçu de la photo" data-ai-hint="employee photo" /><AvatarFallback>{firstName ? firstName.charAt(0) : 'E'}</AvatarFallback></Avatar>
-                  <div className="flex flex-col gap-2">
-                    <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}><Upload className="mr-2 h-4 w-4" />Télécharger</Button>
-                    <Button type="button" variant="outline" size="sm" onClick={() => setIsAvatarDialogOpen(true)}><Sparkles className="mr-2 h-4 w-4" />Générer avec IA</Button>
-                  </div>
-                  <Input ref={fileInputRef} type="file" className="hidden" accept="image/*" onChange={handlePhotoChange}/>
-              </div>
-            </div>
+        <form onSubmit={handleSubmit} className="flex flex-col h-full overflow-hidden">
+            <SheetHeader>
+                <SheetTitle>Ajouter un nouvel employé</SheetTitle>
+                <SheetDescription>
+                Remplissez les détails ci-dessous pour ajouter un nouvel employé au système.
+                </SheetDescription>
+            </SheetHeader>
+            <ScrollArea className="flex-1 p-6 -mx-6">
+                <div className="grid gap-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                    <Label className="text-right">Photo</Label>
+                    <div className="col-span-3 flex items-center gap-4">
+                        <Avatar className="h-16 w-16"><AvatarImage src={photoPreview} alt="Aperçu de la photo" data-ai-hint="employee photo" /><AvatarFallback>{firstName ? firstName.charAt(0) : 'E'}</AvatarFallback></Avatar>
+                        <div className="flex flex-col gap-2">
+                            <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}><Upload className="mr-2 h-4 w-4" />Télécharger</Button>
+                            <Button type="button" variant="outline" size="sm" onClick={() => setIsAvatarDialogOpen(true)}><Sparkles className="mr-2 h-4 w-4" />Générer avec IA</Button>
+                        </div>
+                        <Input ref={fileInputRef} type="file" className="hidden" accept="image/*" onChange={handlePhotoChange}/>
+                    </div>
+                    </div>
 
-            <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="matricule" className="text-right">Matricule</Label><Input id="matricule" value={matricule} onChange={(e) => setMatricule(e.target.value)} className="col-span-3" required/></div>
-            <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="lastName" className="text-right">Nom</Label><Input id="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} className="col-span-3" required/></div>
-            <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="firstName" className="text-right">Prénom(s)</Label><Input id="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} className="col-span-3" required/></div>
-            <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="email" className="text-right">Email</Label><Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="col-span-3" /></div>
-            <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="poste" className="text-right">Poste</Label><Input id="poste" value={poste} onChange={(e) => setPoste(e.target.value)} className="col-span-3" required/></div>
-            
-            <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="department" className="text-right">Département</Label><Select value={department} onValueChange={(value) => { setDepartment(value); setDirection(''); setService(''); }} required><SelectTrigger className="col-span-3"><SelectValue placeholder="Sélectionnez..." /></SelectTrigger><SelectContent>{departmentList.map(dep => (<SelectItem key={dep.id} value={dep.name}>{dep.name}</SelectItem>))}</SelectContent></Select></div>
-            <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="direction" className="text-right">Direction</Label><Select value={direction} onValueChange={(value) => { setDirection(value); setService(''); }} disabled={!department}><SelectTrigger className="col-span-3"><SelectValue placeholder="Sélectionnez..." /></SelectTrigger><SelectContent>{filteredDirections.map(dir => (<SelectItem key={dir.id} value={dir.name}>{dir.name}</SelectItem>))}</SelectContent></Select></div>
-            <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="service" className="text-right">Service</Label><Select value={service} onValueChange={setService} disabled={!department || filteredServices.length === 0}><SelectTrigger className="col-span-3"><SelectValue placeholder="Sélectionnez..." /></SelectTrigger><SelectContent>{filteredServices.map(svc => (<SelectItem key={svc.id} value={svc.name}>{svc.name}</SelectItem>))}</SelectContent></Select></div>
+                    <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="matricule" className="text-right">Matricule</Label><Input id="matricule" value={matricule} onChange={(e) => setMatricule(e.target.value)} className="col-span-3" required/></div>
+                    <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="lastName" className="text-right">Nom</Label><Input id="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} className="col-span-3" required/></div>
+                    <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="firstName" className="text-right">Prénom(s)</Label><Input id="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} className="col-span-3" required/></div>
+                    <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="email" className="text-right">Email</Label><Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="col-span-3" /></div>
+                    <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="poste" className="text-right">Poste</Label><Input id="poste" value={poste} onChange={(e) => setPoste(e.target.value)} className="col-span-3" required/></div>
+                    
+                    <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="department" className="text-right">Département</Label><Select value={department} onValueChange={(value) => { setDepartment(value); setDirection(''); setService(''); }} required><SelectTrigger className="col-span-3"><SelectValue placeholder="Sélectionnez..." /></SelectTrigger><SelectContent>{departmentList.map(dep => (<SelectItem key={dep.id} value={dep.name}>{dep.name}</SelectItem>))}</SelectContent></Select></div>
+                    <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="direction" className="text-right">Direction</Label><Select value={direction} onValueChange={(value) => { setDirection(value); setService(''); }} disabled={!department}><SelectTrigger className="col-span-3"><SelectValue placeholder="Sélectionnez..." /></SelectTrigger><SelectContent>{filteredDirections.map(dir => (<SelectItem key={dir.id} value={dir.name}>{dir.name}</SelectItem>))}</SelectContent></Select></div>
+                    <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="service" className="text-right">Service</Label><Select value={service} onValueChange={setService} disabled={!department || filteredServices.length === 0}><SelectTrigger className="col-span-3"><SelectValue placeholder="Sélectionnez..." /></SelectTrigger><SelectContent>{filteredServices.map(svc => (<SelectItem key={svc.id} value={svc.name}>{svc.name}</SelectItem>))}</SelectContent></Select></div>
 
-            <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="region" className="text-right">Région</Label><Input id="region" value={region} onChange={(e) => setRegion(e.target.value)} className="col-span-3" /></div>
-            <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="village" className="text-right">Village</Label><Input id="village" value={village} onChange={(e) => setVillage(e.target.value)} className="col-span-3" /></div>
-            
-            <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="status" className="text-right">Statut</Label><Select value={status} onValueChange={(value: Employe['status']) => setStatus(value)} required><SelectTrigger className="col-span-3"><SelectValue placeholder="Sélectionnez un statut" /></SelectTrigger><SelectContent><SelectItem value="Actif">Actif</SelectItem><SelectItem value="En congé">En congé</SelectItem><SelectItem value="Licencié">Licencié</SelectItem><SelectItem value="Retraité">Retraité</SelectItem><SelectItem value="Décédé">Décédé</SelectItem></SelectContent></Select></div>
-             <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="dateDepart" className="text-right">Date de Départ</Label><Input id="dateDepart" type="date" value={dateDepart} onChange={(e) => setDateDepart(e.target.value)} className="col-span-3" /></div>
-            <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="sexe" className="text-right">Sexe</Label><Select value={sexe} onValueChange={(value: Employe['sexe']) => setSexe(value)}><SelectTrigger className="col-span-3"><SelectValue placeholder="Sélectionnez un sexe" /></SelectTrigger><SelectContent><SelectItem value="Homme">Homme</SelectItem><SelectItem value="Femme">Femme</SelectItem><SelectItem value="Autre">Autre</SelectItem></SelectContent></Select></div>
-            <div className="grid grid-cols-4 items-start gap-4"><Label htmlFor="skills" className="text-right pt-2">Compétences</Label><Textarea id="skills" value={skills} onChange={(e) => setSkills(e.target.value)} className="col-span-3" rows={3} placeholder="Séparer les compétences par une virgule..."/></div>
-            
-            {error && <p className="text-sm text-destructive col-span-4 text-center">{error}</p>}
-          </div>
-          <SheetFooter className="pt-4 border-t">
-            <SheetClose asChild><Button type="button" variant="outline" onClick={handleClose}>Annuler</Button></SheetClose>
-            <Button type="submit" disabled={isSubmitting}>{isSubmitting ? "Enregistrement..." : "Enregistrer"}</Button>
-          </SheetFooter>
+                    <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="region" className="text-right">Région</Label><Input id="region" value={region} onChange={(e) => setRegion(e.target.value)} className="col-span-3" /></div>
+                    <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="village" className="text-right">Village</Label><Input id="village" value={village} onChange={(e) => setVillage(e.target.value)} className="col-span-3" /></div>
+                    
+                    <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="status" className="text-right">Statut</Label><Select value={status} onValueChange={(value: Employe['status']) => setStatus(value)} required><SelectTrigger className="col-span-3"><SelectValue placeholder="Sélectionnez un statut" /></SelectTrigger><SelectContent><SelectItem value="Actif">Actif</SelectItem><SelectItem value="En congé">En congé</SelectItem><SelectItem value="Licencié">Licencié</SelectItem><SelectItem value="Retraité">Retraité</SelectItem><SelectItem value="Décédé">Décédé</SelectItem></SelectContent></Select></div>
+                    <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="dateDepart" className="text-right">Date de Départ</Label><Input id="dateDepart" type="date" value={dateDepart} onChange={(e) => setDateDepart(e.target.value)} className="col-span-3" /></div>
+                    <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="sexe" className="text-right">Sexe</Label><Select value={sexe} onValueChange={(value: Employe['sexe']) => setSexe(value)}><SelectTrigger className="col-span-3"><SelectValue placeholder="Sélectionnez un sexe" /></SelectTrigger><SelectContent><SelectItem value="Homme">Homme</SelectItem><SelectItem value="Femme">Femme</SelectItem><SelectItem value="Autre">Autre</SelectItem></SelectContent></Select></div>
+                    <div className="grid grid-cols-4 items-start gap-4"><Label htmlFor="skills" className="text-right pt-2">Compétences</Label><Textarea id="skills" value={skills} onChange={(e) => setSkills(e.target.value)} className="col-span-3" rows={3} placeholder="Séparer les compétences par une virgule..."/></div>
+                    
+                    {error && <p className="text-sm text-destructive col-span-4 text-center">{error}</p>}
+                </div>
+            </ScrollArea>
+            <SheetFooter>
+                <SheetClose asChild><Button type="button" variant="outline" onClick={handleClose}>Annuler</Button></SheetClose>
+                <Button type="submit" disabled={isSubmitting}>{isSubmitting ? "Enregistrement..." : "Enregistrer"}</Button>
+            </SheetFooter>
         </form>
       </SheetContent>
     </Sheet>

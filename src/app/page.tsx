@@ -440,12 +440,7 @@ function AnniversaryPrintLayout({ logos, employees, period, year }: { logos: Org
         <div id="print-section" className="bg-white text-black p-8 w-full print:shadow-none print:border-none print:p-0">
             <header className="flex justify-between items-start mb-8">
                 <div className="text-center">
-                    <h2 className="font-bold">Chambre Nationale des Rois</h2>
-                    <h2 className="font-bold">et Chefs Traditionnels</h2>
-                    {logos.mainLogoUrl && <img src={logos.mainLogoUrl} alt="Logo CNRCT" width={80} height={80} className="mx-auto mt-2" />}
-                    <p className="font-bold mt-1 text-sm">UN CHEF NOUVEAU</p>
-                    <p className="text-xs mt-4">LE DIRECTOIRE</p>
-                    <p className="text-xs">LE CABINET / LE SERVICE INFORMATIQUE</p>
+                    <img src="/logo_cnrct.png" alt="Logo CNRCT" width={100} height={100} className="mx-auto" />
                 </div>
                 <div className="text-center">
                     <h2 className="font-bold">République de Côte d'Ivoire</h2>
@@ -505,12 +500,7 @@ function RetirementPrintLayout({ logos, employees, year }: { logos: Organization
         <div id="print-section" className="bg-white text-black p-8 w-full print:shadow-none print:border-none print:p-0">
             <header className="flex justify-between items-start mb-8">
                 <div className="text-center">
-                    <h2 className="font-bold">Chambre Nationale des Rois</h2>
-                    <h2 className="font-bold">et Chefs Traditionnels</h2>
-                    {logos.mainLogoUrl && <img src={logos.mainLogoUrl} alt="Logo CNRCT" width={80} height={80} className="mx-auto mt-2" />}
-                    <p className="font-bold mt-1 text-sm">UN CHEF NOUVEAU</p>
-                    <p className="text-xs mt-4">LE DIRECTOIRE</p>
-                    <p className="text-xs">LE CABINET / LE SERVICE INFORMATIQUE</p>
+                    <img src="/logo_cnrct.png" alt="Logo CNRCT" width={100} height={100} className="mx-auto" />
                 </div>
                 <div className="text-center">
                     <h2 className="font-bold">République de Côte d'Ivoire</h2>
@@ -560,7 +550,3 @@ function RetirementPrintLayout({ logos, employees, year }: { logos: Organization
         </div>
     );
 }
-
-    
-
-    

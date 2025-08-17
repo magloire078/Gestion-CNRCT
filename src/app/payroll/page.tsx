@@ -506,10 +506,8 @@ function PayslipTemplate({ payslipDetails }: { payslipDetails: PayslipDetails })
         <div className="w-full max-w-4xl mx-auto bg-white p-6 border-b border-gray-300 text-black font-arial text-[8px] leading-tight print-page-break">
            {/* Header */}
             <header className="flex justify-between items-center pb-2 border-b-2 border-gray-400">
-                 <div className="w-1/4 text-center flex flex-col justify-center items-center h-24">
-                    <p className="font-bold text-xs">CHAMBRE NATIONALE DES</p>
-                    <p className="font-bold text-xs">ROIS ET CHEFS TRADITIONNELS</p>
-                        {organizationLogos.mainLogoUrl && <img src={organizationLogos.mainLogoUrl} alt="Logo CNRCT" className="max-h-16 max-w-full h-auto w-auto mt-1" />}
+                <div className="w-1/4 text-center flex flex-col justify-center items-center h-24">
+                     <img src="/logo_cnrct.png" alt="Logo CNRCT" className="max-h-24 max-w-full h-auto w-auto" />
                 </div>
                 
                     <div className="w-1/4 text-center flex flex-col justify-center items-center h-24">

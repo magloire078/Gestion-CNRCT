@@ -98,6 +98,8 @@ export default function DashboardPage() {
             subscribeToChiefs(setChiefs, console.error),
         ];
         
+        getOrganizationSettings().then(setOrganizationLogos);
+        
         const loadingTimeout = setTimeout(() => setLoading(false), 2000);
 
         return () => {
@@ -171,14 +173,10 @@ export default function DashboardPage() {
     }, [isPrintingAnniversaries, isPrintingRetirements]);
 
     const handlePrintAnniversaries = async () => {
-        const logos = await getOrganizationSettings();
-        setOrganizationLogos(logos);
         setIsPrintingAnniversaries(true);
     };
     
     const handlePrintRetirements = async () => {
-        const logos = await getOrganizationSettings();
-        setOrganizationLogos(logos);
         setIsPrintingRetirements(true);
     };
 
@@ -440,7 +438,7 @@ function AnniversaryPrintLayout({ logos, employees, period, year }: { logos: Org
         <div id="print-section" className="bg-white text-black p-8 w-full print:shadow-none print:border-none print:p-0">
             <header className="flex justify-between items-start mb-8">
                 <div className="text-center">
-                    <img src="/logo_cnrct.png" alt="Logo CNRCT" width={100} height={100} className="mx-auto" />
+                    {logos.mainLogoUrl && <img src={logos.mainLogoUrl} alt="Logo CNRCT" width={100} height={100} className="mx-auto" />}
                 </div>
                 <div className="text-center">
                     <h2 className="font-bold">République de Côte d'Ivoire</h2>
@@ -500,7 +498,7 @@ function RetirementPrintLayout({ logos, employees, year }: { logos: Organization
         <div id="print-section" className="bg-white text-black p-8 w-full print:shadow-none print:border-none print:p-0">
             <header className="flex justify-between items-start mb-8">
                 <div className="text-center">
-                    <img src="/logo_cnrct.png" alt="Logo CNRCT" width={100} height={100} className="mx-auto" />
+                    {logos.mainLogoUrl && <img src={logos.mainLogoUrl} alt="Logo CNRCT" width={100} height={100} className="mx-auto" />}
                 </div>
                 <div className="text-center">
                     <h2 className="font-bold">République de Côte d'Ivoire</h2>

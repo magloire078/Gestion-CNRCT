@@ -15,6 +15,29 @@ import { ArrowLeft, Loader2, Save, User, Star, Briefcase, PlusCircle, Trash2 } f
 import { useToast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
 
+const competencyList = [
+    { id: 'communication', label: 'Communication' },
+    { id: 'teamwork', label: 'Travail d\'équipe' },
+    { id: 'problemSolving', label: 'Résolution de problèmes' },
+    { id: 'qualityOfWork', label: 'Qualité du travail' },
+    { id: 'initiative', label: 'Initiative et Autonomie' },
+    { id: 'technicalSkills', label: 'Compétences Techniques' },
+];
+
+function StarRating({ rating, onRate }: { rating: number, onRate: (rating: number) => void }) {
+    return (
+        <div className="flex items-center">
+            {[1, 2, 3, 4, 5].map((star) => (
+                <Star
+                    key={star}
+                    className={`h-6 w-6 cursor-pointer ${rating >= star ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`}
+                    onClick={() => onRate(star)}
+                />
+            ))}
+        </div>
+    );
+}
+
 export default function EvaluationDetailPage() {
     const params = useParams();
     const router = useRouter();
@@ -45,14 +68,21 @@ export default function EvaluationDetailPage() {
         const { name, value } = e.target;
         setEvaluation(prev => (prev ? { ...prev, [name]: value } : null));
     };
+    
+    const handleRatingChange = (skillId: string, rating: number) => {
+        setEvaluation(prev => {
+            if (!prev) return null;
+            const newScores = { ...prev.scores, [skillId]: rating };
+            return { ...prev, scores: newScores };
+        })
+    };
 
     const handleSave = async () => {
         if (!evaluation || typeof id !== 'string') return;
         setIsSaving(true);
         try {
-            // We only pass the fields that can be updated from this form
-            const { strengths, areasForImprovement, managerComments } = evaluation;
-            await updateEvaluation(id, { strengths, areasForImprovement, managerComments });
+            const { strengths, areasForImprovement, managerComments, scores } = evaluation;
+            await updateEvaluation(id, { strengths, areasForImprovement, managerComments, scores });
             toast({ title: "Succès", description: "L'évaluation a été mise à jour." });
             router.back();
         } catch (error) {
@@ -107,13 +137,18 @@ export default function EvaluationDetailPage() {
             <Card>
                 <CardHeader>
                     <CardTitle>Évaluation des Compétences</CardTitle>
-                    <CardDescription>Notez l'employé sur les compétences clés.</CardDescription>
+                    <CardDescription>Notez l'employé sur les compétences clés de 1 à 5.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    {/* Placeholder for skills rating */}
-                    <div className="text-muted-foreground text-center py-8 border-2 border-dashed rounded-lg">
-                        <p>La notation des compétences sera bientôt disponible ici.</p>
-                    </div>
+                    {competencyList.map(skill => (
+                        <div key={skill.id} className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-3 border rounded-md">
+                           <p className="font-medium mb-2 sm:mb-0">{skill.label}</p>
+                           <StarRating 
+                             rating={evaluation.scores?.[skill.id] || 0}
+                             onRate={(rating) => handleRatingChange(skill.id, rating)}
+                           />
+                        </div>
+                    ))}
                 </CardContent>
             </Card>
 

@@ -39,7 +39,12 @@ export async function getEvaluation(id: string): Promise<Evaluation | null> {
     const evalDocRef = doc(db, 'evaluations', id);
     const docSnap = await getDoc(evalDocRef);
     if (docSnap.exists()) {
-        return { id: docSnap.id, ...docSnap.data() } as Evaluation;
+        const data = docSnap.data();
+        return { 
+            id: docSnap.id,
+            ...data,
+            scores: data.scores || {} // Ensure scores is always an object
+        } as Evaluation;
     }
     return null;
 }
@@ -51,5 +56,14 @@ export async function addEvaluation(evaluationDataToAdd: Omit<Evaluation, 'id'>)
 
 export async function updateEvaluation(evaluationId: string, dataToUpdate: Partial<Evaluation>): Promise<void> {
     const evalDocRef = doc(db, 'evaluations', evaluationId);
-    await updateDoc(evalDocRef, dataToUpdate);
+    
+    // Create a clean object with only the fields to update
+    const updatePayload: Partial<Evaluation> = {};
+    if (dataToUpdate.strengths !== undefined) updatePayload.strengths = dataToUpdate.strengths;
+    if (dataToUpdate.areasForImprovement !== undefined) updatePayload.areasForImprovement = dataToUpdate.areasForImprovement;
+    if (dataToUpdate.managerComments !== undefined) updatePayload.managerComments = dataToUpdate.managerComments;
+    if (dataToUpdate.scores !== undefined) updatePayload.scores = dataToUpdate.scores;
+    if (dataToUpdate.status !== undefined) updatePayload.status = dataToUpdate.status;
+
+    await updateDoc(evalDocRef, updatePayload);
 }

@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/card';
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, FileWarning, Laptop, Car, Download, ShieldCheck, User as UserIcon, Building, Cake, Printer, Crown, LogOut as LogOutIcon, Globe } from 'lucide-react';
+import { Users, FileWarning, Laptop, Car, Download, ShieldCheck, User as UserIcon, Building, Cake, Printer, Crown, LogOut as LogOutIcon, Globe, Bot, Loader2 as LoaderIcon } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { EmployeeDistributionChart } from '@/components/charts/employee-distribution-chart';
 import { AssetStatusChart } from '@/components/charts/asset-status-chart';
@@ -26,6 +26,7 @@ import type { Employe, Leave, Asset, Fleet, OrganizationSettings, Chief } from '
 import { Skeleton } from '@/components/ui/skeleton';
 import { differenceInYears, parseISO, format, addMonths } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { getDashboardSummary } from '@/ai/flows/dashboard-summary-flow';
 
 
 interface StatCardProps {
@@ -72,10 +73,12 @@ export default function DashboardPage() {
     const [selectedAnniversaryYear, setSelectedAnniversaryYear] = useState<string>(new Date().getFullYear().toString());
     const [selectedRetirementYear, setSelectedRetirementYear] = useState<string>(new Date().getFullYear().toString());
 
-
     const [isPrintingAnniversaries, setIsPrintingAnniversaries] = useState(false);
     const [isPrintingRetirements, setIsPrintingRetirements] = useState(false);
     const [organizationLogos, setOrganizationLogos] = useState<OrganizationSettings | null>(null);
+
+    const [summary, setSummary] = useState<string | null>(null);
+    const [loadingSummary, setLoadingSummary] = useState(true);
 
     const anniversaryYears = Array.from({ length: 10 }, (_, i) => (new Date().getFullYear() - i).toString());
     const retirementYears = Array.from({ length: 15 }, (_, i) => (new Date().getFullYear() - 5 + i).toString()).reverse();
@@ -100,6 +103,14 @@ export default function DashboardPage() {
         
         getOrganizationSettings().then(setOrganizationLogos);
         
+        getDashboardSummary()
+            .then(setSummary)
+            .catch(err => {
+                console.error("Failed to get dashboard summary:", err);
+                setSummary("Impossible de charger le résumé de l'assistant.");
+            })
+            .finally(() => setLoadingSummary(false));
+
         const loadingTimeout = setTimeout(() => setLoading(false), 2000);
 
         return () => {
@@ -215,6 +226,26 @@ export default function DashboardPage() {
                 </div>
             </div>
             <TabsContent value="overview" className="space-y-4">
+                <Card>
+                    <CardHeader className="flex flex-row items-center gap-4">
+                        <Bot className="h-8 w-8 text-primary" />
+                        <div>
+                            <CardTitle>Aperçu de l'Assistant</CardTitle>
+                            <CardDescription>Un résumé rapide de la situation actuelle.</CardDescription>
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        {loadingSummary ? (
+                            <div className="flex items-center gap-2 text-muted-foreground">
+                                <LoaderIcon className="h-4 w-4 animate-spin"/>
+                                <span>Génération du résumé en cours...</span>
+                            </div>
+                        ) : (
+                            <p className="text-muted-foreground">{summary}</p>
+                        )}
+                    </CardContent>
+                </Card>
+
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
                     <StatCard 
                         title="Employés Actifs"
@@ -554,3 +585,5 @@ function RetirementPrintLayout({ logos, employees, year }: { logos: Organization
         </div>
     );
 }
+
+    

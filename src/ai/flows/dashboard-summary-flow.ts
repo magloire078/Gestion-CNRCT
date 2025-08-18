@@ -20,6 +20,7 @@ export async function getDashboardSummary(): Promise<DashboardSummaryOutput> {
 
 const dashboardSummaryPrompt = ai.definePrompt({
   name: 'dashboardSummaryPrompt',
+  input: { schema: z.any() }, // Accept any input, we'll pass the stats object.
   output: { schema: DashboardSummaryOutputSchema },
   tools: [getDashboardStats],
   prompt: `You are a helpful assistant for the company "SYSTEME DE GESTION CNRCT".
@@ -47,11 +48,10 @@ const dashboardSummaryFlow = ai.defineFlow(
       return "Bonjour ! Il n'y a pas d'activité particulière pour le moment.";
     }
 
-    // If there are stats, call the LLM to generate a nice sentence.
-    const { output } = await dashboardSummaryPrompt();
+    // If there are stats, call the LLM to generate a nice sentence, passing the stats as context.
+    const { output } = await dashboardSummaryPrompt(stats);
 
     // As a final fallback, ensure we never return null.
     return output || "Résumé non disponible pour le moment.";
   }
 );
-    

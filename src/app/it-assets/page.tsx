@@ -62,7 +62,7 @@ export default function ItAssetsPage() {
     return () => unsubscribe();
   }, []);
 
-  const handleAddAsset = async (newAssetData: Omit<Asset, 'tag'>) => {
+  const handleAddAsset = async (newAssetData: Omit<Asset, 'tag'> & { tag: string }) => {
     try {
       await addAsset(newAssetData);
       // State is managed by real-time subscription

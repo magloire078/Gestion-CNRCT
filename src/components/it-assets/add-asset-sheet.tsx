@@ -27,7 +27,7 @@ import { useToast } from "@/hooks/use-toast";
 interface AddAssetSheetProps {
   isOpen: boolean;
   onClose: () => void;
-  onAddAsset: (asset: Omit<Asset, 'tag'>) => Promise<void>;
+  onAddAsset: (asset: Omit<Asset, 'tag'> & { tag: string }) => Promise<void>;
 }
 
 const assetTypes: Asset['type'][] = ["Ordinateur", "Moniteur", "Clavier", "Souris", "Logiciel", "Autre"];

@@ -119,6 +119,7 @@ export default function DocumentGeneratorPage() {
     if(state.document) {
         setDocumentContent('');
         setSelectedEmployeeId('');
+        setDocumentType('');
         if(formRef.current) formRef.current.reset();
     }
   }, [state]);
@@ -301,7 +302,7 @@ export default function DocumentGeneratorPage() {
       {/* This element is used for both printing and PDF generation */}
       <div className={isPrinting ? '' : 'absolute -left-full'}>
         <div id="print-section">
-            {organizationLogos && (
+            {organizationLogos && state.document && (
                  <DocumentLayout logos={organizationLogos}>
                     <pre className="whitespace-pre-wrap text-sm font-serif">
                       {state.document}

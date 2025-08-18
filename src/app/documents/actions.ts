@@ -30,7 +30,10 @@ function parseEmployeeContext(content: string) {
         if (key.includes('fonction') || key.includes('poste')) context.poste = value;
         if (key.includes('compte')) context.numeroCompte = value;
         if (key.includes('banque')) context.banque = value;
-        if (key.includes('salaire')) context.baseSalary = parseFloat(value.replace(/\s/g, '')) || 0;
+        if (key.includes('salaire')) {
+            const salaryString = value.replace(/[^0-9]/g, '');
+            context.baseSalary = parseFloat(salaryString) || 0;
+        }
         if (key.includes('décision')) context.decisionDetails = value;
         if (key.includes("dated'embauche")) context.dateEmbauche = value;
         if (key.includes('lieudenaissance')) context.lieuNaissance = value;

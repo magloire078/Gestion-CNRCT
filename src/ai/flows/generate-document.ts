@@ -154,7 +154,9 @@ const generateDocumentFlow = ai.defineFlow(
         };
 
         try {
-            const details = await getPayslipDetails(mockEmployee);
+            // Use the current date for the payslip calculation
+            const payslipDate = new Date().toISOString().split('T')[0];
+            const details = await getPayslipDetails(mockEmployee, payslipDate);
             netSalary = details.totals.netAPayer;
             netSalaryInWords = details.totals.netAPayerInWords;
         } catch (e) {

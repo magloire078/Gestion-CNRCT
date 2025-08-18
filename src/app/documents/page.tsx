@@ -45,8 +45,10 @@ export default function DocumentGeneratorPage() {
   const [documentContent, setDocumentContent] = useState('');
   const [isPrinting, setIsPrinting] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
-  const [organizationLogos, setOrganizationLogos] = useState<OrganizationSettings | null>(null);
+  const [organizationSettings, setOrganizationSettings] = useState<OrganizationSettings | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
+  const printSectionRef = useRef<HTMLDivElement>(null);
+
 
   useEffect(() => {
     async function fetchInitialData() {
@@ -56,7 +58,7 @@ export default function DocumentGeneratorPage() {
                 getOrganizationSettings()
             ]);
             setEmployees(fetchedEmployees);
-            setOrganizationLogos(settings);
+            setOrganizationSettings(settings);
         } catch (error) {
             console.error("Failed to fetch initial data:", error);
         } finally {
@@ -140,9 +142,8 @@ export default function DocumentGeneratorPage() {
   };
 
   const handleDownloadPdf = async () => {
-    if (!state.document) return;
-    const printElement = document.getElementById("print-section");
-    if (!printElement) return;
+    const printElement = printSectionRef.current;
+    if (!state.document || !printElement) return;
 
     setIsDownloading(true);
 
@@ -158,24 +159,20 @@ export default function DocumentGeneratorPage() {
 
         const pdfWidth = pdf.internal.pageSize.getWidth();
         const pdfHeight = pdf.internal.pageSize.getHeight();
-        const canvasWidth = canvas.width;
-        const canvasHeight = canvas.height;
-        const ratio = canvasWidth / canvasHeight;
-        const width = pdfWidth;
-        const height = width / ratio;
-
-        pdf.addImage(imgData, 'PNG', 0, 0, width, height > pdfHeight ? pdfHeight : height);
         
-        // Handle multi-page content if needed
-        let position = height;
-        if(position > pdfHeight) {
-            let remainingHeight = canvasHeight - (pdfHeight * canvas.width / pdfWidth);
-            while(remainingHeight > 0) {
-                pdf.addPage();
-                pdf.addImage(imgData, 'PNG', 0, -position, width, height);
-                position += pdfHeight;
-                remainingHeight -= (pdfHeight * canvas.width / pdfWidth);
-            }
+        const imgProps= pdf.getImageProperties(imgData);
+        const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
+        let height = imgHeight;
+        let position = 0;
+
+        pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, height);
+        height -= pdfHeight;
+
+        while (height > 0) {
+            position = position - pdfHeight;
+            pdf.addPage();
+            pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, height);
+            height -= pdfHeight;
         }
         
         pdf.save(`${documentType.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`);
@@ -300,10 +297,10 @@ export default function DocumentGeneratorPage() {
       </div>
       
       {/* This element is used for both printing and PDF generation */}
-      <div className={isPrinting ? '' : 'absolute -left-full'}>
-        <div id="print-section">
-            {organizationLogos && state.document && (
-                 <DocumentLayout logos={organizationLogos}>
+      <div className={isPrinting ? '' : 'absolute -z-10 -left-[9999px]'}>
+        <div ref={printSectionRef}>
+            {organizationSettings && state.document && (
+                 <DocumentLayout logos={organizationSettings}>
                     <pre className="whitespace-pre-wrap text-sm font-serif">
                       {state.document}
                     </pre>

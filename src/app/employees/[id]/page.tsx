@@ -15,13 +15,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Pencil, User, Briefcase, Mail, Phone, MapPin, BadgeCheck, FileText, Calendar, Laptop, Rocket, FolderArchive, LogOut, Globe, Landmark } from "lucide-react";
+import { ArrowLeft, Pencil, User, Briefcase, Mail, Phone, MapPin, BadgeCheck, FileText, Calendar, Laptop, Rocket, FolderArchive, LogOut, Globe, Landmark, ChevronRight } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { lastDayOfMonth } from 'date-fns';
+import { lastDayOfMonth, format, subMonths } from 'date-fns';
+import { fr } from 'date-fns/locale';
 
 
 type Status = "Approuvé" | "En attente" | "Rejeté";
@@ -103,6 +104,15 @@ export default function EmployeeDetailPage() {
         { value: "9", label: "Septembre" }, { value: "10", label: "Octobre" },
         { value: "11", label: "Novembre" }, { value: "12", label: "Décembre" },
     ];
+    
+     const payslipHistory = Array.from({ length: 12 }).map((_, i) => {
+        const date = subMonths(new Date(), i);
+        const lastDay = lastDayOfMonth(date);
+        return {
+            period: format(date, "MMMM yyyy", { locale: fr }),
+            dateParam: lastDay.toISOString().split('T')[0],
+        };
+    });
 
 
     if (loading) {
@@ -224,15 +234,27 @@ export default function EmployeeDetailPage() {
                             <CardTitle className="flex items-center gap-2"><Landmark className="h-5 w-5 text-primary" /> Gestion de la Paie</CardTitle>
                             <CardDescription>Générez et consultez les bulletins de paie de l'employé.</CardDescription>
                         </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="flex items-center justify-between p-4 border rounded-lg">
-                                <p>Générer un nouveau bulletin de paie pour une période spécifique.</p>
-                                <Button onClick={() => setIsDateDialogOpen(true)}>Générer un bulletin</Button>
+                        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-4">
+                                <h4 className="font-semibold">Génération Spécifique</h4>
+                                <div className="flex items-center justify-between p-4 border rounded-lg">
+                                    <p className="text-sm">Générer un bulletin pour une période personnalisée.</p>
+                                    <Button onClick={() => setIsDateDialogOpen(true)} size="sm">Générer</Button>
+                                </div>
                             </div>
-                            <div>
-                                <h4 className="font-semibold mb-2">Historique des bulletins</h4>
-                                <div className="text-center text-sm text-muted-foreground p-8 border-2 border-dashed rounded-lg">
-                                    L'historique des bulletins de paie sera bientôt disponible ici.
+                            <div className="space-y-4">
+                                <h4 className="font-semibold">Historique des 12 derniers mois</h4>
+                                <div className="border rounded-lg max-h-60 overflow-y-auto">
+                                    <ul className="divide-y">
+                                    {payslipHistory.map(item => (
+                                        <li key={item.dateParam}>
+                                            <Link href={`/payroll/${id}?payslipDate=${item.dateParam}`} className="flex items-center justify-between p-3 hover:bg-muted/50 transition-colors">
+                                                <span className="font-medium text-sm capitalize">{item.period}</span>
+                                                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                                            </Link>
+                                        </li>
+                                    ))}
+                                    </ul>
                                 </div>
                             </div>
                         </CardContent>
@@ -445,3 +467,4 @@ function EmployeeDetailSkeleton() {
         </div>
     )
 }
+

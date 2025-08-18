@@ -437,13 +437,16 @@ function AnniversaryPrintLayout({ logos, employees, period, year }: { logos: Org
     return (
         <div id="print-section" className="bg-white text-black p-8 w-full print:shadow-none print:border-none print:p-0">
             <header className="flex justify-between items-start mb-8">
-                <div className="text-center">
-                    {logos.mainLogoUrl && <img src={logos.mainLogoUrl} alt="Logo CNRCT" width={100} height={100} className="mx-auto" />}
+                <div className="w-1/4 text-center flex flex-col justify-center items-center h-24">
+                   {logos.mainLogoUrl && <img src={logos.mainLogoUrl} alt="Logo Principal" className="max-h-24 max-w-full h-auto w-auto" />}
                 </div>
-                <div className="text-center">
-                    <h2 className="font-bold">République de Côte d'Ivoire</h2>
-                    {logos.secondaryLogoUrl && <img src={logos.secondaryLogoUrl} alt="Logo Cote d'Ivoire" width={80} height={80} className="mx-auto mt-2" />}
-                    <p className="mt-1">Union - Discipline - Travail</p>
+                <div className="w-2/4 text-center pt-2">
+                    <h1 className="font-bold text-lg">{logos.organizationName || "Chambre Nationale des Rois et Chefs Traditionnels"}</h1>
+                </div>
+                <div className="w-1/4 text-center flex flex-col justify-center items-center h-24">
+                    <p className="font-bold text-base">République de Côte d'Ivoire</p>
+                    <p className="text-sm">Union - Discipline - Travail</p>
+                    {logos.secondaryLogoUrl && <img src={logos.secondaryLogoUrl} alt="Logo Secondaire" className="max-h-16 max-w-full h-auto w-auto mt-1" />}
                 </div>
             </header>
 
@@ -482,7 +485,7 @@ function AnniversaryPrintLayout({ logos, employees, period, year }: { logos: Org
                 <div className="flex justify-between items-end">
                     <div></div>
                     <div className="text-center">
-                        <p className="font-bold">Chambre Nationale de Rois et Chefs Traditionnels (CNRCT)</p>
+                        <p className="font-bold">{logos.organizationName || "Chambre Nationale de Rois et Chefs Traditionnels (CNRCT)"}</p>
                         <p>Yamoussoukro, Riviera - BP 201 Yamoussoukro | Tél : (225) 30 64 06 60 | Fax : (+255) 30 64 06 63</p>
                         <p>www.cnrct.ci - Email : info@cnrct.ci</p>
                     </div>
@@ -497,13 +500,16 @@ function RetirementPrintLayout({ logos, employees, year }: { logos: Organization
     return (
         <div id="print-section" className="bg-white text-black p-8 w-full print:shadow-none print:border-none print:p-0">
             <header className="flex justify-between items-start mb-8">
-                <div className="text-center">
-                    {logos.mainLogoUrl && <img src={logos.mainLogoUrl} alt="Logo CNRCT" width={100} height={100} className="mx-auto" />}
+                <div className="w-1/4 text-center flex flex-col justify-center items-center h-24">
+                    {logos.mainLogoUrl && <img src={logos.mainLogoUrl} alt="Logo Principal" className="max-h-24 max-w-full h-auto w-auto" />}
                 </div>
-                <div className="text-center">
-                    <h2 className="font-bold">République de Côte d'Ivoire</h2>
-                    {logos.secondaryLogoUrl && <img src={logos.secondaryLogoUrl} alt="Logo Cote d'Ivoire" width={80} height={80} className="mx-auto mt-2" />}
-                    <p className="mt-1">Union - Discipline - Travail</p>
+                 <div className="w-2/4 text-center pt-2">
+                    <h1 className="font-bold text-lg">{logos.organizationName || "Chambre Nationale des Rois et Chefs Traditionnels"}</h1>
+                </div>
+                <div className="w-1/4 text-center flex flex-col justify-center items-center h-24">
+                     <p className="font-bold text-base">République de Côte d'Ivoire</p>
+                    <p className="text-sm">Union - Discipline - Travail</p>
+                    {logos.secondaryLogoUrl && <img src={logos.secondaryLogoUrl} alt="Logo Secondaire" className="max-h-16 max-w-full h-auto w-auto mt-1" />}
                 </div>
             </header>
 
@@ -538,7 +544,7 @@ function RetirementPrintLayout({ logos, employees, year }: { logos: Organization
                 <div className="flex justify-between items-end">
                     <div></div>
                     <div className="text-center">
-                        <p className="font-bold">Chambre Nationale de Rois et Chefs Traditionnels (CNRCT)</p>
+                        <p className="font-bold">{logos.organizationName || "Chambre Nationale de Rois et Chefs Traditionnels (CNRCT)"}</p>
                         <p>Yamoussoukro, Riviera - BP 201 Yamoussoukro | Tél : (225) 30 64 06 60 | Fax : (+255) 30 64 06 63</p>
                         <p>www.cnrct.ci - Email : info@cnrct.ci</p>
                     </div>

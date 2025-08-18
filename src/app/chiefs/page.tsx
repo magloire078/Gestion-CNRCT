@@ -63,7 +63,7 @@ export default function ChiefsPage() {
 
   const handleAddChief = async (newChiefData: Omit<Chief, "id">) => {
     try {
-      await addChief(newChiefData);
+      await addChief(newChiefData, null);
       setIsSheetOpen(false);
       toast({
         title: "Chef ajouté",

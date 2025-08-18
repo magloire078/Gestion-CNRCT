@@ -67,7 +67,7 @@ export default function DashboardPage() {
     const [chiefs, setChiefs] = useState<Chief[]>([]);
     const [loading, setLoading] = useState(true);
     const [seniorityAnniversaries, setSeniorityAnniversaries] = useState<Employe[]>([]);
-    const [upcomingRetirements, setUpcomingRetirements] = useState<Employe[]>([]);
+    const [upcomingRetirements, setUpcomingRetirements] = useState<(Employe & { calculatedRetirementDate: Date })[]>([]);
     
     const [selectedAnniversaryMonth, setSelectedAnniversaryMonth] = useState<string>((new Date().getMonth()).toString());
     const [selectedAnniversaryYear, setSelectedAnniversaryYear] = useState<string>(new Date().getFullYear().toString());
@@ -585,5 +585,3 @@ function RetirementPrintLayout({ logos, employees, year }: { logos: Organization
         </div>
     );
 }
-
-    

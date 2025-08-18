@@ -114,13 +114,5 @@
         border: none;
         box-shadow: none;
     }
-    .print-page-break {
-      page-break-after: always;
-    }
-    .print-page-break:last-child {
-      page-break-after: auto;
-    }
   }
 }
-
-    

@@ -258,5 +258,3 @@ export type OrganizationSettings = {
     secondaryLogoUrl: string;
     faviconUrl: string;
 };
-
-    

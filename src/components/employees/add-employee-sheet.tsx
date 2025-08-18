@@ -246,14 +246,14 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
   return (
     <>
     <Sheet open={isOpen} onOpenChange={(open) => { if (!open) handleClose(); }}>
-      <SheetContent className="sm:max-w-xl">
-        <form onSubmit={handleSubmit} className="flex flex-col h-full overflow-hidden">
-            <SheetHeader>
-                <SheetTitle>Ajouter un nouvel employé</SheetTitle>
-                <SheetDescription>
-                Remplissez les détails ci-dessous pour ajouter un nouvel employé au système.
-                </SheetDescription>
-            </SheetHeader>
+      <SheetContent className="sm:max-w-xl flex flex-col">
+        <SheetHeader>
+            <SheetTitle>Ajouter un nouvel employé</SheetTitle>
+            <SheetDescription>
+            Remplissez les détails ci-dessous pour ajouter un nouvel employé au système.
+            </SheetDescription>
+        </SheetHeader>
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
             <ScrollArea className="flex-1 p-6 -mx-6">
                 <div className="grid gap-4">
                     <div className="grid grid-cols-4 items-center gap-4">

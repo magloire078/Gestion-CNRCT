@@ -27,6 +27,8 @@ const dashboardSummaryPrompt = ai.definePrompt({
   Use the getDashboardStats tool to get the data you need.
   Mention the number of active employees, pending leaves, and missions in progress.
   Keep it to a single, welcoming sentence. For example: "Bonjour ! Il y a actuellement X employés actifs, Y demandes de congé en attente et Z missions en cours."
+  
+  IMPORTANT: Your entire response must be a single, raw string, not a JSON object.
   `,
 });
 

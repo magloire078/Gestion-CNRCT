@@ -28,7 +28,9 @@ const dashboardSummaryPrompt = ai.definePrompt({
   Mention the number of active employees, pending leaves, and missions in progress.
   Keep it to a single, welcoming sentence. For example: "Bonjour ! Il y a actuellement X employés actifs, Y demandes de congé en attente et Z missions en cours."
   
-  IMPORTANT: Your entire response must be a single, raw string, not a JSON object.
+  IMPORTANT: Your entire response MUST BE A SINGLE, RAW STRING, not a JSON object or null.
+  Even if all stats are zero, you must generate a sentence like "Bonjour ! Il n'y a pas d'activité particulière pour le moment."
+  DO NOT output JSON.
   `,
 });
 
@@ -39,8 +41,7 @@ const dashboardSummaryFlow = ai.defineFlow(
   },
   async () => {
     const { output } = await dashboardSummaryPrompt();
-    return output!;
+    return output || "Résumé non disponible pour le moment.";
   }
 );
-
     

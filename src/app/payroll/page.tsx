@@ -48,6 +48,7 @@ import { Label } from "@/components/ui/label";
 import { lastDayOfMonth, format } from "date-fns";
 import { fr } from "date-fns/locale";
 import QRCode from "react-qr-code";
+import { useAuth } from "@/hooks/use-auth";
 
 
 type EmployeeWithDetails = Employe & { netSalary?: number; grossSalary?: number };
@@ -60,6 +61,8 @@ export default function PayrollPage() {
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   const router = useRouter();
+  const { hasPermission } = useAuth();
+  const canViewSalaries = hasPermission('page:payroll:view');
 
   // State for search and filters
   const [searchTerm, setSearchTerm] = useState("");
@@ -83,19 +86,23 @@ export default function PayrollPage() {
         // Filter for employees who should be on payroll
         const payrollEmployees = fetchedEmployees.filter(e => e.status === 'Actif' || e.status === 'En congé');
         
-        // Calculate net salary for each employee for the current month
-        const today = new Date();
-        const lastDayOfCurrentMonth = lastDayOfMonth(today).toISOString().split('T')[0];
-        const employeesWithSalary = await Promise.all(
-            payrollEmployees.map(async (emp) => {
-                try {
-                    const details = await getPayslipDetails(emp, lastDayOfCurrentMonth);
-                    return { ...emp, netSalary: details.totals.netAPayer, grossSalary: details.totals.brutImposable };
-                } catch {
-                    return { ...emp, netSalary: 0, grossSalary: 0 }; // Default to 0 if calculation fails
-                }
-            })
-        );
+        let employeesWithSalary: EmployeeWithDetails[] = payrollEmployees;
+
+        if (canViewSalaries) {
+            // Calculate net salary for each employee for the current month
+            const today = new Date();
+            const lastDayOfCurrentMonth = lastDayOfMonth(today).toISOString().split('T')[0];
+            employeesWithSalary = await Promise.all(
+                payrollEmployees.map(async (emp) => {
+                    try {
+                        const details = await getPayslipDetails(emp, lastDayOfCurrentMonth);
+                        return { ...emp, netSalary: details.totals.netAPayer, grossSalary: details.totals.brutImposable };
+                    } catch {
+                        return { ...emp, netSalary: 0, grossSalary: 0 }; // Default to 0 if calculation fails
+                    }
+                })
+            );
+        }
         
         setEmployees(employeesWithSalary);
         setError(null);
@@ -108,7 +115,7 @@ export default function PayrollPage() {
       }
     );
      return () => unsubscribe();
-  }, []);
+  }, [canViewSalaries]);
 
   useEffect(() => {
     if (isPreparingPrint && bulkPayslips.length > 0) {
@@ -231,10 +238,12 @@ export default function PayrollPage() {
         <div className="flex flex-col gap-6">
           <div className="flex items-center justify-between">
             <h1 className="text-3xl font-bold tracking-tight">Gestion de la Paie</h1>
-             <Button onClick={() => setIsBulkPrintDialogOpen(true)} disabled={filteredEmployees.length === 0}>
-                <Printer className="mr-2 h-4 w-4" />
-                Imprimer la Sélection
-            </Button>
+            {canViewSalaries && (
+                <Button onClick={() => setIsBulkPrintDialogOpen(true)} disabled={filteredEmployees.length === 0}>
+                    <Printer className="mr-2 h-4 w-4" />
+                    Imprimer la Sélection
+                </Button>
+            )}
           </div>
           <Card>
             <CardHeader>
@@ -286,8 +295,8 @@ export default function PayrollPage() {
                     <TableRow>
                         <TableHead>Employé</TableHead>
                         <TableHead>Poste</TableHead>
-                        <TableHead className="text-right">Salaire Brut</TableHead>
-                        <TableHead className="text-right">Salaire Net</TableHead>
+                        {canViewSalaries && <TableHead className="text-right">Salaire Brut</TableHead>}
+                        {canViewSalaries && <TableHead className="text-right">Salaire Net</TableHead>}
                         <TableHead><span className="sr-only">Actions</span></TableHead>
                     </TableRow>
                     </TableHeader>
@@ -297,8 +306,8 @@ export default function PayrollPage() {
                         <TableRow key={i}>
                             <TableCell><Skeleton className="h-4 w-32" /></TableCell>
                             <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                            <TableCell><Skeleton className="h-4 w-24 ml-auto" /></TableCell>
-                            <TableCell><Skeleton className="h-4 w-24 ml-auto" /></TableCell>
+                            {canViewSalaries && <TableCell><Skeleton className="h-4 w-24 ml-auto" /></TableCell>}
+                            {canViewSalaries && <TableCell><Skeleton className="h-4 w-24 ml-auto" /></TableCell>}
                             <TableCell><Skeleton className="h-8 w-8 rounded-md" /></TableCell>
                         </TableRow>
                         ))
@@ -307,12 +316,8 @@ export default function PayrollPage() {
                         <TableRow key={employee.id}>
                             <TableCell className="font-medium">{`${employee.lastName || ''} ${employee.firstName || ''}`.trim()}</TableCell>
                             <TableCell>{employee.poste}</TableCell>
-                            <TableCell className="text-right font-mono">
-                            {formatCurrency(employee.grossSalary)}
-                            </TableCell>
-                            <TableCell className="text-right font-mono">
-                            {formatCurrency(employee.netSalary)}
-                            </TableCell>
+                            {canViewSalaries && <TableCell className="text-right font-mono">{formatCurrency(employee.grossSalary)}</TableCell>}
+                            {canViewSalaries && <TableCell className="text-right font-mono">{formatCurrency(employee.netSalary)}</TableCell>}
                             <TableCell className="text-right">
                               <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
@@ -323,10 +328,12 @@ export default function PayrollPage() {
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end">
                                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                        <DropdownMenuItem onClick={() => openEditSheet(employee)}>
-                                            <Pencil className="mr-2 h-4 w-4" />
-                                            Modifier les infos de paie
-                                        </DropdownMenuItem>
+                                        {canViewSalaries && (
+                                            <DropdownMenuItem onClick={() => openEditSheet(employee)}>
+                                                <Pencil className="mr-2 h-4 w-4" />
+                                                Modifier les infos de paie
+                                            </DropdownMenuItem>
+                                        )}
                                         <DropdownMenuItem onClick={() => openDateDialog(employee)}>
                                           <Eye className="mr-2 h-4 w-4" />
                                           Afficher le bulletin
@@ -363,10 +370,12 @@ export default function PayrollPage() {
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="end">
                                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                            <DropdownMenuItem onClick={() => openEditSheet(employee)}>
-                                                <Pencil className="mr-2 h-4 w-4" />
-                                                Modifier les infos de paie
-                                            </DropdownMenuItem>
+                                            {canViewSalaries && (
+                                                <DropdownMenuItem onClick={() => openEditSheet(employee)}>
+                                                    <Pencil className="mr-2 h-4 w-4" />
+                                                    Modifier les infos de paie
+                                                </DropdownMenuItem>
+                                            )}
                                             <DropdownMenuItem onClick={() => openDateDialog(employee)}>
                                               <Eye className="mr-2 h-4 w-4" />
                                               Afficher le bulletin
@@ -374,10 +383,12 @@ export default function PayrollPage() {
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 </div>
-                                <div className="mt-2 space-y-1">
-                                    <p className="text-sm"><span className="font-medium">Salaire Brut:</span> {formatCurrency(employee.grossSalary)}</p>
-                                    <p className="text-sm"><span className="font-medium">Salaire Net:</span> {formatCurrency(employee.netSalary)}</p>
-                                </div>
+                                {canViewSalaries && (
+                                    <div className="mt-2 space-y-1">
+                                        <p className="text-sm"><span className="font-medium">Salaire Brut:</span> {formatCurrency(employee.grossSalary)}</p>
+                                        <p className="text-sm"><span className="font-medium">Salaire Net:</span> {formatCurrency(employee.netSalary)}</p>
+                                    </div>
+                                )}
                             </CardContent>
                         </Card>
                     ))

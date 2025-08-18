@@ -29,7 +29,6 @@ const dashboardSummaryPrompt = ai.definePrompt({
   Keep it to a single, welcoming sentence. For example: "Bonjour ! Il y a actuellement X employés actifs, Y demandes de congé en attente et Z missions en cours."
   
   IMPORTANT: Your entire response MUST BE A SINGLE, RAW STRING, not a JSON object or null.
-  Even if all stats are zero, you must generate a sentence like "Bonjour ! Il n'y a pas d'activité particulière pour le moment."
   DO NOT output JSON.
   `,
 });
@@ -40,7 +39,18 @@ const dashboardSummaryFlow = ai.defineFlow(
     outputSchema: DashboardSummaryOutputSchema,
   },
   async () => {
+    // First, get the stats directly.
+    const stats = await getDashboardStats();
+
+    // If all stats are zero, return a default message without calling the LLM.
+    if (stats.activeEmployees === 0 && stats.pendingLeaves === 0 && stats.inProgressMissions === 0) {
+      return "Bonjour ! Il n'y a pas d'activité particulière pour le moment.";
+    }
+
+    // If there are stats, call the LLM to generate a nice sentence.
     const { output } = await dashboardSummaryPrompt();
+
+    // As a final fallback, ensure we never return null.
     return output || "Résumé non disponible pour le moment.";
   }
 );

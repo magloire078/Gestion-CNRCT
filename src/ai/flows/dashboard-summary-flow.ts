@@ -40,18 +40,23 @@ const dashboardSummaryFlow = ai.defineFlow(
     outputSchema: DashboardSummaryOutputSchema,
   },
   async () => {
-    // First, get the stats directly.
-    const stats = await getDashboardStats();
+    try {
+      // First, get the stats directly.
+      const stats = await getDashboardStats();
 
-    // If all stats are zero, return a default message without calling the LLM.
-    if (stats.activeEmployees === 0 && stats.pendingLeaves === 0 && stats.inProgressMissions === 0) {
-      return "Bonjour ! Il n'y a pas d'activité particulière pour le moment.";
+      // If all stats are zero, return a default message without calling the LLM.
+      if (stats.activeEmployees === 0 && stats.pendingLeaves === 0 && stats.inProgressMissions === 0) {
+        return "Bonjour ! Il n'y a pas d'activité particulière pour le moment.";
+      }
+
+      // If there are stats, call the LLM to generate a nice sentence, passing the stats as context.
+      const { output } = await dashboardSummaryPrompt(stats);
+
+      // As a final fallback, ensure we never return null.
+      return output || "Résumé non disponible pour le moment.";
+    } catch (error) {
+      console.error("[dashboardSummaryFlow] Error calling AI:", error);
+      return "Résumé non disponible pour le moment.";
     }
-
-    // If there are stats, call the LLM to generate a nice sentence, passing the stats as context.
-    const { output } = await dashboardSummaryPrompt(stats);
-
-    // As a final fallback, ensure we never return null.
-    return output || "Résumé non disponible pour le moment.";
   }
 );

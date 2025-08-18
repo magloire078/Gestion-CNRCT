@@ -55,69 +55,68 @@ const generateDocumentPrompt = ai.definePrompt({
   output: {schema: GenerateDocumentOutputSchema},
   prompt: `You are an AI assistant specialized in generating various types of official HR documents for an organization named "Chambre Nationale des Rois et Chefs Traditionnels (CNRCT)" in Côte d'Ivoire.
 
-  Based on the provided document type and context, generate a complete and coherent document.
+  Based on the provided document type and context, generate a complete and coherent document. Your response should contain ONLY the raw text of the document, without any additional formatting like Markdown headers or titles.
 
   {{#if (eq documentType "Attestation de Virement")}}
-  ## ATTESTATION IRREVOCABLE DE VIREMENT DE SALAIRE
+ATTESTATION IRREVOCABLE DE VIREMENT DE SALAIRE
 
-  Le président de la Chambre Nationale des Rois et Chefs Traditionnels (CNRCT), soussigné, atteste que Monsieur {{employeeContext.name}}, matricule solde {{employeeContext.matricule}}, nommé par décision {{employeeContext.decisionDetails}}, {{employeeContext.poste}}, y a pris service en cette qualité et à cet effet, engage la CNRCT à virer irrévocablement sur son compte N° {{employeeContext.numeroCompte}}, ouvert à la {{employeeContext.banque}}, toutes les sommes qui lui seront dues au titre de primes et indemnités.
+Le président de la Chambre Nationale des Rois et Chefs Traditionnels (CNRCT), soussigné, atteste que Monsieur {{employeeContext.name}}, matricule solde {{employeeContext.matricule}}, nommé par décision {{employeeContext.decisionDetails}}, {{employeeContext.poste}}, y a pris service en cette qualité et à cet effet, engage la CNRCT à virer irrévocablement sur son compte N° {{employeeContext.numeroCompte}}, ouvert à la {{employeeContext.banque}}, toutes les sommes qui lui seront dues au titre de primes et indemnités.
 
-  Cet engagement implique qu'aucun acompte ne doit être versé directement à l'intéressé en dehors dudit compte.
+Cet engagement implique qu'aucun acompte ne doit être versé directement à l'intéressé en dehors dudit compte.
 
-  Salaire net à payer : {{employeeContext.netSalaryInWords}} ({{employeeContext.netSalary}} FCFA)
+Salaire net à payer : {{employeeContext.netSalaryInWords}} ({{employeeContext.netSalary}} FCFA)
 
-  Nous nous engageons à virer toutes primes, indemnités ou salaires qui seront dus à l'intéressé s'il venait de quitter, pour quelque raison que ce soit, notre institution et à vous aviser de ce départ définitif au plus tard en même temps que nous vous adressons son virement de liquidation.
+Nous nous engageons à virer toutes primes, indemnités ou salaires qui seront dus à l'intéressé s'il venait de quitter, pour quelque raison que ce soit, notre institution et à vous aviser de ce départ définitif au plus tard en même temps que nous vous adressons son virement de liquidation.
 
-  Cet ordre de virement ne pourra être modifié ou suspendu qu'après accord donné par la {{employeeContext.banque}} conjointement avec l'intéressé.
+Cet ordre de virement ne pourra être modifié ou suspendu qu'après accord donné par la {{employeeContext.banque}} conjointement avec l'intéressé.
 
-  Fait à Yamoussoukro, le {{employeeContext.currentDate}}
+Fait à Yamoussoukro, le {{employeeContext.currentDate}}
 
-  P. Le Président du Directoire et P.O
-  Le Directeur des Affaires Sociales
+P. Le Président du Directoire et P.O
+Le Directeur des Affaires Sociales
 
-  {{employeeContext.signerName}}
-  {{employeeContext.signerTitle}}
+{{employeeContext.signerName}}
+{{employeeContext.signerTitle}}
   {{else if (eq documentType "Employment Contract")}}
-  ## CONTRAT DE TRAVAIL A DUREE INDETERMINEE
+CONTRAT DE TRAVAIL A DUREE INDETERMINEE
 
-  **ENTRE LES SOUSSIGNES :**
+**ENTRE LES SOUSSIGNES :**
 
-  La Chambre Nationale des Rois et Chefs Traditionnels (CNRCT), ci-après dénommée "l'Employeur", représentée par son Président, {{employeeContext.signerName}}.
+La Chambre Nationale des Rois et Chefs Traditionnels (CNRCT), ci-après dénommée "l'Employeur", représentée par son Président, {{employeeContext.signerName}}.
 
-  **ET**
+**ET**
 
-  Monsieur/Madame {{employeeContext.name}}, né(e) le {{employeeContext.dateEmbauche}} à {{employeeContext.lieuNaissance}}, ci-après dénommé(e) "l'Employé(e)".
+Monsieur/Madame {{employeeContext.name}}, né(e) le {{employeeContext.dateEmbauche}} à {{employeeContext.lieuNaissance}}, ci-après dénommé(e) "l'Employé(e)".
 
-  **IL A ETE CONVENU CE QUI SUIT :**
+**IL A ETE CONVENU CE QUI SUIT :**
 
-  **Article 1 : Engagement**
-  L'Employeur engage l'Employé(e) en qualité de {{employeeContext.poste}}, à compter du {{employeeContext.dateEmbauche}}.
+**Article 1 : Engagement**
+L'Employeur engage l'Employé(e) en qualité de {{employeeContext.poste}}, à compter du {{employeeContext.dateEmbauche}}.
 
-  **Article 2 : Fonctions**
-  L'Employé(e) exercera les fonctions de {{employeeContext.poste}}. Il/Elle sera chargé(e) de [Description générique des tâches].
+**Article 2 : Fonctions**
+L'Employé(e) exercera les fonctions de {{employeeContext.poste}}. Il/Elle sera chargé(e) de [Description générique des tâches].
 
-  **Article 3 : Rémunération**
-  L'Employé(e) percevra une rémunération mensuelle brute de {{employeeContext.baseSalary}} FCFA.
+**Article 3 : Rémunération**
+L'Employé(e) percevra une rémunération mensuelle brute de {{employeeContext.baseSalary}} FCFA.
 
-  **Article 4 : Durée et Période d'essai**
-  Le présent contrat est conclu pour une durée indéterminée. La période d'essai est fixée à trois (3) mois, renouvelable une fois.
+**Article 4 : Durée et Période d'essai**
+Le présent contrat est conclu pour une durée indéterminée. La période d'essai est fixée à trois (3) mois, renouvelable une fois.
 
-  **Article 5 : Lieu de travail**
-  Le lieu de travail est fixé au siège de la CNRCT à Yamoussoukro.
+**Article 5 : Lieu de travail**
+Le lieu de travail est fixé au siège de la CNRCT à Yamoussoukro.
 
-  Fait à Yamoussoukro, le {{employeeContext.currentDate}}, en deux exemplaires originaux.
+Fait à Yamoussoukro, le {{employeeContext.currentDate}}, en deux exemplaires originaux.
 
-  **Pour l'Employeur,**
-  {{employeeContext.signerName}}
-  {{employeeContext.signerTitle}}
+**Pour l'Employeur,**
+{{employeeContext.signerName}}
+{{employeeContext.signerTitle}}
 
-  **L'Employé(e),**
-  (Signature précédée de la mention "Lu et approuvé")
-  {{employeeContext.name}}
+**L'Employé(e),**
+(Signature précédée de la mention "Lu et approuvé")
+{{employeeContext.name}}
   {{else}}
-  ## Generic Document Generation
-  Document Type: {{{documentType}}}
-  Content: {{{documentContent}}}
+Document Type: {{{documentType}}}
+Content: {{{documentContent}}}
   {{/if}}
   `,
 });
@@ -137,7 +136,7 @@ const generateDocumentFlow = ai.defineFlow(
       input.employeeContext.currentDate = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
     }
 
-    if (input.documentType === 'Attestation de Virement' && input.employeeContext) {
+    if (input.documentType === 'Attestation de Virement' && input.employeeContext?.baseSalary) {
         let netSalary = 0;
         let netSalaryInWords = '';
 

@@ -32,6 +32,7 @@ import { cn } from "@/lib/utils";
 import type { Leave } from "@/lib/data";
 import { fr } from "date-fns/locale";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "../ui/textarea";
 
 interface EditLeaveRequestSheetProps {
   isOpen: boolean;
@@ -51,6 +52,7 @@ export function EditLeaveRequestSheet({
   const [startDate, setStartDate] = useState<Date>();
   const [endDate, setEndDate] = useState<Date>();
   const [numDecision, setNumDecision] = useState("");
+  const [reason, setReason] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -61,6 +63,7 @@ export function EditLeaveRequestSheet({
         setStartDate(parseISO(leaveRequest.startDate));
         setEndDate(parseISO(leaveRequest.endDate));
         setNumDecision(leaveRequest.num_decision || "");
+        setReason(leaveRequest.reason || "");
     }
   }, [leaveRequest])
 
@@ -70,6 +73,7 @@ export function EditLeaveRequestSheet({
     setStartDate(undefined);
     setEndDate(undefined);
     setNumDecision("");
+    setReason("");
     setError("");
   }
 
@@ -86,6 +90,10 @@ export function EditLeaveRequestSheet({
       setError("Veuillez remplir tous les champs.");
       return;
     }
+    if (leaveType === "Congé Personnel" && !reason) {
+      setError("Le motif est obligatoire pour un congé personnel.");
+      return;
+    }
     if (endDate < startDate) {
       setError("La date de fin ne peut pas être antérieure à la date de début.");
       return;
@@ -100,13 +108,9 @@ export function EditLeaveRequestSheet({
         type: leaveType as Leave['type'],
         startDate: format(startDate, "yyyy-MM-dd"),
         endDate: format(endDate, "yyyy-MM-dd"),
+        num_decision: leaveType === "Congé Annuel" ? numDecision : "",
+        reason: leaveType === "Congé Personnel" ? reason : "",
       };
-
-      if (leaveType === "Congé Annuel") {
-        dataToUpdate.num_decision = numDecision;
-      } else {
-        dataToUpdate.num_decision = "";
-      }
 
       await onUpdateLeave(leaveRequest.id, dataToUpdate);
       handleClose();
@@ -139,7 +143,11 @@ export function EditLeaveRequestSheet({
             <Label htmlFor="leaveType" className="text-right">
               Type
             </Label>
-            <Select value={leaveType} onValueChange={setLeaveType}>
+            <Select value={leaveType} onValueChange={(type) => {
+              setLeaveType(type);
+              if (type !== 'Congé Annuel') setNumDecision('');
+              if (type !== 'Congé Personnel') setReason('');
+            }}>
               <SelectTrigger className="col-span-3">
                 <SelectValue placeholder="Sélectionnez un type..." />
               </SelectTrigger>
@@ -219,6 +227,21 @@ export function EditLeaveRequestSheet({
                 onChange={(e) => setNumDecision(e.target.value)}
                 className="col-span-3"
                 placeholder="Entrez le n° de décision"
+              />
+            </div>
+          )}
+          {leaveType === 'Congé Personnel' && (
+            <div className="grid grid-cols-4 items-start gap-4">
+              <Label htmlFor="reason-edit" className="text-right pt-2">
+                Motif
+              </Label>
+              <Textarea
+                id="reason-edit"
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                className="col-span-3"
+                rows={3}
+                placeholder="Indiquez la raison du congé personnel..."
               />
             </div>
           )}

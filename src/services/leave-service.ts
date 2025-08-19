@@ -57,7 +57,8 @@ export async function addLeave(leaveDataToAdd: Omit<Leave, 'id' | 'status'>): Pr
 
 export async function updateLeave(id: string, dataToUpdate: Partial<Omit<Leave, 'id' | 'status'>>): Promise<void> {
     const leaveDocRef = doc(db, 'leaves', id);
-    await updateDoc(leaveDocRef, dataToUpdate);
+    const cleanData = JSON.parse(JSON.stringify(dataToUpdate));
+    await updateDoc(leaveDocRef, cleanData);
 }
 
 

@@ -91,6 +91,7 @@ export type Leave = {
   endDate: string; // YYYY-MM-DD
   status: 'Approuvé' | 'En attente' | 'Rejeté';
   num_decision?: string;
+  reason?: string;
 };
 
 export type Asset = {

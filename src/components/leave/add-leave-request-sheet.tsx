@@ -31,6 +31,7 @@ import {
 import { cn } from "@/lib/utils";
 import type { Leave, Employe } from "@/lib/data";
 import { getEmployees } from "@/services/employee-service";
+import { Textarea } from "../ui/textarea";
 
 interface AddLeaveRequestSheetProps {
   isOpen: boolean;
@@ -48,6 +49,7 @@ export function AddLeaveRequestSheet({
   const [leaveType, setLeaveType] = useState("");
   const [startDate, setStartDate] = useState<Date>();
   const [endDate, setEndDate] = useState<Date>();
+  const [reason, setReason] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -70,6 +72,7 @@ export function AddLeaveRequestSheet({
     setLeaveType("");
     setStartDate(undefined);
     setEndDate(undefined);
+    setReason("");
     setError("");
   }
 
@@ -83,6 +86,10 @@ export function AddLeaveRequestSheet({
 
     if (!employee || !leaveType || !startDate || !endDate) {
       setError("Veuillez remplir tous les champs.");
+      return;
+    }
+     if (leaveType === "Congé Personnel" && !reason) {
+      setError("Le motif est obligatoire pour un congé personnel.");
       return;
     }
     if (endDate < startDate) {
@@ -99,6 +106,7 @@ export function AddLeaveRequestSheet({
         type: leaveType as Leave['type'],
         startDate: format(startDate, "yyyy-MM-dd"),
         endDate: format(endDate, "yyyy-MM-dd"),
+        reason: leaveType === "Congé Personnel" ? reason : undefined,
       });
       handleClose();
     } catch(err) {
@@ -154,6 +162,21 @@ export function AddLeaveRequestSheet({
               </SelectContent>
             </Select>
           </div>
+          {leaveType === 'Congé Personnel' && (
+            <div className="grid grid-cols-4 items-start gap-4">
+              <Label htmlFor="reason" className="text-right pt-2">
+                Motif
+              </Label>
+              <Textarea
+                id="reason"
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                className="col-span-3"
+                rows={3}
+                placeholder="Indiquez la raison du congé personnel..."
+              />
+            </div>
+          )}
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="startDate" className="text-right">
               Date de début

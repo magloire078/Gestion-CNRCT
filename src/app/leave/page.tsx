@@ -250,7 +250,7 @@ export default function LeavePage() {
                             <TableHead>Type de congé</TableHead>
                             <TableHead>Date de début</TableHead>
                             <TableHead>Date de fin</TableHead>
-                            <TableHead>N° Décision</TableHead>
+                            <TableHead>Motif / N° Décision</TableHead>
                             <TableHead>Statut</TableHead>
                             <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
@@ -275,7 +275,9 @@ export default function LeavePage() {
                                 <TableCell>{leave.type}</TableCell>
                                 <TableCell>{leave.startDate}</TableCell>
                                 <TableCell>{leave.endDate}</TableCell>
-                                <TableCell>{leave.num_decision || '-'}</TableCell>
+                                <TableCell className="text-sm text-muted-foreground max-w-xs truncate">
+                                    {leave.type === "Congé Annuel" ? leave.num_decision : leave.reason || '-'}
+                                </TableCell>
                                 <TableCell>
                                 <Badge
                                     variant={
@@ -341,7 +343,9 @@ export default function LeavePage() {
                                             <p className="font-medium">{leave.employee}</p>
                                             <p className="text-sm text-muted-foreground">{leave.type}</p>
                                             <p className="text-sm text-muted-foreground">{leave.startDate} au {leave.endDate}</p>
-                                            {leave.num_decision && <p className="text-sm text-muted-foreground">Décision: {leave.num_decision}</p>}
+                                            {(leave.num_decision || leave.reason) && <p className="text-sm text-muted-foreground truncate">
+                                                {leave.type === 'Congé Annuel' ? `Décision: ${leave.num_decision}` : `Motif: ${leave.reason}`}
+                                            </p>}
                                             <Badge
                                                 variant={(statusVariantMap[leave.status as Status] || "default")}
                                                 className="mt-1"

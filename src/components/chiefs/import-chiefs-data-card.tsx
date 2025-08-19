@@ -56,7 +56,7 @@ export function ImportChiefsDataCard() {
         }
 
         const headers = results.meta.fields || [];
-        const requiredColumns = ['name', 'title', 'role', 'region', 'department', 'subprefecture', 'village'];
+        const requiredColumns = ['lastname', 'firstname', 'title', 'role', 'region', 'department', 'subprefecture', 'village'];
         const missingColumns = requiredColumns.filter(col => !headers.includes(col));
 
         if (missingColumns.length > 0) {
@@ -66,10 +66,12 @@ export function ImportChiefsDataCard() {
         }
         
         const chiefsToImport: Omit<Chief, "id">[] = results.data
-          .filter(row => row && row.name)
+          .filter(row => row && row.lastname)
           .map(row => {
               const chiefData: Omit<Chief, 'id'> = {
-                name: String(row.name || ''),
+                name: `${row.lastname || ''} ${row.firstname || ''}`.trim(),
+                lastName: String(row.lastname || ''),
+                firstName: String(row.firstname || ''),
                 title: String(row.title || ''),
                 role: String(row.role || 'Chef de Village') as Chief['role'],
                 region: String(row.region || ''),

@@ -134,7 +134,7 @@ export function AddChiefSheet({ isOpen, onClose, onAddChief }: AddChiefSheetProp
     setError("");
     try {
         const chiefData: Omit<Chief, "id"> = {
-            name: `${firstName} ${lastName}`.trim(),
+            name: `${lastName} ${firstName}`.trim(),
             firstName,
             lastName,
             title,

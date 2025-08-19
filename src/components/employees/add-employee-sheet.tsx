@@ -224,7 +224,7 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
           direction,
           service,
           status, 
-          name: `${firstName} ${lastName}`.trim(), 
+          name: `${lastName} ${firstName}`.trim(), 
           skills: skillsArray,
           sexe: sexe as Employe['sexe'],
           Date_Depart: dateDepart || undefined,

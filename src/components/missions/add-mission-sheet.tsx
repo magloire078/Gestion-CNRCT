@@ -49,7 +49,7 @@ export function AddMissionSheet({
   const [assignedTo, setAssignedTo] = useState("");
   const [startDate, setStartDate] = useState<Date>();
   const [endDate, setEndDate] = useState<Date>();
-  const [status, setStatus] = useState<Mission['status']>('Planned');
+  const [status, setStatus] = useState<Mission['status']>('Planifiée');
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -59,7 +59,7 @@ export function AddMissionSheet({
     setAssignedTo("");
     setStartDate(undefined);
     setEndDate(undefined);
-    setStatus("Planned");
+    setStatus("Planifiée");
     setError("");
   }
 
@@ -153,10 +153,10 @@ export function AddMissionSheet({
                       <SelectValue placeholder="Sélectionnez un statut" />
                   </SelectTrigger>
                   <SelectContent>
-                      <SelectItem value="Planned">Planifiée</SelectItem>
-                      <SelectItem value="In Progress">En cours</SelectItem>
-                      <SelectItem value="Completed">Terminée</SelectItem>
-                      <SelectItem value="Cancelled">Annulée</SelectItem>
+                      <SelectItem value="Planifiée">Planifiée</SelectItem>
+                      <SelectItem value="En cours">En cours</SelectItem>
+                      <SelectItem value="Terminée">Terminée</SelectItem>
+                      <SelectItem value="Annulée">Annulée</SelectItem>
                   </SelectContent>
                </Select>
             </div>

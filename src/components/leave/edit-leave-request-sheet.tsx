@@ -50,6 +50,7 @@ export function EditLeaveRequestSheet({
   const [leaveType, setLeaveType] = useState("");
   const [startDate, setStartDate] = useState<Date>();
   const [endDate, setEndDate] = useState<Date>();
+  const [numDecision, setNumDecision] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -59,6 +60,7 @@ export function EditLeaveRequestSheet({
         setLeaveType(leaveRequest.type);
         setStartDate(parseISO(leaveRequest.startDate));
         setEndDate(parseISO(leaveRequest.endDate));
+        setNumDecision(leaveRequest.num_decision || "");
     }
   }, [leaveRequest])
 
@@ -67,6 +69,7 @@ export function EditLeaveRequestSheet({
     setLeaveType("");
     setStartDate(undefined);
     setEndDate(undefined);
+    setNumDecision("");
     setError("");
   }
 
@@ -92,12 +95,20 @@ export function EditLeaveRequestSheet({
     setError("");
 
     try {
-      await onUpdateLeave(leaveRequest.id, {
+      const dataToUpdate: Partial<Omit<Leave, 'id' | 'status'>> = {
         employee,
         type: leaveType as Leave['type'],
         startDate: format(startDate, "yyyy-MM-dd"),
         endDate: format(endDate, "yyyy-MM-dd"),
-      });
+      };
+
+      if (leaveType === "Congé Annuel") {
+        dataToUpdate.num_decision = numDecision;
+      } else {
+        dataToUpdate.num_decision = "";
+      }
+
+      await onUpdateLeave(leaveRequest.id, dataToUpdate);
       handleClose();
     } catch(err) {
        setError("Échec de la mise à jour de la demande. Veuillez réessayer.");
@@ -197,6 +208,20 @@ export function EditLeaveRequestSheet({
               </PopoverContent>
             </Popover>
           </div>
+          {leaveType === 'Congé Annuel' && (
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="numDecision" className="text-right">
+                N° Décision
+              </Label>
+              <Input
+                id="numDecision"
+                value={numDecision}
+                onChange={(e) => setNumDecision(e.target.value)}
+                className="col-span-3"
+                placeholder="Entrez le n° de décision"
+              />
+            </div>
+          )}
           {error && (
             <p className="col-span-4 text-center text-sm text-destructive">
               {error}

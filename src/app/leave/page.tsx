@@ -21,12 +21,13 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import type { Leave } from "@/lib/data";
+import type { Leave, Employe } from "@/lib/data";
 import { AddLeaveRequestSheet } from "@/components/leave/add-leave-request-sheet";
 import { EditLeaveRequestSheet } from "@/components/leave/edit-leave-request-sheet";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { subscribeToLeaves, addLeave, updateLeaveStatus, updateLeave } from "@/services/leave-service";
+import { getEmployees } from "@/services/employee-service";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { LeaveCalendar } from "@/components/leave/leave-calendar";
@@ -44,6 +45,7 @@ const leaveTypes = ["Congé Annuel", "Congé Maladie", "Congé Personnel", "Cong
 
 export default function LeavePage() {
   const [leaves, setLeaves] = useState<Leave[]>([]);
+  const [employees, setEmployees] = useState<Employe[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
@@ -57,24 +59,29 @@ export default function LeavePage() {
   const [statusFilter, setStatusFilter] = useState("all");
 
   useEffect(() => {
-    const unsubscribe = subscribeToLeaves((fetchedLeaves) => {
+    const unsubLeaves = subscribeToLeaves((fetchedLeaves) => {
         setLeaves(fetchedLeaves);
-        setLoading(false);
-        setError(null);
     }, (err) => {
         setError("Impossible de charger les demandes de congé.");
         console.error(err);
         setLoading(false);
     });
 
-    // Cleanup subscription on component unmount
-    return () => unsubscribe();
+    getEmployees().then(fetchedEmployees => {
+      setEmployees(fetchedEmployees);
+    }).catch(err => {
+      console.error(err);
+      setError("Impossible de charger les employés pour la recherche.");
+    }).finally(() => setLoading(false));
+
+    return () => {
+      unsubLeaves();
+    };
   }, []);
 
   const handleLeaveStatusChange = async (id: string, status: Status) => {
     try {
       await updateLeaveStatus(id, status);
-      // No need for local state update, onSnapshot will handle it.
       toast({
         title: "Statut mis à jour",
         description: `La demande a été marquée comme ${status}.`,
@@ -91,7 +98,6 @@ export default function LeavePage() {
   const handleAddLeaveRequest = async (newLeaveRequest: Omit<Leave, 'id' | 'status'>) => {
     try {
         const newRequest = await addLeave(newLeaveRequest);
-        // No need for local state update, onSnapshot will handle it.
         setIsAddSheetOpen(false);
         toast({
             title: "Demande ajoutée",
@@ -99,7 +105,7 @@ export default function LeavePage() {
         });
     } catch (err) {
         console.error("Failed to add leave request:", err);
-        throw err; // Re-throw to be caught in the sheet
+        throw err;
     }
   };
 
@@ -124,12 +130,22 @@ export default function LeavePage() {
 
   const filteredLeaves = useMemo(() => {
     return leaves.filter(leave => {
-      const matchesSearch = leave.employee.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesType = typeFilter === 'all' || leave.type === typeFilter;
-      const matchesStatus = statusFilter === 'all' || leave.status === statusFilter;
-      return matchesSearch && matchesType && matchesStatus;
+        const employeeDetails = employees.find(e => e.name === leave.employee);
+        const searchTermLower = searchTerm.toLowerCase();
+
+        const matchesSearch = searchTerm ? (
+            leave.employee.toLowerCase().includes(searchTermLower) ||
+            (employeeDetails?.firstName?.toLowerCase().includes(searchTermLower)) ||
+            (employeeDetails?.lastName?.toLowerCase().includes(searchTermLower)) ||
+            (employeeDetails?.matricule?.toLowerCase().includes(searchTermLower))
+        ) : true;
+
+        const matchesType = typeFilter === 'all' || leave.type === typeFilter;
+        const matchesStatus = statusFilter === 'all' || leave.status === statusFilter;
+        return matchesSearch && matchesType && matchesStatus;
     });
-  }, [leaves, searchTerm, typeFilter, statusFilter]);
+}, [leaves, employees, searchTerm, typeFilter, statusFilter]);
+
 
   const pendingCount = useMemo(() => leaves.filter((l) => l.status === "En attente").length, [leaves]);
   const approvedCount = useMemo(() => leaves.filter((l) => l.status === "Approuvé").length, [leaves]);
@@ -195,7 +211,7 @@ export default function LeavePage() {
                     <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                     <Input
-                        placeholder="Rechercher par employé..."
+                        placeholder="Rechercher par employé (nom, matricule...)"
                         className="pl-10"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
@@ -234,6 +250,7 @@ export default function LeavePage() {
                             <TableHead>Type de congé</TableHead>
                             <TableHead>Date de début</TableHead>
                             <TableHead>Date de fin</TableHead>
+                            <TableHead>N° Décision</TableHead>
                             <TableHead>Statut</TableHead>
                             <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
@@ -246,6 +263,7 @@ export default function LeavePage() {
                                 <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                                 <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                                 <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                                <TableCell><Skeleton className="h-4 w-20" /></TableCell>
                                 <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
                                 <TableCell><div className="flex justify-end gap-2"><Skeleton className="h-8 w-8 rounded-md" /><Skeleton className="h-8 w-8 rounded-md" /></div></TableCell>
                             </TableRow>
@@ -257,6 +275,7 @@ export default function LeavePage() {
                                 <TableCell>{leave.type}</TableCell>
                                 <TableCell>{leave.startDate}</TableCell>
                                 <TableCell>{leave.endDate}</TableCell>
+                                <TableCell>{leave.num_decision || '-'}</TableCell>
                                 <TableCell>
                                 <Badge
                                     variant={
@@ -322,6 +341,7 @@ export default function LeavePage() {
                                             <p className="font-medium">{leave.employee}</p>
                                             <p className="text-sm text-muted-foreground">{leave.type}</p>
                                             <p className="text-sm text-muted-foreground">{leave.startDate} au {leave.endDate}</p>
+                                            {leave.num_decision && <p className="text-sm text-muted-foreground">Décision: {leave.num_decision}</p>}
                                             <Badge
                                                 variant={(statusVariantMap[leave.status as Status] || "default")}
                                                 className="mt-1"

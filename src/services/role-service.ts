@@ -17,7 +17,7 @@ const defaultRoles: Role[] = [
         name: 'Employé', 
         permissions: [
             allPermissions["Accès au Tableau de Bord"],
-            allPermissions["Gestion des Congés"],
+            allPermissions["Accès à Mon Espace"],
             allPermissions["Accès à l'Assistant IA"],
         ]
     },
@@ -26,6 +26,7 @@ const defaultRoles: Role[] = [
         name: 'Manager RH',
         permissions: [
             allPermissions["Accès au Tableau de Bord"],
+            allPermissions["Accès à Mon Espace"],
             allPermissions["Gestion des Employés"],
             allPermissions["Gestion de la Paie"],
             allPermissions["Gestion des Congés"],

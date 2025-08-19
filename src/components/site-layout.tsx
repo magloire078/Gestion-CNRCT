@@ -18,7 +18,6 @@ import {
   Shield,
   Briefcase,
   Scale,
-  User,
   Settings,
   MoreHorizontal,
   Loader2,
@@ -30,7 +29,7 @@ import {
   Building,
   Globe,
   ChevronDown,
-  UserSquare,
+  UserSquare as UserSquareIcon,
   ShieldHalf,
 } from "lucide-react";
 
@@ -62,6 +61,7 @@ import { NotificationBell } from "./common/notification-bell";
 
 const allMenuItems = [
   { href: "/", label: "Tableau de Bord", icon: LayoutDashboard, permission: "page:dashboard:view" },
+  { href: "/my-space", label: "Mon Espace", icon: UserSquareIcon, permission: "page:my-space:view" },
   { 
     isCollapsible: true,
     label: "Employés", 
@@ -71,7 +71,7 @@ const allMenuItems = [
         { href: "/employees", label: "Effectif Global", icon: Users, permission: "page:employees:view-all" },
         { href: "/employees?filter=directoire", label: "Membres du directoire", icon: Building, permission: "page:board-members:view" },
         { href: "/employees?filter=regional", label: "Comités régionaux", icon: Globe, permission: "page:regional-committees:view" },
-        { href: "/employees?filter=personnel", label: "Agent/Personnel", icon: UserSquare, permission: "page:staff:view" },
+        { href: "/employees?filter=personnel", label: "Agent/Personnel", icon: UserSquareIcon, permission: "page:staff:view" },
         { href: "/employees?filter=garde-republicaine", label: "Garde Républicaine", icon: ShieldHalf, permission: "page:republican-guard:view" },
         { href: "/employees?filter=gendarme", label: "Gendarmes", icon: Shield, permission: "page:gendarmerie:view" },
     ]
@@ -252,7 +252,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
                         <Link href="/profile">
-                            <User className="mr-2 h-4 w-4" />
+                            <UserSquareIcon className="mr-2 h-4 w-4" />
                             <span>Profil</span>
                         </Link>
                     </DropdownMenuItem>

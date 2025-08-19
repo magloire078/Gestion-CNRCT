@@ -18,7 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Loader2, User, Briefcase, BadgeCheck, Save, Upload, MapPin } from "lucide-react";
+import { ArrowLeft, Loader2, User, Briefcase, BadgeCheck, Save, Upload, MapPin, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -97,6 +97,15 @@ export default function EmployeeEditPage() {
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setEmployee(prev => (prev ? { ...prev, [name]: value } : null));
+    };
+
+    const handleNumberInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setEmployee(prev => {
+            if (!prev) return null;
+            const parsedValue = value === '' ? undefined : parseInt(value, 10);
+            return { ...prev, [name]: isNaN(parsedValue as number) ? undefined : parsedValue };
+        });
     };
 
      const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -227,6 +236,10 @@ export default function EmployeeEditPage() {
                                     <SelectItem value="Autre">Autre</SelectItem>
                                 </SelectContent>
                             </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="enfants">Nombre d'enfants</Label>
+                            <Input id="enfants" name="enfants" type="number" value={employee.enfants ?? ''} onChange={handleNumberInputChange} />
                         </div>
                     </CardContent>
                 </Card>

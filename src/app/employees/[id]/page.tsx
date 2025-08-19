@@ -15,13 +15,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Pencil, User, Briefcase, Mail, Phone, MapPin, BadgeCheck, FileText, Calendar, Laptop, Rocket, FolderArchive, LogOut, Globe, Landmark, ChevronRight } from "lucide-react";
+import { ArrowLeft, Pencil, User, Briefcase, Mail, Phone, MapPin, BadgeCheck, FileText, Calendar, Laptop, Rocket, FolderArchive, LogOut, Globe, Landmark, ChevronRight, Users, Cake } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { lastDayOfMonth, format, subMonths } from 'date-fns';
+import { lastDayOfMonth, format, subMonths, differenceInYears, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
 
@@ -54,7 +54,10 @@ export default function EmployeeDetailPage() {
         
         async function fetchData() {
             try {
-                const employeeData = await getEmployee(id);
+                let employeeData = await getEmployee(id);
+                if (employeeData && employeeData.Date_Naissance) {
+                    employeeData.age = differenceInYears(new Date(), parseISO(employeeData.Date_Naissance));
+                }
                 setEmployee(employeeData);
 
                 if (employeeData) {
@@ -203,7 +206,9 @@ export default function EmployeeDetailPage() {
                                 </CardHeader>
                                 <CardContent className="space-y-4">
                                     <InfoItem label="Date de naissance" value={employee.Date_Naissance} icon={Calendar} />
+                                    {employee.age !== undefined && <InfoItem label="Âge" value={`${employee.age} ans`} icon={Cake} />}
                                     <InfoItem label="Lieu de naissance" value={employee.Lieu_Naissance} icon={MapPin} />
+                                    {employee.enfants !== undefined && <InfoItem label="Enfants à charge" value={employee.enfants} icon={Users} />}
                                     <InfoItem label="Localisation" icon={Globe}>
                                         {employee.Region || employee.Village ? (
                                             <p className="text-base font-medium mt-1">{employee.Region}{employee.Village ? `, ${employee.Village}` : ''}</p>
@@ -467,4 +472,3 @@ function EmployeeDetailSkeleton() {
         </div>
     )
 }
-

@@ -55,6 +55,12 @@ export async function addLeave(leaveDataToAdd: Omit<Leave, 'id' | 'status'>): Pr
     return { id: docRef.id, ...newLeaveData };
 }
 
+export async function updateLeave(id: string, dataToUpdate: Partial<Omit<Leave, 'id' | 'status'>>): Promise<void> {
+    const leaveDocRef = doc(db, 'leaves', id);
+    await updateDoc(leaveDocRef, dataToUpdate);
+}
+
+
 export async function updateLeaveStatus(id: string, status: 'Approuvé' | 'Rejeté'): Promise<void> {
     const leaveDocRef = doc(db, 'leaves', id);
     await updateDoc(leaveDocRef, { status });

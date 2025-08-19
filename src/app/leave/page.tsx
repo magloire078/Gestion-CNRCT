@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { PlusCircle, Check, X, Search, Loader2 } from "lucide-react";
+import { PlusCircle, Check, X, Search, Loader2, FileText, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -23,9 +23,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import type { Leave } from "@/lib/data";
 import { AddLeaveRequestSheet } from "@/components/leave/add-leave-request-sheet";
+import { EditLeaveRequestSheet } from "@/components/leave/edit-leave-request-sheet";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { subscribeToLeaves, addLeave, updateLeaveStatus } from "@/services/leave-service";
+import { subscribeToLeaves, addLeave, updateLeaveStatus, updateLeave } from "@/services/leave-service";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { LeaveCalendar } from "@/components/leave/leave-calendar";
@@ -43,11 +44,14 @@ const leaveTypes = ["Congé Annuel", "Congé Maladie", "Congé Personnel", "Cong
 
 export default function LeavePage() {
   const [leaves, setLeaves] = useState<Leave[]>([]);
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   
+  const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
+  const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
+  const [selectedLeave, setSelectedLeave] = useState<Leave | null>(null);
+
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -88,7 +92,7 @@ export default function LeavePage() {
     try {
         const newRequest = await addLeave(newLeaveRequest);
         // No need for local state update, onSnapshot will handle it.
-        setIsSheetOpen(false);
+        setIsAddSheetOpen(false);
         toast({
             title: "Demande ajoutée",
             description: `La demande de congé pour ${newRequest.employee} a été ajoutée.`,
@@ -98,6 +102,25 @@ export default function LeavePage() {
         throw err; // Re-throw to be caught in the sheet
     }
   };
+
+  const handleUpdateLeaveRequest = async (id: string, data: Partial<Omit<Leave, "id" | "status">>) => {
+    try {
+        await updateLeave(id, data);
+        setIsEditSheetOpen(false);
+        toast({
+            title: "Demande de congé mise à jour",
+            description: "Les détails du congé ont été modifiés avec succès.",
+        });
+    } catch (err) {
+         console.error("Failed to update leave request:", err);
+         throw err;
+    }
+  };
+
+  const openEditSheet = (leave: Leave) => {
+    setSelectedLeave(leave);
+    setIsEditSheetOpen(true);
+  }
 
   const filteredLeaves = useMemo(() => {
     return leaves.filter(leave => {
@@ -117,10 +140,16 @@ export default function LeavePage() {
         <h1 className="text-3xl font-bold tracking-tight">
           Gestion des Congés
         </h1>
-        <Button onClick={() => setIsSheetOpen(true)} className="w-full sm:w-auto">
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Nouvelle demande
-        </Button>
+        <div className="flex gap-2">
+           <Button variant="outline">
+              <FileText className="mr-2 h-4 w-4" />
+              Rapport des Congés
+           </Button>
+           <Button onClick={() => setIsAddSheetOpen(true)}>
+             <PlusCircle className="mr-2 h-4 w-4" />
+             Nouvelle demande
+           </Button>
+        </div>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
@@ -239,6 +268,15 @@ export default function LeavePage() {
                                 </TableCell>
                                 <TableCell className="text-right">
                                 <div className="flex justify-end gap-2">
+                                     <Button
+                                        variant="outline"
+                                        size="icon"
+                                        className="h-8 w-8"
+                                        onClick={() => openEditSheet(leave)}
+                                        >
+                                        <Pencil className="h-4 w-4" />
+                                        <span className="sr-only">Modifier</span>
+                                    </Button>
                                     <Button
                                     variant="outline"
                                     size="icon"
@@ -291,8 +329,18 @@ export default function LeavePage() {
                                                 {leave.status}
                                             </Badge>
                                         </div>
-                                        {leave.status === 'En attente' && (
-                                            <div className="flex flex-col gap-2">
+                                        <div className="flex flex-col gap-2">
+                                            <Button
+                                                variant="outline"
+                                                size="icon"
+                                                className="h-8 w-8"
+                                                onClick={() => openEditSheet(leave)}
+                                                >
+                                                <Pencil className="h-4 w-4" />
+                                                <span className="sr-only">Modifier</span>
+                                            </Button>
+                                            {leave.status === 'En attente' && (
+                                            <>
                                                 <Button
                                                     variant="outline"
                                                     size="icon"
@@ -311,8 +359,9 @@ export default function LeavePage() {
                                                     <X className="h-4 w-4" />
                                                     <span className="sr-only">Rejeter</span>
                                                 </Button>
-                                            </div>
-                                        )}
+                                            </>
+                                            )}
+                                        </div>
                                     </CardContent>
                                 </Card>
                             ))
@@ -336,7 +385,7 @@ export default function LeavePage() {
                     Visualisez les congés approuvés pour le mois en cours.
                 </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="flex justify-center">
                     <LeaveCalendar leaves={leaves.filter(l => l.status === 'Approuvé')} />
                 </CardContent>
             </Card>
@@ -344,12 +393,16 @@ export default function LeavePage() {
       </Tabs>
 
        <AddLeaveRequestSheet
-        isOpen={isSheetOpen}
-        onClose={() => setIsSheetOpen(false)}
+        isOpen={isAddSheetOpen}
+        onClose={() => setIsAddSheetOpen(false)}
         onAddLeaveRequest={handleAddLeaveRequest}
+      />
+      <EditLeaveRequestSheet
+        isOpen={isEditSheetOpen}
+        onClose={() => setIsEditSheetOpen(false)}
+        onUpdateLeave={handleUpdateLeaveRequest}
+        leaveRequest={selectedLeave}
       />
     </div>
   );
 }
-
-    

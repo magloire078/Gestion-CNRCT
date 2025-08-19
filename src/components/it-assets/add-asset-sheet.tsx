@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,8 +21,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { Asset } from "@/lib/data";
+import type { Asset, Employe } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
+import { getEmployees } from "@/services/employee-service";
 
 interface AddAssetSheetProps {
   isOpen: boolean;
@@ -43,9 +44,25 @@ export function AddAssetSheet({ isOpen, onClose, onAddAsset }: AddAssetSheetProp
   const [numeroDeSerie, setNumeroDeSerie] = useState("");
   const [assignedTo, setAssignedTo] = useState("En stock");
   const [status, setStatus] = useState<Asset['status']>('En stock');
+  const [employees, setEmployees] = useState<Employe[]>([]);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (isOpen) {
+        async function fetchEmployees() {
+            try {
+                const fetchedEmployees = await getEmployees();
+                setEmployees(fetchedEmployees);
+            } catch(err) {
+                console.error("Failed to fetch employees", err);
+                toast({ variant: "destructive", title: "Erreur", description: "Impossible de charger la liste des employés." });
+            }
+        }
+        fetchEmployees();
+    }
+  }, [isOpen, toast]);
 
   const resetForm = () => {
     setTag("");
@@ -149,7 +166,18 @@ export function AddAssetSheet({ isOpen, onClose, onAddAsset }: AddAssetSheetProp
             </div>
             <div className="space-y-2">
               <Label htmlFor="assignedTo">Assigné à</Label>
-              <Input id="assignedTo" value={assignedTo} onChange={(e) => setAssignedTo(e.target.value)} />
+              <Select value={assignedTo} onValueChange={setAssignedTo}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Sélectionnez une assignation" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="En stock">En stock</SelectItem>
+                    <SelectItem value="Unassigned">Non assigné</SelectItem>
+                    {employees.map(emp => (
+                        <SelectItem key={emp.id} value={emp.name}>{emp.name}</SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
             </div>
              <div className="space-y-2">
               <Label htmlFor="status">Statut</Label>

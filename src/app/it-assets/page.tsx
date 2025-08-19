@@ -181,7 +181,7 @@ export default function ItAssetsPage() {
                       ))
                   ) : (
                       filteredAssets.map((asset) => (
-                      <TableRow key={asset.tag}>
+                      <TableRow key={asset.tag} onClick={() => router.push(`/it-assets/${asset.tag}/edit`)} className="cursor-pointer">
                           <TableCell className="font-medium">{asset.tag}</TableCell>
                           <TableCell>{asset.type}</TableCell>
                           <TableCell>
@@ -208,7 +208,7 @@ export default function ItAssetsPage() {
                                             <Pencil className="mr-2 h-4 w-4" /> Modifier
                                           </Link>
                                       </DropdownMenuItem>
-                                      <DropdownMenuItem onClick={() => setDeleteTarget(asset)} className="text-destructive focus:text-destructive">
+                                      <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setDeleteTarget(asset); }} className="text-destructive focus:text-destructive">
                                           <Trash2 className="mr-2 h-4 w-4" /> Supprimer
                                       </DropdownMenuItem>
                                   </DropdownMenuContent>
@@ -227,7 +227,7 @@ export default function ItAssetsPage() {
                   ))
                 ) : (
                   filteredAssets.map((asset) => (
-                    <Card key={asset.tag} onClick={() => router.push(`/it-assets/${asset.tag}/edit`)}>
+                    <Card key={asset.tag} onClick={() => router.push(`/it-assets/${asset.tag}/edit`)} className="cursor-pointer">
                       <CardContent className="p-4 space-y-2">
                         <div className="flex justify-between items-start">
                           <div>

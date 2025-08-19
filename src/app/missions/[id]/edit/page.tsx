@@ -1,0 +1,142 @@
+
+"use client";
+
+import { useState, useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { getMission, updateMission } from "@/services/mission-service";
+import type { Mission } from "@/lib/data";
+
+import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { ArrowLeft, Loader2, Save } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+
+type Status = "Planifiée" | "En cours" | "Terminée" | "Annulée";
+
+export default function MissionEditPage() {
+    const params = useParams();
+    const router = useRouter();
+    const { id } = params;
+    const { toast } = useToast();
+
+    const [mission, setMission] = useState<Partial<Mission> | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [isSaving, setIsSaving] = useState(false);
+    
+    useEffect(() => {
+        if (typeof id !== 'string') return;
+        async function fetchMissionData() {
+            try {
+                const data = await getMission(id);
+                setMission(data);
+            } catch (error) {
+                console.error("Failed to fetch mission data", error);
+                toast({ variant: "destructive", title: "Erreur", description: "Impossible de charger les données de la mission." });
+            } finally {
+                setLoading(false);
+            }
+        }
+        fetchMissionData();
+    }, [id, toast]);
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const { name, value } = e.target;
+        setMission(prev => prev ? { ...prev, [name]: value } : null);
+    };
+    
+    const handleSelectChange = (name: string, value: string) => {
+        setMission(prev => prev ? { ...prev, [name]: value } : null);
+    };
+
+    const handleSave = async () => {
+        if (!mission || typeof id !== 'string') return;
+        setIsSaving(true);
+        try {
+            await updateMission(id, mission);
+            toast({ title: "Succès", description: "Les informations de la mission ont été mises à jour." });
+            router.back();
+        } catch (error) {
+            console.error("Failed to save mission", error);
+            toast({ variant: "destructive", title: "Erreur", description: "Impossible d'enregistrer les modifications." });
+        } finally {
+            setIsSaving(false);
+        }
+    };
+    
+    if (loading) {
+        return (
+             <div className="max-w-2xl mx-auto flex flex-col gap-6">
+                <Skeleton className="h-10 w-48" />
+                <Card><CardContent className="p-6"><Skeleton className="h-96 w-full" /></CardContent></Card>
+            </div>
+        );
+    }
+
+    if (!mission) {
+        return <div className="text-center py-10">Mission non trouvée.</div>;
+    }
+
+    return (
+         <div className="max-w-2xl mx-auto flex flex-col gap-6">
+            <div className="flex items-center gap-4">
+                 <Button variant="outline" size="icon" onClick={() => router.back()}>
+                    <ArrowLeft className="h-4 w-4" />
+                    <span className="sr-only">Retour</span>
+                 </Button>
+                 <div>
+                    <h1 className="text-2xl font-bold tracking-tight">Modifier la Mission</h1>
+                    <p className="text-muted-foreground">{mission.title}</p>
+                 </div>
+                 <Button onClick={handleSave} disabled={isSaving} className="ml-auto">
+                    {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4" />}
+                    Enregistrer
+                </Button>
+            </div>
+            
+            <Card>
+                <CardHeader><CardTitle>Détails de la Mission</CardTitle></CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="title">Titre</Label>
+                        <Input id="title" name="title" value={mission.title || ''} onChange={handleInputChange} />
+                    </div>
+                     <div className="space-y-2">
+                        <Label htmlFor="description">Description / Objectifs</Label>
+                        <Textarea id="description" name="description" value={mission.description || ''} onChange={handleInputChange} rows={4} />
+                    </div>
+                     <div className="space-y-2">
+                        <Label htmlFor="assignedTo">Assigné à</Label>
+                        <Input id="assignedTo" name="assignedTo" value={mission.assignedTo || ''} onChange={handleInputChange} />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="startDate">Date de début</Label>
+                            <Input id="startDate" name="startDate" type="date" value={mission.startDate || ''} onChange={handleInputChange} />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="endDate">Date de fin</Label>
+                            <Input id="endDate" name="endDate" type="date" value={mission.endDate || ''} onChange={handleInputChange} />
+                        </div>
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="status">Statut</Label>
+                         <Select value={mission.status || ''} onValueChange={(v) => handleSelectChange('status', v)}>
+                            <SelectTrigger><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="Planifiée">Planifiée</SelectItem>
+                                <SelectItem value="En cours">En cours</SelectItem>
+                                <SelectItem value="Terminée">Terminée</SelectItem>
+                                <SelectItem value="Annulée">Annulée</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </CardContent>
+            </Card>
+        </div>
+    );
+}

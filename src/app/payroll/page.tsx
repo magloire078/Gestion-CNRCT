@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
@@ -672,3 +671,5 @@ function PayslipTemplate({ payslipDetails }: { payslipDetails: PayslipDetails })
         </div>
     );
 }
+
+    

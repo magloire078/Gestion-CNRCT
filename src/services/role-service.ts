@@ -19,6 +19,7 @@ const defaultRoles: Role[] = [
             allPermissions["Accès au Tableau de Bord"],
             allPermissions["Accès à Mon Espace"],
             allPermissions["Accès à l'Assistant IA"],
+            allPermissions["Voir le groupe Personnel"],
         ]
     },
     {
@@ -33,6 +34,8 @@ const defaultRoles: Role[] = [
             allPermissions["Gestion des Évaluations"],
             allPermissions["Gestion des Missions"],
             allPermissions["Gestion des Documents"],
+            allPermissions["Voir le groupe Personnel"],
+            allPermissions["Voir le groupe Opérations"],
         ]
     }
 ];

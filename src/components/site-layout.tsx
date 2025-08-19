@@ -64,31 +64,50 @@ const allMenuItems = [
   { href: "/my-space", label: "Mon Espace", icon: UserSquareIcon, permission: "page:my-space:view" },
   { 
     isCollapsible: true,
-    label: "Employés", 
+    label: "Personnel", 
     icon: Users,
-    permission: "page:employees:view",
+    permission: "group:personnel:view",
     subItems: [
-        { href: "/employees", label: "Effectif Global", icon: Users, permission: "page:employees:view-all" },
-        { href: "/employees?filter=directoire", label: "Membres du directoire", icon: Building, permission: "page:board-members:view" },
-        { href: "/employees?filter=regional", label: "Comités régionaux", icon: Globe, permission: "page:regional-committees:view" },
-        { href: "/employees?filter=personnel", label: "Agent/Personnel", icon: UserSquareIcon, permission: "page:staff:view" },
-        { href: "/employees?filter=garde-republicaine", label: "Garde Républicaine", icon: ShieldHalf, permission: "page:republican-guard:view" },
-        { href: "/employees?filter=gendarme", label: "Gendarmes", icon: Shield, permission: "page:gendarmerie:view" },
+        { href: "/employees", label: "Employés", icon: Users, permission: "page:employees:view" },
+        { href: "/payroll", label: "Paie", icon: Landmark, permission: "page:payroll:view" },
+        { href: "/leave", label: "Congés", icon: CalendarOff, permission: "page:leave:view" },
+        { href: "/evaluations", label: "Évaluations", icon: ClipboardCheck, permission: "page:evaluations:view" },
     ]
   },
-  { href: "/chiefs", label: "Rois & Chefs", icon: Crown, permission: "page:chiefs:view" },
-  { href: "/mapping", label: "Cartographie", icon: MapIcon, permission: "page:mapping:view" },
-  { href: "/payroll", label: "Paie", icon: Landmark, permission: "page:payroll:view" },
-  { href: "/leave", label: "Congés", icon: CalendarOff, permission: "page:leave:view" },
-  { href: "/evaluations", label: "Évaluations", icon: ClipboardCheck, permission: "page:evaluations:view" },
-  { href: "/missions", label: "Missions", icon: Briefcase, permission: "page:missions:view" },
-  { href: "/conflicts", label: "Conflits", icon: Scale, permission: "page:conflicts:view" },
-  { href: "/supplies", label: "Fournitures", icon: Package, permission: "page:supplies:view" },
-  { href: "/it-assets", label: "Actifs TI", icon: Laptop, permission: "page:it-assets:view" },
-  { href: "/fleet", label: "Flotte de Véhicules", icon: Car, permission: "page:fleet:view" },
-  { href: "/documents", label: "Documents", icon: FileText, permission: "page:documents:view" },
-  { href: "/assistant", label: "Assistant IA", icon: MessageSquare, permission: "page:assistant:view" },
-  { href: "/admin", label: "Administration", icon: Shield, permission: "page:admin:view" },
+  { 
+    isCollapsible: true,
+    label: "Organisation", 
+    icon: Building,
+    permission: "group:organization:view",
+    subItems: [
+        { href: "/chiefs", label: "Rois & Chefs", icon: Crown, permission: "page:chiefs:view" },
+        { href: "/conflicts", label: "Gestion des Conflits", icon: Scale, permission: "page:conflicts:view" },
+        { href: "/mapping", label: "Cartographie", icon: MapIcon, permission: "page:mapping:view" },
+    ]
+  },
+   { 
+    isCollapsible: true,
+    label: "Opérations", 
+    icon: Briefcase,
+    permission: "group:operations:view",
+    subItems: [
+        { href: "/missions", label: "Missions", icon: Briefcase, permission: "page:missions:view" },
+        { href: "/fleet", label: "Flotte de Véhicules", icon: Car, permission: "page:fleet:view" },
+        { href: "/supplies", label: "Fournitures", icon: Package, permission: "page:supplies:view" },
+    ]
+  },
+   { 
+    isCollapsible: true,
+    label: "Administration", 
+    icon: Shield,
+    permission: "group:admin:view",
+    subItems: [
+        { href: "/it-assets", label: "Actifs TI", icon: Laptop, permission: "page:it-assets:view" },
+        { href: "/documents", label: "Documents", icon: FileText, permission: "page:documents:view" },
+        { href: "/assistant", label: "Assistant IA", icon: MessageSquare, permission: "page:assistant:view" },
+        { href: "/admin", label: "Paramètres Admin", icon: Shield, permission: "page:admin:view" },
+    ]
+  },
 ];
 
 function ProtectedPage({ children, permission }: { children: React.ReactNode, permission: string }) {
@@ -146,17 +165,11 @@ function AppLayout({ children }: { children: React.ReactNode }) {
 
   const menuItems = React.useMemo(() => {
     if (!hasPermission) return [];
-    return allMenuItems.filter(item => {
-        if (item.isCollapsible) {
-            // Include parent if any child is visible
-            return item.subItems.some(subItem => hasPermission(subItem.permission));
-        }
-        return hasPermission(item.permission);
-    });
+    return allMenuItems.filter(item => hasPermission(item.permission));
   }, [hasPermission]);
   
   const currentPage = allMenuItems.find(item => !item.isCollapsible && item.href === currentPath);
-  const isSubItemActive = (subItems: any[]) => subItems.some(item => currentPath === item.href);
+  const isSubItemActive = (subItems: any[] | undefined) => subItems?.some(item => currentPath === item.href) || false;
 
   if (loading) {
     return (
@@ -188,7 +201,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
             <SidebarMenu>
               {menuItems.map((item, index) => (
                 item.isCollapsible ? (
-                   <Collapsible key={index} asChild>
+                   <Collapsible key={index} asChild defaultOpen={isSubItemActive(item.subItems)}>
                      <SidebarMenuItem>
                         <CollapsibleTrigger asChild>
                             <SidebarMenuButton
@@ -202,7 +215,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
                         </CollapsibleTrigger>
                         <CollapsibleContent asChild>
                             <SidebarMenuSub>
-                            {item.subItems.filter(sub => hasPermission(sub.permission)).map(subItem => (
+                            {item.subItems?.filter(sub => hasPermission(sub.permission)).map(subItem => (
                                 <SidebarMenuSubItem key={subItem.href}>
                                 <SidebarMenuSubButton asChild isActive={currentPath === subItem.href}>
                                     <Link href={subItem.href!}>

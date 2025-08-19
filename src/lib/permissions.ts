@@ -5,12 +5,6 @@ export const allPermissions = {
   "Accès au Tableau de Bord": "page:dashboard:view",
   "Accès à Mon Espace": "page:my-space:view",
   "Gestion des Employés": "page:employees:view",
-  "Accès à l'Effectif Global": "page:employees:view-all",
-  "Gestion des Membres du Directoire": "page:board-members:view",
-  "Gestion des Comités Régionaux": "page:regional-committees:view",
-  "Gestion des Agents/Personnel": "page:staff:view",
-  "Gestion de la Garde Républicaine": "page:republican-guard:view",
-  "Gestion des Gendarmes": "page:gendarmerie:view",
   "Gestion des Rois & Chefs": "page:chiefs:view",
   "Accès à la Cartographie": "page:mapping:view",
   "Gestion de la Paie": "page:payroll:view",
@@ -24,6 +18,12 @@ export const allPermissions = {
   "Gestion des Documents": "page:documents:view",
   "Accès à l'Assistant IA": "page:assistant:view",
   "Accès à l'Administration": "page:admin:view",
+
+  // Group permissions
+  "Voir le groupe Personnel": "group:personnel:view",
+  "Voir le groupe Organisation": "group:organization:view",
+  "Voir le groupe Opérations": "group:operations:view",
+  "Voir le groupe Administration": "group:admin:view",
 } as const;
 
 export type PermissionKey = keyof typeof allPermissions;

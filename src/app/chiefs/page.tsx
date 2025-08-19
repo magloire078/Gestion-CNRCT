@@ -61,9 +61,9 @@ export default function ChiefsPage() {
     return () => unsubscribe();
   }, []);
 
-  const handleAddChief = async (newChiefData: Omit<Chief, "id">) => {
+  const handleAddChief = async (newChiefData: Omit<Chief, "id">, photoFile: File | null) => {
     try {
-      await addChief(newChiefData, null);
+      await addChief(newChiefData, photoFile);
       setIsSheetOpen(false);
       toast({
         title: "Chef ajouté",
@@ -96,8 +96,8 @@ export default function ChiefsPage() {
   const filteredChiefs = useMemo(() => {
     return chiefs.filter((chief) =>
       chief.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      chief.region.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      chief.village.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (chief.region || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (chief.village || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       chief.title.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [chiefs, searchTerm]);

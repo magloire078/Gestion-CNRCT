@@ -238,7 +238,7 @@ export default function EmployeesPage() {
 
     const escapeSql = (str: string | undefined | null) => {
       if (str === null || str === undefined) return 'NULL';
-      return `'${str.replace(/'/g, "''")}'`;
+      return `'${String(str).replace(/'/g, "''")}'`;
     };
 
     const tableName = 'employees';

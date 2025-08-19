@@ -77,9 +77,11 @@ export type Employe = {
   solde_conges?: number;
   Droit?: number;
   bActif?: boolean;
-  Salaire_Brut?: number; // Can be calculated or stored
-  Salaire_Net?: number; // Can be calculated or stored
-  calculatedRetirementDate?: Date; // For UI display only
+  
+  // Calculated fields for UI display
+  netSalary?: number;
+  grossSalary?: number;
+  calculatedRetirementDate?: Date;
 };
 
 export type Leave = {

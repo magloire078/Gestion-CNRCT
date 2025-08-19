@@ -2,11 +2,10 @@
 "use client";
 
 import { useState, useMemo } from 'react';
-import { eachDayOfInterval, parseISO, getDay, isWeekend, isToday } from 'date-fns';
+import { eachDayOfInterval, parseISO, isWeekend, isToday } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Badge } from '@/components/ui/badge';
 import type { Leave } from '@/lib/data';
 import { Skeleton } from '../ui/skeleton';
 
@@ -59,22 +58,22 @@ export function LeaveCalendar({ leaves }: LeaveCalendarProps) {
     const dayLeaves = leavesByDate.get(dateString) || [];
     
     const leavesToShow = dayLeaves.slice(0, 2);
-    const remainingLeaves = dayLeaves.slice(2);
+    const remainingLeavesCount = dayLeaves.length - leavesToShow.length;
 
     return (
       <div className={`h-full w-full flex flex-col p-1`}>
-        <div className="flex-shrink-0 text-right text-xs pr-1">{day.getDate()}</div>
+        <div className="flex-shrink-0 self-end text-xs pr-1">{day.getDate()}</div>
         <div className="flex-grow space-y-1 overflow-hidden mt-1">
           {leavesToShow.map((leave, index) => (
             <div key={index} className={`text-xs p-0.5 rounded-sm truncate ${COLORS[index % COLORS.length]}`}>
               {leave.employee}
             </div>
           ))}
-          {remainingLeaves.length > 0 && (
+          {remainingLeavesCount > 0 && (
             <Popover>
               <PopoverTrigger asChild>
                  <div className="text-xs p-0.5 rounded-sm bg-gray-300 text-gray-800 cursor-pointer hover:bg-gray-400">
-                    + {remainingLeaves.length} de plus
+                    + {remainingLeavesCount} de plus
                 </div>
               </PopoverTrigger>
               <PopoverContent className="w-60">
@@ -111,15 +110,15 @@ export function LeaveCalendar({ leaves }: LeaveCalendarProps) {
         today: (date) => isToday(date),
       }}
        modifiersClassNames={{
-        today: 'bg-green-100 text-green-800 border-green-300 rounded-md',
-        weekend: 'text-red-600 bg-red-50 rounded-md',
+        today: 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 border-green-300 dark:border-green-700',
+        weekend: 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/50',
       }}
       classNames={{
           table: "w-full border-collapse space-y-1",
           head_row: "flex",
           head_cell: "text-muted-foreground rounded-md w-full font-normal text-[0.8rem]",
           row: "flex w-full mt-2",
-          cell: "h-24 text-center text-sm p-0 relative focus-within:relative focus-within:z-20",
+          cell: "h-28 text-center text-sm p-0 relative focus-within:relative focus-within:z-20",
           day: "h-full w-full p-0 focus-within:relative focus-within:z-20 border border-transparent hover:border-primary rounded-md",
           day_today: "border-primary",
       }}

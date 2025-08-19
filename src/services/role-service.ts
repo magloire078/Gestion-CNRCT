@@ -2,6 +2,7 @@
 import { collection, getDocs, addDoc, deleteDoc, doc, onSnapshot, Unsubscribe, query, orderBy, setDoc, writeBatch, updateDoc } from 'firebase/firestore';
 import type { Role } from '@/lib/data';
 import { db } from '@/lib/firebase';
+import { allPermissions } from '@/lib/permissions';
 
 const rolesCollection = collection(db, 'roles');
 
@@ -9,33 +10,28 @@ const defaultRoles: Role[] = [
     { 
         id: 'administrateur',
         name: 'Administrateur', 
-        permissions: [
-            "page:dashboard:view", "page:employees:view", "page:payroll:view",
-            "page:leave:view", "page:missions:view", "page:conflicts:view",
-            "page:supplies:view", "page:it-assets:view", "page:fleet:view",
-            "page:documents:view", "page:assistant:view", "page:admin:view",
-            "page:chiefs:view", "page:mapping:view", "page:evaluations:view"
-        ] 
+        permissions: Object.values(allPermissions)
     },
     { 
         id: 'employe',
         name: 'Employé', 
         permissions: [
-            "page:dashboard:view", "page:employees:view", "page:payroll:view",
-            "page:leave:view", "page:missions:view", "page:conflicts:view",
-            "page:supplies:view", "page:it-assets:view", "page:fleet:view",
-            "page:documents:view", "page:assistant:view", "page:admin:view",
-            "page:chiefs:view", "page:mapping:view", "page:evaluations:view"
-        ] 
+            allPermissions["Accès au Tableau de Bord"],
+            allPermissions["Gestion des Congés"],
+            allPermissions["Accès à l'Assistant IA"],
+        ]
     },
     {
         id: 'manager-rh',
         name: 'Manager RH',
         permissions: [
-            "page:dashboard:view", "page:employees:view", "page:payroll:view",
-            "page:leave:view", "page:missions:view", "page:conflicts:view",
-            "page:documents:view", "page:assistant:view", "page:chiefs:view", "page:mapping:view",
-            "page:evaluations:view"
+            allPermissions["Accès au Tableau de Bord"],
+            allPermissions["Gestion des Employés"],
+            allPermissions["Gestion de la Paie"],
+            allPermissions["Gestion des Congés"],
+            allPermissions["Gestion des Évaluations"],
+            allPermissions["Gestion des Missions"],
+            allPermissions["Gestion des Documents"],
         ]
     }
 ];

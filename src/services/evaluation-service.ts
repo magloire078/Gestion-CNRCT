@@ -1,4 +1,5 @@
 
+
 import { db } from '@/lib/firebase';
 import { collection, getDocs, addDoc, onSnapshot, Unsubscribe, query, orderBy, doc, updateDoc, getDoc } from 'firebase/firestore';
 import type { Evaluation } from '@/lib/data';
@@ -43,7 +44,9 @@ export async function getEvaluation(id: string): Promise<Evaluation | null> {
         return { 
             id: docSnap.id,
             ...data,
-            scores: data.scores || {} // Ensure scores is always an object
+            scores: data.scores || {}, // Ensure scores is always an object
+            goals: data.goals || [], // Ensure goals is always an array
+            employeeComments: data.employeeComments || '', // Ensure comments exist
         } as Evaluation;
     }
     return null;
@@ -62,7 +65,9 @@ export async function updateEvaluation(evaluationId: string, dataToUpdate: Parti
     if (dataToUpdate.strengths !== undefined) updatePayload.strengths = dataToUpdate.strengths;
     if (dataToUpdate.areasForImprovement !== undefined) updatePayload.areasForImprovement = dataToUpdate.areasForImprovement;
     if (dataToUpdate.managerComments !== undefined) updatePayload.managerComments = dataToUpdate.managerComments;
+    if (dataToUpdate.employeeComments !== undefined) updatePayload.employeeComments = dataToUpdate.employeeComments;
     if (dataToUpdate.scores !== undefined) updatePayload.scores = dataToUpdate.scores;
+    if (dataToUpdate.goals !== undefined) updatePayload.goals = dataToUpdate.goals;
     if (dataToUpdate.status !== undefined) updatePayload.status = dataToUpdate.status;
 
     await updateDoc(evalDocRef, updatePayload);

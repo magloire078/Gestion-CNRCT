@@ -213,6 +213,13 @@ export type Chief = {
   regencyEndDate?: string;
 };
 
+export type Goal = {
+    id: string;
+    title: string;
+    description: string;
+    status: 'Not Started' | 'In Progress' | 'Completed';
+}
+
 export type Evaluation = {
   id: string;
   employeeId: string;
@@ -226,11 +233,7 @@ export type Evaluation = {
   areasForImprovement: string;
   managerComments: string;
   employeeComments?: string;
-  goals: {
-    title: string;
-    description: string;
-    status: 'Not Started' | 'In Progress' | 'Completed';
-  }[];
+  goals: Goal[];
   evaluationDate: string; // YYYY-MM-DD
 };
 

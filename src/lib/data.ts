@@ -79,8 +79,6 @@ export type Employe = {
   bActif?: boolean;
   
   // Calculated fields for UI display
-  netSalary?: number;
-  grossSalary?: number;
   calculatedRetirementDate?: Date;
 };
 

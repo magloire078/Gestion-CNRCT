@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useMemo } from 'react';
-import { eachDayOfInterval, parseISO, getDay } from 'date-fns';
+import { eachDayOfInterval, parseISO, getDay, isWeekend, isToday } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -57,13 +57,12 @@ export function LeaveCalendar({ leaves }: LeaveCalendarProps) {
   const DayContentWithPopover = (day: Date) => {
     const dateString = day.toISOString().split('T')[0];
     const dayLeaves = leavesByDate.get(dateString) || [];
-    const isWeekend = getDay(day) === 0 || getDay(day) === 6;
-
+    
     const leavesToShow = dayLeaves.slice(0, 2);
     const remainingLeaves = dayLeaves.slice(2);
 
     return (
-      <div className={`h-full w-full flex flex-col p-1 ${isWeekend ? 'bg-muted/50 rounded-md' : ''}`}>
+      <div className={`h-full w-full flex flex-col p-1`}>
         <div className="flex-shrink-0 text-right text-xs pr-1">{day.getDate()}</div>
         <div className="flex-grow space-y-1 overflow-hidden mt-1">
           {leavesToShow.map((leave, index) => (
@@ -107,6 +106,14 @@ export function LeaveCalendar({ leaves }: LeaveCalendarProps) {
       locale={fr}
       month={month}
       onMonthChange={setMonth}
+      modifiers={{
+        weekend: (date) => isWeekend(date),
+        today: (date) => isToday(date),
+      }}
+       modifiersClassNames={{
+        today: 'bg-green-100 text-green-800 border-green-300 rounded-md',
+        weekend: 'text-red-600 bg-red-50 rounded-md',
+      }}
       classNames={{
           table: "w-full border-collapse space-y-1",
           head_row: "flex",

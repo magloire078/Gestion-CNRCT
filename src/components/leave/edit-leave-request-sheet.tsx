@@ -30,6 +30,8 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import type { Leave } from "@/lib/data";
+import { fr } from "date-fns/locale";
+import { Input } from "@/components/ui/input";
 
 interface EditLeaveRequestSheetProps {
   isOpen: boolean;

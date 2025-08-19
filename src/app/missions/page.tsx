@@ -1,8 +1,7 @@
-
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { PlusCircle, Search, Eye, Pencil, Trash2, MoreHorizontal } from "lucide-react";
+import { PlusCircle, Search, Eye, Pencil, Trash2, MoreHorizontal, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -115,10 +114,16 @@ export default function MissionsPage() {
         <h1 className="text-3xl font-bold tracking-tight">
           Gestion des Missions
         </h1>
-        <Button onClick={() => setIsSheetOpen(true)} className="w-full sm:w-auto">
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Ajouter une mission
-        </Button>
+        <div className="flex items-center gap-2">
+            <Button variant="outline">
+                <FileText className="mr-2 h-4 w-4" />
+                Rapport des Missions
+            </Button>
+            <Button onClick={() => setIsSheetOpen(true)} className="w-full sm:w-auto">
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Ajouter une mission
+            </Button>
+        </div>
       </div>
       <Card>
         <CardHeader>

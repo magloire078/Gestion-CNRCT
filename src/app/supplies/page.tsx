@@ -86,9 +86,10 @@ export default function SuppliesPage() {
   }, [supplies, searchTerm, categoryFilter]);
 
   const getStockStatus = (quantity: number, reorderLevel: number) => {
-    if (quantity === 0) return { text: "Rupture", color: "destructive" as const, value: 0 };
-    if (quantity <= reorderLevel) return { text: "Bas", color: "secondary" as const, value: (quantity / (reorderLevel * 2)) * 100 };
-    return { text: "OK", color: "default" as const, value: (quantity / (reorderLevel * 2)) * 100 };
+    if (quantity <= 0) return { text: "Rupture", color: "destructive" as const, value: 5, className: "bg-destructive" };
+    if (quantity <= reorderLevel) return { text: "Bas", color: "secondary" as const, value: (quantity / (reorderLevel * 2)) * 100, className: "bg-yellow-500" };
+    const percentage = Math.min(100, (quantity / (reorderLevel * 2)) * 100);
+    return { text: "OK", color: "default" as const, value: percentage, className: "bg-primary" };
   };
 
   return (
@@ -141,9 +142,9 @@ export default function SuppliesPage() {
                     <TableHead>Nom</TableHead>
                     <TableHead>Catégorie</TableHead>
                     <TableHead className="text-center">Quantité</TableHead>
-                    <TableHead className="text-center">Niveau de Réappro</TableHead>
+                    <TableHead className="text-center">Seuil</TableHead>
                     <TableHead>Dernier Ajout</TableHead>
-                    <TableHead>Statut du Stock</TableHead>
+                    <TableHead className="w-[200px]">Statut du Stock</TableHead>
                 </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -155,7 +156,7 @@ export default function SuppliesPage() {
                             <TableCell><Skeleton className="h-4 w-16 mx-auto" /></TableCell>
                             <TableCell><Skeleton className="h-4 w-16 mx-auto" /></TableCell>
                             <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                             <TableCell><Skeleton className="h-6 w-24 rounded-full" /></TableCell>
+                             <TableCell><Skeleton className="h-6 w-full" /></TableCell>
                         </TableRow>
                     ))
                 ) : (
@@ -170,7 +171,8 @@ export default function SuppliesPage() {
                           <TableCell>{supply.lastRestockDate}</TableCell>
                           <TableCell>
                             <div className="flex items-center gap-2">
-                               <Badge variant={stockStatus.color}>{stockStatus.text}</Badge>
+                               <Progress value={stockStatus.value} className="h-3" indicatorClassName={stockStatus.className} />
+                               <span className="text-xs font-medium w-16 text-right">{stockStatus.text}</span>
                             </div>
                           </TableCell>
                         </TableRow>
@@ -196,3 +198,4 @@ export default function SuppliesPage() {
     </div>
   );
 }
+

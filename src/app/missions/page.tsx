@@ -101,8 +101,9 @@ export default function MissionsPage() {
   const filteredMissions = useMemo(() => {
     return missions.filter(mission => {
       const searchTermLower = searchTerm.toLowerCase();
+      const assignedToString = mission.assignedTo.join(" ").toLowerCase();
       return mission.title.toLowerCase().includes(searchTermLower) ||
-             mission.assignedTo.toLowerCase().includes(searchTermLower) ||
+             assignedToString.includes(searchTermLower) ||
              mission.description.toLowerCase().includes(searchTermLower);
     });
   }, [missions, searchTerm]);
@@ -137,7 +138,7 @@ export default function MissionsPage() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <Input
-                placeholder="Rechercher par titre, assigné..."
+                placeholder="Rechercher par titre, participant..."
                 className="pl-10"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -152,10 +153,10 @@ export default function MissionsPage() {
             <Table>
                 <TableHeader>
                 <TableRow>
+                    <TableHead>N°</TableHead>
                     <TableHead>Titre</TableHead>
-                    <TableHead>Assigné à</TableHead>
-                    <TableHead>Date de début</TableHead>
-                    <TableHead>Date de fin</TableHead>
+                    <TableHead>Participants</TableHead>
+                    <TableHead>Période</TableHead>
                     <TableHead>Statut</TableHead>
                     <TableHead><span className="sr-only">Actions</span></TableHead>
                 </TableRow>
@@ -164,9 +165,9 @@ export default function MissionsPage() {
                 {loading ? (
                     Array.from({ length: 5 }).map((_, i) => (
                         <TableRow key={i}>
+                            <TableCell><Skeleton className="h-4 w-12" /></TableCell>
                             <TableCell><Skeleton className="h-4 w-40" /></TableCell>
                             <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                            <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                             <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                             <TableCell><Skeleton className="h-6 w-24 rounded-full" /></TableCell>
                             <TableCell><Skeleton className="h-8 w-8" /></TableCell>
@@ -175,10 +176,14 @@ export default function MissionsPage() {
                 ) : (
                     filteredMissions.map((mission) => (
                         <TableRow key={mission.id} onClick={() => router.push(`/missions/${mission.id}`)} className="cursor-pointer">
+                          <TableCell className="font-mono text-muted-foreground">{mission.numeroMission}</TableCell>
                           <TableCell className="font-medium">{mission.title}</TableCell>
-                          <TableCell>{mission.assignedTo}</TableCell>
-                          <TableCell>{mission.startDate}</TableCell>
-                          <TableCell>{mission.endDate}</TableCell>
+                          <TableCell>
+                            <div className="flex flex-wrap gap-1">
+                              {mission.assignedTo.map(name => <Badge key={name} variant="outline">{name}</Badge>)}
+                            </div>
+                          </TableCell>
+                          <TableCell>{mission.startDate} au {mission.endDate}</TableCell>
                           <TableCell>
                             <Badge variant={statusVariantMap[mission.status] || 'default'}>{mission.status}</Badge>
                           </TableCell>
@@ -222,11 +227,14 @@ export default function MissionsPage() {
                            <div className="flex justify-between items-start">
                               <div>
                                 <p className="font-bold">{mission.title}</p>
-                                <p className="text-sm text-muted-foreground">{mission.assignedTo}</p>
+                                <p className="text-sm text-muted-foreground">#{mission.numeroMission}</p>
                               </div>
                               <Badge variant={statusVariantMap[mission.status] || 'default'}>{mission.status}</Badge>
                            </div>
                             <p className="text-sm"><span className="font-medium">Période:</span> {mission.startDate} au {mission.endDate}</p>
+                             <div className="flex flex-wrap gap-1 pt-1">
+                              {mission.assignedTo.map(name => <Badge key={name} variant="outline">{name}</Badge>)}
+                            </div>
                         </CardContent>
                     </Card>
                 ))

@@ -4,8 +4,8 @@ export type Employe = {
   id: string; // Firestore document ID
   matricule: string;
   name: string; // Combined name
-  firstName?: string;
   lastName?: string;
+  firstName?: string;
   poste: string;
   department: string;
   direction?: string;
@@ -130,12 +130,16 @@ export type Role = {
 
 export type Mission = {
   id: string; // Firestore document ID
+  numeroMission: string;
   title: string;
   description: string;
-  assignedTo: string;
+  assignedTo: string[]; // Array of employee names
   startDate: string; // YYYY-MM-DD
   endDate: string; // YYYY-MM-DD
   status: 'Planifiée' | 'En cours' | 'Terminée' | 'Annulée';
+  lieuMission?: string;
+  moyenTransport?: string;
+  immatriculation?: string;
 };
 
 export type Conflict = {
@@ -196,8 +200,8 @@ export type ChiefRole = "Chef de Village" | "Chef de Canton" | "Roi";
 export type Chief = {
   id: string; // Firestore document ID
   name: string; // Combined name
-  firstName?: string;
   lastName?: string;
+  firstName?: string;
   title: string; // e.g., "Roi des N'zima", "Chef de Canton"
   role: ChiefRole;
   sexe?: 'Homme' | 'Femme' | 'Autre';

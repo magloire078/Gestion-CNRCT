@@ -4,17 +4,28 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { getMission, updateMission } from "@/services/mission-service";
-import type { Mission } from "@/lib/data";
+import type { Mission, Employe } from "@/lib/data";
+import { getEmployees } from "@/services/employee-service";
+import { cn } from "@/lib/utils";
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Loader2, Save } from "lucide-react";
+import { ArrowLeft, Loader2, Save, X, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Badge } from "@/components/ui/badge";
 
 type Status = "Planifiée" | "En cours" | "Terminée" | "Annulée";
 
@@ -25,6 +36,7 @@ export default function MissionEditPage() {
     const { toast } = useToast();
 
     const [mission, setMission] = useState<Partial<Mission> | null>(null);
+    const [allEmployees, setAllEmployees] = useState<Employe[]>([]);
     const [loading, setLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     
@@ -32,8 +44,12 @@ export default function MissionEditPage() {
         if (typeof id !== 'string') return;
         async function fetchMissionData() {
             try {
-                const data = await getMission(id);
+                const [data, employees] = await Promise.all([
+                    getMission(id),
+                    getEmployees(),
+                ]);
                 setMission(data);
+                setAllEmployees(employees.filter(e => e.status === 'Actif'));
             } catch (error) {
                 console.error("Failed to fetch mission data", error);
                 toast({ variant: "destructive", title: "Erreur", description: "Impossible de charger les données de la mission." });
@@ -51,6 +67,17 @@ export default function MissionEditPage() {
     
     const handleSelectChange = (name: string, value: string) => {
         setMission(prev => prev ? { ...prev, [name]: value } : null);
+    };
+
+    const toggleAssigned = (employeeName: string) => {
+        setMission(prev => {
+            if (!prev) return null;
+            const currentAssigned = prev.assignedTo || [];
+            const newAssigned = currentAssigned.includes(employeeName)
+                ? currentAssigned.filter(name => name !== employeeName)
+                : [...currentAssigned, employeeName];
+            return { ...prev, assignedTo: newAssigned };
+        });
     };
 
     const handleSave = async () => {
@@ -102,6 +129,10 @@ export default function MissionEditPage() {
                 <CardHeader><CardTitle>Détails de la Mission</CardTitle></CardHeader>
                 <CardContent className="space-y-4">
                     <div className="space-y-2">
+                        <Label htmlFor="numeroMission">N° Mission</Label>
+                        <Input id="numeroMission" name="numeroMission" value={mission.numeroMission || ''} className="bg-muted" readOnly />
+                    </div>
+                    <div className="space-y-2">
                         <Label htmlFor="title">Titre</Label>
                         <Input id="title" name="title" value={mission.title || ''} onChange={handleInputChange} />
                     </div>
@@ -110,8 +141,54 @@ export default function MissionEditPage() {
                         <Textarea id="description" name="description" value={mission.description || ''} onChange={handleInputChange} rows={4} />
                     </div>
                      <div className="space-y-2">
-                        <Label htmlFor="assignedTo">Assigné à</Label>
-                        <Input id="assignedTo" name="assignedTo" value={mission.assignedTo || ''} onChange={handleInputChange} />
+                        <Label>Participants</Label>
+                        <Popover>
+                            <PopoverTrigger asChild>
+                            <Button variant="outline" className="w-full justify-start font-normal text-muted-foreground">
+                                {mission.assignedTo?.length ? `${mission.assignedTo.length} sélectionné(s)` : "Sélectionner des employés..."}
+                            </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-[300px] p-0">
+                            <Command>
+                                <CommandInput placeholder="Rechercher un employé..."/>
+                                <CommandList>
+                                <CommandEmpty>Aucun employé trouvé.</CommandEmpty>
+                                <CommandGroup>
+                                    {allEmployees.map(emp => (
+                                    <CommandItem key={emp.id} onSelect={() => toggleAssigned(emp.name)}>
+                                        <div className={cn("mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary", mission.assignedTo?.includes(emp.name) ? "bg-primary text-primary-foreground" : "opacity-50 [&_svg]:invisible")}>
+                                          <Check className="h-4 w-4" />
+                                        </div>
+                                        <span>{emp.name}</span>
+                                    </CommandItem>
+                                    ))}
+                                </CommandGroup>
+                                </CommandList>
+                            </Command>
+                            </PopoverContent>
+                        </Popover>
+                         <div className="mt-2 flex flex-wrap gap-1">
+                            {mission.assignedTo?.map(name => (
+                            <Badge key={name} variant="secondary">
+                                {name}
+                                <button type="button" onClick={() => toggleAssigned(name)} className="ml-1 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2">
+                                <X className="h-3 w-3 text-muted-foreground hover:text-foreground" />
+                                </button>
+                            </Badge>
+                            ))}
+                        </div>
+                    </div>
+                     <div className="space-y-2">
+                        <Label htmlFor="lieuMission">Lieu</Label>
+                        <Input id="lieuMission" name="lieuMission" value={mission.lieuMission || ''} onChange={handleInputChange} />
+                    </div>
+                     <div className="space-y-2">
+                        <Label htmlFor="moyenTransport">Moyen de Transport</Label>
+                        <Input id="moyenTransport" name="moyenTransport" value={mission.moyenTransport || ''} onChange={handleInputChange} />
+                    </div>
+                     <div className="space-y-2">
+                        <Label htmlFor="immatriculation">Immatriculation</Label>
+                        <Input id="immatriculation" name="immatriculation" value={mission.immatriculation || ''} onChange={handleInputChange} />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">

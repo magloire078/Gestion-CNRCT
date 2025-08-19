@@ -11,7 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Pencil, User, Calendar, Info, Flag } from "lucide-react";
+import { ArrowLeft, Pencil, User, Calendar, Info, Flag, Users, Car, MapPin, Hash } from "lucide-react";
 import { Label } from "@/components/ui/label";
 
 type Status = "Planifiée" | "En cours" | "Terminée" | "Annulée";
@@ -76,16 +76,30 @@ export default function MissionDetailPage() {
             
              <Card>
                 <CardHeader>
-                    <CardTitle>{mission.title}</CardTitle>
-                    <CardDescription>
-                        <Badge variant={statusVariantMap[mission.status]}>{mission.status}</Badge>
-                    </CardDescription>
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <CardTitle className="flex items-center gap-2">
+                                <Hash className="h-5 w-5 text-muted-foreground" />
+                                {mission.numeroMission} - {mission.title}
+                            </CardTitle>
+                            <CardDescription className="mt-2">
+                                <Badge variant={statusVariantMap[mission.status]}>{mission.status}</Badge>
+                            </CardDescription>
+                        </div>
+                    </div>
                 </CardHeader>
                 <CardContent className="space-y-6">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <InfoItem label="Assigné à" value={mission.assignedTo} icon={User} />
                         <InfoItem label="Période" value={`${mission.startDate} au ${mission.endDate}`} icon={Calendar} />
+                        <InfoItem label="Lieu" value={mission.lieuMission} icon={MapPin} />
+                        <InfoItem label="Transport" value={mission.moyenTransport} icon={Car} />
+                        <InfoItem label="Immatriculation" value={mission.immatriculation} icon={Car} />
                     </div>
+                     <InfoItem label="Participants" icon={Users}>
+                        <div className="flex flex-wrap gap-2 pt-1">
+                            {mission.assignedTo.map(name => <Badge key={name}>{name}</Badge>)}
+                        </div>
+                    </InfoItem>
                      {mission.description && (
                         <InfoItem label="Description / Objectifs" icon={Info}>
                            <p className="text-sm text-muted-foreground whitespace-pre-wrap mt-1">{mission.description}</p>

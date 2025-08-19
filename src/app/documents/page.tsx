@@ -94,6 +94,20 @@ export default function DocumentGeneratorPage() {
 *   **Lieu de naissance** : ${employee.Lieu_Naissance || ''}
 *   **Salaire de base** : ${employee.baseSalary || 0}
 `;
+    } else if (type === 'Ordre de Mission') {
+       content = `## Contexte pour l'Ordre de Mission
+
+*   **Numero Mission** : 947
+*   **Type Mission** : REGULARISATION
+*   **Nom Employe** : ${employee.name || ''}
+*   **Fonction** : ${employee.poste || ''}
+*   **Destination** : Abidjan
+*   **Objet Mission** : Accompagner le 5ème Vice-Président du Directoire de la CNRCT...
+*   **Moyen Transport** : Véhicule CNRCT
+*   **Immatriculation** : D 22 009
+*   **Date Depart** : Mardi 12 août 2025
+*   **Date Retour** : Samedi 16 août 2025
+`;
     }
     else {
         content = `Employé: ${employee.name}\nMatricule: ${employee.matricule}\nPoste: ${employee.poste}\nDépartement: ${employee.department}\n`;
@@ -205,6 +219,7 @@ export default function DocumentGeneratorPage() {
                       <SelectContent>
                         <SelectItem value="Attestation de Virement">Attestation de Virement</SelectItem>
                         <SelectItem value="Employment Contract">Contrat de travail</SelectItem>
+                        <SelectItem value="Ordre de Mission">Ordre de Mission</SelectItem>
                         <SelectItem value="Company Policy">Politique d'entreprise</SelectItem>
                         <SelectItem value="Warning Letter">Lettre d'avertissement</SelectItem>
                         <SelectItem value="Termination Letter">Lettre de licenciement</SelectItem>

@@ -36,6 +36,20 @@ const GenerateDocumentInputSchema = z.object({
       signerTitle: z.string().optional().default('Préfet'),
       dateEmbauche: z.string().optional(),
       lieuNaissance: z.string().optional(),
+      
+      // Fields for Ordre de Mission
+      numeroMission: z.string().optional(),
+      villeRedaction: z.string().optional().default('Yamoussoukro'),
+      dateRedaction: z.string().optional(),
+      destination: z.string().optional(),
+      objetMission: z.string().optional(),
+      moyenTransport: z.string().optional(),
+      immatriculation: z.string().optional(),
+      dateDepart: z.string().optional(),
+      dateRetour: z.string().optional(),
+      imputationBudgetaire: z.string().optional().default('Chambre Nationale des Rois et Chefs Traditionnels'),
+      missionType: z.string().optional(),
+
   }).optional().describe("Contextual information about the employee for document generation."),
 });
 export type GenerateDocumentInput = z.infer<typeof GenerateDocumentInputSchema>;
@@ -114,6 +128,35 @@ Fait à Yamoussoukro, le {{employeeContext.currentDate}}, en deux exemplaires or
 **L'Employé(e),**
 (Signature précédée de la mention "Lu et approuvé")
 {{employeeContext.name}}
+  {{else if (eq documentType "Ordre de Mission")}}
+N° {{employeeContext.numeroMission}}/ CNRCT/DIR/PDT.
+
+ORDRE DE MISSION{{#if employeeContext.missionType}} ({{employeeContext.missionType}}){{/if}}
+
+LE PRESIDENT DU DIRECTOIRE
+
+Donne ordre à : Monsieur {{employeeContext.name}}
+Fonction : {{employeeContext.poste}}
+De se rendre à : {{employeeContext.destination}}
+
+Objet de la mission : {{employeeContext.objetMission}}
+
+Moyen de transport : {{employeeContext.moyenTransport}}
+Immatriculation : {{employeeContext.immatriculation}}
+
+Date de départ : {{employeeContext.dateDepart}}
+Date de retour : {{employeeContext.dateRetour}}
+
+Imputation budgétaire : {{employeeContext.imputationBudgetaire}}
+
+Fait à {{employeeContext.villeRedaction}}, le {{employeeContext.dateRedaction}}
+
+P. Le Président du Directoire et P.O
+Le Directeur des Affaires Sociales
+
+
+{{employeeContext.signerName}}
+{{employeeContext.signerTitle}}
   {{else}}
 Document Type: {{{documentType}}}
 Content: {{{documentContent}}}
@@ -131,9 +174,16 @@ const generateDocumentFlow = ai.defineFlow(
   async (input) => {
     
     // Set current date for all document types that need it
-    if (input.documentType === 'Attestation de Virement' || input.documentType === 'Employment Contract') {
+    if (input.documentType === 'Attestation de Virement' || input.documentType === 'Employment Contract' || input.documentType === 'Ordre de Mission') {
       if(!input.employeeContext) input.employeeContext = {};
-      input.employeeContext.currentDate = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+      const today = new Date();
+      const formattedDate = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }).format(today);
+      
+      if(input.documentType === 'Ordre de Mission') {
+          input.employeeContext.dateRedaction = formattedDate;
+      } else {
+          input.employeeContext.currentDate = formattedDate;
+      }
     }
 
     if (input.documentType === 'Attestation de Virement' && input.employeeContext?.baseSalary) {

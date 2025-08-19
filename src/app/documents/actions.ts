@@ -22,7 +22,8 @@ function parseEmployeeContext(content: string) {
     lines.forEach(line => {
         const parts = line.split(':');
         if (parts.length < 2) return;
-        const key = parts[0].replace(/\*|\s/g, '').trim().toLowerCase();
+        
+        let key = parts[0].replace(/\*|\s/g, '').trim().toLowerCase();
         const value = parts.slice(1).join(':').trim();
 
         if (key.includes('nom')) context.name = value;
@@ -37,6 +38,17 @@ function parseEmployeeContext(content: string) {
         if (key.includes('décision')) context.decisionDetails = value;
         if (key.includes("dated'embauche")) context.dateEmbauche = value;
         if (key.includes('lieudenaissance')) context.lieuNaissance = value;
+        
+        // Ordre de Mission fields
+        if (key === 'numeromission') context.numeroMission = value;
+        if (key === 'typemission') context.missionType = value;
+        if (key === 'destination') context.destination = value;
+        if (key === 'objetmission') context.objetMission = value;
+        if (key === 'moyentransport') context.moyenTransport = value;
+        if (key === 'immatriculation') context.immatriculation = value;
+        if (key === 'datedepart') context.dateDepart = value;
+        if (key === 'dateretour') context.dateRetour = value;
+
     });
     return context;
 }
@@ -67,7 +79,7 @@ export async function generateDocumentAction(
       documentContent: parsed.data.documentContent,
     };
 
-    if(input.documentType === 'Attestation de Virement' || input.documentType === 'Employment Contract') {
+    if(input.documentType === 'Attestation de Virement' || input.documentType === 'Employment Contract' || input.documentType === 'Ordre de Mission') {
         input.employeeContext = parseEmployeeContext(input.documentContent);
     }
     

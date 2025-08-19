@@ -58,6 +58,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel } from "./ui/dropdown-menu";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
+import { NotificationBell } from "./common/notification-bell";
 
 const allMenuItems = [
   { href: "/", label: "Tableau de Bord", icon: LayoutDashboard, permission: "page:dashboard:view" },
@@ -271,18 +272,24 @@ function AppLayout({ children }: { children: React.ReactNode }) {
           </SidebarFooter>
         </Sidebar>
         <SidebarInset>
-          <main className="flex-1 p-4 sm:p-6">
-            <div className="mx-auto w-full max-w-7xl">
-                {currentPage ? (
-                    <ProtectedPage permission={currentPage.permission}>
-                        {children}
-                    </ProtectedPage>
-                ) : (
-                    // Handle sub-pages and other pages not in the main menu
-                    children
-                )}
-            </div>
-          </main>
+            <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
+                {/* Header content can go here, like a search bar or breadcrumbs */}
+                <div className="ml-auto flex items-center gap-2">
+                    <NotificationBell />
+                </div>
+            </header>
+            <main className="flex-1 p-4 sm:p-6 sm:pt-0">
+                <div className="mx-auto w-full max-w-7xl">
+                    {currentPage ? (
+                        <ProtectedPage permission={currentPage.permission}>
+                            {children}
+                        </ProtectedPage>
+                    ) : (
+                        // Handle sub-pages and other pages not in the main menu
+                        children
+                    )}
+                </div>
+            </main>
         </SidebarInset>
     </SidebarProvider>
   );

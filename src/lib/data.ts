@@ -260,3 +260,13 @@ export type OrganizationSettings = {
     secondaryLogoUrl: string;
     faviconUrl: string;
 };
+
+export type Notification = {
+  id: string; // Firestore document ID
+  userId: string; // 'all' or a specific user ID
+  title: string;
+  description: string;
+  href: string; // Link to the relevant page
+  isRead: boolean;
+  createdAt: string; // ISO string e.g. new Date().toISOString()
+};

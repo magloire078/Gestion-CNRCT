@@ -1,7 +1,9 @@
 
+
 import { collection, getDocs, addDoc, doc, updateDoc, onSnapshot, Unsubscribe, query, orderBy } from 'firebase/firestore';
 import type { Leave } from '@/lib/data';
 import { db } from '@/lib/firebase';
+import { createNotification } from './notification-service';
 
 const leavesCollection = collection(db, 'leaves');
 
@@ -41,6 +43,15 @@ export async function addLeave(leaveDataToAdd: Omit<Leave, 'id' | 'status'>): Pr
         status: 'En attente'
     };
     const docRef = await addDoc(leavesCollection, newLeaveData);
+    
+    // Create a notification for admins/managers
+    await createNotification({
+        userId: 'all', // Or target specific manager/admin roles
+        title: 'Nouvelle demande de congé',
+        description: `${leaveDataToAdd.employee} a demandé un ${leaveDataToAdd.type}.`,
+        href: `/leave`,
+    });
+    
     return { id: docRef.id, ...newLeaveData };
 }
 

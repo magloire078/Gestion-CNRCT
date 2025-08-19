@@ -1,7 +1,9 @@
+
 "use client";
 
 import { useState, useMemo } from 'react';
 import { eachDayOfInterval, parseISO, getDay } from 'date-fns';
+import { fr } from 'date-fns/locale';
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
@@ -102,6 +104,7 @@ export function LeaveCalendar({ leaves }: LeaveCalendarProps) {
 
   return (
     <Calendar
+      locale={fr}
       month={month}
       onMonthChange={setMonth}
       classNames={{

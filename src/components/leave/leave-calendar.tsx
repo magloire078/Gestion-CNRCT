@@ -111,7 +111,7 @@ export function LeaveCalendar({ leaves }: LeaveCalendarProps) {
       }}
        modifiersClassNames={{
         today: 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 border-green-300 dark:border-green-700',
-        weekend: 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/50',
+        weekend: 'text-red-600 dark:text-red-400',
       }}
       classNames={{
           table: "w-full border-collapse space-y-1",

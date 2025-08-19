@@ -159,7 +159,7 @@ export default function AdminPage() {
         await addDirection({ name, departmentId });
         toast({ title: "Direction ajoutée" });
       }
-    } catch (err) => {
+    } catch (err) {
       toast({ variant: "destructive", title: "Erreur", description: "Impossible d'enregistrer la direction." });
     }
   };

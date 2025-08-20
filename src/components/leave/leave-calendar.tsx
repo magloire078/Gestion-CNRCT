@@ -125,7 +125,7 @@ export function LeaveCalendar({ leaves }: LeaveCalendarProps) {
       components={{
         DayContent: ({ date }) => DayContentWithPopover(date),
       }}
-      className="p-0"
+      className="p-0 max-w-full"
     />
   );
 }

@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { Eye, MoreHorizontal, Pencil, Search, Printer, Loader2 } from "lucide-react";
+import { Eye, MoreHorizontal, Pencil, Search, Printer, Loader2, Landmark } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -181,6 +181,11 @@ export default function PayrollPage() {
       return matchesSearchTerm && matchesDepartment && matchesStatus;
     });
   }, [employees, searchTerm, departmentFilter, statusFilter]);
+
+  const totalPayroll = useMemo(() => {
+    if (!canViewSalaries) return 0;
+    return filteredEmployees.reduce((acc, emp) => acc + (emp.netSalary || 0), 0);
+  }, [filteredEmployees, canViewSalaries]);
   
   const years = Array.from({ length: 10 }, (_, i) => (new Date().getFullYear() - i).toString());
   const months = [
@@ -244,6 +249,27 @@ export default function PayrollPage() {
                 </Button>
             )}
           </div>
+
+          {canViewSalaries && (
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+                 <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Masse Salariale (Filtrée)</CardTitle>
+                        <Landmark className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        {loading ? <Skeleton className="h-8 w-32" /> : (
+                            <div className="text-2xl font-bold">{formatCurrency(totalPayroll)}</div>
+                        )}
+                        <p className="text-xs text-muted-foreground">
+                            Basé sur les {filteredEmployees.length} employés affichés
+                        </p>
+                    </CardContent>
+                </Card>
+            </div>
+          )}
+
+
           <Card>
             <CardHeader>
               <CardTitle>Employés sur la Paie</CardTitle>
@@ -671,5 +697,3 @@ function PayslipTemplate({ payslipDetails }: { payslipDetails: PayslipDetails })
         </div>
     );
 }
-
-    

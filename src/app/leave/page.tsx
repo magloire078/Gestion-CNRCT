@@ -140,19 +140,25 @@ export default function LeavePage() {
   }
 
   const filteredLeaves = useMemo(() => {
-    return leaves.filter(leave => {
+    return leaves.map(leave => {
         const employeeDetails = employees.find(e => e.name === leave.employee);
+        return {
+            ...leave,
+            employeeDetails
+        };
+    }).filter(leaveWithDetails => {
+        const { employee, employeeDetails } = leaveWithDetails;
         const searchTermLower = searchTerm.toLowerCase();
 
         const matchesSearch = searchTerm ? (
-            leave.employee.toLowerCase().includes(searchTermLower) ||
+            employee.toLowerCase().includes(searchTermLower) ||
             (employeeDetails?.firstName?.toLowerCase().includes(searchTermLower)) ||
             (employeeDetails?.lastName?.toLowerCase().includes(searchTermLower)) ||
             (employeeDetails?.matricule?.toLowerCase().includes(searchTermLower))
         ) : true;
 
-        const matchesType = typeFilter === 'all' || leave.type === typeFilter;
-        const matchesStatus = statusFilter === 'all' || leave.status === statusFilter;
+        const matchesType = typeFilter === 'all' || leaveWithDetails.type === typeFilter;
+        const matchesStatus = statusFilter === 'all' || leaveWithDetails.status === statusFilter;
         return matchesSearch && matchesType && matchesStatus;
     });
 }, [leaves, employees, searchTerm, typeFilter, statusFilter]);
@@ -280,63 +286,66 @@ export default function LeavePage() {
                             </TableRow>
                             ))
                         ) : (
-                            filteredLeaves.map((leave) => (
-                            <TableRow key={leave.id}>
-                                <TableCell className="font-medium">{leave.employee}</TableCell>
-                                <TableCell>{leave.type}</TableCell>
-                                <TableCell>{formatDate(leave.startDate)}</TableCell>
-                                <TableCell>{formatDate(leave.endDate)}</TableCell>
-                                <TableCell className="text-sm text-muted-foreground max-w-xs truncate">
-                                    {leave.type === "Congé Annuel" ? leave.num_decision : leave.reason || '-'}
-                                </TableCell>
-                                <TableCell>
-                                <Badge
-                                    variant={
-                                    (statusVariantMap[leave.status as Status] || "default")
-                                    }
-                                >
-                                    {leave.status}
-                                </Badge>
-                                </TableCell>
-                                <TableCell className="text-right">
-                                <div className="flex justify-end gap-2">
-                                     <Button
+                            filteredLeaves.map((leave) => {
+                                const displayName = leave.employeeDetails ? `${leave.employeeDetails.lastName || ''} ${leave.employeeDetails.firstName || ''}`.trim() : leave.employee;
+                                return (
+                                <TableRow key={leave.id}>
+                                    <TableCell className="font-medium">{displayName}</TableCell>
+                                    <TableCell>{leave.type}</TableCell>
+                                    <TableCell>{formatDate(leave.startDate)}</TableCell>
+                                    <TableCell>{formatDate(leave.endDate)}</TableCell>
+                                    <TableCell className="text-sm text-muted-foreground max-w-xs truncate">
+                                        {leave.type === "Congé Annuel" ? leave.num_decision : leave.reason || '-'}
+                                    </TableCell>
+                                    <TableCell>
+                                    <Badge
+                                        variant={
+                                        (statusVariantMap[leave.status as Status] || "default")
+                                        }
+                                    >
+                                        {leave.status}
+                                    </Badge>
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                    <div className="flex justify-end gap-2">
+                                         <Button
+                                            variant="outline"
+                                            size="icon"
+                                            className="h-8 w-8"
+                                            onClick={() => openEditSheet(leave)}
+                                            >
+                                            <Pencil className="h-4 w-4" />
+                                            <span className="sr-only">Modifier</span>
+                                        </Button>
+                                        <Button
                                         variant="outline"
                                         size="icon"
                                         className="h-8 w-8"
-                                        onClick={() => openEditSheet(leave)}
+                                        disabled={leave.status !== "En attente"}
+                                        onClick={() =>
+                                            handleLeaveStatusChange(leave.id, "Approuvé")
+                                        }
                                         >
-                                        <Pencil className="h-4 w-4" />
-                                        <span className="sr-only">Modifier</span>
-                                    </Button>
-                                    <Button
-                                    variant="outline"
-                                    size="icon"
-                                    className="h-8 w-8"
-                                    disabled={leave.status !== "En attente"}
-                                    onClick={() =>
-                                        handleLeaveStatusChange(leave.id, "Approuvé")
-                                    }
-                                    >
-                                    <Check className="h-4 w-4" />
-                                    <span className="sr-only">Approuver</span>
-                                    </Button>
-                                    <Button
-                                    variant="outline"
-                                    size="icon"
-                                    className="h-8 w-8"
-                                    disabled={leave.status !== "En attente"}
-                                    onClick={() =>
-                                        handleLeaveStatusChange(leave.id, "Rejeté")
-                                    }
-                                    >
-                                    <X className="h-4 w-4" />
-                                    <span className="sr-only">Rejeter</span>
-                                    </Button>
-                                </div>
-                                </TableCell>
-                            </TableRow>
-                            ))
+                                        <Check className="h-4 w-4" />
+                                        <span className="sr-only">Approuver</span>
+                                        </Button>
+                                        <Button
+                                        variant="outline"
+                                        size="icon"
+                                        className="h-8 w-8"
+                                        disabled={leave.status !== "En attente"}
+                                        onClick={() =>
+                                            handleLeaveStatusChange(leave.id, "Rejeté")
+                                        }
+                                        >
+                                        <X className="h-4 w-4" />
+                                        <span className="sr-only">Rejeter</span>
+                                        </Button>
+                                    </div>
+                                    </TableCell>
+                                </TableRow>
+                                )
+                            })
                         )}
                         </TableBody>
                     </Table>
@@ -347,11 +356,13 @@ export default function LeavePage() {
                                 <Card key={i}><CardContent className="p-4"><Skeleton className="h-24 w-full" /></CardContent></Card>
                             ))
                         ) : (
-                            filteredLeaves.map((leave) => (
+                            filteredLeaves.map((leave) => {
+                                const displayName = leave.employeeDetails ? `${leave.employeeDetails.lastName || ''} ${leave.employeeDetails.firstName || ''}`.trim() : leave.employee;
+                                return (
                                 <Card key={leave.id}>
                                     <CardContent className="p-4 flex items-center gap-4">
                                         <div className="flex-1 space-y-1">
-                                            <p className="font-medium">{leave.employee}</p>
+                                            <p className="font-medium">{displayName}</p>
                                             <p className="text-sm text-muted-foreground">{leave.type}</p>
                                             <p className="text-sm text-muted-foreground">{formatDate(leave.startDate)} au {formatDate(leave.endDate)}</p>
                                             {(leave.num_decision || leave.reason) && <p className="text-sm text-muted-foreground truncate">
@@ -399,7 +410,8 @@ export default function LeavePage() {
                                         </div>
                                     </CardContent>
                                 </Card>
-                            ))
+                                )
+                            })
                         )}
                     </div>
                 { !loading && filteredLeaves.length === 0 && !error && (

@@ -131,7 +131,7 @@ Fait à Yamoussoukro, le {{employeeContext.currentDate}}, en deux exemplaires or
   {{else if (eq documentType "Ordre de Mission")}}
 N° {{employeeContext.numeroMission}}/CNRCT/DIR/PDT.               Yamoussoukro, le {{employeeContext.dateRedaction}}
 
-ORDRE DE MISSION INDIVIDUEL{{#if employeeContext.missionType}} ({{employeeContext.missionType}}){{/if}}
+ORDRE DE MISSION{{#if employeeContext.missionType}} ({{employeeContext.missionType}}){{/if}}
 
 LE PRESIDENT DU DIRECTOIRE
 
@@ -141,7 +141,7 @@ Fonction : {{employeeContext.poste}}
 
 De se rendre à : {{employeeContext.destination}}
 
-Objet de la mission : {{employeeContext.objetMission}}
+Objet de la mission : {{{employeeContext.objetMission}}}
 
 Moyen de transport : {{employeeContext.moyenTransport}}
 

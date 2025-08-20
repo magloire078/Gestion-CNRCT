@@ -146,7 +146,7 @@ export default function MissionDetailPage() {
   }
 
   const participantsToShow = (mission.participants || []).slice(0, 5);
-  const remainingParticipantsCount = (mission.participants?.length || 0) - participantsToShow.length;
+  const remainingParticipantsCount = (mission.participants || []).length - participantsToShow.length;
 
 
   return (

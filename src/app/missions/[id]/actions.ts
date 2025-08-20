@@ -29,7 +29,7 @@ export async function generateMissionOrderAction(mission: Mission): Promise<{ do
                 documentContent: mission.description,
                 employeeContext: {
                     numeroMission: participant.numeroOrdre || mission.numeroMission,
-                    missionType: "SIMPLE", 
+                    missionType: "(REGULARISATION)", 
                     name: participant.employeeName,
                     poste: employeeDetails?.poste || 'N/A',
                     destination: mission.lieuMission,
@@ -42,16 +42,18 @@ export async function generateMissionOrderAction(mission: Mission): Promise<{ do
             };
 
             const result = await generateDocument(input);
+            // Each document is wrapped in a div with a page break style
             allDocumentsHtml += `<div class="page-break"><pre>${result.generatedDocument}</pre></div>`;
         }
 
+        // The final HTML string includes all individual mission orders
         const htmlDoc = `
             <html>
                 <head>
-                    <title>Ordre de Mission ${mission.numeroMission}</title>
+                    <title>Ordres de Mission ${mission.numeroMission}</title>
                     <style>
-                        body { font-family: 'Times New Roman', serif; margin: 2cm; }
-                        pre { white-space: pre-wrap; font-family: 'Times New Roman', serif; }
+                        body { font-family: 'Times New Roman', serif; margin: 2cm; font-size: 12pt; }
+                        pre { white-space: pre-wrap; font-family: 'Times New Roman', serif; font-size: 12pt; }
                         .page-break { page-break-after: always; }
                         .page-break:last-child { page-break-after: auto; }
                     </style>

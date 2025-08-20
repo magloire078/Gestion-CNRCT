@@ -6,7 +6,10 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { getMission } from "@/services/mission-service";
-import type { Mission } from "@/lib/data";
+import type { Mission, Employe } from "@/lib/data";
+import { getEmployees } from "@/services/employee-service";
+import { getAllowanceRate } from "@/services/allowance-service";
+import { differenceInDays, parseISO } from 'date-fns';
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -31,11 +34,14 @@ import {
   Hash,
   Printer,
   Trash2,
+  Landmark,
 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { ConfirmationDialog } from "@/components/common/confirmation-dialog";
 import { generateMissionOrderAction, deleteMissionAction } from "./actions";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+
 
 type Status = "Planifiée" | "En cours" | "Terminée" | "Annulée";
 
@@ -49,6 +55,14 @@ const statusVariantMap: Record<
   Annulée: "destructive",
 };
 
+interface ParticipantWithDetails extends Employe {
+    moyenTransport?: string;
+    immatriculation?: string;
+    numeroOrdre?: string;
+    allowanceRate: number;
+    totalAllowance: number;
+}
+
 export default function MissionDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -56,6 +70,10 @@ export default function MissionDetailPage() {
   const { toast } = useToast();
 
   const [mission, setMission] = useState<Mission | null>(null);
+  const [participantsDetails, setParticipantsDetails] = useState<ParticipantWithDetails[]>([]);
+  const [missionDuration, setMissionDuration] = useState(0);
+  const [totalMissionCost, setTotalMissionCost] = useState(0);
+
   const [loading, setLoading] = useState(true);
   const [isPrinting, setIsPrinting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -66,8 +84,45 @@ export default function MissionDetailPage() {
 
     async function fetchData() {
       try {
-        const missionData = await getMission(id);
-        setMission(missionData);
+        const [missionData, allEmployees] = await Promise.all([
+          getMission(id),
+          getEmployees(),
+        ]);
+
+        if (missionData) {
+            setMission(missionData);
+            
+            // Calculate mission duration
+            const startDate = parseISO(missionData.startDate);
+            const endDate = parseISO(missionData.endDate);
+            const duration = differenceInDays(endDate, startDate) + 1;
+            setMissionDuration(duration);
+
+            const employeesMap = new Map(allEmployees.map(e => [e.name, e]));
+            
+            let calculatedTotalCost = 0;
+            const participantsWithDetails = (missionData.participants || []).map(p => {
+                const employee = employeesMap.get(p.employeeName);
+                if (!employee) return null;
+
+                const allowanceRate = getAllowanceRate(employee.categorie);
+                const totalAllowance = allowanceRate * duration;
+                calculatedTotalCost += totalAllowance;
+
+                return {
+                    ...employee,
+                    moyenTransport: p.moyenTransport,
+                    immatriculation: p.immatriculation,
+                    numeroOrdre: p.numeroOrdre,
+                    allowanceRate,
+                    totalAllowance
+                };
+            }).filter((p): p is ParticipantWithDetails => p !== null);
+            
+            setParticipantsDetails(participantsWithDetails);
+            setTotalMissionCost(calculatedTotalCost);
+        }
+        
       } catch (error) {
         console.error("Failed to fetch mission details", error);
       } finally {
@@ -136,6 +191,10 @@ export default function MissionDetailPage() {
       setIsDeleting(false);
     }
   };
+  
+  const formatCurrency = (value: number) => {
+    return value.toLocaleString('fr-FR') + ' FCFA';
+  };
 
   if (loading) {
     return <MissionDetailSkeleton />;
@@ -145,13 +204,9 @@ export default function MissionDetailPage() {
     return <div className="text-center py-10">Mission non trouvée.</div>;
   }
 
-  const participantsToShow = (mission.participants || []).slice(0, 5);
-  const remainingParticipantsCount = (mission.participants || []).length - participantsToShow.length;
-
-
   return (
     <>
-      <div className="flex flex-col gap-6 max-w-2xl mx-auto">
+      <div className="flex flex-col gap-6 max-w-4xl mx-auto">
         <div className="flex items-center gap-4">
           <Button variant="outline" size="icon" onClick={() => router.back()}>
             <ArrowLeft className="h-4 w-4" />
@@ -163,12 +218,23 @@ export default function MissionDetailPage() {
             </h1>
             <p className="text-muted-foreground truncate">{mission.title}</p>
           </div>
-          <Button asChild>
-            <Link href={`/missions/${id}/edit`}>
-              <Pencil className="mr-2 h-4 w-4" />
-              Modifier
-            </Link>
-          </Button>
+           <div className="flex gap-2">
+            <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => setShowDeleteConfirm(true)}
+                disabled={isDeleting}
+            >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Supprimer
+            </Button>
+             <Button asChild size="sm">
+                <Link href={`/missions/${id}/edit`}>
+                <Pencil className="mr-2 h-4 w-4" />
+                Modifier
+                </Link>
+            </Button>
+          </div>
         </div>
 
         <Card>
@@ -185,8 +251,7 @@ export default function MissionDetailPage() {
                   </Badge>
                 </CardDescription>
               </div>
-              <div className="flex gap-2">
-                <Button
+               <Button
                   variant="outline"
                   size="sm"
                   onClick={handlePrint}
@@ -195,23 +260,13 @@ export default function MissionDetailPage() {
                   <Printer className="mr-2 h-4 w-4" />
                   {isPrinting ? "Génération..." : "Ordres de Mission"}
                 </Button>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => setShowDeleteConfirm(true)}
-                  disabled={isDeleting}
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Supprimer
-                </Button>
-              </div>
             </div>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <InfoItem
                 label="Période"
-                value={`${mission.startDate} au ${mission.endDate}`}
+                value={`${mission.startDate} au ${mission.endDate} (${missionDuration} jours)`}
                 icon={Calendar}
               />
               <InfoItem
@@ -220,26 +275,6 @@ export default function MissionDetailPage() {
                 icon={MapPin}
               />
             </div>
-            <InfoItem label="Participants" icon={Users}>
-              <div className="flex flex-col gap-2 pt-1">
-                {participantsToShow.map((p, index) => (
-                  <div key={index} className="flex justify-between items-center text-sm">
-                      <span className="font-medium">{p.employeeName}</span>
-                      <span className="text-xs text-muted-foreground font-mono">Ordre N° {p.numeroOrdre || 'N/A'}</span>
-                  </div>
-                ))}
-                {remainingParticipantsCount > 0 && (
-                  <Button variant="link" asChild className="p-0 h-auto justify-start">
-                    <Link href={`/missions/${id}/participants`}>
-                      et {remainingParticipantsCount} autre(s)...
-                    </Link>
-                  </Button>
-                )}
-                 {participantsToShow.length === 0 && (
-                     <p className="text-sm text-muted-foreground">Aucun participant assigné.</p>
-                 )}
-              </div>
-            </InfoItem>
             {mission.description && (
               <InfoItem label="Description / Objectifs" icon={Info}>
                 <p className="text-sm text-muted-foreground whitespace-pre-wrap mt-1">
@@ -249,6 +284,55 @@ export default function MissionDetailPage() {
             )}
           </CardContent>
         </Card>
+        
+        <Card>
+             <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-5 w-5 text-muted-foreground" />
+                  Participants & Indemnités
+                </CardTitle>
+                <CardDescription>
+                  Détail des participants et calcul des indemnités de mission.
+                </CardDescription>
+            </CardHeader>
+             <CardContent>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Participant</TableHead>
+                            <TableHead className="text-right">Taux Journalier</TableHead>
+                            <TableHead className="text-right">Indemnité Totale</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {participantsDetails.map((p) => (
+                           <TableRow key={p.id}>
+                                <TableCell>
+                                    <div className="font-medium">{p.name}</div>
+                                    <div className="text-sm text-muted-foreground">{p.poste} (Cat. {p.categorie || 'N/A'})</div>
+                                </TableCell>
+                                <TableCell className="text-right font-mono">{formatCurrency(p.allowanceRate)}</TableCell>
+                                <TableCell className="text-right font-mono">{formatCurrency(p.totalAllowance)}</TableCell>
+                           </TableRow>
+                        ))}
+                         {participantsDetails.length === 0 && (
+                            <TableRow>
+                                <TableCell colSpan={3} className="text-center text-muted-foreground py-6">
+                                    Aucun participant assigné à cette mission.
+                                </TableCell>
+                            </TableRow>
+                         )}
+                    </TableBody>
+                </Table>
+                <div className="flex justify-end mt-4 pt-4 border-t">
+                    <div className="text-right">
+                        <p className="text-muted-foreground">Coût total des indemnités</p>
+                        <p className="text-xl font-bold">{formatCurrency(totalMissionCost)}</p>
+                    </div>
+                </div>
+            </CardContent>
+        </Card>
+
       </div>
       <ConfirmationDialog
         isOpen={showDeleteConfirm}

@@ -30,9 +30,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { Mission, Employe, MissionParticipant } from "@/lib/data";
+import type { Mission, Employe, MissionParticipant, Fleet } from "@/lib/data";
 import { getEmployees } from "@/services/employee-service";
 import { getLatestMissionNumber } from "@/services/mission-service";
+import { getVehicles } from "@/services/fleet-service";
 import { cn } from "@/lib/utils";
 import { CalendarIcon, Loader2, X, Check, Trash2 } from "lucide-react";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
@@ -60,6 +61,7 @@ export function AddMissionSheet({
   const [status, setStatus] = useState<Mission['status']>('Planifiée');
   
   const [allEmployees, setAllEmployees] = useState<Employe[]>([]);
+  const [fleetVehicles, setFleetVehicles] = useState<Fleet[]>([]);
   const [loadingInitial, setLoadingInitial] = useState(true);
 
   const [error, setError] = useState("");
@@ -70,11 +72,13 @@ export function AddMissionSheet({
       async function fetchInitialData() {
         setLoadingInitial(true);
         try {
-          const [employees, missionNumber] = await Promise.all([
+          const [employees, missionNumber, vehicles] = await Promise.all([
             getEmployees(),
             getLatestMissionNumber(true),
+            getVehicles(),
           ]);
           setAllEmployees(employees.filter(e => e.status === 'Actif'));
+          setFleetVehicles(vehicles);
           setNumeroMission(missionNumber.toString().padStart(3, '0'));
         } catch (err) {
           console.error("Failed to load initial data for mission sheet", err);
@@ -287,7 +291,17 @@ export function AddMissionSheet({
                                     </div>
                                      <div className="space-y-1">
                                         <Label htmlFor={`immat-${p.employeeName}`} className="text-xs">Immatriculation</Label>
-                                        <Input id={`immat-${p.employeeName}`} value={p.immatriculation} onChange={(e) => handleParticipantVehicleChange(p.employeeName, 'immatriculation', e.target.value)} placeholder="Ex: AB-123-CD"/>
+                                        <Select value={p.immatriculation} onValueChange={(value) => handleParticipantVehicleChange(p.employeeName, 'immatriculation', value)}>
+                                            <SelectTrigger id={`immat-${p.employeeName}`}>
+                                                <SelectValue placeholder="Sélectionnez un véhicule..." />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="">Aucun</SelectItem>
+                                                {fleetVehicles.map(v => (
+                                                    <SelectItem key={v.plate} value={v.plate}>{v.plate} ({v.makeModel})</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
                                     </div>
                                 </div>
                             </div>

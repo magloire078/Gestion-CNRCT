@@ -5,8 +5,9 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { getMission, updateMission } from "@/services/mission-service";
-import type { Mission, Employe, MissionParticipant } from "@/lib/data";
+import type { Mission, Employe, MissionParticipant, Fleet } from "@/lib/data";
 import { getEmployees } from "@/services/employee-service";
+import { getVehicles } from "@/services/fleet-service";
 import { cn } from "@/lib/utils";
 
 import { Skeleton } from "@/components/ui/skeleton";
@@ -38,6 +39,7 @@ export default function MissionEditPage() {
 
     const [mission, setMission] = useState<Partial<Mission> | null>(null);
     const [allEmployees, setAllEmployees] = useState<Employe[]>([]);
+    const [fleetVehicles, setFleetVehicles] = useState<Fleet[]>([]);
     const [loading, setLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     
@@ -45,12 +47,14 @@ export default function MissionEditPage() {
         if (typeof id !== 'string') return;
         async function fetchMissionData() {
             try {
-                const [data, employees] = await Promise.all([
+                const [data, employees, vehicles] = await Promise.all([
                     getMission(id),
                     getEmployees(),
+                    getVehicles(),
                 ]);
                 setMission(data);
                 setAllEmployees(employees.filter(e => e.status === 'Actif'));
+                setFleetVehicles(vehicles);
             } catch (error) {
                 console.error("Failed to fetch mission data", error);
                 toast({ variant: "destructive", title: "Erreur", description: "Impossible de charger les données de la mission." });
@@ -233,7 +237,17 @@ export default function MissionEditPage() {
                                         </div>
                                         <div className="space-y-1">
                                             <Label htmlFor={`immat-${p.employeeName}`} className="text-xs">Immatriculation</Label>
-                                            <Input id={`immat-${p.employeeName}`} value={p.immatriculation} onChange={(e) => handleParticipantVehicleChange(p.employeeName, 'immatriculation', e.target.value)} placeholder="Ex: AB-123-CD"/>
+                                            <Select value={p.immatriculation} onValueChange={(value) => handleParticipantVehicleChange(p.employeeName, 'immatriculation', value)}>
+                                                <SelectTrigger id={`immat-${p.employeeName}`}>
+                                                    <SelectValue placeholder="Sélectionnez un véhicule..." />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="">Aucun</SelectItem>
+                                                    {fleetVehicles.map(v => (
+                                                        <SelectItem key={v.plate} value={v.plate}>{v.plate} ({v.makeModel})</SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
                                         </div>
                                     </div>
                                 </div>

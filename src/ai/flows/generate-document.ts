@@ -129,27 +129,29 @@ Fait à Yamoussoukro, le {{employeeContext.currentDate}}, en deux exemplaires or
 (Signature précédée de la mention "Lu et approuvé")
 {{employeeContext.name}}
   {{else if (eq documentType "Ordre de Mission")}}
-N° {{employeeContext.numeroMission}}/ CNRCT/DIR/PDT.
+N° {{employeeContext.numeroMission}}/CNRCT/DIR/PDT.               Yamoussoukro, le {{employeeContext.dateRedaction}}
 
 ORDRE DE MISSION{{#if employeeContext.missionType}} ({{employeeContext.missionType}}){{/if}}
 
 LE PRESIDENT DU DIRECTOIRE
 
 Donne ordre à : Monsieur {{employeeContext.name}}
+
 Fonction : {{employeeContext.poste}}
+
 De se rendre à : {{employeeContext.destination}}
 
 Objet de la mission : {{employeeContext.objetMission}}
 
 Moyen de transport : {{employeeContext.moyenTransport}}
+
 Immatriculation : {{employeeContext.immatriculation}}
 
 Date de départ : {{employeeContext.dateDepart}}
+
 Date de retour : {{employeeContext.dateRetour}}
 
 Imputation budgétaire : {{employeeContext.imputationBudgetaire}}
-
-Fait à {{employeeContext.villeRedaction}}, le {{employeeContext.dateRedaction}}
 
 P. Le Président du Directoire et P.O
 Le Directeur des Affaires Sociales

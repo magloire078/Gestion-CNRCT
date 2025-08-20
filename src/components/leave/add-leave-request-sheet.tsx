@@ -118,6 +118,11 @@ export function AddLeaveRequestSheet({
         setIsSubmitting(false);
     }
   };
+  
+  const getDisplayName = (emp: Employe | undefined) => {
+      if (!emp) return "";
+      return `${emp.lastName || ''} ${emp.firstName || ''}`.trim();
+  }
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && handleClose()}>
@@ -143,7 +148,7 @@ export function AddLeaveRequestSheet({
                         className="col-span-3 justify-between font-normal"
                     >
                         {employee
-                            ? employees.find((emp) => emp.name === employee)?.name
+                            ? getDisplayName(employees.find((emp) => emp.name === employee))
                             : "Sélectionnez un employé..."}
                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
@@ -157,9 +162,9 @@ export function AddLeaveRequestSheet({
                                 {employees.map((emp) => (
                                     <CommandItem
                                         key={emp.id}
-                                        value={emp.name}
+                                        value={getDisplayName(emp)}
                                         onSelect={(currentValue) => {
-                                            const selectedEmp = employees.find(e => e.name.toLowerCase() === currentValue.toLowerCase());
+                                            const selectedEmp = employees.find(e => getDisplayName(e).toLowerCase() === currentValue.toLowerCase());
                                             setEmployee(selectedEmp ? selectedEmp.name : "");
                                             setIsEmployeeComboboxOpen(false);
                                         }}
@@ -170,7 +175,7 @@ export function AddLeaveRequestSheet({
                                                 employee === emp.name ? "opacity-100" : "opacity-0"
                                             )}
                                         />
-                                        {emp.name}
+                                        {getDisplayName(emp)}
                                     </CommandItem>
                                 ))}
                             </CommandGroup>

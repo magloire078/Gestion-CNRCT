@@ -91,8 +91,9 @@ export default function MissionEditPage() {
     const handleParticipantVehicleChange = (employeeName: string, field: keyof Omit<MissionParticipant, 'employeeName' | 'numeroOrdre'>, value: string) => {
         setMission(prev => {
             if (!prev || !prev.participants) return prev;
+            const finalValue = value === 'none' ? '' : value;
             const newParticipants = prev.participants.map(p => 
-                p.employeeName === employeeName ? { ...p, [field]: value } : p
+                p.employeeName === employeeName ? { ...p, [field]: finalValue } : p
             );
             return { ...prev, participants: newParticipants };
         });
@@ -148,7 +149,7 @@ export default function MissionEditPage() {
                 <CardContent className="space-y-4">
                     <div className="space-y-2">
                         <Label htmlFor="numeroMission">N° Mission</Label>
-                        <Input id="numeroMission" name="numeroMission" value={mission.numeroMission || ''} className="bg-muted" readOnly />
+                        <Input id="numeroMission" value={mission.numeroMission || ''} className="bg-muted" readOnly />
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="title">Titre</Label>
@@ -237,12 +238,12 @@ export default function MissionEditPage() {
                                         </div>
                                         <div className="space-y-1">
                                             <Label htmlFor={`immat-${p.employeeName}`} className="text-xs">Immatriculation</Label>
-                                            <Select value={p.immatriculation} onValueChange={(value) => handleParticipantVehicleChange(p.employeeName, 'immatriculation', value)}>
+                                            <Select value={p.immatriculation || 'none'} onValueChange={(value) => handleParticipantVehicleChange(p.employeeName, 'immatriculation', value)}>
                                                 <SelectTrigger id={`immat-${p.employeeName}`}>
                                                     <SelectValue placeholder="Sélectionnez un véhicule..." />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem value="">Aucun</SelectItem>
+                                                    <SelectItem value="none">Aucun</SelectItem>
                                                     {fleetVehicles.map(v => (
                                                         <SelectItem key={v.plate} value={v.plate}>{v.plate} ({v.makeModel})</SelectItem>
                                                     ))}

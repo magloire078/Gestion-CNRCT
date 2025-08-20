@@ -156,9 +156,13 @@ export function AddMissionSheet({
   };
 
   const handleParticipantVehicleChange = (employeeName: string, field: keyof Omit<MissionParticipant, 'employeeName' | 'numeroOrdre'>, value: string) => {
-    setParticipants(prev => prev.map(p => 
-        p.employeeName === employeeName ? { ...p, [field]: value } : p
-    ));
+    setParticipants(prev => prev.map(p => {
+        if (p.employeeName === employeeName) {
+            const finalValue = value === 'none' ? '' : value;
+            return { ...p, [field]: finalValue };
+        }
+        return p;
+    }));
   };
 
 
@@ -291,12 +295,12 @@ export function AddMissionSheet({
                                     </div>
                                      <div className="space-y-1">
                                         <Label htmlFor={`immat-${p.employeeName}`} className="text-xs">Immatriculation</Label>
-                                        <Select value={p.immatriculation} onValueChange={(value) => handleParticipantVehicleChange(p.employeeName, 'immatriculation', value)}>
+                                        <Select value={p.immatriculation || 'none'} onValueChange={(value) => handleParticipantVehicleChange(p.employeeName, 'immatriculation', value)}>
                                             <SelectTrigger id={`immat-${p.employeeName}`}>
                                                 <SelectValue placeholder="Sélectionnez un véhicule..." />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem value="">Aucun</SelectItem>
+                                                <SelectItem value="none">Aucun</SelectItem>
                                                 {fleetVehicles.map(v => (
                                                     <SelectItem key={v.plate} value={v.plate}>{v.plate} ({v.makeModel})</SelectItem>
                                                 ))}

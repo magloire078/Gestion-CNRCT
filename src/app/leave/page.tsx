@@ -68,7 +68,7 @@ export default function LeavePage() {
     });
 
     getEmployees().then(fetchedEmployees => {
-      setEmployees(fetchedEmployees);
+      setEmployees(fetchedEmployees.filter(e => e.status === 'Actif'));
     }).catch(err => {
       console.error(err);
       setError("Impossible de charger les employés pour la recherche.");
@@ -409,7 +409,7 @@ export default function LeavePage() {
                     Visualisez les congés approuvés pour le mois en cours.
                 </CardDescription>
                 </CardHeader>
-                <CardContent className="flex justify-center">
+                <CardContent>
                     <LeaveCalendar leaves={leaves.filter(l => l.status === 'Approuvé')} />
                 </CardContent>
             </Card>

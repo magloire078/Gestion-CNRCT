@@ -19,35 +19,36 @@ export function subscribeToNotifications(
     callback: (notifications: Notification[]) => void,
     onError: (error: Error) => void
 ): Unsubscribe {
-    let allNotifications: Notification[] = [];
     const notificationMap = new Map<string, Notification>();
 
     const qUser = query(
         notificationsCollection, 
-        where('userId', '==', userId),
-        orderBy('createdAt', 'desc')
+        where('userId', '==', userId)
     );
     
     const qAll = query(
         notificationsCollection,
-        where('userId', '==', 'all'),
-        orderBy('createdAt', 'desc')
+        where('userId', '==', 'all')
     );
 
-    const updateUserNotifications = (newNotifs: Notification[]) => {
-        newNotifs.forEach(n => notificationMap.set(n.id, n));
-        allNotifications = Array.from(notificationMap.values()).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    const updateCombinedAndSort = () => {
+        const allNotifications = Array.from(notificationMap.values());
+        allNotifications.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
         callback(allNotifications);
     };
 
     const unsubUser = onSnapshot(qUser, (snapshot) => {
-        const userNotifications = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Notification));
-        updateUserNotifications(userNotifications);
+        snapshot.docs.forEach(doc => {
+            notificationMap.set(doc.id, { id: doc.id, ...doc.data() } as Notification);
+        });
+        updateCombinedAndSort();
     }, onError);
 
     const unsubAll = onSnapshot(qAll, (snapshot) => {
-         const allUserNotifications = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Notification));
-         updateUserNotifications(allUserNotifications);
+         snapshot.docs.forEach(doc => {
+            notificationMap.set(doc.id, { id: doc.id, ...doc.data() } as Notification);
+        });
+         updateCombinedAndSort();
     }, onError);
 
     return () => {

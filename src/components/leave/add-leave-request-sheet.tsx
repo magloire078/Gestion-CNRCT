@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon } from "lucide-react";
+import { Calendar as CalendarIcon, Check, ChevronsUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Label } from "@/components/ui/label";
@@ -32,6 +32,7 @@ import { cn } from "@/lib/utils";
 import type { Leave, Employe } from "@/lib/data";
 import { getEmployees } from "@/services/employee-service";
 import { Textarea } from "../ui/textarea";
+import { Command, CommandEmpty, CommandInput, CommandGroup, CommandItem, CommandList } from "@/components/ui/command";
 
 interface AddLeaveRequestSheetProps {
   isOpen: boolean;
@@ -52,6 +53,7 @@ export function AddLeaveRequestSheet({
   const [reason, setReason] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isEmployeeComboboxOpen, setIsEmployeeComboboxOpen] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -132,18 +134,50 @@ export function AddLeaveRequestSheet({
             <Label htmlFor="employee" className="text-right">
               Employé
             </Label>
-            <Select value={employee} onValueChange={setEmployee}>
-              <SelectTrigger className="col-span-3">
-                <SelectValue placeholder="Sélectionnez un employé..." />
-              </SelectTrigger>
-              <SelectContent>
-                {employees.map((emp) => (
-                  <SelectItem key={emp.id} value={emp.name}>
-                    {emp.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Popover open={isEmployeeComboboxOpen} onOpenChange={setIsEmployeeComboboxOpen}>
+                <PopoverTrigger asChild>
+                    <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={isEmployeeComboboxOpen}
+                        className="col-span-3 justify-between font-normal"
+                    >
+                        {employee
+                            ? employees.find((emp) => emp.name === employee)?.name
+                            : "Sélectionnez un employé..."}
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[300px] p-0">
+                    <Command>
+                        <CommandInput placeholder="Rechercher un employé..." />
+                        <CommandList>
+                            <CommandEmpty>Aucun employé trouvé.</CommandEmpty>
+                            <CommandGroup>
+                                {employees.map((emp) => (
+                                    <CommandItem
+                                        key={emp.id}
+                                        value={emp.name}
+                                        onSelect={(currentValue) => {
+                                            const selectedEmp = employees.find(e => e.name.toLowerCase() === currentValue.toLowerCase());
+                                            setEmployee(selectedEmp ? selectedEmp.name : "");
+                                            setIsEmployeeComboboxOpen(false);
+                                        }}
+                                    >
+                                        <Check
+                                            className={cn(
+                                                "mr-2 h-4 w-4",
+                                                employee === emp.name ? "opacity-100" : "opacity-0"
+                                            )}
+                                        />
+                                        {emp.name}
+                                    </CommandItem>
+                                ))}
+                            </CommandGroup>
+                        </CommandList>
+                    </Command>
+                </PopoverContent>
+            </Popover>
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="leaveType" className="text-right">

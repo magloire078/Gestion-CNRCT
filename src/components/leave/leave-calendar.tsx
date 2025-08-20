@@ -102,6 +102,7 @@ export function LeaveCalendar({ leaves }: LeaveCalendarProps) {
 
   return (
     <Calendar
+      fixedWeeks
       locale={fr}
       month={month}
       onMonthChange={setMonth}

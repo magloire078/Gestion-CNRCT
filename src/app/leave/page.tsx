@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { PlusCircle, Check, X, Search, Loader2, FileText, Pencil } from "lucide-react";
+import { PlusCircle, Check, X, Search, Loader2, FileText, Pencil, Hash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -31,7 +31,7 @@ import { getEmployees } from "@/services/employee-service";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { LeaveCalendar } from "@/components/leave/leave-calendar";
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, eachDayOfInterval } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
 
@@ -66,6 +66,18 @@ export default function LeavePage() {
         return format(parseISO(dateString), 'dd/MM/yyyy');
     } catch (error) {
         return dateString; // Fallback to original string
+    }
+  };
+  
+  const calculateWorkingDays = (startDate: string, endDate: string): number => {
+    try {
+        const start = parseISO(startDate);
+        const end = parseISO(endDate);
+        const days = eachDayOfInterval({ start, end });
+        // Exclude only Sundays (day 0)
+        return days.filter(day => day.getDay() !== 0).length;
+    } catch {
+        return 0;
     }
   };
 
@@ -264,9 +276,9 @@ export default function LeavePage() {
                         <TableHeader>
                         <TableRow>
                             <TableHead>Employé</TableHead>
-                            <TableHead>Type de congé</TableHead>
-                            <TableHead>Date de début</TableHead>
-                            <TableHead>Date de fin</TableHead>
+                            <TableHead>Type</TableHead>
+                            <TableHead>Dates</TableHead>
+                            <TableHead className="text-center">Jours Ouvrés</TableHead>
                             <TableHead>Motif / N° Décision</TableHead>
                             <TableHead>Statut</TableHead>
                             <TableHead className="text-right">Actions</TableHead>
@@ -279,7 +291,7 @@ export default function LeavePage() {
                                 <TableCell><Skeleton className="h-4 w-32" /></TableCell>
                                 <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                                 <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                                <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                                <TableCell><Skeleton className="h-4 w-12 mx-auto" /></TableCell>
                                 <TableCell><Skeleton className="h-4 w-20" /></TableCell>
                                 <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
                                 <TableCell><div className="flex justify-end gap-2"><Skeleton className="h-8 w-8 rounded-md" /><Skeleton className="h-8 w-8 rounded-md" /></div></TableCell>
@@ -288,12 +300,13 @@ export default function LeavePage() {
                         ) : (
                             filteredLeaves.map((leave) => {
                                 const displayName = leave.employeeDetails ? `${leave.employeeDetails.lastName || ''} ${leave.employeeDetails.firstName || ''}`.trim() : leave.employee;
+                                const workingDays = calculateWorkingDays(leave.startDate, leave.endDate);
                                 return (
                                 <TableRow key={leave.id}>
                                     <TableCell className="font-medium">{displayName}</TableCell>
                                     <TableCell>{leave.type}</TableCell>
-                                    <TableCell>{formatDate(leave.startDate)}</TableCell>
-                                    <TableCell>{formatDate(leave.endDate)}</TableCell>
+                                    <TableCell>{formatDate(leave.startDate)} - {formatDate(leave.endDate)}</TableCell>
+                                    <TableCell className="text-center font-medium">{workingDays}</TableCell>
                                     <TableCell className="text-sm text-muted-foreground max-w-xs truncate">
                                         {leave.type === "Congé Annuel" ? leave.num_decision : leave.reason || '-'}
                                     </TableCell>
@@ -358,22 +371,29 @@ export default function LeavePage() {
                         ) : (
                             filteredLeaves.map((leave) => {
                                 const displayName = leave.employeeDetails ? `${leave.employeeDetails.lastName || ''} ${leave.employeeDetails.firstName || ''}`.trim() : leave.employee;
+                                const workingDays = calculateWorkingDays(leave.startDate, leave.endDate);
                                 return (
                                 <Card key={leave.id}>
-                                    <CardContent className="p-4 flex items-center gap-4">
+                                    <CardContent className="p-4 flex items-start gap-4">
                                         <div className="flex-1 space-y-1">
-                                            <p className="font-medium">{displayName}</p>
+                                            <div className="flex justify-between items-start">
+                                                <p className="font-medium">{displayName}</p>
+                                                <Badge
+                                                    variant={(statusVariantMap[leave.status as Status] || "default")}
+                                                    className="mt-1"
+                                                >
+                                                    {leave.status}
+                                                </Badge>
+                                            </div>
                                             <p className="text-sm text-muted-foreground">{leave.type}</p>
                                             <p className="text-sm text-muted-foreground">{formatDate(leave.startDate)} au {formatDate(leave.endDate)}</p>
+                                            <p className="text-sm font-medium pt-1">
+                                                <Hash className="inline h-3 w-3 mr-1"/>
+                                                {workingDays} jour(s) ouvré(s)
+                                            </p>
                                             {(leave.num_decision || leave.reason) && <p className="text-sm text-muted-foreground truncate">
                                                 {leave.type === 'Congé Annuel' ? `Décision: ${leave.num_decision}` : `Motif: ${leave.reason}`}
                                             </p>}
-                                            <Badge
-                                                variant={(statusVariantMap[leave.status as Status] || "default")}
-                                                className="mt-1"
-                                            >
-                                                {leave.status}
-                                            </Badge>
                                         </div>
                                         <div className="flex flex-col gap-2">
                                             <Button
@@ -453,3 +473,4 @@ export default function LeavePage() {
     </div>
   );
 }
+

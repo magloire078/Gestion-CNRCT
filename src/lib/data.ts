@@ -128,19 +128,24 @@ export type Role = {
     permissions: string[];
 }
 
+export type MissionParticipant = {
+  employeeName: string;
+  moyenTransport?: string;
+  immatriculation?: string;
+};
+
 export type Mission = {
   id: string; // Firestore document ID
   numeroMission: string;
   title: string;
   description: string;
-  assignedTo: string[]; // Array of employee names
+  participants: MissionParticipant[];
   startDate: string; // YYYY-MM-DD
   endDate: string; // YYYY-MM-DD
   status: 'Planifiée' | 'En cours' | 'Terminée' | 'Annulée';
   lieuMission?: string;
-  moyenTransport?: string;
-  immatriculation?: string;
 };
+
 
 export type Conflict = {
     id: string; // Firestore document ID

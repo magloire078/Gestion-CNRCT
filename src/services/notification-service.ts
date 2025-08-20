@@ -19,22 +19,43 @@ export function subscribeToNotifications(
     callback: (notifications: Notification[]) => void,
     onError: (error: Error) => void
 ): Unsubscribe {
-    const q = query(
+    let allNotifications: Notification[] = [];
+    const notificationMap = new Map<string, Notification>();
+
+    const qUser = query(
         notificationsCollection, 
-        where('userId', 'in', ['all', userId]),
+        where('userId', '==', userId),
         orderBy('createdAt', 'desc')
     );
     
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-        const notifications = snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        } as Notification));
-        callback(notifications);
+    const qAll = query(
+        notificationsCollection,
+        where('userId', '==', 'all'),
+        orderBy('createdAt', 'desc')
+    );
+
+    const updateUserNotifications = (newNotifs: Notification[]) => {
+        newNotifs.forEach(n => notificationMap.set(n.id, n));
+        allNotifications = Array.from(notificationMap.values()).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+        callback(allNotifications);
+    };
+
+    const unsubUser = onSnapshot(qUser, (snapshot) => {
+        const userNotifications = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Notification));
+        updateUserNotifications(userNotifications);
     }, onError);
 
-    return unsubscribe;
+    const unsubAll = onSnapshot(qAll, (snapshot) => {
+         const allUserNotifications = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Notification));
+         updateUserNotifications(allUserNotifications);
+    }, onError);
+
+    return () => {
+        unsubUser();
+        unsubAll();
+    };
 }
+
 
 export async function markNotificationsAsRead(notificationIds: string[]): Promise<void> {
     if (notificationIds.length === 0) return;

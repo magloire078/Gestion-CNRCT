@@ -145,9 +145,9 @@ export default function MissionDetailPage() {
     return <div className="text-center py-10">Mission non trouvée.</div>;
   }
 
-  const participantsToShow = mission.participants.slice(0, 5);
-  const remainingParticipantsCount =
-    mission.participants.length - participantsToShow.length;
+  const participantsToShow = (mission.participants || []).slice(0, 5);
+  const remainingParticipantsCount = (mission.participants?.length || 0) - participantsToShow.length;
+
 
   return (
     <>
@@ -235,6 +235,9 @@ export default function MissionDetailPage() {
                     </Link>
                   </Button>
                 )}
+                 {participantsToShow.length === 0 && (
+                     <p className="text-sm text-muted-foreground">Aucun participant assigné.</p>
+                 )}
               </div>
             </InfoItem>
             {mission.description && (

@@ -146,6 +146,8 @@ export type Mission = {
   endDate: string; // YYYY-MM-DD
   status: 'Planifiée' | 'En cours' | 'Terminée' | 'Annulée';
   lieuMission?: string;
+  // This field is deprecated and will be removed. Use `participants` instead.
+  assignedTo?: string[];
 };
 
 

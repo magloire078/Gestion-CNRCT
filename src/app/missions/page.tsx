@@ -101,9 +101,10 @@ export default function MissionsPage() {
   const filteredMissions = useMemo(() => {
     return missions.filter(mission => {
       const searchTermLower = searchTerm.toLowerCase();
-      const assignedToString = mission.assignedTo.join(" ").toLowerCase();
+      // Ensure participants array exists before trying to access it
+      const participantsString = (mission.participants || []).map(p => p.employeeName).join(" ").toLowerCase();
       return mission.title.toLowerCase().includes(searchTermLower) ||
-             assignedToString.includes(searchTermLower) ||
+             participantsString.includes(searchTermLower) ||
              mission.description.toLowerCase().includes(searchTermLower);
     });
   }, [missions, searchTerm]);
@@ -180,7 +181,7 @@ export default function MissionsPage() {
                           <TableCell className="font-medium">{mission.title}</TableCell>
                           <TableCell>
                             <div className="flex flex-wrap gap-1">
-                              {mission.assignedTo.map(name => <Badge key={name} variant="outline">{name}</Badge>)}
+                              {(mission.participants || []).map(p => <Badge key={p.employeeName} variant="outline">{p.employeeName}</Badge>)}
                             </div>
                           </TableCell>
                           <TableCell>{mission.startDate} au {mission.endDate}</TableCell>
@@ -233,7 +234,7 @@ export default function MissionsPage() {
                            </div>
                             <p className="text-sm"><span className="font-medium">Période:</span> {mission.startDate} au {mission.endDate}</p>
                              <div className="flex flex-wrap gap-1 pt-1">
-                              {mission.assignedTo.map(name => <Badge key={name} variant="outline">{name}</Badge>)}
+                              {(mission.participants || []).map(p => <Badge key={p.employeeName} variant="outline">{p.employeeName}</Badge>)}
                             </div>
                         </CardContent>
                     </Card>

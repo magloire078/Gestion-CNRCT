@@ -33,7 +33,7 @@ import type { Mission, Employe } from "@/lib/data";
 import { getEmployees } from "@/services/employee-service";
 import { getLatestMissionNumber } from "@/services/mission-service";
 import { cn } from "@/lib/utils";
-import { CalendarIcon, Loader2, X } from "lucide-react";
+import { CalendarIcon, Loader2, X, Check } from "lucide-react";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Badge } from "../ui/badge";
 

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useMemo } from 'react';
@@ -65,7 +64,7 @@ export function LeaveCalendar({ leaves }: LeaveCalendarProps) {
         <div className="flex-shrink-0 self-end text-xs pr-1">{day.getDate()}</div>
         <div className="flex-grow space-y-1 overflow-hidden mt-1">
           {leavesToShow.map((leave, index) => (
-            <div key={index} className={`text-xs p-0.5 rounded-sm truncate ${COLORS[index % COLORS.length]}`}>
+            <div key={index} className={`text-xs px-1 py-0.5 rounded-sm whitespace-normal ${COLORS[index % COLORS.length]}`}>
               {leave.employee}
             </div>
           ))}

@@ -118,7 +118,7 @@ export function LeaveCalendar({ leaves }: LeaveCalendarProps) {
           head_row: "flex",
           head_cell: "text-muted-foreground rounded-md w-full font-normal text-[0.8rem]",
           row: "flex w-full mt-2",
-          cell: "h-28 text-center text-sm p-0 relative focus-within:relative focus-within:z-20",
+          cell: "h-28 text-center text-sm p-0 relative focus-within:relative focus-within:z-20 flex-1",
           day: "h-full w-full p-0 focus-within:relative focus-within:z-20 border border-transparent hover:border-primary rounded-md",
           day_today: "border-primary",
       }}

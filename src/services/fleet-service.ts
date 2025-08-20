@@ -1,4 +1,5 @@
 
+
 import { collection, getDocs, addDoc, doc, setDoc, onSnapshot, Unsubscribe, query, orderBy } from 'firebase/firestore';
 import type { Fleet } from '@/lib/data';
 import { db } from '@/lib/firebase';
@@ -13,7 +14,7 @@ export function subscribeToVehicles(
     const unsubscribe = onSnapshot(q, 
         (snapshot) => {
             const vehicles = snapshot.docs.map(doc => ({
-                id: doc.id,
+                plate: doc.id,
                 ...doc.data()
             } as Fleet));
             callback(vehicles);
@@ -29,7 +30,7 @@ export function subscribeToVehicles(
 export async function getVehicles(): Promise<Fleet[]> {
   const snapshot = await getDocs(query(fleetCollection, orderBy("makeModel", "asc")));
   return snapshot.docs.map(doc => ({
-    id: doc.id,
+    plate: doc.id,
     ...doc.data()
   } as Fleet));
 }

@@ -14,6 +14,13 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import type { Fleet } from "@/lib/data";
 
 interface AddVehicleSheetProps {
@@ -31,6 +38,7 @@ export function AddVehicleSheet({
   const [makeModel, setMakeModel] = useState("");
   const [assignedTo, setAssignedTo] = useState("");
   const [maintenanceDue, setMaintenanceDue] = useState("");
+  const [status, setStatus] = useState<Fleet['status']>('Disponible');
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -39,6 +47,7 @@ export function AddVehicleSheet({
     setMakeModel("");
     setAssignedTo("");
     setMaintenanceDue("");
+    setStatus("Disponible");
     setError("");
   }
 
@@ -58,7 +67,7 @@ export function AddVehicleSheet({
     setError("");
 
     try {
-        await onAddVehicle({ plate, makeModel, assignedTo, maintenanceDue });
+        await onAddVehicle({ plate, makeModel, assignedTo, maintenanceDue, status });
         handleClose();
     } catch (err) {
         setError(err instanceof Error ? err.message : "Échec de l'ajout du véhicule. Veuillez réessayer.");
@@ -114,6 +123,22 @@ export function AddVehicleSheet({
                 className="col-span-3"
                 placeholder="Nom de l'employé ou 'Véhicule de pool'"
               />
+            </div>
+             <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="status" className="text-right">
+                Statut
+              </Label>
+              <Select value={status} onValueChange={(value: Fleet['status']) => setStatus(value)}>
+                  <SelectTrigger className="col-span-3">
+                      <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                      <SelectItem value="Disponible">Disponible</SelectItem>
+                      <SelectItem value="En mission">En mission</SelectItem>
+                      <SelectItem value="En maintenance">En maintenance</SelectItem>
+                      <SelectItem value="Hors service">Hors service</SelectItem>
+                  </SelectContent>
+              </Select>
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="maintenanceDue" className="text-right">

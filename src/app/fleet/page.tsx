@@ -19,6 +19,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import type { Fleet } from "@/lib/data";
 import { AddVehicleSheet } from "@/components/fleet/add-vehicle-sheet";
 import { Input } from "@/components/ui/input";
@@ -26,12 +34,20 @@ import { subscribeToVehicles, addVehicle } from "@/services/fleet-service";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 
+const statusVariantMap: Record<Fleet['status'], "default" | "secondary" | "outline" | "destructive"> = {
+  'Disponible': 'default',
+  'En mission': 'secondary',
+  'En maintenance': 'outline',
+  'Hors service': 'destructive',
+};
+
 export default function FleetPage() {
   const [vehicles, setVehicles] = useState<Fleet[]>([]);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -68,11 +84,15 @@ export default function FleetPage() {
   const filteredVehicles = useMemo(() => {
     return vehicles.filter(vehicle => {
       const searchTermLower = searchTerm.toLowerCase();
-      return vehicle.plate.toLowerCase().includes(searchTermLower) ||
+      const matchesSearch = vehicle.plate.toLowerCase().includes(searchTermLower) ||
              vehicle.makeModel.toLowerCase().includes(searchTermLower) ||
              vehicle.assignedTo.toLowerCase().includes(searchTermLower);
+      
+      const matchesStatus = statusFilter === "all" || vehicle.status === statusFilter;
+
+      return matchesSearch && matchesStatus;
     });
-  }, [vehicles, searchTerm]);
+  }, [vehicles, searchTerm, statusFilter]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -104,6 +124,18 @@ export default function FleetPage() {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
+             <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-full sm:w-[200px]">
+                <SelectValue placeholder="Filtrer par statut" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tous les statuts</SelectItem>
+                <SelectItem value="Disponible">Disponible</SelectItem>
+                <SelectItem value="En mission">En mission</SelectItem>
+                <SelectItem value="En maintenance">En maintenance</SelectItem>
+                <SelectItem value="Hors service">Hors service</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
             <div className="mb-4 text-sm text-muted-foreground">
               {filteredVehicles.length} résultat(s) trouvé(s).
@@ -116,6 +148,7 @@ export default function FleetPage() {
                     <TableHead>Plaque d'immatriculation</TableHead>
                     <TableHead>Marque & Modèle</TableHead>
                     <TableHead>Assigné à</TableHead>
+                    <TableHead>Statut</TableHead>
                     <TableHead>Entretien Prévu</TableHead>
                 </TableRow>
                 </TableHeader>
@@ -126,16 +159,20 @@ export default function FleetPage() {
                             <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                             <TableCell><Skeleton className="h-4 w-40" /></TableCell>
                             <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                            <TableCell><Skeleton className="h-6 w-24 rounded-full" /></TableCell>
                             <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                         </TableRow>
                     ))
                 ) : (
                     filteredVehicles.map((vehicle) => (
                         <TableRow key={vehicle.plate}>
-                        <TableCell className="font-medium">{vehicle.plate}</TableCell>
-                        <TableCell>{vehicle.makeModel}</TableCell>
-                        <TableCell>{vehicle.assignedTo}</TableCell>
-                        <TableCell>{vehicle.maintenanceDue}</TableCell>
+                          <TableCell className="font-medium">{vehicle.plate}</TableCell>
+                          <TableCell>{vehicle.makeModel}</TableCell>
+                          <TableCell>{vehicle.assignedTo}</TableCell>
+                           <TableCell>
+                            <Badge variant={statusVariantMap[vehicle.status]}>{vehicle.status}</Badge>
+                          </TableCell>
+                          <TableCell>{vehicle.maintenanceDue}</TableCell>
                         </TableRow>
                     ))
                 )}
@@ -151,7 +188,10 @@ export default function FleetPage() {
                 filteredVehicles.map((vehicle) => (
                     <Card key={vehicle.plate}>
                         <CardContent className="p-4 space-y-2">
-                            <p className="font-bold">{vehicle.makeModel}</p>
+                            <div className="flex justify-between items-start">
+                                <p className="font-bold">{vehicle.makeModel}</p>
+                                <Badge variant={statusVariantMap[vehicle.status]}>{vehicle.status}</Badge>
+                            </div>
                             <p className="text-sm"><span className="font-medium">Plaque:</span> {vehicle.plate}</p>
                             <p className="text-sm"><span className="font-medium">Assigné à:</span> {vehicle.assignedTo}</p>
                             <p className="text-sm"><span className="font-medium">Prochain entretien:</span> {vehicle.maintenanceDue}</p>
@@ -175,5 +215,3 @@ export default function FleetPage() {
     </div>
   );
 }
-
-    

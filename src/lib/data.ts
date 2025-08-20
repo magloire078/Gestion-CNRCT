@@ -110,6 +110,7 @@ export type Fleet = {
   makeModel: string;
   assignedTo: string;
   maintenanceDue: string; // YYYY-MM-DD
+  status: 'Disponible' | 'En mission' | 'En maintenance' | 'Hors service';
 };
 
 export type User = {

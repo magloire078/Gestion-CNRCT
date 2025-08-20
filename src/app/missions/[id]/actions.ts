@@ -2,7 +2,7 @@
 "use server";
 
 import { generateDocument } from "@/ai/flows/generate-document";
-import { getEmployee } from "@/services/employee-service";
+import { searchEmployees } from "@/services/employee-service";
 import { deleteMission } from "@/services/mission-service";
 import type { Mission } from "@/lib/data";
 
@@ -12,21 +12,20 @@ import type { Mission } from "@/lib/data";
  * @returns An object with the generated document or an error message.
  */
 export async function generateMissionOrderAction(mission: Mission): Promise<{ document?: string; error?: string; }> {
-    if (!mission.assignedTo.length) {
+    if (!mission.assignedTo || mission.assignedTo.length === 0) {
         return { error: "Aucun employé n'est assigné à cette mission." };
     }
 
     try {
         // For simplicity, we'll use the first assigned employee for the main document fields.
-        // A real implementation might generate separate orders or list all participants.
         const primaryEmployeeName = mission.assignedTo[0];
         // We need to fetch the employee details to get their "poste"
-        const allEmployees = await getEmployee(primaryEmployeeName);
+        const employeesWithName = await searchEmployees(primaryEmployeeName);
         
-        const employeeDetails = allEmployees;
+        const employeeDetails = employeesWithName.length > 0 ? employeesWithName[0] : null;
 
         const input = {
-            documentType: 'Ordre de Mission',
+            documentType: 'Ordre de Mission' as const,
             documentContent: mission.description, // Fallback content
             employeeContext: {
                 numeroMission: mission.numeroMission,

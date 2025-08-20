@@ -6,6 +6,8 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { getChief, getChiefs } from "@/services/chief-service";
 import type { Chief } from "@/lib/data";
+import { format, parseISO } from 'date-fns';
+import { fr } from 'date-fns/locale';
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -22,6 +24,15 @@ export default function ChiefDetailPage() {
     const [chief, setChief] = useState<Chief | null>(null);
     const [parentChief, setParentChief] = useState<Chief | null>(null);
     const [loading, setLoading] = useState(true);
+    
+    const formatDate = (dateString?: string) => {
+        if (!dateString) return 'N/A';
+        try {
+            return format(parseISO(dateString), 'dd MMMM yyyy', { locale: fr });
+        } catch (error) {
+            return dateString; // Fallback to original string if parsing fails
+        }
+    };
 
     useEffect(() => {
         if (typeof id !== 'string') return;
@@ -44,7 +55,7 @@ export default function ChiefDetailPage() {
         fetchData();
     }, [id]);
     
-    const fullName = chief ? `${chief.firstName || ''} ${chief.lastName || ''}`.trim() : "Chargement...";
+    const fullName = chief ? `${chief.lastName || ''} ${chief.firstName || ''}`.trim() : "Chargement...";
 
 
     if (loading) {
@@ -77,7 +88,7 @@ export default function ChiefDetailPage() {
                         <CardContent className="pt-6 flex flex-col items-center text-center">
                             <Avatar className="h-32 w-32 border-4 border-primary/20 mb-4">
                                 <AvatarImage src={chief.photoUrl} alt={fullName} data-ai-hint="chief portrait" />
-                                <AvatarFallback className="text-4xl bg-muted">{fullName.charAt(0) || 'C'}</AvatarFallback>
+                                <AvatarFallback className="text-4xl bg-muted">{chief.lastName?.charAt(0) || 'C'}</AvatarFallback>
                             </Avatar>
                             <h2 className="text-2xl font-bold">{fullName}</h2>
                             <p className="text-lg text-primary">{chief.title}</p>
@@ -107,15 +118,15 @@ export default function ChiefDetailPage() {
                         </CardHeader>
                         <CardContent className="grid grid-cols-2 gap-4">
                             <InfoItem label="Contact" value={chief.contact} icon={Phone} />
-                            <InfoItem label="Date de naissance" value={chief.dateOfBirth} icon={Calendar} />
+                            <InfoItem label="Date de naissance" value={formatDate(chief.dateOfBirth)} icon={Calendar} />
                             {parentChief && (
                                 <InfoItem label="Autorité Supérieure" value={parentChief.name} icon={Users} />
                             )}
                             {chief.regencyStartDate && (
-                                <InfoItem label="Début de régence" value={chief.regencyStartDate} icon={Calendar} />
+                                <InfoItem label="Début de régence" value={formatDate(chief.regencyStartDate)} icon={Calendar} />
                             )}
                             {chief.regencyEndDate && (
-                                <InfoItem label="Fin de régence / Décès" value={chief.regencyEndDate} icon={Calendar} />
+                                <InfoItem label="Fin de régence / Décès" value={formatDate(chief.regencyEndDate)} icon={Calendar} />
                             )}
                         </CardContent>
                     </Card>

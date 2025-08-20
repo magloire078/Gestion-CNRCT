@@ -32,7 +32,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { AddLeaveRequestSheet } from "@/components/leave/add-leave-request-sheet";
 import { Mail, Phone, Calendar, Briefcase, ChevronRight, Landmark } from "lucide-react";
-import { lastDayOfMonth, format, subMonths } from 'date-fns';
+import { lastDayOfMonth, format, subMonths, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import Link from "next/link";
 
@@ -57,6 +57,15 @@ export default function MySpacePage() {
     const [loadingData, setLoadingData] = useState(true);
 
     const [isSheetOpen, setIsSheetOpen] = useState(false);
+    
+    const formatDate = (dateString?: string) => {
+        if (!dateString) return 'N/A';
+        try {
+            return format(parseISO(dateString), 'dd/MM/yyyy');
+        } catch (error) {
+            return dateString; // Fallback to original string if parsing fails
+        }
+    };
 
     useEffect(() => {
         if (user) {
@@ -111,7 +120,7 @@ export default function MySpacePage() {
         return null;
     }
     
-    const fullName = employeeDetails?.name || user.name;
+    const fullName = `${employeeDetails?.lastName || ''} ${employeeDetails?.firstName || ''}`.trim() || user.name;
 
     return (
         <div className="flex flex-col gap-6">
@@ -145,7 +154,7 @@ export default function MySpacePage() {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <InfoItem icon={Mail} label="Email" value={user.email} />
                                 <InfoItem icon={Phone} label="Téléphone" value={employeeDetails?.mobile || 'N/A'} />
-                                <InfoItem icon={Calendar} label="Date d'embauche" value={employeeDetails?.dateEmbauche || 'N/A'} />
+                                <InfoItem icon={Calendar} label="Date d'embauche" value={formatDate(employeeDetails?.dateEmbauche)} />
                                 <InfoItem icon={Briefcase} label="Statut" value={employeeDetails?.status || 'N/A'} />
                             </div>
                         </CardContent>
@@ -200,8 +209,8 @@ export default function MySpacePage() {
                                     {leaves.length > 0 ? leaves.map(leave => (
                                         <TableRow key={leave.id}>
                                             <TableCell>{leave.type}</TableCell>
-                                            <TableCell>{leave.startDate}</TableCell>
-                                            <TableCell>{leave.endDate}</TableCell>
+                                            <TableCell>{formatDate(leave.startDate)}</TableCell>
+                                            <TableCell>{formatDate(leave.endDate)}</TableCell>
                                             <TableCell><Badge variant={statusVariantMap[leave.status as Status] || "default"}>{leave.status}</Badge></TableCell>
                                         </TableRow>
                                     )) : (

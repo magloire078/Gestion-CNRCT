@@ -5,6 +5,7 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { getChief, updateChief, getChiefs } from "@/services/chief-service";
 import type { Chief, ChiefRole } from "@/lib/data";
+import { format, parseISO } from 'date-fns';
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -100,7 +101,7 @@ export default function ChiefEditPage() {
         if (!chief || typeof id !== 'string') return;
         setIsSaving(true);
 
-        const fullName = `${chief.firstName || ''} ${chief.lastName || ''}`.trim();
+        const fullName = `${chief.lastName || ''} ${chief.firstName || ''}`.trim();
         const dataToSave = { ...chief, name: fullName };
 
         try {
@@ -115,7 +116,7 @@ export default function ChiefEditPage() {
         }
     };
     
-    const fullName = chief ? `${chief.firstName || ''} ${chief.lastName || ''}`.trim() : "Chargement...";
+    const fullName = chief ? `${chief.lastName || ''} ${chief.firstName || ''}`.trim() : "Chargement...";
 
     if (loading) {
         return <p>Chargement...</p>; // Replace with a proper skeleton loader

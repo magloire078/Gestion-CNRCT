@@ -10,7 +10,7 @@ export function subscribeToChiefs(
     callback: (chiefs: Chief[]) => void,
     onError: (error: Error) => void
 ): Unsubscribe {
-    const q = query(chiefsCollection, orderBy("name", "asc"));
+    const q = query(chiefsCollection, orderBy("lastName", "asc"), orderBy("firstName", "asc"));
     const unsubscribe = onSnapshot(q,
         (snapshot) => {
             const chiefs = snapshot.docs.map(doc => ({
@@ -28,7 +28,7 @@ export function subscribeToChiefs(
 }
 
 export async function getChiefs(): Promise<Chief[]> {
-    const snapshot = await getDocs(query(chiefsCollection, orderBy("name", "asc")));
+    const snapshot = await getDocs(query(chiefsCollection, orderBy("lastName", "asc"), orderBy("firstName", "asc")));
     return snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()

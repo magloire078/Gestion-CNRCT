@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
@@ -29,6 +30,8 @@ import { useRouter } from "next/navigation";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ConfirmationDialog } from "@/components/common/confirmation-dialog";
 import Link from "next/link";
+import { format, parseISO } from 'date-fns';
+import { fr } from 'date-fns/locale';
 
 type Status = "Planifiée" | "En cours" | "Terminée" | "Annulée";
 
@@ -48,6 +51,19 @@ export default function MissionsPage() {
   const { toast } = useToast();
   const router = useRouter();
   const [deleteTarget, setDeleteTarget] = useState<Mission | null>(null);
+  
+  const formatDateRange = (start: string, end: string) => {
+    try {
+      const startDate = parseISO(start);
+      const endDate = parseISO(end);
+      const startFormat = format(startDate, 'dd MMM', { locale: fr });
+      const endFormat = format(endDate, 'dd MMM yyyy', { locale: fr });
+      return `${startFormat} au ${endFormat}`;
+    } catch {
+      return `${start} au ${end}`;
+    }
+  };
+
 
   useEffect(() => {
     const unsubscribe = subscribeToMissions(
@@ -184,7 +200,7 @@ export default function MissionsPage() {
                               {(mission.participants || []).map(p => <Badge key={p.employeeName} variant="outline">{p.employeeName}</Badge>)}
                             </div>
                           </TableCell>
-                          <TableCell>{mission.startDate} au {mission.endDate}</TableCell>
+                          <TableCell>{formatDateRange(mission.startDate, mission.endDate)}</TableCell>
                           <TableCell>
                             <Badge variant={statusVariantMap[mission.status] || 'default'}>{mission.status}</Badge>
                           </TableCell>
@@ -232,7 +248,7 @@ export default function MissionsPage() {
                               </div>
                               <Badge variant={statusVariantMap[mission.status] || 'default'}>{mission.status}</Badge>
                            </div>
-                            <p className="text-sm"><span className="font-medium">Période:</span> {mission.startDate} au {mission.endDate}</p>
+                            <p className="text-sm"><span className="font-medium">Période:</span> {formatDateRange(mission.startDate, mission.endDate)}</p>
                              <div className="flex flex-wrap gap-1 pt-1">
                               {(mission.participants || []).map(p => <Badge key={p.employeeName} variant="outline">{p.employeeName}</Badge>)}
                             </div>

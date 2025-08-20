@@ -15,7 +15,7 @@ async function createOrUpdateChiefFromEmployee(employee: Employe) {
         const snapshot = await getDocs(chiefsQuery);
         
         const chiefData: Partial<Chief> = {
-            name: employee.name,
+            name: `${employee.lastName || ''} ${employee.firstName || ''}`.trim(),
             firstName: employee.firstName,
             lastName: employee.lastName,
             title: employee.poste, // Use 'poste' as 'title'

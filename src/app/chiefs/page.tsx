@@ -244,11 +244,11 @@ export default function ChiefsPage() {
                       <TableCell>
                         <Avatar>
                           <AvatarImage src={chief.photoUrl} alt={chief.name} data-ai-hint="chief portrait" />
-                          <AvatarFallback>{chief.name?.charAt(0) || 'C'}</AvatarFallback>
+                          <AvatarFallback>{chief.lastName?.charAt(0) || 'C'}</AvatarFallback>
                         </Avatar>
                       </TableCell>
                       <TableCell>
-                        <div className="font-medium">{chief.name}</div>
+                        <div className="font-medium">{`${chief.lastName || ''} ${chief.firstName || ''}`.trim()}</div>
                         <div className="text-sm text-muted-foreground">{chief.title}</div>
                       </TableCell>
                       <TableCell>

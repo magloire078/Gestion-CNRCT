@@ -31,6 +31,9 @@ import { getEmployees } from "@/services/employee-service";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { LeaveCalendar } from "@/components/leave/leave-calendar";
+import { format, parseISO } from 'date-fns';
+import { fr } from 'date-fns/locale';
+
 
 type Status = "Approuvé" | "En attente" | "Rejeté";
 
@@ -57,6 +60,14 @@ export default function LeavePage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
+
+  const formatDate = (dateString: string) => {
+    try {
+        return format(parseISO(dateString), 'dd/MM/yyyy');
+    } catch (error) {
+        return dateString; // Fallback to original string
+    }
+  };
 
   useEffect(() => {
     const unsubLeaves = subscribeToLeaves((fetchedLeaves) => {
@@ -273,8 +284,8 @@ export default function LeavePage() {
                             <TableRow key={leave.id}>
                                 <TableCell className="font-medium">{leave.employee}</TableCell>
                                 <TableCell>{leave.type}</TableCell>
-                                <TableCell>{leave.startDate}</TableCell>
-                                <TableCell>{leave.endDate}</TableCell>
+                                <TableCell>{formatDate(leave.startDate)}</TableCell>
+                                <TableCell>{formatDate(leave.endDate)}</TableCell>
                                 <TableCell className="text-sm text-muted-foreground max-w-xs truncate">
                                     {leave.type === "Congé Annuel" ? leave.num_decision : leave.reason || '-'}
                                 </TableCell>
@@ -342,7 +353,7 @@ export default function LeavePage() {
                                         <div className="flex-1 space-y-1">
                                             <p className="font-medium">{leave.employee}</p>
                                             <p className="text-sm text-muted-foreground">{leave.type}</p>
-                                            <p className="text-sm text-muted-foreground">{leave.startDate} au {leave.endDate}</p>
+                                            <p className="text-sm text-muted-foreground">{formatDate(leave.startDate)} au {formatDate(leave.endDate)}</p>
                                             {(leave.num_decision || leave.reason) && <p className="text-sm text-muted-foreground truncate">
                                                 {leave.type === 'Congé Annuel' ? `Décision: ${leave.num_decision}` : `Motif: ${leave.reason}`}
                                             </p>}

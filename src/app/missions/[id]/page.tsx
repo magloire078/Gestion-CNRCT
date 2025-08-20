@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -9,7 +8,8 @@ import { getMission } from "@/services/mission-service";
 import type { Mission, Employe } from "@/lib/data";
 import { getEmployees } from "@/services/employee-service";
 import { getAllowanceRate } from "@/services/allowance-service";
-import { differenceInDays, parseISO } from 'date-fns';
+import { differenceInDays, parseISO, format } from 'date-fns';
+import { fr } from 'date-fns/locale';
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -78,6 +78,18 @@ export default function MissionDetailPage() {
   const [isPrinting, setIsPrinting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  const formatDateRange = (start: string, end: string) => {
+    try {
+      const startDate = parseISO(start);
+      const endDate = parseISO(end);
+      const startFormat = format(startDate, 'dd MMMM', { locale: fr });
+      const endFormat = format(endDate, 'dd MMMM yyyy', { locale: fr });
+      return `du ${startFormat} au ${endFormat}`;
+    } catch {
+      return `${start} au ${end}`;
+    }
+  };
 
   useEffect(() => {
     if (typeof id !== "string") return;
@@ -266,7 +278,7 @@ export default function MissionDetailPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <InfoItem
                 label="Période"
-                value={`${mission.startDate} au ${mission.endDate} (${missionDuration} jours)`}
+                value={`${formatDateRange(mission.startDate, mission.endDate)} (${missionDuration} jours)`}
                 icon={Calendar}
               />
               <InfoItem
@@ -308,7 +320,7 @@ export default function MissionDetailPage() {
                         {participantsDetails.map((p) => (
                            <TableRow key={p.id}>
                                 <TableCell>
-                                    <div className="font-medium">{p.name}</div>
+                                    <div className="font-medium">{`${p.lastName || ''} ${p.firstName || ''}`.trim()}</div>
                                     <div className="text-sm text-muted-foreground">{p.poste} (Cat. {p.categorie || 'N/A'})</div>
                                 </TableCell>
                                 <TableCell className="text-right font-mono">{formatCurrency(p.allowanceRate)}</TableCell>

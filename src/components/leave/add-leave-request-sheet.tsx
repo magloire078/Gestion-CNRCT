@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
+import { fr } from "date-fns/locale";
 import { Calendar as CalendarIcon, Check, ChevronsUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -230,7 +231,7 @@ export function AddLeaveRequestSheet({
                   )}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  {startDate ? format(startDate, "PPP") : <span>Choisissez une date</span>}
+                  {startDate ? format(startDate, "PPP", { locale: fr }) : <span>Choisissez une date</span>}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0">
@@ -239,6 +240,7 @@ export function AddLeaveRequestSheet({
                   selected={startDate}
                   onSelect={setStartDate}
                   initialFocus
+                  locale={fr}
                 />
               </PopoverContent>
             </Popover>
@@ -257,7 +259,7 @@ export function AddLeaveRequestSheet({
                   )}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  {endDate ? format(endDate, "PPP") : <span>Choisissez une date</span>}
+                  {endDate ? format(endDate, "PPP", { locale: fr }) : <span>Choisissez une date</span>}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0">
@@ -266,6 +268,7 @@ export function AddLeaveRequestSheet({
                   selected={endDate}
                   onSelect={setEndDate}
                   initialFocus
+                  locale={fr}
                 />
               </PopoverContent>
             </Popover>

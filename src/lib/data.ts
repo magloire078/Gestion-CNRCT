@@ -130,7 +130,7 @@ export type Role = {
 
 export type MissionParticipant = {
   employeeName: string;
-  moyenTransport?: string;
+  moyenTransport?: 'Véhicule personnel' | 'Véhicule CNRCT';
   immatriculation?: string;
   numeroOrdre?: string;
 };

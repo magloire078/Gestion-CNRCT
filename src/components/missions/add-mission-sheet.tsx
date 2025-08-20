@@ -143,7 +143,7 @@ export function AddMissionSheet({
 
   const handleAddParticipant = (employeeName: string) => {
     if (!participants.some(p => p.employeeName === employeeName)) {
-        setParticipants(prev => [...prev, { employeeName, moyenTransport: '', immatriculation: '' }]);
+        setParticipants(prev => [...prev, { employeeName, moyenTransport: undefined, immatriculation: '' }]);
     }
   };
   
@@ -151,7 +151,7 @@ export function AddMissionSheet({
     setParticipants(prev => prev.filter(p => p.employeeName !== employeeName));
   };
 
-  const handleParticipantVehicleChange = (employeeName: string, field: 'moyenTransport' | 'immatriculation', value: string) => {
+  const handleParticipantVehicleChange = (employeeName: string, field: keyof Omit<MissionParticipant, 'employeeName' | 'numeroOrdre'>, value: string) => {
     setParticipants(prev => prev.map(p => 
         p.employeeName === employeeName ? { ...p, [field]: value } : p
     ));
@@ -275,7 +275,15 @@ export function AddMissionSheet({
                                 <div className="grid grid-cols-2 gap-2">
                                     <div className="space-y-1">
                                         <Label htmlFor={`transport-${p.employeeName}`} className="text-xs">Moyen de Transport</Label>
-                                        <Input id={`transport-${p.employeeName}`} value={p.moyenTransport} onChange={(e) => handleParticipantVehicleChange(p.employeeName, 'moyenTransport', e.target.value)} placeholder="Ex: Véhicule"/>
+                                         <Select value={p.moyenTransport} onValueChange={(value: MissionParticipant['moyenTransport']) => handleParticipantVehicleChange(p.employeeName, 'moyenTransport', value!)}>
+                                            <SelectTrigger id={`transport-${p.employeeName}`}>
+                                                <SelectValue placeholder="Sélectionnez..." />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="Véhicule personnel">Véhicule personnel</SelectItem>
+                                                <SelectItem value="Véhicule CNRCT">Véhicule CNRCT</SelectItem>
+                                            </SelectContent>
+                                        </Select>
                                     </div>
                                      <div className="space-y-1">
                                         <Label htmlFor={`immat-${p.employeeName}`} className="text-xs">Immatriculation</Label>

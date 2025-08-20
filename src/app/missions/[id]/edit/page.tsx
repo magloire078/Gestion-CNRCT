@@ -1,10 +1,11 @@
 
+
 "use client";
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { getMission, updateMission } from "@/services/mission-service";
-import type { Mission, Employe } from "@/lib/data";
+import type { Mission, Employe, MissionParticipant } from "@/lib/data";
 import { getEmployees } from "@/services/employee-service";
 import { cn } from "@/lib/utils";
 
@@ -21,7 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Loader2, Save, X, Check } from "lucide-react";
+import { ArrowLeft, Loader2, Save, X, Check, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
@@ -69,14 +70,27 @@ export default function MissionEditPage() {
         setMission(prev => prev ? { ...prev, [name]: value } : null);
     };
 
-    const toggleAssigned = (employeeName: string) => {
+    const toggleParticipant = (employeeName: string) => {
         setMission(prev => {
             if (!prev) return null;
-            const currentAssigned = prev.assignedTo || [];
-            const newAssigned = currentAssigned.includes(employeeName)
-                ? currentAssigned.filter(name => name !== employeeName)
-                : [...currentAssigned, employeeName];
-            return { ...prev, assignedTo: newAssigned };
+            const currentParticipants = prev.participants || [];
+            const isAssigned = currentParticipants.some(p => p.employeeName === employeeName);
+
+            if (isAssigned) {
+                return { ...prev, participants: currentParticipants.filter(p => p.employeeName !== employeeName) };
+            } else {
+                return { ...prev, participants: [...currentParticipants, { employeeName, moyenTransport: undefined, immatriculation: '' }] };
+            }
+        });
+    };
+    
+    const handleParticipantVehicleChange = (employeeName: string, field: keyof Omit<MissionParticipant, 'employeeName' | 'numeroOrdre'>, value: string) => {
+        setMission(prev => {
+            if (!prev || !prev.participants) return prev;
+            const newParticipants = prev.participants.map(p => 
+                p.employeeName === employeeName ? { ...p, [field]: value } : p
+            );
+            return { ...prev, participants: newParticipants };
         });
     };
 
@@ -141,54 +155,8 @@ export default function MissionEditPage() {
                         <Textarea id="description" name="description" value={mission.description || ''} onChange={handleInputChange} rows={4} />
                     </div>
                      <div className="space-y-2">
-                        <Label>Participants</Label>
-                        <Popover>
-                            <PopoverTrigger asChild>
-                            <Button variant="outline" className="w-full justify-start font-normal text-muted-foreground">
-                                {mission.assignedTo?.length ? `${mission.assignedTo.length} sélectionné(s)` : "Sélectionner des employés..."}
-                            </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-[300px] p-0">
-                            <Command>
-                                <CommandInput placeholder="Rechercher un employé..."/>
-                                <CommandList>
-                                <CommandEmpty>Aucun employé trouvé.</CommandEmpty>
-                                <CommandGroup>
-                                    {allEmployees.map(emp => (
-                                    <CommandItem key={emp.id} onSelect={() => toggleAssigned(emp.name)}>
-                                        <div className={cn("mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary", mission.assignedTo?.includes(emp.name) ? "bg-primary text-primary-foreground" : "opacity-50 [&_svg]:invisible")}>
-                                          <Check className="h-4 w-4" />
-                                        </div>
-                                        <span>{emp.name}</span>
-                                    </CommandItem>
-                                    ))}
-                                </CommandGroup>
-                                </CommandList>
-                            </Command>
-                            </PopoverContent>
-                        </Popover>
-                         <div className="mt-2 flex flex-wrap gap-1">
-                            {mission.assignedTo?.map(name => (
-                            <Badge key={name} variant="secondary">
-                                {name}
-                                <button type="button" onClick={() => toggleAssigned(name)} className="ml-1 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2">
-                                <X className="h-3 w-3 text-muted-foreground hover:text-foreground" />
-                                </button>
-                            </Badge>
-                            ))}
-                        </div>
-                    </div>
-                     <div className="space-y-2">
                         <Label htmlFor="lieuMission">Lieu</Label>
                         <Input id="lieuMission" name="lieuMission" value={mission.lieuMission || ''} onChange={handleInputChange} />
-                    </div>
-                     <div className="space-y-2">
-                        <Label htmlFor="moyenTransport">Moyen de Transport</Label>
-                        <Input id="moyenTransport" name="moyenTransport" value={mission.moyenTransport || ''} onChange={handleInputChange} />
-                    </div>
-                     <div className="space-y-2">
-                        <Label htmlFor="immatriculation">Immatriculation</Label>
-                        <Input id="immatriculation" name="immatriculation" value={mission.immatriculation || ''} onChange={handleInputChange} />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
@@ -211,6 +179,66 @@ export default function MissionEditPage() {
                                 <SelectItem value="Annulée">Annulée</SelectItem>
                             </SelectContent>
                         </Select>
+                    </div>
+
+                    <div className="space-y-4 pt-4 border-t">
+                        <Label>Participants & Véhicules</Label>
+                        <Popover>
+                            <PopoverTrigger asChild>
+                            <Button variant="outline" className="w-full justify-start font-normal">
+                                Ajouter / Retirer des participants...
+                            </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-[300px] p-0">
+                            <Command>
+                                <CommandInput placeholder="Rechercher un employé..."/>
+                                <CommandList>
+                                <CommandEmpty>Aucun employé trouvé.</CommandEmpty>
+                                <CommandGroup>
+                                    {allEmployees.map(emp => (
+                                    <CommandItem key={emp.id} onSelect={() => toggleParticipant(emp.name)}>
+                                        <div className={cn("mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary", mission.participants?.some(p => p.employeeName === emp.name) ? "bg-primary text-primary-foreground" : "opacity-50 [&_svg]:invisible")}>
+                                          <Check className="h-4 w-4" />
+                                        </div>
+                                        <span>{emp.name}</span>
+                                    </CommandItem>
+                                    ))}
+                                </CommandGroup>
+                                </CommandList>
+                            </Command>
+                            </PopoverContent>
+                        </Popover>
+
+                        <div className="space-y-4">
+                            {mission.participants?.map(p => (
+                                <div key={p.employeeName} className="p-3 border rounded-md space-y-3">
+                                    <div className="flex justify-between items-center">
+                                        <p className="font-medium">{p.employeeName}</p>
+                                        <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => toggleParticipant(p.employeeName)}>
+                                            <Trash2 className="h-4 w-4 text-destructive"/>
+                                        </Button>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <div className="space-y-1">
+                                            <Label htmlFor={`transport-${p.employeeName}`} className="text-xs">Moyen de Transport</Label>
+                                            <Select value={p.moyenTransport} onValueChange={(value: MissionParticipant['moyenTransport']) => handleParticipantVehicleChange(p.employeeName, 'moyenTransport', value!)}>
+                                                <SelectTrigger id={`transport-${p.employeeName}`}>
+                                                    <SelectValue placeholder="Sélectionnez..." />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="Véhicule personnel">Véhicule personnel</SelectItem>
+                                                    <SelectItem value="Véhicule CNRCT">Véhicule CNRCT</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <Label htmlFor={`immat-${p.employeeName}`} className="text-xs">Immatriculation</Label>
+                                            <Input id={`immat-${p.employeeName}`} value={p.immatriculation} onChange={(e) => handleParticipantVehicleChange(p.employeeName, 'immatriculation', e.target.value)} placeholder="Ex: AB-123-CD"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </CardContent>
             </Card>

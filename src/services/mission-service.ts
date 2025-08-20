@@ -60,14 +60,16 @@ export async function deleteMission(id: string): Promise<void> {
 }
 
 export async function getLatestMissionNumber(isDossier: boolean = true): Promise<number> {
-    const counterRef = doc(db, 'counters', isDossier ? 'missions' : 'missionOrders');
+    const counterId = isDossier ? 'missions' : 'missionOrders';
+    const counterRef = doc(db, 'counters', counterId);
     
     try {
         const newNumber = await runTransaction(db, async (transaction) => {
             const counterDoc = await transaction.get(counterRef);
             if (!counterDoc.exists()) {
-                transaction.set(counterRef, { lastNumber: 1 });
-                return 1;
+                const startNumber = isDossier ? 1 : 1000; // Start mission orders at a higher number
+                transaction.set(counterRef, { lastNumber: startNumber });
+                return startNumber;
             }
             const newLastNumber = counterDoc.data().lastNumber + 1;
             transaction.update(counterRef, { lastNumber: newLastNumber });
@@ -75,7 +77,7 @@ export async function getLatestMissionNumber(isDossier: boolean = true): Promise
         });
         return newNumber;
     } catch (error) {
-        console.error("Error getting latest mission number:", error);
+        console.error(`Error getting latest number for ${counterId}:`, error);
         throw error;
     }
 }

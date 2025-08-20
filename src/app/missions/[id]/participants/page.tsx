@@ -90,8 +90,8 @@ export default function MissionParticipantsPage() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {participantsDetails.map((p) => (
-              <Card key={p.employee.id} className="p-4 flex flex-col">
+            {participantsDetails.map((p, index) => (
+              <Card key={index} className="p-4 flex flex-col">
                 <div className="flex items-center gap-4">
                   <Avatar className="h-12 w-12">
                     <AvatarImage src={p.employee.photoUrl} alt={p.employee.name} data-ai-hint="employee photo" />

@@ -114,12 +114,12 @@ export function AddMissionSheet({
     setError("");
 
     try {
-        let lastOrderNumber = await getLatestMissionNumber(false) -1; // -1 because we increment inside loop
+        let lastOrderNumber = await getLatestMissionNumber(false); 
         const participantsWithOrderNumber = participants.map(p => {
-            lastOrderNumber++;
+            const nextOrderNumber = lastOrderNumber++;
             return {
                 ...p,
-                numeroOrdre: lastOrderNumber.toString().padStart(5,'0')
+                numeroOrdre: nextOrderNumber.toString().padStart(5,'0')
             }
         });
 

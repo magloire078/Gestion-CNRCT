@@ -222,8 +222,8 @@ export default function MissionDetailPage() {
             </div>
             <InfoItem label="Participants" icon={Users}>
               <div className="flex flex-col gap-2 pt-1">
-                {participantsToShow.map((p) => (
-                  <div key={p.employeeName} className="flex justify-between items-center text-sm">
+                {participantsToShow.map((p, index) => (
+                  <div key={index} className="flex justify-between items-center text-sm">
                       <span className="font-medium">{p.employeeName}</span>
                       <span className="text-xs text-muted-foreground font-mono">Ordre N° {p.numeroOrdre || 'N/A'}</span>
                   </div>

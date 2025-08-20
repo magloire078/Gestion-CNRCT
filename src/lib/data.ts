@@ -132,6 +132,7 @@ export type MissionParticipant = {
   employeeName: string;
   moyenTransport?: string;
   immatriculation?: string;
+  numeroOrdre?: string;
 };
 
 export type Mission = {

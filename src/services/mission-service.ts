@@ -1,5 +1,6 @@
 
-import { collection, getDocs, addDoc, onSnapshot, Unsubscribe, query, orderBy, doc, getDoc, updateDoc, deleteDoc, limit } from 'firebase/firestore';
+
+import { collection, getDocs, addDoc, onSnapshot, Unsubscribe, query, orderBy, doc, getDoc, updateDoc, deleteDoc, limit, runTransaction } from 'firebase/firestore';
 import type { Mission } from '@/lib/data';
 import { db } from '@/lib/firebase';
 
@@ -58,13 +59,23 @@ export async function deleteMission(id: string): Promise<void> {
     await deleteDoc(docRef);
 }
 
-export async function getLatestMissionNumber(): Promise<number> {
-    const q = query(missionsCollection, orderBy("numeroMission", "desc"), limit(1));
-    const snapshot = await getDocs(q);
-    if (snapshot.empty) {
-        return 1;
+export async function getLatestMissionNumber(isDossier: boolean = true): Promise<number> {
+    const counterRef = doc(db, 'counters', isDossier ? 'missions' : 'missionOrders');
+    
+    try {
+        const newNumber = await runTransaction(db, async (transaction) => {
+            const counterDoc = await transaction.get(counterRef);
+            if (!counterDoc.exists()) {
+                transaction.set(counterRef, { lastNumber: 1 });
+                return 1;
+            }
+            const newLastNumber = counterDoc.data().lastNumber + 1;
+            transaction.update(counterRef, { lastNumber: newLastNumber });
+            return newLastNumber;
+        });
+        return newNumber;
+    } catch (error) {
+        console.error("Error getting latest mission number:", error);
+        throw error;
     }
-    const latestMission = snapshot.docs[0].data() as Mission;
-    const latestNumber = parseInt(latestMission.numeroMission, 10);
-    return isNaN(latestNumber) ? 1 : latestNumber + 1;
 }

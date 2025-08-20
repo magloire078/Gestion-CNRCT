@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -88,13 +89,21 @@ export default function MissionDetailPage() {
           description: result.error,
         });
       } else if (result.document) {
-        const printWindow = window.open("", "_blank");
-        printWindow?.document.write(result.document);
-        printWindow?.document.close();
-        // Give it a moment to load before printing
-        setTimeout(() => {
-          printWindow?.print();
-        }, 500);
+        const printWindow = window.open("", "_blank", "height=800,width=800");
+        if (printWindow) {
+            printWindow.document.write(result.document);
+            printWindow.document.close();
+            // Give it a moment to load before printing
+            setTimeout(() => {
+            printWindow.print();
+            }, 500);
+        } else {
+            toast({
+              variant: "destructive",
+              title: "Erreur d'impression",
+              description: "Impossible d'ouvrir la fenêtre d'impression. Vérifiez les bloqueurs de popups.",
+            });
+        }
       }
     } catch (err) {
       toast({
@@ -136,9 +145,9 @@ export default function MissionDetailPage() {
     return <div className="text-center py-10">Mission non trouvée.</div>;
   }
 
-  const participantsToShow = mission.assignedTo.slice(0, 5);
+  const participantsToShow = mission.participants.slice(0, 5);
   const remainingParticipantsCount =
-    mission.assignedTo.length - participantsToShow.length;
+    mission.participants.length - participantsToShow.length;
 
   return (
     <>
@@ -168,7 +177,7 @@ export default function MissionDetailPage() {
               <div>
                 <CardTitle className="flex items-center gap-2">
                   <Hash className="h-5 w-5 text-muted-foreground" />
-                  {mission.numeroMission} - {mission.title}
+                  Dossier Mission N° {mission.numeroMission} - {mission.title}
                 </CardTitle>
                 <CardDescription className="mt-2">
                   <Badge variant={statusVariantMap[mission.status]}>
@@ -184,7 +193,7 @@ export default function MissionDetailPage() {
                   disabled={isPrinting}
                 >
                   <Printer className="mr-2 h-4 w-4" />
-                  {isPrinting ? "Génération..." : "Ordre de Mission"}
+                  {isPrinting ? "Génération..." : "Ordres de Mission"}
                 </Button>
                 <Button
                   variant="destructive"
@@ -210,24 +219,17 @@ export default function MissionDetailPage() {
                 value={mission.lieuMission}
                 icon={MapPin}
               />
-              <InfoItem
-                label="Transport"
-                value={mission.moyenTransport}
-                icon={Car}
-              />
-              <InfoItem
-                label="Immatriculation"
-                value={mission.immatriculation}
-                icon={Car}
-              />
             </div>
             <InfoItem label="Participants" icon={Users}>
-              <div className="flex flex-wrap items-center gap-2 pt-1">
-                {participantsToShow.map((name) => (
-                  <Badge key={name}>{name}</Badge>
+              <div className="flex flex-col gap-2 pt-1">
+                {participantsToShow.map((p) => (
+                  <div key={p.employeeName} className="flex justify-between items-center text-sm">
+                      <span className="font-medium">{p.employeeName}</span>
+                      <span className="text-xs text-muted-foreground font-mono">Ordre N° {p.numeroOrdre || 'N/A'}</span>
+                  </div>
                 ))}
                 {remainingParticipantsCount > 0 && (
-                  <Button variant="link" asChild className="p-0 h-auto">
+                  <Button variant="link" asChild className="p-0 h-auto justify-start">
                     <Link href={`/missions/${id}/participants`}>
                       et {remainingParticipantsCount} autre(s)...
                     </Link>

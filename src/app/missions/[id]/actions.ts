@@ -1,10 +1,11 @@
 
+
 "use server";
 
 import { generateDocument } from "@/ai/flows/generate-document";
 import { searchEmployees } from "@/services/employee-service";
 import { deleteMission } from "@/services/mission-service";
-import type { Mission } from "@/lib/data";
+import type { Mission, MissionParticipant } from "@/lib/data";
 
 /**
  * Generates an HTML document for the mission order.
@@ -12,38 +13,38 @@ import type { Mission } from "@/lib/data";
  * @returns An object with the generated document or an error message.
  */
 export async function generateMissionOrderAction(mission: Mission): Promise<{ document?: string; error?: string; }> {
-    if (!mission.assignedTo || mission.assignedTo.length === 0) {
-        return { error: "Aucun employé n'est assigné à cette mission." };
+    if (!mission.participants || mission.participants.length === 0) {
+        return { error: "Aucun participant n'est assigné à cette mission." };
     }
 
     try {
-        // For simplicity, we'll use the first assigned employee for the main document fields.
-        const primaryEmployeeName = mission.assignedTo[0];
-        // We need to fetch the employee details to get their "poste"
-        const employeesWithName = await searchEmployees(primaryEmployeeName);
-        
-        const employeeDetails = employeesWithName.length > 0 ? employeesWithName[0] : null;
+        let allDocumentsHtml = '';
 
-        const input = {
-            documentType: 'Ordre de Mission' as const,
-            documentContent: mission.description, // Fallback content
-            employeeContext: {
-                numeroMission: mission.numeroMission,
-                missionType: "SIMPLE", // This could be a field in the Mission object in the future
-                name: mission.assignedTo.join(', '),
-                poste: employeeDetails?.poste || 'N/A',
-                destination: mission.lieuMission,
-                objetMission: mission.description,
-                moyenTransport: mission.moyenTransport,
-                immatriculation: mission.immatriculation,
-                dateDepart: mission.startDate,
-                dateRetour: mission.endDate,
-            }
-        };
+        for (const participant of mission.participants) {
+            const employeesWithName = await searchEmployees(participant.employeeName);
+            const employeeDetails = employeesWithName.length > 0 ? employeesWithName[0] : null;
 
-        const result = await generateDocument(input);
-        
-        // Wrap the raw text in a basic HTML structure for printing
+             const input = {
+                documentType: 'Ordre de Mission' as const,
+                documentContent: mission.description,
+                employeeContext: {
+                    numeroMission: participant.numeroOrdre || mission.numeroMission,
+                    missionType: "SIMPLE", 
+                    name: participant.employeeName,
+                    poste: employeeDetails?.poste || 'N/A',
+                    destination: mission.lieuMission,
+                    objetMission: mission.description,
+                    moyenTransport: participant.moyenTransport,
+                    immatriculation: participant.immatriculation,
+                    dateDepart: mission.startDate,
+                    dateRetour: mission.endDate,
+                }
+            };
+
+            const result = await generateDocument(input);
+            allDocumentsHtml += `<div class="page-break"><pre>${result.generatedDocument}</pre></div>`;
+        }
+
         const htmlDoc = `
             <html>
                 <head>
@@ -51,10 +52,12 @@ export async function generateMissionOrderAction(mission: Mission): Promise<{ do
                     <style>
                         body { font-family: 'Times New Roman', serif; margin: 2cm; }
                         pre { white-space: pre-wrap; font-family: 'Times New Roman', serif; }
+                        .page-break { page-break-after: always; }
+                        .page-break:last-child { page-break-after: auto; }
                     </style>
                 </head>
                 <body>
-                    <pre>${result.generatedDocument}</pre>
+                    ${allDocumentsHtml}
                 </body>
             </html>
         `;

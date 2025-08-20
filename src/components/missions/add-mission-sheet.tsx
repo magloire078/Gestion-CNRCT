@@ -72,7 +72,7 @@ export function AddMissionSheet({
         try {
           const [employees, missionNumber] = await Promise.all([
             getEmployees(),
-            getLatestMissionNumber(),
+            getLatestMissionNumber(true),
           ]);
           setAllEmployees(employees.filter(e => e.status === 'Actif'));
           setNumeroMission(missionNumber.toString().padStart(3, '0'));
@@ -114,11 +114,20 @@ export function AddMissionSheet({
     setError("");
 
     try {
+        let lastOrderNumber = await getLatestMissionNumber(false) -1; // -1 because we increment inside loop
+        const participantsWithOrderNumber = participants.map(p => {
+            lastOrderNumber++;
+            return {
+                ...p,
+                numeroOrdre: lastOrderNumber.toString().padStart(5,'0')
+            }
+        });
+
         await onAddMission({ 
             numeroMission,
             title, 
             description, 
-            participants, 
+            participants: participantsWithOrderNumber,
             startDate: format(startDate, "yyyy-MM-dd"),
             endDate: format(endDate, "yyyy-MM-dd"),
             status,
@@ -168,7 +177,7 @@ export function AddMissionSheet({
             ) : (
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="numeroMission">N° Mission</Label>
+                  <Label htmlFor="numeroMission">N° Dossier Mission</Label>
                   <Input id="numeroMission" value={numeroMission} className="bg-muted" readOnly />
                 </div>
                 <div className="space-y-2">

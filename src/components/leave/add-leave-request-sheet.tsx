@@ -104,13 +104,18 @@ export function AddLeaveRequestSheet({
     setError("");
 
     try {
-      await onAddLeaveRequest({
+      const data: Omit<Leave, "id" | "status"> = {
         employee,
         type: leaveType as Leave['type'],
         startDate: format(startDate, "yyyy-MM-dd"),
         endDate: format(endDate, "yyyy-MM-dd"),
-        reason: leaveType === "Congé Personnel" ? reason : undefined,
-      });
+      };
+
+      if (leaveType === "Congé Personnel") {
+        data.reason = reason;
+      }
+
+      await onAddLeaveRequest(data);
       handleClose();
     } catch(err) {
        setError("Échec de l'ajout de la demande. Veuillez réessayer.");

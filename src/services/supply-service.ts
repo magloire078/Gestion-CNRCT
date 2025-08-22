@@ -1,7 +1,7 @@
 
 
 import { db } from '@/lib/firebase';
-import { collection, getDocs, addDoc, onSnapshot, Unsubscribe, query, orderBy, doc, updateDoc, writeBatch } from 'firebase/firestore';
+import { collection, getDocs, addDoc, onSnapshot, Unsubscribe, query, orderBy, doc, updateDoc, deleteDoc, writeBatch } from 'firebase/firestore';
 import type { Supply } from '@/lib/data';
 import { createNotification } from './notification-service';
 
@@ -50,4 +50,24 @@ export async function addSupply(supplyDataToAdd: Omit<Supply, "id">): Promise<Su
     }
     
     return { id: docRef.id, ...supplyDataToAdd };
+}
+
+export async function updateSupply(id: string, dataToUpdate: Partial<Omit<Supply, 'id'>>): Promise<void> {
+    const supplyDocRef = doc(db, 'supplies', id);
+    await updateDoc(supplyDocRef, dataToUpdate);
+
+    // Check stock level after update
+     if (dataToUpdate.quantity !== undefined && dataToUpdate.reorderLevel !== undefined && dataToUpdate.quantity <= dataToUpdate.reorderLevel) {
+        await createNotification({
+            userId: 'all',
+            title: 'Stock Bas',
+            description: `Le stock pour "${dataToUpdate.name || 'un article'}" est bas.`,
+            href: '/supplies'
+        });
+    }
+}
+
+export async function deleteSupply(id: string): Promise<void> {
+    const supplyDocRef = doc(db, 'supplies', id);
+    await deleteDoc(supplyDocRef);
 }

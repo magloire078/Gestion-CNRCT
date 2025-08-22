@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { PlusCircle, Search, Package } from "lucide-react";
+import { PlusCircle, Search, Package, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -19,9 +19,17 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import type { Supply } from "@/lib/data";
 import { AddSupplySheet } from "@/components/supplies/add-supply-sheet";
+import { EditSupplySheet } from "@/components/supplies/edit-supply-sheet";
+import { ConfirmationDialog } from "@/components/common/confirmation-dialog";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -30,7 +38,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { subscribeToSupplies, addSupply } from "@/services/supply-service";
+import { subscribeToSupplies, addSupply, updateSupply, deleteSupply } from "@/services/supply-service";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { Progress } from "@/components/ui/progress";
@@ -39,7 +47,11 @@ export const supplyCategories = ["Papeterie", "Cartouches d'encre", "Matériel d
 
 export default function SuppliesPage() {
   const [supplies, setSupplies] = useState<Supply[]>([]);
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
+  const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
+  const [selectedSupply, setSelectedSupply] = useState<Supply | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Supply | null>(null);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -65,7 +77,7 @@ export default function SuppliesPage() {
   const handleAddSupply = async (newSupplyData: Omit<Supply, "id">) => {
      try {
         await addSupply(newSupplyData);
-        setIsSheetOpen(false);
+        setIsAddSheetOpen(false);
         toast({
             title: "Fourniture ajoutée",
             description: `${newSupplyData.name} a été ajouté à l'inventaire.`,
@@ -75,6 +87,44 @@ export default function SuppliesPage() {
         throw err;
      }
   };
+  
+  const handleUpdateSupply = async (id: string, dataToUpdate: Partial<Omit<Supply, "id">>) => {
+    try {
+        await updateSupply(id, dataToUpdate);
+        setIsEditSheetOpen(false);
+        toast({
+            title: "Fourniture mise à jour",
+            description: "L'article a été mis à jour avec succès.",
+        });
+    } catch (err) {
+        console.error("Failed to update supply:", err);
+        throw err;
+    }
+  };
+  
+  const handleDeleteConfirm = async () => {
+    if (!deleteTarget) return;
+    try {
+      await deleteSupply(deleteTarget.id);
+      toast({
+        title: "Fourniture supprimée",
+        description: `L'article "${deleteTarget.name}" a été supprimé.`,
+      });
+    } catch (err) {
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de supprimer l'article.",
+      });
+    } finally {
+      setDeleteTarget(null);
+    }
+  };
+
+  const openEditSheet = (supply: Supply) => {
+    setSelectedSupply(supply);
+    setIsEditSheetOpen(true);
+  }
 
   const filteredSupplies = useMemo(() => {
     return supplies.filter(supply => {
@@ -93,12 +143,13 @@ export default function SuppliesPage() {
   };
 
   return (
+    <>
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight">
           Gestion des Fournitures
         </h1>
-        <Button onClick={() => setIsSheetOpen(true)} className="w-full sm:w-auto">
+        <Button onClick={() => setIsAddSheetOpen(true)} className="w-full sm:w-auto">
           <PlusCircle className="mr-2 h-4 w-4" />
           Ajouter une fourniture
         </Button>
@@ -145,6 +196,7 @@ export default function SuppliesPage() {
                     <TableHead className="text-center">Seuil</TableHead>
                     <TableHead>Dernier Ajout</TableHead>
                     <TableHead className="w-[200px]">Statut du Stock</TableHead>
+                    <TableHead><span className="sr-only">Actions</span></TableHead>
                 </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -156,7 +208,8 @@ export default function SuppliesPage() {
                             <TableCell><Skeleton className="h-4 w-16 mx-auto" /></TableCell>
                             <TableCell><Skeleton className="h-4 w-16 mx-auto" /></TableCell>
                             <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                             <TableCell><Skeleton className="h-6 w-full" /></TableCell>
+                            <TableCell><Skeleton className="h-6 w-full" /></TableCell>
+                            <TableCell><Skeleton className="h-8 w-8" /></TableCell>
                         </TableRow>
                     ))
                 ) : (
@@ -175,6 +228,24 @@ export default function SuppliesPage() {
                                <span className="text-xs font-medium w-16 text-right">{stockStatus.text}</span>
                             </div>
                           </TableCell>
+                          <TableCell>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                                        <MoreHorizontal className="h-4 w-4" />
+                                        <span className="sr-only">Menu</span>
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={() => openEditSheet(supply)}>
+                                        <Pencil className="mr-2 h-4 w-4" /> Modifier
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => setDeleteTarget(supply)} className="text-destructive focus:text-destructive">
+                                        <Trash2 className="mr-2 h-4 w-4" /> Supprimer
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
                         </TableRow>
                       )
                     })
@@ -191,12 +262,26 @@ export default function SuppliesPage() {
         </CardContent>
       </Card>
       <AddSupplySheet
-        isOpen={isSheetOpen}
-        onClose={() => setIsSheetOpen(false)}
+        isOpen={isAddSheetOpen}
+        onClose={() => setIsAddSheetOpen(false)}
         onAddSupply={handleAddSupply}
       />
+      {selectedSupply && (
+        <EditSupplySheet
+            isOpen={isEditSheetOpen}
+            onClose={() => setIsEditSheetOpen(false)}
+            onUpdateSupply={handleUpdateSupply}
+            supply={selectedSupply}
+        />
+      )}
+       <ConfirmationDialog
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDeleteConfirm}
+        title={`Supprimer "${deleteTarget?.name}"`}
+        description="Êtes-vous sûr de vouloir supprimer cet article de l'inventaire ? Cette action est irréversible."
+      />
     </div>
+    </>
   );
 }
-
-    

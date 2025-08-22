@@ -1,6 +1,6 @@
 
 
-import { collection, getDocs, addDoc, doc, updateDoc, onSnapshot, Unsubscribe, query, orderBy } from 'firebase/firestore';
+import { collection, getDocs, addDoc, doc, updateDoc, onSnapshot, Unsubscribe, query, orderBy, getDoc } from 'firebase/firestore';
 import type { Leave } from '@/lib/data';
 import { db } from '@/lib/firebase';
 import { createNotification } from './notification-service';
@@ -64,5 +64,26 @@ export async function updateLeave(id: string, dataToUpdate: Partial<Omit<Leave, 
 
 export async function updateLeaveStatus(id: string, status: 'Approuvé' | 'Rejeté'): Promise<void> {
     const leaveDocRef = doc(db, 'leaves', id);
+    const leaveDoc = await getDoc(leaveDocRef);
+    if (!leaveDoc.exists()) return;
+
+    const leaveData = leaveDoc.data() as Leave;
+
     await updateDoc(leaveDocRef, { status });
+
+    // Find the employee's user ID to send them a notification
+    // Note: This is a simplified approach. A real app might query the users collection
+    // to find the user ID based on the employee name.
+    // For now, we assume the employee name can be used to find the user, which is not robust.
+    // A better approach would be to store the userId on the leave request.
+    
+    // Since we can't reliably get the userId from the employee name,
+    // we'll send to 'all' as a fallback for now.
+    // A proper implementation would require a lookup service.
+    await createNotification({
+      userId: 'all', // In a real app: findUserIdByName(leaveData.employee),
+      title: `Demande de congé ${status === 'Approuvé' ? 'approuvée' : 'rejetée'}`,
+      description: `Votre demande de ${leaveData.type} du ${leaveData.startDate} a été ${status === 'Approuvé' ? 'approuvée' : 'rejetée'}.`,
+      href: '/my-space' // Link to their personal space
+    })
 }

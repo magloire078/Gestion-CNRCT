@@ -21,8 +21,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { Supply } from "@/lib/data";
+import type { Supply, Asset } from "@/lib/data";
 import { supplyCategories } from "@/app/supplies/page";
+import { getAssets } from "@/services/asset-service";
+import { useToast } from "@/hooks/use-toast";
 
 interface EditSupplySheetProps {
   isOpen: boolean;
@@ -41,8 +43,11 @@ export function EditSupplySheet({
   const [category, setCategory] = useState<Supply['category'] | "">("");
   const [quantity, setQuantity] = useState(0);
   const [reorderLevel, setReorderLevel] = useState(10);
+  const [linkedAssetTag, setLinkedAssetTag] = useState<string | "">("");
+  const [printers, setPrinters] = useState<Asset[]>([]);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (supply) {
@@ -50,8 +55,28 @@ export function EditSupplySheet({
         setCategory(supply.category);
         setQuantity(supply.quantity);
         setReorderLevel(supply.reorderLevel);
+        setLinkedAssetTag(supply.linkedAssetTag || "");
     }
   }, [supply]);
+
+  useEffect(() => {
+    async function fetchPrinters() {
+        if (category === 'Cartouches d\'encre') {
+            try {
+                const allAssets = await getAssets();
+                const printerAssets = allAssets.filter(asset => asset.type === 'Imprimante');
+                setPrinters(printerAssets);
+            } catch (err) {
+                console.error("Failed to fetch printers:", err);
+                toast({ variant: "destructive", title: "Erreur", description: "Impossible de charger la liste des imprimantes." });
+            }
+        }
+    }
+    if(isOpen) {
+        fetchPrinters();
+    }
+  }, [category, isOpen, toast]);
+
 
   const handleClose = () => {
     setError("");
@@ -73,7 +98,8 @@ export function EditSupplySheet({
         name, 
         category, 
         quantity, 
-        reorderLevel, 
+        reorderLevel,
+        linkedAssetTag: category === 'Cartouches d\'encre' ? linkedAssetTag : undefined,
       });
       handleClose();
     } catch (err) {
@@ -109,6 +135,24 @@ export function EditSupplySheet({
                 </SelectContent>
               </Select>
             </div>
+            {category === 'Cartouches d\'encre' && (
+               <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="linkedAssetTag-edit" className="text-right">Imprimante</Label>
+                 <Select value={linkedAssetTag} onValueChange={setLinkedAssetTag}>
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Lier à une imprimante..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Aucune</SelectItem>
+                    {printers.map(printer => (
+                        <SelectItem key={printer.tag} value={printer.tag}>
+                            {printer.modele} ({printer.tag})
+                        </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
              <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="quantity-edit" className="text-right">Quantité</Label>
               <Input id="quantity-edit" type="number" value={quantity} onChange={(e) => setQuantity(Number(e.target.value))} className="col-span-3"/>

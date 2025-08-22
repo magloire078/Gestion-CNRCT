@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,8 +20,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { Supply } from "@/lib/data";
+import type { Supply, Asset } from "@/lib/data";
 import { supplyCategories } from "@/app/supplies/page";
+import { getAssets } from "@/services/asset-service";
+import { useToast } from "@/hooks/use-toast";
 
 interface AddSupplySheetProps {
   isOpen: boolean;
@@ -38,14 +40,36 @@ export function AddSupplySheet({
   const [category, setCategory] = useState<Supply['category'] | "">("");
   const [quantity, setQuantity] = useState(0);
   const [reorderLevel, setReorderLevel] = useState(10);
+  const [linkedAssetTag, setLinkedAssetTag] = useState<string | "">("");
+  const [printers, setPrinters] = useState<Asset[]>([]);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    async function fetchPrinters() {
+        if (category === 'Cartouches d\'encre') {
+            try {
+                const allAssets = await getAssets();
+                const printerAssets = allAssets.filter(asset => asset.type === 'Imprimante');
+                setPrinters(printerAssets);
+            } catch (err) {
+                console.error("Failed to fetch printers:", err);
+                toast({ variant: "destructive", title: "Erreur", description: "Impossible de charger la liste des imprimantes." });
+            }
+        }
+    }
+    if(isOpen) {
+        fetchPrinters();
+    }
+  }, [category, isOpen, toast]);
 
   const resetForm = () => {
     setName("");
     setCategory("");
     setQuantity(0);
     setReorderLevel(10);
+    setLinkedAssetTag("");
     setError("");
   };
 
@@ -71,7 +95,8 @@ export function AddSupplySheet({
         category, 
         quantity, 
         reorderLevel, 
-        lastRestockDate 
+        lastRestockDate,
+        linkedAssetTag: category === 'Cartouches d\'encre' ? linkedAssetTag : undefined,
       });
       handleClose();
     } catch (err) {
@@ -107,6 +132,24 @@ export function AddSupplySheet({
                 </SelectContent>
               </Select>
             </div>
+            {category === 'Cartouches d\'encre' && (
+               <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="linkedAssetTag" className="text-right">Imprimante</Label>
+                 <Select value={linkedAssetTag} onValueChange={setLinkedAssetTag}>
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Lier à une imprimante..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Aucune</SelectItem>
+                    {printers.map(printer => (
+                        <SelectItem key={printer.tag} value={printer.tag}>
+                            {printer.modele} ({printer.tag})
+                        </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
              <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="quantity" className="text-right">Quantité en stock</Label>
               <Input id="quantity" type="number" value={quantity} onChange={(e) => setQuantity(Number(e.target.value))} className="col-span-3"/>

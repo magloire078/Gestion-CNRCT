@@ -96,7 +96,7 @@ export type Leave = {
 
 export type Asset = {
   tag: string; // Numéro d'inventaire, used as Firestore document ID
-  type: "Ordinateur" | "Moniteur" | "Clavier" | "Souris" | "Logiciel" | "Autre";
+  type: "Ordinateur" | "Moniteur" | "Imprimante" | "Clavier" | "Souris" | "Logiciel" | "Autre";
   typeOrdinateur?: "Portable" | "De Bureau" | "Serveur";
   fabricant?: string;
   modele: string;
@@ -166,6 +166,7 @@ export type Supply = {
   quantity: number;
   reorderLevel: number;
   lastRestockDate: string; // YYYY-MM-DD
+  linkedAssetTag?: string; // Link to an Asset (e.g., a printer)
 };
 
 export type PayslipEarning = {

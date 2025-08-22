@@ -36,7 +36,7 @@ export async function getSupplies(): Promise<Supply[]> {
     } as Supply));
 }
 
-export async function addSupply(supplyDataToAdd: Omit<Supply, 'id'>): Promise<Supply> {
+export async function addSupply(supplyDataToAdd: Omit<Supply, "id">): Promise<Supply> {
     const docRef = await addDoc(suppliesCollection, supplyDataToAdd);
     
     // Check if stock is low and create notification

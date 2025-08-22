@@ -4,10 +4,12 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
-import type { Leave, Employe, Evaluation } from "@/lib/data";
+import type { Leave, Employe, Evaluation, Asset, Mission } from "@/lib/data";
 import { subscribeToLeaves, addLeave } from "@/services/leave-service";
 import { getEmployee } from "@/services/employee-service";
 import { subscribeToEvaluations } from "@/services/evaluation-service";
+import { getAssets } from "@/services/asset-service";
+import { getMissions } from "@/services/mission-service";
 
 
 import {
@@ -33,7 +35,7 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { AddLeaveRequestSheet } from "@/components/leave/add-leave-request-sheet";
-import { Mail, Phone, Calendar, Briefcase, ChevronRight, Landmark, Eye } from "lucide-react";
+import { Mail, Phone, Calendar, Briefcase, ChevronRight, Landmark, Eye, Laptop, Rocket } from "lucide-react";
 import { lastDayOfMonth, format, subMonths, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import Link from "next/link";
@@ -56,6 +58,13 @@ const evalStatusVariantMap: Record<EvaluationStatus, "secondary" | "default" | "
   'Completed': 'default', 
 };
 
+const missionStatusVariantMap: Record<Mission['status'], "secondary" | "default" | "outline" | "destructive"> = {
+  'Planifiée': 'secondary',
+  'En cours': 'default',
+  'Terminée': 'outline',
+  'Annulée': 'destructive',
+};
+
 
 export default function MySpacePage() {
     const { user, loading: authLoading } = useAuth();
@@ -65,6 +74,8 @@ export default function MySpacePage() {
     const [employeeDetails, setEmployeeDetails] = useState<Employe | null>(null);
     const [leaves, setLeaves] = useState<Leave[]>([]);
     const [evaluations, setEvaluations] = useState<Evaluation[]>([]);
+    const [assets, setAssets] = useState<Asset[]>([]);
+    const [missions, setMissions] = useState<Mission[]>([]);
     const [loadingData, setLoadingData] = useState(true);
 
     const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -88,9 +99,16 @@ export default function MySpacePage() {
                 setEvaluations(allEvals.filter(e => e.employeeId === user.id));
             }, console.error);
 
-            getEmployee(user.id).then(details => {
+            Promise.all([
+                getEmployee(user.id),
+                getAssets(),
+                getMissions(),
+            ]).then(([details, allAssets, allMissions]) => {
                 setEmployeeDetails(details);
-            }).finally(() => setLoadingData(false));
+                setAssets(allAssets.filter(a => a.assignedTo === user.name));
+                setMissions(allMissions.filter(m => m.participants.some(p => p.employeeName === user.name)));
+            }).catch(console.error).finally(() => setLoadingData(false));
+
 
             return () => {
                 unsubLeaves();
@@ -150,6 +168,8 @@ export default function MySpacePage() {
                     <TabsTrigger value="payroll">Paie</TabsTrigger>
                     <TabsTrigger value="leaves">Congés</TabsTrigger>
                     <TabsTrigger value="evaluations">Évaluations</TabsTrigger>
+                    <TabsTrigger value="assets">Actifs</TabsTrigger>
+                    <TabsTrigger value="missions">Missions</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="profile">
@@ -288,6 +308,73 @@ export default function MySpacePage() {
                         </CardContent>
                     </Card>
                 </TabsContent>
+
+                <TabsContent value="assets">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2"><Laptop className="h-5 w-5 text-primary" /> Mes Actifs</CardTitle>
+                            <CardDescription>La liste du matériel informatique qui vous est assigné.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Type</TableHead>
+                                        <TableHead>Modèle</TableHead>
+                                        <TableHead>N° Inventaire</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {assets.length > 0 ? assets.map(asset => (
+                                        <TableRow key={asset.tag}>
+                                            <TableCell>{asset.type}</TableCell>
+                                            <TableCell>{asset.modele}</TableCell>
+                                            <TableCell>{asset.tag}</TableCell>
+                                        </TableRow>
+                                    )) : (
+                                        <TableRow>
+                                            <TableCell colSpan={3} className="text-center text-muted-foreground py-8">Aucun actif ne vous est assigné.</TableCell>
+                                        </TableRow>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+                
+                <TabsContent value="missions">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2"><Rocket className="h-5 w-5 text-primary" /> Mes Missions</CardTitle>
+                            <CardDescription>Historique des missions auxquelles vous avez participé.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                             <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Titre de la Mission</TableHead>
+                                        <TableHead>Période</TableHead>
+                                        <TableHead>Statut</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {missions.length > 0 ? missions.map(mission => (
+                                        <TableRow key={mission.id}>
+                                            <TableCell className="font-medium">{mission.title}</TableCell>
+                                            <TableCell>{formatDate(mission.startDate)} - {formatDate(mission.endDate)}</TableCell>
+                                            <TableCell><Badge variant={missionStatusVariantMap[mission.status] || 'default'}>{mission.status}</Badge></TableCell>
+                                        </TableRow>
+                                    )) : (
+                                        <TableRow>
+                                            <TableCell colSpan={3} className="text-center text-muted-foreground py-8">Vous n'avez participé à aucune mission récemment.</TableCell>
+                                        </TableRow>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+
             </Tabs>
              <AddLeaveRequestSheet
                 isOpen={isSheetOpen}
@@ -309,5 +396,3 @@ function InfoItem({ label, value, icon: Icon }: { label: string; value: string; 
         </div>
     )
 }
-
-    

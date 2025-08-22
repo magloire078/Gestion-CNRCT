@@ -4,9 +4,11 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
-import type { Leave, Employe } from "@/lib/data";
+import type { Leave, Employe, Evaluation } from "@/lib/data";
 import { subscribeToLeaves, addLeave } from "@/services/leave-service";
 import { getEmployee } from "@/services/employee-service";
+import { subscribeToEvaluations } from "@/services/evaluation-service";
+
 
 import {
   Card,
@@ -31,13 +33,14 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { AddLeaveRequestSheet } from "@/components/leave/add-leave-request-sheet";
-import { Mail, Phone, Calendar, Briefcase, ChevronRight, Landmark } from "lucide-react";
+import { Mail, Phone, Calendar, Briefcase, ChevronRight, Landmark, Eye } from "lucide-react";
 import { lastDayOfMonth, format, subMonths, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import Link from "next/link";
 
 
 type Status = "Approuvé" | "En attente" | "Rejeté";
+type EvaluationStatus = "Draft" | "Pending Manager Review" | "Pending Employee Sign-off" | "Completed";
 
 const statusVariantMap: Record<Status, "default" | "secondary" | "destructive"> =
   {
@@ -45,6 +48,13 @@ const statusVariantMap: Record<Status, "default" | "secondary" | "destructive"> 
     "En attente": "secondary",
     "Rejeté": "destructive",
   };
+  
+const evalStatusVariantMap: Record<EvaluationStatus, "secondary" | "default" | "outline" | "destructive"> = {
+  'Draft': 'secondary',
+  'Pending Manager Review': 'default',
+  'Pending Employee Sign-off': 'outline',
+  'Completed': 'default', 
+};
 
 
 export default function MySpacePage() {
@@ -54,6 +64,7 @@ export default function MySpacePage() {
 
     const [employeeDetails, setEmployeeDetails] = useState<Employe | null>(null);
     const [leaves, setLeaves] = useState<Leave[]>([]);
+    const [evaluations, setEvaluations] = useState<Evaluation[]>([]);
     const [loadingData, setLoadingData] = useState(true);
 
     const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -72,12 +83,19 @@ export default function MySpacePage() {
             const unsubLeaves = subscribeToLeaves((allLeaves) => {
                 setLeaves(allLeaves.filter(l => l.employee === user.name));
             }, console.error);
+            
+            const unsubEvals = subscribeToEvaluations((allEvals) => {
+                setEvaluations(allEvals.filter(e => e.employeeId === user.id));
+            }, console.error);
 
             getEmployee(user.id).then(details => {
                 setEmployeeDetails(details);
             }).finally(() => setLoadingData(false));
 
-            return () => unsubLeaves();
+            return () => {
+                unsubLeaves();
+                unsubEvals();
+            }
         }
     }, [user]);
 
@@ -131,6 +149,7 @@ export default function MySpacePage() {
                     <TabsTrigger value="profile">Profil</TabsTrigger>
                     <TabsTrigger value="payroll">Paie</TabsTrigger>
                     <TabsTrigger value="leaves">Congés</TabsTrigger>
+                    <TabsTrigger value="evaluations">Évaluations</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="profile">
@@ -223,6 +242,52 @@ export default function MySpacePage() {
                         </CardContent>
                     </Card>
                 </TabsContent>
+                
+                 <TabsContent value="evaluations">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Mes Évaluations de Performance</CardTitle>
+                            <CardDescription>Consultez l'historique et le statut de vos évaluations.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                             <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Période d'évaluation</TableHead>
+                                        <TableHead>Manager</TableHead>
+                                        <TableHead>Statut</TableHead>
+                                        <TableHead><span className="sr-only">Action</span></TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {evaluations.length > 0 ? evaluations.map(evaluation => (
+                                        <TableRow key={evaluation.id}>
+                                            <TableCell className="font-medium">{evaluation.reviewPeriod}</TableCell>
+                                            <TableCell>{evaluation.managerName}</TableCell>
+                                            <TableCell>
+                                                <Badge variant={evalStatusVariantMap[evaluation.status as EvaluationStatus] || "default"}>
+                                                    {evaluation.status}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                                <Button variant="outline" size="sm" asChild>
+                                                    <Link href={`/evaluations/${evaluation.id}`}>
+                                                        <Eye className="mr-2 h-4 w-4" />
+                                                        Voir
+                                                    </Link>
+                                                </Button>
+                                            </TableCell>
+                                        </TableRow>
+                                    )) : (
+                                        <TableRow>
+                                            <TableCell colSpan={4} className="text-center text-muted-foreground py-8">Aucune évaluation de performance trouvée.</TableCell>
+                                        </TableRow>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
             </Tabs>
              <AddLeaveRequestSheet
                 isOpen={isSheetOpen}
@@ -244,3 +309,5 @@ function InfoItem({ label, value, icon: Icon }: { label: string; value: string; 
         </div>
     )
 }
+
+    

@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useRef, useEffect, useMemo } from "react";
@@ -227,9 +228,9 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
           name: `${lastName} ${firstName}`.trim(), 
           skills: skillsArray,
           sexe: sexe as Employe['sexe'],
-          Date_Depart: dateDepart || undefined,
-          Region: region || undefined,
-          Village: village || undefined,
+          Date_Depart: dateDepart,
+          Region: region,
+          Village: village,
           photoUrl: '', // This will be set by the service after upload
       };
       await onAddEmployee(employeeData, photoFile);

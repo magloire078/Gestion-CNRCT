@@ -93,9 +93,17 @@ export async function addEmployee(employeeData: Omit<Employe, 'id'>, photoFile: 
     }
     
     const finalEmployeeData = { ...employeeData, photoUrl };
+    
+    // Remove undefined fields before sending to Firestore
+    Object.keys(finalEmployeeData).forEach(key => {
+        if (finalEmployeeData[key as keyof typeof finalEmployeeData] === undefined) {
+            delete finalEmployeeData[key as keyof typeof finalEmployeeData];
+        }
+    });
+
     await setDoc(docRef, finalEmployeeData);
     
-    const newEmployee = { id: docRef.id, ...finalEmployeeData };
+    const newEmployee = { id: docRef.id, ...finalEmployeeData } as Employe;
     await createOrUpdateChiefFromEmployee(newEmployee);
     
     return newEmployee;
@@ -143,6 +151,13 @@ export async function updateEmployee(employeeId: string, employeeDataToUpdate: P
         const snapshot = await uploadBytes(photoRef, photoFile);
         updateData.photoUrl = await getDownloadURL(snapshot.ref);
     }
+    
+    // Remove undefined fields before sending to Firestore
+    Object.keys(updateData).forEach(key => {
+        if (updateData[key as keyof typeof updateData] === undefined) {
+            delete updateData[key as keyof typeof updateData];
+        }
+    });
 
     await updateDoc(employeeDocRef, updateData);
     

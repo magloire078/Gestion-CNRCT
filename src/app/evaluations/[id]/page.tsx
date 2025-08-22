@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -13,12 +12,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Loader2, Save, User, Star, Briefcase, PlusCircle, Trash2, Shield, Circle, CheckCircle, Goal as GoalIcon } from "lucide-react";
+import { ArrowLeft, Loader2, Save, User, Star, Briefcase, PlusCircle, Trash2, Shield, Circle, CheckCircle, Goal as GoalIcon, Send, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { v4 as uuidv4 } from 'uuid';
-
+import { Badge } from "@/components/ui/badge";
 
 const competencyList = [
     { id: 'communication', label: 'Communication' },
@@ -37,13 +36,20 @@ const statusIcons: Record<Goal['status'], React.ElementType> = {
     'Completed': CheckCircle,
 };
 
+const statusVariantMap: Record<Evaluation['status'], "secondary" | "default" | "outline" | "destructive"> = {
+  'Draft': 'secondary',
+  'Pending Manager Review': 'default',
+  'Pending Employee Sign-off': 'outline',
+  'Completed': 'default', // Should be a success/green color, but using default for now
+};
+
 function StarRating({ rating, onRate, disabled }: { rating: number, onRate: (rating: number) => void, disabled?: boolean }) {
     return (
         <div className="flex items-center">
             {[1, 2, 3, 4, 5].map((star) => (
                 <Star
                     key={star}
-                    className={`h-6 w-6 ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'} ${rating >= star ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`}
+                    className={`h-6 w-6 ${disabled ? 'cursor-not-allowed' : 'text-gray-300'} ${rating >= star ? 'text-yellow-400 fill-yellow-400' : ''}`}
                     onClick={() => !disabled && onRate(star)}
                 />
             ))}
@@ -89,10 +95,10 @@ export default function EvaluationDetailPage() {
     
     const canEditManagerFields = isManager && !isCompleted;
     const canEditEmployeeFields = isEmployee && evaluation?.status === 'Pending Employee Sign-off';
-    const canSave = canEditManagerFields || canEditEmployeeFields;
 
 
     const handleRatingChange = (skillId: string, rating: number) => {
+        if (!canEditManagerFields) return;
         setEvaluation(prev => {
             if (!prev) return null;
             const newScores = { ...prev.scores, [skillId]: rating };
@@ -105,6 +111,7 @@ export default function EvaluationDetailPage() {
     };
 
     const handleGoalChange = (goalId: string, field: 'title' | 'description' | 'status', value: string) => {
+        if (!canEditManagerFields) return;
         setEvaluation(prev => {
             if (!prev) return null;
             const newGoals = prev.goals.map(g => g.id === goalId ? { ...g, [field]: value } : g);
@@ -113,6 +120,7 @@ export default function EvaluationDetailPage() {
     };
 
     const addGoal = () => {
+        if (!canEditManagerFields) return;
         setEvaluation(prev => {
             if (!prev) return null;
             const newGoal: Goal = {
@@ -126,6 +134,7 @@ export default function EvaluationDetailPage() {
     };
     
     const removeGoal = (goalId: string) => {
+        if (!canEditManagerFields) return;
         setEvaluation(prev => {
             if (!prev) return null;
             const newGoals = prev.goals.filter(g => g.id !== goalId);
@@ -133,14 +142,25 @@ export default function EvaluationDetailPage() {
         });
     };
 
-    const handleSave = async () => {
+    const handleSave = async (newStatus?: Evaluation['status']) => {
         if (!evaluation || typeof id !== 'string') return;
         setIsSaving(true);
         try {
             const { strengths, areasForImprovement, managerComments, employeeComments, scores, goals, status } = evaluation;
-            await updateEvaluation(id, { strengths, areasForImprovement, managerComments, employeeComments, scores, goals, status });
+            const dataToSave = { strengths, areasForImprovement, managerComments, employeeComments, scores, goals, status: newStatus || status };
+            
+            await updateEvaluation(id, dataToSave);
+
+            if(newStatus){
+                setEvaluation(prev => prev ? { ...prev, status: newStatus} : null);
+            }
+
             toast({ title: "Succès", description: "L'évaluation a été mise à jour." });
-            router.back();
+
+            if (newStatus === 'Completed') {
+                router.back();
+            }
+
         } catch (error) {
             console.error("Failed to save evaluation", error);
             toast({ variant: "destructive", title: "Erreur", description: "Impossible d'enregistrer les modifications." });
@@ -149,9 +169,6 @@ export default function EvaluationDetailPage() {
         }
     };
     
-    const handleStatusChange = (status: Evaluation['status']) => {
-        setEvaluation(prev => prev ? { ...prev, status } : null);
-    }
 
     if (loading) {
         return <EvaluationDetailSkeleton />;
@@ -172,17 +189,24 @@ export default function EvaluationDetailPage() {
                     <h1 className="text-2xl font-bold tracking-tight">Détails de l'Évaluation</h1>
                     <p className="text-muted-foreground">Période : {evaluation.reviewPeriod}</p>
                  </div>
-                 <Button onClick={handleSave} disabled={isSaving || !canSave} className="ml-auto">
-                    {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4" />}
-                    Enregistrer
-                </Button>
+                 <div className="ml-auto flex items-center gap-2">
+                    {isManager && !isCompleted && (
+                        <Button onClick={() => handleSave()} disabled={isSaving}>
+                            <Save className="mr-2 h-4 w-4" />
+                            Enregistrer
+                        </Button>
+                    )}
+                 </div>
             </div>
             
             <Card>
                 <CardHeader>
-                    <CardTitle>Information</CardTitle>
+                    <div className="flex justify-between items-center">
+                        <CardTitle>Information</CardTitle>
+                        <Badge variant={statusVariantMap[evaluation.status] || 'default'}>{evaluation.status}</Badge>
+                    </div>
                 </CardHeader>
-                <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
                      <div className="space-y-1">
                         <Label>Employé</Label>
                         <p className="font-medium flex items-center gap-2"><User className="h-4 w-4 text-muted-foreground"/> {evaluation.employeeName}</p>
@@ -190,18 +214,6 @@ export default function EvaluationDetailPage() {
                      <div className="space-y-1">
                         <Label>Manager</Label>
                         <p className="font-medium flex items-center gap-2"><Briefcase className="h-4 w-4 text-muted-foreground"/> {evaluation.managerName}</p>
-                    </div>
-                     <div className="space-y-1">
-                        <Label htmlFor="status">Statut de l'évaluation</Label>
-                        <Select value={evaluation.status} onValueChange={handleStatusChange} disabled={!canEditManagerFields}>
-                            <SelectTrigger id="status"><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="Draft">Brouillon</SelectItem>
-                                <SelectItem value="Pending Manager Review">En attente (Manager)</SelectItem>
-                                <SelectItem value="Pending Employee Sign-off">En attente (Employé)</SelectItem>
-                                <SelectItem value="Completed">Complétée</SelectItem>
-                            </SelectContent>
-                        </Select>
                     </div>
                 </CardContent>
             </Card>
@@ -245,6 +257,13 @@ export default function EvaluationDetailPage() {
                      <div className="space-y-2">
                         <Label htmlFor="employeeComments">Commentaires de l'Employé</Label>
                         <Textarea id="employeeComments" value={evaluation.employeeComments || ''} onChange={(e) => handleCommentChange(e, 'employeeComments')} rows={4} placeholder="L'employé peut ajouter ses commentaires ici..." disabled={!canEditEmployeeFields}/>
+                         {canEditEmployeeFields && (
+                            <div className="flex justify-end pt-2">
+                                <Button size="sm" onClick={() => handleSave()} disabled={isSaving}>
+                                    <Save className="mr-2 h-4 w-4"/> Enregistrer mes commentaires
+                                </Button>
+                            </div>
+                        )}
                     </div>
                 </CardContent>
             </Card>
@@ -288,12 +307,14 @@ export default function EvaluationDetailPage() {
                                     <Label htmlFor={`goal-desc-${goal.id}`}>Description</Label>
                                     <Textarea id={`goal-desc-${goal.id}`} value={goal.description} onChange={(e) => handleGoalChange(goal.id, 'description', e.target.value)} placeholder="Description..." rows={2} disabled={!canEditManagerFields}/>
                                 </div>
-                                <div className="text-right">
-                                    <Button variant="destructive" size="sm" onClick={() => removeGoal(goal.id)} disabled={!canEditManagerFields}>
-                                        <Trash2 className="mr-2 h-4 w-4"/>
-                                        Supprimer
-                                    </Button>
-                                </div>
+                                {canEditManagerFields && (
+                                    <div className="text-right">
+                                        <Button variant="destructive" size="sm" onClick={() => removeGoal(goal.id)}>
+                                            <Trash2 className="mr-2 h-4 w-4"/>
+                                            Supprimer
+                                        </Button>
+                                    </div>
+                                )}
                             </div>
                         )
                     }) : (
@@ -301,6 +322,28 @@ export default function EvaluationDetailPage() {
                     )}
                 </CardContent>
             </Card>
+
+            {isManager && !isCompleted && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Actions du Manager</CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex items-center gap-4">
+                        {evaluation.status === 'Draft' || evaluation.status === 'Pending Manager Review' ? (
+                            <Button onClick={() => handleSave('Pending Employee Sign-off')} disabled={isSaving}>
+                                <Send className="mr-2 h-4 w-4" />
+                                Soumettre à l'employé
+                            </Button>
+                        ) : null}
+                         {evaluation.status === 'Pending Employee Sign-off' ? (
+                            <Button onClick={() => handleSave('Completed')} disabled={isSaving}>
+                                <Check className="mr-2 h-4 w-4" />
+                                Finaliser l'évaluation
+                            </Button>
+                        ) : null}
+                    </CardContent>
+                </Card>
+            )}
         </div>
     );
 }

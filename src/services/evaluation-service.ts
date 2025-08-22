@@ -2,7 +2,7 @@
 
 import { db } from '@/lib/firebase';
 import { collection, getDocs, addDoc, onSnapshot, Unsubscribe, query, orderBy, doc, updateDoc, getDoc } from 'firebase/firestore';
-import type { Evaluation } from '@/lib/data';
+import type { Evaluation, Goal } from '@/lib/data';
 
 const evaluationsCollection = collection(db, 'evaluations');
 

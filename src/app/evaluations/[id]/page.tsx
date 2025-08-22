@@ -127,8 +127,8 @@ export default function EvaluationDetailPage() {
         if (!evaluation || typeof id !== 'string') return;
         setIsSaving(true);
         try {
-            const { strengths, areasForImprovement, managerComments, employeeComments, scores, goals } = evaluation;
-            await updateEvaluation(id, { strengths, areasForImprovement, managerComments, employeeComments, scores, goals });
+            const { strengths, areasForImprovement, managerComments, employeeComments, scores, goals, status } = evaluation;
+            await updateEvaluation(id, { strengths, areasForImprovement, managerComments, employeeComments, scores, goals, status });
             toast({ title: "Succès", description: "L'évaluation a été mise à jour." });
             router.back();
         } catch (error) {
@@ -138,6 +138,10 @@ export default function EvaluationDetailPage() {
             setIsSaving(false);
         }
     };
+    
+    const handleStatusChange = (status: Evaluation['status']) => {
+        setEvaluation(prev => prev ? { ...prev, status } : null);
+    }
 
     if (loading) {
         return <EvaluationDetailSkeleton />;
@@ -168,7 +172,7 @@ export default function EvaluationDetailPage() {
                 <CardHeader>
                     <CardTitle>Information</CardTitle>
                 </CardHeader>
-                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
                      <div className="space-y-1">
                         <Label>Employé</Label>
                         <p className="font-medium flex items-center gap-2"><User className="h-4 w-4 text-muted-foreground"/> {evaluation.employeeName}</p>
@@ -176,6 +180,18 @@ export default function EvaluationDetailPage() {
                      <div className="space-y-1">
                         <Label>Manager</Label>
                         <p className="font-medium flex items-center gap-2"><Briefcase className="h-4 w-4 text-muted-foreground"/> {evaluation.managerName}</p>
+                    </div>
+                     <div className="space-y-1">
+                        <Label htmlFor="status">Statut de l'évaluation</Label>
+                        <Select value={evaluation.status} onValueChange={handleStatusChange}>
+                            <SelectTrigger id="status"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="Draft">Brouillon</SelectItem>
+                                <SelectItem value="Pending Manager Review">En attente (Manager)</SelectItem>
+                                <SelectItem value="Pending Employee Sign-off">En attente (Employé)</SelectItem>
+                                <SelectItem value="Completed">Complétée</SelectItem>
+                            </SelectContent>
+                        </Select>
                     </div>
                 </CardContent>
             </Card>

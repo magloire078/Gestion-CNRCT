@@ -20,7 +20,9 @@ if (!getApps().length) {
   app = getApps()[0];
 }
 
-const db = getFirestore(app);
+const db = initializeFirestore(app, {
+  localCache: memoryLocalCache(),
+});
 const auth = getAuth(app);
 const storage = getStorage(app);
 

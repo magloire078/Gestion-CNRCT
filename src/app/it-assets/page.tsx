@@ -29,7 +29,7 @@ const statusVariantMap: Record<Status, "default" | "secondary" | "outline"> = {
   'Retiré': 'outline',
 };
 
-const assetTypes: Asset['type'][] = ["Ordinateur", "Moniteur", "Clavier", "Souris", "Logiciel", "Autre"];
+const assetTypes: Asset['type'][] = ["Ordinateur", "Moniteur", "Imprimante", "Clavier", "Souris", "Logiciel", "Autre"];
 const assetStatuses: Asset['status'][] = ['En utilisation', 'En stock', 'En réparation', 'Retiré'];
 
 export default function ItAssetsPage() {
@@ -196,17 +196,15 @@ export default function ItAssetsPage() {
                           <TableCell className="text-right">
                               <DropdownMenu>
                                   <DropdownMenuTrigger asChild>
-                                      <Button aria-haspopup="true" size="icon" variant="ghost">
+                                      <Button aria-haspopup="true" size="icon" variant="ghost" onClick={(e) => e.stopPropagation()}>
                                           <MoreHorizontal className="h-4 w-4" />
                                           <span className="sr-only">Ouvrir le menu</span>
                                       </Button>
                                   </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end">
+                                  <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
                                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                      <DropdownMenuItem asChild>
-                                          <Link href={`/it-assets/${asset.tag}/edit`}>
+                                      <DropdownMenuItem onSelect={() => router.push(`/it-assets/${asset.tag}/edit`)}>
                                             <Pencil className="mr-2 h-4 w-4" /> Modifier
-                                          </Link>
                                       </DropdownMenuItem>
                                       <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setDeleteTarget(asset); }} className="text-destructive focus:text-destructive">
                                           <Trash2 className="mr-2 h-4 w-4" /> Supprimer
@@ -266,5 +264,3 @@ export default function ItAssetsPage() {
     </>
   );
 }
-
-    

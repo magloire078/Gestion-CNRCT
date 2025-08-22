@@ -17,7 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowLeft, Loader2, Save } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-const assetTypes: Asset['type'][] = ["Ordinateur", "Moniteur", "Clavier", "Souris", "Logiciel", "Autre"];
+const assetTypes: Asset['type'][] = ["Ordinateur", "Moniteur", "Imprimante", "Clavier", "Souris", "Logiciel", "Autre"];
 const computerTypes: Asset['typeOrdinateur'][] = ["Portable", "De Bureau", "Serveur"];
 const assetStatuses: Asset['status'][] = ['En utilisation', 'En stock', 'En réparation', 'Retiré'];
 

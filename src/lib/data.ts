@@ -81,6 +81,7 @@ export type Employe = {
   // Calculated fields for UI display
   calculatedRetirementDate?: Date;
   age?: number;
+  retirementNotificationSent?: boolean;
 };
 
 export type Leave = {

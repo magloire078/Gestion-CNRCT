@@ -22,6 +22,7 @@ import { subscribeToLeaves } from '@/services/leave-service';
 import { subscribeToAssets } from '@/services/asset-service';
 import { subscribeToVehicles } from '@/services/fleet-service';
 import { subscribeToChiefs } from '@/services/chief-service';
+import { checkAndNotifyForUpcomingRetirements } from '@/services/notification-service';
 import type { Employe, Leave, Asset, Fleet, OrganizationSettings, Chief } from '@/lib/data';
 import { Skeleton } from '@/components/ui/skeleton';
 import { differenceInYears, parseISO, format, addMonths } from 'date-fns';
@@ -110,6 +111,9 @@ export default function DashboardPage() {
                 setSummary("Impossible de charger le résumé de l'assistant.");
             })
             .finally(() => setLoadingSummary(false));
+            
+        // Trigger retirement check
+        checkAndNotifyForUpcomingRetirements().catch(console.error);
 
         const loadingTimeout = setTimeout(() => setLoading(false), 2000);
 

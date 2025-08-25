@@ -18,6 +18,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ArrowLeft, Loader2, Save, Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { divisions } from "@/lib/ivory-coast-divisions";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 export default function ChiefEditPage() {
     const params = useParams();
@@ -143,138 +149,147 @@ export default function ChiefEditPage() {
                 </Button>
             </div>
             
-            <Card>
-                <CardHeader><CardTitle>Informations Principales</CardTitle></CardHeader>
-                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                        <Label>Photo</Label>
-                        <div className="flex items-center gap-4">
-                             <Avatar className="h-20 w-20">
-                                <AvatarImage src={photoPreview} alt={chief.name} data-ai-hint="chief portrait" />
-                                <AvatarFallback>{chief.lastName?.charAt(0) || 'C'}</AvatarFallback>
-                             </Avatar>
-                             <Button type="button" variant="outline" onClick={() => photoInputRef.current?.click()}>
-                                <Upload className="mr-2 h-4 w-4" /> Changer
-                             </Button>
-                             <Input ref={photoInputRef} type="file" className="hidden" accept="image/*" onChange={handlePhotoChange}/>
-                        </div>
-                    </div>
-                    <div />
-                    <div className="space-y-2">
-                        <Label htmlFor="lastName">Nom</Label>
-                        <Input id="lastName" name="lastName" value={chief.lastName || ''} onChange={handleInputChange} />
-                    </div>
-                     <div className="space-y-2">
-                        <Label htmlFor="firstName">Prénom(s)</Label>
-                        <Input id="firstName" name="firstName" value={chief.firstName || ''} onChange={handleInputChange} />
-                    </div>
-                     <div className="space-y-2">
-                        <Label htmlFor="title">Titre</Label>
-                        <Input id="title" name="title" value={chief.title || ''} onChange={handleInputChange} />
-                    </div>
-                     <div className="space-y-2">
-                        <Label htmlFor="role">Rôle</Label>
-                        <Select value={chief.role} onValueChange={(v) => handleSelectChange('role', v)}>
-                            <SelectTrigger><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="Chef de Village">Chef de Village</SelectItem>
-                                <SelectItem value="Chef de Canton">Chef de Canton</SelectItem>
-                                <SelectItem value="Roi">Roi</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="parentChiefId">Chef Supérieur</Label>
-                         <Select value={chief.parentChiefId || 'none'} onValueChange={(v) => handleSelectChange('parentChiefId', v === 'none' ? '' : v)}>
-                            <SelectTrigger><SelectValue placeholder="Aucun"/></SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="none">Aucun</SelectItem>
-                                {allChiefs.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="sexe">Sexe</Label>
-                         <Select value={chief.sexe || ''} onValueChange={(v) => handleSelectChange('sexe', v)}>
-                            <SelectTrigger id="sexe"><SelectValue placeholder="Sélectionnez..." /></SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="Homme">Homme</SelectItem>
-                                <SelectItem value="Femme">Femme</SelectItem>
-                                <SelectItem value="Autre">Autre</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
+             <Card>
+                <CardContent className="p-4">
+                    <Accordion type="multiple" defaultValue={['item-1', 'item-2']} className="w-full">
+                        <AccordionItem value="item-1">
+                            <AccordionTrigger>Informations Principales</AccordionTrigger>
+                            <AccordionContent>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+                                    <div className="space-y-2">
+                                        <Label>Photo</Label>
+                                        <div className="flex items-center gap-4">
+                                            <Avatar className="h-20 w-20">
+                                                <AvatarImage src={photoPreview} alt={chief.name} data-ai-hint="chief portrait" />
+                                                <AvatarFallback>{chief.lastName?.charAt(0) || 'C'}</AvatarFallback>
+                                            </Avatar>
+                                            <Button type="button" variant="outline" onClick={() => photoInputRef.current?.click()}>
+                                                <Upload className="mr-2 h-4 w-4" /> Changer
+                                            </Button>
+                                            <Input ref={photoInputRef} type="file" className="hidden" accept="image/*" onChange={handlePhotoChange}/>
+                                        </div>
+                                    </div>
+                                    <div />
+                                    <div className="space-y-2">
+                                        <Label htmlFor="lastName">Nom</Label>
+                                        <Input id="lastName" name="lastName" value={chief.lastName || ''} onChange={handleInputChange} />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="firstName">Prénom(s)</Label>
+                                        <Input id="firstName" name="firstName" value={chief.firstName || ''} onChange={handleInputChange} />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="title">Titre</Label>
+                                        <Input id="title" name="title" value={chief.title || ''} onChange={handleInputChange} />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="role">Rôle</Label>
+                                        <Select value={chief.role} onValueChange={(v) => handleSelectChange('role', v)}>
+                                            <SelectTrigger><SelectValue /></SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="Chef de Village">Chef de Village</SelectItem>
+                                                <SelectItem value="Chef de Canton">Chef de Canton</SelectItem>
+                                                <SelectItem value="Roi">Roi</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="parentChiefId">Chef Supérieur</Label>
+                                        <Select value={chief.parentChiefId || 'none'} onValueChange={(v) => handleSelectChange('parentChiefId', v === 'none' ? '' : v)}>
+                                            <SelectTrigger><SelectValue placeholder="Aucun"/></SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="none">Aucun</SelectItem>
+                                                {allChiefs.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="sexe">Sexe</Label>
+                                        <Select value={chief.sexe || ''} onValueChange={(v) => handleSelectChange('sexe', v)}>
+                                            <SelectTrigger id="sexe"><SelectValue placeholder="Sélectionnez..." /></SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="Homme">Homme</SelectItem>
+                                                <SelectItem value="Femme">Femme</SelectItem>
+                                                <SelectItem value="Autre">Autre</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                </div>
+                            </AccordionContent>
+                        </AccordionItem>
+                        <AccordionItem value="item-2">
+                            <AccordionTrigger>Localisation</AccordionTrigger>
+                            <AccordionContent>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="region">Région</Label>
+                                        <Select value={chief.region} onValueChange={(v) => handleSelectChange('region', v)}>
+                                            <SelectTrigger><SelectValue placeholder="Sélectionnez..." /></SelectTrigger>
+                                            <SelectContent>{Object.keys(divisions).map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}</SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="department">Département</Label>
+                                        <Select value={chief.department} onValueChange={(v) => handleSelectChange('department', v)} disabled={!chief.region}>
+                                            <SelectTrigger><SelectValue placeholder="Sélectionnez..." /></SelectTrigger>
+                                            <SelectContent>{departments.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="subPrefecture">Sous-préfecture</Label>
+                                        <Select value={chief.subPrefecture} onValueChange={(v) => handleSelectChange('subPrefecture', v)} disabled={!chief.department}>
+                                            <SelectTrigger><SelectValue placeholder="Sélectionnez..." /></SelectTrigger>
+                                            <SelectContent>{subPrefectures.map(sp => <SelectItem key={sp} value={sp}>{sp}</SelectItem>)}</SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="village">Village / Commune</Label>
+                                        <Select value={chief.village} onValueChange={(v) => handleSelectChange('village', v)} disabled={!chief.subPrefecture}>
+                                            <SelectTrigger><SelectValue placeholder="Sélectionnez..." /></SelectTrigger>
+                                            <SelectContent>{villages.map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}</SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="latitude">Latitude</Label>
+                                        <Input id="latitude" name="latitude" type="number" step="any" value={chief.latitude ?? ''} onChange={handleNumberInputChange} />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="longitude">Longitude</Label>
+                                        <Input id="longitude" name="longitude" type="number" step="any" value={chief.longitude ?? ''} onChange={handleNumberInputChange} />
+                                    </div>
+                                </div>
+                            </AccordionContent>
+                        </AccordionItem>
+                        <AccordionItem value="item-3">
+                             <AccordionTrigger>Informations Additionnelles</AccordionTrigger>
+                             <AccordionContent>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="contact">Contact</Label>
+                                        <Input id="contact" name="contact" value={chief.contact || ''} onChange={handleInputChange} />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="dateOfBirth">Date de naissance</Label>
+                                        <Input id="dateOfBirth" name="dateOfBirth" type="date" value={chief.dateOfBirth || ''} onChange={handleInputChange} />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="regencyStartDate">Début de régence</Label>
+                                        <Input id="regencyStartDate" name="regencyStartDate" type="date" value={chief.regencyStartDate || ''} onChange={handleInputChange} />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="regencyEndDate">Fin de régence / Décès</Label>
+                                        <Input id="regencyEndDate" name="regencyEndDate" type="date" value={chief.regencyEndDate || ''} onChange={handleInputChange} />
+                                    </div>
+                                    <div className="space-y-2 md:col-span-2">
+                                        <Label htmlFor="bio">Biographie</Label>
+                                        <Textarea id="bio" name="bio" value={chief.bio || ''} onChange={handleInputChange} rows={4} />
+                                    </div>
+                                </div>
+                             </AccordionContent>
+                        </AccordionItem>
+                    </Accordion>
                 </CardContent>
-            </Card>
-
-            <Card>
-                <CardHeader><CardTitle>Localisation</CardTitle></CardHeader>
-                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                        <Label htmlFor="region">Région</Label>
-                        <Select value={chief.region} onValueChange={(v) => handleSelectChange('region', v)}>
-                            <SelectTrigger><SelectValue placeholder="Sélectionnez..." /></SelectTrigger>
-                            <SelectContent>{Object.keys(divisions).map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}</SelectContent>
-                        </Select>
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="department">Département</Label>
-                         <Select value={chief.department} onValueChange={(v) => handleSelectChange('department', v)} disabled={!chief.region}>
-                            <SelectTrigger><SelectValue placeholder="Sélectionnez..." /></SelectTrigger>
-                            <SelectContent>{departments.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
-                        </Select>
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="subPrefecture">Sous-préfecture</Label>
-                        <Select value={chief.subPrefecture} onValueChange={(v) => handleSelectChange('subPrefecture', v)} disabled={!chief.department}>
-                            <SelectTrigger><SelectValue placeholder="Sélectionnez..." /></SelectTrigger>
-                            <SelectContent>{subPrefectures.map(sp => <SelectItem key={sp} value={sp}>{sp}</SelectItem>)}</SelectContent>
-                        </Select>
-                    </div>
-                     <div className="space-y-2">
-                        <Label htmlFor="village">Village / Commune</Label>
-                        <Select value={chief.village} onValueChange={(v) => handleSelectChange('village', v)} disabled={!chief.subPrefecture}>
-                            <SelectTrigger><SelectValue placeholder="Sélectionnez..." /></SelectTrigger>
-                            <SelectContent>{villages.map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}</SelectContent>
-                        </Select>
-                    </div>
-                     <div className="space-y-2">
-                        <Label htmlFor="latitude">Latitude</Label>
-                        <Input id="latitude" name="latitude" type="number" step="any" value={chief.latitude ?? ''} onChange={handleNumberInputChange} />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="longitude">Longitude</Label>
-                        <Input id="longitude" name="longitude" type="number" step="any" value={chief.longitude ?? ''} onChange={handleNumberInputChange} />
-                    </div>
-                </CardContent>
-            </Card>
-
-            <Card>
-                <CardHeader><CardTitle>Informations Additionnelles</CardTitle></CardHeader>
-                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                        <Label htmlFor="contact">Contact</Label>
-                        <Input id="contact" name="contact" value={chief.contact || ''} onChange={handleInputChange} />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="dateOfBirth">Date de naissance</Label>
-                        <Input id="dateOfBirth" name="dateOfBirth" type="date" value={chief.dateOfBirth || ''} onChange={handleInputChange} />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="regencyStartDate">Début de régence</Label>
-                        <Input id="regencyStartDate" name="regencyStartDate" type="date" value={chief.regencyStartDate || ''} onChange={handleInputChange} />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="regencyEndDate">Fin de régence / Décès</Label>
-                        <Input id="regencyEndDate" name="regencyEndDate" type="date" value={chief.regencyEndDate || ''} onChange={handleInputChange} />
-                    </div>
-                    <div className="space-y-2 md:col-span-2">
-                        <Label htmlFor="bio">Biographie</Label>
-                        <Textarea id="bio" name="bio" value={chief.bio || ''} onChange={handleInputChange} rows={4} />
-                    </div>
-                </CardContent>
-            </Card>
-
+             </Card>
         </div>
     );
 }

@@ -5,9 +5,8 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { getMission } from "@/services/mission-service";
-import type { Mission, Employe } from "@/lib/data";
+import type { Mission, Employe, MissionParticipant } from "@/lib/data";
 import { getEmployees } from "@/services/employee-service";
-import { getAllowanceRate } from "@/services/allowance-service";
 import { differenceInDays, parseISO, format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
@@ -27,20 +26,19 @@ import {
   User,
   Calendar,
   Info,
-  Flag,
   Users,
-  Car,
   MapPin,
   Hash,
   Printer,
   Trash2,
-  Landmark,
+  FileText,
 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { ConfirmationDialog } from "@/components/common/confirmation-dialog";
 import { generateMissionOrderAction, deleteMissionAction } from "./actions";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { MissionCostReport } from "@/components/missions/mission-cost-report";
 
 
 type Status = "Planifiée" | "En cours" | "Terminée" | "Annulée";
@@ -55,13 +53,7 @@ const statusVariantMap: Record<
   Annulée: "destructive",
 };
 
-interface ParticipantWithDetails extends Employe {
-    moyenTransport?: string;
-    immatriculation?: string;
-    numeroOrdre?: string;
-    allowanceRate: number;
-    totalAllowance: number;
-}
+interface ParticipantWithDetails extends Employe, MissionParticipant {}
 
 export default function MissionDetailPage() {
   const params = useParams();
@@ -75,7 +67,8 @@ export default function MissionDetailPage() {
   const [totalMissionCost, setTotalMissionCost] = useState(0);
 
   const [loading, setLoading] = useState(true);
-  const [isPrinting, setIsPrinting] = useState(false);
+  const [isPrintingOrder, setIsPrintingOrder] = useState(false);
+  const [isPrintingCostReport, setIsPrintingCostReport] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
@@ -104,7 +97,6 @@ export default function MissionDetailPage() {
         if (missionData) {
             setMission(missionData);
             
-            // Calculate mission duration
             const startDate = parseISO(missionData.startDate);
             const endDate = parseISO(missionData.endDate);
             const duration = differenceInDays(endDate, startDate) + 1;
@@ -117,18 +109,10 @@ export default function MissionDetailPage() {
                 const employee = employeesMap.get(p.employeeName);
                 if (!employee) return null;
 
-                const allowanceRate = getAllowanceRate(employee.categorie);
-                const totalAllowance = allowanceRate * (duration > 0 ? duration : 1);
-                calculatedTotalCost += totalAllowance;
+                const participantCost = (p.totalIndemnites || 0) + (p.coutTransport || 0) + (p.coutHebergement || 0);
+                calculatedTotalCost += participantCost;
 
-                return {
-                    ...employee,
-                    moyenTransport: p.moyenTransport,
-                    immatriculation: p.immatriculation,
-                    numeroOrdre: p.numeroOrdre,
-                    allowanceRate,
-                    totalAllowance
-                };
+                return { ...employee, ...p };
             }).filter((p): p is ParticipantWithDetails => p !== null);
             
             setParticipantsDetails(participantsWithDetails);
@@ -144,9 +128,9 @@ export default function MissionDetailPage() {
     fetchData();
   }, [id]);
 
-  const handlePrint = async () => {
+  const handlePrintMissionOrder = async () => {
     if (!mission) return;
-    setIsPrinting(true);
+    setIsPrintingOrder(true);
     try {
       const result = await generateMissionOrderAction(mission);
       if (result.error) {
@@ -160,7 +144,6 @@ export default function MissionDetailPage() {
         if (printWindow) {
             printWindow.document.write(result.document);
             printWindow.document.close();
-            // Give it a moment to load before printing
             setTimeout(() => {
             printWindow.print();
             }, 500);
@@ -180,9 +163,22 @@ export default function MissionDetailPage() {
           "Une erreur est survenue lors de la génération de l'ordre de mission.",
       });
     } finally {
-      setIsPrinting(false);
+      setIsPrintingOrder(false);
     }
   };
+
+  const handlePrintCostReport = () => {
+      setIsPrintingCostReport(true);
+  };
+  
+  useEffect(() => {
+      if(isPrintingCostReport) {
+          setTimeout(() => {
+            window.print();
+            setIsPrintingCostReport(false);
+          }, 300);
+      }
+  }, [isPrintingCostReport]);
 
   const handleDelete = async () => {
     if (!mission) return;
@@ -204,7 +200,8 @@ export default function MissionDetailPage() {
     }
   };
   
-  const formatCurrency = (value: number) => {
+  const formatCurrency = (value: number | undefined) => {
+    if(value === undefined) return '0 FCFA';
     return value.toLocaleString('fr-FR') + ' FCFA';
   };
 
@@ -218,7 +215,7 @@ export default function MissionDetailPage() {
 
   return (
     <>
-      <div className="flex flex-col gap-6 max-w-4xl mx-auto">
+      <div className={`flex flex-col gap-6 max-w-4xl mx-auto ${isPrintingCostReport ? 'print-hidden' : ''}`}>
         <div className="flex items-center gap-4">
           <Button variant="outline" size="icon" onClick={() => router.back()}>
             <ArrowLeft className="h-4 w-4" />
@@ -263,15 +260,26 @@ export default function MissionDetailPage() {
                   </Badge>
                 </CardDescription>
               </div>
-               <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handlePrint}
-                  disabled={isPrinting}
-                >
-                  <Printer className="mr-2 h-4 w-4" />
-                  {isPrinting ? "Génération..." : "Ordres de Mission"}
-                </Button>
+               <div className="flex gap-2">
+                 <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handlePrintCostReport}
+                    disabled={isPrintingCostReport}
+                  >
+                    <FileText className="mr-2 h-4 w-4" />
+                    État des Frais
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handlePrintMissionOrder}
+                    disabled={isPrintingOrder}
+                  >
+                    <Printer className="mr-2 h-4 w-4" />
+                    {isPrintingOrder ? "Génération..." : "Ordres de Mission"}
+                  </Button>
+               </div>
             </div>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -301,10 +309,10 @@ export default function MissionDetailPage() {
              <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Users className="h-5 w-5 text-muted-foreground" />
-                  Participants & Indemnités
+                  Détails Financiers par Participant
                 </CardTitle>
                 <CardDescription>
-                  Détail des participants et calcul des indemnités de mission.
+                  Détail des coûts et indemnités pour chaque participant.
                 </CardDescription>
             </CardHeader>
              <CardContent>
@@ -312,24 +320,31 @@ export default function MissionDetailPage() {
                     <TableHeader>
                         <TableRow>
                             <TableHead>Participant</TableHead>
-                            <TableHead className="text-right">Taux Journalier</TableHead>
-                            <TableHead className="text-right">Indemnité Totale</TableHead>
+                            <TableHead className="text-right">Indemnités</TableHead>
+                            <TableHead className="text-right">Transport</TableHead>
+                            <TableHead className="text-right">Hébergement</TableHead>
+                            <TableHead className="text-right">Total Participant</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {participantsDetails.map((p) => (
-                           <TableRow key={p.id}>
-                                <TableCell>
-                                    <div className="font-medium">{`${p.lastName || ''} ${p.firstName || ''}`.trim()}</div>
-                                    <div className="text-sm text-muted-foreground">{p.poste} (Cat. {p.categorie || 'N/A'})</div>
-                                </TableCell>
-                                <TableCell className="text-right font-mono">{formatCurrency(p.allowanceRate)}</TableCell>
-                                <TableCell className="text-right font-mono">{formatCurrency(p.totalAllowance)}</TableCell>
-                           </TableRow>
-                        ))}
+                        {participantsDetails.map((p) => {
+                            const totalParticipant = (p.totalIndemnites || 0) + (p.coutTransport || 0) + (p.coutHebergement || 0);
+                            return (
+                                <TableRow key={p.id}>
+                                    <TableCell>
+                                        <div className="font-medium">{`${p.lastName || ''} ${p.firstName || ''}`.trim()}</div>
+                                        <div className="text-sm text-muted-foreground">{p.poste}</div>
+                                    </TableCell>
+                                    <TableCell className="text-right font-mono">{formatCurrency(p.totalIndemnites)}</TableCell>
+                                    <TableCell className="text-right font-mono">{formatCurrency(p.coutTransport)}</TableCell>
+                                    <TableCell className="text-right font-mono">{formatCurrency(p.coutHebergement)}</TableCell>
+                                    <TableCell className="text-right font-bold font-mono">{formatCurrency(totalParticipant)}</TableCell>
+                               </TableRow>
+                            )
+                        })}
                          {participantsDetails.length === 0 && (
                             <TableRow>
-                                <TableCell colSpan={3} className="text-center text-muted-foreground py-6">
+                                <TableCell colSpan={5} className="text-center text-muted-foreground py-6">
                                     Aucun participant assigné à cette mission.
                                 </TableCell>
                             </TableRow>
@@ -338,7 +353,7 @@ export default function MissionDetailPage() {
                 </Table>
                 <div className="flex justify-end mt-4 pt-4 border-t">
                     <div className="text-right">
-                        <p className="text-muted-foreground">Coût total des indemnités</p>
+                        <p className="text-muted-foreground">Coût total de la mission</p>
                         <p className="text-xl font-bold">{formatCurrency(totalMissionCost)}</p>
                     </div>
                 </div>
@@ -353,6 +368,12 @@ export default function MissionDetailPage() {
         title={`Supprimer la mission "${mission.title}" ?`}
         description="Cette action est irréversible et supprimera définitivement la mission."
       />
+
+      {isPrintingCostReport && mission && (
+        <div id="print-section">
+            <MissionCostReport mission={mission} participants={participantsDetails} duration={missionDuration} totalCost={totalMissionCost} />
+        </div>
+      )}
     </>
   );
 }
@@ -383,7 +404,7 @@ function InfoItem({
 
 function MissionDetailSkeleton() {
   return (
-    <div className="flex flex-col gap-6 max-w-2xl mx-auto">
+    <div className="flex flex-col gap-6 max-w-4xl mx-auto">
       <div className="flex items-center gap-4">
         <Skeleton className="h-10 w-10" />
         <div className="space-y-2">

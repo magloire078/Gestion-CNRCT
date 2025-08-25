@@ -23,7 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Loader2, Save, X, Check, Trash2 } from "lucide-react";
+import { ArrowLeft, Loader2, Save, X, Check, Trash2, Euro } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
@@ -88,16 +88,16 @@ export default function MissionEditPage() {
         });
     };
     
-    const handleParticipantVehicleChange = (employeeName: string, field: keyof Omit<MissionParticipant, 'employeeName' | 'numeroOrdre'>, value: string) => {
-        setMission(prev => {
+    const handleParticipantChange = (employeeName: string, field: keyof Omit<MissionParticipant, 'employeeName' | 'numeroOrdre'>, value: string | number) => {
+         setMission(prev => {
             if (!prev || !prev.participants) return prev;
-            const finalValue = value === 'none' ? '' : value;
-            const newParticipants = prev.participants.map(p => 
+             const finalValue = value === 'none' ? '' : value;
+             const newParticipants = prev.participants.map(p => 
                 p.employeeName === employeeName ? { ...p, [field]: finalValue } : p
             );
             return { ...prev, participants: newParticipants };
         });
-    };
+    }
 
     const handleSave = async () => {
         if (!mission || typeof id !== 'string') return;
@@ -216,7 +216,7 @@ export default function MissionEditPage() {
 
                         <div className="space-y-4">
                             {mission.participants?.map(p => (
-                                <div key={p.employeeName} className="p-3 border rounded-md space-y-3">
+                                <div key={p.employeeName} className="p-3 border rounded-lg space-y-3">
                                     <div className="flex justify-between items-center">
                                         <p className="font-medium">{p.employeeName}</p>
                                         <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => toggleParticipant(p.employeeName)}>
@@ -226,7 +226,7 @@ export default function MissionEditPage() {
                                     <div className="grid grid-cols-2 gap-2">
                                         <div className="space-y-1">
                                             <Label htmlFor={`transport-${p.employeeName}`} className="text-xs">Moyen de Transport</Label>
-                                            <Select value={p.moyenTransport} onValueChange={(value: MissionParticipant['moyenTransport']) => handleParticipantVehicleChange(p.employeeName, 'moyenTransport', value!)}>
+                                            <Select value={p.moyenTransport} onValueChange={(value: MissionParticipant['moyenTransport']) => handleParticipantChange(p.employeeName, 'moyenTransport', value!)}>
                                                 <SelectTrigger id={`transport-${p.employeeName}`}>
                                                     <SelectValue placeholder="Sélectionnez..." />
                                                 </SelectTrigger>
@@ -238,7 +238,7 @@ export default function MissionEditPage() {
                                         </div>
                                         <div className="space-y-1">
                                             <Label htmlFor={`immat-${p.employeeName}`} className="text-xs">Immatriculation</Label>
-                                            <Select value={p.immatriculation || 'none'} onValueChange={(value) => handleParticipantVehicleChange(p.employeeName, 'immatriculation', value)}>
+                                            <Select value={p.immatriculation || 'none'} onValueChange={(value) => handleParticipantChange(p.employeeName, 'immatriculation', value)}>
                                                 <SelectTrigger id={`immat-${p.employeeName}`}>
                                                     <SelectValue placeholder="Sélectionnez un véhicule..." />
                                                 </SelectTrigger>
@@ -249,6 +249,23 @@ export default function MissionEditPage() {
                                                     ))}
                                                 </SelectContent>
                                             </Select>
+                                        </div>
+                                    </div>
+                                     <div className="space-y-4 pt-3 border-t">
+                                        <h4 className="text-sm font-medium">Détails Financiers</h4>
+                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                              <div className="space-y-1">
+                                                <Label htmlFor={`indemnite-${p.employeeName}`} className="text-xs">Indemnités</Label>
+                                                <Input id={`indemnite-${p.employeeName}`} type="number" placeholder="0" value={p.totalIndemnites || ''} onChange={e => handleParticipantChange(p.employeeName, 'totalIndemnites', e.target.valueAsNumber || 0)} />
+                                            </div>
+                                             <div className="space-y-1">
+                                                <Label htmlFor={`transport-cost-${p.employeeName}`} className="text-xs">Coût Transport</Label>
+                                                <Input id={`transport-cost-${p.employeeName}`} type="number" placeholder="0" value={p.coutTransport || ''} onChange={e => handleParticipantChange(p.employeeName, 'coutTransport', e.target.valueAsNumber || 0)} />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <Label htmlFor={`hebergement-cost-${p.employeeName}`} className="text-xs">Coût Hébergement</Label>
+                                                <Input id={`hebergement-cost-${p.employeeName}`} type="number" placeholder="0" value={p.coutHebergement || ''} onChange={e => handleParticipantChange(p.employeeName, 'coutHebergement', e.target.valueAsNumber || 0)} />
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

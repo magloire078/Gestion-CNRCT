@@ -134,6 +134,9 @@ export type MissionParticipant = {
   moyenTransport?: 'Véhicule personnel' | 'Véhicule CNRCT';
   immatriculation?: string;
   numeroOrdre?: string;
+  coutTransport?: number;
+  coutHebergement?: number;
+  totalIndemnites?: number;
 };
 
 export type Mission = {

@@ -21,6 +21,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import Papa from "papaparse";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PaginationControls } from "@/components/common/pagination-controls";
 
 
 type Status = 'Actif' | 'En congé' | 'Licencié' | 'Retraité' | 'Décédé';
@@ -70,6 +71,10 @@ export default function EmployeesPage() {
   const [organizationLogos, setOrganizationLogos] = useState({ mainLogoUrl: '', secondaryLogoUrl: '' });
 
   const [printDate, setPrintDate] = useState('');
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const pageTitle = useMemo(() => {
     switch (personnelTypeFilter) {
@@ -151,7 +156,7 @@ export default function EmployeesPage() {
   }, [employees]);
 
   const filteredEmployees = useMemo(() => {
-    return employees.filter(employee => {
+    const filtered = employees.filter(employee => {
       const fullName = (employee.firstName && employee.lastName) ? `${employee.lastName} ${employee.firstName}`.toLowerCase() : (employee.name || '').toLowerCase();
       const matchesSearchTerm = fullName.includes(searchTerm.toLowerCase()) || (employee.matricule || '').toLowerCase().includes(searchTerm.toLowerCase());
       const matchesDepartment = departmentFilter === 'all' || employee.department === departmentFilter;
@@ -187,7 +192,19 @@ export default function EmployeesPage() {
       
       return matchesSearchTerm && matchesDepartment && matchesStatus && matchesCnps && matchesSexe && matchesPersonnelType;
     });
-  }, [employees, searchTerm, departmentFilter, statusFilter, cnpsFilter, sexeFilter, personnelTypeFilter]);
+     // Reset page to 1 if filters change and current page is out of bounds
+    if (currentPage > Math.ceil(filtered.length / itemsPerPage)) {
+        setCurrentPage(1);
+    }
+    return filtered;
+  }, [employees, searchTerm, departmentFilter, statusFilter, cnpsFilter, sexeFilter, personnelTypeFilter, currentPage, itemsPerPage]);
+
+  const paginatedEmployees = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredEmployees.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredEmployees, currentPage, itemsPerPage]);
+
+  const totalPages = Math.ceil(filteredEmployees.length / itemsPerPage);
   
   const downloadFile = (content: string, fileName: string, contentType: string) => {
       const blob = new Blob([content], { type: contentType });
@@ -292,6 +309,7 @@ export default function EmployeesPage() {
 
   const handleTabChange = (value: string) => {
     setPersonnelTypeFilter(value);
+    setCurrentPage(1); // Reset to first page on tab change
     const params = new URLSearchParams(searchParams.toString());
     if (value === 'all') {
         params.delete('filter');
@@ -440,7 +458,7 @@ export default function EmployeesPage() {
                                 </TableRow>
                             ))
                             ) : (
-                                filteredEmployees.map((employee) => (
+                                paginatedEmployees.map((employee) => (
                                    <TableRow key={employee.id}>
                                         <TableCell>
                                             <Avatar>
@@ -504,6 +522,18 @@ export default function EmployeesPage() {
                         </div>
                     )}
                     </CardContent>
+                    {totalPages > 1 && (
+                        <CardFooter>
+                            <PaginationControls
+                                currentPage={currentPage}
+                                totalPages={totalPages}
+                                onPageChange={setCurrentPage}
+                                itemsPerPage={itemsPerPage}
+                                onItemsPerPageChange={setItemsPerPage}
+                                totalItems={filteredEmployees.length}
+                            />
+                        </CardFooter>
+                    )}
                 </Card>
                 <AddEmployeeSheet 
                     isOpen={isAddSheetOpen}
@@ -574,7 +604,7 @@ export default function EmployeesPage() {
                             
                         </div>
                         <div className="text-center">
-                            <p className="font-bold">Chambre Nationale de Rois et Chefs Traditionnels (CNRCT)</p>
+                            <p className="font-bold">{organizationLogos.organizationName || "Chambre Nationale de Rois et Chefs Traditionnels (CNRCT)"}</p>
                             <p>Yamoussoukro, Riviera - BP 201 Yamoussoukro | Tél : (225) 30 64 06 60 | Fax : (+255) 30 64 06 63</p>
                             <p>www.cnrct.ci - Email : info@cnrct.ci</p>
                         </div>
@@ -588,5 +618,7 @@ export default function EmployeesPage() {
     </>
   );
 }
+
+    
 
     

@@ -6,18 +6,29 @@ import { db, storage } from '@/lib/firebase';
 
 const chiefsCollection = collection(db, 'chiefs');
 
+const sortChiefs = (chiefs: Chief[]): Chief[] => {
+    return chiefs.sort((a, b) => {
+        const lastNameCompare = (a.lastName || '').localeCompare(b.lastName || '');
+        if (lastNameCompare !== 0) {
+            return lastNameCompare;
+        }
+        return (a.firstName || '').localeCompare(b.firstName || '');
+    });
+};
+
+
 export function subscribeToChiefs(
     callback: (chiefs: Chief[]) => void,
     onError: (error: Error) => void
 ): Unsubscribe {
-    const q = query(chiefsCollection, orderBy("lastName", "asc"), orderBy("firstName", "asc"));
+    const q = query(chiefsCollection, orderBy("lastName", "asc"));
     const unsubscribe = onSnapshot(q,
         (snapshot) => {
             const chiefs = snapshot.docs.map(doc => ({
                 id: doc.id,
                 ...doc.data()
             } as Chief));
-            callback(chiefs);
+            callback(sortChiefs(chiefs));
         },
         (error) => {
             console.error("Error subscribing to chiefs:", error);
@@ -28,11 +39,12 @@ export function subscribeToChiefs(
 }
 
 export async function getChiefs(): Promise<Chief[]> {
-    const snapshot = await getDocs(query(chiefsCollection, orderBy("lastName", "asc"), orderBy("firstName", "asc")));
-    return snapshot.docs.map(doc => ({
+    const snapshot = await getDocs(query(chiefsCollection, orderBy("lastName", "asc")));
+    const chiefs = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
     } as Chief));
+    return sortChiefs(chiefs);
 }
 
 export async function getChief(id: string): Promise<Chief | null> {

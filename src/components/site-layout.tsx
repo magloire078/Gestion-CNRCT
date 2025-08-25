@@ -72,6 +72,7 @@ const allMenuItems = [
         { href: "/payroll", label: "Paie", icon: Landmark, permission: "page:payroll:view" },
         { href: "/leave", label: "Congés", icon: CalendarOff, permission: "page:leave:view" },
         { href: "/evaluations", label: "Évaluations", icon: ClipboardCheck, permission: "page:evaluations:view" },
+        { href: "/indemnities", label: "Indemnités", icon: Scale, permission: "page:indemnities:view" },
     ]
   },
   { 

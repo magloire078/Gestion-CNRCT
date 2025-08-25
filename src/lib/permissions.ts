@@ -10,6 +10,7 @@ export const allPermissions = {
   "Gestion de la Paie": "page:payroll:view",
   "Gestion des Congés": "page:leave:view",
   "Gestion des Évaluations": "page:evaluations:view",
+  "Gestion des Indemnités": "page:indemnities:view",
   "Gestion des Missions": "page:missions:view",
   "Gestion des Conflits": "page:conflicts:view",
   "Gestion des Fournitures": "page:supplies:view",

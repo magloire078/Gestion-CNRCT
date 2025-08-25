@@ -9,7 +9,7 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'genkit';
+import { z } from 'zod';
 
 const ConflictResolutionInputSchema = z.object({
   description: z.string().describe('The description of the conflict to be analyzed.'),
@@ -18,7 +18,7 @@ export type ConflictResolutionInput = z.infer<typeof ConflictResolutionInputSche
 
 const ConflictResolutionOutputSchema = z.object({
   analysis: z.string().describe("A brief analysis of the conflict's key issues."),
-  mediationSteps: z.array(z.string()).describe('A list of concrete steps for mediation.'),
+  mediationSteps: z.array(z.string()).describe('A list of concrete steps for a neutral mediator to take.'),
   communicationStrategies: z.array(z.string()).describe('A list of communication tips for the involved parties.'),
 });
 export type ConflictResolutionOutput = z.infer<typeof ConflictResolutionOutputSchema>;

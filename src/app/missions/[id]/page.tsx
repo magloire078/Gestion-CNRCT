@@ -108,7 +108,7 @@ export default function MissionDetailPage() {
             const startDate = parseISO(missionData.startDate);
             const endDate = parseISO(missionData.endDate);
             const duration = differenceInDays(endDate, startDate) + 1;
-            setMissionDuration(duration);
+            setMissionDuration(duration > 0 ? duration : 1);
 
             const employeesMap = new Map(allEmployees.map(e => [e.name, e]));
             
@@ -118,7 +118,7 @@ export default function MissionDetailPage() {
                 if (!employee) return null;
 
                 const allowanceRate = getAllowanceRate(employee.categorie);
-                const totalAllowance = allowanceRate * duration;
+                const totalAllowance = allowanceRate * (duration > 0 ? duration : 1);
                 calculatedTotalCost += totalAllowance;
 
                 return {
@@ -404,6 +404,12 @@ function MissionDetailSkeleton() {
           </div>
           <Skeleton className="h-24 w-full" />
         </CardContent>
+      </Card>
+      <Card>
+          <CardHeader><Skeleton className="h-6 w-1/2" /></CardHeader>
+          <CardContent>
+            <Skeleton className="h-32 w-full" />
+          </CardContent>
       </Card>
     </div>
   );

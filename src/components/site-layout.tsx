@@ -68,7 +68,8 @@ const allMenuItems = [
     icon: Users,
     permission: "group:personnel:view",
     subItems: [
-        { href: "/employees", label: "Employés", icon: Users, permission: "page:employees:view" },
+        { href: "/employees", label: "Effectif Global", icon: Users, permission: "page:employees:view" },
+        { href: "/employees?filter=personnel", label: "Agents", icon: Users, permission: "page:employees:view" },
         { href: "/payroll", label: "Paie", icon: Landmark, permission: "page:payroll:view" },
         { href: "/leave", label: "Congés", icon: CalendarOff, permission: "page:leave:view" },
         { href: "/evaluations", label: "Évaluations", icon: ClipboardCheck, permission: "page:evaluations:view" },
@@ -81,6 +82,8 @@ const allMenuItems = [
     icon: Building,
     permission: "group:organization:view",
     subItems: [
+        { href: "/employees?filter=directoire", label: "Directoire", icon: Building, permission: "page:employees:view" },
+        { href: "/employees?filter=regional", label: "Comités Régionaux", icon: Globe, permission: "page:employees:view" },
         { href: "/chiefs", label: "Rois & Chefs", icon: Crown, permission: "page:chiefs:view" },
         { href: "/conflicts", label: "Gestion des Conflits", icon: Scale, permission: "page:conflicts:view" },
         { href: "/mapping", label: "Cartographie", icon: MapIcon, permission: "page:mapping:view" },
@@ -103,6 +106,8 @@ const allMenuItems = [
     icon: Shield,
     permission: "group:admin:view",
     subItems: [
+        { href: "/employees?filter=garde-republicaine", label: "Garde Républicaine", icon: ShieldHalf, permission: "page:employees:view" },
+        { href: "/employees?filter=gendarme", label: "Gendarmes", icon: ShieldHalf, permission: "page:employees:view" },
         { href: "/it-assets", label: "Actifs TI", icon: Laptop, permission: "page:it-assets:view" },
         { href: "/documents", label: "Documents", icon: FileText, permission: "page:documents:view" },
         { href: "/assistant", label: "Assistant IA", icon: MessageSquare, permission: "page:assistant:view" },
@@ -326,3 +331,5 @@ export function SiteLayout({ children, settings }: { children: React.ReactNode, 
     </AuthProvider>
   )
 }
+
+    

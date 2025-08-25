@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import Link from "next/link";
 import { PlusCircle, Search, Download, Printer, Eye, Pencil, Trash2, MoreHorizontal, ShieldCheck, Globe, Building } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,7 @@ import { useToast } from "@/hooks/use-toast";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import Papa from "papaparse";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 
 type Status = 'Actif' | 'En congé' | 'Licencié' | 'Retraité' | 'Décédé';
@@ -54,6 +55,7 @@ export default function EmployeesPage() {
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   
+  const router = useRouter();
   const searchParams = useSearchParams();
   const initialFilter = searchParams.get('filter');
 
@@ -288,6 +290,17 @@ export default function EmployeesPage() {
   
   const showDepartmentFilter = personnelTypeFilter === 'all' || personnelTypeFilter === 'personnel';
 
+  const handleTabChange = (value: string) => {
+    setPersonnelTypeFilter(value);
+    const params = new URLSearchParams(searchParams.toString());
+    if (value === 'all') {
+        params.delete('filter');
+    } else {
+        params.set('filter', value);
+    }
+    router.push(`/employees?${params.toString()}`);
+  }
+
   return (
     <>
         <div className={isPrinting ? 'print-hidden' : ''}>
@@ -314,14 +327,26 @@ export default function EmployeesPage() {
                         </DropdownMenu>
                         <Button onClick={() => setIsAddSheetOpen(true)} className="w-full sm:w-auto">
                             <PlusCircle className="mr-2 h-4 w-4" />
-                            Ajouter un employé
+                            Ajouter
                         </Button>
                     </div>
                 </div>
+
+                <Tabs value={personnelTypeFilter} onValueChange={handleTabChange}>
+                    <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-6 mb-6">
+                        <TabsTrigger value="all">Effectif Global</TabsTrigger>
+                        <TabsTrigger value="directoire">Directoire</TabsTrigger>
+                        <TabsTrigger value="regional">Comités Régionaux</TabsTrigger>
+                        <TabsTrigger value="personnel">Personnel</TabsTrigger>
+                        <TabsTrigger value="garde-republicaine">Garde Républicaine</TabsTrigger>
+                        <TabsTrigger value="gendarme">Gendarmes</TabsTrigger>
+                    </TabsList>
+                </Tabs>
+
                 <Card>
                     <CardHeader>
                     <CardTitle>Liste des employés</CardTitle>
-                    <CardDescription>Une liste complète de tous les employés de l'entreprise.</CardDescription>
+                    <CardDescription>Une liste complète de tous les employés de la catégorie sélectionnée.</CardDescription>
                     </CardHeader>
                     <CardContent>
                     <div className="flex flex-col sm:flex-row gap-2 mb-4 flex-wrap">
@@ -563,3 +588,5 @@ export default function EmployeesPage() {
     </>
   );
 }
+
+    

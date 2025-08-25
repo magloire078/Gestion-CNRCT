@@ -251,7 +251,7 @@ export default function DashboardPage() {
                         title="Employés Actifs"
                         value={activeEmployees.length}
                         icon={Users}
-                        href="/employees?filter=actif"
+                        href="/employees?filter=personnel"
                         loading={loading}
                         description={getGenderBreakdown(activeEmployees)}
                     />
@@ -259,7 +259,7 @@ export default function DashboardPage() {
                         title="Déclarés à la CNPS"
                         value={cnpsEmployees.length}
                         icon={ShieldCheck}
-                        href="/employees?filter=cnps"
+                        href="/employees?filter=personnel"
                         loading={loading}
                         description={getGenderBreakdown(cnpsEmployees)}
                     />
@@ -585,3 +585,5 @@ function RetirementPrintLayout({ logos, employees, year }: { logos: Organization
         </div>
     );
 }
+
+    

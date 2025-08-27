@@ -23,7 +23,7 @@ import type { Leave } from "@/lib/data";
 import { Loader2, Printer, FileText } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { format, parseISO, eachDayOfInterval, getDay } from 'date-fns';
+import { format, parseISO, eachDayOfInterval, getDay, startOfMonth, endOfMonth } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
 interface ReportData {
@@ -40,7 +40,7 @@ export default function LeaveReportPage() {
   const [error, setError] = useState<string | null>(null);
   const [reportData, setReportData] = useState<ReportData | null>(null);
   
-  const selectedPeriodText = `${fr.localize?.month(parseInt(month) - 1, { width: 'wide' })} ${year}`;
+  const selectedPeriodText = `${months.find(m => m.value === month)?.label} ${year}`;
 
 
   const calculateWorkingDays = (startDate: string, endDate: string): number => {
@@ -65,11 +65,17 @@ export default function LeaveReportPage() {
     try {
       const allLeaves = await getLeaves();
 
+      const periodStart = startOfMonth(new Date(selectedYear, selectedMonth));
+      const periodEnd = endOfMonth(new Date(selectedYear, selectedMonth));
+
       const filteredLeaves = allLeaves.filter(l => {
-        const leaveDate = parseISO(l.startDate);
-        const matchesDate = leaveDate.getFullYear() === selectedYear && leaveDate.getMonth() === selectedMonth;
+        const leaveStart = parseISO(l.startDate);
+        const leaveEnd = parseISO(l.endDate);
+
+        const overlapsWithPeriod = leaveStart <= periodEnd && leaveEnd >= periodStart;
         const matchesStatus = statusFilter === "all" || l.status === statusFilter;
-        return matchesDate && matchesStatus;
+        
+        return overlapsWithPeriod && matchesStatus;
       });
       
       const totalDays = filteredLeaves.reduce((acc, leave) => acc + calculateWorkingDays(leave.startDate, leave.endDate), 0);
@@ -135,7 +141,7 @@ export default function LeaveReportPage() {
             </div>
              <div className="grid gap-2 flex-1 w-full">
                 <Label htmlFor="statusFilter">Statut</Label>
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <Select value={statusFilter} onValueChange={(val: any) => setStatusFilter(val)}>
                 <SelectTrigger id="statusFilter"><SelectValue /></SelectTrigger>
                 <SelectContent>
                     <SelectItem value="all">Tous</SelectItem>

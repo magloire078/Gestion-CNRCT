@@ -76,11 +76,10 @@ export default function LeaveReportPage() {
             const leaveStart = parseISO(l.startDate);
             const leaveEnd = parseISO(l.endDate);
 
-            // Check if the leave interval overlaps with the selected period
-            const overlaps = isWithinInterval(leaveStart, { start: periodStart, end: periodEnd }) ||
-                             isWithinInterval(leaveEnd, { start: periodStart, end: periodEnd }) ||
-                             (leaveStart < periodStart && leaveEnd > periodEnd);
-
+            // Corrected logic: Check for any overlap between the leave interval and the report period.
+            // (LeaveStart <= PeriodEnd) and (LeaveEnd >= PeriodStart)
+            const overlaps = leaveStart <= periodEnd && leaveEnd >= periodStart;
+            
             const matchesStatus = statusFilter === "all" || l.status === statusFilter;
             
             return overlaps && matchesStatus;

@@ -32,7 +32,7 @@ const goalStatuses: Goal['status'][] = ['Not Started', 'In Progress', 'Completed
 
 const statusIcons: Record<Goal['status'], React.ElementType> = {
     'Not Started': Shield,
-    'In Progress': Circle,
+    'In Progress': Loader2,
     'Completed': CheckCircle,
 };
 
@@ -293,12 +293,22 @@ export default function EvaluationDetailPage() {
                                         <Select value={goal.status} onValueChange={(value: Goal['status']) => handleGoalChange(goal.id, 'status', value)} disabled={!canEditManagerFields}>
                                             <SelectTrigger id={`goal-status-${goal.id}`} className="w-full">
                                                 <div className="flex items-center gap-2">
-                                                    <StatusIcon className="h-4 w-4" />
+                                                    <StatusIcon className={`h-4 w-4 ${goal.status === 'In Progress' ? 'animate-spin' : ''}`} />
                                                     <SelectValue />
                                                 </div>
                                             </SelectTrigger>
                                             <SelectContent>
-                                                {goalStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                                                {goalStatuses.map(s => {
+                                                   const Icon = statusIcons[s];
+                                                   return (
+                                                    <SelectItem key={s} value={s}>
+                                                        <div className="flex items-center gap-2">
+                                                          <Icon className={`h-4 w-4 ${s === 'In Progress' ? 'animate-spin' : ''}`} />
+                                                          {s}
+                                                        </div>
+                                                    </SelectItem>
+                                                   )
+                                                })}
                                             </SelectContent>
                                         </Select>
                                     </div>
@@ -390,3 +400,5 @@ function EvaluationDetailSkeleton() {
         </div>
     )
 }
+
+    

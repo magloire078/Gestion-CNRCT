@@ -23,7 +23,7 @@ import type { Leave } from "@/lib/data";
 import { Loader2, Printer, FileText } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { format, parseISO, eachDayOfInterval, isWeekend } from 'date-fns';
+import { format, parseISO, eachDayOfInterval, getDay } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
 interface ReportData {
@@ -48,7 +48,7 @@ export default function LeaveReportPage() {
         const start = parseISO(startDate);
         const end = parseISO(endDate);
         const days = eachDayOfInterval({ start, end });
-        return days.filter(day => !isWeekend(day)).length; // Exclude Saturdays and Sundays
+        return days.filter(day => getDay(day) !== 0).length; // Exclude Sundays
     } catch {
         return 0;
     }

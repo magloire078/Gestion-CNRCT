@@ -32,7 +32,7 @@ import { getEmployees } from "@/services/employee-service";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { LeaveCalendar } from "@/components/leave/leave-calendar";
-import { format, parseISO, eachDayOfInterval, isWeekend } from 'date-fns';
+import { format, parseISO, eachDayOfInterval, getDay } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
 
@@ -75,8 +75,8 @@ export default function LeavePage() {
         const start = parseISO(startDate);
         const end = parseISO(endDate);
         const days = eachDayOfInterval({ start, end });
-        // Exclude Saturdays (6) and Sundays (0)
-        return days.filter(day => !isWeekend(day)).length;
+        // Exclude Sundays (0)
+        return days.filter(day => getDay(day) !== 0).length;
     } catch {
         return 0;
     }

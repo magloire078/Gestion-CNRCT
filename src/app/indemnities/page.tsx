@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -12,19 +12,41 @@ import {
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getEmployees } from "@/services/employee-service";
 import type { Employe } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Calculator } from "lucide-react";
+import { Loader2, Calculator, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { differenceInYears, parseISO } from "date-fns";
+import {
+  Command,
+  CommandEmpty,
+  CommandInput,
+  CommandGroup,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
+
 
 type CalculationType = "retraite" | "licenciement";
 
 export default function IndemnityCalculatorPage() {
-  const [employees, setEmployees] = useState<Employe[]>([]);
+  const [allEmployees, setAllEmployees] = useState<Employe[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
@@ -35,12 +57,16 @@ export default function IndemnityCalculatorPage() {
   const [isCalculating, setIsCalculating] = useState(false);
   const [result, setResult] = useState<{ amount: number; details: string[] } | null>(null);
 
+  const [isEmployeeComboboxOpen, setIsEmployeeComboboxOpen] = useState(false);
+  const [employeeSearchTerm, setEmployeeSearchTerm] = useState("");
+
   useEffect(() => {
     async function fetchEmployees() {
       try {
         setLoading(true);
         const data = await getEmployees();
-        setEmployees(data);
+        // Include active and dismissed employees
+        setAllEmployees(data.filter(e => e.status === 'Actif' || e.status === 'Licencié'));
       } catch (error) {
         toast({
           variant: "destructive",
@@ -53,6 +79,17 @@ export default function IndemnityCalculatorPage() {
     }
     fetchEmployees();
   }, [toast]);
+  
+  const filteredEmployees = useMemo(() => {
+    if (!employeeSearchTerm) return allEmployees;
+    const lowercasedTerm = employeeSearchTerm.toLowerCase();
+    return allEmployees.filter(emp => 
+        (emp.name.toLowerCase().includes(lowercasedTerm)) ||
+        (emp.firstName?.toLowerCase().includes(lowercasedTerm)) ||
+        (emp.lastName?.toLowerCase().includes(lowercasedTerm))
+    );
+  }, [allEmployees, employeeSearchTerm]);
+
 
   const handleCalculate = () => {
     if (!selectedEmployeeId) {
@@ -63,7 +100,7 @@ export default function IndemnityCalculatorPage() {
     setIsCalculating(true);
     setResult(null);
 
-    const employee = employees.find(e => e.id === selectedEmployeeId);
+    const employee = allEmployees.find(e => e.id === selectedEmployeeId);
     if (!employee || !employee.dateEmbauche || !employee.baseSalary) {
       toast({ variant: "destructive", title: "Données de l'employé incomplètes", description: "Le salaire de base et la date d'embauche sont requis." });
       setIsCalculating(false);
@@ -75,7 +112,8 @@ export default function IndemnityCalculatorPage() {
     let indemnity = 0;
     const details : string[] = [];
 
-    details.push(`Employé: ${employee.name}`);
+    const employeeDisplayName = `${employee.lastName || ''} ${employee.firstName || ''}`.trim();
+    details.push(`Employé: ${employeeDisplayName}`);
     details.push(`Ancienneté: ${seniority} ans`);
     details.push(`Salaire de base de référence: ${salary.toLocaleString('fr-FR')} FCFA`);
 
@@ -144,14 +182,49 @@ export default function IndemnityCalculatorPage() {
                         <div className="space-y-2">
                             <Label htmlFor="employee">Employé</Label>
                             {loading ? <Skeleton className="h-10 w-full" /> : (
-                                <Select value={selectedEmployeeId} onValueChange={setSelectedEmployeeId}>
-                                    <SelectTrigger><SelectValue placeholder="Sélectionnez un employé..." /></SelectTrigger>
-                                    <SelectContent>
-                                        {employees.map(emp => (
-                                            <SelectItem key={emp.id} value={emp.id}>{emp.name}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                                 <Popover open={isEmployeeComboboxOpen} onOpenChange={setIsEmployeeComboboxOpen}>
+                                    <PopoverTrigger asChild>
+                                        <Button
+                                            variant="outline"
+                                            role="combobox"
+                                            aria-expanded={isEmployeeComboboxOpen}
+                                            className="w-full justify-between font-normal"
+                                        >
+                                            {selectedEmployeeId
+                                                ? `${allEmployees.find(e => e.id === selectedEmployeeId)?.lastName || ''} ${allEmployees.find(e => e.id === selectedEmployeeId)?.firstName || ''}`.trim()
+                                                : "Sélectionnez un employé..."}
+                                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-full p-0">
+                                        <Command>
+                                            <CommandInput placeholder="Rechercher un employé..." value={employeeSearchTerm} onValueChange={setEmployeeSearchTerm}/>
+                                            <CommandList>
+                                                <CommandEmpty>Aucun employé trouvé.</CommandEmpty>
+                                                <CommandGroup>
+                                                    {filteredEmployees.map((emp) => (
+                                                        <CommandItem
+                                                            key={emp.id}
+                                                            value={`${emp.lastName} ${emp.firstName}`}
+                                                            onSelect={() => {
+                                                                setSelectedEmployeeId(emp.id);
+                                                                setIsEmployeeComboboxOpen(false);
+                                                            }}
+                                                        >
+                                                            <Check
+                                                                className={cn(
+                                                                    "mr-2 h-4 w-4",
+                                                                    selectedEmployeeId === emp.id ? "opacity-100" : "opacity-0"
+                                                                )}
+                                                            />
+                                                            {`${emp.lastName || ''} ${emp.firstName || ''}`.trim()}
+                                                        </CommandItem>
+                                                    ))}
+                                                </CommandGroup>
+                                            </CommandList>
+                                        </Command>
+                                    </PopoverContent>
+                                </Popover>
                             )}
                         </div>
                         <div className="space-y-2">

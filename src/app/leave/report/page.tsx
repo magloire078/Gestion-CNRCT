@@ -23,7 +23,7 @@ import type { Leave } from "@/lib/data";
 import { Loader2, Printer, FileText } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { format, parseISO, eachDayOfInterval, getDay, startOfMonth, endOfMonth } from 'date-fns';
+import { format, parseISO, eachDayOfInterval, getDay, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
 interface ReportData {
@@ -39,6 +39,9 @@ export default function LeaveReportPage() {
   const [isPrinting, setIsPrinting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [reportData, setReportData] = useState<ReportData | null>(null);
+  
+  const years = Array.from({ length: 10 }, (_, i) => (new Date().getFullYear() - i).toString());
+  const months = Array.from({ length: 12 }, (_, i) => ({ value: (i + 1).toString(), label: fr.localize?.month(i, { width: 'wide' }) }));
   
   const selectedPeriodText = `${months.find(m => m.value === month)?.label} ${year}`;
 
@@ -69,13 +72,22 @@ export default function LeaveReportPage() {
       const periodEnd = endOfMonth(new Date(selectedYear, selectedMonth));
 
       const filteredLeaves = allLeaves.filter(l => {
-        const leaveStart = parseISO(l.startDate);
-        const leaveEnd = parseISO(l.endDate);
+        try {
+            const leaveStart = parseISO(l.startDate);
+            const leaveEnd = parseISO(l.endDate);
 
-        const overlapsWithPeriod = leaveStart <= periodEnd && leaveEnd >= periodStart;
-        const matchesStatus = statusFilter === "all" || l.status === statusFilter;
-        
-        return overlapsWithPeriod && matchesStatus;
+            // Check if the leave interval overlaps with the selected period
+            const overlaps = isWithinInterval(leaveStart, { start: periodStart, end: periodEnd }) ||
+                             isWithinInterval(leaveEnd, { start: periodStart, end: periodEnd }) ||
+                             (leaveStart < periodStart && leaveEnd > periodEnd);
+
+            const matchesStatus = statusFilter === "all" || l.status === statusFilter;
+            
+            return overlaps && matchesStatus;
+        } catch (e) {
+            console.error("Invalid date format for leave:", l);
+            return false;
+        }
       });
       
       const totalDays = filteredLeaves.reduce((acc, leave) => acc + calculateWorkingDays(leave.startDate, leave.endDate), 0);
@@ -100,11 +112,6 @@ export default function LeaveReportPage() {
         setIsPrinting(false);
     }, 300);
   };
-
-
-  const years = Array.from({ length: 10 }, (_, i) => (new Date().getFullYear() - i).toString());
-  const months = Array.from({ length: 12 }, (_, i) => ({ value: (i + 1).toString(), label: fr.localize?.month(i, { width: 'wide' }) }));
-
 
   return (
     <>

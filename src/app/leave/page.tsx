@@ -1,7 +1,7 @@
-
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
+import Link from 'next/link';
 import { PlusCircle, Check, X, Search, Loader2, FileText, Pencil, Hash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -186,9 +186,11 @@ export default function LeavePage() {
           Gestion des Congés
         </h1>
         <div className="flex gap-2">
-           <Button variant="outline">
+           <Button variant="outline" asChild>
+            <Link href="/leave/report">
               <FileText className="mr-2 h-4 w-4" />
               Rapport des Congés
+            </Link>
            </Button>
            <Button onClick={() => setIsAddSheetOpen(true)}>
              <PlusCircle className="mr-2 h-4 w-4" />
@@ -473,4 +475,3 @@ export default function LeavePage() {
     </div>
   );
 }
-

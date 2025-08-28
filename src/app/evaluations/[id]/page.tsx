@@ -147,7 +147,7 @@ export default function EvaluationDetailPage() {
         setIsSaving(true);
         try {
             const { strengths, areasForImprovement, managerComments, employeeComments, scores, goals, status } = evaluation;
-            const dataToSave = { strengths, areasForImprovement, managerComments, employeeComments, scores, goals, status: newStatus || status };
+            const dataToSave: Partial<Evaluation> = { strengths, areasForImprovement, managerComments, employeeComments, scores, goals, status: newStatus || status };
             
             await updateEvaluation(id, dataToSave);
 
@@ -416,3 +416,5 @@ function EvaluationDetailSkeleton() {
         </div>
     )
 }
+
+    

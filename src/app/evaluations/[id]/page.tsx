@@ -49,7 +49,7 @@ function StarRating({ rating, onRate, disabled }: { rating: number, onRate: (rat
             {[1, 2, 3, 4, 5].map((star) => (
                 <Star
                     key={star}
-                    className={`h-6 w-6 ${disabled ? 'cursor-not-allowed' : 'text-gray-300'} ${rating >= star ? 'text-yellow-400 fill-yellow-400' : ''}`}
+                    className={`h-6 w-6 ${disabled ? 'cursor-not-allowed text-gray-300' : 'cursor-pointer'} ${rating >= star ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`}
                     onClick={() => !disabled && onRate(star)}
                 />
             ))}
@@ -193,7 +193,7 @@ export default function EvaluationDetailPage() {
                     {isManager && !isCompleted && (
                         <Button onClick={() => handleSave()} disabled={isSaving}>
                             <Save className="mr-2 h-4 w-4" />
-                            Enregistrer
+                            Enregistrer les Modifications
                         </Button>
                     )}
                  </div>
@@ -354,6 +354,22 @@ export default function EvaluationDetailPage() {
                     </CardContent>
                 </Card>
             )}
+            
+            {isEmployee && evaluation.status === 'Pending Employee Sign-off' && (
+                 <Card>
+                    <CardHeader>
+                        <CardTitle>Actions de l'Employé</CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex items-center gap-4">
+                        <Button onClick={() => handleSave('Completed')} disabled={isSaving}>
+                            <Check className="mr-2 h-4 w-4" />
+                            Accepter et Finaliser l'évaluation
+                        </Button>
+                         <p className="text-sm text-muted-foreground">En finalisant, vous confirmez avoir lu l'évaluation et ajouté vos commentaires.</p>
+                    </CardContent>
+                </Card>
+            )}
+
         </div>
     );
 }
@@ -400,5 +416,3 @@ function EvaluationDetailSkeleton() {
         </div>
     )
 }
-
-    

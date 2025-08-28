@@ -93,7 +93,7 @@ export default function EvaluationDetailPage() {
     const isEmployee = user?.id === evaluation?.employeeId;
     const isCompleted = evaluation?.status === 'Completed';
     
-    const canEditManagerFields = isManager && !isCompleted;
+    const canEditManagerFields = isManager && evaluation?.status !== 'Pending Employee Sign-off' && !isCompleted;
     const canEditEmployeeFields = isEmployee && evaluation?.status === 'Pending Employee Sign-off';
 
 
@@ -190,7 +190,7 @@ export default function EvaluationDetailPage() {
                     <p className="text-muted-foreground">Période : {evaluation.reviewPeriod}</p>
                  </div>
                  <div className="ml-auto flex items-center gap-2">
-                    {isManager && !isCompleted && (
+                    {canEditManagerFields && (
                         <Button onClick={() => handleSave()} disabled={isSaving}>
                             <Save className="mr-2 h-4 w-4" />
                             Enregistrer les Modifications
@@ -339,7 +339,7 @@ export default function EvaluationDetailPage() {
                         <CardTitle>Actions du Manager</CardTitle>
                     </CardHeader>
                     <CardContent className="flex items-center gap-4">
-                        {evaluation.status === 'Draft' || evaluation.status === 'Pending Manager Review' ? (
+                        {evaluation.status === 'Draft' ? (
                             <Button onClick={() => handleSave('Pending Employee Sign-off')} disabled={isSaving}>
                                 <Send className="mr-2 h-4 w-4" />
                                 Soumettre à l'employé
@@ -416,5 +416,7 @@ function EvaluationDetailSkeleton() {
         </div>
     )
 }
+
+    
 
     

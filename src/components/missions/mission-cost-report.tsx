@@ -2,7 +2,7 @@
 "use client";
 
 import type { Mission, Employe } from "@/lib/data";
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
 interface ParticipantWithDetails extends Employe {

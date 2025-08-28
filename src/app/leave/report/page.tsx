@@ -23,12 +23,12 @@ import type { Leave } from "@/lib/data";
 import { Loader2, Printer, FileText } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { format, parseISO, eachDayOfInterval, getDay, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
+import { format, parseISO, eachDayOfInterval, getDay, startOfMonth, endOfMonth, max, min, isWithinInterval } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
 interface ReportData {
   leaves: Leave[];
-  totalDays: number;
+  totalDaysInPeriod: number;
 }
 
 export default function LeaveReportPage() {
@@ -45,15 +45,21 @@ export default function LeaveReportPage() {
   
   const selectedPeriodText = `${months.find(m => m.value === month)?.label} ${year}`;
 
+  const calculateWorkingDaysInPeriod = (leave: Leave, periodStart: Date, periodEnd: Date): number => {
+    try {
+      const leaveStart = parseISO(leave.startDate);
+      const leaveEnd = parseISO(leave.endDate);
 
-  const calculateWorkingDays = (startDate: string, endDate: string): number => {
-      try {
-        const start = parseISO(startDate);
-        const end = parseISO(endDate);
-        const days = eachDayOfInterval({ start, end });
-        return days.filter(day => getDay(day) !== 0).length; // Exclude Sundays
+      // Determine the actual interval of the leave that falls within the report period
+      const effectiveStart = max([leaveStart, periodStart]);
+      const effectiveEnd = min([leaveEnd, periodEnd]);
+      
+      if (effectiveStart > effectiveEnd) return 0;
+
+      const days = eachDayOfInterval({ start: effectiveStart, end: effectiveEnd });
+      return days.filter(day => getDay(day) !== 0).length; // Exclude Sundays
     } catch {
-        return 0;
+      return 0;
     }
   };
 
@@ -75,13 +81,8 @@ export default function LeaveReportPage() {
         try {
             const leaveStart = parseISO(l.startDate);
             const leaveEnd = parseISO(l.endDate);
-
-            // Corrected logic: Check for any overlap between the leave interval and the report period.
-            // (LeaveStart <= PeriodEnd) and (LeaveEnd >= PeriodStart)
             const overlaps = leaveStart <= periodEnd && leaveEnd >= periodStart;
-            
             const matchesStatus = statusFilter === "all" || l.status === statusFilter;
-            
             return overlaps && matchesStatus;
         } catch (e) {
             console.error("Invalid date format for leave:", l);
@@ -89,11 +90,11 @@ export default function LeaveReportPage() {
         }
       });
       
-      const totalDays = filteredLeaves.reduce((acc, leave) => acc + calculateWorkingDays(leave.startDate, leave.endDate), 0);
+      const totalDaysInPeriod = filteredLeaves.reduce((acc, leave) => acc + calculateWorkingDaysInPeriod(leave, periodStart, periodEnd), 0);
 
       setReportData({
         leaves: filteredLeaves,
-        totalDays: totalDays,
+        totalDaysInPeriod: totalDaysInPeriod,
       });
 
     } catch (err) {
@@ -178,7 +179,7 @@ export default function LeaveReportPage() {
                 <div className="flex justify-between items-center">
                     <div>
                         <CardTitle>Rapport pour {selectedPeriodText}</CardTitle>
-                        <CardDescription>Total de {reportData.leaves.length} demande(s) pour {reportData.totalDays} jour(s).</CardDescription>
+                        <CardDescription>Total de {reportData.leaves.length} demande(s) pour {reportData.totalDaysInPeriod} jour(s) dans la période.</CardDescription>
                     </div>
                     <Button variant="outline" onClick={handlePrint}>
                         <Printer className="mr-2 h-4 w-4" />
@@ -195,22 +196,24 @@ export default function LeaveReportPage() {
                             <TableHead>Type de Congé</TableHead>
                             <TableHead>Date de Début</TableHead>
                             <TableHead>Date de Fin</TableHead>
-                            <TableHead className="text-center">Jours</TableHead>
+                            <TableHead className="text-center">Jours (période)</TableHead>
                             <TableHead>Statut</TableHead>
                         </TableRow>
                         </TableHeader>
                         <TableBody>
                         {reportData.leaves.length > 0 ? (
-                            reportData.leaves.map(leave => (
-                            <TableRow key={leave.id}>
-                                <TableCell className="font-medium">{leave.employee}</TableCell>
-                                <TableCell>{leave.type}</TableCell>
-                                <TableCell>{format(parseISO(leave.startDate), 'dd/MM/yyyy')}</TableCell>
-                                <TableCell>{format(parseISO(leave.endDate), 'dd/MM/yyyy')}</TableCell>
-                                <TableCell className="text-center">{calculateWorkingDays(leave.startDate, leave.endDate)}</TableCell>
-                                <TableCell>{leave.status}</TableCell>
-                            </TableRow>
-                            ))
+                            reportData.leaves.map(leave => {
+                                const daysInPeriod = calculateWorkingDaysInPeriod(leave, startOfMonth(new Date(parseInt(year), parseInt(month) - 1)), endOfMonth(new Date(parseInt(year), parseInt(month) - 1)));
+                                return (
+                                <TableRow key={leave.id}>
+                                    <TableCell className="font-medium">{leave.employee}</TableCell>
+                                    <TableCell>{leave.type}</TableCell>
+                                    <TableCell>{format(parseISO(leave.startDate), 'dd/MM/yyyy')}</TableCell>
+                                    <TableCell>{format(parseISO(leave.endDate), 'dd/MM/yyyy')}</TableCell>
+                                    <TableCell className="text-center">{daysInPeriod}</TableCell>
+                                    <TableCell>{leave.status}</TableCell>
+                                </TableRow>
+                            )})
                         ) : (
                             <TableRow>
                             <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
@@ -249,7 +252,7 @@ export default function LeaveReportPage() {
                         <th className="border border-black p-2 text-left">Type de Congé</th>
                         <th className="border border-black p-2 text-left">Date de Début</th>
                         <th className="border border-black p-2 text-left">Date de Fin</th>
-                        <th className="border border-black p-2 text-center">Jours</th>
+                        <th className="border border-black p-2 text-center">Jours (période)</th>
                         <th className="border border-black p-2 text-left">Statut</th>
                     </tr>
                 </thead>
@@ -260,15 +263,15 @@ export default function LeaveReportPage() {
                             <td className="border border-black p-2">{leave.type}</td>
                             <td className="border border-black p-2">{format(parseISO(leave.startDate), 'dd/MM/yyyy')}</td>
                             <td className="border border-black p-2">{format(parseISO(leave.endDate), 'dd/MM/yyyy')}</td>
-                            <td className="border border-black p-2 text-center">{calculateWorkingDays(leave.startDate, leave.endDate)}</td>
+                            <td className="border border-black p-2 text-center">{calculateWorkingDaysInPeriod(leave, startOfMonth(new Date(parseInt(year), parseInt(month) - 1)), endOfMonth(new Date(parseInt(year), parseInt(month) - 1)))}</td>
                             <td className="border border-black p-2">{leave.status}</td>
                         </tr>
                     ))}
                 </tbody>
                  <tfoot>
                     <tr className="font-bold bg-gray-100">
-                        <td colSpan={4} className="text-right p-2 border border-black">Total de jours de congé :</td>
-                        <td className="text-center p-2 border border-black">{reportData.totalDays}</td>
+                        <td colSpan={4} className="text-right p-2 border border-black">Total de jours de congé dans la période :</td>
+                        <td className="text-center p-2 border border-black">{reportData.totalDaysInPeriod}</td>
                         <td className="border border-black"></td>
                     </tr>
                 </tfoot>

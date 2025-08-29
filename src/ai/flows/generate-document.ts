@@ -129,6 +129,10 @@ Fait à Yamoussoukro, le {{employeeContext.currentDate}}, en deux exemplaires or
 (Signature précédée de la mention "Lu et approuvé")
 {{employeeContext.name}}
   {{else if (eq documentType "Ordre de Mission")}}
+Le Directoire
+------555------
+Le Président
+-----555---
 N° {{employeeContext.numeroMission}}/CNRCT/DIR/PDT.               Yamoussoukro, le {{employeeContext.dateRedaction}}
 
 ORDRE DE MISSION{{#if employeeContext.missionType}} ({{employeeContext.missionType}}){{/if}}
@@ -225,4 +229,3 @@ const generateDocumentFlow = ai.defineFlow(
     return output!;
   }
 );
-

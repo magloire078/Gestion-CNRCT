@@ -1,6 +1,6 @@
 
 
-import { collection, getDocs, addDoc, doc, setDoc, onSnapshot, Unsubscribe, query, orderBy } from 'firebase/firestore';
+import { collection, getDocs, addDoc, doc, setDoc, onSnapshot, Unsubscribe, query, orderBy, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import type { Fleet } from '@/lib/data';
 import { db } from '@/lib/firebase';
 
@@ -35,11 +35,33 @@ export async function getVehicles(): Promise<Fleet[]> {
   } as Fleet));
 }
 
+
+export async function getVehicle(plate: string): Promise<Fleet | null> {
+    if (!plate) return null;
+    const vehicleDocRef = doc(db, 'fleet', plate);
+    const docSnap = await getDoc(vehicleDocRef);
+    if (docSnap.exists()) {
+        return { plate: docSnap.id, ...docSnap.data() } as Fleet;
+    }
+    return null;
+}
+
 export async function addVehicle(vehicleDataToAdd: Omit<Fleet, 'id'> & { plate: string }): Promise<Fleet> {
     const vehicleRef = doc(db, 'fleet', vehicleDataToAdd.plate);
     await setDoc(vehicleRef, vehicleDataToAdd);
     return { ...vehicleDataToAdd };
 }
+
+export async function updateVehicle(plate: string, vehicleData: Partial<Fleet>): Promise<void> {
+    const vehicleDocRef = doc(db, 'fleet', plate);
+    await updateDoc(vehicleDocRef, vehicleData);
+}
+
+export async function deleteVehicle(plate: string): Promise<void> {
+    const vehicleDocRef = doc(db, 'fleet', plate);
+    await deleteDoc(vehicleDocRef);
+}
+
 
 export async function searchVehicles(queryText: string): Promise<Fleet[]> {
     const lowerCaseQuery = queryText.toLowerCase();

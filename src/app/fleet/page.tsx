@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { PlusCircle, Search } from "lucide-react";
+import { PlusCircle, Search, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -20,6 +20,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -30,9 +36,12 @@ import { Badge } from "@/components/ui/badge";
 import type { Fleet } from "@/lib/data";
 import { AddVehicleSheet } from "@/components/fleet/add-vehicle-sheet";
 import { Input } from "@/components/ui/input";
-import { subscribeToVehicles, addVehicle } from "@/services/fleet-service";
+import { subscribeToVehicles, addVehicle, deleteVehicle } from "@/services/fleet-service";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation";
+import { ConfirmationDialog } from "@/components/common/confirmation-dialog";
+
 
 const statusVariantMap: Record<Fleet['status'], "default" | "secondary" | "outline" | "destructive"> = {
   'Disponible': 'default',
@@ -49,6 +58,9 @@ export default function FleetPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const { toast } = useToast();
+  const router = useRouter();
+  const [deleteTarget, setDeleteTarget] = useState<Fleet | null>(null);
+
 
   useEffect(() => {
     const unsubscribe = subscribeToVehicles(
@@ -81,6 +93,25 @@ export default function FleetPage() {
      }
   };
 
+  const handleDeleteConfirm = async () => {
+    if (!deleteTarget) return;
+    try {
+        await deleteVehicle(deleteTarget.plate);
+        toast({
+            title: "Véhicule supprimé",
+            description: `Le véhicule ${deleteTarget.plate} a été supprimé.`,
+        });
+    } catch(err) {
+        toast({
+            variant: "destructive",
+            title: "Erreur",
+            description: "Impossible de supprimer le véhicule."
+        });
+    } finally {
+        setDeleteTarget(null);
+    }
+  };
+
   const filteredVehicles = useMemo(() => {
     return vehicles.filter(vehicle => {
       const searchTermLower = searchTerm.toLowerCase();
@@ -95,6 +126,7 @@ export default function FleetPage() {
   }, [vehicles, searchTerm, statusFilter]);
 
   return (
+    <>
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight">
@@ -150,6 +182,7 @@ export default function FleetPage() {
                     <TableHead>Assigné à</TableHead>
                     <TableHead>Statut</TableHead>
                     <TableHead>Entretien Prévu</TableHead>
+                    <TableHead><span className="sr-only">Actions</span></TableHead>
                 </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -161,11 +194,12 @@ export default function FleetPage() {
                             <TableCell><Skeleton className="h-4 w-32" /></TableCell>
                             <TableCell><Skeleton className="h-6 w-24 rounded-full" /></TableCell>
                             <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                            <TableCell><Skeleton className="h-8 w-8" /></TableCell>
                         </TableRow>
                     ))
                 ) : (
                     filteredVehicles.map((vehicle) => (
-                        <TableRow key={vehicle.plate}>
+                        <TableRow key={vehicle.plate} onClick={() => router.push(`/fleet/${vehicle.plate}/edit`)} className="cursor-pointer">
                           <TableCell className="font-medium">{vehicle.plate}</TableCell>
                           <TableCell>{vehicle.makeModel}</TableCell>
                           <TableCell>{vehicle.assignedTo}</TableCell>
@@ -173,6 +207,23 @@ export default function FleetPage() {
                             <Badge variant={statusVariantMap[vehicle.status]}>{vehicle.status}</Badge>
                           </TableCell>
                           <TableCell>{vehicle.maintenanceDue}</TableCell>
+                          <TableCell className="text-right">
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()}>
+                                        <MoreHorizontal className="h-4 w-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                                    <DropdownMenuItem onClick={() => router.push(`/fleet/${vehicle.plate}/edit`)}>
+                                        <Pencil className="mr-2 h-4 w-4"/> Modifier
+                                    </DropdownMenuItem>
+                                     <DropdownMenuItem onClick={() => setDeleteTarget(vehicle)} className="text-destructive focus:text-destructive">
+                                        <Trash2 className="mr-2 h-4 w-4"/> Supprimer
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                          </TableCell>
                         </TableRow>
                     ))
                 )}
@@ -186,7 +237,7 @@ export default function FleetPage() {
                  ))
               ) : (
                 filteredVehicles.map((vehicle) => (
-                    <Card key={vehicle.plate}>
+                    <Card key={vehicle.plate} onClick={() => router.push(`/fleet/${vehicle.plate}/edit`)}>
                         <CardContent className="p-4 space-y-2">
                             <div className="flex justify-between items-start">
                                 <p className="font-bold">{vehicle.makeModel}</p>
@@ -213,5 +264,13 @@ export default function FleetPage() {
         onAddVehicle={handleAddVehicle}
       />
     </div>
+    <ConfirmationDialog
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDeleteConfirm}
+        title={`Supprimer le véhicule ${deleteTarget?.plate}`}
+        description="Êtes-vous sûr de vouloir supprimer ce véhicule ? Cette action est irréversible."
+    />
+    </>
   );
 }

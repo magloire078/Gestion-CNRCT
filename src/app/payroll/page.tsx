@@ -44,7 +44,7 @@ import { EditPayrollSheet } from "@/components/payroll/edit-payroll-sheet";
 import { useRouter } from "next/navigation";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { lastDayOfMonth, format } from "date-fns";
+import { lastDayOfMonth, format, parseISO } from "date-fns";
 import { fr } from "date-fns/locale";
 import QRCode from "react-qr-code";
 import { useAuth } from "@/hooks/use-auth";
@@ -320,7 +320,7 @@ export default function PayrollPage() {
                     <TableRow>
                         <TableHead>Employé</TableHead>
                         <TableHead>Poste</TableHead>
-                        {canViewSalaries && <TableHead className="text-right">Salaire Brut</TableHead>}
+                        <TableHead>Date d'embauche</TableHead>
                         {canViewSalaries && <TableHead className="text-right">Salaire Net</TableHead>}
                         <TableHead><span className="sr-only">Actions</span></TableHead>
                     </TableRow>
@@ -331,9 +331,9 @@ export default function PayrollPage() {
                         <TableRow key={i}>
                             <TableCell><Skeleton className="h-4 w-32" /></TableCell>
                             <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                            <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                             {canViewSalaries && <TableCell><Skeleton className="h-4 w-24 ml-auto" /></TableCell>}
-                            {canViewSalaries && <TableCell><Skeleton className="h-4 w-24 ml-auto" /></TableCell>}
-                            <TableCell><Skeleton className="h-8 w-8 rounded-md" /></TableCell>
+                            <TableCell><Skeleton className="h-8 w-8 rounded-md ml-auto" /></TableCell>
                         </TableRow>
                         ))
                     ) : filteredEmployees.length > 0 ? (
@@ -341,7 +341,7 @@ export default function PayrollPage() {
                         <TableRow key={employee.id}>
                             <TableCell className="font-medium">{`${employee.lastName || ''} ${employee.firstName || ''}`.trim()}</TableCell>
                             <TableCell>{employee.poste}</TableCell>
-                            {canViewSalaries && <TableCell className="text-right font-mono">{formatCurrency(employee.grossSalary)}</TableCell>}
+                            <TableCell>{employee.dateEmbauche ? format(parseISO(employee.dateEmbauche), 'dd/MM/yyyy') : 'N/A'}</TableCell>
                             {canViewSalaries && <TableCell className="text-right font-mono">{formatCurrency(employee.netSalary)}</TableCell>}
                             <TableCell className="text-right">
                               <DropdownMenu>
@@ -408,12 +408,10 @@ export default function PayrollPage() {
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 </div>
-                                {canViewSalaries && (
-                                    <div className="mt-2 space-y-1">
-                                        <p className="text-sm"><span className="font-medium">Salaire Brut:</span> {formatCurrency(employee.grossSalary)}</p>
-                                        <p className="text-sm"><span className="font-medium">Salaire Net:</span> {formatCurrency(employee.netSalary)}</p>
-                                    </div>
-                                )}
+                                <div className="mt-2 space-y-1 text-sm">
+                                    <p><span className="font-medium">Embauche:</span> {employee.dateEmbauche ? format(parseISO(employee.dateEmbauche), 'dd/MM/yyyy') : 'N/A'}</p>
+                                    {canViewSalaries && <p><span className="font-medium">Salaire Net:</span> {formatCurrency(employee.netSalary)}</p>}
+                                </div>
                             </CardContent>
                         </Card>
                     ))

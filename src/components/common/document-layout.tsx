@@ -13,7 +13,7 @@ export function DocumentLayout({ logos, children }: DocumentLayoutProps) {
     <div className="bg-white text-black p-8 font-serif w-[210mm] min-h-[297mm] flex flex-col">
       <header className="flex justify-between items-start pb-4 border-b-2 border-gray-600">
         <div className="w-1/4 text-center flex flex-col justify-center items-center h-24">
-           {logos.mainLogoUrl && <img src={logos.mainLogoUrl} alt="Logo CNRCT" className="max-h-24 max-w-full h-auto w-auto" />}
+           {logos.mainLogoUrl && <img src="https://storage.googleapis.com/demobuilder-testing.appspot.com/uploads/1721919864275_cnrct.png" alt="Logo CNRCT" className="max-h-24 max-w-full h-auto w-auto" />}
         </div>
         <div className="w-2/4 text-center pt-2">
           <h1 className="font-bold text-lg">

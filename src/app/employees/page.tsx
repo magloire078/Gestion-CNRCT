@@ -29,6 +29,7 @@ import Papa from "papaparse";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PaginationControls } from "@/components/common/pagination-controls";
+import { ImportDataCard } from "@/components/admin/import-data-card";
 
 
 type Status = 'Actif' | 'En congé' | 'Licencié' | 'Retraité' | 'Décédé';
@@ -367,6 +368,10 @@ export default function EmployeesPage() {
                         <TabsTrigger value="gendarme">Gendarmes</TabsTrigger>
                     </TabsList>
                 </Tabs>
+                
+                <div className="mb-6">
+                    <ImportDataCard />
+                </div>
 
                 <Card>
                     <CardHeader>
@@ -625,7 +630,3 @@ export default function EmployeesPage() {
     </>
   );
 }
-
-    
-
-    

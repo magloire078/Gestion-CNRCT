@@ -7,17 +7,32 @@ import type { OrganizationSettings } from '@/lib/data';
 const SETTINGS_DOC_ID = 'organization_settings';
 const settingsDocRef = doc(db, 'settings', SETTINGS_DOC_ID);
 
+const defaultSecondaryLogoUrl = "https://storage.googleapis.com/demobuilder-testing.appspot.com/uploads/1721921387603_republique-ci-logo.png";
+const defaultMainLogoUrl = "https://storage.googleapis.com/demobuilder-testing.appspot.com/uploads/1721919864275_cnrct.png";
+
 export async function getOrganizationSettings(): Promise<OrganizationSettings> {
     try {
         const docSnap = await getDoc(settingsDocRef);
         if (docSnap.exists()) {
-            return docSnap.data() as OrganizationSettings;
+            const data = docSnap.data();
+            // Return existing data, but use default if a field is missing
+            return {
+                organizationName: data.organizationName || 'Gestion CNRCT',
+                mainLogoUrl: data.mainLogoUrl || defaultMainLogoUrl,
+                secondaryLogoUrl: data.secondaryLogoUrl || defaultSecondaryLogoUrl,
+                faviconUrl: data.faviconUrl || '',
+            };
         }
     } catch (e) {
         console.error("Could not get organization settings from Firestore, returning default.", e);
     }
-    // Return default empty state if not found or on error
-    return { organizationName: 'Gestion CNRCT', mainLogoUrl: '', secondaryLogoUrl: '', faviconUrl: '' };
+    // Return default state if document doesn't exist or on error
+    return {
+        organizationName: 'Gestion CNRCT',
+        mainLogoUrl: defaultMainLogoUrl,
+        secondaryLogoUrl: defaultSecondaryLogoUrl,
+        faviconUrl: ''
+    };
 }
 
 export async function saveOrganizationName(name: string): Promise<void> {

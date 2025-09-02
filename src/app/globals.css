@@ -93,6 +93,7 @@
     body {
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
+        counter-reset: page;
     }
     .print-hidden {
         display: none !important;
@@ -119,6 +120,10 @@
         padding: 0;
         border: none;
         box-shadow: none;
+    }
+    .page-number::after {
+      counter-increment: page;
+      content: counter(page);
     }
   }
 }

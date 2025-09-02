@@ -278,6 +278,7 @@ export default function LeaveReportPage() {
             </table>
              <footer className="mt-12 text-center text-xs text-gray-500">
                 <p>Rapport généré le {format(new Date(), 'dd/MM/yyyy HH:mm')}</p>
+                 <div className="mt-4"><p className="page-number"></p></div>
             </footer>
         </div>
     )}

@@ -524,7 +524,7 @@ function AnniversaryPrintLayout({ logos, employees, period, year }: { logos: Org
                         <p>Yamoussoukro, Riviera - BP 201 Yamoussoukro | Tél : (225) 30 64 06 60 | Fax : (+255) 30 64 06 63</p>
                         <p>www.cnrct.ci - Email : info@cnrct.ci</p>
                     </div>
-                    <div><p>1</p></div>
+                    <div><p className="page-number"></p></div>
                 </div>
             </footer>
         </div>
@@ -583,7 +583,7 @@ function RetirementPrintLayout({ logos, employees, year }: { logos: Organization
                         <p>Yamoussoukro, Riviera - BP 201 Yamoussoukro | Tél : (225) 30 64 06 60 | Fax : (+255) 30 64 06 63</p>
                         <p>www.cnrct.ci - Email : info@cnrct.ci</p>
                     </div>
-                    <div><p>1</p></div>
+                    <div><p className="page-number"></p></div>
                 </div>
             </footer>
         </div>

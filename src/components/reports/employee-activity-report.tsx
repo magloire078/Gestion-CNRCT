@@ -162,7 +162,7 @@ export function EmployeeActivityReport() {
                 <ReportSection title="Missions du Mois" data={reportData.missions} renderItem={mission => (
                      <div className="flex justify-between">
                         <span>{mission.title}</span>
-                        <span className="text-muted-foreground">{mission.assignedTo}</span>
+                        <span className="text-muted-foreground">{mission.participants.map(p => p.employeeName).join(', ')}</span>
                     </div>
                 )} />
                 

@@ -1,4 +1,3 @@
-
 // src/lib/permissions.ts
 
 export const allPermissions = {

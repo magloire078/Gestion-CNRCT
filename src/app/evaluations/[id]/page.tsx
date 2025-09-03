@@ -416,7 +416,3 @@ function EvaluationDetailSkeleton() {
         </div>
     )
 }
-
-    
-
-    

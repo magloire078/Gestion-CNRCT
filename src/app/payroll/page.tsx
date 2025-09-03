@@ -9,6 +9,7 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -49,6 +50,7 @@ import { lastDayOfMonth, format, parseISO } from "date-fns";
 import { fr } from "date-fns/locale";
 import QRCode from "react-qr-code";
 import { useAuth } from "@/hooks/use-auth";
+import { PaginationControls } from "@/components/common/pagination-controls";
 
 
 type EmployeeWithDetails = Employe & { netSalary?: number; grossSalary?: number };
@@ -78,6 +80,11 @@ export default function PayrollPage() {
   const [isBulkPrintDialogOpen, setIsBulkPrintDialogOpen] = useState(false);
   const [isPreparingPrint, setIsPreparingPrint] = useState(false);
   const [bulkPayslips, setBulkPayslips] = useState<PayslipDetails[]>([]);
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+
 
   useEffect(() => {
     setLoading(true);
@@ -174,14 +181,27 @@ export default function PayrollPage() {
   }, [employees]);
 
   const filteredEmployees = useMemo(() => {
-    return employees.filter(employee => {
+    const filtered = employees.filter(employee => {
       const fullName = (employee.firstName && employee.lastName) ? `${employee.lastName} ${employee.firstName}`.toLowerCase() : (employee.name || '').toLowerCase();
       const matchesSearchTerm = fullName.includes(searchTerm.toLowerCase()) || (employee.matricule || '').toLowerCase().includes(searchTerm.toLowerCase());
       const matchesDepartment = departmentFilter === 'all' || employee.department === departmentFilter;
       const matchesStatus = statusFilter === 'all' || employee.status === statusFilter;
       return matchesSearchTerm && matchesDepartment && matchesStatus;
     });
-  }, [employees, searchTerm, departmentFilter, statusFilter]);
+
+    if (currentPage > Math.ceil(filtered.length / itemsPerPage)) {
+        setCurrentPage(1);
+    }
+    return filtered;
+
+  }, [employees, searchTerm, departmentFilter, statusFilter, currentPage, itemsPerPage]);
+
+  const paginatedEmployees = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredEmployees.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredEmployees, currentPage, itemsPerPage]);
+
+  const totalPages = Math.ceil(filteredEmployees.length / itemsPerPage);
 
   const totalPayroll = useMemo(() => {
     if (!canViewSalaries) return 0;
@@ -337,8 +357,8 @@ export default function PayrollPage() {
                             <TableCell><Skeleton className="h-8 w-8 rounded-md ml-auto" /></TableCell>
                         </TableRow>
                         ))
-                    ) : filteredEmployees.length > 0 ? (
-                        filteredEmployees.map((employee) => (
+                    ) : paginatedEmployees.length > 0 ? (
+                        paginatedEmployees.map((employee) => (
                         <TableRow key={employee.id}>
                             <TableCell className="font-medium">{`${employee.lastName || ''} ${employee.firstName || ''}`.trim()}</TableCell>
                             <TableCell>{employee.poste}</TableCell>
@@ -378,8 +398,8 @@ export default function PayrollPage() {
                     Array.from({ length: 5 }).map((_, i) => (
                       <Card key={i}><CardContent className="p-4"><Skeleton className="h-20 w-full" /></CardContent></Card>
                     ))
-                ) : filteredEmployees.length > 0 ? (
-                    filteredEmployees.map((employee) => (
+                ) : paginatedEmployees.length > 0 ? (
+                    paginatedEmployees.map((employee) => (
                         <Card key={employee.id}>
                             <CardContent className="p-4">
                                 <div className="flex justify-between items-start">
@@ -424,6 +444,18 @@ export default function PayrollPage() {
                 </div>
               )}
             </CardContent>
+            {totalPages > 1 && (
+                <CardFooter>
+                    <PaginationControls
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={setCurrentPage}
+                        itemsPerPage={itemsPerPage}
+                        onItemsPerPageChange={setItemsPerPage}
+                        totalItems={filteredEmployees.length}
+                    />
+                </CardFooter>
+            )}
           </Card>
         </div>
         

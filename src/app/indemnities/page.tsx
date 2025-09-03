@@ -116,45 +116,28 @@ export default function IndemnityCalculatorPage() {
     details.push(`Employé: ${employeeDisplayName}`);
     details.push(`Ancienneté: ${seniority} ans`);
     details.push(`Salaire de base de référence: ${salary.toLocaleString('fr-FR')} FCFA`);
+    details.push(`Type: ${calculationType === 'retraite' ? 'Départ à la retraite' : 'Licenciement'}`);
 
-    if (calculationType === 'retraite') {
-        details.push(`Type: Départ à la retraite`);
 
-        const yearsInBracket1 = Math.min(seniority, 5);
+    const yearsInBracket1 = Math.min(seniority, 5);
+    if (yearsInBracket1 > 0) {
         const indemnityBracket1 = salary * 0.30 * yearsInBracket1;
         details.push(`- Tranche 1 (0-5 ans): ${yearsInBracket1} an(s) * 30% = ${indemnityBracket1.toLocaleString('fr-FR')} FCFA`);
         indemnity += indemnityBracket1;
+    }
 
-        if (seniority > 5) {
-            const yearsInBracket2 = Math.min(seniority - 5, 5); // 5 ans max (de la 6e à la 10e)
+    if (seniority > 5) {
+        const yearsInBracket2 = Math.min(seniority - 5, 5); // 5 ans max (de la 6e à la 10e)
+        if (yearsInBracket2 > 0) {
             const indemnityBracket2 = salary * 0.35 * yearsInBracket2;
             details.push(`- Tranche 2 (6-10 ans): ${yearsInBracket2} an(s) * 35% = ${indemnityBracket2.toLocaleString('fr-FR')} FCFA`);
             indemnity += indemnityBracket2;
         }
+    }
 
-        if (seniority > 10) {
-            const yearsInBracket3 = seniority - 10;
-            const indemnityBracket3 = salary * 0.40 * yearsInBracket3;
-            details.push(`- Tranche 3 (>10 ans): ${yearsInBracket3} an(s) * 40% = ${indemnityBracket3.toLocaleString('fr-FR')} FCFA`);
-            indemnity += indemnityBracket3;
-        }
-
-    } else { // Licenciement (logique similaire pour l'exemple)
-        details.push(`Type: Licenciement`);
-         const yearsInBracket1 = Math.min(seniority, 5);
-        const indemnityBracket1 = salary * 0.30 * yearsInBracket1;
-        details.push(`- Tranche 1 (0-5 ans): ${yearsInBracket1} an(s) * 30% = ${indemnityBracket1.toLocaleString('fr-FR')} FCFA`);
-        indemnity += indemnityBracket1;
-
-        if (seniority > 5) {
-            const yearsInBracket2 = Math.min(seniority - 5, 5); // 5 ans max (de la 6e à la 10e)
-            const indemnityBracket2 = salary * 0.35 * yearsInBracket2;
-            details.push(`- Tranche 2 (6-10 ans): ${yearsInBracket2} an(s) * 35% = ${indemnityBracket2.toLocaleString('fr-FR')} FCFA`);
-            indemnity += indemnityBracket2;
-        }
-
-        if (seniority > 10) {
-            const yearsInBracket3 = seniority - 10;
+    if (seniority > 10) {
+        const yearsInBracket3 = seniority - 10;
+        if (yearsInBracket3 > 0) {
             const indemnityBracket3 = salary * 0.40 * yearsInBracket3;
             details.push(`- Tranche 3 (>10 ans): ${yearsInBracket3} an(s) * 40% = ${indemnityBracket3.toLocaleString('fr-FR')} FCFA`);
             indemnity += indemnityBracket3;

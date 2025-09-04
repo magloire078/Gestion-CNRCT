@@ -171,7 +171,14 @@ function AppLayout({ children }: { children: React.ReactNode }) {
 
   const menuItems = React.useMemo(() => {
     if (!hasPermission) return [];
-    return allMenuItems.filter(item => hasPermission(item.permission));
+
+    return allMenuItems.filter(item => {
+        if (item.isCollapsible) {
+            // Show group if user has permission to view at least one sub-item
+            return item.subItems?.some(sub => hasPermission(sub.permission));
+        }
+        return hasPermission(item.permission);
+    });
   }, [hasPermission]);
   
   const currentPage = allMenuItems.find(item => !item.isCollapsible && item.href === currentPath);

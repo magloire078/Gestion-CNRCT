@@ -43,7 +43,7 @@ export default function LeaveReportPage() {
   const years = Array.from({ length: 10 }, (_, i) => (new Date().getFullYear() - i).toString());
   const months = Array.from({ length: 12 }, (_, i) => ({ value: (i + 1).toString(), label: fr.localize?.month(i, { width: 'wide' }) }));
   
-  const selectedPeriodText = `${months.find(m => m.value === month)?.label} ${year}`;
+  const selectedPeriodText = `${''\'\'' + months.find(m => m.value === month)?.label} ${''\'\'' + year}`;
 
   const calculateWorkingDaysInPeriod = (leave: Leave, periodStart: Date, periodEnd: Date): number => {
     try {

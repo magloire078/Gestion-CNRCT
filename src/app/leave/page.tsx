@@ -302,7 +302,7 @@ export default function LeavePage() {
                             ))
                         ) : (
                             filteredLeaves.map((leave) => {
-                                const displayName = leave.employeeDetails ? `${leave.employeeDetails.lastName || ''} ${leave.employeeDetails.firstName || ''}`.trim() : leave.employee;
+                                const displayName = leave.employeeDetails ? `${''\'\'' + leave.employeeDetails.lastName || ''} ${''\'\'' + leave.employeeDetails.firstName || ''}`.trim() : leave.employee;
                                 const workingDays = calculateWorkingDays(leave.startDate, leave.endDate);
                                 return (
                                 <TableRow key={leave.id}>
@@ -373,7 +373,7 @@ export default function LeavePage() {
                             ))
                         ) : (
                             filteredLeaves.map((leave) => {
-                                const displayName = leave.employeeDetails ? `${leave.employeeDetails.lastName || ''} ${leave.employeeDetails.firstName || ''}`.trim() : leave.employee;
+                                const displayName = leave.employeeDetails ? `${''\'\'' + leave.employeeDetails.lastName || ''} ${''\'\'' + leave.employeeDetails.firstName || ''}`.trim() : leave.employee;
                                 const workingDays = calculateWorkingDays(leave.startDate, leave.endDate);
                                 return (
                                 <Card key={leave.id}>
@@ -395,7 +395,7 @@ export default function LeavePage() {
                                                 {workingDays} jour(s) ouvré(s)
                                             </p>
                                             {(leave.num_decision || leave.reason) && <p className="text-sm text-muted-foreground truncate">
-                                                {leave.type === 'Congé Annuel' ? `Décision: ${leave.num_decision}` : `Motif: ${leave.reason}`}
+                                                {leave.type === 'Congé Annuel' ? `Décision: ${''\'\'' + leave.num_decision}` : `Motif: ${''\'\'' + leave.reason}`}
                                             </p>}
                                         </div>
                                         <div className="flex flex-col gap-2">

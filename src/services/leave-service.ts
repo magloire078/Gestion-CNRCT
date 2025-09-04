@@ -1,11 +1,35 @@
 
 
-import { collection, getDocs, addDoc, doc, updateDoc, onSnapshot, Unsubscribe, query, orderBy, getDoc } from 'firebase/firestore';
-import type { Leave } from '@/lib/data';
+import { collection, getDocs, addDoc, doc, updateDoc, onSnapshot, Unsubscribe, query, orderBy, getDoc, where } from 'firebase/firestore';
+import type { Leave, User } from '@/lib/data';
 import { db } from '@/lib/firebase';
 import { createNotification } from './notification-service';
 
 const leavesCollection = collection(db, 'leaves');
+const usersCollection = collection(db, 'users');
+
+
+/**
+ * Finds a user ID based on the employee name.
+ * This is not a very robust method and should be used with caution.
+ * It's better to store userId directly on the leave request if possible.
+ * @param employeeName The name of the employee.
+ * @returns The user ID string or null if not found.
+ */
+async function findUserIdByName(employeeName: string): Promise<string | null> {
+    try {
+        const userQuery = query(usersCollection, where("name", "==", employeeName));
+        const querySnapshot = await getDocs(userQuery);
+        if (!querySnapshot.empty) {
+            return querySnapshot.docs[0].id;
+        }
+        return null;
+    } catch (error) {
+        console.error("Error finding user by name:", error);
+        return null;
+    }
+}
+
 
 export function subscribeToLeaves(
     callback: (leaves: Leave[]) => void,
@@ -70,20 +94,18 @@ export async function updateLeaveStatus(id: string, status: 'Approuvé' | 'Rejet
     const leaveData = leaveDoc.data() as Leave;
 
     await updateDoc(leaveDocRef, { status });
-
-    // Find the employee's user ID to send them a notification
-    // Note: This is a simplified approach. A real app might query the users collection
-    // to find the user ID based on the employee name.
-    // For now, we assume the employee name can be used to find the user, which is not robust.
-    // A better approach would be to store the userId on the leave request.
     
-    // Since we can't reliably get the userId from the employee name,
-    // we'll send to 'all' as a fallback for now.
-    // A proper implementation would require a lookup service.
-    await createNotification({
-      userId: 'all', // In a real app: findUserIdByName(leaveData.employee),
-      title: `Demande de congé ${status === 'Approuvé' ? 'approuvée' : 'rejetée'}`,
-      description: `Votre demande de ${leaveData.type} du ${leaveData.startDate} a été ${status === 'Approuvé' ? 'approuvée' : 'rejetée'}.`,
-      href: '/my-space' // Link to their personal space
-    })
+    // Find the employee's user ID to send them a notification
+    const employeeUserId = await findUserIdByName(leaveData.employee);
+
+    if (employeeUserId) {
+        await createNotification({
+            userId: employeeUserId,
+            title: `Demande de congé ${status === 'Approuvé' ? 'approuvée' : 'rejetée'}`,
+            description: `Votre demande de ${leaveData.type} du ${leaveData.startDate} a été ${status === 'Approuvé' ? 'approuvée' : 'rejetée'}.`,
+            href: '/my-space' // Link to their personal space
+        });
+    } else {
+        console.warn(`Could not find user for employee ${leaveData.employee} to send notification.`);
+    }
 }

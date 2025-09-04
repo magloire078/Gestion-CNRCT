@@ -3,6 +3,7 @@
 import { db } from '@/lib/firebase';
 import { collection, getDocs, addDoc, onSnapshot, Unsubscribe, query, orderBy, doc, updateDoc, getDoc } from 'firebase/firestore';
 import type { Evaluation, Goal } from '@/lib/data';
+import { createNotification } from './notification-service';
 
 const evaluationsCollection = collection(db, 'evaluations');
 
@@ -54,6 +55,14 @@ export async function getEvaluation(id: string): Promise<Evaluation | null> {
 
 export async function addEvaluation(evaluationDataToAdd: Omit<Evaluation, 'id'>): Promise<Evaluation> {
     const docRef = await addDoc(evaluationsCollection, evaluationDataToAdd);
+
+    await createNotification({
+        userId: evaluationDataToAdd.managerId,
+        title: 'Nouvelle Évaluation Créée',
+        description: `Une nouvelle évaluation pour ${evaluationDataToAdd.employeeName} est prête à être remplie.`,
+        href: `/evaluations/${docRef.id}`
+    });
+
     return { id: docRef.id, ...evaluationDataToAdd };
 }
 
@@ -71,4 +80,32 @@ export async function updateEvaluation(evaluationId: string, dataToUpdate: Parti
     if (dataToUpdate.status !== undefined) updatePayload.status = dataToUpdate.status;
 
     await updateDoc(evalDocRef, updatePayload);
+    
+    // Send notifications based on status change
+    if (dataToUpdate.status) {
+        const currentEval = await getEvaluation(evaluationId);
+        if(!currentEval) return;
+
+        if (dataToUpdate.status === 'Pending Employee Sign-off') {
+             await createNotification({
+                userId: currentEval.employeeId,
+                title: 'Évaluation Prête',
+                description: `Votre évaluation de performance pour la période ${currentEval.reviewPeriod} est prête pour vos commentaires.`,
+                href: `/evaluations/${evaluationId}`
+            });
+        } else if (dataToUpdate.status === 'Completed') {
+             await createNotification({
+                userId: currentEval.employeeId,
+                title: 'Évaluation Finalisée',
+                description: `Votre évaluation de performance pour la période ${currentEval.reviewPeriod} est finalisée.`,
+                href: `/evaluations/${evaluationId}`
+            });
+             await createNotification({
+                userId: currentEval.managerId,
+                title: 'Évaluation Finalisée',
+                description: `L'évaluation de ${currentEval.employeeName} pour ${currentEval.reviewPeriod} a été finalisée.`,
+                href: `/evaluations/${evaluationId}`
+            });
+        }
+    }
 }

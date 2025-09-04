@@ -40,6 +40,7 @@ import { ConfirmationDialog } from "@/components/common/confirmation-dialog";
 import { generateMissionOrderAction, deleteMissionAction } from "./actions";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { MissionCostReport } from "@/components/missions/mission-cost-report";
+import { getAllowanceRate } from "@/services/allowance-service";
 
 
 type Status = "Planifiée" | "En cours" | "Terminée" | "Annulée";
@@ -109,6 +110,12 @@ export default function MissionDetailPage() {
             const participantsWithDetails = (missionData.participants || []).map(p => {
                 const employee = employeesMap.get(p.employeeName);
                 if (!employee) return null;
+
+                // If totalIndemnites is not manually set, calculate it
+                if (p.totalIndemnites === undefined || p.totalIndemnites === 0) {
+                    const rate = getAllowanceRate(employee.categorie);
+                    p.totalIndemnites = rate * (duration > 0 ? duration : 1);
+                }
 
                 const participantCost = (p.totalIndemnites || 0) + (p.coutTransport || 0) + (p.coutHebergement || 0);
                 calculatedTotalCost += participantCost;

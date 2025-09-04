@@ -30,6 +30,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PaginationControls } from "@/components/common/pagination-controls";
 import { ImportDataCard } from "@/components/admin/import-data-card";
+import { useAuth } from "@/hooks/use-auth";
 
 
 type Status = 'Actif' | 'En congé' | 'Licencié' | 'Retraité' | 'Décédé';
@@ -63,6 +64,7 @@ export default function EmployeesPage() {
   const [isPrinting, setIsPrinting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
+  const { hasPermission } = useAuth();
   
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -83,6 +85,9 @@ export default function EmployeesPage() {
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  
+  const canImport = hasPermission('feature:employees:import');
+  const canExport = hasPermission('feature:employees:export');
 
   const pageTitle = useMemo(() => {
     switch (personnelTypeFilter) {
@@ -338,19 +343,21 @@ export default function EmployeesPage() {
                           <Printer className="mr-2 h-4 w-4" />
                           Imprimer
                         </Button>
-                        <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="outline" className="w-full sm:w-auto">
-                            <Download className="mr-2 h-4 w-4" />
-                            Exporter
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={handleExportCsv}>Exporter en CSV</DropdownMenuItem>
-                            <DropdownMenuItem onClick={handleExportJson}>Exporter en JSON</DropdownMenuItem>
-                            <DropdownMenuItem onClick={handleExportSql}>Exporter en SQL</DropdownMenuItem>
-                        </DropdownMenuContent>
-                        </DropdownMenu>
+                        {canExport && (
+                          <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                              <Button variant="outline" className="w-full sm:w-auto">
+                              <Download className="mr-2 h-4 w-4" />
+                              Exporter
+                              </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={handleExportCsv}>Exporter en CSV</DropdownMenuItem>
+                              <DropdownMenuItem onClick={handleExportJson}>Exporter en JSON</DropdownMenuItem>
+                              <DropdownMenuItem onClick={handleExportSql}>Exporter en SQL</DropdownMenuItem>
+                          </DropdownMenuContent>
+                          </DropdownMenu>
+                        )}
                         <Button onClick={() => setIsAddSheetOpen(true)} className="w-full sm:w-auto">
                             <PlusCircle className="mr-2 h-4 w-4" />
                             Ajouter
@@ -369,9 +376,11 @@ export default function EmployeesPage() {
                     </TabsList>
                 </Tabs>
                 
-                <div className="mb-6">
-                    <ImportDataCard />
-                </div>
+                {canImport && (
+                  <div className="mb-6">
+                      <ImportDataCard />
+                  </div>
+                )}
 
                 <Card>
                     <CardHeader>

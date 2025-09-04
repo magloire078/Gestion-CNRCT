@@ -1,4 +1,5 @@
 
+
 // src/lib/permissions.ts
 
 export const allPermissions = {
@@ -25,6 +26,12 @@ export const allPermissions = {
   "Voir le groupe Organisation": "group:organization:view",
   "Voir le groupe Opérations": "group:operations:view",
   "Voir le groupe Administration": "group:admin:view",
+
+  // Feature permissions
+  "Importer les employés": "feature:employees:import",
+  "Exporter les employés": "feature:employees:export",
+  "Importer les chefs": "feature:chiefs:import",
+  "Exporter les chefs": "feature:chiefs:export",
 } as const;
 
 export type PermissionKey = keyof typeof allPermissions;

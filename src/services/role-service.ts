@@ -1,4 +1,5 @@
 
+
 import { collection, getDocs, addDoc, deleteDoc, doc, onSnapshot, Unsubscribe, query, orderBy, setDoc, writeBatch, updateDoc } from 'firebase/firestore';
 import type { Role } from '@/lib/data';
 import { db } from '@/lib/firebase';
@@ -8,9 +9,15 @@ const rolesCollection = collection(db, 'roles');
 
 const defaultRoles: Role[] = [
     { 
+        id: 'super-admin',
+        name: 'Super Administrateur', 
+        permissions: Object.values(allPermissions) // All permissions
+    },
+    { 
         id: 'administrateur',
         name: 'Administrateur', 
-        permissions: Object.values(allPermissions)
+        // All permissions EXCEPT import/export
+        permissions: Object.values(allPermissions).filter(p => !p.startsWith('feature:'))
     },
     { 
         id: 'employe',

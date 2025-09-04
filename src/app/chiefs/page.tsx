@@ -37,6 +37,7 @@ import { AddChiefSheet } from "@/components/chiefs/add-chief-sheet";
 import { Badge } from "@/components/ui/badge";
 import Papa from "papaparse";
 import { ImportChiefsDataCard } from "@/components/chiefs/import-chiefs-data-card";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function ChiefsPage() {
   const [chiefs, setChiefs] = useState<Chief[]>([]);
@@ -45,6 +46,10 @@ export default function ChiefsPage() {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
+  const { hasPermission } = useAuth();
+
+  const canImport = hasPermission('feature:chiefs:import');
+  const canExport = hasPermission('feature:chiefs:export');
 
   useEffect(() => {
     const unsubscribe = subscribeToChiefs(
@@ -166,28 +171,32 @@ export default function ChiefsPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight">Rois et Chefs Traditionnels</h1>
         <div className="flex gap-2">
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="w-full sm:w-auto">
-                    <Download className="mr-2 h-4 w-4" />
-                    Exporter
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={handleExportCsv}>Exporter en CSV</DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleExportJson}>Exporter en JSON</DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleExportSql}>Exporter en SQL</DropdownMenuItem>
-                </DropdownMenuContent>
-            </DropdownMenu>
+            {canExport && (
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="outline" className="w-full sm:w-auto">
+                        <Download className="mr-2 h-4 w-4" />
+                        Exporter
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={handleExportCsv}>Exporter en CSV</DropdownMenuItem>
+                        <DropdownMenuItem onClick={handleExportJson}>Exporter en JSON</DropdownMenuItem>
+                        <DropdownMenuItem onClick={handleExportSql}>Exporter en SQL</DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            )}
             <Button onClick={() => setIsSheetOpen(true)}>
             <PlusCircle className="mr-2 h-4 w-4" />
             Ajouter un Chef
             </Button>
         </div>
       </div>
-      <div className="mb-6">
-        <ImportChiefsDataCard />
-      </div>
+      {canImport && (
+        <div className="mb-6">
+          <ImportChiefsDataCard />
+        </div>
+      )}
       <Card>
         <CardHeader>
           <CardTitle>Répertoire Officiel</CardTitle>

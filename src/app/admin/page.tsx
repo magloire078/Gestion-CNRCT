@@ -19,17 +19,17 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { PlusCircle, Trash2, Pencil, ChevronRight } from "lucide-react";
+import { PlusCircle, Trash2, Pencil, ChevronRight, Link2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 
-import type { User, Role, Department, Direction, Service } from "@/lib/data";
+import type { User, Role, Department, Direction, Service, Employe } from "@/lib/data";
 import { subscribeToUsers, deleteUser, updateUser } from "@/services/user-service";
 import { subscribeToRoles, deleteRole, updateRole } from "@/services/role-service";
 import { subscribeToDepartments, addDepartment, updateDepartment, deleteDepartment } from "@/services/department-service";
 import { subscribeToDirections, addDirection, updateDirection, deleteDirection } from "@/services/direction-service";
 import { subscribeToServices, addService, updateService, deleteService } from "@/services/service-service";
-
+import { getEmployees, updateEmployee } from "@/services/employee-service";
 
 import { AddUserSheet } from "@/components/admin/add-user-sheet";
 import { AddRoleSheet } from "@/components/admin/add-role-sheet";
@@ -41,6 +41,7 @@ import { EditRoleSheet } from "@/components/admin/edit-role-sheet";
 import { DirectionDialog } from "@/components/admin/direction-dialog";
 import { ServiceDialog } from "@/components/admin/service-dialog";
 import { Badge } from "@/components/ui/badge";
+import { LinkUserEmployeeDialog } from "@/components/admin/link-user-employee-dialog";
 
 export default function AdminPage() {
   const [users, setUsers] = useState<User[] | null>(null);
@@ -48,6 +49,7 @@ export default function AdminPage() {
   const [departments, setDepartments] = useState<Department[] | null>(null);
   const [directions, setDirections] = useState<Direction[] | null>(null);
   const [services, setServices] = useState<Service[] | null>(null);
+  const [allEmployees, setAllEmployees] = useState<Employe[]>([]);
 
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
@@ -59,11 +61,13 @@ export default function AdminPage() {
   const [isDirectionDialogOpen, setIsDirectionDialogOpen] = useState(false);
   const [isServiceDialogOpen, setIsServiceDialogOpen] = useState(false);
   const [isEditUserDialogOpen, setIsEditUserDialogOpen] = useState(false);
+  const [isLinkUserDialogOpen, setIsLinkUserDialogOpen] = useState(false);
 
   const [editingDepartment, setEditingDepartment] = useState<Department | null>(null);
   const [editingDirection, setEditingDirection] = useState<Direction | null>(null);
   const [editingService, setEditingService] = useState<Service | null>(null);
   const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [linkingUser, setLinkingUser] = useState<User | null>(null);
   const [editingRole, setEditingRole] = useState<Role | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; type: 'user' | 'role' | 'department' | 'direction' | 'service'; name: string } | null>(null);
 
@@ -104,6 +108,10 @@ export default function AdminPage() {
       (err) => { setError("Impossible de charger les services."); console.error(err); }
     );
 
+    getEmployees().then(setAllEmployees).catch(err => {
+        setError("Impossible de charger les employés."); console.error(err);
+    })
+
 
     return () => {
       unsubRoles();
@@ -114,7 +122,7 @@ export default function AdminPage() {
     };
   }, []);
 
-  const loading = users === null || roles === null || departments === null || directions === null || services === null;
+  const loading = users === null || roles === null || departments === null || directions === null || services === null || allEmployees.length === 0;
 
   const handleAddUser = (newUser: User) => {
     setIsAddUserSheetOpen(false);
@@ -175,6 +183,20 @@ export default function AdminPage() {
     }
   };
 
+  const handleLinkUserToEmployee = async (userId: string, employeeId: string) => {
+    try {
+        // Link user to employee
+        await updateUser(userId, { employeeId });
+        // Link employee to user
+        await updateEmployee(employeeId, { userId });
+
+        toast({ title: "Utilisateur lié", description: "Le compte utilisateur a été lié au profil employé." });
+        setIsLinkUserDialogOpen(false);
+    } catch (err) {
+        toast({ variant: "destructive", title: "Erreur", description: "Impossible de lier l'utilisateur à l'employé." });
+    }
+  }
+
   const handleConfirmDelete = async () => {
     if (!deleteTarget) return;
 
@@ -234,7 +256,14 @@ export default function AdminPage() {
                       <TableRow key={i}><TableCell><Skeleton className="h-4 w-24" /></TableCell><TableCell><Skeleton className="h-4 w-40" /></TableCell><TableCell><Skeleton className="h-4 w-20" /></TableCell><TableCell><Skeleton className="h-4 w-12" /></TableCell><TableCell><div className="flex justify-end gap-2"><Skeleton className="h-8 w-8" /><Skeleton className="h-8 w-8" /></div></TableCell></TableRow>
                   )) : (users?.map((user) => (
                       <TableRow key={user.id}>
-                        <TableCell className="font-medium">{user.name}</TableCell>
+                        <TableCell className="font-medium">
+                            {user.name}
+                            {user.employeeId && (
+                                <p className="text-xs text-muted-foreground">
+                                    Lié à : {allEmployees.find(e => e.id === user.employeeId)?.name || 'N/A'}
+                                </p>
+                            )}
+                        </TableCell>
                         <TableCell>{user.email}</TableCell>
                         <TableCell><Badge variant="secondary">{user.role?.name || 'Non assigné'}</Badge></TableCell>
                         <TableCell className="text-sm text-muted-foreground">
@@ -245,7 +274,8 @@ export default function AdminPage() {
                             )}
                         </TableCell>
                         <TableCell className="text-right">
-                          <Button variant="ghost" size="icon" onClick={() => { setEditingUser(user); setIsEditUserDialogOpen(true); }}><Pencil className="h-4 w-4" /><span className="sr-only">Modifier</span></Button>
+                          <Button variant="ghost" size="icon" onClick={() => { setLinkingUser(user); setIsLinkUserDialogOpen(true); }}><Link2 className="h-4 w-4" /><span className="sr-only">Lier</span></Button>
+                          <Button variant="ghost" size="icon" onClick={() => { setEditingUser(user); setIsEditUserDialogOpen(true); }}><Pencil className="h-4 w-4" /><span className="sr-only">Modifier Rôle</span></Button>
                           <Button variant="ghost" size="icon" onClick={() => setDeleteTarget({ id: user.id, type: 'user', name: user.name })}><Trash2 className="h-4 w-4" /><span className="sr-only">Supprimer</span></Button>
                         </TableCell>
                       </TableRow>
@@ -361,6 +391,7 @@ export default function AdminPage() {
         <DirectionDialog isOpen={isDirectionDialogOpen} onClose={() => setIsDirectionDialogOpen(false)} onConfirm={handleSaveDirection} direction={editingDirection} departments={departments || []} />
         <ServiceDialog isOpen={isServiceDialogOpen} onClose={() => setIsServiceDialogOpen(false)} service={editingService} directions={directions || []} departments={departments || []} />
         <EditUserRoleDialog isOpen={isEditUserDialogOpen} onClose={() => setIsEditUserDialogOpen(false)} onConfirm={handleUpdateUserRole} user={editingUser} roles={roles || []} />
+        <LinkUserEmployeeDialog isOpen={isLinkUserDialogOpen} onClose={() => setIsLinkUserDialogOpen(false)} onConfirm={handleLinkUserToEmployee} user={linkingUser} employees={allEmployees} />
       </div>
       
        <ConfirmationDialog
@@ -373,5 +404,3 @@ export default function AdminPage() {
     </>
   );
 }
-
-    

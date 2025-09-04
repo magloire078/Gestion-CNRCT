@@ -1,6 +1,7 @@
 
+
 import { collection, getDocs, addDoc, deleteDoc, doc, onSnapshot, Unsubscribe, query, orderBy, setDoc, updateDoc } from 'firebase/firestore';
-import type { User, Role } from '@/lib/data';
+import type { User, Role, Employe } from '@/lib/data';
 import { db } from '@/lib/firebase';
 import { getRoles } from './role-service';
 
@@ -69,7 +70,7 @@ export async function addUser(userDataToAdd: Omit<User, 'id' | 'role' | 'permiss
     };
 }
 
-export async function updateUser(userId: string, dataToUpdate: Partial<Omit<User, 'id'>>): Promise<void> {
+export async function updateUser(userId: string, dataToUpdate: Partial<Omit<User, 'id' | 'role' | 'permissions'>>): Promise<void> {
     const userDocRef = doc(db, 'users', userId);
     await updateDoc(userDocRef, dataToUpdate);
 }

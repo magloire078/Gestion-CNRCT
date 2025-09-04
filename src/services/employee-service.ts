@@ -1,5 +1,6 @@
 
 
+
 import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, onSnapshot, Unsubscribe, query, orderBy, where, writeBatch, getDoc, setDoc } from 'firebase/firestore';
 import type { Employe, Chief } from '@/lib/data';
 import { db, storage } from '@/lib/firebase';
@@ -158,6 +159,11 @@ export async function updateEmployee(employeeId: string, employeeDataToUpdate: P
             delete updateData[key as keyof typeof updateData];
         }
     });
+
+    // Make sure not to send `id` inside the update payload
+    if ('id' in updateData) {
+        delete (updateData as any).id;
+    }
 
     await updateDoc(employeeDocRef, updateData);
     

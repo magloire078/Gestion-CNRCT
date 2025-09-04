@@ -12,6 +12,7 @@ export type Employe = {
   service?: string;
   status: 'Actif' | 'En congé' | 'Licencié' | 'Retraité' | 'Décédé';
   photoUrl: string;
+  userId?: string; // ID de l'utilisateur authentifié lié
 
   // Personal Info
   email?: string;
@@ -122,6 +123,7 @@ export type User = {
     roleId: string; // Reference to a role document in the 'roles' collection
     role: Role | null; // The resolved role object
     permissions: string[]; // The resolved permissions for the user's role
+    employeeId?: string; // ID de l'employé lié
 }
 
 export type Role = {

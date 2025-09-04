@@ -40,6 +40,7 @@ import { EditUserRoleDialog } from "@/components/admin/edit-user-role-dialog";
 import { EditRoleSheet } from "@/components/admin/edit-role-sheet";
 import { DirectionDialog } from "@/components/admin/direction-dialog";
 import { ServiceDialog } from "@/components/admin/service-dialog";
+import { Badge } from "@/components/ui/badge";
 
 export default function AdminPage() {
   const [users, setUsers] = useState<User[] | null>(null);
@@ -227,15 +228,27 @@ export default function AdminPage() {
               <CardContent>
               <div className="flex justify-end mb-4"><Button onClick={() => setIsAddUserSheetOpen(true)}><PlusCircle className="mr-2 h-4 w-4" />Ajouter un utilisateur</Button></div>
               {error && <p className="text-destructive text-center py-4">{error}</p>}
-              <Table><TableHeader><TableRow><TableHead>Nom</TableHead><TableHead>Email</TableHead><TableHead>Rôle</TableHead><TableHead><span className="sr-only">Actions</span></TableHead></TableRow></TableHeader>
+              <Table><TableHeader><TableRow><TableHead>Nom</TableHead><TableHead>Email</TableHead><TableHead>Rôle</TableHead><TableHead>Permissions</TableHead><TableHead><span className="sr-only">Actions</span></TableHead></TableRow></TableHeader>
                   <TableBody>
                   {loading ? Array.from({ length: 3 }).map((_, i) => (
-                      <TableRow key={i}><TableCell><Skeleton className="h-4 w-32" /></TableCell><TableCell><Skeleton className="h-4 w-48" /></TableCell><TableCell><Skeleton className="h-4 w-24" /></TableCell><TableCell><div className="flex justify-end gap-2"><Skeleton className="h-8 w-8" /><Skeleton className="h-8 w-8" /></div></TableCell></TableRow>
+                      <TableRow key={i}><TableCell><Skeleton className="h-4 w-24" /></TableCell><TableCell><Skeleton className="h-4 w-40" /></TableCell><TableCell><Skeleton className="h-4 w-20" /></TableCell><TableCell><Skeleton className="h-4 w-12" /></TableCell><TableCell><div className="flex justify-end gap-2"><Skeleton className="h-8 w-8" /><Skeleton className="h-8 w-8" /></div></TableCell></TableRow>
                   )) : (users?.map((user) => (
-                      <TableRow key={user.id}><TableCell className="font-medium">{user.name}</TableCell><TableCell>{user.email}</TableCell><TableCell>{user.role?.name || 'Non assigné'}</TableCell><TableCell className="text-right">
-                        <Button variant="ghost" size="icon" onClick={() => { setEditingUser(user); setIsEditUserDialogOpen(true); }}><Pencil className="h-4 w-4" /><span className="sr-only">Modifier</span></Button>
-                        <Button variant="ghost" size="icon" onClick={() => setDeleteTarget({ id: user.id, type: 'user', name: user.name })}><Trash2 className="h-4 w-4" /><span className="sr-only">Supprimer</span></Button>
-                      </TableCell></TableRow>
+                      <TableRow key={user.id}>
+                        <TableCell className="font-medium">{user.name}</TableCell>
+                        <TableCell>{user.email}</TableCell>
+                        <TableCell><Badge variant="secondary">{user.role?.name || 'Non assigné'}</Badge></TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                            {user.role?.name === 'Administrateur' || user.role?.name === 'Super Administrateur' ? (
+                                <Badge>Tous</Badge>
+                            ) : (
+                                user.permissions?.length > 0 ? `${user.permissions.length} droit(s)` : 'Aucun'
+                            )}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button variant="ghost" size="icon" onClick={() => { setEditingUser(user); setIsEditUserDialogOpen(true); }}><Pencil className="h-4 w-4" /><span className="sr-only">Modifier</span></Button>
+                          <Button variant="ghost" size="icon" onClick={() => setDeleteTarget({ id: user.id, type: 'user', name: user.name })}><Trash2 className="h-4 w-4" /><span className="sr-only">Supprimer</span></Button>
+                        </TableCell>
+                      </TableRow>
                   )))}
                   </TableBody>
               </Table>
@@ -360,3 +373,5 @@ export default function AdminPage() {
     </>
   );
 }
+
+    

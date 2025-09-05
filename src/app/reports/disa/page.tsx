@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -104,11 +104,18 @@ export default function DisaReportPage() {
   
   const handlePrint = () => {
     setIsPrinting(true);
-    setTimeout(() => {
-        window.print();
-        setIsPrinting(false);
-    }, 300);
   };
+  
+  useEffect(() => {
+    if (isPrinting) {
+      document.body.classList.add('print-landscape');
+      setTimeout(() => {
+        window.print();
+        document.body.classList.remove('print-landscape');
+        setIsPrinting(false);
+      }, 500);
+    }
+  }, [isPrinting]);
   
   const grandTotal = reportData?.reduce((acc, row) => {
     acc.brut += row.totalBrut;
@@ -287,4 +294,3 @@ export default function DisaReportPage() {
     </>
   );
 }
-

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
@@ -77,7 +78,7 @@ export default function EmployeesPage() {
   const [personnelTypeFilter, setPersonnelTypeFilter] = useState(initialFilter || 'all');
 
   const [columnsToPrint, setColumnsToPrint] = useState<ColumnKeys[]>(Object.keys(allColumns) as ColumnKeys[]);
-  const [organizationLogos, setOrganizationLogos] = useState({ mainLogoUrl: '', secondaryLogoUrl: '' });
+  const [organizationLogos, setOrganizationLogos] = useState({ mainLogoUrl: '', secondaryLogoUrl: '', organizationName: '' });
 
   const [printDate, setPrintDate] = useState('');
 
@@ -122,8 +123,10 @@ export default function EmployeesPage() {
 
   useEffect(() => {
     if (isPrinting) {
+      document.body.classList.add('print-landscape');
       setTimeout(() => {
         window.print();
+        document.body.classList.remove('print-landscape');
         setIsPrinting(false);
       }, 500); // Increased timeout to ensure images load
     }
@@ -169,7 +172,7 @@ export default function EmployeesPage() {
 
   const filteredEmployees = useMemo(() => {
     const filtered = employees.filter(employee => {
-      const fullName = (employee.firstName && employee.lastName) ? `${employee.lastName} ${employee.firstName}`.toLowerCase() : (employee.name || '').toLowerCase();
+      const fullName = (employee.lastName || '').toLowerCase() + ' ' + (employee.firstName || '').toLowerCase();
       const matchesSearchTerm = fullName.includes(searchTerm.toLowerCase()) || (employee.matricule || '').toLowerCase().includes(searchTerm.toLowerCase());
       const matchesDepartment = departmentFilter === 'all' || employee.department === departmentFilter;
       const matchesStatus = statusFilter === 'all' || employee.status === statusFilter;
@@ -237,7 +240,8 @@ export default function EmployeesPage() {
     }
     const csvData = Papa.unparse(filteredEmployees.map(e => ({
         matricule: e.matricule, 
-        name: e.firstName && e.lastName ? `${e.lastName} ${e.firstName}` : e.name, 
+        nom: e.lastName,
+        prenom: e.firstName,
         email: e.email, 
         poste: e.poste, 
         department: e.department, 
@@ -245,7 +249,7 @@ export default function EmployeesPage() {
         photoUrl: e.photoUrl
     })), {
         header: true,
-        columns: ["matricule", "name", "email", "poste", "department", "status", "photoUrl"]
+        columns: ["matricule", "nom", "prenom", "email", "poste", "department", "status", "photoUrl"]
     });
     downloadFile(csvData, 'export_employes.csv', 'text/csv;charset=utf-8;');
     toast({ title: "Exportation CSV réussie" });
@@ -281,7 +285,7 @@ export default function EmployeesPage() {
         escapeSql(emp.matricule),
         escapeSql(emp.firstName),
         escapeSql(emp.lastName),
-        escapeSql(emp.firstName && emp.lastName ? `${emp.firstName} ${emp.lastName}` : emp.name),
+        escapeSql(emp.name),
         escapeSql(emp.email),
         escapeSql(emp.poste),
         escapeSql(emp.department),
@@ -454,7 +458,7 @@ export default function EmployeesPage() {
                         <TableHeader>
                             <TableRow>
                             <TableHead className="w-[80px]">Photo</TableHead>
-                            <TableHead>Nom & Prénoms</TableHead>
+                            <TableHead>NOM & Prénoms</TableHead>
                             <TableHead>Matricule</TableHead>
                             <TableHead>Poste</TableHead>
                             <TableHead>Service</TableHead>
@@ -484,12 +488,12 @@ export default function EmployeesPage() {
                                             <Avatar>
                                                 <AvatarImage src={employee.photoUrl || ''} alt={employee.name} data-ai-hint="employee photo" />
                                                 <AvatarFallback className={getAvatarBgClass(employee.sexe)}>
-                                                    {employee.lastName?.charAt(0) || ''}{employee.firstName?.charAt(0) || ''}
+                                                    {(employee.lastName || '').charAt(0)}{(employee.firstName || '').charAt(0)}
                                                 </AvatarFallback>
                                             </Avatar>
                                         </TableCell>
                                         <TableCell>
-                                            <div className="font-medium">{`${employee.lastName} ${employee.firstName}`.trim()}</div>
+                                            <div className="font-medium">{(employee.lastName || '').toUpperCase()} {employee.firstName}</div>
                                         </TableCell>
                                         <TableCell>{employee.matricule}</TableCell>
                                         <TableCell>{employee.poste}</TableCell>
@@ -605,8 +609,8 @@ export default function EmployeesPage() {
                                 <td className="border border-black p-1 text-center">{index + 1}</td>
                                 {columnsToPrint.map(key => {
                                     let value: React.ReactNode = employee[key as keyof Employe] as string || '';
-                                    if (key === 'name' && (employee.firstName || employee.lastName)) {
-                                        value = `${employee.lastName} ${employee.firstName}`.trim();
+                                    if (key === 'name') {
+                                        value = `${(employee.lastName || '').toUpperCase()} ${employee.firstName || ''}`.trim();
                                     }
                                     if (key === 'CNPS') {
                                         value = employee.CNPS ? 'Oui' : 'Non';
@@ -625,8 +629,6 @@ export default function EmployeesPage() {
                         </div>
                         <div className="text-center">
                             <p className="font-bold">{organizationLogos.organizationName || "Chambre Nationale de Rois et Chefs Traditionnels (CNRCT)"}</p>
-                            <p>Yamoussoukro, Riviera - BP 201 Yamoussoukro | Tél : (225) 30 64 06 60 | Fax : (+255) 30 64 06 63</p>
-                            <p>www.cnrct.ci - Email : info@cnrct.ci</p>
                         </div>
                         <div>
                             <p>1</p>
@@ -642,3 +644,4 @@ export default function EmployeesPage() {
     
 
     
+

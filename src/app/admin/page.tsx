@@ -78,16 +78,31 @@ export default function AdminPage() {
       (roleList) => {
         setRoles(roleList);
         roleList.forEach(role => rolesMap.set(role.id, role));
-        setUsers(currentUsers => 
-            currentUsers?.map(user => ({ ...user, role: rolesMap.get(user.roleId) || null })) || null
-        );
+        
+        // This is the key change: When roles update, re-map the roles to the existing user list.
+        setUsers(currentUsers => {
+            if (!currentUsers) return null;
+            return currentUsers.map(user => {
+                const updatedRole = rolesMap.get(user.roleId) || null;
+                return { 
+                    ...user, 
+                    role: updatedRole, 
+                    permissions: updatedRole?.permissions || []
+                };
+            });
+        });
       },
       (err) => { setError("Impossible de charger les rôles."); console.error(err); }
     );
 
     const unsubUsers = subscribeToUsers(
       (userList) => {
-        const usersWithRoles = userList.map(user => ({ ...user, role: rolesMap.get(user.roleId) || null }));
+        // When users update, map the roles we already have.
+        const usersWithRoles = userList.map(user => ({ 
+            ...user, 
+            role: rolesMap.get(user.roleId) || null,
+            permissions: rolesMap.get(user.roleId)?.permissions || []
+        }));
         setUsers(usersWithRoles);
       },
       (err) => { setError("Impossible de charger les utilisateurs."); console.error(err); }

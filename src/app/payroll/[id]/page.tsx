@@ -255,7 +255,6 @@ export default function PayslipPage() {
                     <div className="leading-tight">
                         <p className="font-bold">Chambre Nationale de Rois et Chefs Traditionnels (CNRCT)</p>
                         <p>Yamoussoukro, Riviera - BP 201 Yamoussoukro | Tél : (225) 30 64 06 60 | Fax : (+255) 30 64 06 63</p>
-                        <p>www.cnrct.ci - Email : info@cnrct.ci</p>
                     </div>
                 </footer>
             </div>

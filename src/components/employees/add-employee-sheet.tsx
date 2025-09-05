@@ -117,7 +117,7 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
       return serviceList.filter(s => s.directionId === selectedDir.id);
     }
     if (selectedDepartmentObject) {
-      return serviceList.filter(s => s.departmentId === selectedDepartmentObject.id);
+      return serviceList.filter(s => s.departmentId === selectedDepartmentObject.id && !s.directionId);
     }
     return [];
   }, [direction, selectedDepartmentObject, directionList, serviceList]);
@@ -275,7 +275,7 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
                     <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="poste" className="text-right">Poste</Label><Input id="poste" value={poste} onChange={(e) => setPoste(e.target.value)} className="col-span-3" required/></div>
                     
                     <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="department" className="text-right">Département</Label><Select value={department} onValueChange={(value) => { setDepartment(value); setDirection(''); setService(''); }} required><SelectTrigger className="col-span-3"><SelectValue placeholder="Sélectionnez..." /></SelectTrigger><SelectContent>{departmentList.map(dep => (<SelectItem key={dep.id} value={dep.name}>{dep.name}</SelectItem>))}</SelectContent></Select></div>
-                    <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="direction" className="text-right">Direction</Label><Select value={direction} onValueChange={(value) => { setDirection(value); setService(''); }} disabled={!department}><SelectTrigger className="col-span-3"><SelectValue placeholder="Sélectionnez..." /></SelectTrigger><SelectContent>{filteredDirections.map(dir => (<SelectItem key={dir.id} value={dir.name}>{dir.name}</SelectItem>))}</SelectContent></Select></div>
+                    <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="direction" className="text-right">Direction</Label><Select value={direction} onValueChange={(value) => { setDirection(value); setService(''); }} disabled={!department || filteredDirections.length === 0}><SelectTrigger className="col-span-3"><SelectValue placeholder="Sélectionnez..." /></SelectTrigger><SelectContent>{filteredDirections.map(dir => (<SelectItem key={dir.id} value={dir.name}>{dir.name}</SelectItem>))}</SelectContent></Select></div>
                     <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="service" className="text-right">Service</Label><Select value={service} onValueChange={setService} disabled={!department || filteredServices.length === 0}><SelectTrigger className="col-span-3"><SelectValue placeholder="Sélectionnez..." /></SelectTrigger><SelectContent>{filteredServices.map(svc => (<SelectItem key={svc.id} value={svc.name}>{svc.name}</SelectItem>))}</SelectContent></Select></div>
 
                     <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="region" className="text-right">Région</Label><Input id="region" value={region} onChange={(e) => setRegion(e.target.value)} className="col-span-3" /></div>

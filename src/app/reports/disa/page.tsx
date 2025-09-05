@@ -31,10 +31,8 @@ import type { OrganizationSettings } from "@/lib/data";
 interface DisaRow {
   matricule: string;
   name: string;
+  monthlySalaries: number[];
   totalBrut: number;
-  totalITS: number;
-  totalCN: number;
-  totalIGR: number;
   totalCNPS: number;
 }
 
@@ -47,17 +45,19 @@ export default function DisaReportPage() {
   const [organizationLogos, setOrganizationLogos] = useState<OrganizationSettings | null>(null);
   
   const years = Array.from({ length: 10 }, (_, i) => (new Date().getFullYear() - i).toString());
+  const monthLabels = Array.from({ length: 12 }, (_, i) => fr.localize?.month(i, { width: 'short' }).toUpperCase());
 
-  const calculateAnnualData = async (payslipPromises: Promise<PayslipDetails>[]): Promise<{ totalBrut: number, totalITS: number, totalCN: number, totalIGR: number, totalCNPS: number }> => {
+  const calculateAnnualData = async (payslipPromises: Promise<PayslipDetails>[]): Promise<{ monthlySalaries: number[], totalBrut: number, totalCNPS: number }> => {
     const monthlyDetails = await Promise.all(payslipPromises);
-    return monthlyDetails.reduce((acc, details) => {
-        acc.totalBrut += details.totals.brutImposable;
-        acc.totalITS += details.deductions.find(d => d.label === 'ITS')?.amount || 0;
-        acc.totalCN += details.deductions.find(d => d.label === 'CN')?.amount || 0;
-        acc.totalIGR += details.deductions.find(d => d.label === 'IGR')?.amount || 0;
-        acc.totalCNPS += details.deductions.find(d => d.label === 'CNPS')?.amount || 0;
-        return acc;
-    }, { totalBrut: 0, totalITS: 0, totalCN: 0, totalIGR: 0, totalCNPS: 0 });
+    const monthlySalaries = monthlyDetails.map(details => details.totals.brutImposable);
+    const totalBrut = monthlySalaries.reduce((sum, current) => sum + current, 0);
+    const totalCNPS = monthlyDetails.reduce((sum, details) => sum + (details.deductions.find(d => d.label === 'CNPS')?.amount || 0), 0);
+    
+    return {
+        monthlySalaries,
+        totalBrut,
+        totalCNPS,
+    };
   };
   
   const generateReport = async () => {
@@ -85,7 +85,9 @@ export default function DisaReportPage() {
           reportRows.push({
               matricule: employee.matricule,
               name: employee.name,
-              ...annualTotals
+              monthlySalaries: annualTotals.monthlySalaries,
+              totalBrut: annualTotals.totalBrut,
+              totalCNPS: annualTotals.totalCNPS,
           });
       }
       setReportData(reportRows);
@@ -98,7 +100,7 @@ export default function DisaReportPage() {
     }
   };
 
-  const formatCurrency = (value: number) => value.toLocaleString('fr-FR');
+  const formatCurrency = (value: number) => value === 0 ? '-' : value.toLocaleString('fr-FR');
   
   const handlePrint = () => {
     setIsPrinting(true);
@@ -110,12 +112,12 @@ export default function DisaReportPage() {
   
   const grandTotal = reportData?.reduce((acc, row) => {
     acc.brut += row.totalBrut;
-    acc.its += row.totalITS;
-    acc.cn += row.totalCN;
-    acc.igr += row.totalIGR;
     acc.cnps += row.totalCNPS;
+    row.monthlySalaries.forEach((salary, index) => {
+        acc.monthly[index] = (acc.monthly[index] || 0) + salary;
+    });
     return acc;
-  }, { brut: 0, its: 0, cn: 0, igr: 0, cnps: 0});
+  }, { brut: 0, cnps: 0, monthly: Array(12).fill(0) });
 
   return (
     <>
@@ -182,32 +184,30 @@ export default function DisaReportPage() {
                             <TableRow>
                                 <TableHead>Matricule</TableHead>
                                 <TableHead>Nom et Prénoms</TableHead>
-                                <TableHead className="text-right">Total Brut Annuel</TableHead>
-                                <TableHead className="text-right">Total ITS</TableHead>
-                                <TableHead className="text-right">Total CN</TableHead>
-                                <TableHead className="text-right">Total IGR</TableHead>
-                                <TableHead className="text-right">Total CNPS</TableHead>
+                                {monthLabels.map(m => <TableHead key={m} className="text-right">{m}</TableHead>)}
+                                <TableHead className="text-right font-bold">Total Brut</TableHead>
+                                <TableHead className="text-right font-bold">Total CNPS</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {reportData.map(row => (
                                 <TableRow key={row.matricule}>
                                     <TableCell>{row.matricule}</TableCell>
-                                    <TableCell className="font-medium">{row.name}</TableCell>
-                                    <TableCell className="text-right font-mono">{formatCurrency(row.totalBrut)}</TableCell>
-                                    <TableCell className="text-right font-mono">{formatCurrency(row.totalITS)}</TableCell>
-                                    <TableCell className="text-right font-mono">{formatCurrency(row.totalCN)}</TableCell>
-                                    <TableCell className="text-right font-mono">{formatCurrency(row.totalIGR)}</TableCell>
-                                    <TableCell className="text-right font-mono">{formatCurrency(row.totalCNPS)}</TableCell>
+                                    <TableCell className="font-medium whitespace-nowrap">{row.name}</TableCell>
+                                    {row.monthlySalaries.map((salary, index) => (
+                                        <TableCell key={index} className="text-right font-mono text-xs">{formatCurrency(salary)}</TableCell>
+                                    ))}
+                                    <TableCell className="text-right font-mono font-bold">{formatCurrency(row.totalBrut)}</TableCell>
+                                    <TableCell className="text-right font-mono font-bold">{formatCurrency(row.totalCNPS)}</TableCell>
                                 </TableRow>
                             ))}
                             {grandTotal && (
                                 <TableRow className="font-bold bg-muted hover:bg-muted">
                                     <TableCell colSpan={2} className="text-right">TOTAUX</TableCell>
+                                    {grandTotal.monthly.map((total, index) => (
+                                        <TableCell key={index} className="text-right font-mono text-xs">{formatCurrency(total)}</TableCell>
+                                    ))}
                                     <TableCell className="text-right font-mono">{formatCurrency(grandTotal.brut)}</TableCell>
-                                    <TableCell className="text-right font-mono">{formatCurrency(grandTotal.its)}</TableCell>
-                                    <TableCell className="text-right font-mono">{formatCurrency(grandTotal.cn)}</TableCell>
-                                    <TableCell className="text-right font-mono">{formatCurrency(grandTotal.igr)}</TableCell>
                                     <TableCell className="text-right font-mono">{formatCurrency(grandTotal.cnps)}</TableCell>
                                 </TableRow>
                             )}
@@ -246,36 +246,34 @@ export default function DisaReportPage() {
             <div className="text-center mb-8">
                 <h1 className="text-xl font-bold underline">DÉCLARATION INDIVIDUELLE DES SALAIRES ET APPOINTEMENTS - ANNEE {year}</h1>
             </div>
-            <table className="w-full text-xs border-collapse border border-black">
+            <table className="w-full text-[8px] border-collapse border border-black">
                 <thead className="bg-gray-200">
                     <tr>
-                        <th className="border border-black p-1">Matricule</th>
+                        <th className="border border-black p-1">Mat.</th>
                         <th className="border border-black p-1">Nom et Prénoms</th>
-                        <th className="border border-black p-1">Brut Annuel</th>
-                        <th className="border border-black p-1">ITS</th>
-                        <th className="border border-black p-1">CN</th>
-                        <th className="border border-black p-1">IGR</th>
-                        <th className="border border-black p-1">CNPS</th>
+                        {monthLabels.map(m => <th key={m} className="border border-black p-1">{m}</th>)}
+                        <th className="border border-black p-1">Total Brut</th>
+                        <th className="border border-black p-1">Total CNPS</th>
                     </tr>
                 </thead>
                 <tbody>
                     {reportData.map(row => (
                         <tr key={row.matricule}>
                             <td className="border border-black p-1">{row.matricule}</td>
-                            <td className="border border-black p-1">{row.name}</td>
-                            <td className="border border-black p-1 text-right">{formatCurrency(row.totalBrut)}</td>
-                            <td className="border border-black p-1 text-right">{formatCurrency(row.totalITS)}</td>
-                            <td className="border border-black p-1 text-right">{formatCurrency(row.totalCN)}</td>
-                            <td className="border border-black p-1 text-right">{formatCurrency(row.totalIGR)}</td>
-                            <td className="border border-black p-1 text-right">{formatCurrency(row.totalCNPS)}</td>
+                            <td className="border border-black p-1 whitespace-nowrap">{row.name}</td>
+                            {row.monthlySalaries.map((salary, index) => (
+                                <td key={index} className="border border-black p-1 text-right">{formatCurrency(salary)}</td>
+                            ))}
+                            <td className="border border-black p-1 text-right font-bold">{formatCurrency(row.totalBrut)}</td>
+                            <td className="border border-black p-1 text-right font-bold">{formatCurrency(row.totalCNPS)}</td>
                         </tr>
                     ))}
                     <tr className="font-bold bg-gray-100">
                         <td colSpan={2} className="border border-black p-1 text-right">TOTAL</td>
+                        {grandTotal.monthly.map((total, index) => (
+                           <td key={index} className="border border-black p-1 text-right">{formatCurrency(total)}</td>
+                        ))}
                         <td className="border border-black p-1 text-right">{formatCurrency(grandTotal.brut)}</td>
-                        <td className="border border-black p-1 text-right">{formatCurrency(grandTotal.its)}</td>
-                        <td className="border border-black p-1 text-right">{formatCurrency(grandTotal.cn)}</td>
-                        <td className="border border-black p-1 text-right">{formatCurrency(grandTotal.igr)}</td>
                         <td className="border border-black p-1 text-right">{formatCurrency(grandTotal.cnps)}</td>
                     </tr>
                 </tbody>
@@ -289,3 +287,4 @@ export default function DisaReportPage() {
     </>
   );
 }
+

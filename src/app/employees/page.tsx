@@ -170,7 +170,7 @@ export default function EmployeesPage() {
 
   const filteredEmployees = useMemo(() => {
     const filtered = employees.filter(employee => {
-      const fullName = (employee.firstName && employee.lastName) ? `${employee.lastName} ${employee.firstName}`.toLowerCase() : (employee.name || '').toLowerCase();
+      const fullName = (employee.firstName && employee.lastName) ? `${'\'\'\' + employee.lastName} ${'\'\'\' + employee.firstName}`.toLowerCase() : (employee.name || '').toLowerCase();
       const matchesSearchTerm = fullName.includes(searchTerm.toLowerCase()) || (employee.matricule || '').toLowerCase().includes(searchTerm.toLowerCase());
       const matchesDepartment = departmentFilter === 'all' || employee.department === departmentFilter;
       const matchesStatus = statusFilter === 'all' || employee.status === statusFilter;
@@ -238,7 +238,7 @@ export default function EmployeesPage() {
     }
     const csvData = Papa.unparse(filteredEmployees.map(e => ({
         matricule: e.matricule, 
-        name: e.firstName && e.lastName ? `${e.lastName} ${e.firstName}` : e.name, 
+        name: e.firstName && e.lastName ? `${'\'\'\' + e.lastName} ${'\'\'\' + e.firstName}` : e.name, 
         email: e.email, 
         poste: e.poste, 
         department: e.department, 
@@ -282,7 +282,7 @@ export default function EmployeesPage() {
         escapeSql(emp.matricule),
         escapeSql(emp.firstName),
         escapeSql(emp.lastName),
-        escapeSql(emp.firstName && emp.lastName ? `${emp.firstName} ${emp.lastName}` : emp.name),
+        escapeSql(emp.firstName && emp.lastName ? `${'\'\'\' + emp.firstName} ${'\'\'\' + emp.lastName}` : emp.name),
         escapeSql(emp.email),
         escapeSql(emp.poste),
         escapeSql(emp.department),
@@ -490,7 +490,7 @@ export default function EmployeesPage() {
                                             </Avatar>
                                         </TableCell>
                                         <TableCell>
-                                            <div className="font-medium">{`${employee.lastName || ''} ${employee.firstName || ''}`.trim()}</div>
+                                            <div className="font-medium">{`${'\'\'\' + employee.lastName} ${'\'\'\' + employee.firstName}`.trim()}</div>
                                         </TableCell>
                                         <TableCell>{employee.matricule}</TableCell>
                                         <TableCell>{employee.poste}</TableCell>
@@ -607,7 +607,7 @@ export default function EmployeesPage() {
                                 {columnsToPrint.map(key => {
                                     let value: React.ReactNode = employee[key as keyof Employe] as string || '';
                                     if (key === 'name' && (employee.firstName || employee.lastName)) {
-                                        value = `${employee.lastName || ''} ${employee.firstName || ''}`.trim();
+                                        value = `${'\'\'\' + employee.lastName} ${'\'\'\' + employee.firstName}`.trim();
                                     }
                                     if (key === 'CNPS') {
                                         value = employee.CNPS ? 'Oui' : 'Non';
@@ -639,7 +639,5 @@ export default function EmployeesPage() {
     </>
   );
 }
-
-    
 
     

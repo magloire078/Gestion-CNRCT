@@ -121,15 +121,18 @@ export default function EmployeeEditPage() {
     };
 
     const handleSelectChange = (name: string, value: string) => {
-        const newState: Partial<Employe> = { ...employee, [name]: value };
-        if (name === 'department') {
-            newState.direction = '';
-            newState.service = '';
-        }
-        if (name === 'direction') {
-            newState.service = '';
-        }
-        setEmployee(newState);
+        setEmployee(prev => {
+            if(!prev) return null;
+            const newState: Partial<Employe> = { ...prev, [name]: value };
+            if (name === 'department') {
+                newState.direction = '';
+                newState.service = '';
+            }
+            if (name === 'direction') {
+                newState.service = '';
+            }
+            return newState;
+        });
     };
 
     const handleSave = async () => {

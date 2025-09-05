@@ -1,4 +1,5 @@
 
+
 // src/lib/permissions.ts
 
 export const allPermissions = {
@@ -19,6 +20,7 @@ export const allPermissions = {
   "Gestion des Documents": "page:documents:view",
   "Accès à l'Assistant IA": "page:assistant:view",
   "Accès à l'Administration": "page:admin:view",
+  "Voir l'Organigramme": "page:organization-chart:view",
 
   // Group permissions
   "Voir le groupe Personnel": "group:personnel:view",

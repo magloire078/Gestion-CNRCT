@@ -1,3 +1,4 @@
+
 // src/services/allowance-service.ts
 
 // Pour l'instant, les barèmes sont définis ici.

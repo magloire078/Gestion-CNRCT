@@ -356,7 +356,7 @@ export default function MissionDetailPage() {
                                     <TableCell className="text-right font-mono">{formatCurrency(p.coutTransport)}</TableCell>
                                     <TableCell className="text-right font-mono">{formatCurrency(p.coutHebergement)}</TableCell>
                                     <TableCell className="text-right font-bold font-mono">{formatCurrency(totalParticipant)}</TableCell>
-                               </TableRow>
+                                </TableRow>
                             )
                         })}
                          {participantsDetails.length === 0 && (

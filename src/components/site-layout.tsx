@@ -32,7 +32,7 @@ import {
   ChevronDown,
   UserSquare as UserSquareIcon,
   ShieldHalf,
-  Sitemap,
+  Network,
 } from "lucide-react";
 
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
@@ -87,7 +87,7 @@ const allMenuItems = [
         { href: "/employees?filter=directoire", label: "Directoire", icon: Building, permission: "page:employees:view" },
         { href: "/employees?filter=regional", label: "Comités Régionaux", icon: Globe, permission: "page:employees:view" },
         { href: "/chiefs", label: "Rois & Chefs", icon: Crown, permission: "page:chiefs:view" },
-        { href: "/organization-chart", label: "Organigramme", icon: Sitemap, permission: "page:organization-chart:view" },
+        { href: "/organization-chart", label: "Organigramme", icon: Network, permission: "page:organization-chart:view" },
         { href: "/conflicts", label: "Gestion des Conflits", icon: Scale, permission: "page:conflicts:view" },
         { href: "/mapping", label: "Cartographie", icon: MapIcon, permission: "page:mapping:view" },
     ]

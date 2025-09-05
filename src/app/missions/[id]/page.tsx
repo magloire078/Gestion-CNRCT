@@ -41,6 +41,7 @@ import { generateMissionOrderAction, deleteMissionAction } from "./actions";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { MissionCostReport } from "@/components/missions/mission-cost-report";
 import { getAllowanceRate } from "@/services/allowance-service";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 
 type Status = "Planifiée" | "En cours" | "Terminée" | "Annulée";
@@ -340,8 +341,16 @@ export default function MissionDetailPage() {
                             return (
                                 <TableRow key={p.id}>
                                     <TableCell>
-                                        <div className="font-medium">{`${p.lastName || ''} ${p.firstName || ''}`.trim()}</div>
-                                        <div className="text-sm text-muted-foreground">{p.poste}</div>
+                                       <Link href={`/employees/${p.id}`} className="flex items-center gap-3 group">
+                                         <Avatar className="h-9 w-9">
+                                            <AvatarImage src={p.photoUrl} alt={p.name} data-ai-hint="employee photo" />
+                                            <AvatarFallback>{p.lastName?.charAt(0)}{p.firstName?.charAt(0)}</AvatarFallback>
+                                         </Avatar>
+                                         <div>
+                                            <div className="font-medium group-hover:underline">{`${p.lastName || ''} ${p.firstName || ''}`.trim()}</div>
+                                            <div className="text-sm text-muted-foreground">{p.poste}</div>
+                                         </div>
+                                       </Link>
                                     </TableCell>
                                     <TableCell className="text-right font-mono">{formatCurrency(p.totalIndemnites)}</TableCell>
                                     <TableCell className="text-right font-mono">{formatCurrency(p.coutTransport)}</TableCell>

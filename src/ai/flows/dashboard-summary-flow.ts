@@ -20,14 +20,13 @@ export async function getDashboardSummary(): Promise<DashboardSummaryOutput> {
 
 const dashboardSummaryPrompt = ai.definePrompt({
   name: 'dashboardSummaryPrompt',
-  input: { schema: z.any() }, // Accept any input, we'll pass the stats object.
-  output: { schema: DashboardSummaryOutputSchema },
   tools: [getDashboardStats],
   prompt: `You are a helpful assistant for the company "SYSTEME DE GESTION CNRCT".
   Your goal is to provide a very brief, friendly, and informative summary of the current company stats.
   Use the getDashboardStats tool to get the data you need.
   Mention the number of active employees, pending leaves, and missions in progress.
-  Keep it to a single, welcoming sentence. For example: "Bonjour ! Il y a actuellement X employés actifs, Y demandes de congé en attente et Z missions en cours."
+  If all stats are zero, output a message like: "Bonjour ! Il n'y a pas d'activité particulière pour le moment."
+  Otherwise, keep it to a single, welcoming sentence. For example: "Bonjour ! Il y a actuellement X employés actifs, Y demandes de congé en attente et Z missions en cours."
   
   IMPORTANT: Your entire response MUST BE A SINGLE, RAW STRING, not a JSON object or null.
   DO NOT output JSON.
@@ -41,18 +40,7 @@ const dashboardSummaryFlow = ai.defineFlow(
   },
   async () => {
     try {
-      // First, get the stats directly.
-      const stats = await getDashboardStats();
-
-      // If all stats are zero, return a default message without calling the LLM.
-      if (stats.activeEmployees === 0 && stats.pendingLeaves === 0 && stats.inProgressMissions === 0) {
-        return "Bonjour ! Il n'y a pas d'activité particulière pour le moment.";
-      }
-
-      // If there are stats, call the LLM to generate a nice sentence, passing the stats as context.
-      const { output } = await dashboardSummaryPrompt(stats);
-
-      // As a final fallback, ensure we never return null.
+      const { output } = await dashboardSummaryPrompt();
       return output || "Résumé non disponible pour le moment.";
     } catch (error) {
       console.error("[dashboardSummaryFlow] Error calling AI:", error);

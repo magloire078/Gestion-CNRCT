@@ -291,3 +291,12 @@ export type Notification = {
   isRead: boolean;
   createdAt: string; // ISO string e.g. new Date().toISOString()
 };
+
+export type EmployeeEvent = {
+  id: string;
+  employeeId: string;
+  eventType: 'Promotion' | 'Augmentation' | 'Changement de poste' | 'Départ' | 'Autre';
+  effectiveDate: string; // YYYY-MM-DD
+  description: string;
+  details?: Record<string, any>; // e.g., { previousPoste: 'Junior', newPoste: 'Senior', previousSalary: 500, newSalary: 600 }
+};

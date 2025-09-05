@@ -9,13 +9,14 @@ import { getEmployee } from "@/services/employee-service";
 import { getLeaves } from "@/services/leave-service";
 import { getAssets } from "@/services/asset-service";
 import { getMissions } from "@/services/mission-service";
-import type { Employe, Leave, Asset, Mission } from "@/lib/data";
+import { getEmployeeHistory } from "@/services/employee-history-service";
+import type { Employe, Leave, Asset, Mission, EmployeeEvent } from "@/lib/data";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Pencil, User, Briefcase, Mail, Phone, MapPin, BadgeCheck, FileText, Calendar, Laptop, Rocket, FolderArchive, LogOut, Globe, Landmark, ChevronRight, Users, Cake } from "lucide-react";
+import { ArrowLeft, Pencil, User, Briefcase, Mail, Phone, MapPin, BadgeCheck, FileText, Calendar, Laptop, Rocket, FolderArchive, LogOut, Globe, Landmark, ChevronRight, Users, Cake, History } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -23,6 +24,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { lastDayOfMonth, format, subMonths, differenceInYears, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { EmployeeHistoryTimeline } from "@/components/employees/employee-history-timeline";
 
 
 type Status = "Approuvé" | "En attente" | "Rejeté";
@@ -43,6 +45,7 @@ export default function EmployeeDetailPage() {
     const [leaves, setLeaves] = useState<Leave[]>([]);
     const [assets, setAssets] = useState<Asset[]>([]);
     const [missions, setMissions] = useState<Mission[]>([]);
+    const [history, setHistory] = useState<EmployeeEvent[]>([]);
     const [loading, setLoading] = useState(true);
 
     const [isDateDialogOpen, setIsDateDialogOpen] = useState(false);
@@ -61,14 +64,16 @@ export default function EmployeeDetailPage() {
                 setEmployee(employeeData);
 
                 if (employeeData) {
-                    const [leavesData, assetsData, missionsData] = await Promise.all([
+                    const [leavesData, assetsData, missionsData, historyData] = await Promise.all([
                         getLeaves(),
                         getAssets(),
-                        getMissions()
+                        getMissions(),
+                        getEmployeeHistory(id),
                     ]);
                     setLeaves(leavesData.filter(l => l.employee === employeeData.name).slice(0, 5));
                     setAssets(assetsData.filter(a => a.assignedTo === employeeData.name));
                     setMissions(missionsData.filter(m => m.assignedTo === employeeData.name).slice(0, 5));
+                    setHistory(historyData);
                 }
             } catch (error) {
                 console.error("Failed to fetch employee details", error);
@@ -156,6 +161,7 @@ export default function EmployeeDetailPage() {
                     <TabsTrigger value="info">Informations Générales</TabsTrigger>
                     <TabsTrigger value="payroll">Paie</TabsTrigger>
                     <TabsTrigger value="activity">Activité</TabsTrigger>
+                    <TabsTrigger value="history">Historique</TabsTrigger>
                 </TabsList>
                 <TabsContent value="info">
                      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -353,6 +359,17 @@ export default function EmployeeDetailPage() {
                             </CardContent>
                         </Card>
                     </div>
+                 </TabsContent>
+                 <TabsContent value="history">
+                     <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2"><History className="h-5 w-5 text-primary" /> Historique Professionnel</CardTitle>
+                            <CardDescription>Journal des événements clés de la carrière de l'employé.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                             <EmployeeHistoryTimeline events={history} />
+                        </CardContent>
+                    </Card>
                  </TabsContent>
             </Tabs>
 

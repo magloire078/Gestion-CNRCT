@@ -106,12 +106,15 @@ export default function DisaReportPage() {
     setIsPrinting(true);
   };
   
-  useEffect(() => {
+ useEffect(() => {
     if (isPrinting) {
-      document.body.classList.add('print-landscape');
+      const style = document.createElement('style');
+      style.innerHTML = `@media print { @page { size: landscape; margin: 1cm; } }`;
+      document.head.appendChild(style);
+      
       setTimeout(() => {
         window.print();
-        document.body.classList.remove('print-landscape');
+        document.head.removeChild(style);
         setIsPrinting(false);
       }, 500);
     }
@@ -294,3 +297,4 @@ export default function DisaReportPage() {
     </>
   );
 }
+

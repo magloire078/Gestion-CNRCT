@@ -133,9 +133,11 @@ export default function MissionsPage() {
           Gestion des Missions
         </h1>
         <div className="flex items-center gap-2">
-            <Button variant="outline">
-                <FileText className="mr-2 h-4 w-4" />
-                Rapport des Missions
+            <Button variant="outline" asChild>
+                <Link href="/missions/report">
+                    <FileText className="mr-2 h-4 w-4" />
+                    Rapport des Missions
+                </Link>
             </Button>
             <Button onClick={() => setIsSheetOpen(true)} className="w-full sm:w-auto">
               <PlusCircle className="mr-2 h-4 w-4" />

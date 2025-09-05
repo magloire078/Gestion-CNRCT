@@ -32,7 +32,7 @@ const chartConfig = {
   Protocole: { label: "Protocole", color: "hsl(var(--chart-1))" },
   Cabinet: { label: "Cabinet", color: "hsl(var(--chart-2))" },
   "Direction des Affaires sociales": { label: "Social", color: "hsl(var(--chart-3))" },
-  Directoire: { label: "Directoire", color: "hsl(var(--chart-4))" },
+  Directoire: { label: "Membres du Directoire", color: "hsl(var(--chart-4))" },
   "Comités Régionaux": { label: "Régions", color: "hsl(var(--chart-5))" },
   Other: { label: "Autre", color: "hsl(var(--muted))" },
 } satisfies ChartConfig

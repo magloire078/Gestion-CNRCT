@@ -84,7 +84,7 @@ const allMenuItems = [
     icon: Building,
     permission: "group:organization:view",
     subItems: [
-        { href: "/employees?filter=directoire", label: "Directoire", icon: Building, permission: "page:employees:view" },
+        { href: "/employees?filter=directoire", label: "Membres du Directoire", icon: Building, permission: "page:employees:view" },
         { href: "/employees?filter=regional", label: "Comités Régionaux", icon: Globe, permission: "page:employees:view" },
         { href: "/chiefs", label: "Rois & Chefs", icon: Crown, permission: "page:chiefs:view" },
         { href: "/organization-chart", label: "Organigramme", icon: Network, permission: "page:organization-chart:view" },

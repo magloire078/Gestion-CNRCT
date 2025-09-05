@@ -368,7 +368,7 @@ export default function EmployeesPage() {
                 <Tabs value={personnelTypeFilter} onValueChange={handleTabChange}>
                     <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-6 mb-6">
                         <TabsTrigger value="all">Effectif Global</TabsTrigger>
-                        <TabsTrigger value="directoire">Directoire</TabsTrigger>
+                        <TabsTrigger value="directoire">Membres du Directoire</TabsTrigger>
                         <TabsTrigger value="regional">Comités Régionaux</TabsTrigger>
                         <TabsTrigger value="personnel">Personnel</TabsTrigger>
                         <TabsTrigger value="garde-republicaine">Garde Républicaine</TabsTrigger>

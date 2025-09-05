@@ -84,7 +84,7 @@ export default function DisaReportPage() {
           
           reportRows.push({
               matricule: employee.matricule,
-              name: employee.name,
+              name: `${(employee.lastName || '').toUpperCase()} ${employee.firstName || ''}`.trim(),
               monthlySalaries: annualTotals.monthlySalaries,
               totalBrut: annualTotals.totalBrut,
               totalCNPS: annualTotals.totalCNPS,
@@ -297,4 +297,3 @@ export default function DisaReportPage() {
     </>
   );
 }
-

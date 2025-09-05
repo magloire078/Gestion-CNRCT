@@ -23,7 +23,7 @@ interface MissionCostReportProps {
 
 const formatCurrency = (value: number | undefined) => {
     if (value === undefined) return '0';
-    return value.toLocaleString('fr-FR');
+    return Math.round(value).toLocaleString('fr-FR');
 }
 
 export function MissionCostReport({ mission, participants, duration, totalCost }: MissionCostReportProps) {
@@ -66,7 +66,7 @@ export function MissionCostReport({ mission, participants, duration, totalCost }
                     </thead>
                     <tbody>
                         {participants.map((p, index) => {
-                            const totalParticipant = (p.totalIndemnites || 0) + (p.coutTransport || 0) + (p.coutHebergement || 0);
+                            const totalParticipant = Math.round(p.totalIndemnites || 0) + Math.round(p.coutTransport || 0) + Math.round(p.coutHebergement || 0);
                             return (
                                 <tr key={p.id}>
                                     <td className="border border-black p-1 text-center">{index + 1}</td>

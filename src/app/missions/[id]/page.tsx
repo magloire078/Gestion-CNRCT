@@ -115,10 +115,10 @@ export default function MissionDetailPage() {
                 // If totalIndemnites is not manually set, calculate it
                 if (p.totalIndemnites === undefined || p.totalIndemnites === 0) {
                     const rate = getAllowanceRate(employee.categorie);
-                    p.totalIndemnites = rate * (duration > 0 ? duration : 1);
+                    p.totalIndemnites = Math.round(rate * (duration > 0 ? duration : 1));
                 }
 
-                const participantCost = (p.totalIndemnites || 0) + (p.coutTransport || 0) + (p.coutHebergement || 0);
+                const participantCost = Math.round(p.totalIndemnites || 0) + Math.round(p.coutTransport || 0) + Math.round(p.coutHebergement || 0);
                 calculatedTotalCost += participantCost;
 
                 return { ...employee, ...p };
@@ -211,7 +211,7 @@ export default function MissionDetailPage() {
   
   const formatCurrency = (value: number | undefined) => {
     if(value === undefined) return '0 FCFA';
-    return value.toLocaleString('fr-FR') + ' FCFA';
+    return Math.round(value).toLocaleString('fr-FR') + ' FCFA';
   };
 
   if (loading) {
@@ -337,7 +337,7 @@ export default function MissionDetailPage() {
                     </TableHeader>
                     <TableBody>
                         {participantsDetails.map((p) => {
-                            const totalParticipant = (p.totalIndemnites || 0) + (p.coutTransport || 0) + (p.coutHebergement || 0);
+                            const totalParticipant = Math.round(p.totalIndemnites || 0) + Math.round(p.coutTransport || 0) + Math.round(p.coutHebergement || 0);
                             return (
                                 <TableRow key={p.id}>
                                     <TableCell>

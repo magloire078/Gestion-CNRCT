@@ -1,4 +1,5 @@
 
+
 import type { Employe, PayslipDetails, PayslipEarning, PayslipDeduction, PayslipEmployerContribution } from '@/lib/data';
 import { numberToWords } from '@/lib/utils';
 import { getOrganizationSettings } from './organization-service';
@@ -93,14 +94,14 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
     
     // --- Création de la liste des gains pour l'affichage ---
     const earnings: PayslipEarning[] = [
-        { label: 'SALAIRE DE BASE', amount: baseSalary },
-        { label: 'PRIME D\'ANCIENNETE', amount: primeAnciennete },
-        { label: 'INDEMNITE DE TRANSPORT IMPOSABLE', amount: indemniteTransportImposable },
-        { label: 'INDEMNITE DE SUJETION', amount: indemniteSujetion },
-        { label: 'INDEMNITE DE COMMUNICATION', amount: indemniteCommunication },
-        { label: 'INDEMNITE DE REPRESENTATION', amount: indemniteRepresentation },
-        { label: 'INDEMNITE DE RESPONSABILITE', amount: indemniteResponsabilite },
-        { label: 'INDEMNITE DE LOGEMENT', amount: indemniteLogement },
+        { label: 'SALAIRE DE BASE', amount: Math.round(baseSalary) },
+        { label: 'PRIME D\'ANCIENNETE', amount: Math.round(primeAnciennete) },
+        { label: 'INDEMNITE DE TRANSPORT IMPOSABLE', amount: Math.round(indemniteTransportImposable) },
+        { label: 'INDEMNITE DE SUJETION', amount: Math.round(indemniteSujetion) },
+        { label: 'INDEMNITE DE COMMUNICATION', amount: Math.round(indemniteCommunication) },
+        { label: 'INDEMNITE DE REPRESENTATION', amount: Math.round(indemniteRepresentation) },
+        { label: 'INDEMNITE DE RESPONSABILITE', amount: Math.round(indemniteResponsabilite) },
+        { label: 'INDEMNITE DE LOGEMENT', amount: Math.round(indemniteLogement) },
     ];
 
     // --- Calcul du Brut Imposable ---
@@ -118,10 +119,10 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
     const cn = 0;   // Exonéré, mais peut être modifié ici.
     
     const deductions: PayslipDeduction[] = [
-        { label: 'ITS', amount: its },
-        { label: 'CN', amount: cn },
-        { label: 'IGR', amount: igr },
-        { label: 'CNPS', amount: cnps },
+        { label: 'ITS', amount: Math.round(its) },
+        { label: 'CN', amount: Math.round(cn) },
+        { label: 'IGR', amount: Math.round(igr) },
+        { label: 'CNPS', amount: Math.round(cnps) },
     ];
     
     const totalDeductions = deductions.reduce((sum, item) => sum + item.amount, 0);
@@ -139,12 +140,12 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
     const isCnpsRegistered = employee.CNPS === true;
 
     const employerContributions: PayslipEmployerContribution[] = [
-        { label: 'ITS PART PATRONALE', base: brutImposable, rate: '1,2%', amount: isCnpsRegistered ? (brutImposable * 0.012) : 0 },
-        { label: 'TAXE D\'APPRENTISSAGE', base: brutImposable, rate: '0,4%', amount: isCnpsRegistered ? (brutImposable * 0.004) : 0 },
-        { label: 'TAXE FPC', base: brutImposable, rate: '0,6%', amount: isCnpsRegistered ? (brutImposable * 0.006) : 0 },
-        { label: 'PRESTATION FAMILIALE', base: Math.min(brutImposable, 70000), rate: '5,75%', amount: isCnpsRegistered ? (Math.min(brutImposable, 70000) * 0.0575) : 0 },
-        { label: 'ACCIDENT DE TRAVAIL', base: Math.min(brutImposable, 70000), rate: '2,0%', amount: isCnpsRegistered ? (Math.min(brutImposable, 70000) * 0.02) : 0 },
-        { label: 'REGIME DE RETRAITE', base: brutImposable, rate: '7,7%', amount: isCnpsRegistered ? (brutImposable * 0.077) : 0 },
+        { label: 'ITS PART PATRONALE', base: Math.round(brutImposable), rate: '1,2%', amount: isCnpsRegistered ? Math.round(brutImposable * 0.012) : 0 },
+        { label: 'TAXE D\'APPRENTISSAGE', base: Math.round(brutImposable), rate: '0,4%', amount: isCnpsRegistered ? Math.round(brutImposable * 0.004) : 0 },
+        { label: 'TAXE FPC', base: Math.round(brutImposable), rate: '0,6%', amount: isCnpsRegistered ? Math.round(brutImposable * 0.006) : 0 },
+        { label: 'PRESTATION FAMILIALE', base: Math.min(brutImposable, 70000), rate: '5,75%', amount: isCnpsRegistered ? Math.round(Math.min(brutImposable, 70000) * 0.0575) : 0 },
+        { label: 'ACCIDENT DE TRAVAIL', base: Math.min(brutImposable, 70000), rate: '2,0%', amount: isCnpsRegistered ? Math.round(Math.min(brutImposable, 70000) * 0.02) : 0 },
+        { label: 'REGIME DE RETRAITE', base: Math.round(brutImposable), rate: '7,7%', amount: isCnpsRegistered ? Math.round(brutImposable * 0.077) : 0 },
     ];
     
     // =================================================================
@@ -171,8 +172,8 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
         earnings,
         deductions,
         totals: {
-            brutImposable,
-            transportNonImposable: { label: 'INDEMNITE DE TRANSPORT NON IMPOSABLE', amount: transportNonImposable },
+            brutImposable: Math.round(brutImposable),
+            transportNonImposable: { label: 'INDEMNITE DE TRANSPORT NON IMPOSABLE', amount: Math.round(transportNonImposable) },
             netAPayer: Math.round(netAPayer),
             netAPayerInWords,
         },

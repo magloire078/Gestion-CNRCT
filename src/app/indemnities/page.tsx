@@ -122,7 +122,7 @@ export default function IndemnityCalculatorPage() {
     const yearsInBracket1 = Math.min(seniority, 5);
     if (yearsInBracket1 > 0) {
         const indemnityBracket1 = salary * 0.30 * yearsInBracket1;
-        details.push(`- Tranche 1 (0-5 ans): ${yearsInBracket1} an(s) * 30% = ${indemnityBracket1.toLocaleString('fr-FR')} FCFA`);
+        details.push(`- Tranche 1 (0-5 ans): ${yearsInBracket1} an(s) * 30% = ${Math.round(indemnityBracket1).toLocaleString('fr-FR')} FCFA`);
         indemnity += indemnityBracket1;
     }
 
@@ -130,7 +130,7 @@ export default function IndemnityCalculatorPage() {
         const yearsInBracket2 = Math.min(seniority - 5, 5); // 5 ans max (de la 6e à la 10e)
         if (yearsInBracket2 > 0) {
             const indemnityBracket2 = salary * 0.35 * yearsInBracket2;
-            details.push(`- Tranche 2 (6-10 ans): ${yearsInBracket2} an(s) * 35% = ${indemnityBracket2.toLocaleString('fr-FR')} FCFA`);
+            details.push(`- Tranche 2 (6-10 ans): ${yearsInBracket2} an(s) * 35% = ${Math.round(indemnityBracket2).toLocaleString('fr-FR')} FCFA`);
             indemnity += indemnityBracket2;
         }
     }
@@ -139,13 +139,13 @@ export default function IndemnityCalculatorPage() {
         const yearsInBracket3 = seniority - 10;
         if (yearsInBracket3 > 0) {
             const indemnityBracket3 = salary * 0.40 * yearsInBracket3;
-            details.push(`- Tranche 3 (>10 ans): ${yearsInBracket3} an(s) * 40% = ${indemnityBracket3.toLocaleString('fr-FR')} FCFA`);
+            details.push(`- Tranche 3 (>10 ans): ${yearsInBracket3} an(s) * 40% = ${Math.round(indemnityBracket3).toLocaleString('fr-FR')} FCFA`);
             indemnity += indemnityBracket3;
         }
     }
 
     setTimeout(() => {
-        setResult({ amount: indemnity, details });
+        setResult({ amount: Math.round(indemnity), details });
         setIsCalculating(false);
     }, 1000); // Simule un calcul
   };

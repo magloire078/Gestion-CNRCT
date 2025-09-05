@@ -49,14 +49,14 @@ export default function DisaReportPage() {
 
   const calculateAnnualData = async (payslipPromises: Promise<PayslipDetails>[]): Promise<{ monthlySalaries: number[], totalBrut: number, totalCNPS: number }> => {
     const monthlyDetails = await Promise.all(payslipPromises);
-    const monthlySalaries = monthlyDetails.map(details => details.totals.brutImposable);
+    const monthlySalaries = monthlyDetails.map(details => Math.round(details.totals.brutImposable));
     const totalBrut = monthlySalaries.reduce((sum, current) => sum + current, 0);
     const totalCNPS = monthlyDetails.reduce((sum, details) => sum + (details.deductions.find(d => d.label === 'CNPS')?.amount || 0), 0);
     
     return {
         monthlySalaries,
-        totalBrut,
-        totalCNPS,
+        totalBrut: Math.round(totalBrut),
+        totalCNPS: Math.round(totalCNPS),
     };
   };
   
@@ -100,7 +100,7 @@ export default function DisaReportPage() {
     }
   };
 
-  const formatCurrency = (value: number) => value === 0 ? '-' : value.toLocaleString('fr-FR');
+  const formatCurrency = (value: number) => value === 0 ? '-' : Math.round(value).toLocaleString('fr-FR');
   
   const handlePrint = () => {
     setIsPrinting(true);

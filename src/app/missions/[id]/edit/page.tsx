@@ -256,15 +256,15 @@ export default function MissionEditPage() {
                                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                                               <div className="space-y-1">
                                                 <Label htmlFor={`indemnite-${p.employeeName}`} className="text-xs">Indemnités</Label>
-                                                <Input id={`indemnite-${p.employeeName}`} type="number" placeholder="0" value={p.totalIndemnites || ''} onChange={e => handleParticipantChange(p.employeeName, 'totalIndemnites', e.target.valueAsNumber || 0)} />
+                                                <Input id={`indemnite-${p.employeeName}`} type="number" placeholder="0" value={p.totalIndemnites || ''} onChange={e => handleParticipantChange(p.employeeName, 'totalIndemnites', Math.round(e.target.valueAsNumber) || 0)} />
                                             </div>
                                              <div className="space-y-1">
                                                 <Label htmlFor={`transport-cost-${p.employeeName}`} className="text-xs">Coût Transport</Label>
-                                                <Input id={`transport-cost-${p.employeeName}`} type="number" placeholder="0" value={p.coutTransport || ''} onChange={e => handleParticipantChange(p.employeeName, 'coutTransport', e.target.valueAsNumber || 0)} />
+                                                <Input id={`transport-cost-${p.employeeName}`} type="number" placeholder="0" value={p.coutTransport || ''} onChange={e => handleParticipantChange(p.employeeName, 'coutTransport', Math.round(e.target.valueAsNumber) || 0)} />
                                             </div>
                                             <div className="space-y-1">
                                                 <Label htmlFor={`hebergement-cost-${p.employeeName}`} className="text-xs">Coût Hébergement</Label>
-                                                <Input id={`hebergement-cost-${p.employeeName}`} type="number" placeholder="0" value={p.coutHebergement || ''} onChange={e => handleParticipantChange(p.employeeName, 'coutHebergement', e.target.valueAsNumber || 0)} />
+                                                <Input id={`hebergement-cost-${p.employeeName}`} type="number" placeholder="0" value={p.coutHebergement || ''} onChange={e => handleParticipantChange(p.employeeName, 'coutHebergement', Math.round(e.target.valueAsNumber) || 0)} />
                                             </div>
                                         </div>
                                     </div>

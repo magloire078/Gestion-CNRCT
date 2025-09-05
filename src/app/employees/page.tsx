@@ -93,7 +93,7 @@ export default function EmployeesPage() {
     switch (personnelTypeFilter) {
       case 'directoire': return 'Membres du Directoire';
       case 'regional': return 'Comités Régionaux';
-      case 'personnel': return 'Agents / Personnel';
+      case 'personnel': return 'Personnel';
       case 'garde-republicaine': return 'Garde Républicaine';
       case 'gendarme': return 'Gendarmes';
       default: return 'Effectif Global';
@@ -376,7 +376,7 @@ export default function EmployeesPage() {
                     </TabsList>
                 </Tabs>
                 
-                {canImport && (
+                {canImport && (personnelTypeFilter === 'all' || personnelTypeFilter === 'personnel') && (
                   <div className="mb-6">
                       <ImportDataCard />
                   </div>
@@ -639,5 +639,7 @@ export default function EmployeesPage() {
     </>
   );
 }
+
+    
 
     

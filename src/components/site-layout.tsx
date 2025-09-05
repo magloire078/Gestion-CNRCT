@@ -102,6 +102,15 @@ const allMenuItems = [
   },
    { 
     isCollapsible: true,
+    label: "Rapports", 
+    icon: FileText,
+    permission: "group:reports:view", // New group permission
+    subItems: [
+        { href: "/reports/disa", label: "DISA", icon: FileText, permission: "page:reports:disa:view" },
+    ]
+  },
+   { 
+    isCollapsible: true,
     label: "Administration", 
     icon: Shield,
     permission: "group:admin:view",

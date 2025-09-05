@@ -43,6 +43,8 @@ const defaultRoles: Role[] = [
             allPermissions["Gestion des Documents"],
             allPermissions["Voir le groupe Personnel"],
             allPermissions["Voir le groupe Opérations"],
+            allPermissions["Voir le groupe Rapports"],
+            allPermissions["Voir le rapport DISA"],
         ]
     }
 ];

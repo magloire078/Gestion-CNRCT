@@ -1,5 +1,4 @@
 
-
 // src/lib/permissions.ts
 
 export const allPermissions = {
@@ -26,6 +25,10 @@ export const allPermissions = {
   "Voir le groupe Organisation": "group:organization:view",
   "Voir le groupe Opérations": "group:operations:view",
   "Voir le groupe Administration": "group:admin:view",
+  "Voir le groupe Rapports": "group:reports:view",
+
+  // Report permissions
+  "Voir le rapport DISA": "page:reports:disa:view",
 
   // Feature permissions
   "Importer les employés": "feature:employees:import",

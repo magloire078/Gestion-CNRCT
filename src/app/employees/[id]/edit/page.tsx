@@ -89,7 +89,7 @@ export default function EmployeeEditPage() {
             return serviceList.filter(s => s.directionId === selectedDir.id);
         }
         if (selectedDepartmentObject) {
-            return serviceList.filter(s => s.departmentId === selectedDepartmentObject.id);
+            return serviceList.filter(s => s.departmentId === selectedDepartmentObject.id && !s.directionId);
         }
         return [];
     }, [employee?.direction, selectedDepartmentObject, directionList, serviceList]);
@@ -277,7 +277,7 @@ export default function EmployeeEditPage() {
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="direction">Direction</Label>
-                            <Select name="direction" value={employee.direction || ''} onValueChange={(v) => handleSelectChange('direction', v)} disabled={!employee.department}>
+                            <Select name="direction" value={employee.direction || ''} onValueChange={(v) => handleSelectChange('direction', v)} disabled={!employee.department || filteredDirections.length === 0}>
                                 <SelectTrigger><SelectValue placeholder="Sélectionnez..." /></SelectTrigger>
                                 <SelectContent>
                                     {filteredDirections.map(dir => <SelectItem key={dir.id} value={dir.name}>{dir.name}</SelectItem>)}

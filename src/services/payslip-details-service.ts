@@ -93,14 +93,14 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
     
     // --- Création de la liste des gains pour l'affichage ---
     const earnings: PayslipEarning[] = [
-        { label: 'SALAIRE DE BASE', amount: baseSalary, deduction: 0 },
-        { label: 'PRIME D\'ANCIENNETE', amount: primeAnciennete, deduction: 0 },
-        { label: 'INDEMNITE DE TRANSPORT IMPOSABLE', amount: indemniteTransportImposable, deduction: 0 },
-        { label: 'INDEMNITE DE SUJETION', amount: indemniteSujetion, deduction: 0 },
-        { label: 'INDEMNITE DE COMMUNICATION', amount: indemniteCommunication, deduction: 0 },
-        { label: 'INDEMNITE DE REPRESENTATION', amount: indemniteRepresentation, deduction: 0 },
-        { label: 'INDEMNITE DE RESPONSABILITE', amount: indemniteResponsabilite, deduction: 0 },
-        { label: 'INDEMNITE DE LOGEMENT', amount: indemniteLogement, deduction: 0 },
+        { label: 'SALAIRE DE BASE', amount: baseSalary },
+        { label: 'PRIME D\'ANCIENNETE', amount: primeAnciennete },
+        { label: 'INDEMNITE DE TRANSPORT IMPOSABLE', amount: indemniteTransportImposable },
+        { label: 'INDEMNITE DE SUJETION', amount: indemniteSujetion },
+        { label: 'INDEMNITE DE COMMUNICATION', amount: indemniteCommunication },
+        { label: 'INDEMNITE DE REPRESENTATION', amount: indemniteRepresentation },
+        { label: 'INDEMNITE DE RESPONSABILITE', amount: indemniteResponsabilite },
+        { label: 'INDEMNITE DE LOGEMENT', amount: indemniteLogement },
     ];
 
     // --- Calcul du Brut Imposable ---

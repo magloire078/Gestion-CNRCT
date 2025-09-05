@@ -176,7 +176,6 @@ export type Supply = {
 export type PayslipEarning = {
     label: string;
     amount: number;
-    deduction: number; // to align retenues column
 };
 
 export type PayslipDeduction = {

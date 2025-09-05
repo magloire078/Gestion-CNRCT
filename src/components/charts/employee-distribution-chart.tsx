@@ -32,7 +32,7 @@ const chartConfig = {
   Protocole: { label: "Protocole", color: "hsl(var(--chart-1))" },
   Cabinet: { label: "Cabinet", color: "hsl(var(--chart-2))" },
   "Direction des Affaires sociales": { label: "Social", color: "hsl(var(--chart-3))" },
-  Directoire: { label: "Membres du Directoire", color: "hsl(var(--chart-4))" },
+  "Membres du Directoire": { label: "Membres du Directoire", color: "hsl(var(--chart-4))" },
   "Comités Régionaux": { label: "Régions", color: "hsl(var(--chart-5))" },
   Other: { label: "Autre", color: "hsl(var(--muted))" },
 } satisfies ChartConfig
@@ -46,7 +46,10 @@ export function EmployeeDistributionChart() {
       try {
         const employeeData = await getEmployees();
         const departmentData = employeeData.reduce((acc, employee) => {
-          const department = employee.department || "Other";
+          let department = employee.department || "Other";
+          if (department === "Directoire") {
+            department = "Membres du Directoire";
+          }
           if (!acc[department]) {
             acc[department] = { name: department, value: 0, fill: '' };
           }
@@ -97,3 +100,5 @@ export function EmployeeDistributionChart() {
     </ChartContainer>
   )
 }
+
+    

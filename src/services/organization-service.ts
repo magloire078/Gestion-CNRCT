@@ -1,6 +1,6 @@
 
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { getStorage, ref, getDownloadURL, uploadBytes, type UploadTask } from "firebase/storage";
+import { getStorage, ref, getDownloadURL, uploadBytesResumable, type UploadTask } from "firebase/storage";
 import { db, storage } from '@/lib/firebase';
 import type { OrganizationSettings } from '@/lib/data';
 
@@ -41,7 +41,8 @@ export async function saveOrganizationName(name: string): Promise<void> {
 
 export async function uploadOrganizationFile(
     fileType: 'mainLogo' | 'secondaryLogo' | 'favicon',
-    file: File | null
+    file: File | null,
+    onProgress?: (percentage: number) => void
 ): Promise<string | undefined> {
     if (!file) {
         return undefined;
@@ -50,12 +51,26 @@ export async function uploadOrganizationFile(
     const fileName = `${fileType}_${new Date().getTime()}_${file.name}`;
     const fileRef = ref(storage, `organization/${fileName}`);
     
-    // Directly upload the file using uploadBytes
-    const snapshot = await uploadBytes(fileRef, file);
-    const downloadUrl = await getDownloadURL(snapshot.ref);
+    const uploadTask = uploadBytesResumable(fileRef, file);
 
-    const fieldToUpdate = `${fileType}Url`;
-    await setDoc(settingsDocRef, { [fieldToUpdate]: downloadUrl }, { merge: true });
-    
-    return downloadUrl;
+    return new Promise((resolve, reject) => {
+        uploadTask.on('state_changed',
+            (snapshot) => {
+                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                if (onProgress) {
+                    onProgress(progress);
+                }
+            },
+            (error) => {
+                console.error("Upload failed:", error);
+                reject(error);
+            },
+            async () => {
+                const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
+                const fieldToUpdate = `${fileType}Url`;
+                await setDoc(settingsDocRef, { [fieldToUpdate]: downloadUrl }, { merge: true });
+                resolve(downloadUrl);
+            }
+        );
+    });
 }

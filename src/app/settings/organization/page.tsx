@@ -14,12 +14,14 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Upload, Loader2, Save, X, Building2, Globe, Heart } from "lucide-react";
+import { Upload, Loader2, Save, Building2, Globe, Heart } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from "@/components/ui/separator";
 import { getOrganizationSettings, saveOrganizationName, uploadOrganizationFile } from "@/services/organization-service";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { OrganizationSettings } from "@/lib/data";
+import { Progress } from "@/components/ui/progress";
+
 
 type FileType = 'mainLogo' | 'secondaryLogo' | 'favicon';
 
@@ -27,6 +29,7 @@ interface FileState {
     file: File | null;
     preview: string;
     isSaving: boolean;
+    progress: number;
 }
 
 export default function OrganizationSettingsPage() {
@@ -37,9 +40,9 @@ export default function OrganizationSettingsPage() {
     const [isSavingName, setIsSavingName] = useState(false);
 
     const [files, setFiles] = useState<Record<FileType, FileState>>({
-        mainLogo: { file: null, preview: "", isSaving: false },
-        secondaryLogo: { file: null, preview: "", isSaving: false },
-        favicon: { file: null, preview: "", isSaving: false },
+        mainLogo: { file: null, preview: "", isSaving: false, progress: 0 },
+        secondaryLogo: { file: null, preview: "", isSaving: false, progress: 0 },
+        favicon: { file: null, preview: "", isSaving: false, progress: 0 },
     });
     
     const [loading, setLoading] = useState(true);
@@ -56,9 +59,9 @@ export default function OrganizationSettingsPage() {
                 setName(loadedSettings.organizationName);
                 setInitialName(loadedSettings.organizationName);
                 setFiles({
-                    mainLogo: { file: null, preview: loadedSettings.mainLogoUrl, isSaving: false },
-                    secondaryLogo: { file: null, preview: loadedSettings.secondaryLogoUrl, isSaving: false },
-                    favicon: { file: null, preview: loadedSettings.faviconUrl, isSaving: false },
+                    mainLogo: { file: null, preview: loadedSettings.mainLogoUrl, isSaving: false, progress: 0 },
+                    secondaryLogo: { file: null, preview: loadedSettings.secondaryLogoUrl, isSaving: false, progress: 0 },
+                    favicon: { file: null, preview: loadedSettings.faviconUrl, isSaving: false, progress: 0 },
                 });
             } catch (error) {
                 console.error("Failed to load organization settings:", error);
@@ -102,8 +105,6 @@ export default function OrganizationSettingsPage() {
             await saveOrganizationName(name);
             setInitialName(name);
             toast({ title: "Nom de l'organisation mis à jour" });
-            // Optional: force reload to update app-wide settings like title, though this is disruptive.
-            // window.location.reload(); 
         } catch (error) {
            toast({ variant: "destructive", title: "Erreur", description: "Impossible de sauvegarder le nom." });
         } finally {
@@ -115,14 +116,18 @@ export default function OrganizationSettingsPage() {
         const fileState = files[fileType];
         if (!fileState.file) return;
 
-        setFiles(prev => ({ ...prev, [fileType]: { ...prev[fileType], isSaving: true } }));
+        setFiles(prev => ({ ...prev, [fileType]: { ...prev[fileType], isSaving: true, progress: 0 } }));
 
         try {
-            const newUrl = await uploadOrganizationFile(fileType, fileState.file);
+            const onProgress = (percentage: number) => {
+                 setFiles(prev => ({ ...prev, [fileType]: { ...prev[fileType], progress: percentage } }));
+            };
+
+            const newUrl = await uploadOrganizationFile(fileType, fileState.file, onProgress);
             
             setFiles(prev => ({
                 ...prev,
-                [fileType]: { file: null, preview: newUrl || prev[fileType].preview, isSaving: false }
+                [fileType]: { file: null, preview: newUrl || prev[fileType].preview, isSaving: false, progress: 0 }
             }));
 
             toast({
@@ -142,7 +147,7 @@ export default function OrganizationSettingsPage() {
                 description: "Une erreur est survenue lors du téléversement de l'image.",
             });
             console.error(error);
-            setFiles(prev => ({ ...prev, [fileType]: { ...prev[fileType], isSaving: false } }));
+            setFiles(prev => ({ ...prev, [fileType]: { ...prev[fileType], isSaving: false, progress: 0 } }));
         }
     };
     
@@ -232,7 +237,7 @@ interface LogoUploaderProps {
 }
 
 function LogoUploader({ title, description, icon: Icon, fileState, onFileChange, onSave, inputRef }: LogoUploaderProps) {
-    const { file, preview, isSaving } = fileState;
+    const { file, preview, isSaving, progress } = fileState;
     return (
         <div className="space-y-4">
             <div className="flex items-start gap-6">
@@ -251,10 +256,16 @@ function LogoUploader({ title, description, icon: Icon, fileState, onFileChange,
                 </Button>
                 <Input ref={inputRef} type="file" className="hidden" accept="image/png, image/jpeg, image/svg+xml, image/x-icon" onChange={onFileChange} />
             </div>
-            {file && (
+            {isSaving && (
+                 <div className="flex items-center gap-2">
+                    <Progress value={progress} className="w-[60%]" />
+                    <span className="text-sm text-muted-foreground">{Math.round(progress)}%</span>
+                </div>
+            )}
+            {file && !isSaving && (
                 <div className="flex justify-end">
                     <Button type="button" onClick={onSave} disabled={isSaving}>
-                        {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                        <Save className="mr-2 h-4 w-4" />
                         Enregistrer le {title.toLowerCase()}
                     </Button>
                 </div>

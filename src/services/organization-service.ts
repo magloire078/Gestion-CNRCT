@@ -48,13 +48,14 @@ export async function uploadOrganizationFile(
     const uploadTask = uploadBytesResumable(fileRef, file);
 
     return new Promise((resolve, reject) => {
+      try {
         uploadTask.on('state_changed',
             (snapshot) => {
                 const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
                 onProgress(progress);
             },
             (error) => {
-                console.error("Upload failed:", error);
+                console.error("Upload failed in 'on' error handler:", error);
                 reject(error);
             },
             async () => {
@@ -69,5 +70,9 @@ export async function uploadOrganizationFile(
                 }
             }
         );
+      } catch (error) {
+         console.error("Error setting up upload listener:", error);
+         reject(error);
+      }
     });
 }

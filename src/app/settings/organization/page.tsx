@@ -138,12 +138,13 @@ export default function OrganizationSettingsPage() {
             }
 
         } catch (error: any) {
-            toast({
+             const errorMessage = error.message || "Une erreur inconnue est survenue lors du téléversement.";
+             console.error(`Upload error for ${fileType}:`, error);
+             toast({
                 variant: "destructive",
                 title: "Erreur de sauvegarde",
-                description: "Une erreur est survenue lors du téléversement de l'image.",
+                description: errorMessage,
             });
-            console.error(error);
         } finally {
             setUploadingFileType(null);
             setUploadProgress(0);

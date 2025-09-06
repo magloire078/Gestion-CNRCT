@@ -254,7 +254,7 @@ function LogoUploader({ title, description, icon: Icon, fileState, onFileChange,
                     <Upload className="mr-2 h-4 w-4" />
                     Changer
                 </Button>
-                <Input ref={inputRef} type="file" className="hidden" accept="image/png, image/jpeg, image/svg+xml, image/x-icon" onChange={onFileChange} />
+                <Input ref={inputRef} type="file" className="hidden" accept="image/*" onChange={onFileChange} />
             </div>
             {isSaving && (
                  <div className="flex items-center gap-2">

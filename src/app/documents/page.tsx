@@ -142,12 +142,17 @@ export default function DocumentGeneratorPage() {
 
   useEffect(() => {
     if (isPrinting) {
+      const originalTitle = document.title;
+      const employeeName = selectedEmployeeId ? employees.find(e => e.id === selectedEmployeeId)?.name.replace(/\s+/g, '_') : 'document';
+      document.title = `${documentType.replace(/\s+/g, '_')}_${employeeName}`;
+      
       setTimeout(() => {
         window.print();
+        document.title = originalTitle;
         setIsPrinting(false);
       }, 300);
     }
-  }, [isPrinting]);
+  }, [isPrinting, documentType, selectedEmployeeId, employees]);
 
   const handlePrint = () => {
     if(state.document) {
@@ -189,7 +194,8 @@ export default function DocumentGeneratorPage() {
             height -= pdfHeight;
         }
         
-        pdf.save(`${documentType.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`);
+        const employeeName = selectedEmployeeId ? employees.find(e => e.id === selectedEmployeeId)?.name.replace(/\s+/g, '_') : 'document';
+        pdf.save(`${documentType.replace(/\s+/g, '_')}_${employeeName}_${new Date().toISOString().split('T')[0]}.pdf`);
     } catch(error) {
         console.error("Failed to generate PDF", error);
     } finally {

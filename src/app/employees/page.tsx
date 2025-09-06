@@ -123,6 +123,9 @@ export default function EmployeesPage() {
 
   useEffect(() => {
     if (isPrinting) {
+      const originalTitle = document.title;
+      document.title = `Liste_Personnel_${pageTitle.replace(/\s+/g, '_')}`;
+      
       const style = document.createElement('style');
       style.innerHTML = `@media print { @page { size: landscape; margin: 1cm; } }`;
       document.head.appendChild(style);
@@ -130,10 +133,11 @@ export default function EmployeesPage() {
       setTimeout(() => {
         window.print();
         document.head.removeChild(style);
+        document.title = originalTitle;
         setIsPrinting(false);
       }, 500);
     }
-  }, [isPrinting]);
+  }, [isPrinting, pageTitle]);
 
   const handleAddEmployee = async (newEmployeeData: Omit<Employe, 'id'>, photoFile: File | null) => {
     try {

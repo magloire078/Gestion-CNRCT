@@ -50,7 +50,7 @@ export async function uploadOrganizationFile(
     const fileName = `${fileType}_${new Date().getTime()}_${file.name}`;
     const fileRef = ref(storage, `organization/${fileName}`);
     
-    // Directly upload the file without AI processing
+    // Directly upload the file using uploadBytes
     const snapshot = await uploadBytes(fileRef, file);
     const downloadUrl = await getDownloadURL(snapshot.ref);
 

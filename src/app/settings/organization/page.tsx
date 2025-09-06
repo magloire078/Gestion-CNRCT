@@ -28,8 +28,6 @@ type FileType = 'mainLogo' | 'secondaryLogo' | 'favicon';
 interface FileState {
     file: File | null;
     preview: string;
-    isSaving: boolean;
-    progress: number;
 }
 
 export default function OrganizationSettingsPage() {
@@ -40,16 +38,14 @@ export default function OrganizationSettingsPage() {
     const [isSavingName, setIsSavingName] = useState(false);
 
     const [files, setFiles] = useState<Record<FileType, FileState>>({
-        mainLogo: { file: null, preview: "", isSaving: false, progress: 0 },
-        secondaryLogo: { file: null, preview: "", isSaving: false, progress: 0 },
-        favicon: { file: null, preview: "", isSaving: false, progress: 0 },
+        mainLogo: { file: null, preview: "" },
+        secondaryLogo: { file: null, preview: "" },
+        favicon: { file: null, preview: "" },
     });
     
     const [loading, setLoading] = useState(true);
-    
-    const mainLogoInputRef = useRef<HTMLInputElement>(null);
-    const secondaryLogoInputRef = useRef<HTMLInputElement>(null);
-    const faviconInputRef = useRef<HTMLInputElement>(null);
+    const [uploadingFileType, setUploadingFileType] = useState<FileType | null>(null);
+    const [uploadProgress, setUploadProgress] = useState(0);
 
     useEffect(() => {
         async function loadSettings() {
@@ -59,9 +55,9 @@ export default function OrganizationSettingsPage() {
                 setName(loadedSettings.organizationName);
                 setInitialName(loadedSettings.organizationName);
                 setFiles({
-                    mainLogo: { file: null, preview: loadedSettings.mainLogoUrl, isSaving: false, progress: 0 },
-                    secondaryLogo: { file: null, preview: loadedSettings.secondaryLogoUrl, isSaving: false, progress: 0 },
-                    favicon: { file: null, preview: loadedSettings.faviconUrl, isSaving: false, progress: 0 },
+                    mainLogo: { file: null, preview: loadedSettings.mainLogoUrl },
+                    secondaryLogo: { file: null, preview: loadedSettings.secondaryLogoUrl },
+                    favicon: { file: null, preview: loadedSettings.faviconUrl },
                 });
             } catch (error) {
                 console.error("Failed to load organization settings:", error);
@@ -116,18 +112,19 @@ export default function OrganizationSettingsPage() {
         const fileState = files[fileType];
         if (!fileState.file) return;
 
-        setFiles(prev => ({ ...prev, [fileType]: { ...prev[fileType], isSaving: true, progress: 0 } }));
+        setUploadingFileType(fileType);
+        setUploadProgress(0);
 
         try {
             const onProgress = (percentage: number) => {
-                 setFiles(prev => ({ ...prev, [fileType]: { ...prev[fileType], progress: percentage } }));
+                 setUploadProgress(percentage);
             };
 
             const newUrl = await uploadOrganizationFile(fileType, fileState.file, onProgress);
             
             setFiles(prev => ({
                 ...prev,
-                [fileType]: { file: null, preview: newUrl || prev[fileType].preview, isSaving: false, progress: 0 }
+                [fileType]: { file: null, preview: newUrl || prev[fileType].preview }
             }));
 
             toast({
@@ -147,7 +144,9 @@ export default function OrganizationSettingsPage() {
                 description: "Une erreur est survenue lors du téléversement de l'image.",
             });
             console.error(error);
-            setFiles(prev => ({ ...prev, [fileType]: { ...prev[fileType], isSaving: false, progress: 0 } }));
+        } finally {
+            setUploadingFileType(null);
+            setUploadProgress(0);
         }
     };
     
@@ -197,7 +196,8 @@ export default function OrganizationSettingsPage() {
                      fileState={files.mainLogo}
                      onFileChange={(e) => handleFileChange(e, 'mainLogo')}
                      onSave={() => handleSaveFile('mainLogo')}
-                     inputRef={mainLogoInputRef}
+                     isSaving={uploadingFileType === 'mainLogo'}
+                     progress={uploadingFileType === 'mainLogo' ? uploadProgress : 0}
                    />
                    <Separator />
                    <LogoUploader
@@ -207,7 +207,8 @@ export default function OrganizationSettingsPage() {
                      fileState={files.secondaryLogo}
                      onFileChange={(e) => handleFileChange(e, 'secondaryLogo')}
                      onSave={() => handleSaveFile('secondaryLogo')}
-                     inputRef={secondaryLogoInputRef}
+                     isSaving={uploadingFileType === 'secondaryLogo'}
+                     progress={uploadingFileType === 'secondaryLogo' ? uploadProgress : 0}
                    />
                    <Separator />
                    <LogoUploader
@@ -217,7 +218,8 @@ export default function OrganizationSettingsPage() {
                      fileState={files.favicon}
                      onFileChange={(e) => handleFileChange(e, 'favicon')}
                      onSave={() => handleSaveFile('favicon')}
-                     inputRef={faviconInputRef}
+                     isSaving={uploadingFileType === 'favicon'}
+                     progress={uploadingFileType === 'favicon' ? uploadProgress : 0}
                    />
                 </CardContent>
             </Card>
@@ -233,16 +235,17 @@ interface LogoUploaderProps {
   fileState: FileState;
   onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onSave: () => void;
-  inputRef: React.RefObject<HTMLInputElement>;
+  isSaving: boolean;
+  progress: number;
 }
 
-function LogoUploader({ title, description, icon: Icon, fileState, onFileChange, onSave, inputRef }: LogoUploaderProps) {
-    const { file, preview, isSaving, progress } = fileState;
+function LogoUploader({ title, description, icon: Icon, fileState, onFileChange, onSave, isSaving, progress }: LogoUploaderProps) {
+    const inputRef = useRef<HTMLInputElement>(null);
     return (
         <div className="space-y-4">
             <div className="flex items-start gap-6">
                 <Avatar className="h-20 w-20 rounded-md">
-                    <AvatarImage src={preview} alt={title} />
+                    <AvatarImage src={fileState.preview} alt={title} />
                     <AvatarFallback><Icon className="h-8 w-8 text-muted-foreground" /></AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
@@ -250,11 +253,11 @@ function LogoUploader({ title, description, icon: Icon, fileState, onFileChange,
                     <p className="text-sm text-muted-foreground">{description}</p>
                     <p className="text-xs text-muted-foreground mt-1">Taille max : 4 Mo.</p>
                 </div>
-                <Button type="button" variant="outline" size="sm" onClick={() => inputRef.current?.click()}>
+                <Button type="button" variant="outline" size="sm" onClick={() => inputRef.current?.click()} disabled={isSaving}>
                     <Upload className="mr-2 h-4 w-4" />
                     Changer
                 </Button>
-                <Input ref={inputRef} type="file" className="hidden" accept="image/*" onChange={onFileChange} />
+                <Input ref={inputRef} type="file" className="hidden" accept="image/*" onChange={onFileChange} disabled={isSaving}/>
             </div>
             {isSaving && (
                  <div className="flex items-center gap-2">
@@ -262,7 +265,7 @@ function LogoUploader({ title, description, icon: Icon, fileState, onFileChange,
                     <span className="text-sm text-muted-foreground">{Math.round(progress)}%</span>
                 </div>
             )}
-            {file && !isSaving && (
+            {fileState.file && !isSaving && (
                 <div className="flex justify-end">
                     <Button type="button" onClick={onSave} disabled={isSaving}>
                         <Save className="mr-2 h-4 w-4" />

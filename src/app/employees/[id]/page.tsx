@@ -72,7 +72,7 @@ export default function EmployeeDetailPage() {
                     ]);
                     setLeaves(leavesData.filter(l => l.employee === employeeData.name).slice(0, 5));
                     setAssets(assetsData.filter(a => a.assignedTo === employeeData.name));
-                    setMissions(missionsData.filter(m => m.assignedTo === employeeData.name).slice(0, 5));
+                    setMissions(missionsData.filter(m => m.participants.some(p => p.employeeName === employeeData.name))).slice(0, 5);
                     setHistory(historyData);
                 }
             } catch (error) {

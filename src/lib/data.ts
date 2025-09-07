@@ -300,3 +300,14 @@ export type EmployeeEvent = {
   description: string;
   details?: Record<string, any>; // e.g., { previousPoste: 'Junior', newPoste: 'Senior', previousSalary: 500, newSalary: 600 }
 };
+
+export type Document = {
+  id: string;
+  fileName: string;
+  fileSize: number;
+  fileType: string;
+  uploadDate: string;
+  storageUrl: string;
+  relatedEmployeeId?: string;
+  category?: string;
+}

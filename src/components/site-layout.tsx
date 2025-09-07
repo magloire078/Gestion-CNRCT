@@ -33,6 +33,7 @@ import {
   UserSquare as UserSquareIcon,
   ShieldHalf,
   Network,
+  Archive,
 } from "lucide-react";
 
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
@@ -100,6 +101,7 @@ const allMenuItems = [
         { href: "/missions", label: "Missions", icon: Briefcase, permission: "page:missions:view" },
         { href: "/fleet", label: "Flotte de Véhicules", icon: Car, permission: "page:fleet:view" },
         { href: "/supplies", label: "Fournitures", icon: Package, permission: "page:supplies:view" },
+        { href: "/repository", label: "Référentiel", icon: Archive, permission: "page:repository:view" },
     ]
   },
    { 
@@ -349,5 +351,3 @@ export function SiteLayout({ children, settings }: { children: React.ReactNode, 
     </AuthProvider>
   )
 }
-
-    

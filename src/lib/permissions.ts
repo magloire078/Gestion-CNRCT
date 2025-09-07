@@ -18,6 +18,7 @@ export const allPermissions = {
   "Gestion des Actifs TI": "page:it-assets:view",
   "Gestion de la Flotte": "page:fleet:view",
   "Gestion des Documents": "page:documents:view",
+  "Gestion du Référentiel": "page:repository:view",
   "Accès à l'Assistant IA": "page:assistant:view",
   "Accès à l'Administration": "page:admin:view",
   "Voir l'Organigramme": "page:organization-chart:view",

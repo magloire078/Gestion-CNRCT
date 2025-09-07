@@ -4,6 +4,8 @@ import { collection, getDocs, addDoc, doc, updateDoc, onSnapshot, Unsubscribe, q
 import type { Leave, User } from '@/lib/data';
 import { db } from '@/lib/firebase';
 import { createNotification } from './notification-service';
+import { parseISO, eachDayOfInterval, getDay } from 'date-fns';
+
 
 const leavesCollection = collection(db, 'leaves');
 const usersCollection = collection(db, 'users');
@@ -108,4 +110,35 @@ export async function updateLeaveStatus(id: string, status: 'Approuvé' | 'Rejet
     } else {
         console.warn(`Could not find user for employee ${leaveData.employee} to send notification.`);
     }
+}
+
+/**
+ * Calculates the remaining leave balance for an employee for the current year.
+ * @param employeeLeaves All leave requests for the employee.
+ * @returns The number of remaining leave days.
+ */
+export async function calculateLeaveBalance(employeeLeaves: Leave[]): Promise<number> {
+    const ANNUAL_LEAVE_ENTITLEMENT = 26; // Standard leave days per year in many contracts.
+    const currentYear = new Date().getFullYear();
+
+    const annualLeavesThisYear = employeeLeaves.filter(l => 
+        l.type === "Congé Annuel" &&
+        l.status === "Approuvé" &&
+        new Date(l.startDate).getFullYear() === currentYear
+    );
+
+    const workingDaysTaken = annualLeavesThisYear.reduce((total, leave) => {
+        try {
+            const start = parseISO(leave.startDate);
+            const end = parseISO(leave.endDate);
+            const days = eachDayOfInterval({ start, end });
+            // Exclude Sundays (0)
+            const workDays = days.filter(day => getDay(day) !== 0).length;
+            return total + workDays;
+        } catch {
+            return total;
+        }
+    }, 0);
+
+    return ANNUAL_LEAVE_ENTITLEMENT - workingDaysTaken;
 }

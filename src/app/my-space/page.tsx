@@ -1,11 +1,11 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import type { Leave, Employe, Evaluation, Asset, Mission } from "@/lib/data";
-import { subscribeToLeaves, addLeave } from "@/services/leave-service";
+import { subscribeToLeaves, addLeave, calculateLeaveBalance } from "@/services/leave-service";
 import { getEmployee } from "@/services/employee-service";
 import { subscribeToEvaluations } from "@/services/evaluation-service";
 import { getAssets } from "@/services/asset-service";
@@ -35,8 +35,8 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { AddLeaveRequestSheet } from "@/components/leave/add-leave-request-sheet";
-import { Mail, Phone, Calendar, Briefcase, ChevronRight, Landmark, Eye, Laptop, Rocket } from "lucide-react";
-import { lastDayOfMonth, format, subMonths, parseISO } from 'date-fns';
+import { Mail, Phone, Calendar, Briefcase, ChevronRight, Landmark, Eye, Laptop, Rocket, PlusCircle, CheckCircle, FileClock, Hourglass } from "lucide-react";
+import { lastDayOfMonth, format, subMonths, parseISO, isAfter, isBefore } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import Link from "next/link";
 
@@ -76,6 +76,7 @@ export default function MySpacePage() {
     const [evaluations, setEvaluations] = useState<Evaluation[]>([]);
     const [assets, setAssets] = useState<Asset[]>([]);
     const [missions, setMissions] = useState<Mission[]>([]);
+    const [leaveBalance, setLeaveBalance] = useState<number | null>(null);
     const [loadingData, setLoadingData] = useState(true);
 
     const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -92,7 +93,9 @@ export default function MySpacePage() {
     useEffect(() => {
         if (user) {
             const unsubLeaves = subscribeToLeaves((allLeaves) => {
-                setLeaves(allLeaves.filter(l => l.employee === user.name));
+                const userLeaves = allLeaves.filter(l => l.employee === user.name);
+                setLeaves(userLeaves);
+                calculateLeaveBalance(userLeaves).then(setLeaveBalance);
             }, console.error);
             
             const unsubEvals = subscribeToEvaluations((allEvals) => {
@@ -142,6 +145,23 @@ export default function MySpacePage() {
 
     const loading = authLoading || loadingData;
 
+    const latestEvaluation = useMemo(() => {
+        if (evaluations.length === 0) return null;
+        return evaluations.sort((a,b) => new Date(b.evaluationDate).getTime() - new Date(a.evaluationDate).getTime())[0];
+    }, [evaluations]);
+
+    const upcomingMissions = useMemo(() => {
+        const today = new Date();
+        return missions.filter(m => {
+            try {
+                const endDate = parseISO(m.endDate);
+                return isAfter(endDate, today) && (m.status === 'Planifiée' || m.status === 'En cours');
+            } catch {
+                return false;
+            }
+        });
+    }, [missions]);
+
     if (loading) {
         return (
              <div className="space-y-6">
@@ -161,6 +181,12 @@ export default function MySpacePage() {
     return (
         <div className="flex flex-col gap-6">
             <h1 className="text-3xl font-bold tracking-tight">Mon Espace</h1>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <StatCard title="Solde de Congés" value={leaveBalance !== null ? `${leaveBalance} jours` : <Skeleton className="h-8 w-16" />} icon={Calendar} />
+                <StatCard title="Dernière Évaluation" value={latestEvaluation ? latestEvaluation.reviewPeriod : "N/A"} icon={CheckCircle} description={latestEvaluation ? `Statut: ${latestEvaluation.status}` : ''}/>
+                <StatCard title="Missions à Venir" value={upcomingMissions.length} icon={Rocket} />
+            </div>
 
             <Tabs defaultValue="profile">
                 <TabsList className="mb-4">
@@ -231,7 +257,7 @@ export default function MySpacePage() {
                                     <CardTitle>Mes Demandes de Congé</CardTitle>
                                     <CardDescription>Soumettez et suivez vos demandes de congé.</CardDescription>
                                 </div>
-                                <Button onClick={() => setIsSheetOpen(true)}>Nouvelle Demande</Button>
+                                <Button onClick={() => setIsSheetOpen(true)}><PlusCircle className="mr-2 h-4 w-4"/>Nouvelle Demande</Button>
                             </div>
                         </CardHeader>
                         <CardContent>
@@ -385,6 +411,20 @@ export default function MySpacePage() {
     )
 }
 
+function StatCard({ title, value, icon: Icon, description }: { title: string, value: string | number, icon: React.ElementType, description?: string }) {
+    return (
+        <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">{title}</CardTitle>
+                <Icon className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+                <div className="text-2xl font-bold">{value}</div>
+                {description && <p className="text-xs text-muted-foreground">{description}</p>}
+            </CardContent>
+        </Card>
+    )
+}
 
 function InfoItem({ label, value, icon: Icon }: { label: string; value: string; icon: React.ElementType }) {
     return (

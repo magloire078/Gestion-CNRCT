@@ -1,6 +1,5 @@
 
 
-
 import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, onSnapshot, Unsubscribe, query, orderBy, where, writeBatch, getDoc, setDoc } from 'firebase/firestore';
 import type { Employe, Chief } from '@/lib/data';
 import { db, storage } from '@/lib/firebase';
@@ -75,11 +74,22 @@ export async function getEmployees(): Promise<Employe[]> {
 
 export async function getEmployee(id: string): Promise<Employe | null> {
     if (!id) return null;
+
+    // 1. Try to get by document ID first
     const employeeDocRef = doc(db, 'employees', id);
     const docSnap = await getDoc(employeeDocRef);
     if (docSnap.exists()) {
         return { id: docSnap.id, ...docSnap.data() } as Employe;
     }
+
+    // 2. If not found, try to find by userId field
+    const q = query(employeesCollection, where("userId", "==", id));
+    const querySnapshot = await getDocs(q);
+    if (!querySnapshot.empty) {
+        const doc = querySnapshot.docs[0];
+        return { id: doc.id, ...doc.data() } as Employe;
+    }
+
     return null;
 }
 
@@ -173,8 +183,8 @@ export async function updateEmployee(employeeId: string, employeeDataToUpdate: P
     }
 }
 
-export async function searchEmployees(query: string): Promise<Employe[]> {
-    const lowerCaseQuery = query.toLowerCase();
+export async function searchEmployees(queryText: string): Promise<Employe[]> {
+    const lowerCaseQuery = queryText.toLowerCase();
     const allEmployees = await getEmployees();
     return allEmployees.filter(employee => 
         (employee.name?.toLowerCase() || '').includes(lowerCaseQuery) || 

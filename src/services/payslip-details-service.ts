@@ -4,7 +4,8 @@ import type { Employe, PayslipDetails, PayslipEarning, PayslipDeduction, Payslip
 import { numberToWords } from '@/lib/utils';
 import { getOrganizationSettings } from './organization-service';
 import { getEmployeeHistory } from './employee-history-service';
-import { differenceInYears, differenceInMonths, differenceInDays, addYears, addMonths, parseISO, isValid, lastDayOfMonth, getDay, isBefore, isEqual } from 'date-fns';
+import { differenceInYears, differenceInMonths, differenceInDays, addYears, addMonths, parseISO, isValid, lastDayOfMonth, getDay, isBefore, isEqual, format } from 'date-fns';
+import { fr } from 'date-fns/locale';
 
 
 // Ce service calcule les détails d'un bulletin de paie pour un employé donné à une date précise.
@@ -172,8 +173,13 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
     const paymentDateObject = getLastWorkingDay(parseISO(payslipDate));
     const numeroCompteComplet = [employee.CB, employee.CG, employee.numeroCompte, employee.Cle_RIB].filter(Boolean).join(' ');
 
+    const formattedDateEmbauche = employee.dateEmbauche && isValid(parseISO(employee.dateEmbauche)) 
+        ? format(parseISO(employee.dateEmbauche), 'dd MMMM yyyy', { locale: fr })
+        : 'N/A';
+
     const employeeInfoWithStaticData: Employe & { numeroCompteComplet?: string } = {
         ...employee,
+        dateEmbauche: formattedDateEmbauche,
         cnpsEmployeur: "320491", // Numéro CNPS statique de l'employeur
         anciennete: seniorityInfo.text,
         paymentDate: paymentDateObject.toISOString(),

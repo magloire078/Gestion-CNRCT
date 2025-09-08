@@ -1,9 +1,10 @@
 
 
-import type { Employe, PayslipDetails, PayslipEarning, PayslipDeduction, PayslipEmployerContribution } from '@/lib/data';
+import type { Employe, PayslipDetails, PayslipEarning, PayslipDeduction, PayslipEmployerContribution, EmployeeEvent } from '@/lib/data';
 import { numberToWords } from '@/lib/utils';
 import { getOrganizationSettings } from './organization-service';
-import { differenceInYears, differenceInMonths, differenceInDays, addYears, addMonths, parseISO, isValid, lastDayOfMonth, getDay } from 'date-fns';
+import { getEmployeeHistory } from './employee-history-service';
+import { differenceInYears, differenceInMonths, differenceInDays, addYears, addMonths, parseISO, isValid, lastDayOfMonth, getDay, isBefore, isEqual } from 'date-fns';
 
 
 // Ce service calcule les détails d'un bulletin de paie pour un employé donné à une date précise.
@@ -67,7 +68,22 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
     // =================================================================
     // ÉTAPE 1 : RÉCUPÉRATION DES DONNÉES DE BASE DE L'EMPLOYÉ
     // =================================================================
-    const baseSalary = employee.baseSalary || 0;
+    const history = await getEmployeeHistory(employee.id);
+    const payslipDateObj = parseISO(payslipDate);
+
+    // Find the most recent salary augmentation before or on the payslip date
+    const lastAugmentation = history
+        .filter((event): event is EmployeeEvent & { eventType: 'Augmentation' } => 
+            event.eventType === 'Augmentation' && 
+            (isBefore(parseISO(event.effectiveDate), payslipDateObj) || isEqual(parseISO(event.effectiveDate), payslipDateObj))
+        )
+        .sort((a, b) => parseISO(b.effectiveDate).getTime() - parseISO(a.effectiveDate).getTime())
+        [0];
+
+    const baseSalary = lastAugmentation?.details?.newSalary ? 
+        Number(lastAugmentation.details.newSalary) : 
+        (employee.baseSalary || 0);
+
     const seniorityInfo = calculateSeniority(employee.dateEmbauche || '', payslipDate);
     
     // =================================================================

@@ -263,11 +263,11 @@ export default function MissionDetailPage() {
                   <Hash className="h-5 w-5 text-muted-foreground" />
                   Dossier Mission N° {mission.numeroMission} - {mission.title}
                 </CardTitle>
-                <CardDescription className="mt-2">
-                  <Badge variant={statusVariantMap[mission.status]}>
-                    {mission.status}
-                  </Badge>
-                </CardDescription>
+                <div className="mt-2">
+                    <Badge variant={statusVariantMap[mission.status]}>
+                        {mission.status}
+                    </Badge>
+                </div>
               </div>
                <div className="flex gap-2">
                  <Button

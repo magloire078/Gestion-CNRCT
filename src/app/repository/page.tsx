@@ -1,7 +1,8 @@
 
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
+import Link from "next/link";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { uploadDocument, subscribeToDocuments } from "@/services/repository-service";
@@ -17,8 +18,22 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
-import { Upload, FileText, Loader2 } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Upload, FileText, Loader2, Download, PackageOpen, X } from "lucide-react";
 import { useDropzone } from 'react-dropzone';
+import { format, parseISO } from "date-fns";
+import { fr } from "date-fns/locale";
+
+function formatBytes(bytes: number, decimals = 2) {
+  if (bytes === 0) return '0 Octets';
+  const k = 1024;
+  const dm = decimals < 0 ? 0 : decimals;
+  const sizes = ['Octets', 'Ko', 'Mo', 'Go', 'To'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+}
+
 
 export default function RepositoryPage() {
   const { user } = useAuth();
@@ -27,6 +42,25 @@ export default function RepositoryPage() {
   const [filesToUpload, setFilesToUpload] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+
+  const [documents, setDocuments] = useState<Document[]>([]);
+  const [loadingDocs, setLoadingDocs] = useState(true);
+
+   useEffect(() => {
+    const unsubscribe = subscribeToDocuments(
+      (docs) => {
+        setDocuments(docs);
+        setLoadingDocs(false);
+      },
+      (error) => {
+        console.error("Failed to subscribe to documents", error);
+        toast({ variant: "destructive", title: "Erreur", description: "Impossible de charger les documents." });
+        setLoadingDocs(false);
+      }
+    );
+    return () => unsubscribe();
+  }, [toast]);
+
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     setFilesToUpload(prev => [...prev, ...acceptedFiles]);
@@ -104,8 +138,13 @@ export default function RepositoryPage() {
                      {filesToUpload.length > 0 && (
                         <div className="mt-4 space-y-2">
                             <p className="text-sm font-medium">Fichiers à téléverser :</p>
-                            <ul className="list-disc list-inside text-sm text-muted-foreground">
-                                {filesToUpload.map(file => <li key={file.name}>{file.name} <button onClick={() => removeFile(file.name)} className="text-destructive text-xs ml-2">[X]</button></li>)}
+                            <ul className="space-y-1">
+                                {filesToUpload.map(file => (
+                                    <li key={file.name} className="flex items-center justify-between text-sm text-muted-foreground">
+                                        <span className="truncate pr-2">{file.name}</span>
+                                        <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => removeFile(file.name)}><X className="h-3 w-3"/></Button>
+                                    </li>
+                                ))}
                             </ul>
                         </div>
                     )}
@@ -122,15 +161,51 @@ export default function RepositoryPage() {
         <div className="lg:col-span-2">
             <Card>
                 <CardHeader>
-                    <CardTitle>Documents Récents</CardTitle>
+                    <CardTitle>Documents en Ligne</CardTitle>
                     <CardDescription>
-                        Les derniers documents ajoutés au référentiel.
+                        Liste de tous les documents disponibles dans le référentiel.
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div className="flex items-center justify-center h-64 border-2 border-dashed rounded-lg">
-                        <p className="text-muted-foreground">La liste des documents s'affichera ici.</p>
-                    </div>
+                     {loadingDocs ? (
+                        <Skeleton className="h-48 w-full" />
+                     ) : documents.length > 0 ? (
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Nom du fichier</TableHead>
+                                    <TableHead>Taille</TableHead>
+                                    <TableHead>Date d'ajout</TableHead>
+                                    <TableHead><span className="sr-only">Actions</span></TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {documents.map(doc => (
+                                    <TableRow key={doc.id}>
+                                        <TableCell className="font-medium flex items-center gap-2">
+                                            <FileText className="h-4 w-4 text-muted-foreground" />
+                                            {doc.fileName}
+                                        </TableCell>
+                                        <TableCell>{formatBytes(doc.fileSize)}</TableCell>
+                                        <TableCell>{format(parseISO(doc.uploadDate), 'dd/MM/yyyy', { locale: fr })}</TableCell>
+                                        <TableCell className="text-right">
+                                            <Button asChild variant="outline" size="sm">
+                                                <Link href={doc.storageUrl} target="_blank" download={doc.fileName}>
+                                                    <Download className="mr-2 h-4 w-4" />
+                                                    Télécharger
+                                                </Link>
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    ) : (
+                        <div className="flex flex-col items-center justify-center h-64 border-2 border-dashed rounded-lg">
+                            <PackageOpen className="h-12 w-12 text-muted-foreground" />
+                            <p className="text-muted-foreground mt-4">Aucun document dans le référentiel.</p>
+                        </div>
+                    )}
                 </CardContent>
             </Card>
         </div>

@@ -3,7 +3,10 @@
 
 import { useState, useEffect } from "react";
 import Link from 'next/link';
-import { getDepartments, getDirections, getServices, getEmployees } from '@/services/employee-service';
+import { getDepartments } from '@/services/department-service';
+import { getDirections } from '@/services/direction-service';
+import { getServices } from '@/services/service-service';
+import { getEmployees } from '@/services/employee-service';
 import type { Department, Direction, Service, Employe } from "@/lib/data";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

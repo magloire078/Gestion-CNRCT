@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
@@ -35,17 +34,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { subscribeToBudgetLines, deleteBudgetLine, addBudgetLine } from "@/services/budget-line-service";
+import { subscribeToBudgetLines, deleteBudgetLine, addBudgetLine, updateBudgetLine } from "@/services/budget-line-service";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { AddBudgetLineSheet } from "@/components/budget/add-budget-line-sheet";
+import { EditBudgetLineSheet } from "@/components/budget/edit-budget-line-sheet";
 
 export default function BudgetPage() {
   const [budgetLines, setBudgetLines] = useState<BudgetLine[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
+  const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
+  const [editingTarget, setEditingTarget] = useState<BudgetLine | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<BudgetLine | null>(null);
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
   
   const [searchTerm, setSearchTerm] = useState("");
   const [yearFilter, setYearFilter] = useState<string>("all");
@@ -70,13 +73,26 @@ export default function BudgetPage() {
   const handleAddBudgetLine = async (newLineData: Omit<BudgetLine, "id">) => {
     try {
         await addBudgetLine(newLineData);
-        setIsSheetOpen(false);
+        setIsAddSheetOpen(false);
         toast({
             title: "Ligne budgétaire ajoutée",
             description: `${newLineData.name} a été ajouté au budget.`,
         });
     } catch(err) {
         console.error("Failed to add budget line:", err);
+        throw err;
+    }
+  };
+  
+  const handleUpdateBudgetLine = async (id: string, dataToUpdate: Partial<Omit<BudgetLine, 'id'>>) => {
+    try {
+        await updateBudgetLine(id, dataToUpdate);
+        setIsEditSheetOpen(false);
+        toast({
+            title: "Ligne budgétaire mise à jour",
+        });
+    } catch (err) {
+        console.error("Failed to update budget line:", err);
         throw err;
     }
   };
@@ -91,6 +107,11 @@ export default function BudgetPage() {
     } finally {
       setDeleteTarget(null);
     }
+  };
+  
+  const openEditSheet = (line: BudgetLine) => {
+    setEditingTarget(line);
+    setIsEditSheetOpen(true);
   };
 
   const years = useMemo(() => {
@@ -121,7 +142,7 @@ export default function BudgetPage() {
       <div className="flex flex-col gap-6">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold tracking-tight">Gestion Budgétaire</h1>
-          <Button onClick={() => setIsSheetOpen(true)}>
+          <Button onClick={() => setIsAddSheetOpen(true)}>
             <PlusCircle className="mr-2 h-4 w-4" />
             Ajouter une Ligne
           </Button>
@@ -201,7 +222,7 @@ export default function BudgetPage() {
                               <Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => openEditSheet(line)}>
                                 <Pencil className="mr-2 h-4 w-4" /> Modifier
                               </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => setDeleteTarget(line)} className="text-destructive focus:text-destructive">
@@ -225,10 +246,18 @@ export default function BudgetPage() {
       </div>
 
        <AddBudgetLineSheet
-        isOpen={isSheetOpen}
-        onClose={() => setIsSheetOpen(false)}
+        isOpen={isAddSheetOpen}
+        onClose={() => setIsAddSheetOpen(false)}
         onAddBudgetLine={handleAddBudgetLine}
       />
+      {editingTarget && (
+        <EditBudgetLineSheet
+            isOpen={isEditSheetOpen}
+            onClose={() => setIsEditSheetOpen(false)}
+            onUpdateBudgetLine={handleUpdateBudgetLine}
+            budgetLine={editingTarget}
+        />
+      )}
 
       <ConfirmationDialog
         isOpen={!!deleteTarget}

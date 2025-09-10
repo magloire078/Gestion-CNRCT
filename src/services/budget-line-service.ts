@@ -1,4 +1,3 @@
-
 import { db } from '@/lib/firebase';
 import { collection, addDoc, onSnapshot, Unsubscribe, query, orderBy, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import type { BudgetLine } from '@/lib/data';

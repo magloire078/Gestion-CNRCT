@@ -186,7 +186,7 @@ export default function SuppliesPage() {
               {filteredSupplies.length} résultat(s) trouvé(s).
             </div>
           {error && <p className="text-destructive text-center py-4">{error}</p>}
-           <div className="overflow-x-auto">
+           <div className="hidden md:block">
             <Table>
                 <TableHeader>
                 <TableRow>
@@ -252,6 +252,50 @@ export default function SuppliesPage() {
                 )}
                 </TableBody>
             </Table>
+            </div>
+             <div className="grid grid-cols-1 gap-4 md:hidden">
+              {loading ? (
+                 Array.from({ length: 5 }).map((_, i) => (
+                    <Card key={i}><CardContent className="p-4"><Skeleton className="h-24 w-full" /></CardContent></Card>
+                 ))
+              ) : (
+                filteredSupplies.map((supply) => {
+                   const stockStatus = getStockStatus(supply.quantity, supply.reorderLevel);
+                   return (
+                    <Card key={supply.id} onClick={() => openEditSheet(supply)}>
+                        <CardContent className="p-4 space-y-2">
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <p className="font-bold">{supply.name}</p>
+                                    <p className="text-sm text-muted-foreground">{supply.category}</p>
+                                </div>
+                                <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="h-8 w-8 -mr-2" onClick={(e) => e.stopPropagation()}>
+                                        <MoreHorizontal className="h-4 w-4" />
+                                        <span className="sr-only">Menu</span>
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                                    <DropdownMenuItem onClick={() => openEditSheet(supply)}>
+                                        <Pencil className="mr-2 h-4 w-4" /> Modifier
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => setDeleteTarget(supply)} className="text-destructive focus:text-destructive">
+                                        <Trash2 className="mr-2 h-4 w-4" /> Supprimer
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                            </div>
+                           <div className="space-y-1 text-sm">
+                                <p><span className="font-medium">Quantité:</span> {supply.quantity} (Seuil: {supply.reorderLevel})</p>
+                                <Progress value={stockStatus.value} className="h-2" indicatorClassName={stockStatus.className} />
+                            </div>
+                            <p className="text-xs text-muted-foreground pt-1">Dernier ajout: {supply.lastRestockDate}</p>
+                        </CardContent>
+                    </Card>
+                   )
+                })
+              )}
             </div>
           {!loading && filteredSupplies.length === 0 && (
             <div className="text-center py-10 text-muted-foreground">

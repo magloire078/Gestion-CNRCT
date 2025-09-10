@@ -15,6 +15,7 @@ export async function generateMetadata(): Promise<Metadata> {
     icons: {
       icon: settings.faviconUrl || '/favicon.ico',
     },
+    manifest: "/manifest.json",
   };
 }
 

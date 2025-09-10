@@ -13,6 +13,7 @@ export const allPermissions = {
   "Gestion des Évaluations": "page:evaluations:view",
   "Gestion des Indemnités": "page:indemnities:view",
   "Gestion des Missions": "page:missions:view",
+  "Gestion du Budget": "page:budget:view",
   "Gestion des Conflits": "page:conflicts:view",
   "Gestion des Fournitures": "page:supplies:view",
   "Gestion des Actifs TI": "page:it-assets:view",

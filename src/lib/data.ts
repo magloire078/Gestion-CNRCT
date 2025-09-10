@@ -311,3 +311,11 @@ export type Document = {
   relatedEmployeeId?: string;
   category?: string;
 }
+
+export type BudgetLine = {
+    id: string; // Firestore document ID
+    code: string;
+    name: string;
+    allocatedAmount: number;
+    year: number;
+};

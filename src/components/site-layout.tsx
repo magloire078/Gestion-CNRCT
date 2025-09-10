@@ -34,6 +34,7 @@ import {
   ShieldHalf,
   Network,
   Archive,
+  Wallet,
 } from "lucide-react";
 
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
@@ -99,6 +100,7 @@ const allMenuItems = [
     permission: "group:operations:view",
     subItems: [
         { href: "/missions", label: "Missions", icon: Briefcase, permission: "page:missions:view" },
+        { href: "/budget", label: "Budget", icon: Wallet, permission: "page:budget:view" },
         { href: "/fleet", label: "Flotte de Véhicules", icon: Car, permission: "page:fleet:view" },
         { href: "/supplies", label: "Fournitures", icon: Package, permission: "page:supplies:view" },
         { href: "/repository", label: "Référentiel", icon: Archive, permission: "page:repository:view" },

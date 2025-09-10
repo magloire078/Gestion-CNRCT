@@ -35,15 +35,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { subscribeToBudgetLines, deleteBudgetLine } from "@/services/budget-line-service";
+import { subscribeToBudgetLines, deleteBudgetLine, addBudgetLine } from "@/services/budget-line-service";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
+import { AddBudgetLineSheet } from "@/components/budget/add-budget-line-sheet";
 
 export default function BudgetPage() {
   const [budgetLines, setBudgetLines] = useState<BudgetLine[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<BudgetLine | null>(null);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
   
   const [searchTerm, setSearchTerm] = useState("");
   const [yearFilter, setYearFilter] = useState<string>("all");
@@ -65,6 +67,20 @@ export default function BudgetPage() {
     return () => unsubscribe();
   }, []);
   
+  const handleAddBudgetLine = async (newLineData: Omit<BudgetLine, "id">) => {
+    try {
+        await addBudgetLine(newLineData);
+        setIsSheetOpen(false);
+        toast({
+            title: "Ligne budgétaire ajoutée",
+            description: `${newLineData.name} a été ajouté au budget.`,
+        });
+    } catch(err) {
+        console.error("Failed to add budget line:", err);
+        throw err;
+    }
+  };
+
   const handleDeleteConfirm = async () => {
     if (!deleteTarget) return;
     try {
@@ -105,7 +121,7 @@ export default function BudgetPage() {
       <div className="flex flex-col gap-6">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold tracking-tight">Gestion Budgétaire</h1>
-          <Button>
+          <Button onClick={() => setIsSheetOpen(true)}>
             <PlusCircle className="mr-2 h-4 w-4" />
             Ajouter une Ligne
           </Button>
@@ -207,6 +223,12 @@ export default function BudgetPage() {
           </CardContent>
         </Card>
       </div>
+
+       <AddBudgetLineSheet
+        isOpen={isSheetOpen}
+        onClose={() => setIsSheetOpen(false)}
+        onAddBudgetLine={handleAddBudgetLine}
+      />
 
       <ConfirmationDialog
         isOpen={!!deleteTarget}

@@ -29,6 +29,15 @@ function initializeServices() {
     const auth: Auth = getAuth(app);
     const storage: FirebaseStorage = getStorage(app);
     
+    // Check if running in a Node.js environment (e.g., during SSR)
+    if (typeof window === 'undefined') {
+      // For server-side rendering, it's often better to re-initialize 
+      // or ensure the instance is correctly configured for the server environment.
+      // A simple re-initialization can sometimes resolve offline/context issues.
+      const serverApp = initializeApp(firebaseConfig, `server-${new Date().getTime()}`);
+      firestore = getFirestore(serverApp);
+    }
+
     return { app, db: firestore, auth, storage };
 }
 

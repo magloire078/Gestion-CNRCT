@@ -3,14 +3,17 @@ import { initializeApp, getApps, getApp, type FirebaseOptions } from "firebase/a
 import { getFirestore, initializeFirestore, memoryLocalCache, Firestore } from "firebase/firestore";
 import { getAuth, Auth } from "firebase/auth";
 import { getStorage, FirebaseStorage } from "firebase/storage";
+import { getAnalytics } from "firebase/analytics";
 
 const firebaseConfig: FirebaseOptions = {
   apiKey: "AIzaSyBuMgqk-I_mngDw4SYuNhOOLcF6JNchXhw",
   authDomain: "gestion-cnrct.firebaseapp.com",
-  projectId: "project-126727792063",
+  databaseURL: "https://gestion-cnrct-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "gestion-cnrct",
   storageBucket: "gestion-cnrct.firebasestorage.app",
   messagingSenderId: "126727792063",
-  appId: "1:126727792063:web:55513c7e21531a87286d0a"
+  appId: "1:126727792063:web:55513c7e21531a87286d0a",
+  measurementId: "G-TDXM581DZ5"
 };
 
 // Singleton pattern to initialize Firebase services
@@ -25,6 +28,11 @@ function initializeServices() {
 
     const auth: Auth = getAuth(app);
     const storage: FirebaseStorage = getStorage(app);
+    
+    // Initialize Analytics if not in a server environment
+    if (typeof window !== 'undefined') {
+        getAnalytics(app);
+    }
 
     return { app, db, auth, storage };
 }

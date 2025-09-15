@@ -54,7 +54,7 @@ export default function LoginPage() {
           setError("Votre compte existe mais le profil n'a pas pu être chargé. Veuillez contacter un administrateur.");
       }
       else {
-          setError(errorMessage);
+          setError("Une erreur de connexion est survenue. Veuillez réessayer.");
       }
       console.error("Login Error:", err);
     } finally {

@@ -1,8 +1,8 @@
 
 import { initializeApp, getApps, getApp, type FirebaseOptions } from "firebase/app";
-import { getFirestore, connectFirestoreEmulator, initializeFirestore, memoryLocalCache, Firestore } from "firebase/firestore";
-import { getAuth, connectAuthEmulator, Auth } from "firebase/auth";
-import { getStorage, connectStorageEmulator, FirebaseStorage } from "firebase/storage";
+import { getFirestore, initializeFirestore, memoryLocalCache, Firestore } from "firebase/firestore";
+import { getAuth, Auth } from "firebase/auth";
+import { getStorage, FirebaseStorage } from "firebase/storage";
 
 const firebaseConfig: FirebaseOptions = {
   apiKey: "AIzaSyBuMgqk-I_mngDw4SYuNhOOLcF6JNchXhw",

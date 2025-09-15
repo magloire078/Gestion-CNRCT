@@ -6,19 +6,21 @@ import { useRouter, usePathname } from 'next/navigation';
 import { onAuthStateChange } from '@/services/auth-service';
 import type { User, Role, OrganizationSettings } from '@/lib/data';
 import { getRoles, initializeDefaultRoles } from '@/services/role-service';
+import { getOrganizationSettings } from '@/services/organization-service';
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  settings: OrganizationSettings;
+  settings: OrganizationSettings | null;
   hasPermission: (permission: string) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 
-export function AuthProvider({ children, settings }: { children: ReactNode, settings: OrganizationSettings }) {
+export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [settings, setSettings] = useState<OrganizationSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
@@ -28,6 +30,8 @@ export function AuthProvider({ children, settings }: { children: ReactNode, sett
       setUser(currentUser);
       setLoading(false);
     });
+    
+    getOrganizationSettings().then(setSettings);
 
     return () => unsubscribe();
   }, []);

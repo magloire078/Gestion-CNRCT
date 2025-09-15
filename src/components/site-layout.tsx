@@ -39,7 +39,7 @@ import {
 
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { signOut } from "@/services/auth-service";
-import type { OrganizationSettings } from "@/lib/data";
+import { getOrganizationSettings, type OrganizationSettings } from '@/services/organization-service';
 
 import {
   SidebarProvider,
@@ -336,7 +336,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function SiteLayout({ children, settings }: { children: React.ReactNode, settings: OrganizationSettings }) {
+export function SiteLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   
   const isPublicPage = ['/login', '/signup', '/forgot-password'].includes(pathname);
@@ -346,7 +346,7 @@ export function SiteLayout({ children, settings }: { children: React.ReactNode, 
   }
 
   return (
-    <AuthProvider settings={settings}>
+    <AuthProvider>
         <AppLayout>
             {children}
         </AppLayout>

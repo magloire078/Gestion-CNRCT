@@ -24,8 +24,6 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const settings = await getOrganizationSettings();
-
   return (
     <html lang="fr" suppressHydrationWarning>
       <head>
@@ -43,7 +41,7 @@ export default async function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <SiteLayout settings={settings}>
+            <SiteLayout>
                 {children}
             </SiteLayout>
             <Toaster />

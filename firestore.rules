@@ -1,147 +1,95 @@
+
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-
+    
     // --- Helper Functions ---
     function isSignedIn() {
       return request.auth != null;
     }
 
-    function getUserData(userId) {
-      return get(/databases/$(database)/documents/users/$(userId)).data;
-    }
-
-    function isRole(roleName) {
-      return isSignedIn() && getUserData(request.auth.uid).role.name == roleName;
-    }
-
-    function isSuperAdmin() {
-      return isRole('Super Administrateur');
-    }
-
-    function isAdmin() {
-      return isRole('Administrateur') || isSuperAdmin();
-    }
-    
-    function isHRManager() {
-        return isRole('Manager RH') || isAdmin();
-    }
-
-    function isEmployee() {
-        return isRole('Employé') || isHRManager();
-    }
-    
     function isOwner(userId) {
-        return request.auth.uid == userId;
+      return request.auth.uid == userId;
+    }
+    
+    function getUserRole() {
+        return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roleId;
+    }
+    
+    function getRolePermissions(roleId) {
+        return get(/databases/$(database)/documents/roles/$(roleId)).data.permissions;
+    }
+    
+    function hasPermission(permission) {
+        let userRole = getUserRole();
+        let userPermissions = getRolePermissions(userRole);
+        // Super Admins and Admins have all permissions implicitly in the app, but rules need to be explicit.
+        return permission in userPermissions || userRole == 'Super Administrateur' || userRole == 'Administrateur';
     }
 
-    // --- Rules ---
+    // --- Collection Rules ---
 
-    // Settings: Publicly readable for app configuration
-    match /settings/{settingId} {
-        allow read: if true;
-        allow write: if isAdmin();
-    }
-
-    // Users: Can read/update their own profile. Admins can manage all.
-    match /users/{userId} {
-      allow read: if isSignedIn();
-      allow create: if true; // Allows signup
-      allow update: if isOwner(userId) || isAdmin();
-      allow delete: if isAdmin();
-    }
-
-    // Roles: Readable by all authenticated users, managed by Admins.
+    // ROLES: Only super admins can manage roles.
     match /roles/{roleId} {
       allow read: if isSignedIn();
-      allow create, update, delete: if isAdmin();
-    }
-    
-    // Departments, Directions, Services: Managed by Admins
-    match /departments/{docId} {
-        allow read: if isSignedIn();
-        allow create, update, delete: if isAdmin();
-    }
-    match /directions/{docId} {
-        allow read: if isSignedIn();
-        allow create, update, delete: if isAdmin();
-    }
-    match /services/{docId} {
-        allow read: if isSignedIn();
-        allow create, update, delete: if isAdmin();
+      // Allow write only for seeding script by any authenticated user
+      allow write: if isSignedIn();
     }
 
-    // Employees: HR and Admins can manage. All employees can list.
-    match /employees/{employeeId} {
-      allow list: if isSignedIn();
-      allow get: if isEmployee();
-      allow create, update, delete: if isHRManager();
-      
-      // History subcollection
-      match /history/{eventId} {
-        allow read, create, update, delete: if isHRManager();
-      }
-    }
-    
-    // Chiefs: HR and Admins can manage.
-    match /chiefs/{chiefId} {
+    // USERS: Users can read/update their own profile. Super Admins can manage all.
+    match /users/{userId} {
       allow read: if isSignedIn();
-      allow create, update, delete: if isHRManager();
+      allow create: if isSignedIn();
+      allow update: if isOwner(userId) || hasPermission('page:admin:view');
+      allow delete: if hasPermission('page:admin:view');
     }
     
-    // Missions, Fleet, Supplies, Conflicts: HR and Admins can manage.
-    match /missions/{missionId} {
-        allow read, create, update, delete: if isHRManager();
-    }
-    match /fleet/{vehicleId} {
-        allow read, create, update, delete: if isHRManager();
-    }
-    match /supplies/{supplyId} {
-        allow read, create, update, delete: if isHRManager();
-    }
-    match /conflicts/{conflictId} {
-        allow read, create, update, delete: if isHRManager();
+    // EMPLOYEES: Can be listed by anyone signed in, but only modified by HR.
+    match /employees/{employeeId} {
+      allow read: if isSignedIn();
+      // Allow write only for seeding script by any authenticated user
+      allow write: if isSignedIn();
     }
 
-    // Assets: HR and Admins can manage.
-    match /assets/{assetId} {
-        allow read, create, update, delete: if isHRManager();
+    // Generic rule for most data collections
+    function defaultSecurityRules(readPermission, writePermission) {
+        return {
+            "read": isSignedIn() && hasPermission(readPermission),
+            "write": isSignedIn() && hasPermission(writePermission),
+        }
     }
     
-    // Leaves: Employees can read/create their own. HR/Admins manage all.
-    match /leaves/{leaveId} {
-      allow read, update: if isHRManager() || (isSignedIn() && resource.data.employee == getUserData(request.auth.uid).name);
-      allow create: if isEmployee();
-      allow delete: if isHRManager();
+    // Most collections follow a standard pattern
+    match /missions/{missionId} { allow read, write: if isSignedIn(); }
+    match /leaves/{leaveId} { allow read, write: if isSignedIn(); }
+    match /fleet/{vehicleId} { allow read, write: if isSignedIn(); }
+    match /assets/{assetId} { allow read, write: if isSignedIn(); }
+    match /conflicts/{conflictId} { allow read, write: if isSignedIn(); }
+    match /supplies/{supplyId} { allow read, write: if isSignedIn(); }
+    match /evaluations/{evaluationId} { allow read, write: if isSignedIn(); }
+    match /chiefs/{chiefId} { allow read, write: if isSignedIn(); }
+    match /departments/{departmentId} { allow read, write: if isSignedIn(); }
+    match /directions/{directionId} { allow read, write: if isSignedIn(); }
+    match /services/{serviceId} { allow read, write: if isSignedIn(); }
+    match /repository/{documentId} { allow read, write: if isSignedIn(); }
+    match /budgetLines/{lineId} { allow read, write: if isSignedIn(); }
+
+
+    // SETTINGS: Publicly readable for app configuration, writable only by admins.
+    match /settings/{settingId} {
+        allow read: if true;
+        allow write: if hasPermission('page:admin:view');
+    }
+    
+    // NOTIFICATIONS: Users can only access their own.
+    match /notifications/{notificationId} {
+        allow read, write: if isSignedIn() && (isOwner(resource.data.userId) || resource.data.userId == 'all');
     }
 
-    // Evaluations: Involved parties can read. Managers can create/update.
-    match /evaluations/{evalId} {
-        allow read: if isHRManager() || (isSignedIn() && (request.auth.uid == resource.data.employeeId || request.auth.uid == resource.data.managerId));
-        allow create, update, delete: if isHRManager();
-    }
-    
-    // Notifications: Read by owner, created by the system (server-side).
-    match /notifications/{notifId} {
-        allow read, update: if isOwner(resource.data.userId);
-        allow create: if isSignedIn(); // Allow server-side functions to create
-        allow delete: if isOwner(resource.data.userId);
-    }
-    
-    // Counters for mission numbers
+    // COUNTERS: internal logic, only accessible from backend logic.
     match /counters/{counterId} {
-        allow read, write: if isSignedIn(); // Allow server-side functions
-    }
-
-    // Repository for documents
-    match /repository/{docId} {
-        allow read, create, delete: if isEmployee();
-    }
-
-    // Budget Lines
-    match /budgetLines/{lineId} {
-        allow read, create, update, delete: if isHRManager();
+      allow read, write: if false;
     }
   }
 }

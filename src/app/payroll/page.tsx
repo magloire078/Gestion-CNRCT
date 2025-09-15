@@ -93,25 +93,25 @@ export default function PayrollPage() {
         // Filter for employees who should be on payroll
         const payrollEmployees = fetchedEmployees.filter(e => e.status === 'Actif' || e.status === 'En congé');
         
-        let employeesWithSalary: EmployeeWithDetails[] = payrollEmployees;
-
         if (canViewSalaries) {
-            // Calculate net salary for each employee for the current month
             const today = new Date();
             const lastDayOfCurrentMonth = lastDayOfMonth(today).toISOString().split('T')[0];
-            employeesWithSalary = await Promise.all(
+            
+            const employeesWithSalary = await Promise.all(
                 payrollEmployees.map(async (emp) => {
                     try {
                         const details = await getPayslipDetails(emp, lastDayOfCurrentMonth);
                         return { ...emp, netSalary: details.totals.netAPayer, grossSalary: details.totals.brutImposable };
                     } catch {
-                        return { ...emp, netSalary: 0, grossSalary: 0 }; // Default to 0 if calculation fails
+                        return { ...emp, netSalary: 0, grossSalary: 0 };
                     }
                 })
             );
+            setEmployees(employeesWithSalary);
+        } else {
+             setEmployees(payrollEmployees);
         }
         
-        setEmployees(employeesWithSalary);
         setError(null);
         setLoading(false);
       },

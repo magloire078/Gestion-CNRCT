@@ -28,10 +28,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const unsubscribe = onAuthStateChange((currentUser) => {
       setUser(currentUser);
-      setLoading(false);
+      // We only set loading to false after settings are also fetched.
     });
     
-    getOrganizationSettings().then(setSettings);
+    getOrganizationSettings().then(orgSettings => {
+        setSettings(orgSettings);
+        // Set dynamic title and favicon
+        if (orgSettings.organizationName) {
+            document.title = orgSettings.organizationName;
+        }
+        if (orgSettings.faviconUrl) {
+            let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
+            if (!link) {
+                link = document.createElement('link');
+                link.rel = 'icon';
+                document.getElementsByTagName('head')[0].appendChild(link);
+            }
+            link.href = orgSettings.faviconUrl;
+        }
+    }).catch(console.error)
+      .finally(() => {
+        setLoading(false);
+      });
 
     return () => unsubscribe();
   }, []);

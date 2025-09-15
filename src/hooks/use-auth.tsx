@@ -26,9 +26,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
 
   useEffect(() => {
+    let settingsDone = false;
+    let authDone = false;
+
+    const checkDone = () => {
+      if (settingsDone && authDone) {
+        setLoading(false);
+      }
+    };
+
     const unsubscribe = onAuthStateChange((currentUser) => {
       setUser(currentUser);
-      // We only set loading to false after settings are also fetched.
+      authDone = true;
+      checkDone();
     });
     
     getOrganizationSettings().then(orgSettings => {
@@ -48,7 +58,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
     }).catch(console.error)
       .finally(() => {
-        setLoading(false);
+        settingsDone = true;
+        checkDone();
       });
 
     return () => unsubscribe();

@@ -18,6 +18,7 @@ function initializeServices() {
     const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
     
     // Use initializeFirestore with memory cache to avoid persistence issues in SSR environments
+    // This is the correct way to handle Firestore in Next.js App Router for server components.
     const db: Firestore = initializeFirestore(app, {
       localCache: memoryLocalCache(),
     });

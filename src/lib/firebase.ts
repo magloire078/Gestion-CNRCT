@@ -7,7 +7,7 @@ import { getStorage, connectStorageEmulator, FirebaseStorage } from "firebase/st
 const firebaseConfig: FirebaseOptions = {
   apiKey: "AIzaSyBuMgqk-I_mngDw4SYuNhOOLcF6JNchXhw",
   authDomain: "gestion-cnrct.firebaseapp.com",
-  projectId: "gestion-cnrct",
+  projectId: "project-126727792063",
   storageBucket: "gestion-cnrct.firebasestorage.app",
   messagingSenderId: "126727792063",
   appId: "1:126727792063:web:55513c7e21531a87286d0a"

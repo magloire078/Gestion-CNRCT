@@ -170,7 +170,7 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
     // =================================================================
     
     const organizationLogos = await getOrganizationSettings();
-    const paymentDateObject = getLastWorkingDay(parseISO(payslipDate));
+    const paymentDateObject = isValid(payslipDateObj) ? getLastWorkingDay(payslipDateObj) : new Date();
     const numeroCompteComplet = [employee.CB, employee.CG, employee.numeroCompte, employee.Cle_RIB].filter(Boolean).join(' ');
 
     const formattedDateEmbauche = employee.dateEmbauche && isValid(parseISO(employee.dateEmbauche)) 

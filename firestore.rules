@@ -3,93 +3,10 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // --- Helper Functions ---
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    function isOwner(userId) {
-      return request.auth.uid == userId;
-    }
-    
-    function getUserRole() {
-        return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roleId;
-    }
-    
-    function getRolePermissions(roleId) {
-        return get(/databases/$(database)/documents/roles/$(roleId)).data.permissions;
-    }
-    
-    function hasPermission(permission) {
-        let userRole = getUserRole();
-        let userPermissions = getRolePermissions(userRole);
-        // Super Admins and Admins have all permissions implicitly in the app, but rules need to be explicit.
-        return permission in userPermissions || userRole == 'Super Administrateur' || userRole == 'Administrateur';
-    }
-
-    // --- Collection Rules ---
-
-    // ROLES: Only super admins can manage roles.
-    match /roles/{roleId} {
-      allow read: if isSignedIn();
-      // Allow write only for seeding script by any authenticated user
-      allow write: if isSignedIn();
-    }
-
-    // USERS: Users can read/update their own profile. Super Admins can manage all.
-    match /users/{userId} {
-      allow read: if isSignedIn();
-      allow create: if isSignedIn();
-      allow update: if isOwner(userId) || hasPermission('page:admin:view');
-      allow delete: if hasPermission('page:admin:view');
-    }
-    
-    // EMPLOYEES: Can be listed by anyone signed in, but only modified by HR.
-    match /employees/{employeeId} {
-      allow read: if isSignedIn();
-      // Allow write only for seeding script by any authenticated user
-      allow write: if isSignedIn();
-    }
-
-    // Generic rule for most data collections
-    function defaultSecurityRules(readPermission, writePermission) {
-        return {
-            "read": isSignedIn() && hasPermission(readPermission),
-            "write": isSignedIn() && hasPermission(writePermission),
-        }
-    }
-    
-    // Most collections follow a standard pattern
-    match /missions/{missionId} { allow read, write: if isSignedIn(); }
-    match /leaves/{leaveId} { allow read, write: if isSignedIn(); }
-    match /fleet/{vehicleId} { allow read, write: if isSignedIn(); }
-    match /assets/{assetId} { allow read, write: if isSignedIn(); }
-    match /conflicts/{conflictId} { allow read, write: if isSignedIn(); }
-    match /supplies/{supplyId} { allow read, write: if isSignedIn(); }
-    match /evaluations/{evaluationId} { allow read, write: if isSignedIn(); }
-    match /chiefs/{chiefId} { allow read, write: if isSignedIn(); }
-    match /departments/{departmentId} { allow read, write: if isSignedIn(); }
-    match /directions/{directionId} { allow read, write: if isSignedIn(); }
-    match /services/{serviceId} { allow read, write: if isSignedIn(); }
-    match /repository/{documentId} { allow read, write: if isSignedIn(); }
-    match /budgetLines/{lineId} { allow read, write: if isSignedIn(); }
-
-
-    // SETTINGS: Publicly readable for app configuration, writable only by admins.
-    match /settings/{settingId} {
-        allow read: if true;
-        allow write: if hasPermission('page:admin:view');
-    }
-    
-    // NOTIFICATIONS: Users can only access their own.
-    match /notifications/{notificationId} {
-        allow read, write: if isSignedIn() && (isOwner(resource.data.userId) || resource.data.userId == 'all');
-    }
-
-    // COUNTERS: internal logic, only accessible from backend logic.
-    match /counters/{counterId} {
-      allow read, write: if false;
+    // Allow read/write access to all documents for any authenticated user
+    // This is not recommended for production, but is useful for development.
+    match /{document=**} {
+      allow read, write: if request.auth != null;
     }
   }
 }

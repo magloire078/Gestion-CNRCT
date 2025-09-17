@@ -1,4 +1,3 @@
-
 'use server';
 
 /**
@@ -51,6 +50,3 @@ export const getDashboardStats = ai.defineTool(
     }
   }
 );
-    
-
-    

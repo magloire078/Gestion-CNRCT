@@ -268,7 +268,7 @@ export default function DashboardPage() {
                         description={getGenderBreakdown(cnpsEmployees)}
                     />
                     <StatCard 
-                        title="Rois &amp; Chefs"
+                        title="Rois & Chefs"
                         value={chiefs.length}
                         icon={Crown}
                         href="/chiefs"

@@ -93,7 +93,7 @@ export default function NominativeReportPage() {
           endYear = currentYear;
       } else {
           startYear = getYear(hireDate);
-          endYear = currentYear;
+          endYear = departureDate ? getYear(departureDate) : currentYear;
       }
 
       const annualSalaries = [];
@@ -130,12 +130,19 @@ export default function NominativeReportPage() {
   
   useEffect(() => {
     if (isPrinting) {
-      document.body.classList.add('print-landscape');
+      const style = document.createElement('style');
+      style.id = 'print-landscape-style';
+      style.innerHTML = `@media print { @page { size: landscape; margin: 1cm; } }`;
+      document.head.appendChild(style);
+      
       setTimeout(() => {
         window.print();
-        document.body.classList.remove('print-landscape');
+        const styleElement = document.getElementById('print-landscape-style');
+        if (styleElement) {
+            document.head.removeChild(styleElement);
+        }
         setIsPrinting(false);
-      }, 300);
+      }, 500); // Delay to ensure styles are applied
     }
   }, [isPrinting]);
   

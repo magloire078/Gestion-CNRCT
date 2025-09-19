@@ -27,7 +27,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
-import { parseISO, differenceInCalendarYears, getYear, format, startOfYear, endOfYear } from 'date-fns';
+import { parseISO, differenceInCalendarYears, getYear, format, startOfYear, endOfYear, isAfter } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
 type PeriodOption = "last3years" | "alltime";
@@ -83,6 +83,7 @@ export default function NominativeReportPage() {
       }
       
       const hireDate = parseISO(employee.dateEmbauche);
+      const departureDate = employee.Date_Depart ? parseISO(employee.Date_Depart) : null;
       const currentYear = getYear(new Date());
       
       let startYear, endYear;
@@ -102,15 +103,15 @@ export default function NominativeReportPage() {
           let yearTotal = 0;
           for (let month = 0; month < 12; month++) {
               const payslipDate = new Date(year, month, 15);
-              if (payslipDate < hireDate) {
+              
+              if (isAfter(payslipDate, hireDate) && (!departureDate || isAfter(departureDate, payslipDate))) {
+                  const details = await getPayslipDetails(employee, payslipDate.toISOString().split('T')[0]);
+                  const grossSalary = details.totals.brutImposable;
+                  monthlyData.push({ month: fr.localize?.month(month, { width: 'short' }) || '', gross: grossSalary });
+                  yearTotal += grossSalary;
+              } else {
                   monthlyData.push({ month: fr.localize?.month(month, { width: 'short' }) || '', gross: 0 });
-                  continue;
               }
-
-              const details = await getPayslipDetails(employee, payslipDate.toISOString().split('T')[0]);
-              const grossSalary = details.totals.brutImposable;
-              monthlyData.push({ month: fr.localize?.month(month, { width: 'short' }) || '', gross: grossSalary });
-              yearTotal += grossSalary;
           }
           annualSalaries.push({ year, months: monthlyData, total: yearTotal });
           grandTotal += yearTotal;

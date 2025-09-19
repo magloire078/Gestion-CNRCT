@@ -126,12 +126,19 @@ export default function NominativeReportPage() {
     }
   };
   
+  useEffect(() => {
+    if (isPrinting) {
+      document.body.classList.add('print-landscape');
+      setTimeout(() => {
+        window.print();
+        document.body.classList.remove('print-landscape');
+        setIsPrinting(false);
+      }, 300);
+    }
+  }, [isPrinting]);
+  
   const handlePrint = () => {
     setIsPrinting(true);
-    setTimeout(() => {
-      window.print();
-      setIsPrinting(false);
-    }, 300);
   };
   
   const formatCurrency = (value: number) => value === 0 ? '-' : value.toLocaleString('fr-FR') + ' FCFA';

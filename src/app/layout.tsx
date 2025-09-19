@@ -8,7 +8,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 // Metadata must be static in this context to avoid server-side Firebase calls during build.
 // Dynamic metadata will be handled client-side.
 export const metadata: Metadata = {
-  title: 'SynergieRH',
+  title: 'Gestion RH&M CNRCT',
   description: 'Application de gestion des ressources humaines et matérielles.',
   manifest: "/manifest.json",
 };

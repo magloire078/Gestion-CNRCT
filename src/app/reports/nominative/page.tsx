@@ -56,7 +56,7 @@ export default function NominativeReportPage() {
     async function fetchInitialData() {
       try {
         const data = await getEmployees();
-        setEmployees(data.filter(e => e.status === 'Actif'));
+        setEmployees(data);
       } catch (err) {
         setError("Impossible de charger la liste des employés.");
       } finally {

@@ -3,7 +3,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { PlusCircle, Search, Eye, Pencil, Trash2, MoreHorizontal, Laptop, Monitor, Printer, Keyboard, Mouse, FileCode, Package as PackageIcon } from "lucide-react";
+import { PlusCircle, Search, Eye, Pencil, Trash2, MoreHorizontal, Laptop, Monitor, Printer, Keyboard, Mouse, FileCode, Package as PackageIcon, Download } from "lucide-react";
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,6 +19,8 @@ import { useToast } from "@/hooks/use-toast";
 import { ConfirmationDialog } from "@/components/common/confirmation-dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useRouter } from "next/navigation";
+import Papa from "papaparse";
+import { ImportAssetsDataCard } from "@/components/it-assets/import-assets-data-card";
 
 
 type Status = 'En utilisation' | 'En stock' | 'En réparation' | 'Retiré';
@@ -98,7 +100,6 @@ export default function ItAssetsPage() {
     }
   };
 
-
   const filteredAssets = useMemo(() => {
     return assets.filter(asset => {
       const searchTermLower = searchTerm.toLowerCase();
@@ -115,15 +116,82 @@ export default function ItAssetsPage() {
     });
   }, [assets, searchTerm, typeFilter, statusFilter]);
 
+  const downloadFile = (content: string, fileName: string, contentType: string) => {
+      const blob = new Blob([content], { type: contentType });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', fileName);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+  };
+
+  const handleExportCsv = () => {
+    if (filteredAssets.length === 0) {
+      toast({ variant: "destructive", title: "Aucune donnée à exporter" });
+      return;
+    }
+    const csvData = Papa.unparse(filteredAssets);
+    downloadFile(csvData, 'export_actifs.csv', 'text/csv;charset=utf-8;');
+    toast({ title: "Exportation CSV réussie" });
+  };
+
+  const handleExportJson = () => {
+    if (filteredAssets.length === 0) {
+      toast({ variant: "destructive", title: "Aucune donnée à exporter" });
+      return;
+    }
+    const jsonData = JSON.stringify(filteredAssets, null, 2);
+    downloadFile(jsonData, 'export_actifs.json', 'application/json;charset=utf-8;');
+    toast({ title: "Exportation JSON réussie" });
+  };
+  
+  const handleExportSql = () => {
+    if (filteredAssets.length === 0) {
+      toast({ variant: "destructive", title: "Aucune donnée à exporter" });
+      return;
+    }
+    const escapeSql = (str: any) => str ? `'${String(str).replace(/'/g, "''")}'` : 'NULL';
+    const tableName = 'assets';
+    const columns = ['tag', 'type', 'typeOrdinateur', 'fabricant', 'modele', 'numeroDeSerie', 'assignedTo', 'status'];
+    const sqlContent = filteredAssets.map(asset => {
+      const values = columns.map(col => escapeSql(asset[col as keyof Asset])).join(', ');
+      return `INSERT INTO ${tableName} (${columns.join(', ')}) VALUES (${values});`;
+    }).join('\n');
+    downloadFile(sqlContent, 'export_actifs.sql', 'application/sql');
+    toast({ title: "Exportation SQL réussie" });
+  };
+
+
   return (
     <>
       <div className="flex flex-col gap-6">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold tracking-tight">Actifs Informatiques</h1>
-          <Button onClick={() => setIsSheetOpen(true)} className="w-full sm:w-auto">
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Ajouter un actif
-          </Button>
+          <div className="flex gap-2">
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="w-full sm:w-auto">
+                    <Download className="mr-2 h-4 w-4" />
+                    Exporter
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={handleExportCsv}>Exporter en CSV</DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleExportJson}>Exporter en JSON</DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleExportSql}>Exporter en SQL</DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
+            <Button onClick={() => setIsSheetOpen(true)} className="w-full sm:w-auto">
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Ajouter un actif
+            </Button>
+          </div>
+        </div>
+        <div className="mb-6">
+          <ImportAssetsDataCard />
         </div>
         <Card>
           <CardHeader>
@@ -289,5 +357,3 @@ export default function ItAssetsPage() {
     </>
   );
 }
-
-    

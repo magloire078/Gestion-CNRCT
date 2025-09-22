@@ -1,0 +1,4 @@
+tag,type,typeOrdinateur,fabricant,modele,numeroDeSerie,status,assignedTo
+CNRCT-PC-001,Ordinateur,Portable,Dell,Latitude 7490,ABC1234,En utilisation,Koffi Jean-Luc
+CNRCT-MON-002,Moniteur,,Dell,UltraSharp U2721DE,XYZ5678,En utilisation,Amoin Thérèse
+CNRCT-IMP-001,Imprimante,,HP,LaserJet Pro M404dn,SDF910,En stock,

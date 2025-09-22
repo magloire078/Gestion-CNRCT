@@ -1,6 +1,6 @@
 
 import { initializeApp, getApps, getApp, type FirebaseOptions } from "firebase/app";
-import { getFirestore, initializeFirestore, memoryLocalCache, Firestore } from "firebase/firestore";
+import { getFirestore, Firestore } from "firebase/firestore";
 import { getAuth, Auth } from "firebase/auth";
 import { getStorage, FirebaseStorage } from "firebase/storage";
 import { getAnalytics } from "firebase/analytics";
@@ -19,10 +19,7 @@ const firebaseConfig: FirebaseOptions = {
 function initializeServices() {
     const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
     
-    const db: Firestore = initializeFirestore(app, {
-      localCache: memoryLocalCache(),
-    });
-
+    const db: Firestore = getFirestore(app);
     const auth: Auth = getAuth(app);
     const storage: FirebaseStorage = getStorage(app);
     

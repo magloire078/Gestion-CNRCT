@@ -7,9 +7,9 @@ import { getAnalytics } from "firebase/analytics";
 
 const firebaseConfig: FirebaseOptions = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: "gestion-cnrct-w8ljs.firebaseapp.com",
-  projectId: "gestion-cnrct-w8ljs",
-  storageBucket: "gestion-cnrct-w8ljs.appspot.com",
+  authDomain: "gestion-cnrct.firebaseapp.com",
+  projectId: "gestion-cnrct",
+  storageBucket: "gestion-cnrct.appspot.com",
   messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,

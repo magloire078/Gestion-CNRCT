@@ -15,18 +15,26 @@ const firebaseConfig: FirebaseOptions = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
-// Singleton pattern to initialize Firebase services
-const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
-const storage = getStorage(app);
+// Use a function to ensure services are initialized only once
+function initializeFirebaseServices() {
+  const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+  const db = getFirestore(app);
+  const auth = getAuth(app);
+  const storage = getStorage(app);
 
-if (typeof window !== 'undefined') {
+  // Initialize Analytics only in the browser
+  if (typeof window !== 'undefined') {
     try {
-        getAnalytics(app);
+      getAnalytics(app);
     } catch (error) {
-        console.log("Could not initialize Analytics", error);
+      console.log("Could not initialize Analytics", error);
     }
+  }
+
+  return { app, db, auth, storage };
 }
+
+// Export the initialized services
+const { app, db, auth, storage } = initializeFirebaseServices();
 
 export { app, db, auth, storage };

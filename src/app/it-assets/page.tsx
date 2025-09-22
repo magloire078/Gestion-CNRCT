@@ -1,8 +1,9 @@
 
+
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { PlusCircle, Search, Eye, Pencil, Trash2, MoreHorizontal } from "lucide-react";
+import { PlusCircle, Search, Eye, Pencil, Trash2, MoreHorizontal, Laptop, Monitor, Printer, Keyboard, Mouse, FileCode, Package as PackageIcon } from "lucide-react";
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -31,6 +32,16 @@ const statusVariantMap: Record<Status, "default" | "secondary" | "outline"> = {
 
 const assetTypes: Asset['type'][] = ["Ordinateur", "Moniteur", "Imprimante", "Clavier", "Souris", "Logiciel", "Autre"];
 const assetStatuses: Asset['status'][] = ['En utilisation', 'En stock', 'En réparation', 'Retiré'];
+
+const assetIcons: Record<Asset['type'], React.ElementType> = {
+  "Ordinateur": Laptop,
+  "Moniteur": Monitor,
+  "Imprimante": Printer,
+  "Clavier": Keyboard,
+  "Souris": Mouse,
+  "Logiciel": FileCode,
+  "Autre": PackageIcon,
+};
 
 export default function ItAssetsPage() {
   const [assets, setAssets] = useState<Asset[]>([]);
@@ -180,40 +191,48 @@ export default function ItAssetsPage() {
                       </TableRow>
                       ))
                   ) : (
-                      filteredAssets.map((asset) => (
-                      <TableRow key={asset.tag} onClick={() => router.push(`/it-assets/${asset.tag}/edit`)} className="cursor-pointer">
-                          <TableCell className="font-medium">{asset.tag}</TableCell>
-                          <TableCell>{asset.type}</TableCell>
-                          <TableCell>
-                            <div>{asset.fabricant}</div>
-                            <div className="text-sm text-muted-foreground">{asset.modele}</div>
-                          </TableCell>
-                          <TableCell>{asset.numeroDeSerie}</TableCell>
-                          <TableCell>{asset.assignedTo}</TableCell>
-                          <TableCell>
-                          <Badge variant={statusVariantMap[asset.status as Status] || 'default'}>{asset.status}</Badge>
-                          </TableCell>
-                          <TableCell className="text-right">
-                              <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                      <Button aria-haspopup="true" size="icon" variant="ghost" onClick={(e) => e.stopPropagation()}>
-                                          <MoreHorizontal className="h-4 w-4" />
-                                          <span className="sr-only">Ouvrir le menu</span>
-                                      </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-                                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                      <DropdownMenuItem onSelect={() => router.push(`/it-assets/${asset.tag}/edit`)}>
-                                            <Pencil className="mr-2 h-4 w-4" /> Modifier
-                                      </DropdownMenuItem>
-                                      <DropdownMenuItem onClick={() => setDeleteTarget(asset)} className="text-destructive focus:text-destructive">
-                                          <Trash2 className="mr-2 h-4 w-4" /> Supprimer
-                                      </DropdownMenuItem>
-                                  </DropdownMenuContent>
-                              </DropdownMenu>
-                          </TableCell>
-                      </TableRow>
-                      ))
+                      filteredAssets.map((asset) => {
+                        const Icon = assetIcons[asset.type] || PackageIcon;
+                        return (
+                          <TableRow key={asset.tag} onClick={() => router.push(`/it-assets/${asset.tag}/edit`)} className="cursor-pointer">
+                              <TableCell className="font-medium">{asset.tag}</TableCell>
+                              <TableCell>
+                                <div className="flex items-center gap-2">
+                                  <Icon className="h-4 w-4 text-muted-foreground" />
+                                  {asset.type}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div>{asset.fabricant}</div>
+                                <div className="text-sm text-muted-foreground">{asset.modele}</div>
+                              </TableCell>
+                              <TableCell>{asset.numeroDeSerie}</TableCell>
+                              <TableCell>{asset.assignedTo}</TableCell>
+                              <TableCell>
+                              <Badge variant={statusVariantMap[asset.status as Status] || 'default'}>{asset.status}</Badge>
+                              </TableCell>
+                              <TableCell className="text-right">
+                                  <DropdownMenu>
+                                      <DropdownMenuTrigger asChild>
+                                          <Button aria-haspopup="true" size="icon" variant="ghost" onClick={(e) => e.stopPropagation()}>
+                                              <MoreHorizontal className="h-4 w-4" />
+                                              <span className="sr-only">Ouvrir le menu</span>
+                                          </Button>
+                                      </DropdownMenuTrigger>
+                                      <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                          <DropdownMenuItem onSelect={() => router.push(`/it-assets/${asset.tag}/edit`)}>
+                                                <Pencil className="mr-2 h-4 w-4" /> Modifier
+                                          </DropdownMenuItem>
+                                          <DropdownMenuItem onClick={() => setDeleteTarget(asset)} className="text-destructive focus:text-destructive">
+                                              <Trash2 className="mr-2 h-4 w-4" /> Supprimer
+                                          </DropdownMenuItem>
+                                      </DropdownMenuContent>
+                                  </DropdownMenu>
+                              </TableCell>
+                          </TableRow>
+                        )
+                      })
                   )}
                   </TableBody>
               </Table>
@@ -224,21 +243,27 @@ export default function ItAssetsPage() {
                     <Card key={i}><CardContent className="p-4"><Skeleton className="h-24 w-full" /></CardContent></Card>
                   ))
                 ) : (
-                  filteredAssets.map((asset) => (
-                    <Card key={asset.tag} onClick={() => router.push(`/it-assets/${asset.tag}/edit`)} className="cursor-pointer">
-                      <CardContent className="p-4 space-y-2">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <p className="font-bold">{asset.fabricant} {asset.modele}</p>
-                            <p className="text-sm text-muted-foreground">{asset.type}</p>
+                  filteredAssets.map((asset) => {
+                    const Icon = assetIcons[asset.type] || PackageIcon;
+                    return (
+                      <Card key={asset.tag} onClick={() => router.push(`/it-assets/${asset.tag}/edit`)} className="cursor-pointer">
+                        <CardContent className="p-4 space-y-2">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <p className="font-bold">{asset.fabricant} {asset.modele}</p>
+                              <p className="text-sm text-muted-foreground flex items-center gap-2">
+                                <Icon className="h-4 w-4" />
+                                {asset.type}
+                              </p>
+                            </div>
+                            <Badge variant={statusVariantMap[asset.status as Status] || 'default'}>{asset.status}</Badge>
                           </div>
-                          <Badge variant={statusVariantMap[asset.status as Status] || 'default'}>{asset.status}</Badge>
-                        </div>
-                        <p className="text-sm"><span className="font-medium">N° Inventaire:</span> {asset.tag}</p>
-                        <p className="text-sm"><span className="font-medium">Assigné à:</span> {asset.assignedTo}</p>
-                      </CardContent>
-                    </Card>
-                  ))
+                          <p className="text-sm"><span className="font-medium">N° Inventaire:</span> {asset.tag}</p>
+                          <p className="text-sm"><span className="font-medium">Assigné à:</span> {asset.assignedTo}</p>
+                        </CardContent>
+                      </Card>
+                    )
+                  })
                 )}
               </div>
             { !loading && filteredAssets.length === 0 && (

@@ -1,8 +1,9 @@
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Autorise la lecture et l'écriture pour tous les utilisateurs connectés.
-    // C'est une règle de base pour le développement, à affiner pour la production.
+    // WARNING: These rules are permissive and are meant for development.
+    // You should secure your database before going to production.
     match /{document=**} {
       allow read, write: if request.auth != null;
     }

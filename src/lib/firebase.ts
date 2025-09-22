@@ -6,9 +6,9 @@ import { getStorage, FirebaseStorage } from "firebase/storage";
 import { getAnalytics } from "firebase/analytics";
 
 const firebaseConfig: FirebaseOptions = {
-  apiKey: "AIzaSyBuMgqk-I_mngDw4SYuNhOOLcF6JNchXhw",
+  apiKey: process.env.API_KEY || "AIzaSyBuMgqk-I_mngDw4SYuNhOOLcF6JNchXhw",
   authDomain: "gestion-cnrct.firebaseapp.com",
-  databaseURL: "https://gestion-cnrct.firebaseio.com",
+  databaseURL: "https://gestion-cnrct-default-rtdb.firebaseio.com",
   projectId: "gestion-cnrct",
   storageBucket: "gestion-cnrct.appspot.com",
   messagingSenderId: "126727792063",

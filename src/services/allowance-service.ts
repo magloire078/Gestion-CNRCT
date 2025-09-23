@@ -1,4 +1,3 @@
-
 // src/services/allowance-service.ts
 
 // Pour l'instant, les barèmes sont définis ici.
@@ -31,3 +30,5 @@ export function getAllowanceRate(category?: string): number {
     }
     return allowanceRates['Par défaut'];
 }
+
+    

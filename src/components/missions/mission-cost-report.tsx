@@ -103,3 +103,5 @@ export function MissionCostReport({ mission, participants, duration, totalCost }
         </div>
     )
 }
+
+    

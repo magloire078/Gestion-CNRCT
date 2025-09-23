@@ -9,14 +9,14 @@ import { getEmployee } from "@/services/employee-service";
 import { getLeaves } from "@/services/leave-service";
 import { getAssets } from "@/services/asset-service";
 import { getMissions } from "@/services/mission-service";
-import { getEmployeeHistory } from "@/services/employee-history-service";
+import { getEmployeeHistory, deleteEmployeeHistoryEvent } from "@/services/employee-history-service";
 import type { Employe, Leave, Asset, Mission, EmployeeEvent } from "@/lib/data";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Pencil, User, Briefcase, Mail, Phone, MapPin, BadgeCheck, FileText, Calendar, Laptop, Rocket, FolderArchive, LogOut, Globe, Landmark, ChevronRight, Users, Cake, History, PlusCircle } from "lucide-react";
+import { ArrowLeft, Pencil, User, Briefcase, Mail, Phone, MapPin, BadgeCheck, FileText, Calendar, Laptop, Rocket, FolderArchive, LogOut, Globe, Landmark, ChevronRight, Users, Cake, History, PlusCircle, Trash2 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -26,6 +26,8 @@ import { lastDayOfMonth, format, subMonths, differenceInYears, parseISO } from '
 import { fr } from 'date-fns/locale';
 import { EmployeeHistoryTimeline } from "@/components/employees/employee-history-timeline";
 import { AddHistoryEventSheet } from "@/components/employees/add-history-event-sheet";
+import { ConfirmationDialog } from "@/components/common/confirmation-dialog";
+import { useToast } from "@/hooks/use-toast";
 
 
 type Status = "Approuvé" | "En attente" | "Rejeté";
@@ -41,6 +43,7 @@ const statusVariantMap: Record<Status, "default" | "secondary" | "destructive"> 
 export default function EmployeeDetailPage() {
     const params = useParams();
     const router = useRouter();
+    const { toast } = useToast();
     const { id } = params;
     const [employee, setEmployee] = useState<Employe | null>(null);
     const [leaves, setLeaves] = useState<Leave[]>([]);
@@ -53,7 +56,9 @@ export default function EmployeeDetailPage() {
     const [year, setYear] = useState<string>(new Date().getFullYear().toString());
     const [month, setMonth] = useState<string>((new Date().getMonth() + 1).toString());
 
-    const [isAddEventSheetOpen, setIsAddEventSheetOpen] = useState(false);
+    const [isEventSheetOpen, setIsEventSheetOpen] = useState(false);
+    const [editingEvent, setEditingEvent] = useState<EmployeeEvent | null>(null);
+    const [deleteEventTarget, setDeleteEventTarget] = useState<EmployeeEvent | null>(null);
 
     useEffect(() => {
         if (typeof id !== 'string') return;
@@ -106,8 +111,32 @@ export default function EmployeeDetailPage() {
         router.push(`/payroll/${employee.id}?payslipDate=${formattedDate}`);
     };
 
-    const handleEventAdded = (newEvent: EmployeeEvent) => {
-        setHistory(prev => [newEvent, ...prev].sort((a, b) => new Date(b.effectiveDate).getTime() - new Date(a.effectiveDate).getTime()));
+    const handleOpenEventSheet = (eventToEdit: EmployeeEvent | null = null) => {
+        setEditingEvent(eventToEdit);
+        setIsEventSheetOpen(true);
+    };
+
+    const handleEventSaved = (savedEvent: EmployeeEvent) => {
+        if (editingEvent) {
+            // Update existing event in the list
+            setHistory(prev => prev.map(e => e.id === savedEvent.id ? savedEvent : e));
+        } else {
+            // Add new event and re-sort
+            setHistory(prev => [savedEvent, ...prev].sort((a, b) => new Date(b.effectiveDate).getTime() - new Date(a.effectiveDate).getTime()));
+        }
+    };
+
+    const handleDeleteEventConfirm = async () => {
+        if (!deleteEventTarget) return;
+        try {
+            await deleteEmployeeHistoryEvent(id as string, deleteEventTarget.id);
+            setHistory(prev => prev.filter(e => e.id !== deleteEventTarget.id));
+            toast({ title: "Événement supprimé", description: "L'événement a été retiré de l'historique." });
+        } catch (error) {
+            toast({ variant: "destructive", title: "Erreur", description: "Impossible de supprimer l'événement." });
+        } finally {
+            setDeleteEventTarget(null);
+        }
     };
     
     const years = Array.from({ length: 10 }, (_, i) => (new Date().getFullYear() - i).toString());
@@ -376,13 +405,17 @@ export default function EmployeeDetailPage() {
                                         <CardTitle className="flex items-center gap-2"><History className="h-5 w-5 text-primary" /> Historique Professionnel</CardTitle>
                                         <CardDescription>Journal des événements clés de la carrière de l'employé.</CardDescription>
                                     </div>
-                                    <Button onClick={() => setIsAddEventSheetOpen(true)}>
+                                    <Button onClick={() => handleOpenEventSheet()}>
                                         <PlusCircle className="mr-2 h-4 w-4" /> Ajouter un événement
                                     </Button>
                                 </div>
                             </CardHeader>
                             <CardContent>
-                                <EmployeeHistoryTimeline events={history} />
+                                <EmployeeHistoryTimeline 
+                                    events={history}
+                                    onEdit={handleOpenEventSheet}
+                                    onDelete={setDeleteEventTarget}
+                                />
                             </CardContent>
                         </Card>
                     </TabsContent>
@@ -424,10 +457,18 @@ export default function EmployeeDetailPage() {
                 </Dialog>
             </div>
             <AddHistoryEventSheet 
-                isOpen={isAddEventSheetOpen}
-                onClose={() => setIsAddEventSheetOpen(false)}
-                employeeId={id}
-                onEventAdded={handleEventAdded}
+                isOpen={isEventSheetOpen}
+                onClose={() => setIsEventSheetOpen(false)}
+                employeeId={id as string}
+                eventToEdit={editingEvent}
+                onEventSaved={handleEventSaved}
+            />
+            <ConfirmationDialog
+                isOpen={!!deleteEventTarget}
+                onClose={() => setDeleteEventTarget(null)}
+                onConfirm={handleDeleteEventConfirm}
+                title={`Supprimer l'événement : ${deleteEventTarget?.eventType}`}
+                description="Êtes-vous sûr de vouloir supprimer cet événement ? Cette action est irréversible."
             />
         </>
     );

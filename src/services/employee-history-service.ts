@@ -1,6 +1,6 @@
 
 
-import { collection, getDocs, addDoc, query, where, orderBy } from 'firebase/firestore';
+import { collection, getDocs, addDoc, query, where, orderBy, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import type { EmployeeEvent } from '@/lib/data';
 import { db } from '@/lib/firebase';
 
@@ -33,4 +33,34 @@ export async function addEmployeeHistoryEvent(employeeId: string, eventData: Omi
         employeeId,
         ...eventData
     };
+}
+
+
+/**
+ * Updates an existing event in an employee's professional history.
+ * @param employeeId The ID of the employee.
+ * @param eventId The ID of the event to update.
+ * @param eventData The partial data to update.
+ * @returns A promise that resolves to the updated EmployeeEvent object.
+ */
+export async function updateEmployeeHistoryEvent(employeeId: string, eventId: string, eventData: Partial<EmployeeEvent>): Promise<EmployeeEvent> {
+    const eventDocRef = doc(db, `employees/${employeeId}/history`, eventId);
+    await updateDoc(eventDocRef, eventData);
+    
+    // Fetch the updated document to return the full object
+    const updatedDoc = await getDocs(query(collection(db, `employees/${employeeId}/history`), where('__name__', '==', eventId)));
+    if (updatedDoc.empty) {
+        throw new Error("Failed to retrieve updated event.");
+    }
+    return { id: updatedDoc.docs[0].id, ...updatedDoc.docs[0].data() } as EmployeeEvent;
+}
+
+/**
+ * Deletes an event from an employee's professional history.
+ * @param employeeId The ID of the employee.
+ * @param eventId The ID of the event to delete.
+ */
+export async function deleteEmployeeHistoryEvent(employeeId: string, eventId: string): Promise<void> {
+    const eventDocRef = doc(db, `employees/${employeeId}/history`, eventId);
+    await deleteDoc(eventDocRef);
 }

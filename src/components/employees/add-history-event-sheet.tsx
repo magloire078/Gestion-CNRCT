@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import type { EmployeeEvent } from "@/lib/data";
-import { addEmployeeHistoryEvent } from "@/services/employee-history-service";
+import { addEmployeeHistoryEvent, updateEmployeeHistoryEvent } from "@/services/employee-history-service";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 
@@ -30,12 +30,13 @@ interface AddHistoryEventSheetProps {
   isOpen: boolean;
   onClose: () => void;
   employeeId: string;
-  onEventAdded: (newEvent: EmployeeEvent) => void;
+  eventToEdit?: EmployeeEvent | null;
+  onEventSaved: (savedEvent: EmployeeEvent) => void;
 }
 
 const eventTypes: EmployeeEvent['eventType'][] = ['Promotion', 'Augmentation', 'Changement de poste', 'Départ', 'Autre'];
 
-export function AddHistoryEventSheet({ isOpen, onClose, employeeId, onEventAdded }: AddHistoryEventSheetProps) {
+export function AddHistoryEventSheet({ isOpen, onClose, employeeId, eventToEdit, onEventSaved }: AddHistoryEventSheetProps) {
   const [eventType, setEventType] = useState<EmployeeEvent['eventType'] | "">("");
   const [effectiveDate, setEffectiveDate] = useState(new Date().toISOString().split('T')[0]);
   const [description, setDescription] = useState("");
@@ -44,16 +45,27 @@ export function AddHistoryEventSheet({ isOpen, onClose, employeeId, onEventAdded
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
-  const resetForm = () => {
-    setEventType("");
-    setEffectiveDate(new Date().toISOString().split('T')[0]);
-    setDescription("");
-    setDetails({});
-    setError("");
-  };
+  const isEditMode = !!eventToEdit;
+
+  useEffect(() => {
+    if (isOpen) {
+      if (eventToEdit) {
+        setEventType(eventToEdit.eventType);
+        setEffectiveDate(eventToEdit.effectiveDate);
+        setDescription(eventToEdit.description);
+        setDetails(eventToEdit.details || {});
+      } else {
+        // Reset form for adding new event
+        setEventType("");
+        setEffectiveDate(new Date().toISOString().split('T')[0]);
+        setDescription("");
+        setDetails({});
+        setError("");
+      }
+    }
+  }, [isOpen, eventToEdit]);
 
   const handleClose = () => {
-    resetForm();
     onClose();
   };
   
@@ -72,18 +84,25 @@ export function AddHistoryEventSheet({ isOpen, onClose, employeeId, onEventAdded
     setError("");
 
     try {
-      const newEventData: Omit<EmployeeEvent, "id" | "employeeId"> = {
-          eventType: eventType as EmployeeEvent['eventType'],
-          effectiveDate,
-          description,
-          details
-      };
-      const newEvent = await addEmployeeHistoryEvent(employeeId, newEventData);
-      onEventAdded(newEvent);
-      toast({ title: "Événement ajouté", description: "L'historique de l'employé a été mis à jour." });
+        if (isEditMode) {
+            const updatedData: Partial<EmployeeEvent> = { eventType, effectiveDate, description, details };
+            const updatedEvent = await updateEmployeeHistoryEvent(employeeId, eventToEdit.id, updatedData);
+            onEventSaved(updatedEvent);
+            toast({ title: "Événement mis à jour", description: "L'historique a été modifié avec succès." });
+        } else {
+            const newEventData: Omit<EmployeeEvent, "id" | "employeeId"> = {
+                eventType: eventType as EmployeeEvent['eventType'],
+                effectiveDate,
+                description,
+                details
+            };
+            const newEvent = await addEmployeeHistoryEvent(employeeId, newEventData);
+            onEventSaved(newEvent);
+            toast({ title: "Événement ajouté", description: "L'historique de l'employé a été mis à jour." });
+        }
       handleClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Échec de l'ajout de l'événement.");
+      setError(err instanceof Error ? err.message : "Échec de l'enregistrement de l'événement.");
     } finally {
       setIsSubmitting(false);
     }
@@ -94,9 +113,9 @@ export function AddHistoryEventSheet({ isOpen, onClose, employeeId, onEventAdded
       <SheetContent className="sm:max-w-lg">
         <form onSubmit={handleSubmit}>
           <SheetHeader>
-            <SheetTitle>Ajouter un événement de carrière</SheetTitle>
+            <SheetTitle>{isEditMode ? "Modifier un événement" : "Ajouter un événement de carrière"}</SheetTitle>
             <SheetDescription>
-              Enregistrez un nouvel événement dans l'historique professionnel de l'employé.
+              {isEditMode ? "Modifiez les détails de cet événement." : "Enregistrez un nouvel événement dans l'historique professionnel de l'employé."}
             </SheetDescription>
           </SheetHeader>
           <div className="grid gap-4 py-4">
@@ -139,14 +158,14 @@ export function AddHistoryEventSheet({ isOpen, onClose, employeeId, onEventAdded
             
             {eventType === 'Augmentation' && (
                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="newSalary" className="text-right">Nouveau Salaire</Label>
-                    <Input id="newSalary" type="number" placeholder="ex: 1200000" onChange={e => handleDetailChange('newSalary', e.target.value)} className="col-span-3" />
+                    <Label htmlFor="newSalary" className="text-right">Nouveau Salaire de Base</Label>
+                    <Input id="newSalary" type="number" value={details.newSalary || ''} placeholder="ex: 1200000" onChange={e => handleDetailChange('newSalary', e.target.value)} className="col-span-3" />
                  </div>
             )}
             {eventType === 'Promotion' && (
                  <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="newPoste" className="text-right">Nouveau Poste</Label>
-                    <Input id="newPoste" type="text" placeholder="ex: Développeur Senior" onChange={e => handleDetailChange('newPoste', e.target.value)} className="col-span-3" />
+                    <Input id="newPoste" type="text" value={details.newPoste || ''} placeholder="ex: Développeur Senior" onChange={e => handleDetailChange('newPoste', e.target.value)} className="col-span-3" />
                  </div>
             )}
 

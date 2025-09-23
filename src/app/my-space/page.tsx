@@ -35,7 +35,7 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { AddLeaveRequestSheet } from "@/components/leave/add-leave-request-sheet";
-import { Mail, Phone, Calendar, Briefcase, ChevronRight, Landmark, Eye, Laptop, Rocket, PlusCircle, CheckCircle, FileClock, Hourglass } from "lucide-react";
+import { Mail, Phone, Calendar, Briefcase, ChevronRight, Landmark, Eye, Laptop, Rocket, PlusCircle, CheckCircle, FileClock, Hourglass, FilePlus2, Receipt } from "lucide-react";
 import { lastDayOfMonth, format, subMonths, parseISO, isAfter, isBefore } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import Link from "next/link";
@@ -73,7 +73,7 @@ export default function MySpacePage() {
 
     const [employeeDetails, setEmployeeDetails] = useState<Employe | null>(null);
     const [leaves, setLeaves] = useState<Leave[]>([]);
-    const [evaluations, setEvaluations] = useState<Evaluation[]>([]);
+    const [evaluations, setEvaluations] = useState<Evaluation[]>(([]);
     const [assets, setAssets] = useState<Asset[]>([]);
     const [missions, setMissions] = useState<Mission[]>([]);
     const [leaveBalance, setLeaveBalance] = useState<number | null>(null);
@@ -177,6 +177,7 @@ export default function MySpacePage() {
     }
     
     const fullName = `${employeeDetails?.lastName || ''} ${employeeDetails?.firstName || ''}`.trim() || user.name;
+    const lastPayslip = payslipHistory[0];
 
     return (
         <div className="flex flex-col gap-6">
@@ -187,6 +188,30 @@ export default function MySpacePage() {
                 <StatCard title="Dernière Évaluation" value={latestEvaluation ? latestEvaluation.reviewPeriod : "N/A"} icon={CheckCircle} description={latestEvaluation ? `Statut: ${latestEvaluation.status}` : ''}/>
                 <StatCard title="Missions à Venir" value={upcomingMissions.length} icon={Rocket} />
             </div>
+            
+            <Card>
+                <CardHeader>
+                    <CardTitle>Actions Rapides</CardTitle>
+                </CardHeader>
+                <CardContent className="flex flex-wrap gap-4">
+                     <Button onClick={() => setIsSheetOpen(true)}>
+                        <FilePlus2 className="mr-2 h-4 w-4" />
+                        Nouvelle Demande de Congé
+                    </Button>
+                    <Button variant="outline" asChild>
+                        <Link href={`/payroll/${user.id}?payslipDate=${lastPayslip.dateParam}`}>
+                            <Receipt className="mr-2 h-4 w-4" />
+                            Voir le Dernier Bulletin
+                        </Link>
+                    </Button>
+                    <Button variant="outline" asChild>
+                         <Link href={`/evaluations/${latestEvaluation?.id}`}>
+                            <Eye className="mr-2 h-4 w-4" />
+                            Consulter ma Dernière Évaluation
+                        </Link>
+                    </Button>
+                </CardContent>
+            </Card>
 
             <Tabs defaultValue="profile">
                 <TabsList className="mb-4">
@@ -411,7 +436,7 @@ export default function MySpacePage() {
     )
 }
 
-function StatCard({ title, value, icon: Icon, description }: { title: string, value: string | number, icon: React.ElementType, description?: string }) {
+function StatCard({ title, value, icon: Icon, description }: { title: string, value: string | number | React.ReactNode, icon: React.ElementType, description?: string }) {
     return (
         <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -436,3 +461,5 @@ function InfoItem({ label, value, icon: Icon }: { label: string; value: string; 
         </div>
     )
 }
+
+    

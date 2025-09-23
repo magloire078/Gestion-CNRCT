@@ -1,9 +1,7 @@
-rules_version = '2';
 
+rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // WARNING: These rules are permissive and are meant for development.
-    // You should secure your database before going to production.
     match /{document=**} {
       allow read, write: if request.auth != null;
     }

@@ -19,8 +19,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Terminal, FileText, Bot, Loader2, Printer, Download } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DocumentLayout } from "@/components/common/document-layout";
-import { getOrganizationSettings } from "@/services/organization-service";
-import type { OrganizationSettings } from "@/lib/data";
+import { useAuth } from "@/hooks/use-auth";
 
 const initialState: FormState = {
   message: "",
@@ -37,6 +36,7 @@ function SubmitButton() {
 }
 
 export default function DocumentGeneratorPage() {
+  const { settings } = useAuth();
   const [state, formAction] = useActionState(generateDocumentAction, initialState);
   const [employees, setEmployees] = useState<Employe[]>([]);
   const [loadingEmployees, setLoadingEmployees] = useState(true);
@@ -45,7 +45,6 @@ export default function DocumentGeneratorPage() {
   const [documentContent, setDocumentContent] = useState('');
   const [isPrinting, setIsPrinting] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
-  const [organizationSettings, setOrganizationSettings] = useState<OrganizationSettings | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const printSectionRef = useRef<HTMLDivElement>(null);
 
@@ -53,12 +52,8 @@ export default function DocumentGeneratorPage() {
   useEffect(() => {
     async function fetchInitialData() {
         try {
-            const [fetchedEmployees, settings] = await Promise.all([
-                getEmployees(),
-                getOrganizationSettings()
-            ]);
+            const fetchedEmployees = await getEmployees();
             setEmployees(fetchedEmployees);
-            setOrganizationSettings(settings);
         } catch (error) {
             console.error("Failed to fetch initial data:", error);
         } finally {
@@ -320,8 +315,8 @@ export default function DocumentGeneratorPage() {
       {/* This element is used for both printing and PDF generation */}
       <div className={isPrinting ? '' : 'absolute -z-10 -left-[9999px]'}>
         <div ref={printSectionRef}>
-            {organizationSettings && state.document && (
-                 <DocumentLayout logos={organizationSettings}>
+            {settings && state.document && (
+                 <DocumentLayout>
                     <pre className="whitespace-pre-wrap text-sm font-serif">
                       {state.document}
                     </pre>

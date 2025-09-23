@@ -198,5 +198,3 @@ export async function deleteEmployee(employeeId: string): Promise<void> {
 }
 
 export { getOrganizationSettings };
-
-    

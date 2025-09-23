@@ -4,7 +4,7 @@ import { getStorage, ref, getDownloadURL, uploadBytesResumable, type UploadTask 
 import { db, storage } from '@/lib/firebase';
 import type { OrganizationSettings } from '@/lib/data';
 
-const SETTINGS_DOC_ID = 'organization_settings';
+const SETTINGS_DOC_ID = 'app_settings'; // Use a consistent ID
 const settingsDocRef = doc(db, 'settings', SETTINGS_DOC_ID);
 
 const defaultSecondaryLogoUrl = "https://storage.googleapis.com/demobuilder-testing.appspot.com/uploads/1721921387603_republique-ci-logo.png";
@@ -25,6 +25,14 @@ export async function getOrganizationSettings(): Promise<OrganizationSettings> {
     } catch (e) {
         console.error("Could not get organization settings from Firestore, returning default.", e);
     }
+    // Return default settings if doc doesn't exist or on error
+     await setDoc(settingsDocRef, {
+        organizationName: 'Gestion CNRCT',
+        mainLogoUrl: defaultMainLogoUrl,
+        secondaryLogoUrl: defaultSecondaryLogoUrl,
+        faviconUrl: ''
+    }, { merge: true });
+
     return {
         organizationName: 'Gestion CNRCT',
         mainLogoUrl: defaultMainLogoUrl,
@@ -47,32 +55,29 @@ export async function uploadOrganizationFile(
     
     const uploadTask = uploadBytesResumable(fileRef, file);
 
-    return new Promise((resolve, reject) => {
-      try {
-        uploadTask.on('state_changed',
+    // This function now returns a Promise that resolves with the download URL
+    return await new Promise((resolve, reject) => {
+        uploadTask.on(
+            'state_changed',
             (snapshot) => {
                 const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
                 onProgress(progress);
             },
             (error) => {
-                console.error("Upload failed in 'on' error handler:", error);
+                console.error("Upload failed:", error);
                 reject(error);
             },
             async () => {
                 try {
-                    const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
+                    const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
                     const fieldToUpdate = `${fileType}Url`;
-                    await setDoc(settingsDocRef, { [fieldToUpdate]: downloadUrl }, { merge: true });
-                    resolve(downloadUrl);
+                    await setDoc(settingsDocRef, { [fieldToUpdate]: downloadURL }, { merge: true });
+                    resolve(downloadURL);
                 } catch (error) {
-                    console.error("Failed to get download URL or update Firestore:", error);
+                    console.error("Firestore update failed:", error);
                     reject(error);
                 }
             }
         );
-      } catch (error) {
-         console.error("Error setting up upload listener:", error);
-         reject(error);
-      }
     });
 }

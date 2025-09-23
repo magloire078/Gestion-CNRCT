@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
@@ -73,7 +72,7 @@ export default function MySpacePage() {
 
     const [employeeDetails, setEmployeeDetails] = useState<Employe | null>(null);
     const [leaves, setLeaves] = useState<Leave[]>([]);
-    const [evaluations, setEvaluations] = useState<Evaluation[]>(([]);
+    const [evaluations, setEvaluations] = useState<Evaluation[]>([]);
     const [assets, setAssets] = useState<Asset[]>([]);
     const [missions, setMissions] = useState<Mission[]>([]);
     const [leaveBalance, setLeaveBalance] = useState<number | null>(null);
@@ -461,5 +460,3 @@ function InfoItem({ label, value, icon: Icon }: { label: string; value: string; 
         </div>
     )
 }
-
-    

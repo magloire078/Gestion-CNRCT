@@ -7,8 +7,8 @@ import type { OrganizationSettings } from '@/lib/data';
 const SETTINGS_DOC_ID = 'app_settings'; // Use a consistent ID
 const settingsDocRef = doc(db, 'settings', SETTINGS_DOC_ID);
 
-const defaultSecondaryLogoUrl = "https://storage.googleapis.com/demobuilder-testing.appspot.com/uploads/1721921387603_republique-ci-logo.png";
-const defaultMainLogoUrl = "https://storage.googleapis.com/demobuilder-testing.appspot.com/uploads/1721919864275_cnrct.png";
+const defaultMainLogoUrl = "/assets/cnrct-logo.png";
+const defaultSecondaryLogoUrl = "/assets/ci-logo.png";
 
 export async function getOrganizationSettings(): Promise<OrganizationSettings> {
     try {
@@ -55,8 +55,7 @@ export async function uploadOrganizationFile(
     
     const uploadTask = uploadBytesResumable(fileRef, file);
 
-    // This function now returns a Promise that resolves with the download URL
-    return await new Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
         uploadTask.on(
             'state_changed',
             (snapshot) => {

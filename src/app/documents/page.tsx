@@ -197,6 +197,10 @@ export default function DocumentGeneratorPage() {
         setIsDownloading(false);
     }
   };
+  
+  const formattedDocument = state.document
+    ? state.document.split('\n').map((line, index) => <span key={index}>{line}</span>)
+    : null;
 
   return (
     <>
@@ -318,7 +322,7 @@ export default function DocumentGeneratorPage() {
             {settings && state.document && (
                  <DocumentLayout>
                     <pre className="whitespace-pre-wrap text-sm font-serif">
-                      {state.document}
+                      {formattedDocument}
                     </pre>
                  </DocumentLayout>
             )}

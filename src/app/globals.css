@@ -121,6 +121,23 @@
         border: none;
         box-shadow: none;
     }
+    #print-section pre {
+      counter-reset: line;
+    }
+    #print-section pre > span {
+      counter-increment: line;
+    }
+    #print-section pre > span::before {
+      content: counter(line);
+      display: inline-block;
+      width: 2.5em; /* Adjust width as needed */
+      padding-right: 0.5em;
+      margin-right: 0.5em;
+      text-align: right;
+      color: #999; /* Light grey color for line numbers */
+      font-size: 0.8em;
+      border-right: 1px solid #ddd;
+    }
     .page-number::after {
       counter-increment: page;
       content: counter(page);

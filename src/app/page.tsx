@@ -494,7 +494,7 @@ function AnniversaryPrintLayout({ logos, employees, period, year }: { logos: Org
                 <thead>
                     <tr className="bg-gray-200">
                         <th className="border border-black p-2 text-left font-bold">N°</th>
-                        <th className="border border-black p-2 text-left font-bold">Nom &amp; Prénoms</th>
+                        <th className="border border-black p-2 text-left font-bold">Nom & Prénoms</th>
                         <th className="border border-black p-2 text-left font-bold">Poste</th>
                         <th className="border border-black p-2 text-left font-bold">Date d'embauche</th>
                         <th className="border border-black p-2 text-center font-bold">Ancienneté</th>
@@ -556,7 +556,7 @@ function RetirementPrintLayout({ logos, employees, year }: { logos: Organization
                 <thead>
                     <tr className="bg-gray-200">
                         <th className="border border-black p-2 text-left font-bold">N°</th>
-                        <th className="border border-black p-2 text-left font-bold">Nom &amp; Prénoms</th>
+                        <th className="border border-black p-2 text-left font-bold">Nom & Prénoms</th>
                         <th className="border border-black p-2 text-left font-bold">Poste</th>
                         <th className="border border-black p-2 text-left font-bold">Date de Naissance</th>
                         <th className="border border-black p-2 text-center font-bold">Date de Départ</th>

@@ -11,6 +11,14 @@ export const metadata: Metadata = {
   title: 'Gestion RH&M CNRCT',
   description: 'Application de gestion des ressources humaines et matérielles.',
   manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Gestion CNRCT",
+  },
+  formatDetection: {
+    telephone: false,
+  },
 };
 
 export default async function RootLayout({
@@ -27,6 +35,7 @@ export default async function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Arial&display=swap"
           rel="stylesheet"
         />
+        <script src="/sw-register.js" defer></script>
       </head>
       <body className="font-body antialiased">
          <ThemeProvider

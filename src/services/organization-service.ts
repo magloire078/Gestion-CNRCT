@@ -7,7 +7,7 @@ import type { OrganizationSettings } from '@/lib/data';
 const SETTINGS_DOC_ID = 'app_settings'; // Use a consistent ID
 const settingsDocRef = doc(db, 'settings', SETTINGS_DOC_ID);
 
-const defaultMainLogoUrl = "/assets/cnrct-logo.png";
+const defaultMainLogoUrl = "https://cnrct.ci/wp-content/uploads/2018/03/logo_chambre.png";
 const defaultSecondaryLogoUrl = "/assets/ci-logo.png";
 
 export async function getOrganizationSettings(): Promise<OrganizationSettings> {

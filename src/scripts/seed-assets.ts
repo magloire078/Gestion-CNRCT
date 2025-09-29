@@ -3,8 +3,9 @@ import { collection, writeBatch, doc, getDocs, query, where } from 'firebase/fir
 import { db } from '../lib/firebase';
 import type { Asset } from '@/lib/data';
 
-// Data extracted from the user's image
+// Data extracted from the user's image and CSV
 const assetsData: (Omit<Asset, 'tag'> & { tag: string })[] = [
+    // Laptops & Desktops from previous import
     { tag: "PT-HP-CNRCT-024", type: "Ordinateur", typeOrdinateur: "De Bureau", fabricant: "HP", modele: "Poste de Travail", numeroDeSerie: "8CG7403G5P", assignedTo: "Dir Cab", status: 'En utilisation' },
     { tag: "PT-HP-CNRCT-025", type: "Ordinateur", typeOrdinateur: "De Bureau", fabricant: "HP", modele: "Poste de Travail", numeroDeSerie: "8CG7403G5R", assignedTo: "Dir Cab", status: 'En utilisation' },
     { tag: "PT-HP-CNRCT-026", type: "Ordinateur", typeOrdinateur: "De Bureau", fabricant: "HP", modele: "Poste de Travail", numeroDeSerie: "8CG7403G5T", assignedTo: "Dir Cab", status: 'En utilisation' },
@@ -41,6 +42,31 @@ const assetsData: (Omit<Asset, 'tag'> & { tag: string })[] = [
     { tag: "PT-HP-CNRCT-057", type: "Ordinateur", typeOrdinateur: "De Bureau", fabricant: "HP", modele: "Poste de Travail", numeroDeSerie: "8CG7403G6W", assignedTo: "Dir Cab", status: 'En utilisation' },
     { tag: "PT-HP-CNRCT-058", type: "Ordinateur", typeOrdinateur: "De Bureau", fabricant: "HP", modele: "Poste de Travail", numeroDeSerie: "8CG7403G6X", assignedTo: "Dir Cab", status: 'En utilisation' },
     { tag: "PT-HP-CNRCT-059", type: "Ordinateur", typeOrdinateur: "De Bureau", fabricant: "HP", modele: "Poste de Travail", numeroDeSerie: "8CG7403G6Z", assignedTo: "Dir Cab", status: 'En utilisation' },
+    
+    // New data from CSV
+    { tag: "CNRCT-PC-001", type: "Ordinateur", typeOrdinateur: "Portable", fabricant: "Dell", modele: "Latitude 7490", numeroDeSerie: "ABC1234", status: 'En utilisation', assignedTo: "Koffi Jean-Luc" },
+    { tag: "CNRCT-MON-002", type: "Moniteur", typeOrdinateur: undefined, fabricant: "Dell", modele: "UltraSharp U2721DE", numeroDeSerie: "XYZ5678", status: 'En utilisation', assignedTo: "Amoin Thérèse" },
+    { tag: "CNRCT-IMP-001", type: "Imprimante", typeOrdinateur: undefined, fabricant: "HP", modele: "LaserJet Pro M404dn", numeroDeSerie: "SDF910", status: 'En stock', assignedTo: "" },
+    { tag: "CNRCT_STK_MYPASS1TO_001", type: "Autre", typeOrdinateur: undefined, fabricant: "WD", modele: "My Passport 1 To Noir", numeroDeSerie: "NA830BJW", status: 'En utilisation', assignedTo: "ETTIEN ERIC" },
+    { tag: "CNRCT_STK_MYPASS1TO_002", type: "Autre", typeOrdinateur: undefined, fabricant: "WD", modele: "My Passport 1 To Noir", numeroDeSerie: "NA82XTR3", status: 'En utilisation', assignedTo: "EDOUKOU DOMINIQUE" },
+    { tag: "CNRCT_STK_MYPASS1TO_003", type: "Autre", typeOrdinateur: undefined, fabricant: "WD", modele: "My Passport 1 To Noir", numeroDeSerie: "NA82XLFR", status: 'Retiré', assignedTo: "ZADI TENIN EDITH" },
+    { tag: "CNRCT_STK_MYPASS1TO_004", type: "Autre", typeOrdinateur: undefined, fabricant: "WD", modele: "My Passport 1 To Noir", numeroDeSerie: "NA82XRMF", status: 'En utilisation', assignedTo: "KONATE JEANNE" },
+    { tag: "CNRCT_STK_MYPASS1TO_005", type: "Autre", typeOrdinateur: undefined, fabricant: "WD", modele: "My Passport 1 To Noir", numeroDeSerie: "NA82ZRSD", status: 'En utilisation', assignedTo: "KOUASSI ANNAISE" },
+    { tag: "CNRCT_STK_MYPASS1TO_006", type: "Autre", typeOrdinateur: undefined, fabricant: "WD", modele: "My Passport 1 To Noir", numeroDeSerie: "NA8318GK", status: 'En stock', assignedTo: "" },
+    { tag: "CNRCT_STK_MYPASS1TO_007", type: "Autre", typeOrdinateur: undefined, fabricant: "WD", modele: "My Passport 1 To Noir", numeroDeSerie: "NAAXCGN7", status: 'En utilisation', assignedTo: "ALLAH GOLI EDMOND" },
+    { tag: "CNRCT_IMP_HP_", type: "Imprimante", typeOrdinateur: undefined, fabricant: "HP", modele: "Color LaserJet Pro MFP M177fw", numeroDeSerie: "CNG6HBY1KJ", status: 'En utilisation', assignedTo: "KOUASSI ANNE MARCELLE" },
+    { tag: "PRINT_CO_01", type: "Imprimante", typeOrdinateur: undefined, fabricant: "HP", modele: "Color LaserJet Pro MFP M177fw", numeroDeSerie: "CNG6HBY1HN", status: 'En utilisation', assignedTo: "DIRECTION DES AFFAIRES FINANCIERES ET DU PATRIMOINE" },
+    { tag: "PRINT_CO_03", type: "Imprimante", typeOrdinateur: undefined, fabricant: "HP", modele: "Color LaserJet Pro MFP M177fw", numeroDeSerie: "CNG6HBY1MP", status: 'En utilisation', assignedTo: "SERVICE INFORMATIQUE" },
+    { tag: "PRINT_B/N_001", type: "Imprimante", typeOrdinateur: undefined, fabricant: "HP", modele: "laserjet pro mfp M127fn", numeroDeSerie: "CNB9H916C3", status: 'En utilisation', assignedTo: "ALLAH GOLI EDMOND" },
+    { tag: "PRINT_B/N_002", type: "Imprimante", typeOrdinateur: undefined, fabricant: "HP", modele: "laserjet pro mfp M127fn", numeroDeSerie: "CNB9H916C9", status: 'En utilisation', assignedTo: "KOUASSI ANNE MARCELLE" },
+    { tag: "PRINT_B/N_003", type: "Imprimante", typeOrdinateur: undefined, fabricant: "HP", modele: "laserjet pro mfp M127fn", numeroDeSerie: "CNB9G2Q01W", status: 'En utilisation', assignedTo: "AMANI KOUASSI" },
+    { tag: "PRINT_B/N_004", type: "Imprimante", typeOrdinateur: undefined, fabricant: "HP", modele: "laserjet pro mfp M127fn", numeroDeSerie: "CNB9H916GY", status: 'En utilisation', assignedTo: "POOL SECRETARIAT" },
+    { tag: "PRINT_B/N_005", type: "Imprimante", typeOrdinateur: undefined, fabricant: "HP", modele: "laserjet pro mfp M127fn", numeroDeSerie: "CNB9G2PKFQ", status: 'En utilisation', assignedTo: "SECRETARIAT GENERAL" },
+    { tag: "PRINT_B/N_006", type: "Imprimante", typeOrdinateur: undefined, fabricant: "HP", modele: "laserjet pro mfp M127fn", numeroDeSerie: "CNB9G2Q00Q", status: 'En utilisation', assignedTo: "DAVID ELOISE" },
+    { tag: "PRINT_B/N_007", type: "Imprimante", typeOrdinateur: undefined, fabricant: "HP", modele: "laserjet pro mfp M127fn", numeroDeSerie: "CNB9H916GJ", status: 'En utilisation', assignedTo: "POOL PERSONNEL DAFP" },
+    { tag: "PRINT_B/N_008", type: "Imprimante", typeOrdinateur: undefined, fabricant: "HP", modele: "laserjet pro mfp M127fn", numeroDeSerie: "CNB9G2QOOH", status: 'En utilisation', assignedTo: "TANOE AMON PAUL DESIRE" },
+    { tag: "PRINT_B/N_009", type: "Imprimante", typeOrdinateur: undefined, fabricant: "HP", modele: "laserjet pro mfp M127fn", numeroDeSerie: "CNB9G2Q00Q", status: 'En utilisation', assignedTo: "COULIBALY HAMADOU" },
+    { tag: "PRINT_B/N_010", type: "Imprimante", typeOrdinateur: undefined, fabricant: "HP", modele: "laserjet pro mfp M127fw", numeroDeSerie: "CNB8H3DL8L", status: 'En utilisation', assignedTo: "POOL ASSISTANT" },
 ];
 
 async function seedAssets() {
@@ -63,15 +89,15 @@ async function seedAssets() {
     assetsData.forEach(asset => {
         if (!existingTags.has(asset.tag)) {
             const docRef = doc(assetsCollectionRef, asset.tag);
-            batch.set(docRef, {
-                type: asset.type,
-                typeOrdinateur: asset.typeOrdinateur,
-                fabricant: asset.fabricant,
-                modele: asset.modele,
-                numeroDeSerie: asset.numeroDeSerie,
-                assignedTo: asset.assignedTo,
-                status: asset.status,
-            });
+            const { tag, ...dataToSave } = asset;
+            
+            // Explicitly handle undefined for typeOrdinateur
+            const finalData: Partial<Asset> = { ...dataToSave };
+            if (finalData.type !== 'Ordinateur') {
+                delete finalData.typeOrdinateur;
+            }
+
+            batch.set(docRef, finalData);
             addedCount++;
         }
     });

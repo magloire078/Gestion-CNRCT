@@ -55,8 +55,9 @@ export async function addAsset(assetDataToAdd: Omit<Asset, 'tag'> & { tag: strin
 
     // Remove undefined fields before sending to Firestore
     Object.keys(dataToSave).forEach(key => {
-        if (dataToSave[key as keyof typeof dataToSave] === undefined) {
-            delete dataToSave[key as keyof typeof dataToSave];
+        const dataKey = key as keyof typeof dataToSave;
+        if (dataToSave[dataKey] === undefined) {
+            delete dataToSave[dataKey];
         }
     });
 
@@ -66,40 +67,31 @@ export async function addAsset(assetDataToAdd: Omit<Asset, 'tag'> & { tag: strin
 
 export async function batchAddAssets(assets: (Omit<Asset, 'tag'> & { tag: string })[]): Promise<number> {
     const batch = writeBatch(db);
-    const tags = assets.map(a => a.tag).filter(Boolean);
-    if (tags.length === 0) return 0;
-    
-    // Check for existing tags in chunks of 30
-    const existingTags = new Set<string>();
-    for (let i = 0; i < tags.length; i += 30) {
-        const chunk = tags.slice(i, i + 30);
-        const q = query(assetsCollection, where('__name__', 'in', chunk));
-        const snapshot = await getDocs(q);
-        snapshot.docs.forEach(doc => existingTags.add(doc.id));
-    }
+    let processedCount = 0;
 
-    let addedCount = 0;
-    assets.forEach(asset => {
-        if (asset.tag && !existingTags.has(asset.tag)) {
+    for (const asset of assets) {
+        if (asset.tag) {
             const { tag, ...dataToSave } = asset;
             
             // Remove undefined fields before sending to Firestore
             Object.keys(dataToSave).forEach(key => {
-                if (dataToSave[key as keyof typeof dataToSave] === undefined) {
-                    delete dataToSave[key as keyof typeof dataToSave];
+                const dataKey = key as keyof typeof dataToSave;
+                if (dataToSave[dataKey] === undefined) {
+                    delete dataToSave[dataKey];
                 }
             });
 
             const newDocRef = doc(assetsCollection, tag);
-            batch.set(newDocRef, dataToSave);
-            addedCount++;
+            // Use set with merge to create new or update existing documents
+            batch.set(newDocRef, dataToSave, { merge: true });
+            processedCount++;
         }
-    });
+    }
 
-    if (addedCount > 0) {
+    if (processedCount > 0) {
         await batch.commit();
     }
-    return addedCount;
+    return processedCount;
 }
 
 
@@ -111,4 +103,17 @@ export async function updateAsset(tag: string, assetData: Partial<Asset>): Promi
 export async function deleteAsset(tag: string): Promise<void> {
     const assetDocRef = doc(db, 'assets', tag);
     await deleteDoc(assetDocRef);
+}
+
+
+export async function searchVehicles(queryText: string): Promise<Asset[]> {
+    const lowerCaseQuery = queryText.toLowerCase();
+    const allAssets = await getAssets();
+    return allAssets.filter(asset => 
+        (asset.tag?.toLowerCase() || '').includes(lowerCaseQuery) || 
+        (asset.modele?.toLowerCase() || '').includes(lowerCaseQuery) ||
+        (asset.assignedTo?.toLowerCase() || '').includes(lowerCaseQuery) ||
+        (asset.fabricant?.toLowerCase() || '').includes(lowerCaseQuery) ||
+        (asset.numeroDeSerie?.toLowerCase() || '').includes(lowerCaseQuery)
+    );
 }

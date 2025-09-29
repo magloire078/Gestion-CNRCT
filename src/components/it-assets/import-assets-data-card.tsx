@@ -88,7 +88,7 @@ export function ImportAssetsDataCard() {
           const count = await batchAddAssets(assetsToImport);
           toast({
             title: "Importation réussie",
-            description: `${count} actifs ont été ajoutés. ${assetsToImport.length - count} doublons ont été ignorés.`,
+            description: `${count} actifs ont été ajoutés ou mis à jour.`,
           });
           setFile(null);
           if(inputRef.current) inputRef.current.value = "";
@@ -111,7 +111,7 @@ export function ImportAssetsDataCard() {
       <CardHeader>
         <CardTitle>Importer des Actifs</CardTitle>
         <CardDescription>
-          Importez en masse des actifs à partir d'un fichier CSV. Les actifs avec un N° d'inventaire existant seront ignorés.
+          Importez en masse des actifs à partir d'un fichier CSV. Les actifs avec un N° d'inventaire existant seront mis à jour.
         </CardDescription>
       </CardHeader>
       <CardContent>

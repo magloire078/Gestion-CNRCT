@@ -1,10 +1,11 @@
 
 
 import { collection, getDocs, addDoc, doc, updateDoc, onSnapshot, Unsubscribe, query, orderBy, getDoc, where } from 'firebase/firestore';
-import type { Leave, User } from '@/lib/data';
+import type { Leave, User, Employe } from '@/lib/data';
 import { db } from '@/lib/firebase';
 import { createNotification } from './notification-service';
 import { parseISO, eachDayOfInterval, getDay } from 'date-fns';
+import { getEmployee } from './employee-service';
 
 
 const leavesCollection = collection(db, 'leaves');
@@ -12,22 +13,31 @@ const usersCollection = collection(db, 'users');
 
 
 /**
- * Finds a user ID based on the employee name.
- * This is not a very robust method and should be used with caution.
- * It's better to store userId directly on the leave request if possible.
- * @param employeeName The name of the employee.
+ * Finds a user ID based on the employee's ID.
+ * @param employeeId The ID of the employee.
  * @returns The user ID string or null if not found.
  */
-async function findUserIdByName(employeeName: string): Promise<string | null> {
+async function findUserIdByEmployeeId(employeeId: string): Promise<string | null> {
+    if (!employeeId) return null;
     try {
-        const userQuery = query(usersCollection, where("name", "==", employeeName));
+        const userQuery = query(usersCollection, where("employeeId", "==", employeeId));
         const querySnapshot = await getDocs(userQuery);
         if (!querySnapshot.empty) {
             return querySnapshot.docs[0].id;
         }
+        
+        // Fallback: try to find by name if no direct link
+        const employee = await getEmployee(employeeId);
+        if(employee?.name) {
+            const nameQuery = query(usersCollection, where("name", "==", employee.name));
+            const nameSnapshot = await getDocs(nameQuery);
+            if (!nameSnapshot.empty) {
+                return nameSnapshot.docs[0].id;
+            }
+        }
         return null;
     } catch (error) {
-        console.error("Error finding user by name:", error);
+        console.error("Error finding user by employee ID:", error);
         return null;
     }
 }
@@ -70,12 +80,12 @@ export async function addLeave(leaveDataToAdd: Omit<Leave, 'id' | 'status'>): Pr
     };
     const docRef = await addDoc(leavesCollection, newLeaveData);
     
-    // Create a notification for admins/managers
+    // Create a notification for the relevant manager or HR role
     await createNotification({
-        userId: 'all', // Or target specific manager/admin roles
+        userId: 'manager', // Special keyword to target managers or HR
         title: 'Nouvelle demande de congé',
         description: `${leaveDataToAdd.employee} a demandé un ${leaveDataToAdd.type}.`,
-        href: `/leave`,
+        href: `/leave`, // Direct link to the leave management page
     });
     
     return { id: docRef.id, ...newLeaveData };
@@ -98,7 +108,9 @@ export async function updateLeaveStatus(id: string, status: 'Approuvé' | 'Rejet
     await updateDoc(leaveDocRef, { status });
     
     // Find the employee's user ID to send them a notification
-    const employeeUserId = await findUserIdByName(leaveData.employee);
+    const employee = (await getDocs(query(collection(db, 'employees'), where("name", "==", leaveData.employee)))).docs[0];
+    const employeeUserId = await findUserIdByEmployeeId(employee?.id);
+
 
     if (employeeUserId) {
         await createNotification({

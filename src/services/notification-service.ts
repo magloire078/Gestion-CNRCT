@@ -7,14 +7,36 @@ import { getEmployees } from './employee-service';
 import { parseISO, differenceInMonths } from 'date-fns';
 
 const notificationsCollection = collection(db, 'notifications');
+const usersCollection = collection(db, 'users');
 
-export async function createNotification(data: Omit<Notification, 'id' | 'isRead' | 'createdAt'>) {
-    const notificationData = {
-        ...data,
-        isRead: false,
-        createdAt: new Date().toISOString()
-    };
-    await addDoc(notificationsCollection, notificationData);
+async function createNotification(data: Omit<Notification, 'id' | 'isRead' | 'createdAt'>) {
+    
+    // If userId is a special keyword like 'manager', find all users with that role
+    if (data.userId === 'manager') {
+        const managerQuery = query(usersCollection, where('roleId', 'in', ['manager-rh', 'administrateur', 'super-admin']));
+        const managerSnapshot = await getDocs(managerQuery);
+        
+        const batch = writeBatch(db);
+        managerSnapshot.forEach(managerDoc => {
+            const notificationData = {
+                ...data,
+                userId: managerDoc.id, // Target specific manager user ID
+                isRead: false,
+                createdAt: new Date().toISOString()
+            };
+            const newNotifRef = doc(collection(db, 'notifications'));
+            batch.set(newNotifRef, notificationData);
+        });
+        await batch.commit();
+
+    } else {
+         const notificationData = {
+            ...data,
+            isRead: false,
+            createdAt: new Date().toISOString()
+        };
+        await addDoc(notificationsCollection, notificationData);
+    }
 }
 
 export function subscribeToNotifications(
@@ -131,5 +153,4 @@ export async function checkAndNotifyForUpcomingRetirements() {
         console.error("Failed to commit retirement notifications batch:", error);
     }
 }
-
-    
+export { createNotification };

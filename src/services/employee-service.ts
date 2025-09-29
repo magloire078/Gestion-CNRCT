@@ -103,12 +103,12 @@ export async function addEmployee(employeeData: Omit<Employe, 'id'>, photoFile: 
         photoUrl = await getDownloadURL(snapshot.ref);
     }
     
-    const finalEmployeeData = { ...employeeData, photoUrl };
+    const finalEmployeeData: { [key: string]: any } = { ...employeeData, photoUrl };
     
     // Remove undefined fields before sending to Firestore
     Object.keys(finalEmployeeData).forEach(key => {
-        if (finalEmployeeData[key as keyof typeof finalEmployeeData] === undefined) {
-            delete finalEmployeeData[key as keyof typeof finalEmployeeData];
+        if (finalEmployeeData[key] === undefined) {
+            delete finalEmployeeData[key];
         }
     });
 
@@ -155,7 +155,7 @@ export async function batchAddEmployees(employees: Omit<Employe, 'id'>[]): Promi
 export async function updateEmployee(employeeId: string, employeeDataToUpdate: Partial<Employe>, photoFile: File | null = null): Promise<void> {
     const employeeDocRef = doc(db, 'employees', employeeId);
     
-    const updateData = { ...employeeDataToUpdate };
+    const updateData: { [key: string]: any } = { ...employeeDataToUpdate };
 
     if (photoFile) {
         const photoRef = ref(storage, `employee_photos/${employeeId}/${photoFile.name}`);
@@ -165,8 +165,8 @@ export async function updateEmployee(employeeId: string, employeeDataToUpdate: P
     
     // Remove undefined fields before sending to Firestore
     Object.keys(updateData).forEach(key => {
-        if (updateData[key as keyof typeof updateData] === undefined) {
-            delete updateData[key as keyof typeof updateData];
+        if (updateData[key] === undefined) {
+            delete updateData[key];
         }
     });
 

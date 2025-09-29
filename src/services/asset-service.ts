@@ -53,6 +53,13 @@ export async function addAsset(assetDataToAdd: Omit<Asset, 'tag'> & { tag: strin
         throw new Error(`Un actif avec le N° d'inventaire ${tag} existe déjà.`);
     }
 
+    // Remove undefined fields before sending to Firestore
+    Object.keys(dataToSave).forEach(key => {
+        if (dataToSave[key as keyof typeof dataToSave] === undefined) {
+            delete dataToSave[key as keyof typeof dataToSave];
+        }
+    });
+
     await setDoc(assetRef, dataToSave);
     return { tag, ...dataToSave };
 }
@@ -75,6 +82,14 @@ export async function batchAddAssets(assets: (Omit<Asset, 'tag'> & { tag: string
     assets.forEach(asset => {
         if (asset.tag && !existingTags.has(asset.tag)) {
             const { tag, ...dataToSave } = asset;
+            
+            // Remove undefined fields before sending to Firestore
+            Object.keys(dataToSave).forEach(key => {
+                if (dataToSave[key as keyof typeof dataToSave] === undefined) {
+                    delete dataToSave[key as keyof typeof dataToSave];
+                }
+            });
+
             const newDocRef = doc(assetsCollection, tag);
             batch.set(newDocRef, dataToSave);
             addedCount++;

@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -31,7 +32,7 @@ interface AddAssetSheetProps {
   onAddAsset: (asset: Omit<Asset, 'tag'> & { tag: string }) => Promise<void>;
 }
 
-const assetTypes: Asset['type'][] = ["Ordinateur", "Moniteur", "Imprimante", "Clavier", "Souris", "Logiciel", "Autre"];
+const assetTypes: Asset['type'][] = ["Ordinateur", "Moniteur", "Imprimante", "Clavier", "Souris", "Logiciel", "Équipement Réseau", "Autre"];
 const computerTypes: Asset['typeOrdinateur'][] = ["Portable", "De Bureau", "Serveur"];
 const assetStatuses: Asset['status'][] = ['En utilisation', 'En stock', 'En réparation', 'Retiré'];
 
@@ -42,6 +43,8 @@ export function AddAssetSheet({ isOpen, onClose, onAddAsset }: AddAssetSheetProp
   const [fabricant, setFabricant] = useState("");
   const [modele, setModele] = useState("");
   const [numeroDeSerie, setNumeroDeSerie] = useState("");
+  const [ipAddress, setIpAddress] = useState("");
+  const [password, setPassword] = useState("");
   const [assignedTo, setAssignedTo] = useState("En stock");
   const [status, setStatus] = useState<Asset['status']>('En stock');
   const [employees, setEmployees] = useState<Employe[]>([]);
@@ -71,6 +74,8 @@ export function AddAssetSheet({ isOpen, onClose, onAddAsset }: AddAssetSheetProp
     setFabricant("");
     setModele("");
     setNumeroDeSerie("");
+    setIpAddress("");
+    setPassword("");
     setAssignedTo("En stock");
     setStatus("En stock");
     setError("");
@@ -98,6 +103,8 @@ export function AddAssetSheet({ isOpen, onClose, onAddAsset }: AddAssetSheetProp
         modele, 
         fabricant,
         numeroDeSerie,
+        ipAddress,
+        password: showPasswordField ? password : undefined,
         typeOrdinateur: type === 'Ordinateur' ? typeOrdinateur : undefined,
         assignedTo, 
         status 
@@ -112,6 +119,8 @@ export function AddAssetSheet({ isOpen, onClose, onAddAsset }: AddAssetSheetProp
       setIsSubmitting(false);
     }
   };
+
+  const showPasswordField = type === 'Équipement Réseau' || typeOrdinateur === 'Serveur';
 
   return (
     <Sheet open={isOpen} onOpenChange={handleClose}>
@@ -164,6 +173,16 @@ export function AddAssetSheet({ isOpen, onClose, onAddAsset }: AddAssetSheetProp
               <Label htmlFor="numeroDeSerie">N° de Série</Label>
               <Input id="numeroDeSerie" value={numeroDeSerie} onChange={(e) => setNumeroDeSerie(e.target.value)} />
             </div>
+             <div className="space-y-2">
+                <Label htmlFor="ipAddress">Adresse IP</Label>
+                <Input id="ipAddress" value={ipAddress} onChange={(e) => setIpAddress(e.target.value)} placeholder="Ex: 192.168.1.10" />
+            </div>
+            {showPasswordField && (
+                <div className="space-y-2">
+                    <Label htmlFor="password">Mot de Passe</Label>
+                    <Input id="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Mot de passe de l'équipement" />
+                </div>
+            )}
             <div className="space-y-2">
               <Label htmlFor="assignedTo">Assigné à</Label>
               <Select value={assignedTo} onValueChange={setAssignedTo}>

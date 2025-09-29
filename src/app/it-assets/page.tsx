@@ -3,7 +3,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { PlusCircle, Search, Eye, Pencil, Trash2, MoreHorizontal, Laptop, Monitor, Printer, Keyboard, Mouse, FileCode, Package as PackageIcon, Download } from "lucide-react";
+import { PlusCircle, Search, Eye, Pencil, Trash2, MoreHorizontal, Laptop, Monitor, Printer, Keyboard, Mouse, FileCode, Package as PackageIcon, Download, Server } from "lucide-react";
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -32,7 +32,7 @@ const statusVariantMap: Record<Status, "default" | "secondary" | "outline"> = {
   'Retiré': 'outline',
 };
 
-const assetTypes: Asset['type'][] = ["Ordinateur", "Moniteur", "Imprimante", "Clavier", "Souris", "Logiciel", "Autre"];
+const assetTypes: Asset['type'][] = ["Ordinateur", "Moniteur", "Imprimante", "Clavier", "Souris", "Logiciel", "Équipement Réseau", "Autre"];
 const assetStatuses: Asset['status'][] = ['En utilisation', 'En stock', 'En réparation', 'Retiré'];
 
 const assetIcons: Record<Asset['type'], React.ElementType> = {
@@ -42,6 +42,7 @@ const assetIcons: Record<Asset['type'], React.ElementType> = {
   "Clavier": Keyboard,
   "Souris": Mouse,
   "Logiciel": FileCode,
+  "Équipement Réseau": Server,
   "Autre": PackageIcon,
 };
 
@@ -108,6 +109,7 @@ export default function ItAssetsPage() {
           (asset.fabricant || '').toLowerCase().includes(searchTermLower) ||
           asset.modele.toLowerCase().includes(searchTermLower) ||
           (asset.numeroDeSerie || '').toLowerCase().includes(searchTermLower) ||
+          (asset.ipAddress || '').toLowerCase().includes(searchTermLower) ||
           asset.assignedTo.toLowerCase().includes(searchTermLower);
 
       const matchesType = typeFilter === 'all' || asset.type === typeFilter;
@@ -155,7 +157,7 @@ export default function ItAssetsPage() {
     }
     const escapeSql = (str: any) => str ? `'${String(str).replace(/'/g, "''")}'` : 'NULL';
     const tableName = 'assets';
-    const columns = ['tag', 'type', 'typeOrdinateur', 'fabricant', 'modele', 'numeroDeSerie', 'assignedTo', 'status'];
+    const columns = ['tag', 'type', 'typeOrdinateur', 'fabricant', 'modele', 'numeroDeSerie', 'assignedTo', 'status', 'ipAddress', 'password'];
     const sqlContent = filteredAssets.map(asset => {
       const values = columns.map(col => escapeSql(asset[col as keyof Asset])).join(', ');
       return `INSERT INTO ${tableName} (${columns.join(', ')}) VALUES (${values});`;
@@ -203,7 +205,7 @@ export default function ItAssetsPage() {
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input
-                  placeholder="Rechercher par N° inventaire, modèle, série..."
+                  placeholder="Rechercher par N° inventaire, IP, modèle..."
                   className="pl-10"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
@@ -239,7 +241,7 @@ export default function ItAssetsPage() {
                       <TableHead>N° Inventaire</TableHead>
                       <TableHead>Type</TableHead>
                       <TableHead>Fabricant/Modèle</TableHead>
-                      <TableHead>N° de Série</TableHead>
+                      <TableHead>Adresse IP</TableHead>
                       <TableHead>Assigné à</TableHead>
                       <TableHead>Statut</TableHead>
                       <TableHead><span className="sr-only">Actions</span></TableHead>
@@ -252,7 +254,7 @@ export default function ItAssetsPage() {
                           <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                           <TableCell><Skeleton className="h-4 w-20" /></TableCell>
                           <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                          <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                          <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                           <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                           <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
                           <TableCell><Skeleton className="h-8 w-8" /></TableCell>
@@ -274,7 +276,19 @@ export default function ItAssetsPage() {
                                 <div>{asset.fabricant}</div>
                                 <div className="text-sm text-muted-foreground">{asset.modele}</div>
                               </TableCell>
-                              <TableCell>{asset.numeroDeSerie}</TableCell>
+                               <TableCell>
+                                {asset.ipAddress ? (
+                                    <a 
+                                        href={`http://${asset.ipAddress}`} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer" 
+                                        className="text-blue-600 hover:underline"
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
+                                        {asset.ipAddress}
+                                    </a>
+                                ) : '-'}
+                            </TableCell>
                               <TableCell>{asset.assignedTo}</TableCell>
                               <TableCell>
                               <Badge variant={statusVariantMap[asset.status as Status] || 'default'}>{asset.status}</Badge>
@@ -327,6 +341,7 @@ export default function ItAssetsPage() {
                             <Badge variant={statusVariantMap[asset.status as Status] || 'default'}>{asset.status}</Badge>
                           </div>
                           <p className="text-sm"><span className="font-medium">N° Inventaire:</span> {asset.tag}</p>
+                           {asset.ipAddress && <p className="text-sm"><span className="font-medium">IP:</span> {asset.ipAddress}</p>}
                           <p className="text-sm"><span className="font-medium">Assigné à:</span> {asset.assignedTo}</p>
                         </CardContent>
                       </Card>

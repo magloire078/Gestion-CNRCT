@@ -17,7 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowLeft, Loader2, Save } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-const assetTypes: Asset['type'][] = ["Ordinateur", "Moniteur", "Imprimante", "Clavier", "Souris", "Logiciel", "Autre"];
+const assetTypes: Asset['type'][] = ["Ordinateur", "Moniteur", "Imprimante", "Clavier", "Souris", "Logiciel", "Équipement Réseau", "Autre"];
 const computerTypes: Asset['typeOrdinateur'][] = ["Portable", "De Bureau", "Serveur"];
 const assetStatuses: Asset['status'][] = ['En utilisation', 'En stock', 'En réparation', 'Retiré'];
 
@@ -105,6 +105,9 @@ export default function AssetEditPage() {
     if (!asset) {
         return <div className="text-center py-10">Actif non trouvé.</div>;
     }
+    
+    const showPasswordField = asset.type === 'Équipement Réseau' || asset.typeOrdinateur === 'Serveur';
+
 
     return (
          <div className="max-w-xl mx-auto flex flex-col gap-6">
@@ -162,6 +165,16 @@ export default function AssetEditPage() {
                         <Label htmlFor="numeroDeSerie">N° de Série</Label>
                         <Input id="numeroDeSerie" name="numeroDeSerie" value={asset.numeroDeSerie || ''} onChange={handleInputChange} />
                     </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="ipAddress">Adresse IP</Label>
+                        <Input id="ipAddress" name="ipAddress" value={asset.ipAddress || ''} onChange={handleInputChange} placeholder="Ex: 192.168.1.10" />
+                    </div>
+                    {showPasswordField && (
+                        <div className="space-y-2">
+                            <Label htmlFor="password">Mot de Passe</Label>
+                            <Input id="password" name="password" value={asset.password || ''} onChange={handleInputChange} placeholder="Mot de passe de l'équipement" />
+                        </div>
+                    )}
                      <div className="space-y-2">
                         <Label htmlFor="assignedTo">Assigné à</Label>
                         <Select value={asset.assignedTo || ''} onValueChange={(v) => handleSelectChange('assignedTo', v)}>

@@ -8,7 +8,7 @@ const SETTINGS_DOC_ID = 'app_settings'; // Use a consistent ID
 const settingsDocRef = doc(db, 'settings', SETTINGS_DOC_ID);
 
 const defaultMainLogoUrl = "https://cnrct.ci/wp-content/uploads/2018/03/logo_chambre.png";
-const defaultSecondaryLogoUrl = "/assets/ci-logo.png";
+const defaultSecondaryLogoUrl = "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/Coat_of_arms_of_C%C3%B4te_d%27Ivoire_%281997-2001_variant%29.svg/512px-Coat_of_arms_of_C%C3%B4te_d%27Ivoire_%281997-2001_variant%29.svg.png";
 
 export async function getOrganizationSettings(): Promise<OrganizationSettings> {
     try {

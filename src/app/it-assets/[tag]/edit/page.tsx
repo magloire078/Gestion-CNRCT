@@ -68,13 +68,11 @@ export default function AssetEditPage() {
     };
 
     const handleSelectChange = (name: string, value: string) => {
-        setAsset(prev => {
-            const newState = { ...(prev || {}), [name]: value };
-            if (name === 'type' && value !== 'Ordinateur') {
-                newState.typeOrdinateur = undefined;
-            }
-            return newState as Partial<Asset>;
-        });
+        const newState = { ...(asset || {}), [name]: value };
+        if (name === 'type' && value !== 'Ordinateur') {
+            newState.typeOrdinateur = undefined;
+        }
+        setAsset(newState as Partial<Asset>);
     };
 
     const handleSave = async () => {
@@ -177,14 +175,7 @@ export default function AssetEditPage() {
                     )}
                      <div className="space-y-2">
                         <Label htmlFor="assignedTo">Assigné à</Label>
-                        <Select value={asset.assignedTo || ''} onValueChange={(v) => handleSelectChange('assignedTo', v)}>
-                            <SelectTrigger><SelectValue placeholder="Non assigné" /></SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="Unassigned">Non assigné</SelectItem>
-                                <SelectItem value="En stock">En stock</SelectItem>
-                                {employees.map(emp => <SelectItem key={emp.id} value={emp.name}>{emp.name}</SelectItem>)}
-                            </SelectContent>
-                        </Select>
+                        <Input id="assignedTo" name="assignedTo" value={asset.assignedTo || ''} onChange={handleInputChange} placeholder="Nom de l'employé ou du groupe"/>
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="status">Statut</Label>

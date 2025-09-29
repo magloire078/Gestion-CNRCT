@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -97,7 +96,7 @@ export function AddAssetSheet({ isOpen, onClose, onAddAsset }: AddAssetSheetProp
     setError("");
 
     try {
-      await onAddAsset({ 
+      const dataToSave = { 
         tag,
         type, 
         modele, 
@@ -108,7 +107,17 @@ export function AddAssetSheet({ isOpen, onClose, onAddAsset }: AddAssetSheetProp
         typeOrdinateur: type === 'Ordinateur' ? typeOrdinateur : undefined,
         assignedTo, 
         status 
+      };
+
+      // Ensure no undefined values are sent
+      Object.keys(dataToSave).forEach(key => {
+        const dataKey = key as keyof typeof dataToSave;
+        if (dataToSave[dataKey] === undefined) {
+          delete dataToSave[dataKey];
+        }
       });
+      
+      await onAddAsset(dataToSave as Omit<Asset, 'tag'> & { tag: string });
       handleClose();
     } catch(err) {
       const errorMessage = err instanceof Error ? err.message : "Échec de l'ajout de l'actif. Veuillez réessayer.";
@@ -185,18 +194,7 @@ export function AddAssetSheet({ isOpen, onClose, onAddAsset }: AddAssetSheetProp
             )}
             <div className="space-y-2">
               <Label htmlFor="assignedTo">Assigné à</Label>
-              <Select value={assignedTo} onValueChange={setAssignedTo}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Sélectionnez une assignation" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="En stock">En stock</SelectItem>
-                    <SelectItem value="Unassigned">Non assigné</SelectItem>
-                    {employees.map(emp => (
-                        <SelectItem key={emp.id} value={emp.name}>{emp.name}</SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
+              <Input id="assignedTo" value={assignedTo} onChange={(e) => setAssignedTo(e.target.value)} placeholder="Nom de l'employé ou du groupe"/>
             </div>
              <div className="space-y-2">
               <Label htmlFor="status">Statut</Label>

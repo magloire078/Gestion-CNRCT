@@ -82,7 +82,7 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
         [0];
 
     // Use event details if available, otherwise fallback to employee object
-    const baseSalary = lastAugmentation?.details?.newSalary ? Number(lastAugmentation.details.newSalary) : (employee.baseSalary || 0);
+    const baseSalary = lastAugmentation?.details?.baseSalary ? Number(lastAugmentation.details.baseSalary) : (employee.baseSalary || 0);
     
     const indemnityFields = {
         indemniteTransportImposable: lastAugmentation?.details?.indemniteTransportImposable ?? employee.indemniteTransportImposable,
@@ -102,8 +102,8 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
 
     let primeAnciennete = 0;
     if (seniorityInfo.years >= 2) {
-        const bonusRate = Math.min(0.25, (seniorityInfo.years) * 0.01); 
-        primeAnciennete = baseSalary * bonusRate;
+        const bonusRate = Math.min(25, seniorityInfo.years); // Taux en pourcentage (ex: 5 pour 5%)
+        primeAnciennete = baseSalary * (bonusRate / 100);
     }
 
     const earnings: PayslipEarning[] = [

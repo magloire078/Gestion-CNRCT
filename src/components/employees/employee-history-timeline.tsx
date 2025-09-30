@@ -21,6 +21,20 @@ const eventTypeConfig = {
   Autre: { icon: Briefcase, color: "bg-gray-500" },
 };
 
+const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('fr-FR').format(value);
+}
+
+const indemnityLabels: Record<string, string> = {
+    indemniteTransportImposable: 'Ind. Transport (Imp.)',
+    indemniteSujetion: 'Ind. Sujétion',
+    indemniteCommunication: 'Ind. Communication',
+    indemniteRepresentation: 'Ind. Représentation',
+    indemniteResponsabilite: 'Ind. Responsabilité',
+    indemniteLogement: 'Ind. Logement',
+    transportNonImposable: 'Transport (Non Imp.)',
+};
+
 export function EmployeeHistoryTimeline({ events, onEdit, onDelete }: EmployeeHistoryTimelineProps) {
   if (events.length === 0) {
     return (
@@ -36,6 +50,8 @@ export function EmployeeHistoryTimeline({ events, onEdit, onDelete }: EmployeeHi
       <ul className="space-y-8">
         {events.map((event) => {
           const config = eventTypeConfig[event.eventType] || eventTypeConfig.Autre;
+          const otherDetails = event.details ? Object.entries(event.details).filter(([key]) => key !== 'newSalary' && key !== 'newPoste') : [];
+
           return (
             <li key={event.id} className="relative group">
               <span className={`absolute -left-[38px] top-1 flex h-6 w-6 items-center justify-center rounded-full ${config.color}`}>
@@ -61,12 +77,23 @@ export function EmployeeHistoryTimeline({ events, onEdit, onDelete }: EmployeeHi
                     </div>
                 </div>
                 <p className="mt-1 text-sm">{event.description}</p>
-                {event.details?.newSalary && (
-                    <p className="text-xs text-blue-600 mt-1">Nouveau salaire de base : {Number(event.details.newSalary).toLocaleString('fr-FR')} FCFA</p>
-                )}
-                {event.details?.newPoste && (
-                    <p className="text-xs text-purple-600 mt-1">Nouveau poste : {event.details.newPoste}</p>
-                )}
+                 <div className="mt-2 text-xs space-y-1">
+                    {event.details?.newSalary && (
+                        <p className="text-blue-600 font-medium">Nouveau salaire de base : {formatCurrency(event.details.newSalary)} FCFA</p>
+                    )}
+                     {event.details?.newPoste && (
+                        <p className="text-purple-600 font-medium">Nouveau poste : {event.details.newPoste}</p>
+                    )}
+                    {otherDetails.length > 0 && (
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1 pt-1">
+                        {otherDetails.map(([key, value]) => (
+                            <p key={key} className="text-muted-foreground">
+                                <span className="font-medium">{indemnityLabels[key] || key}:</span> {formatCurrency(value)}
+                            </p>
+                        ))}
+                        </div>
+                    )}
+                </div>
               </div>
             </li>
           );

@@ -72,7 +72,7 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
     const history = await getEmployeeHistory(employee.id);
     const payslipDateObj = parseISO(payslipDate);
 
-    // Find the most recent salary augmentation before or on the payslip date
+    // Find the most recent augmentation event before or on the payslip date
     const lastAugmentation = history
         .filter((event): event is EmployeeEvent & { eventType: 'Augmentation' } => 
             event.eventType === 'Augmentation' && 
@@ -81,9 +81,18 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
         .sort((a, b) => parseISO(b.effectiveDate).getTime() - parseISO(a.effectiveDate).getTime())
         [0];
 
-    const baseSalary = lastAugmentation?.details?.newSalary ? 
-        Number(lastAugmentation.details.newSalary) : 
-        (employee.baseSalary || 0);
+    // Use event details if available, otherwise fallback to employee object
+    const baseSalary = lastAugmentation?.details?.newSalary ? Number(lastAugmentation.details.newSalary) : (employee.baseSalary || 0);
+    
+    const indemnityFields = {
+        indemniteTransportImposable: lastAugmentation?.details?.indemniteTransportImposable ?? employee.indemniteTransportImposable,
+        indemniteResponsabilite: lastAugmentation?.details?.indemniteResponsabilite ?? employee.indemniteResponsabilite,
+        indemniteLogement: lastAugmentation?.details?.indemniteLogement ?? employee.indemniteLogement,
+        indemniteSujetion: lastAugmentation?.details?.indemniteSujetion ?? employee.indemniteSujetion,
+        indemniteCommunication: lastAugmentation?.details?.indemniteCommunication ?? employee.indemniteCommunication,
+        indemniteRepresentation: lastAugmentation?.details?.indemniteRepresentation ?? employee.indemniteRepresentation,
+        transportNonImposable: lastAugmentation?.details?.transportNonImposable ?? employee.transportNonImposable,
+    };
 
     const seniorityInfo = calculateSeniority(employee.dateEmbauche || '', payslipDate);
     
@@ -91,49 +100,33 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
     // ÉTAPE 2 : CALCUL DES GAINS (SALAIRE BRUT)
     // =================================================================
 
-    // --- Prime d'ancienneté ---
-    // Calculée automatiquement si non surchargée manuellement dans la fiche de l'employé.
     let primeAnciennete = employee.primeAnciennete || 0;
     if (seniorityInfo.years >= 2 && !employee.primeAnciennete) {
-        // Le taux est de 1% par an, plafonné à 25%.
         const bonusRate = Math.min(0.25, (seniorityInfo.years) * 0.01); 
         primeAnciennete = baseSalary * bonusRate;
     }
 
-    // --- Liste de toutes les indemnités (imposables et non imposables) ---
-    const indemniteTransportImposable = employee.indemniteTransportImposable || 0;
-    const indemniteResponsabilite = employee.indemniteResponsabilite || 0;
-    const indemniteLogement = employee.indemniteLogement || 0;
-    const indemniteSujetion = employee.indemniteSujetion || 0;
-    const indemniteCommunication = employee.indemniteCommunication || 0;
-    const indemniteRepresentation = employee.indemniteRepresentation || 0;
-    const transportNonImposable = employee.transportNonImposable || 0;
-    
-    // --- Création de la liste des gains pour l'affichage ---
     const earnings: PayslipEarning[] = [
         { label: 'SALAIRE DE BASE', amount: Math.round(baseSalary) },
         { label: 'PRIME D\'ANCIENNETE', amount: Math.round(primeAnciennete) },
-        { label: 'INDEMNITE DE TRANSPORT IMPOSABLE', amount: Math.round(indemniteTransportImposable) },
-        { label: 'INDEMNITE DE SUJETION', amount: Math.round(indemniteSujetion) },
-        { label: 'INDEMNITE DE COMMUNICATION', amount: Math.round(indemniteCommunication) },
-        { label: 'INDEMNITE DE REPRESENTATION', amount: Math.round(indemniteRepresentation) },
-        { label: 'INDEMNITE DE RESPONSABILITE', amount: Math.round(indemniteResponsabilite) },
-        { label: 'INDEMNITE DE LOGEMENT', amount: Math.round(indemniteLogement) },
+        { label: 'INDEMNITE DE TRANSPORT IMPOSABLE', amount: Math.round(indemnityFields.indemniteTransportImposable || 0) },
+        { label: 'INDEMNITE DE SUJETION', amount: Math.round(indemnityFields.indemniteSujetion || 0) },
+        { label: 'INDEMNITE DE COMMUNICATION', amount: Math.round(indemnityFields.indemniteCommunication || 0) },
+        { label: 'INDEMNITE DE REPRESENTATION', amount: Math.round(indemnityFields.indemniteRepresentation || 0) },
+        { label: 'INDEMNITE DE RESPONSABILITE', amount: Math.round(indemnityFields.indemniteResponsabilite || 0) },
+        { label: 'INDEMNITE DE LOGEMENT', amount: Math.round(indemnityFields.indemniteLogement || 0) },
     ];
 
-    // --- Calcul du Brut Imposable ---
-    // Somme de tous les gains qui sont soumis à l'impôt.
     const brutImposable = earnings.reduce((sum, item) => sum + item.amount, 0);
 
     // =================================================================
     // ÉTAPE 3 : CALCUL DES RETENUES (DÉDUCTIONS)
     // =================================================================
     
-    // --- Calcul des cotisations salariales ---
-    const cnps = employee.CNPS ? (brutImposable * 0.063) : 0; // 6.3% du brut imposable si déclaré
-    const its = 0;  // Exonéré, mais peut être modifié ici.
-    const igr = 0;  // Exonéré, mais peut être modifié ici.
-    const cn = 0;   // Exonéré, mais peut être modifié ici.
+    const cnps = employee.CNPS ? (brutImposable * 0.063) : 0;
+    const its = 0;
+    const igr = 0;
+    const cn = 0;
     
     const deductions: PayslipDeduction[] = [
         { label: 'ITS', amount: Math.round(its) },
@@ -148,21 +141,16 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
     // ÉTAPE 4 : CALCUL DES TOTAUX ET CONTRIBUTIONS PATRONALES
     // =================================================================
 
-    // --- Calcul du Net à Payer ---
-    const netAPayer = brutImposable + transportNonImposable - totalDeductions;
+    const netAPayer = brutImposable + (indemnityFields.transportNonImposable || 0) - totalDeductions;
     const netAPayerInWords = numberToWords(Math.floor(netAPayer)) + " FRANCS CFA";
 
-    // --- Calcul des contributions de l'employeur ---
-    const baseCalculCotisations = brutImposable;
-    const isCnpsRegistered = employee.CNPS === true;
-
     const employerContributions: PayslipEmployerContribution[] = [
-        { label: 'ITS PART PATRONALE', base: Math.round(brutImposable), rate: '1,2%', amount: isCnpsRegistered ? Math.round(brutImposable * 0.012) : 0 },
-        { label: 'TAXE D\'APPRENTISSAGE', base: Math.round(brutImposable), rate: '0,4%', amount: isCnpsRegistered ? Math.round(brutImposable * 0.004) : 0 },
-        { label: 'TAXE FPC', base: Math.round(brutImposable), rate: '0,6%', amount: isCnpsRegistered ? Math.round(brutImposable * 0.006) : 0 },
-        { label: 'PRESTATION FAMILIALE', base: Math.min(brutImposable, 70000), rate: '5,75%', amount: isCnpsRegistered ? Math.round(Math.min(brutImposable, 70000) * 0.0575) : 0 },
-        { label: 'ACCIDENT DE TRAVAIL', base: Math.min(brutImposable, 70000), rate: '2,0%', amount: isCnpsRegistered ? Math.round(Math.min(brutImposable, 70000) * 0.02) : 0 },
-        { label: 'REGIME DE RETRAITE', base: Math.round(brutImposable), rate: '7,7%', amount: isCnpsRegistered ? Math.round(brutImposable * 0.077) : 0 },
+        { label: 'ITS PART PATRONALE', base: Math.round(brutImposable), rate: '1,2%', amount: employee.CNPS ? Math.round(brutImposable * 0.012) : 0 },
+        { label: 'TAXE D\'APPRENTISSAGE', base: Math.round(brutImposable), rate: '0,4%', amount: employee.CNPS ? Math.round(brutImposable * 0.004) : 0 },
+        { label: 'TAXE FPC', base: Math.round(brutImposable), rate: '0,6%', amount: employee.CNPS ? Math.round(brutImposable * 0.006) : 0 },
+        { label: 'PRESTATION FAMILIALE', base: Math.min(brutImposable, 70000), rate: '5,75%', amount: employee.CNPS ? Math.round(Math.min(brutImposable, 70000) * 0.0575) : 0 },
+        { label: 'ACCIDENT DE TRAVAIL', base: Math.min(brutImposable, 70000), rate: '2,0%', amount: employee.CNPS ? Math.round(Math.min(brutImposable, 70000) * 0.02) : 0 },
+        { label: 'REGIME DE RETRAITE', base: Math.round(brutImposable), rate: '7,7%', amount: employee.CNPS ? Math.round(brutImposable * 0.077) : 0 },
     ];
     
     // =================================================================
@@ -180,12 +168,12 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
     const employeeInfoWithStaticData: Employe & { numeroCompteComplet?: string } = {
         ...employee,
         dateEmbauche: formattedDateEmbauche,
-        cnpsEmployeur: "320491", // Numéro CNPS statique de l'employeur
+        cnpsEmployeur: "320491",
         anciennete: seniorityInfo.text,
         paymentDate: paymentDateObject.toISOString(),
         paymentLocation: 'Yamoussoukro',
         categorie: employee.categorie || 'Catégorie',
-        parts: employee.parts || 1.5, // Nombre de parts fiscales par défaut
+        parts: employee.parts || 1.5,
         numeroCompteComplet: numeroCompteComplet
     };
 
@@ -195,7 +183,7 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
         deductions,
         totals: {
             brutImposable: Math.round(brutImposable),
-            transportNonImposable: { label: 'INDEMNITE DE TRANSPORT NON IMPOSABLE', amount: Math.round(transportNonImposable) },
+            transportNonImposable: { label: 'INDEMNITE DE TRANSPORT NON IMPOSABLE', amount: Math.round(indemnityFields.transportNonImposable || 0) },
             netAPayer: Math.round(netAPayer),
             netAPayerInWords,
         },

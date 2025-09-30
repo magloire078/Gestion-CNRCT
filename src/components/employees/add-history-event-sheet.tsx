@@ -22,10 +22,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import type { EmployeeEvent } from "@/lib/data";
+import type { EmployeeEvent, Employe } from "@/lib/data";
 import { addEmployeeHistoryEvent, updateEmployeeHistoryEvent } from "@/services/employee-history-service";
+import { getEmployee } from "@/services/employee-service";
 import { useToast } from "@/hooks/use-toast";
-import { format } from "date-fns";
 import { ScrollArea } from "../ui/scroll-area";
 
 interface AddHistoryEventSheetProps {
@@ -38,6 +38,7 @@ interface AddHistoryEventSheetProps {
 
 const eventTypes: EmployeeEvent['eventType'][] = ['Promotion', 'Augmentation', 'Changement de poste', 'Départ', 'Autre'];
 const indemnityFields = [
+    { id: 'baseSalary', label: 'Salaire de Base' },
     { id: 'indemniteTransportImposable', label: 'Ind. Transport (Imposable)' },
     { id: 'indemniteSujetion', label: 'Ind. Sujétion' },
     { id: 'indemniteCommunication', label: 'Ind. Communication' },
@@ -55,27 +56,39 @@ export function AddHistoryEventSheet({ isOpen, onClose, employeeId, eventToEdit,
   const [details, setDetails] = useState<Record<string, any>>({});
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [employee, setEmployee] = useState<Employe | null>(null);
   const { toast } = useToast();
 
   const isEditMode = !!eventToEdit;
 
   useEffect(() => {
-    if (isOpen) {
-      if (eventToEdit) {
-        setEventType(eventToEdit.eventType);
-        setEffectiveDate(eventToEdit.effectiveDate);
-        setDescription(eventToEdit.description);
-        setDetails(eventToEdit.details || {});
-      } else {
-        // Reset form for adding new event
-        setEventType("");
-        setEffectiveDate(new Date().toISOString().split('T')[0]);
-        setDescription("");
-        setDetails({});
-        setError("");
-      }
+    async function loadInitialData() {
+        if (isOpen) {
+          try {
+            const emp = await getEmployee(employeeId);
+            setEmployee(emp);
+
+            if (eventToEdit) {
+              setEventType(eventToEdit.eventType);
+              setEffectiveDate(eventToEdit.effectiveDate);
+              setDescription(eventToEdit.description);
+              setDetails(eventToEdit.details || {});
+            } else {
+              // Reset form for adding new event
+              setEventType("");
+              setEffectiveDate(new Date().toISOString().split('T')[0]);
+              setDescription("");
+              setDetails({});
+              setError("");
+            }
+          } catch(err) {
+            setError("Impossible de charger les données de l'employé.");
+            console.error(err);
+          }
+        }
     }
-  }, [isOpen, eventToEdit]);
+    loadInitialData();
+  }, [isOpen, eventToEdit, employeeId]);
 
   const handleClose = () => {
     onClose();
@@ -96,8 +109,18 @@ export function AddHistoryEventSheet({ isOpen, onClose, employeeId, eventToEdit,
     setError("");
 
     try {
+        let finalDetails = { ...details };
+
+        if (eventType === 'Augmentation' && !isEditMode && employee) {
+            const previousValues: Record<string, any> = {};
+            indemnityFields.forEach(field => {
+                previousValues[`previous_${field.id}`] = employee[field.id as keyof Employe] || 0;
+            });
+            finalDetails = { ...finalDetails, ...previousValues };
+        }
+
         if (isEditMode) {
-            const updatedData: Partial<EmployeeEvent> = { eventType, effectiveDate, description, details };
+            const updatedData: Partial<EmployeeEvent> = { eventType, effectiveDate, description, details: finalDetails };
             const updatedEvent = await updateEmployeeHistoryEvent(employeeId, eventToEdit.id, updatedData);
             onEventSaved(updatedEvent);
             toast({ title: "Événement mis à jour", description: "L'historique a été modifié avec succès." });
@@ -106,7 +129,7 @@ export function AddHistoryEventSheet({ isOpen, onClose, employeeId, eventToEdit,
                 eventType: eventType as EmployeeEvent['eventType'],
                 effectiveDate,
                 description,
-                details
+                details: finalDetails
             };
             const newEvent = await addEmployeeHistoryEvent(employeeId, newEventData);
             onEventSaved(newEvent);
@@ -171,12 +194,8 @@ export function AddHistoryEventSheet({ isOpen, onClose, employeeId, eventToEdit,
                 
                 {eventType === 'Augmentation' && (
                     <div className="col-span-4 space-y-4 pt-4 border-t">
-                        <p className="text-sm font-medium text-center">Détails de l'Augmentation</p>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="newSalary" className="text-right">Nouveau Salaire de Base</Label>
-                            <Input id="newSalary" type="number" value={details.newSalary || ''} placeholder="ex: 1200000" onChange={e => handleDetailChange('newSalary', e.target.value)} className="col-span-3" />
-                        </div>
-                         {indemnityFields.map(field => (
+                        <p className="text-sm font-medium text-center">Détails de l'Augmentation (nouvelles valeurs)</p>
+                        {indemnityFields.map(field => (
                             <div key={field.id} className="grid grid-cols-4 items-center gap-4">
                                 <Label htmlFor={field.id} className="text-right text-xs">{field.label}</Label>
                                 <Input id={field.id} type="number" value={details[field.id] || ''} placeholder="0" onChange={e => handleDetailChange(field.id, e.target.value)} className="col-span-3" />

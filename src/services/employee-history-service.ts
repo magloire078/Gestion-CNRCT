@@ -1,8 +1,9 @@
 
 
 import { collection, getDocs, addDoc, query, where, orderBy, doc, updateDoc, deleteDoc } from 'firebase/firestore';
-import type { EmployeeEvent } from '@/lib/data';
+import type { EmployeeEvent, Employe } from '@/lib/data';
 import { db } from '@/lib/firebase';
+import { getEmployee } from './employee-service';
 
 /**
  * Retrieves the professional history for a specific employee.
@@ -27,11 +28,46 @@ export async function getEmployeeHistory(employeeId: string): Promise<EmployeeEv
  */
 export async function addEmployeeHistoryEvent(employeeId: string, eventData: Omit<EmployeeEvent, 'id' | 'employeeId'>): Promise<EmployeeEvent> {
     const historyCollection = collection(db, `employees/${employeeId}/history`);
-    const docRef = await addDoc(historyCollection, eventData);
+
+    const employee = await getEmployee(employeeId);
+
+    const finalEventData = { ...eventData };
+    if (eventData.eventType === 'Augmentation' && employee) {
+        finalEventData.details = {
+            ...finalEventData.details,
+            employeeHireDate: employee.dateEmbauche,
+            eventEffectiveDate: eventData.effectiveDate,
+        }
+    }
+
+    const docRef = await addDoc(historyCollection, finalEventData);
+    
+    // If the event is a salary increase, also update the main employee document
+    if (eventData.eventType === 'Augmentation' && eventData.details) {
+        const employeeDocRef = doc(db, 'employees', employeeId);
+        const salaryUpdates: Partial<Employe> = {};
+        const indemnityFields = [
+            'baseSalary', 'indemniteTransportImposable', 'indemniteSujetion', 
+            'indemniteCommunication', 'indemniteRepresentation', 'indemniteResponsabilite', 
+            'indemniteLogement', 'transportNonImposable'
+        ];
+        
+        indemnityFields.forEach(field => {
+            if (eventData.details![field] !== undefined) {
+                (salaryUpdates as any)[field] = Number(eventData.details![field]);
+            }
+        });
+
+        if (Object.keys(salaryUpdates).length > 0) {
+            await updateDoc(employeeDocRef, salaryUpdates);
+        }
+    }
+
+
     return { 
         id: docRef.id,
         employeeId,
-        ...eventData
+        ...finalEventData
     };
 }
 

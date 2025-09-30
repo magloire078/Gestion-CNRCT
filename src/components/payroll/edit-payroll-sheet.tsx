@@ -283,6 +283,9 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
                                     )}
                                 </div>
                                 <Input id="baseSalary" type="number" value={formState.baseSalary || 0} onChange={handleInputChange} />
+                                {originalBaseSalary !== null && (
+                                     <p className="text-xs text-muted-foreground line-through">{formatCurrency(originalBaseSalary)}</p>
+                                )}
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="primeAnciennete">Prime Ancienneté</Label>

@@ -22,22 +22,22 @@ export async function getEmployeeHistory(employeeId: string): Promise<EmployeeEv
 
 /**
  * Adds a new event to an employee's professional history.
+ * This also updates the main employee document if the event is a salary increase.
  * @param employeeId The ID of the employee.
  * @param eventData The event data to add.
  * @returns A promise that resolves to the newly created EmployeeEvent.
  */
 export async function addEmployeeHistoryEvent(employeeId: string, eventData: Omit<EmployeeEvent, 'id' | 'employeeId'>): Promise<EmployeeEvent> {
     const historyCollection = collection(db, `employees/${employeeId}/history`);
-
     const employee = await getEmployee(employeeId);
     let finalDetails = { ...eventData.details };
 
     if (eventData.eventType === 'Augmentation' && employee) {
         const previousValues: Record<string, any> = {};
         const indemnityFields = [
-            'baseSalary', 'indemniteTransportImposable', 'indemniteSujetion', 
+            'baseSalary', 'primeAnciennete', 'indemniteTransportImposable', 'indemniteSujetion', 
             'indemniteCommunication', 'indemniteRepresentation', 'indemniteResponsabilite', 
-            'indemniteLogement', 'transportNonImposable', 'primeAnciennete'
+            'indemniteLogement', 'transportNonImposable'
         ];
         
         indemnityFields.forEach(field => {
@@ -47,8 +47,6 @@ export async function addEmployeeHistoryEvent(employeeId: string, eventData: Omi
         finalDetails = { 
             ...finalDetails, 
             ...previousValues,
-            employeeHireDate: employee.dateEmbauche,
-            eventEffectiveDate: eventData.effectiveDate,
         };
     }
     
@@ -97,6 +95,25 @@ export async function updateEmployeeHistoryEvent(employeeId: string, eventId: st
     const eventDocRef = doc(db, `employees/${employeeId}/history`, eventId);
     await updateDoc(eventDocRef, eventData);
     
+    // If it's an Augmentation, re-apply changes to the main employee doc
+    if (eventData.eventType === 'Augmentation' && eventData.details) {
+        const employeeDocRef = doc(db, 'employees', employeeId);
+        const salaryUpdates: Partial<Employe> = {};
+        const fieldsToUpdate = [
+            'baseSalary', 'indemniteTransportImposable', 'indemniteSujetion', 
+            'indemniteCommunication', 'indemniteRepresentation', 'indemniteResponsabilite', 
+            'indemniteLogement', 'transportNonImposable'
+        ];
+        fieldsToUpdate.forEach(field => {
+            if (eventData.details![field] !== undefined) {
+                (salaryUpdates as any)[field] = Number(eventData.details![field]);
+            }
+        });
+        if (Object.keys(salaryUpdates).length > 0) {
+            await updateDoc(employeeDocRef, salaryUpdates);
+        }
+    }
+
     // Fetch the updated document to return the full object
     const updatedDoc = await getDocs(query(collection(db, `employees/${employeeId}/history`), where('__name__', '==', eventId)));
     if (updatedDoc.empty) {

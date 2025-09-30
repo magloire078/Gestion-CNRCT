@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -27,6 +27,8 @@ import { addEmployeeHistoryEvent, updateEmployeeHistoryEvent } from "@/services/
 import { getEmployee } from "@/services/employee-service";
 import { useToast } from "@/hooks/use-toast";
 import { ScrollArea } from "../ui/scroll-area";
+import { differenceInYears, parseISO, isValid, differenceInMonths, addYears, addMonths, differenceInDays } from "date-fns";
+import { Calculator } from "lucide-react";
 
 interface AddHistoryEventSheetProps {
   isOpen: boolean;
@@ -47,6 +49,44 @@ const indemnityFields = [
     { id: 'indemniteLogement', label: 'Ind. Logement' },
     { id: 'transportNonImposable', label: 'Transport (Non Imposable)' },
 ];
+
+function calculatePreview(details: Record<string, any>, employee: Employe | null, effectiveDate: string) {
+    if (!employee) return { brut: 0, net: 0, cnps: 0, anciennete: 'N/A' };
+
+    const baseSalary = Number(details.baseSalary || 0);
+
+    const hireDate = employee.dateEmbauche ? parseISO(employee.dateEmbauche) : new Date();
+    const eventDate = effectiveDate ? parseISO(effectiveDate) : new Date();
+    const yearsOfService = isValid(hireDate) && isValid(eventDate) ? differenceInYears(eventDate, hireDate) : 0;
+    
+    let primeAnciennete = 0;
+    if (yearsOfService >= 2) {
+        const bonusRate = Math.min(25, yearsOfService);
+        primeAnciennete = baseSalary * (bonusRate / 100);
+    }
+    
+    const otherIndemnities = [
+        'indemniteTransportImposable', 'indemniteSujetion', 'indemniteCommunication',
+        'indemniteRepresentation', 'indemniteResponsabilite', 'indemniteLogement'
+    ].reduce((sum, key) => sum + Number(details[key] || 0), 0);
+
+    const brutImposable = baseSalary + primeAnciennete + otherIndemnities;
+    const transportNonImposable = Number(details.transportNonImposable || 0);
+    const cnps = employee.CNPS ? brutImposable * 0.063 : 0;
+    const net = brutImposable + transportNonImposable - cnps;
+    
+    const dateAfterYears = addYears(hireDate, yearsOfService);
+    const months = differenceInMonths(eventDate, dateAfterYears);
+    const dateAfterMonths = addMonths(dateAfterYears, months);
+    const days = differenceInDays(eventDate, dateAfterMonths);
+
+    return {
+        brut: Math.round(brutImposable),
+        net: Math.round(net),
+        cnps: Math.round(cnps),
+        anciennete: `${yearsOfService} an(s), ${months} mois`,
+    };
+}
 
 
 export function AddHistoryEventSheet({ isOpen, onClose, employeeId, eventToEdit, onEventSaved }: AddHistoryEventSheetProps) {
@@ -78,7 +118,7 @@ export function AddHistoryEventSheet({ isOpen, onClose, employeeId, eventToEdit,
               setEventType("");
               setEffectiveDate(new Date().toISOString().split('T')[0]);
               setDescription("");
-              setDetails({});
+              setDetails(emp || {}); // Pre-fill with current employee data
               setError("");
             }
           } catch(err) {
@@ -89,6 +129,14 @@ export function AddHistoryEventSheet({ isOpen, onClose, employeeId, eventToEdit,
     }
     loadInitialData();
   }, [isOpen, eventToEdit, employeeId]);
+  
+   const livePreview = useMemo(() => {
+        if (eventType === 'Augmentation') {
+            return calculatePreview(details, employee, effectiveDate);
+        }
+        return null;
+    }, [details, employee, effectiveDate, eventType]);
+
 
   const handleClose = () => {
     onClose();
@@ -109,18 +157,8 @@ export function AddHistoryEventSheet({ isOpen, onClose, employeeId, eventToEdit,
     setError("");
 
     try {
-        let finalDetails = { ...details };
-
-        if (eventType === 'Augmentation' && !isEditMode && employee) {
-            const previousValues: Record<string, any> = {};
-            indemnityFields.forEach(field => {
-                previousValues[`previous_${field.id}`] = employee[field.id as keyof Employe] || 0;
-            });
-            finalDetails = { ...finalDetails, ...previousValues };
-        }
-
         if (isEditMode) {
-            const updatedData: Partial<EmployeeEvent> = { eventType, effectiveDate, description, details: finalDetails };
+            const updatedData: Partial<EmployeeEvent> = { eventType, effectiveDate, description, details };
             const updatedEvent = await updateEmployeeHistoryEvent(employeeId, eventToEdit.id, updatedData);
             onEventSaved(updatedEvent);
             toast({ title: "Événement mis à jour", description: "L'historique a été modifié avec succès." });
@@ -129,11 +167,11 @@ export function AddHistoryEventSheet({ isOpen, onClose, employeeId, eventToEdit,
                 eventType: eventType as EmployeeEvent['eventType'],
                 effectiveDate,
                 description,
-                details: finalDetails
+                details
             };
             const newEvent = await addEmployeeHistoryEvent(employeeId, newEventData);
             onEventSaved(newEvent);
-            toast({ title: "Événement ajouté", description: "L'historique de l'employé a été mis à jour." });
+            toast({ title: "Événement ajouté", description: "L'historique et la paie de l'employé ont été mis à jour." });
         }
       handleClose();
     } catch (err) {
@@ -207,6 +245,20 @@ export function AddHistoryEventSheet({ isOpen, onClose, employeeId, eventToEdit,
                     <div className="grid grid-cols-4 items-center gap-4 pt-4 border-t">
                         <Label htmlFor="newPoste" className="text-right">Nouveau Poste</Label>
                         <Input id="newPoste" type="text" value={details.newPoste || ''} placeholder="ex: Développeur Senior" onChange={e => handleDetailChange('newPoste', e.target.value)} className="col-span-3" />
+                    </div>
+                )}
+
+                 {livePreview && (
+                    <div className="col-span-4 space-y-4 pt-4 mt-4 border-t">
+                        <p className="text-sm font-medium text-center flex items-center justify-center gap-2">
+                           <Calculator className="h-4 w-4 text-muted-foreground"/> Aperçu en temps réel
+                        </p>
+                         <div className="grid grid-cols-2 gap-4">
+                            <div><Label>Ancienneté</Label><Input value={livePreview.anciennete} readOnly className="font-mono bg-muted" /></div>
+                            <div><Label>Cotisation CNPS</Label><Input value={`${livePreview.cnps.toLocaleString('fr-FR')} FCFA`} readOnly className="font-mono bg-muted" /></div>
+                            <div><Label>Salaire Brut (Est.)</Label><Input value={`${livePreview.brut.toLocaleString('fr-FR')} FCFA`} readOnly className="font-mono bg-muted" /></div>
+                            <div><Label>Salaire Net (Est.)</Label><Input value={`${livePreview.net.toLocaleString('fr-FR')} FCFA`} readOnly className="font-mono bg-muted" /></div>
+                         </div>
                     </div>
                 )}
 

@@ -42,25 +42,37 @@ const indemnityFields = Object.keys(indemnityLabels);
 
 const calculateTotals = (details: Record<string, any>, prefix = '') => {
     const base = Number(details[`${prefix}baseSalary`] || 0);
-    const transport = Number(details[`${prefix}indemniteTransportImposable`] || 0);
-    const sujetion = Number(details[`${prefix}indemniteSujetion`] || 0);
-    const communication = Number(details[`${prefix}indemniteCommunication`] || 0);
-    const representation = Number(details[`${prefix}indemniteRepresentation`] || 0);
-    const responsabilite = Number(details[`${prefix}indemniteResponsabilite`] || 0);
-    const logement = Number(details[`${prefix}indemniteLogement`] || 0);
-    const transportNonImp = Number(details[`${prefix}transportNonImposable`] || 0);
-    
-    const hireDate = details.employeeHireDate ? parseISO(details.employeeHireDate) : new Date();
-    const eventDate = details.eventEffectiveDate ? parseISO(details.eventEffectiveDate) : new Date();
-    const yearsOfService = isValid(hireDate) && isValid(eventDate) ? differenceInYears(eventDate, hireDate) : 0;
-    const primeRate = yearsOfService >= 2 ? Math.min(25, yearsOfService) / 100 : 0;
-    const primeAnciennete = base * primeRate;
 
-    const brutImposable = base + primeAnciennete + transport + sujetion + communication + representation + responsabilite + logement;
-    const cnps = brutImposable * 0.063;
-    const net = brutImposable + transportNonImp - cnps;
+    const hireDateStr = details.employeeHireDate;
+    const eventDateStr = details.eventEffectiveDate;
     
-    return { brut: Math.round(brutImposable), net: Math.round(net), anciennete: `${yearsOfService} ans` };
+    let primeAnciennete = 0;
+    let yearsOfServiceText = 'N/A';
+
+    if(hireDateStr && eventDateStr) {
+        const hireDate = parseISO(hireDateStr);
+        const eventDate = parseISO(eventDateStr);
+        if(isValid(hireDate) && isValid(eventDate)) {
+            const yearsOfService = differenceInYears(eventDate, hireDate);
+            yearsOfServiceText = `${yearsOfService} an(s)`;
+            if (yearsOfService >= 2) {
+                const bonusRate = Math.min(25, yearsOfService);
+                primeAnciennete = base * (bonusRate / 100);
+            }
+        }
+    }
+    
+    const otherIndemnities = [
+        'indemniteTransportImposable', 'indemniteSujetion', 'indemniteCommunication',
+        'indemniteRepresentation', 'indemniteResponsabilite', 'indemniteLogement'
+    ].reduce((sum, key) => sum + Number(details[`${prefix}${key}`] || 0), 0);
+
+    const brutImposable = base + primeAnciennete + otherIndemnities;
+    const transportNonImposable = Number(details[`${prefix}transportNonImposable`] || 0);
+    const cnps = (details.cnpsEnabled === false) ? 0 : brutImposable * 0.063;
+    const net = brutImposable + transportNonImposable - cnps;
+    
+    return { brut: Math.round(brutImposable), net: Math.round(net), anciennete: yearsOfServiceText };
 }
 
 export function EmployeeHistoryTimeline({ events, onEdit, onDelete }: EmployeeHistoryTimelineProps) {
@@ -80,7 +92,7 @@ export function EmployeeHistoryTimeline({ events, onEdit, onDelete }: EmployeeHi
           const config = eventTypeConfig[event.eventType] || eventTypeConfig.Autre;
           const isAugmentation = event.eventType === 'Augmentation' && event.details;
           
-          const { brut: newBrut, net: newNet, anciennete } = isAugmentation ? calculateTotals(event.details) : { brut: 0, net: 0, anciennete: '' };
+          const { brut: newBrut, net: newNet, anciennete } = isAugmentation ? calculateTotals(event.details, '') : { brut: 0, net: 0, anciennete: '' };
           const { brut: oldBrut, net: oldNet } = isAugmentation ? calculateTotals(event.details, 'previous_') : { brut: 0, net: 0 };
           
           return (
@@ -122,7 +134,7 @@ export function EmployeeHistoryTimeline({ events, onEdit, onDelete }: EmployeeHi
                         {indemnityFields.map(key => {
                             const oldValue = event.details![`previous_${key}`];
                             const newValue = event.details![key];
-                            if (newValue !== undefined && oldValue !== undefined && oldValue !== newValue) {
+                            if (newValue !== undefined && oldValue !== undefined && Math.round(oldValue) !== Math.round(newValue)) {
                                 return (
                                      <div key={key} className="grid grid-cols-3 gap-2 items-center">
                                         <span className="text-muted-foreground">{indemnityLabels[key]}</span>
@@ -134,12 +146,12 @@ export function EmployeeHistoryTimeline({ events, onEdit, onDelete }: EmployeeHi
                             return null;
                         })}
                          <div className="grid grid-cols-3 gap-2 pt-2 border-t font-semibold">
-                            <span className="text-muted-foreground">Brut</span>
+                            <span className="text-muted-foreground">Brut (Est.)</span>
                             <span className="text-right text-muted-foreground line-through font-mono">{formatCurrency(oldBrut)}</span>
                             <span className="text-right font-mono">{formatCurrency(newBrut)}</span>
                         </div>
                          <div className="grid grid-cols-3 gap-2 font-semibold">
-                            <span className="text-muted-foreground">Net</span>
+                            <span className="text-muted-foreground">Net (Est.)</span>
                             <span className="text-right text-muted-foreground line-through font-mono">{formatCurrency(oldNet)}</span>
                             <span className="text-right font-mono">{formatCurrency(newNet)}</span>
                         </div>

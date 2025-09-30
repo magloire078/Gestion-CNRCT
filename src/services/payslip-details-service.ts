@@ -100,8 +100,8 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
     // ÉTAPE 2 : CALCUL DES GAINS (SALAIRE BRUT)
     // =================================================================
 
-    let primeAnciennete = employee.primeAnciennete || 0;
-    if (seniorityInfo.years >= 2 && !employee.primeAnciennete) {
+    let primeAnciennete = 0;
+    if (seniorityInfo.years >= 2) {
         const bonusRate = Math.min(0.25, (seniorityInfo.years) * 0.01); 
         primeAnciennete = baseSalary * bonusRate;
     }

@@ -30,15 +30,29 @@ export async function addEmployeeHistoryEvent(employeeId: string, eventData: Omi
     const historyCollection = collection(db, `employees/${employeeId}/history`);
 
     const employee = await getEmployee(employeeId);
+    let finalDetails = { ...eventData.details };
 
-    const finalEventData = { ...eventData };
     if (eventData.eventType === 'Augmentation' && employee) {
-        finalEventData.details = {
-            ...finalEventData.details,
+        const previousValues: Record<string, any> = {};
+        const indemnityFields = [
+            'baseSalary', 'indemniteTransportImposable', 'indemniteSujetion', 
+            'indemniteCommunication', 'indemniteRepresentation', 'indemniteResponsabilite', 
+            'indemniteLogement', 'transportNonImposable', 'primeAnciennete'
+        ];
+        
+        indemnityFields.forEach(field => {
+            previousValues[`previous_${field}`] = employee[field as keyof Employe] || 0;
+        });
+
+        finalDetails = { 
+            ...finalDetails, 
+            ...previousValues,
             employeeHireDate: employee.dateEmbauche,
             eventEffectiveDate: eventData.effectiveDate,
-        }
+        };
     }
+    
+    const finalEventData = { ...eventData, details: finalDetails };
 
     const docRef = await addDoc(historyCollection, finalEventData);
     
@@ -46,13 +60,13 @@ export async function addEmployeeHistoryEvent(employeeId: string, eventData: Omi
     if (eventData.eventType === 'Augmentation' && eventData.details) {
         const employeeDocRef = doc(db, 'employees', employeeId);
         const salaryUpdates: Partial<Employe> = {};
-        const indemnityFields = [
+        const fieldsToUpdate = [
             'baseSalary', 'indemniteTransportImposable', 'indemniteSujetion', 
             'indemniteCommunication', 'indemniteRepresentation', 'indemniteResponsabilite', 
             'indemniteLogement', 'transportNonImposable'
         ];
         
-        indemnityFields.forEach(field => {
+        fieldsToUpdate.forEach(field => {
             if (eventData.details![field] !== undefined) {
                 (salaryUpdates as any)[field] = Number(eventData.details![field]);
             }

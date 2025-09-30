@@ -21,13 +21,14 @@ const eventTypeConfig = {
   Autre: { icon: Briefcase, color: "bg-gray-500" },
 };
 
-const formatCurrency = (value: number | undefined) => {
-    if (value === undefined || isNaN(value)) return '-';
-    return new Intl.NumberFormat('fr-FR').format(value);
+const formatCurrency = (value: number | undefined | null) => {
+    if (value === undefined || value === null || isNaN(value)) return '-';
+    return new Intl.NumberFormat('fr-FR').format(Math.round(value));
 }
 
 const indemnityLabels: Record<string, string> = {
     baseSalary: 'Salaire de Base',
+    primeAnciennete: 'Prime Ancienneté',
     indemniteTransportImposable: 'Ind. Transport (Imp.)',
     indemniteSujetion: 'Ind. Sujétion',
     indemniteCommunication: 'Ind. Communication',
@@ -36,6 +37,8 @@ const indemnityLabels: Record<string, string> = {
     indemniteLogement: 'Ind. Logement',
     transportNonImposable: 'Transport (Non Imp.)',
 };
+
+const indemnityFields = Object.keys(indemnityLabels);
 
 const calculateTotals = (details: Record<string, any>, prefix = '') => {
     const base = Number(details[`${prefix}baseSalary`] || 0);
@@ -47,17 +50,17 @@ const calculateTotals = (details: Record<string, any>, prefix = '') => {
     const logement = Number(details[`${prefix}indemniteLogement`] || 0);
     const transportNonImp = Number(details[`${prefix}transportNonImposable`] || 0);
     
-    // Simplistic prime calculation for display
     const hireDate = details.employeeHireDate ? parseISO(details.employeeHireDate) : new Date();
     const eventDate = details.eventEffectiveDate ? parseISO(details.eventEffectiveDate) : new Date();
     const yearsOfService = isValid(hireDate) && isValid(eventDate) ? differenceInYears(eventDate, hireDate) : 0;
-    const primeAnciennete = yearsOfService >= 2 ? base * (Math.min(25, yearsOfService) / 100) : 0;
+    const primeRate = yearsOfService >= 2 ? Math.min(25, yearsOfService) / 100 : 0;
+    const primeAnciennete = base * primeRate;
 
     const brutImposable = base + primeAnciennete + transport + sujetion + communication + representation + responsabilite + logement;
-    const cnps = brutImposable * 0.063; // Simplified CNPS calculation for display
+    const cnps = brutImposable * 0.063;
     const net = brutImposable + transportNonImp - cnps;
     
-    return { brut: Math.round(brutImposable), net: Math.round(net) };
+    return { brut: Math.round(brutImposable), net: Math.round(net), anciennete: `${yearsOfService} ans` };
 }
 
 export function EmployeeHistoryTimeline({ events, onEdit, onDelete }: EmployeeHistoryTimelineProps) {
@@ -76,7 +79,8 @@ export function EmployeeHistoryTimeline({ events, onEdit, onDelete }: EmployeeHi
         {events.map((event) => {
           const config = eventTypeConfig[event.eventType] || eventTypeConfig.Autre;
           const isAugmentation = event.eventType === 'Augmentation' && event.details;
-          const { brut: newBrut, net: newNet } = isAugmentation ? calculateTotals(event.details) : { brut: 0, net: 0 };
+          
+          const { brut: newBrut, net: newNet, anciennete } = isAugmentation ? calculateTotals(event.details) : { brut: 0, net: 0, anciennete: '' };
           const { brut: oldBrut, net: oldNet } = isAugmentation ? calculateTotals(event.details, 'previous_') : { brut: 0, net: 0 };
           
           return (
@@ -115,10 +119,10 @@ export function EmployeeHistoryTimeline({ events, onEdit, onDelete }: EmployeeHi
                             <span className="text-right">Ancienne Valeur</span>
                             <span className="text-right">Nouvelle Valeur</span>
                         </div>
-                        {Object.keys(indemnityLabels).map(key => {
+                        {indemnityFields.map(key => {
                             const oldValue = event.details![`previous_${key}`];
                             const newValue = event.details![key];
-                            if(newValue !== undefined && oldValue !== newValue) {
+                            if (newValue !== undefined && oldValue !== undefined && oldValue !== newValue) {
                                 return (
                                      <div key={key} className="grid grid-cols-3 gap-2 items-center">
                                         <span className="text-muted-foreground">{indemnityLabels[key]}</span>
@@ -138,6 +142,10 @@ export function EmployeeHistoryTimeline({ events, onEdit, onDelete }: EmployeeHi
                             <span className="text-muted-foreground">Net</span>
                             <span className="text-right text-muted-foreground line-through font-mono">{formatCurrency(oldNet)}</span>
                             <span className="text-right font-mono">{formatCurrency(newNet)}</span>
+                        </div>
+                         <div className="grid grid-cols-3 gap-2 text-muted-foreground border-t pt-2">
+                            <span>Ancienneté à date d'effet:</span>
+                             <span className="col-span-2 text-right">{anciennete}</span>
                         </div>
                       </div>
                     )}

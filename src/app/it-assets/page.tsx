@@ -3,17 +3,18 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { PlusCircle, Search, Eye, Pencil, Trash2, MoreHorizontal, Laptop, Monitor, Printer, Keyboard, Mouse, FileCode, Package as PackageIcon, Download, Server } from "lucide-react";
+import { PlusCircle, Search, Eye, Pencil, Trash2, MoreHorizontal, Laptop, Monitor, Printer as PrinterIcon, Keyboard, Mouse, FileCode, Package as PackageIcon, Download, Server, Printer } from "lucide-react";
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import type { Asset } from "@/lib/data";
+import type { Asset, OrganizationSettings } from "@/lib/data";
 import { AddAssetSheet } from "@/components/it-assets/add-asset-sheet";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { subscribeToAssets, addAsset, deleteAsset } from "@/services/asset-service";
+import { getOrganizationSettings } from "@/services/organization-service";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { ConfirmationDialog } from "@/components/common/confirmation-dialog";
@@ -21,6 +22,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { useRouter } from "next/navigation";
 import Papa from "papaparse";
 import { ImportAssetsDataCard } from "@/components/it-assets/import-assets-data-card";
+import { PrintAssetsDialog } from "@/components/it-assets/print-assets-dialog";
 
 
 type Status = 'En utilisation' | 'En stock' | 'En réparation' | 'Retiré';
@@ -38,13 +40,25 @@ const assetStatuses: Asset['status'][] = ['En utilisation', 'En stock', 'En rép
 const assetIcons: Record<Asset['type'], React.ElementType> = {
   "Ordinateur": Laptop,
   "Moniteur": Monitor,
-  "Imprimante": Printer,
+  "Imprimante": PrinterIcon,
   "Clavier": Keyboard,
   "Souris": Mouse,
   "Logiciel": FileCode,
   "Équipement Réseau": Server,
   "Autre": PackageIcon,
 };
+
+export const allAssetColumns = {
+  tag: "N° Inventaire",
+  type: "Type",
+  fabricant: "Fabricant",
+  modele: "Modèle",
+  numeroDeSerie: "N° Série",
+  ipAddress: "Adresse IP",
+  assignedTo: "Assigné à",
+  status: "Statut",
+};
+export type AssetColumnKeys = keyof typeof allAssetColumns;
 
 export default function ItAssetsPage() {
   const [assets, setAssets] = useState<Asset[]>([]);
@@ -59,6 +73,13 @@ export default function ItAssetsPage() {
   const [statusFilter, setStatusFilter] = useState("all");
 
   const [deleteTarget, setDeleteTarget] = useState<Asset | null>(null);
+  
+  const [isPrintDialogOpen, setIsPrintDialogOpen] = useState(false);
+  const [isPrinting, setIsPrinting] = useState(false);
+  const [columnsToPrint, setColumnsToPrint] = useState<AssetColumnKeys[]>(Object.keys(allAssetColumns) as AssetColumnKeys[]);
+  const [organizationLogos, setOrganizationLogos] = useState<OrganizationSettings | null>(null);
+  const [printDate, setPrintDate] = useState('');
+
 
   useEffect(() => {
     const unsubscribe = subscribeToAssets(
@@ -73,8 +94,20 @@ export default function ItAssetsPage() {
         setLoading(false);
       }
     );
+    getOrganizationSettings().then(setOrganizationLogos);
     return () => unsubscribe();
   }, []);
+
+  useEffect(() => {
+      if (isPrinting) {
+          document.body.classList.add('print-landscape');
+          setTimeout(() => {
+              window.print();
+              setIsPrinting(false);
+              document.body.classList.remove('print-landscape');
+          }, 500);
+      }
+  }, [isPrinting]);
 
   const handleAddAsset = async (newAssetData: Omit<Asset, 'tag'> & { tag: string }) => {
     try {
@@ -166,13 +199,24 @@ export default function ItAssetsPage() {
     toast({ title: "Exportation SQL réussie" });
   };
 
+  const handlePrint = (selectedColumns: AssetColumnKeys[]) => {
+    setColumnsToPrint(selectedColumns);
+    setPrintDate(new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }));
+    setIsPrintDialogOpen(false);
+    setIsPrinting(true);
+  };
+
 
   return (
     <>
-      <div className="flex flex-col gap-6">
+      <div className={`flex flex-col gap-6 ${isPrinting ? 'print-hidden' : ''}`}>
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold tracking-tight">Actifs Informatiques</h1>
           <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setIsPrintDialogOpen(true)}>
+                <Printer className="mr-2 h-4 w-4" />
+                Imprimer
+            </Button>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <Button variant="outline" className="w-full sm:w-auto">
@@ -361,6 +405,12 @@ export default function ItAssetsPage() {
           onClose={() => setIsSheetOpen(false)}
           onAddAsset={handleAddAsset}
         />
+        <PrintAssetsDialog
+            isOpen={isPrintDialogOpen}
+            onClose={() => setIsPrintDialogOpen(false)}
+            onPrint={handlePrint}
+            allColumns={allAssetColumns}
+        />
       </div>
        <ConfirmationDialog
         isOpen={!!deleteTarget}
@@ -369,6 +419,44 @@ export default function ItAssetsPage() {
         title={`Supprimer l'actif : ${deleteTarget?.tag}`}
         description={`Êtes-vous sûr de vouloir supprimer "${deleteTarget?.modele} (${deleteTarget?.tag})" ? Cette action est irréversible.`}
       />
+
+       {isPrinting && (
+            <div id="print-section" className="bg-white text-black p-8 w-full print:shadow-none print:border-none print:p-0">
+                <header className="flex justify-between items-start mb-8">
+                    <div className="text-center">
+                        <h2 className="font-bold">{organizationLogos?.organizationName || 'Gestion App'}</h2>
+                        {organizationLogos?.mainLogoUrl && <img src={organizationLogos.mainLogoUrl} alt="Logo" width={80} height={80} className="mx-auto mt-2" />}
+                    </div>
+                    <div className="text-center">
+                        <h2 className="font-bold">République de Côte d'Ivoire</h2>
+                        <p className="text-sm">Union - Discipline - Travail</p>
+                    </div>
+                </header>
+
+                <div className="text-center my-6">
+                    <h1 className="text-lg font-bold underline">INVENTAIRE DU MATERIEL INFORMATIQUE - {printDate}</h1>
+                </div>
+                
+                <table className="w-full text-xs border-collapse border border-black">
+                    <thead>
+                        <tr className="bg-gray-200">
+                            <th className="border border-black p-1">N°</th>
+                            {columnsToPrint.map(key => <th key={key} className="border border-black p-1 text-left font-bold">{allAssetColumns[key]}</th>)}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {filteredAssets.map((asset, index) => (
+                            <tr key={asset.tag}>
+                                <td className="border border-black p-1 text-center">{index + 1}</td>
+                                {columnsToPrint.map(key => (
+                                    <td key={key} className="border border-black p-1">{asset[key] || ''}</td>
+                                ))}
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        )}
     </>
   );
 }

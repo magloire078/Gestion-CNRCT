@@ -2,8 +2,8 @@
 "use client";
 
 import { Briefcase, TrendingUp, UserCheck, UserX, Pencil, Trash2 } from "lucide-react";
-import type { EmployeeEvent } from "@/lib/data";
-import { format, parseISO, differenceInYears, isValid } from "date-fns";
+import type { EmployeeEvent, Employe } from "@/lib/data";
+import { format, parseISO, differenceInYears, isValid, differenceInMonths, addYears, addMonths, differenceInDays } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
 
@@ -88,13 +88,27 @@ export function EmployeeHistoryTimeline({ events, onEdit, onDelete }: EmployeeHi
     <div className="relative pl-8">
       <div className="absolute left-4 top-0 h-full w-0.5 bg-border" />
       <ul className="space-y-8">
-        {events.map((event) => {
+        {events.map((event, index) => {
           const config = eventTypeConfig[event.eventType] || eventTypeConfig.Autre;
           const isAugmentation = event.eventType === 'Augmentation' && event.details;
           
           const { brut: newBrut, net: newNet, anciennete } = isAugmentation ? calculateTotals(event.details, '') : { brut: 0, net: 0, anciennete: '' };
           const { brut: oldBrut, net: oldNet } = isAugmentation ? calculateTotals(event.details, 'previous_') : { brut: 0, net: 0 };
           
+          const getOldPeriod = () => {
+              if(!isAugmentation) return null;
+              
+              const currentEventDate = parseISO(event.effectiveDate);
+              const previousEvent = events[index + 1];
+              const employeeHireDate = event.details.employeeHireDate ? parseISO(event.details.employeeHireDate) : null;
+              
+              const startDate = previousEvent ? parseISO(previousEvent.effectiveDate) : employeeHireDate;
+              
+              if (!startDate || !isValid(startDate)) return null;
+
+              return `(du ${format(startDate, 'dd/MM/yy')} au ${format(currentEventDate, 'dd/MM/yy')})`;
+          }
+
           return (
             <li key={event.id} className="relative group">
               <span className={`absolute -left-[38px] top-1 flex h-6 w-6 items-center justify-center rounded-full ${config.color}`}>
@@ -128,7 +142,7 @@ export function EmployeeHistoryTimeline({ events, onEdit, onDelete }: EmployeeHi
                       <div className="p-3 border rounded-md bg-muted/50 space-y-2">
                         <div className="grid grid-cols-3 gap-2 font-medium">
                             <span>Élément</span>
-                            <span className="text-right">Ancienne Valeur</span>
+                            <span className="text-right">Ancienne Valeur <span className="font-normal text-muted-foreground">{getOldPeriod()}</span></span>
                             <span className="text-right">Nouvelle Valeur</span>
                         </div>
                         {indemnityFields.map(key => {

@@ -66,43 +66,53 @@ function getLastWorkingDay(date: Date): Date {
  */
 export async function getPayslipDetails(employee: Employe, payslipDate: string): Promise<PayslipDetails> {
     
-    // =================================================================
-    // ÉTAPE 1 : RÉCUPÉRATION DES DONNÉES DE BASE DE L'EMPLOYÉ
-    // =================================================================
     const history = await getEmployeeHistory(employee.id);
     const payslipDateObj = parseISO(payslipDate);
 
-    // Find the most recent augmentation event before or on the payslip date
-    const lastAugmentation = history
-        .filter((event): event is EmployeeEvent & { eventType: 'Augmentation' } => 
-            event.eventType === 'Augmentation' && 
+    // Find the most recent event that is effective on or before the payslip date
+    const relevantEvent = history
+        .filter(event => 
+            event.eventType === 'Augmentation' &&
+            isValid(parseISO(event.effectiveDate)) &&
             (isBefore(parseISO(event.effectiveDate), payslipDateObj) || isEqual(parseISO(event.effectiveDate), payslipDateObj))
         )
-        .sort((a, b) => parseISO(b.effectiveDate).getTime() - parseISO(a.effectiveDate).getTime())
-        [0];
+        .sort((a, b) => parseISO(b.effectiveDate).getTime() - parseISO(a.effectiveDate).getTime())[0];
 
-    // Use event details if available, otherwise fallback to employee object
-    const baseSalary = lastAugmentation?.details?.baseSalary ? Number(lastAugmentation.details.baseSalary) : (employee.baseSalary || 0);
-    
-    const indemnityFields = {
-        indemniteTransportImposable: lastAugmentation?.details?.indemniteTransportImposable ?? employee.indemniteTransportImposable,
-        indemniteResponsabilite: lastAugmentation?.details?.indemniteResponsabilite ?? employee.indemniteResponsabilite,
-        indemniteLogement: lastAugmentation?.details?.indemniteLogement ?? employee.indemniteLogement,
-        indemniteSujetion: lastAugmentation?.details?.indemniteSujetion ?? employee.indemniteSujetion,
-        indemniteCommunication: lastAugmentation?.details?.indemniteCommunication ?? employee.indemniteCommunication,
-        indemniteRepresentation: lastAugmentation?.details?.indemniteRepresentation ?? employee.indemniteRepresentation,
-        transportNonImposable: lastAugmentation?.details?.transportNonImposable ?? employee.transportNonImposable,
+    const getSalaryStructure = () => {
+        if (relevantEvent) {
+            // Use the salary details from the relevant historical event
+            return {
+                baseSalary: Number(relevantEvent.details?.baseSalary || 0),
+                indemniteTransportImposable: Number(relevantEvent.details?.indemniteTransportImposable || 0),
+                indemniteResponsabilite: Number(relevantEvent.details?.indemniteResponsabilite || 0),
+                indemniteLogement: Number(relevantEvent.details?.indemniteLogement || 0),
+                indemniteSujetion: Number(relevantEvent.details?.indemniteSujetion || 0),
+                indemniteCommunication: Number(relevantEvent.details?.indemniteCommunication || 0),
+                indemniteRepresentation: Number(relevantEvent.details?.indemniteRepresentation || 0),
+                transportNonImposable: Number(relevantEvent.details?.transportNonImposable || 0),
+            };
+        } else {
+            // No relevant augmentation found, use the base employee data (initial salary)
+            return {
+                baseSalary: employee.baseSalary || 0,
+                indemniteTransportImposable: employee.indemniteTransportImposable || 0,
+                indemniteResponsabilite: employee.indemniteResponsabilite || 0,
+                indemniteLogement: employee.indemniteLogement || 0,
+                indemniteSujetion: employee.indemniteSujetion || 0,
+                indemniteCommunication: employee.indemniteCommunication || 0,
+                indemniteRepresentation: employee.indemniteRepresentation || 0,
+                transportNonImposable: employee.transportNonImposable || 0,
+            };
+        }
     };
-
+    
+    const { baseSalary, ...indemnityFields } = getSalaryStructure();
+    
     const seniorityInfo = calculateSeniority(employee.dateEmbauche || '', payslipDate);
     
-    // =================================================================
-    // ÉTAPE 2 : CALCUL DES GAINS (SALAIRE BRUT)
-    // =================================================================
-
     let primeAnciennete = 0;
     if (seniorityInfo.years >= 2) {
-        const bonusRate = Math.min(25, seniorityInfo.years); // Taux en pourcentage (ex: 5 pour 5%)
+        const bonusRate = Math.min(25, seniorityInfo.years);
         primeAnciennete = baseSalary * (bonusRate / 100);
     }
 
@@ -118,10 +128,6 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
     ];
 
     const brutImposable = earnings.reduce((sum, item) => sum + item.amount, 0);
-
-    // =================================================================
-    // ÉTAPE 3 : CALCUL DES RETENUES (DÉDUCTIONS)
-    // =================================================================
     
     const cnps = employee.CNPS ? (brutImposable * 0.063) : 0;
     const its = 0;
@@ -136,10 +142,6 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
     ];
     
     const totalDeductions = deductions.reduce((sum, item) => sum + item.amount, 0);
-    
-    // =================================================================
-    // ÉTAPE 4 : CALCUL DES TOTAUX ET CONTRIBUTIONS PATRONALES
-    // =================================================================
 
     const netAPayer = brutImposable + (indemnityFields.transportNonImposable || 0) - totalDeductions;
     const netAPayerInWords = numberToWords(Math.floor(netAPayer)) + " FRANCS CFA";
@@ -152,10 +154,6 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
         { label: 'ACCIDENT DE TRAVAIL', base: Math.min(brutImposable, 70000), rate: '2,0%', amount: employee.CNPS ? Math.round(Math.min(brutImposable, 70000) * 0.02) : 0 },
         { label: 'REGIME DE RETRAITE', base: Math.round(brutImposable), rate: '7,7%', amount: employee.CNPS ? Math.round(brutImposable * 0.077) : 0 },
     ];
-    
-    // =================================================================
-    // ÉTAPE 5 : FINALISATION DE L'OBJET RETOURNÉ
-    // =================================================================
     
     const organizationLogos = await getOrganizationSettings();
     const paymentDateObject = isValid(payslipDateObj) ? getLastWorkingDay(payslipDateObj) : new Date();

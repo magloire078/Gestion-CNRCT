@@ -30,11 +30,11 @@ import { cn } from "@/lib/utils";
 import { parseISO, differenceInCalendarYears, getYear, format, startOfYear, endOfYear, isAfter } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
-type PeriodOption = "last3years" | "alltime";
 
 interface ReportData {
   employee: Employe;
-  period: PeriodOption;
+  startYear: number;
+  endYear: number;
   annualSalaries: { year: number; months: { month: string; gross: number }[]; total: number }[];
   grandTotal: number;
 }
@@ -42,7 +42,8 @@ interface ReportData {
 export default function NominativeReportPage() {
   const [employees, setEmployees] = useState<Employe[]>([]);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<string>("");
-  const [periodOption, setPeriodOption] = useState<PeriodOption>("last3years");
+  const [startYear, setStartYear] = useState<string>((new Date().getFullYear() - 2).toString());
+  const [endYear, setEndYear] = useState<string>(new Date().getFullYear().toString());
   
   const [loading, setLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -66,11 +67,24 @@ export default function NominativeReportPage() {
     }
     fetchInitialData();
   }, []);
+  
+  const yearOptions = useMemo(() => {
+      const currentYear = new Date().getFullYear();
+      return Array.from({ length: 30 }, (_, i) => (currentYear - i).toString());
+  }, []);
+
 
   const generateReport = async () => {
     if (!selectedEmployeeId) {
       setError("Veuillez sélectionner un employé.");
       return;
+    }
+     const start = parseInt(startYear);
+     const end = parseInt(endYear);
+
+    if (start > end) {
+        setError("L'année de début ne peut pas être postérieure à l'année de fin.");
+        return;
     }
 
     setIsGenerating(true);
@@ -84,32 +98,26 @@ export default function NominativeReportPage() {
       }
       
       const hireDate = parseISO(employee.dateEmbauche);
-      const departureDate = employee.Date_Depart ? parseISO(employee.Date_Depart) : null;
-      const currentYear = getYear(new Date());
       
-      let startYear, endYear;
-      if (periodOption === 'last3years') {
-          startYear = currentYear - 2;
-          endYear = currentYear;
-      } else {
-          startYear = getYear(hireDate);
-          endYear = departureDate ? getYear(departureDate) : currentYear;
-      }
-
       const annualSalaries = [];
       let grandTotal = 0;
 
-      for (let year = startYear; year <= endYear; year++) {
+      for (let year = start; year <= end; year++) {
           const monthlyData = [];
           let yearTotal = 0;
           for (let month = 0; month < 12; month++) {
               const payslipDate = new Date(year, month, 15);
               
-              if (isAfter(payslipDate, hireDate) && (!departureDate || isAfter(departureDate, payslipDate))) {
-                  const details = await getPayslipDetails(employee, payslipDate.toISOString().split('T')[0]);
-                  const grossSalary = details.totals.brutImposable;
-                  monthlyData.push({ month: fr.localize?.month(month, { width: 'short' }) || '', gross: grossSalary });
-                  yearTotal += grossSalary;
+              if (isAfter(payslipDate, hireDate)) {
+                  try {
+                    const details = await getPayslipDetails(employee, payslipDate.toISOString().split('T')[0]);
+                    const grossSalary = details.totals.brutImposable;
+                    monthlyData.push({ month: fr.localize?.month(month, { width: 'short' }) || '', gross: grossSalary });
+                    yearTotal += grossSalary;
+                  } catch (e) {
+                      // It's normal to have errors for months where employee wasn't active, so we push 0
+                      monthlyData.push({ month: fr.localize?.month(month, { width: 'short' }) || '', gross: 0 });
+                  }
               } else {
                   monthlyData.push({ month: fr.localize?.month(month, { width: 'short' }) || '', gross: 0 });
               }
@@ -118,7 +126,7 @@ export default function NominativeReportPage() {
           grandTotal += yearTotal;
       }
       
-      setReportData({ employee, period: periodOption, annualSalaries, grandTotal });
+      setReportData({ employee, startYear: start, endYear: end, annualSalaries, grandTotal });
 
     } catch (err) {
       console.error(err);
@@ -164,7 +172,7 @@ export default function NominativeReportPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col sm:flex-row gap-4 items-end mb-6 p-4 border rounded-lg max-w-xl">
+          <div className="flex flex-col sm:flex-row gap-4 items-end mb-6 p-4 border rounded-lg max-w-2xl">
             <div className="grid gap-2 flex-1 w-full">
               <Label htmlFor="employee">Employé</Label>
                <Popover open={isComboboxOpen} onOpenChange={setIsComboboxOpen}>
@@ -189,13 +197,21 @@ export default function NominativeReportPage() {
                 </PopoverContent>
                </Popover>
             </div>
-            <div className="grid gap-2 flex-1 w-full">
-              <Label htmlFor="period">Période</Label>
-              <Select value={periodOption} onValueChange={(v: PeriodOption) => setPeriodOption(v)}>
-                <SelectTrigger id="period"><SelectValue /></SelectTrigger>
+             <div className="grid gap-2 flex-1 w-full">
+              <Label htmlFor="startYear">Année de début</Label>
+              <Select value={startYear} onValueChange={setStartYear}>
+                <SelectTrigger id="startYear"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="last3years">3 dernières années</SelectItem>
-                  <SelectItem value="alltime">Toute la carrière</SelectItem>
+                  {yearOptions.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-2 flex-1 w-full">
+              <Label htmlFor="endYear">Année de fin</Label>
+              <Select value={endYear} onValueChange={setEndYear}>
+                <SelectTrigger id="endYear"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {yearOptions.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
@@ -214,7 +230,7 @@ export default function NominativeReportPage() {
                 <div className="flex justify-between items-center">
                     <div>
                         <CardTitle>Tableau Nominatif pour {reportData.employee.name}</CardTitle>
-                        <CardDescription>Période : {periodOption === 'last3years' ? '3 dernières années' : 'Toute la carrière'}</CardDescription>
+                        <CardDescription>Période du {reportData.startYear} au {reportData.endYear}</CardDescription>
                     </div>
                     <Button variant="outline" onClick={handlePrint}>
                         <Printer className="mr-2 h-4 w-4" /> Imprimer
@@ -265,6 +281,7 @@ export default function NominativeReportPage() {
              <div className="text-center mb-8">
                 <h1 className="text-xl font-bold">TABLEAU NOMINATIF DES SALAIRES BRUTS</h1>
                 <h2 className="text-lg">Employé : {reportData.employee.name} (Mle: {reportData.employee.matricule})</h2>
+                 <h3 className="text-md">Période du {reportData.startYear} au {reportData.endYear}</h3>
             </div>
             <table className="w-full text-xs border-collapse border border-black">
                 <thead className="bg-gray-200">

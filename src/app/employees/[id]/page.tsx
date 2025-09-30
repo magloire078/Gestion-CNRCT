@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Pencil, User, Briefcase, Mail, Phone, MapPin, BadgeCheck, FileText, Calendar, Laptop, Rocket, FolderArchive, LogOut, Globe, Landmark, ChevronRight, Users, Cake, History, PlusCircle, Trash2 } from "lucide-react";
+import { ArrowLeft, Pencil, User, Briefcase, Mail, Phone, MapPin, BadgeCheck, FileText, Calendar, Laptop, Rocket, FolderArchive, LogOut, Globe, Landmark, ChevronRight, Users, Cake, History, PlusCircle, Trash2, Binary } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -202,42 +202,36 @@ export default function EmployeeDetailPage() {
                     </TabsList>
                     <TabsContent value="info">
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            <Card className="lg:col-span-3">
+                                <CardHeader className="flex flex-col md:flex-row items-start md:items-center gap-6">
+                                    <Avatar className="h-24 w-24 border">
+                                        <AvatarImage src={employee.photoUrl} alt={fullName} data-ai-hint="employee photo"/>
+                                        <AvatarFallback className={`text-3xl ${getAvatarBgClass(employee.sexe)}`}>
+                                            {employee.lastName?.charAt(0) || ''}{employee.firstName?.charAt(0) || ''}
+                                        </AvatarFallback>
+                                    </Avatar>
+                                    <div className="flex-1">
+                                        <CardTitle className="text-3xl">{fullName}</CardTitle>
+                                        <CardDescription className="text-lg text-muted-foreground">{employee.poste}</CardDescription>
+                                        <div className="mt-2 flex gap-2 flex-wrap">
+                                        <Badge variant={employee.status === 'Actif' ? 'default' : 'destructive'}>{employee.status}</Badge>
+                                        <Badge variant="secondary">{employee.department}</Badge>
+                                        {employee.direction && <Badge variant="outline">{employee.direction}</Badge>}
+                                        {employee.service && <Badge variant="outline" className="bg-accent/50">{employee.service}</Badge>}
+                                        </div>
+                                    </div>
+                                </CardHeader>
+                            </Card>
                             <div className="lg:col-span-2 space-y-6">
                                 <Card>
-                                    <CardHeader className="flex flex-col md:flex-row items-start md:items-center gap-6">
-                                        <Avatar className="h-24 w-24 border">
-                                            <AvatarImage src={employee.photoUrl} alt={fullName} data-ai-hint="employee photo"/>
-                                            <AvatarFallback className={`text-3xl ${getAvatarBgClass(employee.sexe)}`}>
-                                                {employee.lastName?.charAt(0) || ''}{employee.firstName?.charAt(0) || ''}
-                                            </AvatarFallback>
-                                        </Avatar>
-                                        <div className="flex-1">
-                                            <CardTitle className="text-3xl">{fullName}</CardTitle>
-                                            <CardDescription className="text-lg text-muted-foreground">{employee.poste}</CardDescription>
-                                            <div className="mt-2 flex gap-2 flex-wrap">
-                                            <Badge variant={employee.status === 'Actif' ? 'default' : 'destructive'}>{employee.status}</Badge>
-                                            <Badge variant="secondary">{employee.department}</Badge>
-                                            {employee.direction && <Badge variant="outline">{employee.direction}</Badge>}
-                                            {employee.service && <Badge variant="outline" className="bg-accent/50">{employee.service}</Badge>}
-                                            </div>
-                                        </div>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <InfoSection title="Informations de Contact" icon={User}>
-                                            <InfoItem label="Email" value={employee.email} icon={Mail} />
-                                            <InfoItem label="Téléphone" value={employee.mobile} icon={Phone} />
-                                        </InfoSection>
-                                    </CardContent>
-                                </Card>
-                            </div>
-                            <div className="lg:col-span-1 space-y-6">
-                                <Card>
                                     <CardHeader>
-                                        <CardTitle className="flex items-center gap-2 text-lg"><Briefcase className="h-5 w-5 text-primary"/> Info Professionnelle</CardTitle>
+                                        <CardTitle className="flex items-center gap-2 text-lg"><Briefcase className="h-5 w-5 text-primary"/> Informations Générales</CardTitle>
                                     </CardHeader>
-                                    <CardContent className="space-y-4">
+                                    <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
                                         <InfoItem label="Poste" value={employee.poste} />
                                         <InfoItem label="Matricule" value={employee.matricule} />
+                                        <InfoItem label="Email" value={employee.email} icon={Mail} />
+                                        <InfoItem label="Téléphone" value={employee.mobile} icon={Phone} />
                                         <InfoItem label="Date d'embauche" value={employee.dateEmbauche} />
                                         <InfoItem label="Date de départ" value={employee.Date_Depart} />
                                         <InfoItem label="Numéro de décision" value={employee.Num_Decision} icon={FileText} />
@@ -245,13 +239,14 @@ export default function EmployeeDetailPage() {
                                 </Card>
                                 <Card>
                                     <CardHeader>
-                                        <CardTitle className="flex items-center gap-2 text-lg"><User className="h-5 w-5 text-primary"/> Info Personnelle</CardTitle>
+                                        <CardTitle className="flex items-center gap-2 text-lg"><User className="h-5 w-5 text-primary"/> Informations Personnelles</CardTitle>
                                     </CardHeader>
-                                    <CardContent className="space-y-4">
+                                    <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
                                         <InfoItem label="Date de naissance" value={employee.Date_Naissance} icon={Calendar} />
                                         {employee.age !== undefined && <InfoItem label="Âge" value={`${employee.age} ans`} icon={Cake} />}
                                         <InfoItem label="Lieu de naissance" value={employee.Lieu_Naissance} icon={MapPin} />
                                         {employee.enfants !== undefined && <InfoItem label="Enfants à charge" value={employee.enfants} icon={Users} />}
+                                        <InfoItem label="Sexe" value={employee.sexe} icon={Binary} />
                                         <InfoItem label="Localisation" icon={Globe}>
                                             {employee.Region || employee.Village ? (
                                                 <p className="text-base font-medium mt-1">{employee.Region}{employee.Village ? `, ${employee.Village}` : ''}</p>
@@ -260,17 +255,24 @@ export default function EmployeeDetailPage() {
                                             )}
                                         </InfoItem>
                                         {retirementDate && <InfoItem label="Date de retraite estimée" value={retirementDate} icon={LogOut}/>}
-                                        <InfoItem label="Compétences" icon={BadgeCheck}>
-                                            {employee.skills && employee.skills.length > 0 ? (
-                                                <div className="flex flex-wrap gap-2 pt-1">
-                                                    {employee.skills.map(skill => (
-                                                        <Badge key={skill} variant="outline">{skill}</Badge>
-                                                    ))}
-                                                </div>
-                                            ) : (
-                                                <p className="text-muted-foreground text-sm font-normal">Aucune</p>
-                                            )}
-                                        </InfoItem>
+                                    </CardContent>
+                                </Card>
+                            </div>
+                            <div className="lg:col-span-1 space-y-6">
+                                <Card>
+                                     <CardHeader>
+                                        <CardTitle className="flex items-center gap-2 text-lg"><BadgeCheck className="h-5 w-5 text-primary"/> Compétences</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        {employee.skills && employee.skills.length > 0 ? (
+                                            <div className="flex flex-wrap gap-2 pt-1">
+                                                {employee.skills.map(skill => (
+                                                    <Badge key={skill} variant="secondary">{skill}</Badge>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <p className="text-muted-foreground text-sm font-normal text-center py-4">Aucune compétence enregistrée.</p>
+                                        )}
                                     </CardContent>
                                 </Card>
                             </div>
@@ -511,8 +513,8 @@ function EmployeeDetailSkeleton() {
                  <Skeleton className="h-10 w-24 ml-auto" />
             </div>
              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2 space-y-6">
-                    <Card>
+                <div className="lg:col-span-3">
+                     <Card>
                         <CardHeader className="flex flex-row items-center gap-6">
                             <Skeleton className="h-24 w-24 rounded-full" />
                             <div className="flex-1 space-y-2">
@@ -524,24 +526,20 @@ function EmployeeDetailSkeleton() {
                                 </div>
                             </div>
                         </CardHeader>
-                        <CardContent>
-                           <Skeleton className="h-12 w-full" />
-                        </CardContent>
                     </Card>
+                </div>
+                 <div className="lg:col-span-2 space-y-6">
                      <Card>
                         <CardHeader><Skeleton className="h-6 w-48" /></CardHeader>
                         <CardContent><Skeleton className="h-24 w-full" /></CardContent>
                     </Card>
-                </div>
-                 <div className="lg:col-span-1 space-y-6">
-                     <Card>
-                        <CardHeader><Skeleton className="h-6 w-3/4" /></CardHeader>
-                        <CardContent className="space-y-4">
-                            <Skeleton className="h-10 w-full" />
-                            <Skeleton className="h-10 w-full" />
-                        </CardContent>
+                      <Card>
+                        <CardHeader><Skeleton className="h-6 w-48" /></CardHeader>
+                        <CardContent><Skeleton className="h-24 w-full" /></CardContent>
                     </Card>
-                     <Card>
+                 </div>
+                 <div className="lg:col-span-1 space-y-6">
+                      <Card>
                         <CardHeader><Skeleton className="h-6 w-3/4" /></CardHeader>
                         <CardContent className="space-y-4">
                            <Skeleton className="h-16 w-full" />
@@ -552,3 +550,4 @@ function EmployeeDetailSkeleton() {
         </div>
     )
 }
+

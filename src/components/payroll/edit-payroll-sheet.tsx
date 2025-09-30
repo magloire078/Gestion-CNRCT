@@ -166,19 +166,13 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
     const transportNonImposable = formState.transportNonImposable || 0;
     const cnpsRate = formState.CNPS ? 0.063 : 0;
     
-    // Let B = baseSalary. Brut Imposable (BI) = B * (1 + primeRate) + otherIndemnities
-    // Net = BI * (1 - cnpsRate) + transportNonImposable
-    // Net = (B * (1 + primeRate) + otherIndemnities) * (1 - cnpsRate) + T_NI
-    // (Net - T_NI) / (1 - cnpsRate) = B * (1 + primeRate) + otherIndemnities
-    // (Net - T_NI) / (1 - cnpsRate) - otherIndemnities = B * (1 + primeRate)
-    // B = ((Net - T_NI) / (1 - cnpsRate) - otherIndemnities) / (1 + primeRate)
-
     const primeRate = primeAncienneteRate / 100;
 
     let baseSalary = 0;
-    if ((1 - cnpsRate) > 0 && (1 + primeRate) > 0) {
-         const tempBrut = (netTarget - transportNonImposable) / (1 - cnpsRate);
-         baseSalary = (tempBrut - otherIndemnities) / (1 + primeRate);
+    const denominator = (1 + primeRate) * (1 - cnpsRate);
+    if (denominator > 0) {
+        const numerator = (netTarget - transportNonImposable) - (otherIndemnities * (1-cnpsRate));
+        baseSalary = numerator / denominator;
     }
 
     if (baseSalary < 0) {
@@ -191,7 +185,7 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
         return;
     }
 
-    setFormState(prev => ({...prev, baseSalary: Math.round(baseSalary), primeAnciennete: 0 })); // Reset manual prime to allow recalculation
+    setFormState(prev => ({...prev, baseSalary: Math.round(baseSalary), primeAnciennete: 0 }));
     toast({
         title: "Simulation Réussie",
         description: `Le salaire de base a été ajusté à ${formatCurrency(Math.round(baseSalary))}.`

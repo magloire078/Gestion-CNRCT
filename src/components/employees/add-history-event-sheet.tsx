@@ -28,7 +28,7 @@ import { getEmployee } from "@/services/employee-service";
 import { useToast } from "@/hooks/use-toast";
 import { ScrollArea } from "../ui/scroll-area";
 import { differenceInYears, parseISO, isValid, differenceInMonths, addYears, addMonths, differenceInDays } from "date-fns";
-import { Calculator } from "lucide-react";
+import { Calculator, Undo2 } from "lucide-react";
 
 interface AddHistoryEventDialogProps {
   isOpen: boolean;
@@ -99,6 +99,9 @@ export function AddHistoryEventSheet({ isOpen, onClose, employeeId, eventToEdit,
   const [employee, setEmployee] = useState<Employe | null>(null);
   const { toast } = useToast();
 
+  const [desiredNetSalary, setDesiredNetSalary] = useState<number | string>('');
+  const [originalBaseSalary, setOriginalBaseSalary] = useState<number | null>(null);
+
   const isEditMode = !!eventToEdit;
 
   useEffect(() => {
@@ -120,6 +123,8 @@ export function AddHistoryEventSheet({ isOpen, onClose, employeeId, eventToEdit,
               setDescription("");
               setDetails(emp || {}); // Pre-fill with current employee data
               setError("");
+              setDesiredNetSalary('');
+              setOriginalBaseSalary(null);
             }
           } catch(err) {
             setError("Impossible de charger les données de l'employé.");
@@ -146,6 +151,54 @@ export function AddHistoryEventSheet({ isOpen, onClose, employeeId, eventToEdit,
       setDetails(prev => ({...prev, [key]: value}));
   }
 
+  const handleSimulation = () => {
+    const netTarget = typeof desiredNetSalary === 'string' ? parseFloat(desiredNetSalary) : desiredNetSalary;
+    if (!netTarget || netTarget <= 0 || !employee) {
+        toast({ variant: "destructive", title: "Valeur Invalide", description: "Veuillez entrer un salaire net valide." });
+        return;
+    }
+    
+    setOriginalBaseSalary(details.baseSalary || 0);
+
+    const hireDate = employee.dateEmbauche ? parseISO(employee.dateEmbauche) : new Date();
+    const eventDate = effectiveDate ? parseISO(effectiveDate) : new Date();
+    const years = isValid(hireDate) && isValid(eventDate) ? differenceInYears(eventDate, hireDate) : 0;
+    const primeRate = years >= 2 ? Math.min(25, years) / 100 : 0;
+    const cnpsRate = employee.CNPS ? 0.063 : 0;
+
+    const otherIndemnities = indemnityFields
+      .filter(f => f.id !== 'baseSalary' && f.id !== 'transportNonImposable')
+      .reduce((sum, key) => sum + Number(details[key.id] || 0), 0);
+      
+    const transportNonImposable = Number(details.transportNonImposable || 0);
+
+    let baseSalary = 0;
+    const denominator = (1 + primeRate) * (1 - cnpsRate);
+
+    if (denominator > 0) {
+        const numerator = (netTarget - transportNonImposable) - (otherIndemnities * (1-cnpsRate));
+        baseSalary = numerator / denominator;
+    }
+
+    if (baseSalary < 0) {
+        toast({ variant: "destructive", title: "Calcul Impossible", description: "Le salaire net souhaité est trop bas." });
+        setOriginalBaseSalary(null);
+        return;
+    }
+    
+    setDetails(prev => ({...prev, baseSalary: Math.round(baseSalary) }));
+    toast({ title: "Simulation Réussie", description: `Salaire de base ajusté à ${Math.round(baseSalary).toLocaleString('fr-FR')} FCFA.` });
+  };
+  
+  const handleRevertSalary = () => {
+    if (originalBaseSalary !== null) {
+      setDetails(prev => ({ ...prev, baseSalary: originalBaseSalary }));
+      setOriginalBaseSalary(null);
+      setDesiredNetSalary('');
+      toast({ title: "Annulé", description: "Le salaire de base a été rétabli." });
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!eventType || !effectiveDate || !description) {
@@ -157,19 +210,13 @@ export function AddHistoryEventSheet({ isOpen, onClose, employeeId, eventToEdit,
     setError("");
 
     try {
-        if (isEditMode) {
-            const updatedData: Partial<EmployeeEvent> = { eventType, effectiveDate, description, details };
-            const updatedEvent = await updateEmployeeHistoryEvent(employeeId, eventToEdit.id, updatedData);
+        const dataToSave: Partial<EmployeeEvent> = { eventType, effectiveDate, description, details };
+        if (isEditMode && eventToEdit) {
+            const updatedEvent = await updateEmployeeHistoryEvent(employeeId, eventToEdit.id, dataToSave);
             onEventSaved(updatedEvent);
             toast({ title: "Événement mis à jour", description: "L'historique a été modifié avec succès." });
         } else {
-            const newEventData: Omit<EmployeeEvent, "id" | "employeeId"> = {
-                eventType: eventType as EmployeeEvent['eventType'],
-                effectiveDate,
-                description,
-                details
-            };
-            const newEvent = await addEmployeeHistoryEvent(employeeId, newEventData);
+            const newEvent = await addEmployeeHistoryEvent(employeeId, dataToSave as Omit<EmployeeEvent, 'id' | 'employeeId'>);
             onEventSaved(newEvent);
             toast({ title: "Événement ajouté", description: "L'historique et la paie de l'employé ont été mis à jour." });
         }
@@ -183,7 +230,7 @@ export function AddHistoryEventSheet({ isOpen, onClose, employeeId, eventToEdit,
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-2xl">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>{isEditMode ? "Modifier un événement" : "Ajouter un événement de carrière"}</DialogTitle>
@@ -233,10 +280,38 @@ export function AddHistoryEventSheet({ isOpen, onClose, employeeId, eventToEdit,
                 {eventType === 'Augmentation' && (
                     <div className="col-span-4 space-y-4 pt-4 border-t">
                         <p className="text-sm font-medium text-center">Détails de l'Augmentation (nouvelles valeurs)</p>
+                        
+                         <div className="p-4 border rounded-md bg-muted/50 space-y-2">
+                            <Label htmlFor="netSimulator">Simuler le Salaire de Base à partir du Net</Label>
+                            <div className="flex gap-2">
+                                <Input 
+                                    id="netSimulator" 
+                                    type="number" 
+                                    placeholder="Entrez le net souhaité..." 
+                                    value={desiredNetSalary}
+                                    onChange={(e) => setDesiredNetSalary(e.target.value)}
+                                />
+                                <Button type="button" variant="secondary" onClick={handleSimulation}>
+                                    <Calculator className="mr-2 h-4 w-4"/>
+                                    Calculer
+                                </Button>
+                            </div>
+                        </div>
+
                         {indemnityFields.map(field => (
                             <div key={field.id} className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor={field.id} className="text-right text-xs">{field.label}</Label>
+                                <Label htmlFor={field.id} className="text-right text-xs">
+                                     {field.label}
+                                     {field.id === 'baseSalary' && originalBaseSalary !== null && (
+                                         <Button type="button" variant="link" size="sm" className="h-auto p-0 pl-2 text-xs" onClick={handleRevertSalary}>
+                                            <Undo2 className="mr-1 h-3 w-3" /> Rétablir
+                                        </Button>
+                                     )}
+                                </Label>
                                 <Input id={field.id} type="number" value={details[field.id] || ''} placeholder="0" onChange={e => handleDetailChange(field.id, e.target.value)} className="col-span-3" />
+                                {field.id === 'baseSalary' && originalBaseSalary !== null && (
+                                     <p className="col-start-2 col-span-3 text-xs text-muted-foreground line-through">{originalBaseSalary.toLocaleString('fr-FR')} FCFA</p>
+                                )}
                             </div>
                         ))}
                     </div>

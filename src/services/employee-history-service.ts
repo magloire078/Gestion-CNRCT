@@ -1,6 +1,6 @@
 
 
-import { collection, getDocs, addDoc, query, where, orderBy, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { collection, getDocs, addDoc, query, where, orderBy, doc, updateDoc, deleteDoc, getDoc } from 'firebase/firestore';
 import type { EmployeeEvent, Employe } from '@/lib/data';
 import { db } from '@/lib/firebase';
 import { getEmployee } from './employee-service';
@@ -43,6 +43,11 @@ export async function addEmployeeHistoryEvent(employeeId: string, eventData: Omi
         indemnityFields.forEach(field => {
             previousValues[`previous_${field}`] = employee[field as keyof Employe] || 0;
         });
+        
+        // Add employee's hire date to details for consistent seniority calculation
+        previousValues['employeeHireDate'] = employee.dateEmbauche;
+        previousValues['cnpsEnabled'] = employee.CNPS;
+
 
         finalDetails = { 
             ...finalDetails, 
@@ -115,11 +120,11 @@ export async function updateEmployeeHistoryEvent(employeeId: string, eventId: st
     }
 
     // Fetch the updated document to return the full object
-    const updatedDoc = await getDocs(query(collection(db, `employees/${employeeId}/history`), where('__name__', '==', eventId)));
-    if (updatedDoc.empty) {
+    const updatedDoc = await getDoc(doc(db, `employees/${employeeId}/history`, eventId));
+    if (!updatedDoc.exists()) {
         throw new Error("Failed to retrieve updated event.");
     }
-    return { id: updatedDoc.docs[0].id, ...updatedDoc.docs[0].data() } as EmployeeEvent;
+    return { id: updatedDoc.id, ...updatedDoc.data() } as EmployeeEvent;
 }
 
 /**

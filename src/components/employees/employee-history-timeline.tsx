@@ -92,15 +92,20 @@ export function EmployeeHistoryTimeline({ events, onEdit, onDelete }: EmployeeHi
           const config = eventTypeConfig[event.eventType] || eventTypeConfig.Autre;
           const isAugmentation = event.eventType === 'Augmentation' && event.details;
           
-          const { brut: newBrut, net: newNet, anciennete } = isAugmentation ? calculateTotals(event.details, '') : { brut: 0, net: 0, anciennete: '' };
-          const { brut: oldBrut, net: oldNet } = isAugmentation ? calculateTotals(event.details, 'previous_') : { brut: 0, net: 0 };
+          const eventDetailsWithContext = {
+            ...event.details,
+            eventEffectiveDate: event.effectiveDate,
+          };
+          
+          const { brut: newBrut, net: newNet, anciennete } = isAugmentation ? calculateTotals(eventDetailsWithContext, '') : { brut: 0, net: 0, anciennete: '' };
+          const { brut: oldBrut, net: oldNet } = isAugmentation ? calculateTotals(eventDetailsWithContext, 'previous_') : { brut: 0, net: 0 };
           
           const getOldPeriod = () => {
               if(!isAugmentation) return null;
               
               const currentEventDate = parseISO(event.effectiveDate);
               const previousEvent = events[index + 1];
-              const employeeHireDate = event.details.employeeHireDate ? parseISO(event.details.employeeHireDate) : null;
+              const employeeHireDate = event.details?.employeeHireDate ? parseISO(event.details.employeeHireDate) : null;
               
               const startDate = previousEvent ? parseISO(previousEvent.effectiveDate) : employeeHireDate;
               

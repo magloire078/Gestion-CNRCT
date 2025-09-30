@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
@@ -6,14 +7,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogClose,
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -228,16 +229,16 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
   };
 
   return (
-    <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent className="sm:max-w-2xl overflow-y-auto">
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-2xl">
         <form onSubmit={handleSubmit}>
-          <SheetHeader>
-            <SheetTitle>Modifier les Détails de Paie</SheetTitle>
-            <SheetDescription>
+          <DialogHeader>
+            <DialogTitle>Modifier les Détails de Paie</DialogTitle>
+            <DialogDescription>
               Mettez à jour les informations de paie pour {`${employee.lastName || ''} ${employee.firstName || ''}`.trim()}.
-            </SheetDescription>
-          </SheetHeader>
-          <div className="space-y-4 py-4">
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4 max-h-[70vh] overflow-y-auto pr-4">
              <Accordion type="single" collapsible defaultValue="item-1" className="w-full">
                 <AccordionItem value="item-1">
                     <AccordionTrigger>Informations Générales</AccordionTrigger>
@@ -430,16 +431,16 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
 
             {error && <p className="text-sm text-destructive text-center pt-2">{error}</p>}
           </div>
-          <SheetFooter>
-            <SheetClose asChild>
+          <DialogFooter>
+            <DialogClose asChild>
               <Button type="button" variant="outline">Annuler</Button>
-            </SheetClose>
+            </DialogClose>
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? "Enregistrement..." : "Enregistrer les modifications"}
             </Button>
-          </SheetFooter>
+          </DialogFooter>
         </form>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 }

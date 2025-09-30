@@ -29,11 +29,8 @@ const generateAvatarFlow = ai.defineFlow(
   },
   async (prompt) => {
     const { media } = await ai.generate({
-      model: 'googleai/gemini-2.0-flash-preview-image-generation',
-      prompt: `Generate a professional, photorealistic avatar for a corporate directory. The description is: "${prompt}". The image should be a headshot, centered, with a neutral background.`,
-      config: {
-        responseModalities: ['TEXT', 'IMAGE'],
-      },
+      model: 'googleai/imagen-4.0-fast-generate-001',
+      prompt: `professional, photorealistic avatar, corporate directory. Description: "${prompt}". centered headshot, neutral background.`,
     });
 
     if (!media || !media.url) {

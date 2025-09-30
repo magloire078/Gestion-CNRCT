@@ -406,7 +406,7 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
                          <div className="pt-4 mt-4 border-t grid grid-cols-1 md:grid-cols-2 gap-4">
                              <div className="space-y-2">
                                 <Label htmlFor="anciennete">Ancienneté</Label>
-                                <Input id="anciennete" value={formState.anciennete || ''} onChange={handleInputChange} />
+                                <Input id="anciennete" value={seniorityInfo.text} readOnly className="font-mono bg-muted" />
                             </div>
                              <div className="space-y-2">
                                 <Label htmlFor="categorie">Catégorie</Label>

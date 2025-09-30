@@ -265,12 +265,13 @@ export default function AdminPage() {
               <CardContent>
               <div className="flex justify-end mb-4"><Button onClick={() => setIsAddUserSheetOpen(true)}><PlusCircle className="mr-2 h-4 w-4" />Ajouter un utilisateur</Button></div>
               {error && <p className="text-destructive text-center py-4">{error}</p>}
-              <Table><TableHeader><TableRow><TableHead>Nom</TableHead><TableHead>Email</TableHead><TableHead>Rôle</TableHead><TableHead>Permissions</TableHead><TableHead><span className="sr-only">Actions</span></TableHead></TableRow></TableHeader>
+              <Table><TableHeader><TableRow><TableHead>N°</TableHead><TableHead>Nom</TableHead><TableHead>Email</TableHead><TableHead>Rôle</TableHead><TableHead>Permissions</TableHead><TableHead><span className="sr-only">Actions</span></TableHead></TableRow></TableHeader>
                   <TableBody>
                   {loading ? Array.from({ length: 3 }).map((_, i) => (
-                      <TableRow key={i}><TableCell><Skeleton className="h-4 w-24" /></TableCell><TableCell><Skeleton className="h-4 w-40" /></TableCell><TableCell><Skeleton className="h-4 w-20" /></TableCell><TableCell><Skeleton className="h-4 w-12" /></TableCell><TableCell><div className="flex justify-end gap-2"><Skeleton className="h-8 w-8" /><Skeleton className="h-8 w-8" /></div></TableCell></TableRow>
-                  )) : (users?.map((user) => (
+                      <TableRow key={i}><TableCell><Skeleton className="h-4 w-4" /></TableCell><TableCell><Skeleton className="h-4 w-24" /></TableCell><TableCell><Skeleton className="h-4 w-40" /></TableCell><TableCell><Skeleton className="h-4 w-20" /></TableCell><TableCell><Skeleton className="h-4 w-12" /></TableCell><TableCell><div className="flex justify-end gap-2"><Skeleton className="h-8 w-8" /><Skeleton className="h-8 w-8" /></div></TableCell></TableRow>
+                  )) : (users?.map((user, index) => (
                       <TableRow key={user.id}>
+                        <TableCell>{index + 1}</TableCell>
                         <TableCell className="font-medium">
                             {user.name}
                             {user.employeeId && (
@@ -305,12 +306,13 @@ export default function AdminPage() {
             <CardContent>
             <div className="flex justify-end mb-4"><Button onClick={() => setIsAddRoleSheetOpen(true)}><PlusCircle className="mr-2 h-4 w-4" />Ajouter un rôle</Button></div>
             {error && <p className="text-destructive text-center py-4">{error}</p>}
-            <Table><TableHeader><TableRow><TableHead>Rôle</TableHead><TableHead>Permissions</TableHead><TableHead className="text-right w-[100px]">Actions</TableHead></TableRow></TableHeader>
+            <Table><TableHeader><TableRow><TableHead>N°</TableHead><TableHead>Rôle</TableHead><TableHead>Permissions</TableHead><TableHead className="text-right w-[100px]">Actions</TableHead></TableRow></TableHeader>
                 <TableBody>
                 {loading ? Array.from({ length: 2 }).map((_, i) => (
-                    <TableRow key={i}><TableCell><Skeleton className="h-4 w-24" /></TableCell><TableCell><Skeleton className="h-4 w-64" /></TableCell><TableCell><Skeleton className="h-8 w-8" /></TableCell></TableRow>
-                )) : (roles?.map((role) => (
+                    <TableRow key={i}><TableCell><Skeleton className="h-4 w-4" /></TableCell><TableCell><Skeleton className="h-4 w-24" /></TableCell><TableCell><Skeleton className="h-4 w-64" /></TableCell><TableCell><Skeleton className="h-8 w-8" /></TableCell></TableRow>
+                )) : (roles?.map((role, index) => (
                     <TableRow key={role.id}>
+                        <TableCell>{index + 1}</TableCell>
                         <TableCell className="font-medium">{role.name}</TableCell>
                         <TableCell className="text-sm text-muted-foreground max-w-xs truncate">{role.permissions.join(', ')}</TableCell>
                         <TableCell className="text-right">
@@ -332,12 +334,12 @@ export default function AdminPage() {
                     <CardHeader><CardTitle>Départements</CardTitle><CardDescription>Niveau le plus élevé de l'organisation.</CardDescription></CardHeader>
                     <CardContent>
                     <div className="flex justify-end mb-4"><Button onClick={() => { setEditingDepartment(null); setIsDepartmentDialogOpen(true); }}><PlusCircle className="mr-2 h-4 w-4" />Ajouter</Button></div>
-                    <Table><TableHeader><TableRow><TableHead>Nom</TableHead><TableHead className="w-[100px] text-right">Actions</TableHead></TableRow></TableHeader>
+                    <Table><TableHeader><TableRow><TableHead>N°</TableHead><TableHead>Nom</TableHead><TableHead className="w-[100px] text-right">Actions</TableHead></TableRow></TableHeader>
                         <TableBody>
                         {loading ? Array.from({ length: 3 }).map((_, i) => (
-                            <TableRow key={i}><TableCell><Skeleton className="h-4 w-full" /></TableCell><TableCell><div className="flex justify-end gap-2"><Skeleton className="h-8 w-8" /><Skeleton className="h-8 w-8" /></div></TableCell></TableRow>
-                        )) : (departments?.map((dept) => (
-                            <TableRow key={dept.id}><TableCell className="font-medium">{dept.name}</TableCell><TableCell className="text-right">
+                            <TableRow key={i}><TableCell><Skeleton className="h-4 w-4" /></TableCell><TableCell><Skeleton className="h-4 w-full" /></TableCell><TableCell><div className="flex justify-end gap-2"><Skeleton className="h-8 w-8" /><Skeleton className="h-8 w-8" /></div></TableCell></TableRow>
+                        )) : (departments?.map((dept, index) => (
+                            <TableRow key={dept.id}><TableCell>{index + 1}</TableCell><TableCell className="font-medium">{dept.name}</TableCell><TableCell className="text-right">
                                 <Button variant="ghost" size="icon" onClick={() => { setEditingDepartment(dept); setIsDepartmentDialogOpen(true); }}><Pencil className="h-4 w-4" /></Button>
                                 <Button variant="ghost" size="icon" onClick={() => setDeleteTarget({ id: dept.id, type: 'department', name: dept.name })}><Trash2 className="h-4 w-4" /></Button>
                             </TableCell></TableRow>
@@ -350,12 +352,12 @@ export default function AdminPage() {
                     <CardHeader><CardTitle>Directions</CardTitle><CardDescription>Sous-divisions des départements.</CardDescription></CardHeader>
                     <CardContent>
                     <div className="flex justify-end mb-4"><Button onClick={() => { setEditingDirection(null); setIsDirectionDialogOpen(true); }} disabled={!departments || departments.length === 0}><PlusCircle className="mr-2 h-4 w-4" />Ajouter</Button></div>
-                    <Table><TableHeader><TableRow><TableHead>Nom</TableHead><TableHead>Département</TableHead><TableHead className="w-[100px] text-right">Actions</TableHead></TableRow></TableHeader>
+                    <Table><TableHeader><TableRow><TableHead>N°</TableHead><TableHead>Nom</TableHead><TableHead>Département</TableHead><TableHead className="w-[100px] text-right">Actions</TableHead></TableRow></TableHeader>
                         <TableBody>
                         {loading ? Array.from({ length: 3 }).map((_, i) => (
-                            <TableRow key={i}><TableCell><Skeleton className="h-4 w-full" /></TableCell><TableCell><Skeleton className="h-4 w-24" /></TableCell><TableCell><div className="flex justify-end gap-2"><Skeleton className="h-8 w-8" /><Skeleton className="h-8 w-8" /></div></TableCell></TableRow>
-                        )) : (directions?.map((dir) => (
-                            <TableRow key={dir.id}><TableCell className="font-medium">{dir.name}</TableCell><TableCell className="text-sm text-muted-foreground">{departments?.find(d => d.id === dir.departmentId)?.name}</TableCell><TableCell className="text-right">
+                            <TableRow key={i}><TableCell><Skeleton className="h-4 w-4" /></TableCell><TableCell><Skeleton className="h-4 w-full" /></TableCell><TableCell><Skeleton className="h-4 w-24" /></TableCell><TableCell><div className="flex justify-end gap-2"><Skeleton className="h-8 w-8" /><Skeleton className="h-8 w-8" /></div></TableCell></TableRow>
+                        )) : (directions?.map((dir, index) => (
+                            <TableRow key={dir.id}><TableCell>{index + 1}</TableCell><TableCell className="font-medium">{dir.name}</TableCell><TableCell className="text-sm text-muted-foreground">{departments?.find(d => d.id === dir.departmentId)?.name}</TableCell><TableCell className="text-right">
                                 <Button variant="ghost" size="icon" onClick={() => { setEditingDirection(dir); setIsDirectionDialogOpen(true); }}><Pencil className="h-4 w-4" /></Button>
                                 <Button variant="ghost" size="icon" onClick={() => setDeleteTarget({ id: dir.id, type: 'direction', name: dir.name })}><Trash2 className="h-4 w-4" /></Button>
                             </TableCell></TableRow>
@@ -368,11 +370,11 @@ export default function AdminPage() {
                     <CardHeader><CardTitle>Services</CardTitle><CardDescription>Unités opérationnelles.</CardDescription></CardHeader>
                     <CardContent>
                     <div className="flex justify-end mb-4"><Button onClick={() => { setEditingService(null); setIsServiceDialogOpen(true); }} disabled={(!directions || directions.length === 0) && (!departments || departments.length === 0)}><PlusCircle className="mr-2 h-4 w-4" />Ajouter</Button></div>
-                    <Table><TableHeader><TableRow><TableHead>Nom</TableHead><TableHead>Dépend de</TableHead><TableHead className="w-[100px] text-right">Actions</TableHead></TableRow></TableHeader>
+                    <Table><TableHeader><TableRow><TableHead>N°</TableHead><TableHead>Nom</TableHead><TableHead>Dépend de</TableHead><TableHead className="w-[100px] text-right">Actions</TableHead></TableRow></TableHeader>
                         <TableBody>
                         {loading ? Array.from({ length: 3 }).map((_, i) => (
-                            <TableRow key={i}><TableCell><Skeleton className="h-4 w-full" /></TableCell><TableCell><Skeleton className="h-4 w-24" /></TableCell><TableCell><div className="flex justify-end gap-2"><Skeleton className="h-8 w-8" /><Skeleton className="h-8 w-8" /></div></TableCell></TableRow>
-                        )) : (services?.map((svc) => {
+                            <TableRow key={i}><TableCell><Skeleton className="h-4 w-4" /></TableCell><TableCell><Skeleton className="h-4 w-full" /></TableCell><TableCell><Skeleton className="h-4 w-24" /></TableCell><TableCell><div className="flex justify-end gap-2"><Skeleton className="h-8 w-8" /><Skeleton className="h-8 w-8" /></div></TableCell></TableRow>
+                        )) : (services?.map((svc, index) => {
                             const parent = svc.directionId 
                                 ? directions?.find(d => d.id === svc.directionId)
                                 : departments?.find(d => d.id === svc.departmentId);
@@ -380,6 +382,7 @@ export default function AdminPage() {
                             const parentType = svc.directionId ? 'Direction' : 'Département';
                             return (
                                 <TableRow key={svc.id}>
+                                    <TableCell>{index + 1}</TableCell>
                                     <TableCell className="font-medium">{svc.name}</TableCell>
                                     <TableCell className="text-sm text-muted-foreground">
                                         {parentName} <span className="text-xs opacity-70">({parentType})</span>

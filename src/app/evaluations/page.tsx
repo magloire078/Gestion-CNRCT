@@ -123,6 +123,7 @@ export default function EvaluationsPage() {
             <Table>
                 <TableHeader>
                 <TableRow>
+                    <TableHead>N°</TableHead>
                     <TableHead>Employé</TableHead>
                     <TableHead>Manager</TableHead>
                     <TableHead>Période</TableHead>
@@ -135,6 +136,7 @@ export default function EvaluationsPage() {
                 {loading ? (
                     Array.from({ length: 5 }).map((_, i) => (
                         <TableRow key={i}>
+                            <TableCell><Skeleton className="h-4 w-4" /></TableCell>
                             <TableCell><Skeleton className="h-4 w-32" /></TableCell>
                             <TableCell><Skeleton className="h-4 w-32" /></TableCell>
                             <TableCell><Skeleton className="h-4 w-24" /></TableCell>
@@ -144,8 +146,9 @@ export default function EvaluationsPage() {
                         </TableRow>
                     ))
                 ) : (
-                    filteredEvaluations.map((evaluation) => (
+                    filteredEvaluations.map((evaluation, index) => (
                         <TableRow key={evaluation.id} className="cursor-pointer" onClick={() => router.push(`/evaluations/${evaluation.id}`)}>
+                          <TableCell>{index + 1}</TableCell>
                           <TableCell className="font-medium">{evaluation.employeeName}</TableCell>
                           <TableCell>{evaluation.managerName}</TableCell>
                           <TableCell>{evaluation.reviewPeriod}</TableCell>

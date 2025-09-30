@@ -173,6 +173,7 @@ export default function RepositoryPage() {
                         <Table>
                             <TableHeader>
                                 <TableRow>
+                                    <TableHead>N°</TableHead>
                                     <TableHead>Nom du fichier</TableHead>
                                     <TableHead>Taille</TableHead>
                                     <TableHead>Date d'ajout</TableHead>
@@ -180,8 +181,9 @@ export default function RepositoryPage() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {documents.map(doc => (
+                                {documents.map((doc, index) => (
                                     <TableRow key={doc.id}>
+                                        <TableCell>{index + 1}</TableCell>
                                         <TableCell className="font-medium flex items-center gap-2">
                                             <FileText className="h-4 w-4 text-muted-foreground" />
                                             {doc.fileName}

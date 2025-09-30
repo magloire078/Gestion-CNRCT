@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
@@ -191,6 +192,7 @@ export default function BudgetPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead>N°</TableHead>
                     <TableHead>Code</TableHead>
                     <TableHead>Nom</TableHead>
                     <TableHead>Année</TableHead>
@@ -202,6 +204,7 @@ export default function BudgetPage() {
                   {loading ? (
                     Array.from({ length: 5 }).map((_, i) => (
                       <TableRow key={i}>
+                        <TableCell><Skeleton className="h-4 w-4" /></TableCell>
                         <TableCell><Skeleton className="h-4 w-16" /></TableCell>
                         <TableCell><Skeleton className="h-4 w-64" /></TableCell>
                         <TableCell><Skeleton className="h-4 w-12" /></TableCell>
@@ -210,8 +213,9 @@ export default function BudgetPage() {
                       </TableRow>
                     ))
                   ) : filteredLines.length > 0 ? (
-                    filteredLines.map((line) => (
+                    filteredLines.map((line, index) => (
                       <TableRow key={line.id}>
+                        <TableCell>{index + 1}</TableCell>
                         <TableCell className="font-mono">{line.code}</TableCell>
                         <TableCell className="font-medium">{line.name}</TableCell>
                         <TableCell>{line.year}</TableCell>
@@ -235,7 +239,7 @@ export default function BudgetPage() {
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center h-24">Aucune ligne budgétaire trouvée.</TableCell>
+                      <TableCell colSpan={6} className="text-center h-24">Aucune ligne budgétaire trouvée.</TableCell>
                     </TableRow>
                   )}
                 </TableBody>

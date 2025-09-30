@@ -177,6 +177,7 @@ export default function FleetPage() {
             <Table>
                 <TableHeader>
                 <TableRow>
+                    <TableHead>N°</TableHead>
                     <TableHead>Plaque d'immatriculation</TableHead>
                     <TableHead>Marque & Modèle</TableHead>
                     <TableHead>Assigné à</TableHead>
@@ -189,6 +190,7 @@ export default function FleetPage() {
                 {loading ? (
                     Array.from({ length: 5 }).map((_, i) => (
                         <TableRow key={i}>
+                            <TableCell><Skeleton className="h-4 w-4" /></TableCell>
                             <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                             <TableCell><Skeleton className="h-4 w-40" /></TableCell>
                             <TableCell><Skeleton className="h-4 w-32" /></TableCell>
@@ -198,8 +200,9 @@ export default function FleetPage() {
                         </TableRow>
                     ))
                 ) : (
-                    filteredVehicles.map((vehicle) => (
+                    filteredVehicles.map((vehicle, index) => (
                         <TableRow key={vehicle.plate} onClick={() => router.push(`/fleet/${vehicle.plate}/edit`)} className="cursor-pointer">
+                          <TableCell>{index + 1}</TableCell>
                           <TableCell className="font-medium">{vehicle.plate}</TableCell>
                           <TableCell>{vehicle.makeModel}</TableCell>
                           <TableCell>{vehicle.assignedTo}</TableCell>
@@ -236,13 +239,15 @@ export default function FleetPage() {
                     <Card key={i}><CardContent className="p-4"><Skeleton className="h-20 w-full" /></CardContent></Card>
                  ))
               ) : (
-                filteredVehicles.map((vehicle) => (
+                filteredVehicles.map((vehicle, index) => (
                     <Card key={vehicle.plate} onClick={() => router.push(`/fleet/${vehicle.plate}/edit`)}>
-                        <CardContent className="p-4 space-y-2">
-                            <div className="flex justify-between items-start">
-                                <p className="font-bold">{vehicle.makeModel}</p>
-                                <Badge variant={statusVariantMap[vehicle.status]}>{vehicle.status}</Badge>
-                            </div>
+                         <CardHeader>
+                            <CardTitle className="text-base">
+                               {index + 1}. {vehicle.makeModel}
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-4 pt-0 space-y-2">
+                            <Badge variant={statusVariantMap[vehicle.status]}>{vehicle.status}</Badge>
                             <p className="text-sm"><span className="font-medium">Plaque:</span> {vehicle.plate}</p>
                             <p className="text-sm"><span className="font-medium">Assigné à:</span> {vehicle.assignedTo}</p>
                             <p className="text-sm"><span className="font-medium">Prochain entretien:</span> {vehicle.maintenanceDue}</p>
@@ -274,5 +279,3 @@ export default function FleetPage() {
     </>
   );
 }
-
-    

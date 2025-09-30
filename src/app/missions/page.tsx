@@ -193,9 +193,9 @@ export default function MissionsPage() {
                         </TableRow>
                     ))
                 ) : (
-                    filteredMissions.map((mission) => (
+                    filteredMissions.map((mission, index) => (
                         <TableRow key={mission.id} onClick={() => router.push(`/missions/${mission.id}`)} className="cursor-pointer">
-                          <TableCell className="font-mono text-muted-foreground">{mission.numeroMission}</TableCell>
+                          <TableCell className="font-mono text-muted-foreground">{index + 1}</TableCell>
                           <TableCell className="font-medium">{mission.title}</TableCell>
                           <TableCell>
                             <div className="flex flex-wrap gap-1">
@@ -240,16 +240,15 @@ export default function MissionsPage() {
                     <Card key={i}><CardContent className="p-4"><Skeleton className="h-20 w-full" /></CardContent></Card>
                  ))
               ) : (
-                filteredMissions.map((mission) => (
+                filteredMissions.map((mission, index) => (
                     <Card key={mission.id} onClick={() => router.push(`/missions/${mission.id}`)}>
-                        <CardContent className="p-4 space-y-2">
-                           <div className="flex justify-between items-start">
-                              <div>
-                                <p className="font-bold">{mission.title}</p>
-                                <p className="text-sm text-muted-foreground">#{mission.numeroMission}</p>
-                              </div>
-                              <Badge variant={statusVariantMap[mission.status] || 'default'}>{mission.status}</Badge>
-                           </div>
+                        <CardHeader>
+                            <CardTitle className="text-base">
+                               {index + 1}. {mission.title}
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-4 pt-0 space-y-2">
+                           <Badge variant={statusVariantMap[mission.status] || 'default'}>{mission.status}</Badge>
                             <p className="text-sm"><span className="font-medium">Période:</span> {formatDateRange(mission.startDate, mission.endDate)}</p>
                              <div className="flex flex-wrap gap-1 pt-1">
                               {(mission.participants || []).map(p => <Badge key={p.employeeName} variant="outline">{p.employeeName}</Badge>)}

@@ -227,6 +227,7 @@ export default function ChiefsPage() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead>N°</TableHead>
                   <TableHead className="w-[80px]">Photo</TableHead>
                   <TableHead>Nom & Titre</TableHead>
                   <TableHead>Rôle</TableHead>
@@ -239,6 +240,7 @@ export default function ChiefsPage() {
                 {loading ? (
                   Array.from({ length: 5 }).map((_, i) => (
                     <TableRow key={i}>
+                      <TableCell><Skeleton className="h-4 w-4" /></TableCell>
                       <TableCell><Skeleton className="h-10 w-10 rounded-full" /></TableCell>
                       <TableCell><Skeleton className="h-4 w-48" /></TableCell>
                       <TableCell><Skeleton className="h-4 w-24" /></TableCell>
@@ -248,8 +250,9 @@ export default function ChiefsPage() {
                     </TableRow>
                   ))
                 ) : (
-                  filteredChiefs.map((chief) => (
+                  filteredChiefs.map((chief, index) => (
                     <TableRow key={chief.id}>
+                      <TableCell>{index + 1}</TableCell>
                       <TableCell>
                         <Avatar>
                           <AvatarImage src={chief.photoUrl} alt={chief.name} data-ai-hint="chief portrait" />

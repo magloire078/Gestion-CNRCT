@@ -158,6 +158,7 @@ export default function ConflictsPage() {
             <Table>
                 <TableHeader>
                 <TableRow>
+                    <TableHead>N°</TableHead>
                     <TableHead>Village</TableHead>
                     <TableHead>Description</TableHead>
                     <TableHead>Date Signalée</TableHead>
@@ -169,6 +170,7 @@ export default function ConflictsPage() {
                 {loading ? (
                     Array.from({ length: 5 }).map((_, i) => (
                         <TableRow key={i}>
+                            <TableCell><Skeleton className="h-4 w-4" /></TableCell>
                             <TableCell><Skeleton className="h-4 w-32" /></TableCell>
                             <TableCell><Skeleton className="h-4 w-64" /></TableCell>
                             <TableCell><Skeleton className="h-4 w-24" /></TableCell>
@@ -177,8 +179,9 @@ export default function ConflictsPage() {
                         </TableRow>
                     ))
                 ) : (
-                    filteredConflicts.map((conflict) => (
+                    filteredConflicts.map((conflict, index) => (
                         <TableRow key={conflict.id}>
+                          <TableCell>{index + 1}</TableCell>
                           <TableCell className="font-medium">{conflict.village}</TableCell>
                           <TableCell className="max-w-xs truncate">{conflict.description}</TableCell>
                           <TableCell>{conflict.reportedDate}</TableCell>
@@ -203,13 +206,15 @@ export default function ConflictsPage() {
                     <Card key={i}><CardContent className="p-4"><Skeleton className="h-28 w-full" /></CardContent></Card>
                  ))
               ) : (
-                filteredConflicts.map((conflict) => (
+                filteredConflicts.map((conflict, index) => (
                     <Card key={conflict.id}>
-                        <CardContent className="p-4 space-y-2">
-                            <div className="flex justify-between items-start">
-                                <p className="font-bold">{conflict.village}</p>
-                                <Badge variant={statusVariantMap[conflict.status] || 'default'}>{conflict.status}</Badge>
-                            </div>
+                        <CardHeader>
+                            <CardTitle className="text-base">
+                               {index + 1}. {conflict.village}
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-4 pt-0 space-y-2">
+                            <Badge variant={statusVariantMap[conflict.status] || 'default'}>{conflict.status}</Badge>
                             <p className="text-sm text-muted-foreground">{conflict.description}</p>
                             <p className="text-sm"><span className="font-medium">Signalé le:</span> {conflict.reportedDate}</p>
                             <Button variant="outline" size="sm" onClick={() => handleAnalyzeConflict(conflict)} className="mt-2">

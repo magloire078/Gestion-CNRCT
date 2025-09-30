@@ -22,6 +22,7 @@ const eventTypeConfig = {
 };
 
 const formatCurrency = (value: number) => {
+    if (typeof value !== 'number' || isNaN(value)) return value;
     return new Intl.NumberFormat('fr-FR').format(value);
 }
 
@@ -87,7 +88,7 @@ export function EmployeeHistoryTimeline({ events, onEdit, onDelete }: EmployeeHi
                     {otherDetails.length > 0 && (
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1 pt-1">
                         {otherDetails.map(([key, value]) => (
-                            <p key={key} className="text-muted-foreground">
+                             <p key={key} className="text-muted-foreground">
                                 <span className="font-medium">{indemnityLabels[key] || key}:</span> {formatCurrency(value)}
                             </p>
                         ))}

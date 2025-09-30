@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -5,17 +6,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogClose,
+} from "@/components/ui/dialog";
 import type { BudgetLine } from "@/lib/data";
 
-interface EditBudgetLineSheetProps {
+interface EditBudgetLineDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onUpdateBudgetLine: (id: string, data: Partial<Omit<BudgetLine, 'id'>>) => Promise<void>;
@@ -27,7 +28,7 @@ export function EditBudgetLineSheet({
   onClose,
   onUpdateBudgetLine,
   budgetLine,
-}: EditBudgetLineSheetProps) {
+}: EditBudgetLineDialogProps) {
   const [code, setCode] = useState("");
   const [name, setName] = useState("");
   const [allocatedAmount, setAllocatedAmount] = useState<number | string>("");
@@ -81,15 +82,15 @@ export function EditBudgetLineSheet({
   };
 
   return (
-    <Sheet open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <SheetContent className="sm:max-w-lg">
+    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
+      <DialogContent className="sm:max-w-lg">
         <form onSubmit={handleSubmit}>
-          <SheetHeader>
-            <SheetTitle>Modifier la ligne budgétaire</SheetTitle>
-            <SheetDescription>
+          <DialogHeader>
+            <DialogTitle>Modifier la ligne budgétaire</DialogTitle>
+            <DialogDescription>
               Mettez à jour les détails de la ligne budgétaire.
-            </SheetDescription>
-          </SheetHeader>
+            </DialogDescription>
+          </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="code-edit" className="text-right">Code</Label>
@@ -114,16 +115,16 @@ export function EditBudgetLineSheet({
               </p>
             )}
           </div>
-          <SheetFooter>
-            <SheetClose asChild>
+          <DialogFooter>
+            <DialogClose asChild>
               <Button type="button" variant="outline" onClick={handleClose}>Annuler</Button>
-            </SheetClose>
+            </DialogClose>
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? "Enregistrement..." : "Enregistrer"}
             </Button>
-          </SheetFooter>
+          </DialogFooter>
         </form>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 }

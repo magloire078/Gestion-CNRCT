@@ -6,14 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogClose,
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -30,7 +30,7 @@ import { ScrollArea } from "../ui/scroll-area";
 import { differenceInYears, parseISO, isValid, differenceInMonths, addYears, addMonths, differenceInDays } from "date-fns";
 import { Calculator } from "lucide-react";
 
-interface AddHistoryEventSheetProps {
+interface AddHistoryEventDialogProps {
   isOpen: boolean;
   onClose: () => void;
   employeeId: string;
@@ -89,7 +89,7 @@ function calculatePreview(details: Record<string, any>, employee: Employe | null
 }
 
 
-export function AddHistoryEventSheet({ isOpen, onClose, employeeId, eventToEdit, onEventSaved }: AddHistoryEventSheetProps) {
+export function AddHistoryEventSheet({ isOpen, onClose, employeeId, eventToEdit, onEventSaved }: AddHistoryEventDialogProps) {
   const [eventType, setEventType] = useState<EmployeeEvent['eventType'] | "">("");
   const [effectiveDate, setEffectiveDate] = useState(new Date().toISOString().split('T')[0]);
   const [description, setDescription] = useState("");
@@ -182,16 +182,16 @@ export function AddHistoryEventSheet({ isOpen, onClose, employeeId, eventToEdit,
   };
 
   return (
-    <Sheet open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <SheetContent className="sm:max-w-lg">
+    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
+      <DialogContent className="sm:max-w-lg">
         <form onSubmit={handleSubmit}>
-          <SheetHeader>
-            <SheetTitle>{isEditMode ? "Modifier un événement" : "Ajouter un événement de carrière"}</SheetTitle>
-            <SheetDescription>
+          <DialogHeader>
+            <DialogTitle>{isEditMode ? "Modifier un événement" : "Ajouter un événement de carrière"}</DialogTitle>
+            <DialogDescription>
               {isEditMode ? "Modifiez les détails de cet événement." : "Enregistrez un nouvel événement dans l'historique professionnel de l'employé."}
-            </SheetDescription>
-          </SheetHeader>
-           <ScrollArea className="h-[calc(100vh-150px)] p-1 -mx-1">
+            </DialogDescription>
+          </DialogHeader>
+           <ScrollArea className="h-[60vh] p-1 -mx-1">
              <div className="grid gap-4 py-4 px-1">
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="eventType" className="text-right">Type</Label>
@@ -265,16 +265,16 @@ export function AddHistoryEventSheet({ isOpen, onClose, employeeId, eventToEdit,
                 {error && <p className="text-sm text-destructive col-span-4 text-center">{error}</p>}
               </div>
           </ScrollArea>
-          <SheetFooter>
-            <SheetClose asChild>
+          <DialogFooter>
+            <DialogClose asChild>
               <Button type="button" variant="outline">Annuler</Button>
-            </SheetClose>
+            </DialogClose>
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? "Enregistrement..." : "Enregistrer"}
             </Button>
-          </SheetFooter>
+          </DialogFooter>
         </form>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 }

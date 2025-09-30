@@ -8,14 +8,14 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Label } from "@/components/ui/label";
 import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogClose,
+} from "@/components/ui/dialog";
 import {
   Popover,
   PopoverContent,
@@ -34,7 +34,7 @@ import { fr } from "date-fns/locale";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "../ui/textarea";
 
-interface EditLeaveRequestSheetProps {
+interface EditLeaveRequestDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onUpdateLeave: (id: string, leaveRequest: Partial<Omit<Leave, "id" | "status">>) => Promise<void>;
@@ -46,7 +46,7 @@ export function EditLeaveRequestSheet({
   onClose,
   onUpdateLeave,
   leaveRequest,
-}: EditLeaveRequestSheetProps) {
+}: EditLeaveRequestDialogProps) {
   const [employee, setEmployee] = useState("");
   const [leaveType, setLeaveType] = useState("");
   const [startDate, setStartDate] = useState<Date>();
@@ -123,15 +123,15 @@ export function EditLeaveRequestSheet({
   };
 
   return (
-    <Sheet open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <SheetContent className="sm:max-w-lg">
+    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
+      <DialogContent className="sm:max-w-lg">
         <form onSubmit={handleSubmit}>
-        <SheetHeader>
-          <SheetTitle>Modifier la demande de congé</SheetTitle>
-          <SheetDescription>
+        <DialogHeader>
+          <DialogTitle>Modifier la demande de congé</DialogTitle>
+          <DialogDescription>
             Ajustez les détails de la demande de congé.
-          </SheetDescription>
-        </SheetHeader>
+          </DialogDescription>
+        </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="employee" className="text-right">
@@ -251,18 +251,18 @@ export function EditLeaveRequestSheet({
             </p>
           )}
         </div>
-        <SheetFooter>
-          <SheetClose asChild>
+        <DialogFooter>
+          <DialogClose asChild>
             <Button type="button" variant="outline" onClick={handleClose}>
               Annuler
             </Button>
-          </SheetClose>
+          </DialogClose>
           <Button type="submit" disabled={isSubmitting}>
              {isSubmitting ? "Enregistrement..." : "Enregistrer les modifications"}
           </Button>
-        </SheetFooter>
+        </DialogFooter>
         </form>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 }

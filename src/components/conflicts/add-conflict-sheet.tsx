@@ -7,14 +7,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogClose,
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/select";
 import type { Conflict } from "@/lib/data";
 
-interface AddConflictSheetProps {
+interface AddConflictDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onAddConflict: (conflict: Omit<Conflict, "id">) => Promise<void>;
@@ -34,7 +34,7 @@ export function AddConflictSheet({
   isOpen,
   onClose,
   onAddConflict,
-}: AddConflictSheetProps) {
+}: AddConflictDialogProps) {
   const [village, setVillage] = useState("");
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState<Conflict['status']>('En cours');
@@ -75,15 +75,15 @@ export function AddConflictSheet({
   };
 
   return (
-    <Sheet open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <SheetContent className="sm:max-w-lg">
+    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
+      <DialogContent className="sm:max-w-lg">
         <form onSubmit={handleSubmit}>
-          <SheetHeader>
-            <SheetTitle>Signaler un nouveau conflit</SheetTitle>
-            <SheetDescription>
+          <DialogHeader>
+            <DialogTitle>Signaler un nouveau conflit</DialogTitle>
+            <DialogDescription>
               Remplissez les détails ci-dessous pour enregistrer un nouveau conflit.
-            </SheetDescription>
-          </SheetHeader>
+            </DialogDescription>
+          </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="village" className="text-right">
@@ -131,18 +131,18 @@ export function AddConflictSheet({
               </p>
             )}
           </div>
-          <SheetFooter>
-            <SheetClose asChild>
+          <DialogFooter>
+            <DialogClose asChild>
               <Button type="button" variant="outline" onClick={handleClose}>
                 Annuler
               </Button>
-            </SheetClose>
+            </DialogClose>
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? "Enregistrement..." : "Enregistrer"}
             </Button>
-          </SheetFooter>
+          </DialogFooter>
         </form>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 }

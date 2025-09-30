@@ -6,14 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogClose,
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -26,13 +26,13 @@ import { addUser } from "@/services/user-service";
 import { getRoles } from "@/services/role-service";
 import { useToast } from "@/hooks/use-toast";
 
-interface AddUserSheetProps {
+interface AddUserDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onAddUser: (user: User) => void;
 }
 
-export function AddUserSheet({ isOpen, onClose, onAddUser }: AddUserSheetProps) {
+export function AddUserSheet({ isOpen, onClose, onAddUser }: AddUserDialogProps) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [roleId, setRoleId] = useState("");
@@ -93,15 +93,15 @@ export function AddUserSheet({ isOpen, onClose, onAddUser }: AddUserSheetProps) 
   };
 
   return (
-    <Sheet open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <SheetContent className="sm:max-w-lg">
+    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
+      <DialogContent className="sm:max-w-lg">
         <form onSubmit={handleSubmit}>
-          <SheetHeader>
-            <SheetTitle>Ajouter un nouvel utilisateur</SheetTitle>
-            <SheetDescription>
+          <DialogHeader>
+            <DialogTitle>Ajouter un nouvel utilisateur</DialogTitle>
+            <DialogDescription>
               Remplissez les détails pour ajouter un nouvel utilisateur au système. L'utilisateur devra ensuite s'inscrire avec le même email pour se connecter.
-            </SheetDescription>
-          </SheetHeader>
+            </DialogDescription>
+          </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="name" className="text-right">Nom</Label>
@@ -126,16 +126,16 @@ export function AddUserSheet({ isOpen, onClose, onAddUser }: AddUserSheetProps) 
             </div>
             {error && <p className="text-sm text-destructive col-span-4 text-center">{error}</p>}
           </div>
-          <SheetFooter>
-            <SheetClose asChild>
+          <DialogFooter>
+            <DialogClose asChild>
               <Button type="button" variant="outline">Annuler</Button>
-            </SheetClose>
+            </DialogClose>
             <Button type="submit" disabled={isSubmitting || roles.length === 0}>
               {isSubmitting ? "Enregistrement..." : "Enregistrer"}
             </Button>
-          </SheetFooter>
+          </DialogFooter>
         </form>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 }

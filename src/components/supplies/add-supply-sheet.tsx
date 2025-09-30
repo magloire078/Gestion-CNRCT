@@ -6,14 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogClose,
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -26,7 +26,7 @@ import { supplyCategories } from "@/app/supplies/page";
 import { getAssets } from "@/services/asset-service";
 import { useToast } from "@/hooks/use-toast";
 
-interface AddSupplySheetProps {
+interface AddSupplyDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onAddSupply: (supply: Omit<Supply, "id">) => Promise<void>;
@@ -36,7 +36,7 @@ export function AddSupplySheet({
   isOpen,
   onClose,
   onAddSupply,
-}: AddSupplySheetProps) {
+}: AddSupplyDialogProps) {
   const [name, setName] = useState("");
   const [category, setCategory] = useState<Supply['category'] | "">("");
   const [quantity, setQuantity] = useState(0);
@@ -108,15 +108,15 @@ export function AddSupplySheet({
   };
 
   return (
-    <Sheet open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <SheetContent className="sm:max-w-lg">
+    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
+      <DialogContent className="sm:max-w-lg">
         <form onSubmit={handleSubmit}>
-          <SheetHeader>
-            <SheetTitle>Ajouter une nouvelle fourniture</SheetTitle>
-            <SheetDescription>
+          <DialogHeader>
+            <DialogTitle>Ajouter une nouvelle fourniture</DialogTitle>
+            <DialogDescription>
               Remplissez les détails ci-dessous pour ajouter un nouvel article à l'inventaire.
-            </SheetDescription>
-          </SheetHeader>
+            </DialogDescription>
+          </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="name" className="text-right">Nom</Label>
@@ -165,16 +165,16 @@ export function AddSupplySheet({
               </p>
             )}
           </div>
-          <SheetFooter>
-            <SheetClose asChild>
+          <DialogFooter>
+            <DialogClose asChild>
               <Button type="button" variant="outline" onClick={handleClose}>Annuler</Button>
-            </SheetClose>
+            </DialogClose>
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? "Enregistrement..." : "Enregistrer"}
             </Button>
-          </SheetFooter>
+          </DialogFooter>
         </form>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 }

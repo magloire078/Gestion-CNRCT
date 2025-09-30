@@ -6,14 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogClose,
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -35,13 +35,13 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
-interface AddChiefSheetProps {
+interface AddChiefDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onAddChief: (chief: Omit<Chief, "id">, photoFile: File | null) => Promise<void>;
 }
 
-export function AddChiefSheet({ isOpen, onClose, onAddChief }: AddChiefSheetProps) {
+export function AddChiefSheet({ isOpen, onClose, onAddChief }: AddChiefDialogProps) {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [title, setTitle] = useState("");
@@ -173,16 +173,16 @@ export function AddChiefSheet({ isOpen, onClose, onAddChief }: AddChiefSheetProp
   };
 
   return (
-    <Sheet open={isOpen} onOpenChange={(open) => { if (!open) handleClose(); }}>
-      <SheetContent className="sm:max-w-xl">
-        <SheetHeader>
-          <SheetTitle>Ajouter un nouveau Chef</SheetTitle>
-          <SheetDescription>
+    <Dialog open={isOpen} onOpenChange={(open) => { if (!open) handleClose(); }}>
+      <DialogContent className="sm:max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>Ajouter un nouveau Chef</DialogTitle>
+          <DialogDescription>
             Remplissez les détails ci-dessous pour ajouter une nouvelle autorité traditionnelle.
-          </SheetDescription>
-        </SheetHeader>
-        <form onSubmit={handleSubmit} className="flex flex-col h-full overflow-hidden">
-          <ScrollArea className="flex-1 p-1 -mr-6 pr-6">
+          </DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <ScrollArea className="h-[60vh] p-1 -mr-6 pr-6">
             <Accordion type="multiple" defaultValue={['item-1', 'item-2', 'item-3']} className="w-full">
               <AccordionItem value="item-1">
                 <AccordionTrigger>Informations Principales</AccordionTrigger>
@@ -242,14 +242,12 @@ export function AddChiefSheet({ isOpen, onClose, onAddChief }: AddChiefSheetProp
             {error && <p className="text-sm text-destructive text-center py-2">{error}</p>}
           </ScrollArea>
           
-          <SheetFooter>
-            <SheetClose asChild><Button type="button" variant="outline" onClick={handleClose}>Annuler</Button></SheetClose>
+          <DialogFooter>
+            <DialogClose asChild><Button type="button" variant="outline" onClick={handleClose}>Annuler</Button></DialogClose>
             <Button type="submit" disabled={isSubmitting}>{isSubmitting ? "Enregistrement..." : "Enregistrer"}</Button>
-          </SheetFooter>
+          </DialogFooter>
         </form>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 }
-
-    

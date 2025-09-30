@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -15,14 +14,14 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogClose,
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -40,7 +39,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { ScrollArea } from "../ui/scroll-area";
 
 
-interface AddMissionSheetProps {
+interface AddMissionDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onAddMission: (mission: Omit<Mission, "id">) => Promise<void>;
@@ -50,7 +49,7 @@ export function AddMissionSheet({
   isOpen,
   onClose,
   onAddMission,
-}: AddMissionSheetProps) {
+}: AddMissionDialogProps) {
   const [numeroMission, setNumeroMission] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -167,17 +166,17 @@ export function AddMissionSheet({
 
 
   return (
-    <Sheet open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <SheetContent className="sm:max-w-2xl">
-        <form onSubmit={handleSubmit} className="flex flex-col h-full overflow-hidden">
-          <SheetHeader className="p-6">
-            <SheetTitle>Ajouter une nouvelle mission</SheetTitle>
-            <SheetDescription>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
+      <DialogContent className="sm:max-w-2xl">
+        <form onSubmit={handleSubmit}>
+          <DialogHeader>
+            <DialogTitle>Ajouter une nouvelle mission</DialogTitle>
+            <DialogDescription>
               Remplissez les détails pour planifier une nouvelle mission.
-            </SheetDescription>
-          </SheetHeader>
+            </DialogDescription>
+          </DialogHeader>
           
-          <ScrollArea className="flex-1 px-6">
+          <div className="py-4 max-h-[70vh] overflow-y-auto pr-4">
             {loadingInitial ? (
               <div className="flex items-center justify-center h-full">
                 <Loader2 className="h-8 w-8 animate-spin" />
@@ -318,18 +317,18 @@ export function AddMissionSheet({
                 )}
               </div>
             )}
-          </ScrollArea>
+          </div>
           
-          <SheetFooter className="p-6 border-t">
-            <SheetClose asChild>
+          <DialogFooter className="p-6 border-t">
+            <DialogClose asChild>
               <Button type="button" variant="outline" onClick={handleClose}>Annuler</Button>
-            </SheetClose>
+            </DialogClose>
             <Button type="submit" disabled={isSubmitting || loadingInitial}>
               {isSubmitting ? "Enregistrement..." : "Enregistrer la Mission"}
             </Button>
-          </SheetFooter>
+          </DialogFooter>
         </form>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 }

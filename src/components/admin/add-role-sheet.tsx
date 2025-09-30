@@ -7,28 +7,28 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogClose,
+} from "@/components/ui/dialog";
 import type { Role } from "@/lib/data";
 import { addRole } from "@/services/role-service";
 import { useToast } from "@/hooks/use-toast";
 import { allPermissions, type PermissionValue } from "@/lib/permissions";
 import { ScrollArea } from "../ui/scroll-area";
 
-interface AddRoleSheetProps {
+interface AddRoleDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onAddRole: (role: Role) => void;
   roles: Role[];
 }
 
-export function AddRoleSheet({ isOpen, onClose, onAddRole, roles }: AddRoleSheetProps) {
+export function AddRoleSheet({ isOpen, onClose, onAddRole, roles }: AddRoleDialogProps) {
   const [name, setName] = useState('');
   const [selectedPermissions, setSelectedPermissions] = useState<PermissionValue[]>([]);
   const [error, setError] = useState("");
@@ -83,24 +83,24 @@ export function AddRoleSheet({ isOpen, onClose, onAddRole, roles }: AddRoleSheet
   };
 
   return (
-    <Sheet open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <SheetContent className="sm:max-w-lg flex flex-col">
-        <form onSubmit={handleSubmit} className="flex flex-col h-full">
-          <SheetHeader>
-            <SheetTitle>Ajouter un nouveau rôle</SheetTitle>
-            <SheetDescription>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
+      <DialogContent className="sm:max-w-lg">
+        <form onSubmit={handleSubmit}>
+          <DialogHeader>
+            <DialogTitle>Ajouter un nouveau rôle</DialogTitle>
+            <DialogDescription>
               Définissez un nouveau rôle et ses permissions associées.
-            </SheetDescription>
-          </SheetHeader>
-          <div className="flex-1 py-4 space-y-4 overflow-hidden">
-            <div className="px-1">
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4 space-y-4">
+            <div>
               <Label htmlFor="name">Nom du Rôle</Label>
               <Input id="name" value={name} onChange={(e) => setName(e.target.value)} className="mt-2" />
             </div>
-            <div className="px-1">
+            <div>
               <Label>Permissions</Label>
             </div>
-             <ScrollArea className="h-[calc(100%-120px)] border rounded-md p-4">
+             <ScrollArea className="h-64 border rounded-md p-4">
                 <div className="space-y-4">
                     {Object.entries(allPermissions).map(([label, value]) => (
                         <div key={value} className="flex items-center space-x-2">
@@ -116,16 +116,16 @@ export function AddRoleSheet({ isOpen, onClose, onAddRole, roles }: AddRoleSheet
             </ScrollArea>
             {error && <p className="text-sm text-destructive px-1 text-center">{error}</p>}
           </div>
-          <SheetFooter>
-            <SheetClose asChild>
+          <DialogFooter>
+            <DialogClose asChild>
               <Button type="button" variant="outline">Annuler</Button>
-            </SheetClose>
+            </DialogClose>
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? "Enregistrement..." : "Enregistrer le Rôle"}
             </Button>
-          </SheetFooter>
+          </DialogFooter>
         </form>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 }

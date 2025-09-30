@@ -6,14 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogClose,
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -25,7 +25,7 @@ import type { Asset, Employe } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
 import { getEmployees } from "@/services/employee-service";
 
-interface EditAssetSheetProps {
+interface EditAssetDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onUpdateAsset: (tag: string, assetData: Partial<Asset>) => Promise<void>;
@@ -36,7 +36,7 @@ const assetTypes: Asset['type'][] = ["Ordinateur", "Moniteur", "Imprimante", "Cl
 const computerTypes: Asset['typeOrdinateur'][] = ["Portable", "De Bureau", "Serveur"];
 const assetStatuses: Asset['status'][] = ['En utilisation', 'En stock', 'En réparation', 'Retiré'];
 
-export function EditAssetSheet({ isOpen, onClose, onUpdateAsset, asset }: EditAssetSheetProps) {
+export function EditAssetSheet({ isOpen, onClose, onUpdateAsset, asset }: EditAssetDialogProps) {
     const [formData, setFormData] = useState<Partial<Asset>>({});
     const [error, setError] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -87,16 +87,16 @@ export function EditAssetSheet({ isOpen, onClose, onUpdateAsset, asset }: EditAs
     const showPasswordField = formData.type === 'Équipement Réseau' || formData.typeOrdinateur === 'Serveur';
 
     return (
-        <Sheet open={isOpen} onOpenChange={onClose}>
-        <SheetContent className="sm:max-w-lg">
+        <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="sm:max-w-lg">
             <form onSubmit={handleSubmit}>
-            <SheetHeader>
-                <SheetTitle>Modifier l'actif : {asset.tag}</SheetTitle>
-                <SheetDescription>
+            <DialogHeader>
+                <DialogTitle>Modifier l'actif : {asset.tag}</DialogTitle>
+                <DialogDescription>
                 Mettez à jour les détails de cet actif.
-                </SheetDescription>
-            </SheetHeader>
-            <div className="grid gap-4 py-4 max-h-[85vh] overflow-y-auto pr-4">
+                </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto pr-4">
                 <div className="space-y-2">
                     <Label htmlFor="edit-tag">N° d'Inventaire</Label>
                     <Input id="edit-tag" value={formData.tag || ''} disabled />
@@ -152,12 +152,12 @@ export function EditAssetSheet({ isOpen, onClose, onUpdateAsset, asset }: EditAs
                 </div>
                 {error && <p className="text-sm text-destructive text-center">{error}</p>}
             </div>
-            <SheetFooter className="border-t pt-4">
-                <SheetClose asChild><Button type="button" variant="outline">Annuler</Button></SheetClose>
+            <DialogFooter className="border-t pt-4">
+                <DialogClose asChild><Button type="button" variant="outline">Annuler</Button></DialogClose>
                 <Button type="submit" disabled={isSubmitting}>{isSubmitting ? "Enregistrement..." : "Enregistrer"}</Button>
-            </SheetFooter>
+            </DialogFooter>
             </form>
-        </SheetContent>
-        </Sheet>
+        </DialogContent>
+        </Dialog>
     );
 }

@@ -6,14 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogClose,
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -25,7 +25,7 @@ import type { Evaluation, Employe } from "@/lib/data";
 import { getEmployees } from "@/services/employee-service";
 import { Loader2 } from "lucide-react";
 
-interface AddEvaluationSheetProps {
+interface AddEvaluationDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onAddEvaluation: (evaluation: Omit<Evaluation, "id">) => Promise<void>;
@@ -35,7 +35,7 @@ export function AddEvaluationSheet({
   isOpen,
   onClose,
   onAddEvaluation,
-}: AddEvaluationSheetProps) {
+}: AddEvaluationDialogProps) {
   const [allEmployees, setAllEmployees] = useState<Employe[]>([]);
   const [loadingEmployees, setLoadingEmployees] = useState(true);
 
@@ -126,15 +126,15 @@ export function AddEvaluationSheet({
   ];
 
   return (
-    <Sheet open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <SheetContent className="sm:max-w-lg">
+    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
+      <DialogContent className="sm:max-w-lg">
         <form onSubmit={handleSubmit}>
-          <SheetHeader>
-            <SheetTitle>Lancer une nouvelle évaluation</SheetTitle>
-            <SheetDescription>
+          <DialogHeader>
+            <DialogTitle>Lancer une nouvelle évaluation</DialogTitle>
+            <DialogDescription>
               Sélectionnez l'employé, le manager et la période pour commencer.
-            </SheetDescription>
-          </SheetHeader>
+            </DialogDescription>
+          </DialogHeader>
           <div className="grid gap-4 py-4">
              {loadingEmployees && (
                 <div className="flex items-center justify-center col-span-4 py-8">
@@ -184,18 +184,18 @@ export function AddEvaluationSheet({
               </p>
             )}
           </div>
-          <SheetFooter>
-            <SheetClose asChild>
+          <DialogFooter>
+            <DialogClose asChild>
               <Button type="button" variant="outline" onClick={handleClose}>
                 Annuler
               </Button>
-            </SheetClose>
+            </DialogClose>
             <Button type="submit" disabled={isSubmitting || loadingEmployees}>
               {isSubmitting ? "Lancement..." : "Lancer l'évaluation"}
             </Button>
-          </SheetFooter>
+          </DialogFooter>
         </form>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 }

@@ -9,14 +9,14 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Label } from "@/components/ui/label";
 import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogClose,
+} from "@/components/ui/dialog";
 import {
   Popover,
   PopoverContent,
@@ -35,7 +35,7 @@ import { getEmployees } from "@/services/employee-service";
 import { Textarea } from "../ui/textarea";
 import { Command, CommandEmpty, CommandInput, CommandGroup, CommandItem, CommandList } from "@/components/ui/command";
 
-interface AddLeaveRequestSheetProps {
+interface AddLeaveRequestDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onAddLeaveRequest: (leaveRequest: Omit<Leave, "id" | "status">) => Promise<void>;
@@ -45,7 +45,7 @@ export function AddLeaveRequestSheet({
   isOpen,
   onClose,
   onAddLeaveRequest,
-}: AddLeaveRequestSheetProps) {
+}: AddLeaveRequestDialogProps) {
   const [employees, setEmployees] = useState<Employe[]>([]);
   const [employee, setEmployee] = useState("");
   const [leaveType, setLeaveType] = useState("");
@@ -131,15 +131,15 @@ export function AddLeaveRequestSheet({
   }
 
   return (
-    <Sheet open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <SheetContent className="sm:max-w-lg">
+    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
+      <DialogContent className="sm:max-w-lg">
         <form onSubmit={handleSubmit}>
-        <SheetHeader>
-          <SheetTitle>Nouvelle demande de congé</SheetTitle>
-          <SheetDescription>
+        <DialogHeader>
+          <DialogTitle>Nouvelle demande de congé</DialogTitle>
+          <DialogDescription>
             Remplissez les détails ci-dessous pour soumettre une nouvelle demande de congé.
-          </SheetDescription>
-        </SheetHeader>
+          </DialogDescription>
+        </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="employee" className="text-right">
@@ -284,18 +284,18 @@ export function AddLeaveRequestSheet({
             </p>
           )}
         </div>
-        <SheetFooter>
-          <SheetClose asChild>
+        <DialogFooter>
+          <DialogClose asChild>
             <Button type="button" variant="outline" onClick={handleClose}>
               Annuler
             </Button>
-          </SheetClose>
+          </DialogClose>
           <Button type="submit" disabled={isSubmitting}>
              {isSubmitting ? "Soumission..." : "Soumettre la Demande"}
           </Button>
-        </SheetFooter>
+        </DialogFooter>
         </form>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 }

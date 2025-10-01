@@ -132,8 +132,35 @@ const allMenuItems = [
   },
 ];
 
-function ProtectedPage({ children, permission }: { children: React.ReactNode, permission: string }) {
+function ProtectedPage({ children }: { children: React.ReactNode }) {
     const { hasPermission, loading } = useAuth();
+    const pathname = usePathname();
+
+    const getRequiredPermission = () => {
+        // Find a direct match first (e.g., /employees?filter=personnel)
+        const directMatch = allMenuItems
+            .flatMap(item => item.isCollapsible ? item.subItems || [] : [item])
+            .find(item => item.href === pathname);
+        if (directMatch) return directMatch.permission;
+        
+        // Find a base route for dynamic paths (e.g., /employees for /employees/123/edit)
+        const baseRoute = allMenuItems
+             .flatMap(item => item.isCollapsible ? item.subItems || [] : [item])
+             .filter(item => item.href !== '/')
+             .find(item => pathname.startsWith(item.href.split('?')[0]));
+
+        if (baseRoute) return baseRoute.permission;
+
+        // Default to dashboard permission for the root page if no other match
+        if (pathname === '/') return 'page:dashboard:view';
+        
+        // For settings or profile pages, allow access if logged in
+        if (pathname.startsWith('/settings') || pathname.startsWith('/profile')) {
+            return 'is-authenticated'; // Special key to just check for auth
+        }
+
+        return null; // No specific permission found for this route
+    };
 
     if (loading) {
         return (
@@ -142,9 +169,22 @@ function ProtectedPage({ children, permission }: { children: React.ReactNode, pe
             </div>
         );
     }
-    
-    if (hasPermission(permission)) {
+
+    const requiredPermission = getRequiredPermission();
+
+    if (requiredPermission === 'is-authenticated') {
         return <>{children}</>;
+    }
+
+    if (requiredPermission && hasPermission(requiredPermission)) {
+        return <>{children}</>;
+    }
+    
+    // If no permission is required (e.g., a page not in the menu system), show it.
+    // Or if permission check fails, show access denied.
+    if (requiredPermission === null) {
+        // This could be a 404 page in a real app, but for now we'll allow it.
+         return <>{children}</>;
     }
 
     return (
@@ -197,8 +237,11 @@ function AppLayout({ children }: { children: React.ReactNode }) {
     });
   }, [hasPermission]);
   
-  const currentPage = allMenuItems.find(item => !item.isCollapsible && item.href === currentPath);
-  const isSubItemActive = (subItems: any[] | undefined) => subItems?.some(item => currentPath === item.href) || false;
+  const isSubItemActive = (subItems: any[] | undefined) => {
+    if (!subItems) return false;
+    // Check if the current path starts with the href of any sub-item
+    return subItems.some(item => pathname.startsWith(item.href.split('?')[0]));
+  };
 
   if (loading) {
     return (
@@ -322,14 +365,9 @@ function AppLayout({ children }: { children: React.ReactNode }) {
             </header>
             <main className="flex-1 p-4 sm:p-6 sm:pt-0">
                 <div className="mx-auto w-full max-w-7xl">
-                    {currentPage ? (
-                        <ProtectedPage permission={currentPage.permission}>
-                            {children}
-                        </ProtectedPage>
-                    ) : (
-                        // Handle sub-pages and other pages not in the main menu
-                        children
-                    )}
+                    <ProtectedPage>
+                        {children}
+                    </ProtectedPage>
                 </div>
             </main>
         </SidebarInset>

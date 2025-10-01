@@ -10,7 +10,11 @@ import { getLeaves } from "@/services/leave-service";
 import { getAssets } from "@/services/asset-service";
 import { getMissions } from "@/services/mission-service";
 import { getEmployeeHistory, deleteEmployeeHistoryEvent } from "@/services/employee-history-service";
-import type { Employe, Leave, Asset, Mission, EmployeeEvent } from "@/lib/data";
+import type { Employe, Leave, Asset, Mission, EmployeeEvent, Department, Direction, Service } from "@/lib/data";
+import { getDepartments } from "@/services/department-service";
+import { getDirections } from "@/services/direction-service";
+import { getServices } from "@/services/service-service";
+
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -50,6 +54,7 @@ export default function EmployeeDetailPage() {
     const [assets, setAssets] = useState<Asset[]>([]);
     const [missions, setMissions] = useState<Mission[]>([]);
     const [history, setHistory] = useState<EmployeeEvent[]>([]);
+    const [orgStructure, setOrgStructure] = useState<{ departments: Department[], directions: Direction[], services: Service[] }>({ departments: [], directions: [], services: [] });
     const [loading, setLoading] = useState(true);
 
     const [isDateDialogOpen, setIsDateDialogOpen] = useState(false);
@@ -65,19 +70,25 @@ export default function EmployeeDetailPage() {
         
         async function fetchData() {
             try {
-                let employeeData = await getEmployee(id);
+                let [employeeData, leavesData, assetsData, missionsData, historyData, departments, directions, services] = await Promise.all([
+                    getEmployee(id),
+                    getLeaves(),
+                    getAssets(),
+                    getMissions(),
+                    getEmployeeHistory(id),
+                    getDepartments(),
+                    getDirections(),
+                    getServices(),
+                ]);
+
                 if (employeeData && employeeData.Date_Naissance) {
                     employeeData.age = differenceInYears(new Date(), parseISO(employeeData.Date_Naissance));
                 }
+                
+                setOrgStructure({ departments, directions, services });
                 setEmployee(employeeData);
 
                 if (employeeData) {
-                    const [leavesData, assetsData, missionsData, historyData] = await Promise.all([
-                        getLeaves(),
-                        getAssets(),
-                        getMissions(),
-                        getEmployeeHistory(id),
-                    ]);
                     setLeaves(leavesData.filter(l => l.employee === employeeData.name).slice(0, 5));
                     setAssets(assetsData.filter(a => a.assignedTo === employeeData.name));
                     setMissions(missionsData.filter(m => m.participants.some(p => p.employeeName === employeeData.name)).slice(0, 5));
@@ -168,6 +179,10 @@ export default function EmployeeDetailPage() {
     }
 
     const fullName = `${employee.firstName || ''} ${employee.lastName || ''}`.trim() || employee.name;
+    const departmentName = orgStructure.departments.find(d => d.id === employee.departmentId)?.name || employee.department;
+    const directionName = orgStructure.directions.find(d => d.id === employee.directionId)?.name;
+    const serviceName = orgStructure.services.find(s => s.id === employee.serviceId)?.name;
+
     
     let retirementDate = null;
     if(employee.Date_Naissance && employee.status === 'Actif') {
@@ -215,9 +230,9 @@ export default function EmployeeDetailPage() {
                                         <CardDescription className="text-lg text-muted-foreground">{employee.poste}</CardDescription>
                                         <div className="mt-2 flex gap-2 flex-wrap">
                                         <Badge variant={employee.status === 'Actif' ? 'default' : 'destructive'}>{employee.status}</Badge>
-                                        <Badge variant="secondary">{employee.department}</Badge>
-                                        {employee.direction && <Badge variant="outline">{employee.direction}</Badge>}
-                                        {employee.service && <Badge variant="outline" className="bg-accent/50">{employee.service}</Badge>}
+                                        {departmentName && <Badge variant="secondary">{departmentName}</Badge>}
+                                        {directionName && <Badge variant="outline">{directionName}</Badge>}
+                                        {serviceName && <Badge variant="outline" className="bg-accent/50">{serviceName}</Badge>}
                                         </div>
                                     </div>
                                 </CardHeader>
@@ -551,3 +566,6 @@ function EmployeeDetailSkeleton() {
     )
 }
 
+
+
+    

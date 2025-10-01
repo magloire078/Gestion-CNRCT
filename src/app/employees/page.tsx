@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
@@ -16,10 +17,13 @@ import {
 } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import type { Employe } from "@/lib/data";
+import type { Employe, Department, Direction, Service } from "@/lib/data";
 import { AddEmployeeSheet } from "@/components/employees/add-employee-sheet";
 import { PrintDialog } from "@/components/employees/print-dialog";
 import { subscribeToEmployees, addEmployee, deleteEmployee, getOrganizationSettings, updateEmployee } from "@/services/employee-service";
+import { getDepartments } from "@/services/department-service";
+import { getDirections } from "@/services/direction-service";
+import { getServices } from "@/services/service-service";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -65,6 +69,10 @@ export default function EmployeesPage() {
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   const { hasPermission } = useAuth();
+
+  const [departments, setDepartments] = useState<Department[]>([]);
+  const [directions, setDirections] = useState<Direction[]>([]);
+  const [services, setServices] = useState<Service[]>([]);
   
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -107,7 +115,7 @@ export default function EmployeesPage() {
 
 
   useEffect(() => {
-    const unsubscribe = subscribeToEmployees((fetchedEmployees) => {
+    const unsubEmployees = subscribeToEmployees((fetchedEmployees) => {
         setEmployees(fetchedEmployees);
         setLoading(false);
         setError(null);
@@ -116,9 +124,27 @@ export default function EmployeesPage() {
         console.error(err);
         setLoading(false);
     });
+
+    async function fetchOrgData() {
+        try {
+            const [depts, dirs, svcs] = await Promise.all([
+                getDepartments(),
+                getDirections(),
+                getServices(),
+            ]);
+            setDepartments(depts);
+            setDirections(dirs);
+            setServices(svcs);
+        } catch (error) {
+            console.error("Failed to fetch organizational structure", error);
+        }
+    }
+    
+    getOrganizationSettings().then(setOrganizationLogos);
+    fetchOrgData();
     
     // Cleanup subscription on component unmount
-    return () => unsubscribe();
+    return () => unsubEmployees();
   }, []);
 
   useEffect(() => {
@@ -172,7 +198,7 @@ export default function EmployeesPage() {
       }
   };
   
-  const departments = useMemo(() => {
+  const departmentOptions = useMemo(() => {
     const allDepartments = employees.map(e => e.department).filter(Boolean);
     return [...new Set(allDepartments)].sort();
   }, [employees]);
@@ -181,15 +207,15 @@ export default function EmployeesPage() {
     const filtered = employees.filter(employee => {
       const fullName = (employee.lastName || '').toLowerCase() + ' ' + (employee.firstName || '').toLowerCase();
       const matchesSearchTerm = fullName.includes(searchTerm.toLowerCase()) || (employee.matricule || '').toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesDepartment = departmentFilter === 'all' || employee.department === departmentFilter;
+      const matchesDepartment = departmentFilter === 'all' || employee.departmentId === departmentFilter;
       const matchesStatus = statusFilter === 'all' || employee.status === statusFilter;
       const matchesCnps = cnpsFilter === 'all' || employee.CNPS === cnpsFilter;
       const matchesSexe = sexeFilter === 'all' || employee.sexe === sexeFilter;
       
-      const isDirectoire = employee.department === 'Directoire';
+      const isDirectoire = employee.departmentId === 'DVeCoGfRfL3p43eQeYwz'; // Replace with actual ID for Directoire
       const isRegional = !!employee.Region;
-      const isGardeRepublicaine = employee.department === 'Garde Républicaine';
-      const isGendarme = employee.department === 'Gendarme';
+      const isGardeRepublicaine = employee.departmentId === 'YOUR_GARDE_ID'; // Replace with actual ID
+      const isGendarme = employee.departmentId === 'YOUR_GENDARME_ID'; // Replace with actual ID
 
       let matchesPersonnelType = true;
       switch (personnelTypeFilter) {
@@ -341,6 +367,17 @@ export default function EmployeesPage() {
     }
     router.push(`/employees?${params.toString()}`);
   }
+  
+  const getEmployeeOrgUnit = (employee: Employe) => {
+      const service = services.find(s => s.id === employee.serviceId);
+      if (service) return service.name;
+      const direction = directions.find(d => d.id === employee.directionId);
+      if (direction) return direction.name;
+      const department = departments.find(d => d.id === employee.departmentId);
+      if (department) return department.name;
+      return employee.department || 'Non spécifié';
+  }
+
 
   return (
     <>
@@ -414,8 +451,8 @@ export default function EmployeesPage() {
                                <SelectValue placeholder="Filtrer par service" />
                            </SelectTrigger>
                            <SelectContent>
-                               <SelectItem value="all">Tous les services</SelectItem>
-                               {departments.map(dep => <SelectItem key={dep} value={dep}>{dep}</SelectItem>)}
+                               <SelectItem value="all">Tous les départements</SelectItem>
+                               {departments.map(dep => <SelectItem key={dep.id} value={dep.id}>{dep.name}</SelectItem>)}
                            </SelectContent>
                            </Select>
                         )}
@@ -504,7 +541,7 @@ export default function EmployeesPage() {
                                         </TableCell>
                                         <TableCell>{employee.matricule}</TableCell>
                                         <TableCell>{employee.poste}</TableCell>
-                                        <TableCell>{employee.service || employee.direction || employee.department}</TableCell>
+                                        <TableCell>{getEmployeeOrgUnit(employee)}</TableCell>
                                         <TableCell>
                                             <Badge variant={statusVariantMap[employee.status as Status] || 'default'}>{employee.status}</Badge>
                                         </TableCell>
@@ -652,3 +689,6 @@ export default function EmployeesPage() {
 
     
 
+
+
+    

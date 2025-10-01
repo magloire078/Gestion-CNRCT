@@ -2,11 +2,38 @@ rules_version = '2';
 
 service firebase.storage {
   match /b/{bucket}/o {
-    // Allow public read on all files, but write only for authenticated users.
-    // This is a simple rule for prototyping. For production, you'd want more specific rules.
+    // Default deny all access
     match /{allPaths=**} {
-      allow read;
+      allow read, write: if false;
+    }
+    
+    // Allow read access to organization logos for everyone
+    match /organization/{allPaths=**} {
+      allow read: if true;
       allow write: if request.auth != null;
+    }
+    
+    // Allow authenticated users to manage their own photos
+    match /user_photos/{userId}/{allPaths=**} {
+        allow read: if request.auth != null;
+        allow write: if request.auth.uid == userId;
+    }
+
+    // Allow authenticated users to manage employee photos (could be restricted to admins)
+    match /employee_photos/{employeeId}/{allPaths=**} {
+        allow read: if request.auth != null;
+        allow write: if request.auth != null; 
+    }
+    
+     // Allow authenticated users to manage chief photos (could be restricted to admins)
+    match /chief_photos/{chiefId}/{allPaths=**} {
+        allow read: if request.auth != null;
+        allow write: if request.auth != null;
+    }
+
+    // Allow authenticated users to manage documents in the repository
+    match /repository/{allPaths=**} {
+      allow read, write: if request.auth != null;
     }
   }
 }

@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect, useRef, useMemo } from "react";
@@ -72,26 +73,20 @@ export default function EmployeeEditPage() {
         fetchEmployee();
     }, [id, toast]);
 
-    const selectedDepartmentObject = useMemo(() => {
-        if (!employee?.department) return null;
-        return departmentList.find(d => d.name === employee.department);
-    }, [employee?.department, departmentList]);
-
     const filteredDirections = useMemo(() => {
-        if (!selectedDepartmentObject) return [];
-        return directionList.filter(dir => dir.departmentId === selectedDepartmentObject.id);
-    }, [selectedDepartmentObject, directionList]);
+        if (!employee?.departmentId) return [];
+        return directionList.filter(dir => dir.departmentId === employee.departmentId);
+    }, [employee?.departmentId, directionList]);
         
     const filteredServices = useMemo(() => {
-        const selectedDir = directionList.find(d => d.name === employee?.direction);
-        if (selectedDir) {
-            return serviceList.filter(s => s.directionId === selectedDir.id);
+        if (employee?.directionId) {
+            return serviceList.filter(s => s.directionId === employee.directionId);
         }
-        if (selectedDepartmentObject) {
-            return serviceList.filter(s => s.departmentId === selectedDepartmentObject.id && !s.directionId);
+        if (employee?.departmentId) {
+            return serviceList.filter(s => s.departmentId === employee.departmentId && !s.directionId);
         }
         return [];
-    }, [employee?.direction, selectedDepartmentObject, directionList, serviceList]);
+    }, [employee?.directionId, employee?.departmentId, serviceList]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
@@ -123,12 +118,12 @@ export default function EmployeeEditPage() {
         setEmployee(prev => {
             if(!prev) return null;
             const newState: Partial<Employe> = { ...prev, [name]: value };
-            if (name === 'department') {
-                newState.direction = '';
-                newState.service = '';
+            if (name === 'departmentId') {
+                newState.directionId = '';
+                newState.serviceId = '';
             }
-            if (name === 'direction') {
-                newState.service = '';
+            if (name === 'directionId') {
+                newState.serviceId = '';
             }
             return newState;
         });
@@ -277,29 +272,29 @@ export default function EmployeeEditPage() {
                             <Input id="Date_Immatriculation" name="Date_Immatriculation" type="date" value={employee.Date_Immatriculation || ''} onChange={handleInputChange} />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="department">Département</Label>
-                            <Select name="department" value={employee.department || ''} onValueChange={(v) => handleSelectChange('department', v)}>
+                            <Label htmlFor="departmentId">Département</Label>
+                            <Select name="departmentId" value={employee.departmentId || ''} onValueChange={(v) => handleSelectChange('departmentId', v)}>
                                 <SelectTrigger><SelectValue placeholder="Sélectionnez..." /></SelectTrigger>
                                 <SelectContent>
-                                    {departmentList.map(dep => <SelectItem key={dep.id} value={dep.name}>{dep.name}</SelectItem>)}
+                                    {departmentList.map(dep => <SelectItem key={dep.id} value={dep.id}>{dep.name}</SelectItem>)}
                                 </SelectContent>
                             </Select>
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="direction">Direction</Label>
-                            <Select name="direction" value={employee.direction || ''} onValueChange={(v) => handleSelectChange('direction', v)} disabled={!employee.department || filteredDirections.length === 0}>
+                            <Label htmlFor="directionId">Direction</Label>
+                            <Select name="directionId" value={employee.directionId || ''} onValueChange={(v) => handleSelectChange('directionId', v)} disabled={!employee.departmentId || filteredDirections.length === 0}>
                                 <SelectTrigger><SelectValue placeholder="Sélectionnez..." /></SelectTrigger>
                                 <SelectContent>
-                                    {filteredDirections.map(dir => <SelectItem key={dir.id} value={dir.name}>{dir.name}</SelectItem>)}
+                                    {filteredDirections.map(dir => <SelectItem key={dir.id} value={dir.id}>{dir.name}</SelectItem>)}
                                 </SelectContent>
                             </Select>
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="service">Service</Label>
-                            <Select name="service" value={employee.service || ''} onValueChange={(v) => handleSelectChange('service', v)} disabled={!employee.department || filteredServices.length === 0}>
+                            <Label htmlFor="serviceId">Service</Label>
+                            <Select name="serviceId" value={employee.serviceId || ''} onValueChange={(v) => handleSelectChange('serviceId', v)} disabled={!employee.departmentId || filteredServices.length === 0}>
                                 <SelectTrigger><SelectValue placeholder="Sélectionnez..." /></SelectTrigger>
                                 <SelectContent>
-                                    {filteredServices.map(svc => <SelectItem key={svc.id} value={svc.name}>{svc.name}</SelectItem>)}
+                                    {filteredServices.map(svc => <SelectItem key={svc.id} value={svc.id}>{svc.name}</SelectItem>)}
                                 </SelectContent>
                             </Select>
                         </div>

@@ -50,9 +50,9 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
   const [directionList, setDirectionList] = useState<Direction[]>([]);
   const [serviceList, setServiceList] = useState<Service[]>([]);
   
-  const [department, setDepartment] = useState("");
-  const [direction, setDirection] = useState("");
-  const [service, setService] = useState("");
+  const [departmentId, setDepartmentId] = useState("");
+  const [directionId, setDirectionId] = useState("");
+  const [serviceId, setServiceId] = useState("");
 
   const [status, setStatus] = useState<Employe['status']>('Actif');
   const [sexe, setSexe] = useState<Employe['sexe'] | "">("");
@@ -95,23 +95,20 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
     }
   }, [isOpen]);
 
-  const selectedDepartmentObject = useMemo(() => departmentList.find(d => d.name === department), [department, departmentList]);
-
   const filteredDirections = useMemo(() => {
-    if (!selectedDepartmentObject) return [];
-    return directionList.filter(d => d.departmentId === selectedDepartmentObject.id);
-  }, [selectedDepartmentObject, directionList]);
+    if (!departmentId) return [];
+    return directionList.filter(d => d.departmentId === departmentId);
+  }, [departmentId, directionList]);
 
   const filteredServices = useMemo(() => {
-    const selectedDir = directionList.find(d => d.name === direction);
-    if (selectedDir) {
-      return serviceList.filter(s => s.directionId === selectedDir.id);
+    if (directionId) {
+      return serviceList.filter(s => s.directionId === directionId);
     }
-    if (selectedDepartmentObject) {
-      return serviceList.filter(s => s.departmentId === selectedDepartmentObject.id && !s.directionId);
+    if (departmentId) {
+      return serviceList.filter(s => s.departmentId === departmentId && !s.directionId);
     }
     return [];
-  }, [direction, selectedDepartmentObject, directionList, serviceList]);
+  }, [departmentId, directionId, serviceList]);
 
 
   const resetForm = () => {
@@ -120,9 +117,9 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
     setLastName("");
     setEmail("");
     setPoste("");
-    setDepartment("");
-    setDirection("");
-    setService("");
+    setDepartmentId("");
+    setDirectionId("");
+    setServiceId("");
     setSkills("");
     setStatus("Actif");
     setSexe("");
@@ -198,7 +195,7 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!matricule || !firstName || !lastName || !poste || !department) {
+    if (!matricule || !firstName || !lastName || !poste || !departmentId) {
       setError("Veuillez remplir tous les champs obligatoires (matricule, noms, poste, département).");
       return;
     }
@@ -212,9 +209,9 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
           lastName, 
           email, 
           poste, 
-          department, 
-          direction,
-          service,
+          departmentId,
+          directionId: directionId || undefined,
+          serviceId: serviceId || undefined,
           status, 
           name: `${lastName} ${firstName}`.trim(), 
           skills: skillsArray,
@@ -223,6 +220,10 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
           Region: region,
           Village: village,
           photoUrl: '', // This will be set by the service after upload
+          // Legacy fields for compatibility - should be removed later
+          department: departmentList.find(d => d.id === departmentId)?.name || '',
+          direction: directionList.find(d => d.id === directionId)?.name || '',
+          service: serviceList.find(s => s.id === serviceId)?.name || '',
       };
       await onAddEmployee(employeeData, photoFile);
       handleClose();
@@ -265,9 +266,9 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
                     <div><Label htmlFor="email">Email</Label><Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} /></div>
                     <div><Label htmlFor="poste">Poste</Label><Input id="poste" value={poste} onChange={(e) => setPoste(e.target.value)} required/></div>
                     
-                    <div><Label htmlFor="department">Département</Label><Select value={department} onValueChange={(value) => { setDepartment(value); setDirection(''); setService(''); }} required><SelectTrigger><SelectValue placeholder="Sélectionnez..." /></SelectTrigger><SelectContent>{departmentList.map(dep => (<SelectItem key={dep.id} value={dep.name}>{dep.name}</SelectItem>))}</SelectContent></Select></div>
-                    <div><Label htmlFor="direction">Direction</Label><Select value={direction} onValueChange={(value) => { setDirection(value); setService(''); }} disabled={!department || filteredDirections.length === 0}><SelectTrigger><SelectValue placeholder="Sélectionnez..." /></SelectTrigger><SelectContent>{filteredDirections.map(dir => (<SelectItem key={dir.id} value={dir.name}>{dir.name}</SelectItem>))}</SelectContent></Select></div>
-                    <div><Label htmlFor="service">Service</Label><Select value={service} onValueChange={setService} disabled={!department || filteredServices.length === 0}><SelectTrigger><SelectValue placeholder="Sélectionnez..." /></SelectTrigger><SelectContent>{filteredServices.map(svc => (<SelectItem key={svc.id} value={svc.name}>{svc.name}</SelectItem>))}</SelectContent></Select></div>
+                    <div><Label htmlFor="departmentId">Département</Label><Select value={departmentId} onValueChange={(value) => { setDepartmentId(value); setDirectionId(''); setServiceId(''); }} required><SelectTrigger><SelectValue placeholder="Sélectionnez..." /></SelectTrigger><SelectContent>{departmentList.map(dep => (<SelectItem key={dep.id} value={dep.id}>{dep.name}</SelectItem>))}</SelectContent></Select></div>
+                    <div><Label htmlFor="directionId">Direction</Label><Select value={directionId} onValueChange={(value) => { setDirectionId(value); setServiceId(''); }} disabled={!departmentId || filteredDirections.length === 0}><SelectTrigger><SelectValue placeholder="Sélectionnez..." /></SelectTrigger><SelectContent>{filteredDirections.map(dir => (<SelectItem key={dir.id} value={dir.id}>{dir.name}</SelectItem>))}</SelectContent></Select></div>
+                    <div><Label htmlFor="serviceId">Service</Label><Select value={serviceId} onValueChange={setServiceId} disabled={!departmentId || filteredServices.length === 0}><SelectTrigger><SelectValue placeholder="Sélectionnez..." /></SelectTrigger><SelectContent>{filteredServices.map(svc => (<SelectItem key={svc.id} value={svc.id}>{svc.name}</SelectItem>))}</SelectContent></Select></div>
 
                     <div><Label htmlFor="region">Région</Label><Input id="region" value={region} onChange={(e) => setRegion(e.target.value)} /></div>
                     <div><Label htmlFor="village">Village</Label><Input id="village" value={village} onChange={(e) => setVillage(e.target.value)} /></div>

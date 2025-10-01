@@ -7,9 +7,12 @@ export type Employe = {
   lastName?: string;
   firstName?: string;
   poste: string;
-  department: string;
-  direction?: string;
-  service?: string;
+  department: string; // DEPRECATED: to be removed in a future refactor
+  departmentId?: string; // Foreign key to 'departments' collection
+  direction?: string; // DEPRECATED
+  directionId?: string; // Foreign key to 'directions' collection
+  service?: string; // DEPRECATED
+  serviceId?: string; // Foreign key to 'services' collection
   status: 'Actif' | 'En congé' | 'Licencié' | 'Retraité' | 'Décédé';
   photoUrl: string;
   userId?: string; // ID de l'utilisateur authentifié lié

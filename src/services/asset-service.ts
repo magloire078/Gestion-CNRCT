@@ -69,8 +69,21 @@ export async function batchAddAssets(assets: (Omit<Asset, 'tag'> & { tag: string
     const batch = writeBatch(db);
     let processedCount = 0;
 
+    const tags = assets.map(a => a.tag).filter(Boolean);
+    const existingTags = new Set<string>();
+
+    // Firestore 'in' query is limited to 30 elements
+    for (let i = 0; i < tags.length; i += 30) {
+        const chunk = tags.slice(i, i + 30);
+        if (chunk.length > 0) {
+            const q = query(assetsCollection, where('__name__', 'in', chunk));
+            const snapshot = await getDocs(q);
+            snapshot.docs.forEach(doc => existingTags.add(doc.id));
+        }
+    }
+
     for (const asset of assets) {
-        if (asset.tag) {
+        if (asset.tag && !existingTags.has(asset.tag)) {
             const { tag, ...dataToSave } = asset;
             
             // Remove undefined fields before sending to Firestore
@@ -82,8 +95,7 @@ export async function batchAddAssets(assets: (Omit<Asset, 'tag'> & { tag: string
             });
 
             const newDocRef = doc(assetsCollection, tag);
-            // Use set with merge to create new or update existing documents
-            batch.set(newDocRef, dataToSave, { merge: true });
+            batch.set(newDocRef, dataToSave);
             processedCount++;
         }
     }

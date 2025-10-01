@@ -35,7 +35,6 @@ export default async function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Arial&display=swap"
           rel="stylesheet"
         />
-        <script src="/sw-register.js" defer></script>
       </head>
       <body className="font-body antialiased">
          <ThemeProvider

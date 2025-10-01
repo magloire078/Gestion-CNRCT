@@ -104,16 +104,3 @@ export async function deleteAsset(tag: string): Promise<void> {
     const assetDocRef = doc(db, 'assets', tag);
     await deleteDoc(assetDocRef);
 }
-
-
-export async function searchVehicles(queryText: string): Promise<Asset[]> {
-    const lowerCaseQuery = queryText.toLowerCase();
-    const allAssets = await getAssets();
-    return allAssets.filter(asset => 
-        (asset.tag?.toLowerCase() || '').includes(lowerCaseQuery) || 
-        (asset.modele?.toLowerCase() || '').includes(lowerCaseQuery) ||
-        (asset.assignedTo?.toLowerCase() || '').includes(lowerCaseQuery) ||
-        (asset.fabricant?.toLowerCase() || '').includes(lowerCaseQuery) ||
-        (asset.numeroDeSerie?.toLowerCase() || '').includes(lowerCaseQuery)
-    );
-}

@@ -11,7 +11,7 @@ import { getEmployee } from "@/services/employee-service";
 import { getPayslipDetails, PayslipDetails } from "@/services/payslip-details-service";
 import { ArrowLeft, Printer } from "lucide-react";
 import QRCode from "react-qr-code";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { fr } from 'date-fns/locale';
 
 export default function PayslipPage() {
@@ -86,9 +86,9 @@ export default function PayslipPage() {
     const fullName = `${employeeInfo.lastName || ''} ${employeeInfo.firstName || ''}`.trim() || employeeInfo.name;
     const qrCodeValue = `${fullName} | ${employeeInfo.matricule} | ${employeeInfo.department}`;
 
-    const parsedPayslipDate = new Date(payslipDate!);
+    const parsedPayslipDate = parseISO(payslipDate!);
     const periodDisplay = format(parsedPayslipDate, "MMMM yyyy", { locale: fr });
-    const paymentDateDisplay = format(new Date(employeeInfo.paymentDate || payslipDate!), "EEEE dd MMMM yyyy", { locale: fr });
+    const paymentDateDisplay = format(parseISO(employeeInfo.paymentDate!), "EEEE dd MMMM yyyy", { locale: fr });
 
     return (
         <>

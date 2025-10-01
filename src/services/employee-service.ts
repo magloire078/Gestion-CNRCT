@@ -10,7 +10,7 @@ const employeesCollection = collection(db, 'employees');
 const chiefsCollection = collection(db, 'chiefs');
 
 async function createOrUpdateChiefFromEmployee(employee: Employe) {
-    if (employee.department === 'Directoire' || (employee.Region && employee.Village)) {
+    if (employee.departmentId === 'DVeCoGfRfL3p43eQeYwz' || (employee.Region && employee.Village)) {
         const chiefsQuery = query(chiefsCollection, where('name', '==', employee.name));
         const snapshot = await getDocs(chiefsQuery);
         
@@ -18,8 +18,8 @@ async function createOrUpdateChiefFromEmployee(employee: Employe) {
             name: `${employee.lastName || ''} ${employee.firstName || ''}`.trim(),
             firstName: employee.firstName,
             lastName: employee.lastName,
-            title: employee.poste, // Use 'poste' as 'title'
-            role: 'Chef de Canton', // Default role, can be changed later
+            title: employee.poste,
+            role: 'Chef de Canton',
             sexe: employee.sexe,
             region: employee.Region,
             department: employee.Departement,
@@ -28,12 +28,10 @@ async function createOrUpdateChiefFromEmployee(employee: Employe) {
         };
         
         if (snapshot.empty) {
-            // Create new chief
             const newChiefRef = doc(chiefsCollection);
             await setDoc(newChiefRef, chiefData);
             console.log(`Created new chief entry for employee: ${employee.name}`);
         } else {
-            // Update existing chief
             const chiefDocRef = snapshot.docs[0].ref;
             await updateDoc(chiefDocRef, chiefData);
             console.log(`Updated chief entry for employee: ${employee.name}`);

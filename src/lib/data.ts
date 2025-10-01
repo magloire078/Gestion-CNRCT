@@ -7,11 +7,8 @@ export type Employe = {
   lastName?: string;
   firstName?: string;
   poste: string;
-  department: string; // DEPRECATED: to be removed in a future refactor
   departmentId?: string; // Foreign key to 'departments' collection
-  direction?: string; // DEPRECATED
   directionId?: string; // Foreign key to 'directions' collection
-  service?: string; // DEPRECATED
   serviceId?: string; // Foreign key to 'services' collection
   status: 'Actif' | 'En congé' | 'Licencié' | 'Retraité' | 'Décédé';
   photoUrl: string;
@@ -86,6 +83,8 @@ export type Employe = {
   calculatedRetirementDate?: Date;
   age?: number;
   retirementNotificationSent?: boolean;
+  // DEPRECATED: Use departmentId instead.
+  department?: string;
 };
 
 export type Leave = {

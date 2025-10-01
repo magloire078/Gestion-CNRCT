@@ -28,6 +28,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { differenceInYears, parseISO, format, addMonths } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { getDashboardSummary } from '@/ai/flows/dashboard-summary-flow';
+import { PrintLayout } from '@/components/reports/print-layout';
 
 
 interface StatCardProps {
@@ -459,135 +460,48 @@ export default function DashboardPage() {
         </div>
     </div>
     {isPrintingAnniversaries && organizationLogos && (
-        <AnniversaryPrintLayout logos={organizationLogos} employees={seniorityAnniversaries} period={selectedAnniversaryPeriodText} year={selectedAnniversaryYear}/>
+        <PrintLayout
+            logos={organizationLogos}
+            title="LISTE DES EMPLOYÉS ATTEIGNANT UN ANNIVERSAIRE D'ANCIENNETÉ"
+            subtitle={`Période de ${selectedAnniversaryPeriodText}`}
+            columns={[
+                { header: 'N°', key: 'index' },
+                { header: 'Nom & Prénoms', key: 'name' },
+                { header: 'Poste', key: 'poste' },
+                { header: 'Date d\'embauche', key: 'dateEmbauche' },
+                { header: 'Ancienneté', key: 'seniority', align: 'center' },
+            ]}
+            data={seniorityAnniversaries.map((emp, index) => ({
+                index: index + 1,
+                name: emp.name,
+                poste: emp.poste,
+                dateEmbauche: emp.dateEmbauche,
+                seniority: `${differenceInYears(new Date(parseInt(selectedAnniversaryYear), parseInt(selectedAnniversaryMonth)), parseISO(emp.dateEmbauche!))} ans`,
+            }))}
+        />
     )}
     {isPrintingRetirements && organizationLogos && (
-        <RetirementPrintLayout logos={organizationLogos} employees={upcomingRetirements} year={selectedRetirementYear} />
+         <PrintLayout
+            logos={organizationLogos}
+            title={`LISTE DES EMPLOYÉS PARTANT À LA RETRAITE EN ${selectedRetirementYear}`}
+            columns={[
+                { header: 'N°', key: 'index' },
+                { header: 'Nom & Prénoms', key: 'name' },
+                { header: 'Poste', key: 'poste' },
+                { header: 'Date de Naissance', key: 'dateOfBirth' },
+                { header: 'Date de Départ', key: 'retirementDate', align: 'center' },
+            ]}
+            data={upcomingRetirements.map((emp, index) => ({
+                index: index + 1,
+                name: emp.name,
+                poste: emp.poste,
+                dateOfBirth: emp.Date_Naissance,
+                retirementDate: format(emp.calculatedRetirementDate, 'dd/MM/yyyy'),
+            }))}
+        />
     )}
     </>
   );
-}
-
-function AnniversaryPrintLayout({ logos, employees, period, year }: { logos: OrganizationSettings, employees: Employe[], period: string, year: string }) {
-    return (
-        <div id="print-section" className="bg-white text-black p-8 w-full print:shadow-none print:border-none print:p-0">
-            <header className="flex justify-between items-start mb-8">
-                <div className="w-1/4 text-center flex flex-col justify-center items-center h-24">
-                   {logos.mainLogoUrl && <img src={logos.mainLogoUrl} alt="Logo Principal" className="max-h-24 max-w-full h-auto w-auto" />}
-                </div>
-                <div className="w-2/4 text-center pt-2">
-                    <h1 className="font-bold text-lg">{logos.organizationName || "Chambre Nationale des Rois et Chefs Traditionnels"}</h1>
-                </div>
-                <div className="w-1/4 text-center flex flex-col justify-center items-center h-24">
-                    <p className="font-bold text-base">République de Côte d'Ivoire</p>
-                    <p className="text-sm">Union - Discipline - Travail</p>
-                    {logos.secondaryLogoUrl && <img src={logos.secondaryLogoUrl} alt="Logo Secondaire" className="max-h-16 max-w-full h-auto w-auto mt-1" />}
-                </div>
-            </header>
-
-            <div className="text-center my-6">
-                <h1 className="text-lg font-bold underline">LISTE DES EMPLOYÉS ATTEIGNANT UN ANNIVERSAIRE D'ANCIENNETÉ</h1>
-                <h2 className="text-md font-bold mt-4 uppercase">{period}</h2>
-            </div>
-            
-            <table className="w-full text-sm border-collapse border border-black">
-                <thead>
-                    <tr className="bg-gray-200">
-                        <th className="border border-black p-2 text-left font-bold">N°</th>
-                        <th className="border border-black p-2 text-left font-bold">Nom & Prénoms</th>
-                        <th className="border border-black p-2 text-left font-bold">Poste</th>
-                        <th className="border border-black p-2 text-left font-bold">Date d'embauche</th>
-                        <th className="border border-black p-2 text-center font-bold">Ancienneté</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {employees.map((employee, index) => {
-                        const years = differenceInYears(new Date(parseInt(year), new Date().getMonth()), parseISO(employee.dateEmbauche!));
-                        return (
-                            <tr key={employee.id}>
-                                <td className="border border-black p-2 text-center">{index + 1}</td>
-                                <td className="border border-black p-2">{employee.name}</td>
-                                <td className="border border-black p-2">{employee.poste}</td>
-                                <td className="border border-black p-2">{employee.dateEmbauche}</td>
-                                <td className="border border-black p-2 text-center">{years} ans</td>
-                            </tr>
-                        )
-                    })}
-                </tbody>
-            </table>
-
-            <footer className="mt-8 text-xs">
-                <div className="flex justify-between items-end">
-                    <div></div>
-                    <div className="text-center">
-                        <p className="font-bold">{logos.organizationName || "Chambre Nationale de Rois et Chefs Traditionnels (CNRCT)"}</p>
-                        <p>Yamoussoukro, Riviera - BP 201 Yamoussoukro | Tél : (225) 30 64 06 60 | Fax : (+255) 30 64 06 63</p>
-                        <p>www.cnrct.ci - Email : info@cnrct.ci</p>
-                    </div>
-                    <div><p className="page-number"></p></div>
-                </div>
-            </footer>
-        </div>
-    );
-}
-
-function RetirementPrintLayout({ logos, employees, year }: { logos: OrganizationSettings, employees: (Employe & { calculatedRetirementDate: Date })[], year: string }) {
-    return (
-        <div id="print-section" className="bg-white text-black p-8 w-full print:shadow-none print:border-none print:p-0">
-            <header className="flex justify-between items-start mb-8">
-                <div className="w-1/4 text-center flex flex-col justify-center items-center h-24">
-                    {logos.mainLogoUrl && <img src={logos.mainLogoUrl} alt="Logo Principal" className="max-h-24 max-w-full h-auto w-auto" />}
-                </div>
-                 <div className="w-2/4 text-center pt-2">
-                    <h1 className="font-bold text-lg">{logos.organizationName || "Chambre Nationale des Rois et Chefs Traditionnels"}</h1>
-                </div>
-                <div className="w-1/4 text-center flex flex-col justify-center items-center h-24">
-                     <p className="font-bold text-base">République de Côte d'Ivoire</p>
-                    <p className="text-sm">Union - Discipline - Travail</p>
-                    {logos.secondaryLogoUrl && <img src={logos.secondaryLogoUrl} alt="Logo Secondaire" className="max-h-16 max-w-full h-auto w-auto mt-1" />}
-                </div>
-            </header>
-
-            <div className="text-center my-6">
-                <h1 className="text-lg font-bold underline">LISTE DES EMPLOYÉS PARTANT À LA RETRAITE EN {year}</h1>
-            </div>
-            
-            <table className="w-full text-sm border-collapse border border-black">
-                <thead>
-                    <tr className="bg-gray-200">
-                        <th className="border border-black p-2 text-left font-bold">N°</th>
-                        <th className="border border-black p-2 text-left font-bold">Nom & Prénoms</th>
-                        <th className="border border-black p-2 text-left font-bold">Poste</th>
-                        <th className="border border-black p-2 text-left font-bold">Date de Naissance</th>
-                        <th className="border border-black p-2 text-center font-bold">Date de Départ</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {employees.map((employee, index) => (
-                        <tr key={employee.id}>
-                            <td className="border border-black p-2 text-center">{index + 1}</td>
-                            <td className="border border-black p-2">{employee.name}</td>
-                            <td className="border border-black p-2">{employee.poste}</td>
-                            <td className="border border-black p-2">{employee.Date_Naissance}</td>
-                            <td className="border border-black p-2 text-center">{format(employee.calculatedRetirementDate, 'dd/MM/yyyy')}</td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-
-            <footer className="mt-8 text-xs">
-                <div className="flex justify-between items-end">
-                    <div></div>
-                    <div className="text-center">
-                        <p className="font-bold">{logos.organizationName || "Chambre Nationale de Rois et Chefs Traditionnels (CNRCT)"}</p>
-                        <p>Yamoussoukro, Riviera - BP 201 Yamoussoukro | Tél : (225) 30 64 06 60 | Fax : (+255) 30 64 06 63</p>
-                        <p>www.cnrct.ci - Email : info@cnrct.ci</p>
-                    </div>
-                    <div><p className="page-number"></p></div>
-                </div>
-            </footer>
-        </div>
-    );
 }
 
     

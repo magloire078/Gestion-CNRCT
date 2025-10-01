@@ -6,35 +6,28 @@ import { getStorage, FirebaseStorage } from "firebase/storage";
 import { getAnalytics } from "firebase/analytics";
 
 const firebaseConfig: FirebaseOptions = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  apiKey: "AIzaSyBuMgqk-I_mngDw4SYuNhOOLcF6JNchXhw",
   authDomain: "gestion-cnrct.firebaseapp.com",
+  databaseURL: "https://gestion-cnrct-default-rtdb.europe-west1.firebasedatabase.app",
   projectId: "gestion-cnrct",
-  storageBucket: "gestion-cnrct.appspot.com",
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  storageBucket: "gestion-cnrct.firebasestorage.app",
+  messagingSenderId: "126727792063",
   appId: "1:126727792063:web:55513c7e21531a87286d0a",
-  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
+  measurementId: "G-TDXM581DZ5"
 };
 
-// Use a function to ensure services are initialized only once
-function initializeFirebaseServices() {
-  const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
-  const db = getFirestore(app);
-  const auth = getAuth(app);
-  const storage = getStorage(app);
-
-  // Initialize Analytics only in the browser
-  if (typeof window !== 'undefined') {
+// Initialize Firebase
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+const db = getFirestore(app);
+const auth = getAuth(app);
+const storage = getStorage(app);
+if (typeof window !== 'undefined') {
     try {
       getAnalytics(app);
     } catch (error) {
       console.log("Could not initialize Analytics", error);
     }
-  }
-
-  return { app, db, auth, storage };
 }
 
-// Export the initialized services
-const { app, db, auth, storage } = initializeFirebaseServices();
 
 export { app, db, auth, storage };

@@ -1,19 +1,19 @@
 {
   "name": "Gestion CNRCT",
-  "short_name": "Gestion CNRCT",
-  "description": "Application de gestion des ressources humaines et matérielles.",
+  "short_name": "Gestion",
+  "description": "Application de gestion pour la CNRCT.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#4f46e5",
+  "theme_color": "#2C3E50",
   "icons": [
     {
-      "src": "/assets/icons/icon-192x192.png",
+      "src": "/icons/icon-192x192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/assets/icons/icon-512x512.png",
+      "src": "/icons/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png"
     }

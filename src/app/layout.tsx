@@ -35,6 +35,8 @@ export default async function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Arial&display=swap"
           rel="stylesheet"
         />
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#2C3E50" />
       </head>
       <body className="font-body antialiased">
          <ThemeProvider

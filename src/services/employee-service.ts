@@ -184,10 +184,16 @@ export async function updateEmployee(employeeId: string, employeeDataToUpdate: P
 }
 
 export async function searchEmployees(queryText: string): Promise<Employe[]> {
+    if (!queryText) {
+        return getEmployees();
+    }
     const lowerCaseQuery = queryText.toLowerCase();
     const allEmployees = await getEmployees();
+    
     return allEmployees.filter(employee => 
         (employee.name?.toLowerCase() || '').includes(lowerCaseQuery) || 
+        (employee.firstName?.toLowerCase() || '').includes(lowerCaseQuery) || 
+        (employee.lastName?.toLowerCase() || '').includes(lowerCaseQuery) || 
         (employee.matricule?.toLowerCase() || '').includes(lowerCaseQuery)
     );
 }

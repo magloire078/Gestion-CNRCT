@@ -20,7 +20,7 @@ async function syncChiefs() {
         return;
     }
 
-    const chiefNames = potentialChiefs.map(p => p.name);
+    const chiefNames = potentialChiefs.map(p => `${p.firstName || ''} ${p.lastName || ''}`.trim());
     const existingChiefsMap = new Map<string, {id: string, data: Chief}>();
 
     for (let i = 0; i < chiefNames.length; i += 30) {
@@ -41,8 +41,9 @@ async function syncChiefs() {
     let updatedCount = 0;
     
     for (const employee of potentialChiefs) {
+        const name = `${employee.firstName || ''} ${employee.lastName || ''}`.trim();
         const chiefData: Partial<Chief> = {
-            name: employee.name,
+            name: name,
             firstName: employee.firstName,
             lastName: employee.lastName,
             title: employee.poste || 'Titre non défini',
@@ -54,7 +55,7 @@ async function syncChiefs() {
             photoUrl: employee.photoUrl || 'https://placehold.co/100x100.png',
         };
 
-        const existingChief = existingChiefsMap.get(employee.name);
+        const existingChief = existingChiefsMap.get(name);
         
         if (existingChief) {
             const chiefDocRef = doc(db, 'chiefs', existingChief.id);

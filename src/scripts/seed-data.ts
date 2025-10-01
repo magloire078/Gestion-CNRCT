@@ -73,7 +73,7 @@ const employeesToSyncAsChiefs = employeesData
     .filter(emp => emp.department === 'Directoire' || (emp.Region && emp.Village))
     .map(emp => ({
         id: emp.id, // Use same ID for simplicity in seeding
-        name: emp.name,
+        name: `${emp.firstName || ''} ${emp.lastName || ''}`.trim(),
         firstName: emp.firstName,
         lastName: emp.lastName,
         title: emp.poste,

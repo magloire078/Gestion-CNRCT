@@ -11,7 +11,7 @@ const firebaseConfig: FirebaseOptions = {
   projectId: "gestion-cnrct",
   storageBucket: "gestion-cnrct.appspot.com",
   messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  appId: "1:126727792063:web:55513c7e21531a87286d0a",
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 

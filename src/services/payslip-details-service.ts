@@ -69,7 +69,8 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
     const history = await getEmployeeHistory(employee.id);
     const payslipDateObj = parseISO(payslipDate);
 
-    // Find the most recent event that is effective on or before the payslip date
+    // Find the most recent 'Augmentation' event that is effective on or before the payslip date.
+    // This ensures we use the correct salary structure for the given historical period.
     const relevantEvent = history
         .filter(event => 
             event.eventType === 'Augmentation' &&
@@ -92,20 +93,20 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
         };
 
         if (relevantEvent && relevantEvent.details) {
-            // Use the salary details from the relevant historical event,
-            // falling back to current employee data if a field is missing in the event.
+            // Use the salary details from the relevant historical event.
+            // If a field is missing in the event, it defaults to 0, not the current employee data.
             return {
-                baseSalary: Number(relevantEvent.details.baseSalary ?? currentEmployeeData.baseSalary),
-                indemniteTransportImposable: Number(relevantEvent.details.indemniteTransportImposable ?? currentEmployeeData.indemniteTransportImposable),
-                indemniteResponsabilite: Number(relevantEvent.details.indemniteResponsabilite ?? currentEmployeeData.indemniteResponsabilite),
-                indemniteLogement: Number(relevantEvent.details.indemniteLogement ?? currentEmployeeData.indemniteLogement),
-                indemniteSujetion: Number(relevantEvent.details.indemniteSujetion ?? currentEmployeeData.indemniteSujetion),
-                indemniteCommunication: Number(relevantEvent.details.indemniteCommunication ?? currentEmployeeData.indemniteCommunication),
-                indemniteRepresentation: Number(relevantEvent.details.indemniteRepresentation ?? currentEmployeeData.indemniteRepresentation),
-                transportNonImposable: Number(relevantEvent.details.transportNonImposable ?? currentEmployeeData.transportNonImposable),
+                baseSalary: Number(relevantEvent.details.baseSalary || 0),
+                indemniteTransportImposable: Number(relevantEvent.details.indemniteTransportImposable || 0),
+                indemniteResponsabilite: Number(relevantEvent.details.indemniteResponsabilite || 0),
+                indemniteLogement: Number(relevantEvent.details.indemniteLogement || 0),
+                indemniteSujetion: Number(relevantEvent.details.indemniteSujetion || 0),
+                indemniteCommunication: Number(relevantEvent.details.indemniteCommunication || 0),
+                indemniteRepresentation: Number(relevantEvent.details.indemniteRepresentation || 0),
+                transportNonImposable: Number(relevantEvent.details.transportNonImposable || 0),
             };
         } else {
-            // No relevant augmentation found, use the current employee data.
+            // No relevant augmentation found, use the current employee data as the default.
             return currentEmployeeData;
         }
     };

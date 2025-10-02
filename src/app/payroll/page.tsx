@@ -572,20 +572,20 @@ function PayslipTemplate({ payslipDetails }: { payslipDetails: PayslipDetails })
     return (
         <div className="w-full max-w-4xl mx-auto bg-white p-6 border-b border-gray-300 text-black font-arial text-[8px] leading-tight print-page-break">
            {/* Header */}
-            <header className="flex justify-between items-center pb-2 pt-2 border-b-2 border-gray-400">
+            <header className="flex justify-between items-center pt-2 pb-1 border-b-2 border-gray-400 mb-2">
                 <div className="w-1/4 text-center flex flex-col justify-center items-center h-28">
-                     <p className="font-bold text-[11px]">Chambre Nationale des Rois et Chefs Traditionnels</p>
+                     <p className="font-bold text-base">Chambre Nationale des Rois et Chefs Traditionnels</p>
                      {organizationLogos.mainLogoUrl && <img src={organizationLogos.mainLogoUrl} alt="Logo CNRCT" className="max-h-24 max-w-full h-auto w-auto mt-1" />}
                 </div>
                 
                     <div className="w-1/4 text-center flex flex-col justify-center items-center h-28">
-                    <p className="font-bold text-[9px] leading-tight">REPUBLIQUE DE CÔTE D'IVOIRE</p>
-                    {organizationLogos.secondaryLogoUrl && <img src={organizationLogos.secondaryLogoUrl} alt="Emblème de la Côte d'Ivoire" className="max-h-16 max-w-full h-auto w-auto my-1" />}
+                    <p className="font-bold text-[10px] leading-tight">REPUBLIQUE DE CÔTE D'IVOIRE</p>
+                    {organizationLogos.secondaryLogoUrl && <img src={organizationLogos.secondaryLogoUrl} alt="Emblème de la Côte d'Ivoire" className="max-h-20 max-w-full h-auto w-auto my-1" />}
                     <p className="text-[9px]">Union - Discipline - Travail</p>
                 </div>
             </header>
 
-            <div className="mt-2">
+            <div>
                 <div className="text-center my-2 p-1 bg-gray-200 font-bold rounded-md text-sm">
                     BULLETIN DE PAIE CNRCT : Période de {periodDisplay}
                 </div>
@@ -690,7 +690,7 @@ function PayslipTemplate({ payslipDetails }: { payslipDetails: PayslipDetails })
                      </div>
                 
                 {/* Employer Contributions */}
-                <div className="grid grid-cols-12 mt-2">
+                <div className="grid grid-cols-12 mt-1">
                     <div className="col-span-8">
                         <p className="font-bold text-center underline mb-1 text-sm">Impôts à la charge de l'employeur</p>
                         <div className="border border-gray-400 rounded-lg p-1 text-[9px]">
@@ -719,7 +719,7 @@ function PayslipTemplate({ payslipDetails }: { payslipDetails: PayslipDetails })
                     </div>
 
                 {/* Footer */}
-                <footer className="text-center pt-2 mt-2 border-t-2 border-gray-400 text-xs">
+                <footer className="text-center pt-1 mt-1 border-t-2 border-gray-400 text-xs">
                     <div className="flex justify-between items-end">
                         <div></div>
                         <div className="leading-tight">

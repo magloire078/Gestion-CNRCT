@@ -40,9 +40,9 @@ export default function MissionReportPage() {
   const [reportData, setReportData] = useState<ReportData | null>(null);
   
   const years = Array.from({ length: 10 }, (_, i) => (new Date().getFullYear() - i).toString());
-  const months = Array.from({ length: 12 }, (_, i) => ({ value: (i + 1).toString(), label: fr.localize?.month(i, { width: 'wide' }) }));
+  const months = Array.from({ length: 12 }, (_, i) => ({ value: (i + 1).toString(), label: format(new Date(2000, i, 1), 'MMMM', { locale: fr }) }));
   
-  const selectedPeriodText = `${months.find(m => m.value === month)?.label} ${year}`;
+  const selectedPeriodText = `${months.find(m => m.value === month)?.label || ''} ${year}`;
 
   const calculateMissionCost = (mission: Mission): number => {
     return mission.participants.reduce((total, p) => {

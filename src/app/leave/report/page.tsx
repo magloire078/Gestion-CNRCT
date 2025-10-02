@@ -41,9 +41,9 @@ export default function LeaveReportPage() {
   const [reportData, setReportData] = useState<ReportData | null>(null);
   
   const years = Array.from({ length: 10 }, (_, i) => (new Date().getFullYear() - i).toString());
-  const months = Array.from({ length: 12 }, (_, i) => ({ value: (i + 1).toString(), label: fr.localize?.month(i, { width: 'wide' }) }));
+  const months = Array.from({ length: 12 }, (_, i) => ({ value: (i + 1).toString(), label: format(new Date(2000, i, 1), 'MMMM', { locale: fr }) }));
   
-  const selectedPeriodText = `${months.find(m => m.value === month)?.label} ${year}`;
+  const selectedPeriodText = `${months.find(m => m.value === month)?.label || ''} ${year}`;
 
   const calculateWorkingDaysInPeriod = (leave: Leave, periodStart: Date, periodEnd: Date): number => {
     try {
@@ -142,7 +142,7 @@ export default function LeaveReportPage() {
               <Select value={month} onValueChange={setMonth}>
                 <SelectTrigger id="month"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {months.map(m => <SelectItem key={m.value} value={m.label}>{m.label}</SelectItem>)}
+                  {months.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>

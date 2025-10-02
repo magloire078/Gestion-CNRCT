@@ -424,11 +424,11 @@ export default function ItAssetsPage() {
             <div id="print-section" className="bg-white text-black p-8 w-full print:shadow-none print:border-none print:p-0">
                 <header className="flex justify-between items-start mb-8">
                     <div className="text-center">
-                        <h2 className="font-bold">{organizationLogos?.organizationName || 'Gestion App'}</h2>
+                        <h2 className="font-bold">Chambre Nationale des Rois et Chefs Traditionnels</h2>
                         {organizationLogos?.mainLogoUrl && <img src={organizationLogos.mainLogoUrl} alt="Logo" width={80} height={80} className="mx-auto mt-2" />}
                     </div>
                     <div className="text-center">
-                        <h2 className="font-bold">République de Côte d'Ivoire</h2>
+                        <p className="font-bold">République de Côte d'Ivoire</p>
                         {organizationLogos?.secondaryLogoUrl && <img src={organizationLogos.secondaryLogoUrl} alt="Logo secondaire" width={80} height={80} className="mx-auto my-2" />}
                         <p className="text-sm">Union - Discipline - Travail</p>
                     </div>

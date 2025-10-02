@@ -16,7 +16,8 @@ export function PrintLayout({ logos, title, subtitle, columns, data }: PrintLayo
         <div id="print-section" className="bg-white text-black p-8 w-full print:shadow-none print:border-none print:p-0">
             <header className="flex justify-between items-start mb-8">
                 <div className="w-1/4 text-center flex flex-col justify-center items-center h-24">
-                   {logos.mainLogoUrl && <img src={logos.mainLogoUrl} alt="Logo Principal" className="max-h-24 max-w-full h-auto w-auto" />}
+                   <p className="font-bold text-base">Chambre Nationale des Rois et Chefs Traditionnels</p>
+                   {logos.mainLogoUrl && <img src={logos.mainLogoUrl} alt="Logo Principal" className="max-h-20 max-w-full h-auto w-auto mt-1" />}
                 </div>
                 <div className="w-2/4 text-center pt-2">
                     <h1 className="font-bold text-lg">{logos.organizationName || "Chambre Nationale des Rois et Chefs Traditionnels"}</h1>

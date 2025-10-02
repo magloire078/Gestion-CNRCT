@@ -434,7 +434,9 @@ export default function EmployeesPage() {
                 <Card>
                     <CardHeader>
                     <CardTitle>Liste des employés</CardTitle>
-                    <CardDescription>Une liste complète de tous les employés de la catégorie sélectionnée.</CardDescription>
+                    <CardDescription>
+                      Une liste complète de tous les employés de la catégorie sélectionnée.
+                    </CardDescription>
                     </CardHeader>
                     <CardContent>
                     <div className="flex flex-col sm:flex-row gap-2 mb-4 flex-wrap">
@@ -630,15 +632,14 @@ export default function EmployeesPage() {
             <div id="print-section" className="bg-white text-black p-8 w-full print:shadow-none print:border-none print:p-0">
                 <header className="flex justify-between items-start mb-8">
                     <div className="text-center">
-                        <h2 className="font-bold">Chambre Nationale des Rois</h2>
-                        <h2 className="font-bold">et Chefs Traditionnels</h2>
+                        <h2 className="font-bold">Chambre Nationale des Rois et Chefs Traditionnels</h2>
                          {organizationLogos.mainLogoUrl && <img src={organizationLogos.mainLogoUrl} alt="Logo CNRCT" width={80} height={80} className="mx-auto mt-2" />}
                         <p className="font-bold mt-1 text-sm">UN CHEF NOUVEAU</p>
                         <p className="text-xs mt-4">LE DIRECTOIRE</p>
                         <p className="text-xs">LE CABINET / LE SERVICE INFORMATIQUE</p>
                     </div>
                     <div className="text-center">
-                        <h2 className="font-bold">République de Côte d'Ivoire</h2>
+                        <p className="font-bold">République de Côte d'Ivoire</p>
                         {organizationLogos.secondaryLogoUrl && <img src={organizationLogos.secondaryLogoUrl} alt="Logo Cote d'Ivoire" width={80} height={80} className="mx-auto my-2" />}
                         <p>Union - Discipline - Travail</p>
                     </div>
@@ -701,3 +702,4 @@ export default function EmployeesPage() {
 
 
     
+

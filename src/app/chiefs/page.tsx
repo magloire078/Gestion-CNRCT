@@ -11,6 +11,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from "@/components/ui/card";
 import {
   Table,
@@ -38,6 +39,8 @@ import { Badge } from "@/components/ui/badge";
 import Papa from "papaparse";
 import { ImportChiefsDataCard } from "@/components/chiefs/import-chiefs-data-card";
 import { useAuth } from "@/hooks/use-auth";
+import { PaginationControls } from "@/components/common/pagination-controls";
+import { ConfirmationDialog } from "@/components/common/confirmation-dialog";
 
 export default function ChiefsPage() {
   const [chiefs, setChiefs] = useState<Chief[]>([]);
@@ -47,6 +50,10 @@ export default function ChiefsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
   const { hasPermission } = useAuth();
+  const [deleteTarget, setDeleteTarget] = useState<Chief | null>(null);
+  
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const canImport = hasPermission('feature:chiefs:import');
   const canExport = hasPermission('feature:chiefs:export');
@@ -80,32 +87,44 @@ export default function ChiefsPage() {
     }
   };
 
-  const handleDeleteChief = async (chief: Chief) => {
-    if (confirm(`Êtes-vous sûr de vouloir supprimer ${chief.name} du répertoire ?`)) {
-      try {
-        await deleteChief(chief.id);
-        toast({
-          title: "Chef supprimé",
-          description: `${chief.name} a été retiré du répertoire.`,
-        });
-      } catch (err) {
-        toast({
-          variant: "destructive",
-          title: "Erreur",
-          description: `Impossible de supprimer ${chief.name}.`,
-        });
-      }
+  const handleDeleteChief = async () => {
+    if (!deleteTarget) return;
+    try {
+      await deleteChief(deleteTarget.id);
+      toast({
+        title: "Chef supprimé",
+        description: `${deleteTarget.name} a été retiré du répertoire.`,
+      });
+    } catch (err) {
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: `Impossible de supprimer ${deleteTarget.name}.`,
+      });
+    } finally {
+        setDeleteTarget(null);
     }
   };
 
   const filteredChiefs = useMemo(() => {
-    return chiefs.filter((chief) =>
+    const filtered = chiefs.filter((chief) =>
       chief.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (chief.region || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       (chief.village || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       chief.title.toLowerCase().includes(searchTerm.toLowerCase())
     );
-  }, [chiefs, searchTerm]);
+    if (currentPage > Math.ceil(filtered.length / itemsPerPage)) {
+        setCurrentPage(1);
+    }
+    return filtered;
+  }, [chiefs, searchTerm, currentPage, itemsPerPage]);
+
+  const paginatedChiefs = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredChiefs.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredChiefs, currentPage, itemsPerPage]);
+
+  const totalPages = Math.ceil(filteredChiefs.length / itemsPerPage);
   
     const downloadFile = (content: string, fileName: string, contentType: string) => {
       const blob = new Blob([content], { type: contentType });
@@ -250,9 +269,9 @@ export default function ChiefsPage() {
                     </TableRow>
                   ))
                 ) : (
-                  filteredChiefs.map((chief, index) => (
+                  paginatedChiefs.map((chief, index) => (
                     <TableRow key={chief.id}>
-                      <TableCell>{index + 1}</TableCell>
+                      <TableCell>{(currentPage - 1) * itemsPerPage + index + 1}</TableCell>
                       <TableCell>
                         <Avatar>
                           <AvatarImage src={chief.photoUrl} alt={chief.name} data-ai-hint="chief portrait" />
@@ -291,7 +310,7 @@ export default function ChiefsPage() {
                                    <Pencil className="mr-2 h-4 w-4" /> Modifier
                                 </Link>
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleDeleteChief(chief)} className="text-destructive focus:text-destructive">
+                            <DropdownMenuItem onClick={() => setDeleteTarget(chief)} className="text-destructive focus:text-destructive">
                               <Trash2 className="mr-2 h-4 w-4" />
                               Supprimer
                             </DropdownMenuItem>
@@ -305,17 +324,36 @@ export default function ChiefsPage() {
             </Table>
           </div>
 
-          {!loading && filteredChiefs.length === 0 && (
+          {!loading && paginatedChiefs.length === 0 && (
             <div className="text-center py-10 text-muted-foreground">
               Aucun chef trouvé.
             </div>
           )}
         </CardContent>
+        {totalPages > 1 && (
+            <CardFooter>
+                <PaginationControls
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setCurrentPage}
+                    itemsPerPage={itemsPerPage}
+                    onItemsPerPageChange={setItemsPerPage}
+                    totalItems={filteredChiefs.length}
+                />
+            </CardFooter>
+        )}
       </Card>
       <AddChiefSheet 
         isOpen={isSheetOpen}
         onClose={() => setIsSheetOpen(false)}
         onAddChief={handleAddChief}
+      />
+      <ConfirmationDialog
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDeleteChief}
+        title={`Supprimer ${deleteTarget?.name} ?`}
+        description="Êtes-vous sûr de vouloir supprimer cette autorité du répertoire ? Cette action est irréversible."
       />
     </div>
   );

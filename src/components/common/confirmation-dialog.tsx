@@ -27,6 +27,12 @@ export function ConfirmationDialog({
   title,
   description,
 }: ConfirmationDialogProps) {
+  
+  const handleConfirmClick = () => {
+    onConfirm();
+    onClose();
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
@@ -40,7 +46,7 @@ export function ConfirmationDialog({
           </DialogClose>
           <Button
             variant="destructive"
-            onClick={onConfirm}
+            onClick={handleConfirmClick}
           >
             Confirmer
           </Button>

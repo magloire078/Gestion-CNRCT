@@ -572,20 +572,31 @@ function PayslipTemplate({ payslipDetails }: { payslipDetails: PayslipDetails })
     return (
         <div className="w-full max-w-4xl mx-auto bg-white p-6 border-b border-gray-300 text-black font-arial text-[8px] leading-tight print-page-break">
            {/* Header */}
-            <header className="flex justify-between items-center pt-2 pb-1 border-b-2 border-gray-400 mb-2">
+            <header className="flex justify-between items-center pt-2 pb-1 mb-2">
                 <div className="w-1/4 text-center flex flex-col justify-center items-center h-28">
-                     <p className="font-bold text-base">Chambre Nationale des Rois et Chefs Traditionnels</p>
-                     {organizationLogos.mainLogoUrl && <img src={organizationLogos.mainLogoUrl} alt="Logo CNRCT" className="max-h-24 max-w-full h-auto w-auto mt-1" />}
+                     <div className='font-bold text-[10px] leading-tight'>
+                        <p>Chambre Nationale des Rois</p>
+                        <p className="-mt-1">et Chefs Traditionnels</p>
+                    </div>
+                     {organizationLogos.mainLogoUrl && <img src={organizationLogos.mainLogoUrl} alt="Logo CNRCT" className="max-h-20 max-w-full h-auto w-auto mt-1" />}
                 </div>
                 
-                    <div className="w-1/4 text-center flex flex-col justify-center items-center h-28">
+                 <div className="w-2/4 text-center pt-2">
+                    <h1 className="font-bold text-[11px] leading-tight">
+                        {organizationLogos.organizationName || "Chambre Nationale des Rois et Chefs Traditionnels"}
+                    </h1>
+                    <p className="text-sm mt-2">LE DIRECTOIRE</p>
+                </div>
+
+                <div className="w-1/4 text-center flex flex-col justify-center items-center h-28">
                     <p className="font-bold text-[10px] leading-tight">REPUBLIQUE DE CÔTE D'IVOIRE</p>
-                    {organizationLogos.secondaryLogoUrl && <img src={organizationLogos.secondaryLogoUrl} alt="Emblème de la Côte d'Ivoire" className="max-h-20 max-w-full h-auto w-auto my-1" />}
+                    {organizationLogos.secondaryLogoUrl && <img src={organizationLogos.secondaryLogoUrl} alt="Emblème de la Côte d'Ivoire" className="max-h-[72px] max-w-full h-auto w-auto my-1" />}
                     <p className="text-[9px]">Union - Discipline - Travail</p>
                 </div>
             </header>
+            <div className='border-t-2 border-gray-400'></div>
 
-            <div>
+            <div className="mt-2">
                 <div className="text-center my-2 p-1 bg-gray-200 font-bold rounded-md text-sm">
                     BULLETIN DE PAIE CNRCT : Période de {periodDisplay}
                 </div>
@@ -719,7 +730,8 @@ function PayslipTemplate({ payslipDetails }: { payslipDetails: PayslipDetails })
                     </div>
 
                 {/* Footer */}
-                <footer className="text-center pt-1 mt-1 border-t-2 border-gray-400 text-xs">
+                <footer className="text-center pt-1 mt-1 text-xs">
+                     <div className='border-t-2 border-gray-400 mb-1'></div>
                     <div className="flex justify-between items-end">
                         <div></div>
                         <div className="leading-tight">

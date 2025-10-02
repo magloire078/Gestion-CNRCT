@@ -429,6 +429,7 @@ export default function ItAssetsPage() {
                     </div>
                     <div className="text-center">
                         <h2 className="font-bold">République de Côte d'Ivoire</h2>
+                        {organizationLogos?.secondaryLogoUrl && <img src={organizationLogos.secondaryLogoUrl} alt="Logo secondaire" width={80} height={80} className="mx-auto my-2" />}
                         <p className="text-sm">Union - Discipline - Travail</p>
                     </div>
                 </header>
@@ -449,7 +450,7 @@ export default function ItAssetsPage() {
                             <tr key={asset.tag}>
                                 <td className="border border-black p-1 text-center">{index + 1}</td>
                                 {columnsToPrint.map(key => (
-                                    <td key={key} className="border border-black p-1">{asset[key] || ''}</td>
+                                    <td key={key} className="border border-black p-1">{asset[key as keyof Asset] || ''}</td>
                                 ))}
                             </tr>
                         ))}

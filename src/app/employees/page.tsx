@@ -35,6 +35,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PaginationControls } from "@/components/common/pagination-controls";
 import { ImportDataCard } from "@/components/admin/import-data-card";
 import { useAuth } from "@/hooks/use-auth";
+import { ConfirmationDialog } from "@/components/common/confirmation-dialog";
 
 
 type Status = 'Actif' | 'En congé' | 'Licencié' | 'Retraité' | 'Décédé';
@@ -69,6 +70,8 @@ export default function EmployeesPage() {
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   const { hasPermission } = useAuth();
+  const [deleteTarget, setDeleteTarget] = useState<Employe | null>(null);
+
 
   const [departments, setDepartments] = useState<Department[]>([]);
   const [directions, setDirections] = useState<Direction[]>([]);
@@ -181,20 +184,19 @@ export default function EmployeesPage() {
   };
   
   const handleDeleteEmployee = async (employeeId: string) => {
-      if (confirm("Êtes-vous sûr de vouloir supprimer cet employé ?")) {
-          try {
-              await deleteEmployee(employeeId);
-              toast({
-                  title: "Employé supprimé",
-                  description: "L'employé a été supprimé avec succès.",
-              });
-          } catch (err) {
-              toast({
-                  variant: "destructive",
-                  title: "Erreur",
-                  description: "Impossible de supprimer l'employé.",
-              });
-          }
+      setDeleteTarget(null);
+      try {
+          await deleteEmployee(employeeId);
+          toast({
+              title: "Employé supprimé",
+              description: "L'employé a été supprimé avec succès.",
+          });
+      } catch (err) {
+          toast({
+              variant: "destructive",
+              title: "Erreur",
+              description: "Impossible de supprimer l'employé.",
+          });
       }
   };
   
@@ -570,7 +572,7 @@ export default function EmployeesPage() {
                                                         Modifier
                                                       </Link>
                                                     </DropdownMenuItem>
-                                                    <DropdownMenuItem onClick={() => handleDeleteEmployee(employee.id)} className="text-destructive focus:text-destructive">
+                                                    <DropdownMenuItem onClick={() => setDeleteTarget(employee)} className="text-destructive focus:text-destructive">
                                                         <Trash2 className="mr-2 h-4 w-4" />
                                                         Supprimer
                                                     </DropdownMenuItem>
@@ -603,7 +605,7 @@ export default function EmployeesPage() {
                         </CardFooter>
                     )}
                 </Card>
-                <AddEmployeeSheet 
+                 <AddEmployeeSheet 
                     isOpen={isAddSheetOpen}
                     onClose={() => setIsAddSheetOpen(false)}
                     onAddEmployee={handleAddEmployee}
@@ -613,6 +615,13 @@ export default function EmployeesPage() {
                     onClose={() => setIsPrintDialogOpen(false)}
                     onPrint={handlePrint}
                     allColumns={allColumns}
+                />
+                 <ConfirmationDialog
+                    isOpen={!!deleteTarget}
+                    onClose={() => setDeleteTarget(null)}
+                    onConfirm={() => deleteTarget && handleDeleteEmployee(deleteTarget.id)}
+                    title={`Supprimer ${deleteTarget?.name} ?`}
+                    description="Êtes-vous sûr de vouloir supprimer cet employé ? Cette action est irréversible."
                 />
             </div>
         </div>
@@ -630,8 +639,8 @@ export default function EmployeesPage() {
                     </div>
                     <div className="text-center">
                         <h2 className="font-bold">République de Côte d'Ivoire</h2>
-                        {organizationLogos.secondaryLogoUrl && <img src={organizationLogos.secondaryLogoUrl} alt="Logo Cote d'Ivoire" width={80} height={80} className="mx-auto mt-2" />}
-                        <p className="mt-1">Union - Discipline - Travail</p>
+                        {organizationLogos.secondaryLogoUrl && <img src={organizationLogos.secondaryLogoUrl} alt="Logo Cote d'Ivoire" width={80} height={80} className="mx-auto my-2" />}
+                        <p>Union - Discipline - Travail</p>
                     </div>
                 </header>
 

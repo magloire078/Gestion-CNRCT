@@ -25,14 +25,14 @@ export function DocumentLayout({ children }: DocumentLayoutProps) {
         </div>
         <div className="w-1/4 text-center flex flex-col justify-center items-center h-24">
           <p className="font-bold text-base">République de Côte d'Ivoire</p>
-          <p className="text-sm">Union - Discipline - Travail</p>
           {settings?.secondaryLogoUrl && (
             <img
               src={settings.secondaryLogoUrl}
               alt="Emblème national"
-              className="max-h-16 max-w-full h-auto w-auto mt-1"
+              className="max-h-16 max-w-full h-auto w-auto my-1"
             />
           )}
+          <p className="text-sm">Union - Discipline - Travail</p>
         </div>
       </header>
 

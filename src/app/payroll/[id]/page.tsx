@@ -113,8 +113,8 @@ export default function PayslipPage() {
                     
                      <div className="w-1/4 text-center flex flex-col justify-center items-center h-24">
                         <p className="font-bold text-xs">REPUBLIQUE DE CÔTE D'IVOIRE</p>
+                        {organizationLogos.secondaryLogoUrl && <img src={organizationLogos.secondaryLogoUrl} alt="Emblème de la Côte d'Ivoire" className="max-h-16 max-w-full h-auto w-auto my-1" />}
                         <p className="text-xs">Union - Discipline - Travail</p>
-                        {organizationLogos.secondaryLogoUrl && <img src={organizationLogos.secondaryLogoUrl} alt="Emblème de la Côte d'Ivoire" className="max-h-16 max-w-full h-auto w-auto mt-1" />}
                     </div>
                 </header>
 

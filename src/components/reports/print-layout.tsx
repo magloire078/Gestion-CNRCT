@@ -23,8 +23,8 @@ export function PrintLayout({ logos, title, subtitle, columns, data }: PrintLayo
                 </div>
                 <div className="w-1/4 text-center flex flex-col justify-center items-center h-24">
                     <p className="font-bold text-base">République de Côte d'Ivoire</p>
+                    {logos.secondaryLogoUrl && <img src={logos.secondaryLogoUrl} alt="Logo Secondaire" className="max-h-16 max-w-full h-auto w-auto my-1" />}
                     <p className="text-sm">Union - Discipline - Travail</p>
-                    {logos.secondaryLogoUrl && <img src={logos.secondaryLogoUrl} alt="Logo Secondaire" className="max-h-16 max-w-full h-auto w-auto mt-1" />}
                 </div>
             </header>
 
@@ -70,5 +70,3 @@ export function PrintLayout({ logos, title, subtitle, columns, data }: PrintLayo
         </div>
     );
 }
-
-    

@@ -572,7 +572,7 @@ function PayslipTemplate({ payslipDetails }: { payslipDetails: PayslipDetails })
     return (
         <div className="w-full max-w-4xl mx-auto bg-white p-6 border-b border-gray-300 text-black font-arial text-[8px] leading-tight print-page-break">
            {/* Header */}
-            <header className="flex justify-between items-center pb-2 border-b-2 border-gray-400">
+            <header className="flex justify-between items-center pb-4 border-b-2 border-gray-400">
                 <div className="w-1/4 text-center flex flex-col justify-center items-center h-24">
                      <p className="font-bold text-xs">Chambre Nationale des Rois et Chefs Traditionnels</p>
                      {organizationLogos.mainLogoUrl && <img src={organizationLogos.mainLogoUrl} alt="Logo CNRCT" className="max-h-20 max-w-full h-auto w-auto mt-1" />}
@@ -585,7 +585,7 @@ function PayslipTemplate({ payslipDetails }: { payslipDetails: PayslipDetails })
                 </div>
             </header>
 
-            <div className="mt-4"> {/* Added margin-top here */}
+            <div className="mt-6"> {/* Increased margin-top here */}
                 <div className="text-center my-2 p-1 bg-gray-200 font-bold rounded-md text-sm">
                     BULLETIN DE PAIE CNRCT : Période de {periodDisplay}
                 </div>
@@ -719,7 +719,7 @@ function PayslipTemplate({ payslipDetails }: { payslipDetails: PayslipDetails })
                     </div>
 
                 {/* Footer */}
-                <footer className="text-center pt-2 border-t-2 border-black mt-2 text-xs">
+                <footer className="text-center pt-4 mt-4 border-t-2 border-gray-400 text-xs">
                     <div className="flex justify-between items-end">
                         <div></div>
                         <div className="leading-tight">

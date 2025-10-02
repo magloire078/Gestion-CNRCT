@@ -94,7 +94,6 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
 
         if (relevantEvent && relevantEvent.details) {
             // Use the salary details from the relevant historical event.
-            // If a field is missing in the event, it defaults to 0, not the current employee data.
             return {
                 baseSalary: Number(relevantEvent.details.baseSalary || 0),
                 indemniteTransportImposable: Number(relevantEvent.details.indemniteTransportImposable || 0),
@@ -106,7 +105,7 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
                 transportNonImposable: Number(relevantEvent.details.transportNonImposable || 0),
             };
         } else {
-            // No relevant augmentation found, use the current employee data as the default.
+            // No relevant augmentation found for this period, use the current employee data.
             return currentEmployeeData;
         }
     };

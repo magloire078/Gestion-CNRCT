@@ -195,7 +195,7 @@ export default function DisaReportPage() {
                                 <TableHead>N°</TableHead>
                                 <TableHead>Matricule</TableHead>
                                 <TableHead>Nom et Prénoms</TableHead>
-                                {monthLabels.map(m => <TableHead key={m} className="text-right">{m}</TableHead>)}
+                                {monthLabels.map((m, i) => <TableHead key={`header-${m}-${i}`} className="text-right">{m}</TableHead>)}
                                 <TableHead className="text-right font-bold">Total Brut</TableHead>
                                 <TableHead className="text-right font-bold">Total CNPS</TableHead>
                             </TableRow>
@@ -217,7 +217,7 @@ export default function DisaReportPage() {
                                 <TableRow className="font-bold bg-muted hover:bg-muted">
                                     <TableCell colSpan={3} className="text-right">TOTAUX</TableCell>
                                     {grandTotal.monthly.map((total, index) => (
-                                        <TableCell key={`total-${index}`} className="text-right font-mono text-xs">{formatCurrency(total)}</TableCell>
+                                        <TableCell key={`total-cell-${index}`} className="text-right font-mono text-xs">{formatCurrency(total)}</TableCell>
                                     ))}
                                     <TableCell className="text-right font-mono">{formatCurrency(grandTotal.brut)}</TableCell>
                                     <TableCell className="text-right font-mono">{formatCurrency(grandTotal.cnps)}</TableCell>
@@ -265,7 +265,7 @@ export default function DisaReportPage() {
                         <th className="border border-black p-1">N°</th>
                         <th className="border border-black p-1">Mat.</th>
                         <th className="border border-black p-1">Nom et Prénoms</th>
-                        {monthLabels.map(m => <th key={m} className="border border-black p-1">{m}</th>)}
+                        {monthLabels.map((m, i) => <th key={`header-print-${m}-${i}`} className="border border-black p-1">{m}</th>)}
                         <th className="border border-black p-1">Total Brut</th>
                         <th className="border border-black p-1">Total CNPS</th>
                     </tr>
@@ -286,7 +286,7 @@ export default function DisaReportPage() {
                     <tr className="font-bold bg-gray-100">
                         <td colSpan={3} className="border border-black p-1 text-right">TOTAL</td>
                         {grandTotal.monthly.map((total, index) => (
-                           <td key={`total-print-${index}`} className="border border-black p-1 text-right">{formatCurrency(total)}</td>
+                           <td key={`total-print-cell-${index}`} className="border border-black p-1 text-right">{formatCurrency(total)}</td>
                         ))}
                         <td className="border border-black p-1 text-right">{formatCurrency(grandTotal.brut)}</td>
                         <td className="border border-black p-1 text-right">{formatCurrency(grandTotal.cnps)}</td>

@@ -45,7 +45,7 @@ export default function DisaReportPage() {
   const [organizationLogos, setOrganizationLogos] = useState<OrganizationSettings | null>(null);
   
   const years = Array.from({ length: 10 }, (_, i) => (new Date().getFullYear() - i).toString());
-  const monthLabels = Array.from({ length: 12 }, (_, i) => fr.localize?.month(i, { width: 'short' }).toUpperCase());
+  const monthLabels = Array.from({ length: 12 }, (_, i) => fr.localize?.month(i, { width: 'short' }).toUpperCase() || `M${i+1}`);
 
   const calculateAnnualData = async (payslipPromises: Promise<PayslipDetails>[]): Promise<{ monthlySalaries: number[], totalBrut: number, totalCNPS: number }> => {
     const monthlyDetails = await Promise.all(payslipPromises);
@@ -67,13 +67,17 @@ export default function DisaReportPage() {
 
     try {
       const allEmployees = await getEmployees();
-      const activeEmployees = allEmployees.filter(e => e.status === 'Actif' && e.CNPS);
+      const activeEmployees = allEmployees.filter(e => e.status === 'Actif' && e.CNPS && e.matricule);
       const logos = await getOrganizationSettings();
       setOrganizationLogos(logos);
 
       const reportRows: DisaRow[] = [];
+      const matriculeSet = new Set<string>();
 
       for (const employee of activeEmployees) {
+          if (matriculeSet.has(employee.matricule)) continue; // Ensure unique matricule per report
+          matriculeSet.add(employee.matricule);
+
           const monthlyPayslipPromises: Promise<PayslipDetails>[] = [];
           for (let month = 0; month < 12; month++) {
               const date = new Date(parseInt(year), month, 15);
@@ -195,7 +199,7 @@ export default function DisaReportPage() {
                                 <TableHead>N°</TableHead>
                                 <TableHead>Matricule</TableHead>
                                 <TableHead>Nom et Prénoms</TableHead>
-                                {monthLabels.map((m, i) => <TableHead key={`header-${m}-${i}`} className="text-right">{m}</TableHead>)}
+                                {monthLabels.map((m, i) => <TableHead key={`header-month-${i}`} className="text-right">{m}</TableHead>)}
                                 <TableHead className="text-right font-bold">Total Brut</TableHead>
                                 <TableHead className="text-right font-bold">Total CNPS</TableHead>
                             </TableRow>
@@ -207,7 +211,7 @@ export default function DisaReportPage() {
                                     <TableCell>{row.matricule}</TableCell>
                                     <TableCell className="font-medium whitespace-nowrap">{row.name}</TableCell>
                                     {row.monthlySalaries.map((salary, i) => (
-                                        <TableCell key={`${row.matricule}-${i}`} className="text-right font-mono text-xs">{formatCurrency(salary)}</TableCell>
+                                        <TableCell key={`${row.matricule}-month-${i}`} className="text-right font-mono text-xs">{formatCurrency(salary)}</TableCell>
                                     ))}
                                     <TableCell className="text-right font-mono font-bold">{formatCurrency(row.totalBrut)}</TableCell>
                                     <TableCell className="text-right font-mono font-bold">{formatCurrency(row.totalCNPS)}</TableCell>
@@ -217,7 +221,7 @@ export default function DisaReportPage() {
                                 <TableRow className="font-bold bg-muted hover:bg-muted">
                                     <TableCell colSpan={3} className="text-right">TOTAUX</TableCell>
                                     {grandTotal.monthly.map((total, index) => (
-                                        <TableCell key={`total-cell-${index}`} className="text-right font-mono text-xs">{formatCurrency(total)}</TableCell>
+                                        <TableCell key={`total-month-${index}`} className="text-right font-mono text-xs">{formatCurrency(total)}</TableCell>
                                     ))}
                                     <TableCell className="text-right font-mono">{formatCurrency(grandTotal.brut)}</TableCell>
                                     <TableCell className="text-right font-mono">{formatCurrency(grandTotal.cnps)}</TableCell>
@@ -265,19 +269,19 @@ export default function DisaReportPage() {
                         <th className="border border-black p-1">N°</th>
                         <th className="border border-black p-1">Mat.</th>
                         <th className="border border-black p-1">Nom et Prénoms</th>
-                        {monthLabels.map((m, i) => <th key={`header-print-${m}-${i}`} className="border border-black p-1">{m}</th>)}
+                        {monthLabels.map((m, i) => <th key={`header-print-month-${i}`} className="border border-black p-1">{m}</th>)}
                         <th className="border border-black p-1">Total Brut</th>
                         <th className="border border-black p-1">Total CNPS</th>
                     </tr>
                 </thead>
                 <tbody>
                     {reportData.map((row, index) => (
-                        <tr key={row.matricule}>
+                        <tr key={`print-row-${row.matricule}`}>
                             <td className="border border-black p-1 text-center">{index + 1}</td>
                             <td className="border border-black p-1">{row.matricule}</td>
                             <td className="border border-black p-1 whitespace-nowrap">{row.name}</td>
                             {row.monthlySalaries.map((salary, i) => (
-                                <td key={`${row.matricule}-print-${i}`} className="border border-black p-1 text-right">{formatCurrency(salary)}</td>
+                                <td key={`print-cell-${row.matricule}-month-${i}`} className="border border-black p-1 text-right">{formatCurrency(salary)}</td>
                             ))}
                             <td className="border border-black p-1 text-right font-bold">{formatCurrency(row.totalBrut)}</td>
                             <td className="border border-black p-1 text-right font-bold">{formatCurrency(row.totalCNPS)}</td>
@@ -286,7 +290,7 @@ export default function DisaReportPage() {
                     <tr className="font-bold bg-gray-100">
                         <td colSpan={3} className="border border-black p-1 text-right">TOTAL</td>
                         {grandTotal.monthly.map((total, index) => (
-                           <td key={`total-print-cell-${index}`} className="border border-black p-1 text-right">{formatCurrency(total)}</td>
+                           <td key={`print-total-month-${index}`} className="border border-black p-1 text-right">{formatCurrency(total)}</td>
                         ))}
                         <td className="border border-black p-1 text-right">{formatCurrency(grandTotal.brut)}</td>
                         <td className="border border-black p-1 text-right">{formatCurrency(grandTotal.cnps)}</td>
@@ -303,4 +307,4 @@ export default function DisaReportPage() {
   );
 }
 
-  
+    

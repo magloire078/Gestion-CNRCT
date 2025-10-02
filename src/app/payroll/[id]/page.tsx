@@ -106,8 +106,8 @@ export default function PayslipPage() {
             </div>
             <div id="print-section" className="w-full max-w-4xl mx-auto bg-white text-black print:shadow-none print:border-none font-arial text-[8px] leading-tight">
                 {/* Header */}
-                 <header className="flex justify-between items-center pt-2 pb-1 mb-2">
-                    <div className="w-1/4 text-center flex flex-col justify-center items-center h-28">
+                 <header className="flex justify-between items-center pt-4 pb-2 mb-2 h-[120px]">
+                    <div className="w-1/4 text-center flex flex-col justify-center items-center h-full">
                         <div className='font-bold text-[10px] leading-tight'>
                             <p>Chambre Nationale des Rois</p>
                             <p className="-mt-1">et Chefs Traditionnels</p>
@@ -116,21 +116,18 @@ export default function PayslipPage() {
                     </div>
                     
                      <div className="w-2/4 text-center pt-2">
-                        <h1 className="font-bold text-[11px] leading-tight">
-                            {organizationLogos.organizationName || "Chambre Nationale des Rois et Chefs Traditionnels"}
-                        </h1>
-                        <p className="text-sm mt-2">LE DIRECTOIRE</p>
+                        {/* Content removed as requested */}
                     </div>
 
-                     <div className="w-1/4 text-center flex flex-col justify-center items-center h-28">
+                     <div className="w-1/4 text-center flex flex-col justify-center items-center h-full">
                         <p className="font-bold text-[10px] leading-tight">REPUBLIQUE DE CÔTE D'IVOIRE</p>
-                        {organizationLogos.secondaryLogoUrl && <img src={organizationLogos.secondaryLogoUrl} alt="Emblème de la Côte d'Ivoire" className="max-h-[72px] max-w-full h-auto w-auto my-1" />}
+                        {organizationLogos.secondaryLogoUrl && <img src={organizationLogos.secondaryLogoUrl} alt="Emblème de la Côte d'Ivoire" className="max-h-[80px] max-w-full h-auto w-auto my-1" />}
                         <p className="text-[9px]">Union - Discipline - Travail</p>
                     </div>
                 </header>
-                <div className='border-t-2 border-gray-400'></div>
+                <div className='border-t-2 border-gray-400 mt-2'></div>
 
-                <div className="mt-2">
+                <div className="mt-4">
                     <div className="text-center my-2 p-1 bg-gray-200 font-bold rounded-md text-sm">
                         BULLETIN DE PAIE CNRCT : Période de {periodDisplay}
                     </div>
@@ -234,7 +231,7 @@ export default function PayslipPage() {
                      </div>
                      
                      {/* Employer Contributions */}
-                     <div className="grid grid-cols-12 mt-1">
+                     <div className="grid grid-cols-12 mt-2">
                         <div className="col-span-8">
                             <p className="font-bold text-center underline mb-1 text-sm">Impôts à la charge de l'employeur</p>
                             <div className="border border-gray-400 rounded-lg p-1 text-[9px]">
@@ -263,7 +260,7 @@ export default function PayslipPage() {
                      </div>
 
                     {/* Footer */}
-                    <footer className="text-center pt-1 mt-1 text-xs">
+                    <footer className="text-center pt-2 mt-2 text-xs">
                          <div className='border-t-2 border-gray-400 mb-1'></div>
                         <div className="leading-tight">
                             <p className="font-bold">Chambre Nationale de Rois et Chefs Traditionnels (CNRCT)</p>

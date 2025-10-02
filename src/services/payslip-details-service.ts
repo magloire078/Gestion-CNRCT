@@ -70,18 +70,18 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
     const payslipDateObj = parseISO(payslipDate);
 
     // Find the most recent 'Augmentation' event that is effective on or before the payslip date.
-    // This ensures we use the correct salary structure for the given historical period.
     const relevantEvent = history
         .filter(event => 
             event.eventType === 'Augmentation' &&
-            event.details && // Make sure details exist
+            event.details &&
             isValid(parseISO(event.effectiveDate)) &&
             (isBefore(parseISO(event.effectiveDate), payslipDateObj) || isEqual(parseISO(event.effectiveDate), payslipDateObj))
         )
         .sort((a, b) => parseISO(b.effectiveDate).getTime() - parseISO(a.effectiveDate).getTime())[0];
-
+    
     const getSalaryStructure = () => {
-        const currentEmployeeData = {
+        // Default structure is the current one on the employee object
+        const currentEmployeeStructure = {
             baseSalary: employee.baseSalary || 0,
             indemniteTransportImposable: employee.indemniteTransportImposable || 0,
             indemniteResponsabilite: employee.indemniteResponsabilite || 0,
@@ -93,7 +93,7 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
         };
 
         if (relevantEvent && relevantEvent.details) {
-            // Use the salary details from the relevant historical event.
+            // If a relevant historical event is found, use its salary details.
             return {
                 baseSalary: Number(relevantEvent.details.baseSalary || 0),
                 indemniteTransportImposable: Number(relevantEvent.details.indemniteTransportImposable || 0),
@@ -104,13 +104,37 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
                 indemniteRepresentation: Number(relevantEvent.details.indemniteRepresentation || 0),
                 transportNonImposable: Number(relevantEvent.details.transportNonImposable || 0),
             };
-        } else {
-            // No relevant augmentation found for this period, use the current employee data.
-            return currentEmployeeData;
         }
+        
+        // If no relevant event is found for the payslip date, we need to determine the "starting" salary.
+        // The best proxy for the starting salary is the 'previous_' state of the OLDEST augmentation event.
+        const oldestEvent = history
+            .filter(event => event.eventType === 'Augmentation' && event.details)
+            .sort((a, b) => parseISO(a.effectiveDate).getTime() - parseISO(b.effectiveDate).getTime())[0];
+
+        if (oldestEvent && oldestEvent.details) {
+             // If payslip date is before the first augmentation, use the "previous" values from that first augmentation.
+             const firstAugmentationDate = parseISO(oldestEvent.effectiveDate);
+             if (isBefore(payslipDateObj, firstAugmentationDate)) {
+                 return {
+                    baseSalary: Number(oldestEvent.details.previous_baseSalary || 0),
+                    indemniteTransportImposable: Number(oldestEvent.details.previous_indemniteTransportImposable || 0),
+                    indemniteResponsabilite: Number(oldestEvent.details.previous_indemniteResponsabilite || 0),
+                    indemniteLogement: Number(oldestEvent.details.previous_indemniteLogement || 0),
+                    indemniteSujetion: Number(oldestEvent.details.previous_indemniteSujetion || 0),
+                    indemniteCommunication: Number(oldestEvent.details.previous_indemniteCommunication || 0),
+                    indemniteRepresentation: Number(oldestEvent.details.previous_indemniteRepresentation || 0),
+                    transportNonImposable: Number(oldestEvent.details.previous_transportNonImposable || 0),
+                 }
+             }
+        }
+
+        // If no history at all, or if the date is after the last event, use the current employee data.
+        return currentEmployeeStructure;
     };
     
-    const { baseSalary, ...indemnityFields } = getSalaryStructure();
+    const salaryStructure = getSalaryStructure();
+    const { baseSalary, ...indemnityFields } = salaryStructure;
     
     const seniorityInfo = calculateSeniority(employee.dateEmbauche || '', payslipDate);
     

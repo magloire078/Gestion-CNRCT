@@ -10,6 +10,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from "@/components/ui/card";
 import {
   Table,
@@ -41,6 +42,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { ConfirmationDialog } from "@/components/common/confirmation-dialog";
+import { PaginationControls } from "@/components/common/pagination-controls";
 
 
 const statusVariantMap: Record<Fleet['status'], "default" | "secondary" | "outline" | "destructive"> = {
@@ -60,6 +62,9 @@ export default function FleetPage() {
   const { toast } = useToast();
   const router = useRouter();
   const [deleteTarget, setDeleteTarget] = useState<Fleet | null>(null);
+  
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
 
   useEffect(() => {
@@ -113,7 +118,7 @@ export default function FleetPage() {
   };
 
   const filteredVehicles = useMemo(() => {
-    return vehicles.filter(vehicle => {
+    const filtered = vehicles.filter(vehicle => {
       const searchTermLower = searchTerm.toLowerCase();
       const matchesSearch = vehicle.plate.toLowerCase().includes(searchTermLower) ||
              vehicle.makeModel.toLowerCase().includes(searchTermLower) ||
@@ -123,7 +128,20 @@ export default function FleetPage() {
 
       return matchesSearch && matchesStatus;
     });
-  }, [vehicles, searchTerm, statusFilter]);
+
+     if (currentPage > Math.ceil(filtered.length / itemsPerPage)) {
+        setCurrentPage(1);
+    }
+    return filtered;
+
+  }, [vehicles, searchTerm, statusFilter, currentPage, itemsPerPage]);
+
+  const paginatedVehicles = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredVehicles.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredVehicles, currentPage, itemsPerPage]);
+
+  const totalPages = Math.ceil(filteredVehicles.length / itemsPerPage);
 
   return (
     <>
@@ -200,9 +218,9 @@ export default function FleetPage() {
                         </TableRow>
                     ))
                 ) : (
-                    filteredVehicles.map((vehicle, index) => (
+                    paginatedVehicles.map((vehicle, index) => (
                         <TableRow key={vehicle.plate} onClick={() => router.push(`/fleet/${vehicle.plate}/edit`)} className="cursor-pointer">
-                          <TableCell>{index + 1}</TableCell>
+                          <TableCell>{(currentPage - 1) * itemsPerPage + index + 1}</TableCell>
                           <TableCell className="font-medium">{vehicle.plate}</TableCell>
                           <TableCell>{vehicle.makeModel}</TableCell>
                           <TableCell>{vehicle.assignedTo}</TableCell>
@@ -239,7 +257,7 @@ export default function FleetPage() {
                     <Card key={i}><CardContent className="p-4"><Skeleton className="h-20 w-full" /></CardContent></Card>
                  ))
               ) : (
-                filteredVehicles.map((vehicle, index) => (
+                paginatedVehicles.map((vehicle, index) => (
                     <Card key={vehicle.plate} onClick={() => router.push(`/fleet/${vehicle.plate}/edit`)}>
                          <CardHeader>
                             <CardTitle className="text-base">
@@ -256,12 +274,24 @@ export default function FleetPage() {
                 ))
               )}
             </div>
-          {!loading && filteredVehicles.length === 0 && (
+          {!loading && paginatedVehicles.length === 0 && (
             <div className="text-center py-10 text-muted-foreground">
                 Aucun véhicule trouvé.
             </div>
           )}
         </CardContent>
+         {totalPages > 1 && (
+            <CardFooter>
+                <PaginationControls
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setCurrentPage}
+                    itemsPerPage={itemsPerPage}
+                    onItemsPerPageChange={setItemsPerPage}
+                    totalItems={filteredVehicles.length}
+                />
+            </CardFooter>
+        )}
       </Card>
       <AddVehicleSheet
         isOpen={isSheetOpen}

@@ -35,6 +35,7 @@ import {
   Network,
   Archive,
   Wallet,
+  FileClock,
 } from "lucide-react";
 
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
@@ -114,6 +115,7 @@ const allMenuItems = [
     subItems: [
         { href: "/reports/disa", label: "DISA", icon: FileText, permission: "page:reports:disa:view" },
         { href: "/reports/nominative", label: "Nominatif", icon: FileText, permission: "page:reports:nominative:view" },
+        { href: "/leave/report", label: "Rapport Congés", icon: FileClock, permission: "page:leave:view" },
     ]
   },
    { 
@@ -138,14 +140,18 @@ function ProtectedPage({ children }: { children: React.ReactNode }) {
 
     const getRequiredPermission = () => {
         // Find a direct match first (e.g., /employees?filter=personnel)
-        const directMatch = allMenuItems
-            .flatMap(item => item.isCollapsible ? item.subItems || [] : [item])
-            .find(item => item.href === pathname);
+        const allSubItems = allMenuItems.flatMap(item => item.isCollapsible ? item.subItems || [] : [item]);
+        
+        let directMatch = allSubItems.find(item => item.href === pathname);
+        // Handle query params for employee page
+        if(pathname === '/employees' && !directMatch){
+            directMatch = allSubItems.find(item => item.href.startsWith('/employees?'));
+        }
+
         if (directMatch) return directMatch.permission;
         
         // Find a base route for dynamic paths (e.g., /employees for /employees/123/edit)
-        const baseRoute = allMenuItems
-             .flatMap(item => item.isCollapsible ? item.subItems || [] : [item])
+        const baseRoute = allSubItems
              .filter(item => item.href !== '/')
              .find(item => pathname.startsWith(item.href.split('?')[0]));
 
@@ -183,7 +189,6 @@ function ProtectedPage({ children }: { children: React.ReactNode }) {
     // If no permission is required (e.g., a page not in the menu system), show it.
     // Or if permission check fails, show access denied.
     if (requiredPermission === null) {
-        // This could be a 404 page in a real app, but for now we'll allow it.
          return <>{children}</>;
     }
 

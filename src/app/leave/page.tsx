@@ -11,6 +11,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from "@/components/ui/card";
 import {
   Table,
@@ -34,6 +35,7 @@ import { useToast } from "@/hooks/use-toast";
 import { LeaveCalendar } from "@/components/leave/leave-calendar";
 import { format, parseISO, eachDayOfInterval, getDay } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { PaginationControls } from "@/components/common/pagination-controls";
 
 
 type Status = "Approuvé" | "En attente" | "Rejeté";
@@ -61,6 +63,9 @@ export default function LeavePage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
+  
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const formatDate = (dateString: string) => {
     try {
@@ -153,7 +158,7 @@ export default function LeavePage() {
   }
 
   const filteredLeaves = useMemo(() => {
-    return leaves.map(leave => {
+    const filtered = leaves.map(leave => {
         const employeeDetails = employees.find(e => e.name === leave.employee);
         return {
             ...leave,
@@ -174,7 +179,19 @@ export default function LeavePage() {
         const matchesStatus = statusFilter === 'all' || leaveWithDetails.status === statusFilter;
         return matchesSearch && matchesType && matchesStatus;
     });
-}, [leaves, employees, searchTerm, typeFilter, statusFilter]);
+
+    if (currentPage > Math.ceil(filtered.length / itemsPerPage)) {
+        setCurrentPage(1);
+    }
+    return filtered;
+}, [leaves, employees, searchTerm, typeFilter, statusFilter, currentPage, itemsPerPage]);
+
+  const paginatedLeaves = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredLeaves.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredLeaves, currentPage, itemsPerPage]);
+
+  const totalPages = Math.ceil(filteredLeaves.length / itemsPerPage);
 
 
   const pendingCount = useMemo(() => leaves.filter((l) => l.status === "En attente").length, [leaves]);
@@ -301,7 +318,7 @@ export default function LeavePage() {
                             </TableRow>
                             ))
                         ) : (
-                            filteredLeaves.map((leave) => {
+                            paginatedLeaves.map((leave) => {
                                 const displayName = leave.employeeDetails ? `${leave.employeeDetails.lastName || ''} ${leave.employeeDetails.firstName || ''}`.trim() : leave.employee;
                                 const workingDays = calculateWorkingDays(leave.startDate, leave.endDate);
                                 return (
@@ -372,7 +389,7 @@ export default function LeavePage() {
                                 <Card key={i}><CardContent className="p-4"><Skeleton className="h-24 w-full" /></CardContent></Card>
                             ))
                         ) : (
-                            filteredLeaves.map((leave) => {
+                            paginatedLeaves.map((leave) => {
                                 const displayName = leave.employeeDetails ? `${leave.employeeDetails.lastName || ''} ${leave.employeeDetails.firstName || ''}`.trim() : leave.employee;
                                 const workingDays = calculateWorkingDays(leave.startDate, leave.endDate);
                                 return (
@@ -437,7 +454,7 @@ export default function LeavePage() {
                             })
                         )}
                     </div>
-                { !loading && filteredLeaves.length === 0 && !error && (
+                { !loading && paginatedLeaves.length === 0 && !error && (
                     <div className="text-center py-10 text-muted-foreground">
                         Aucune demande de congé n'a été trouvée.
                         <br />
@@ -445,6 +462,18 @@ export default function LeavePage() {
                     </div>
                 )}
                 </CardContent>
+                 {totalPages > 1 && (
+                    <CardFooter>
+                        <PaginationControls
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            onPageChange={setCurrentPage}
+                            itemsPerPage={itemsPerPage}
+                            onItemsPerPageChange={setItemsPerPage}
+                            totalItems={filteredLeaves.length}
+                        />
+                    </CardFooter>
+                )}
             </Card>
         </TabsContent>
         <TabsContent value="calendar">

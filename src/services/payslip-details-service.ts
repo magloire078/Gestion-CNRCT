@@ -1,4 +1,5 @@
 
+"use client";
 
 import type { Employe, PayslipDetails, PayslipEarning, PayslipDeduction, PayslipEmployerContribution, EmployeeEvent } from '@/lib/data';
 import { numberToWords } from '@/lib/utils';
@@ -109,7 +110,7 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
         // If no relevant event is found for the payslip date, we need to determine the "starting" salary.
         // The best proxy for the starting salary is the 'previous_' state of the OLDEST augmentation event.
         const oldestEvent = history
-            .filter(event => event.eventType === 'Augmentation' && event.details)
+            .filter(event => event.eventType === 'Augmentation' && event.details && event.details.previous_baseSalary !== undefined)
             .sort((a, b) => parseISO(a.effectiveDate).getTime() - parseISO(b.effectiveDate).getTime())[0];
 
         if (oldestEvent && oldestEvent.details) {

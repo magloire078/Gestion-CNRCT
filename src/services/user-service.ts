@@ -12,30 +12,54 @@ export function subscribeToUsers(
     onError: (error: Error) => void
 ): Unsubscribe {
     const q = query(usersCollection, orderBy("name", "asc"));
-    const unsubscribe = onSnapshot(q,
-        async (snapshot) => {
-            const roles = await getRoles();
-            const rolesMap = new Map(roles.map(r => [r.id, r]));
+    
+    // Create a combined subscription to both users and roles
+    let roles: Role[] = [];
+    let rolesUnsub: Unsubscribe | null = null;
+    let usersUnsub: Unsubscribe | null = null;
 
-            const users = snapshot.docs.map(doc => {
-                const userData = doc.data() as Omit<User, 'id'>;
-                const role = rolesMap.get(userData.roleId) || null;
-                return {
-                    id: doc.id,
-                    ...userData,
-                    role: role,
-                    permissions: role?.permissions || [],
-                } as User;
-            });
-            callback(users);
-        },
-        (error) => {
-            console.error("Error subscribing to users:", error);
-            onError(error);
+    const processUsers = (userDocs: any[]) => {
+        const rolesMap = new Map(roles.map(r => [r.id, r]));
+        const users = userDocs.map(doc => {
+            const userData = doc.data() as Omit<User, 'id'>;
+            const role = rolesMap.get(userData.roleId) || null;
+            return {
+                id: doc.id,
+                ...userData,
+                role: role,
+                permissions: role?.permissions || [],
+            } as User;
+        });
+        callback(users);
+    };
+
+    rolesUnsub = onSnapshot(query(collection(db, 'roles')), (rolesSnapshot) => {
+        roles = rolesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Role));
+        
+        // After fetching roles, set up the user subscription
+        if (!usersUnsub) {
+            usersUnsub = onSnapshot(q, 
+                (usersSnapshot) => {
+                    processUsers(usersSnapshot.docs);
+                },
+                (error) => {
+                    console.error("Error subscribing to users:", error);
+                    onError(error);
+                }
+            );
+        } else {
+            // If users are already loaded, just re-process them with new roles
+            getDocs(q).then(userDocs => processUsers(userDocs.docs)).catch(onError);
         }
-    );
-    return unsubscribe;
+    }, onError);
+
+    // Return a function that unsubscribes from both
+    return () => {
+        if (usersUnsub) usersUnsub();
+        if (rolesUnsub) rolesUnsub();
+    };
 }
+
 
 export async function getUsers(): Promise<User[]> {
     const snapshot = await getDocs(query(usersCollection, orderBy("name", "asc")));

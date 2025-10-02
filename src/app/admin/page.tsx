@@ -72,40 +72,22 @@ export default function AdminPage() {
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; type: 'user' | 'role' | 'department' | 'direction' | 'service'; name: string } | null>(null);
 
   useEffect(() => {
-    const rolesMap = new Map<string, Role>();
-
-    const unsubRoles = subscribeToRoles(
-      (roleList) => {
-        setRoles(roleList);
-        roleList.forEach(role => rolesMap.set(role.id, role));
-        
-        // This is the key change: When roles update, re-map the roles to the existing user list.
-        setUsers(currentUsers => {
-            if (!currentUsers) return null;
-            return currentUsers.map(user => {
-                const updatedRole = rolesMap.get(user.roleId) || null;
-                return { 
-                    ...user, 
-                    role: updatedRole, 
-                    permissions: updatedRole?.permissions || []
-                };
-            });
-        });
-      },
-      (err) => { setError("Impossible de charger les rôles."); console.error(err); }
-    );
-
     const unsubUsers = subscribeToUsers(
       (userList) => {
-        // When users update, map the roles we already have.
-        const usersWithRoles = userList.map(user => ({ 
-            ...user, 
-            role: rolesMap.get(user.roleId) || null,
-            permissions: rolesMap.get(user.roleId)?.permissions || []
-        }));
-        setUsers(usersWithRoles);
+        setUsers(userList);
+        // We also update the roles list from the user data if available
+        const uniqueRoles = Array.from(new Map(userList.map(u => u.role).filter(Boolean).map(r => [r!.id, r])).values());
+        if(uniqueRoles.length > 0) {
+            setRoles(uniqueRoles as Role[]);
+        }
       },
       (err) => { setError("Impossible de charger les utilisateurs."); console.error(err); }
+    );
+    
+    // We still subscribe to roles separately to get the full list for assignment dialogs
+    const unsubRoles = subscribeToRoles(
+      (roleList) => { setRoles(roleList); },
+      (err) => { setError("Impossible de charger les rôles."); console.error(err); }
     );
     
     const unsubDepartments = subscribeToDepartments(
@@ -129,8 +111,8 @@ export default function AdminPage() {
 
 
     return () => {
-      unsubRoles();
       unsubUsers();
+      unsubRoles();
       unsubDepartments();
       unsubDirections();
       unsubServices();

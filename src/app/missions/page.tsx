@@ -10,6 +10,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from "@/components/ui/card";
 import {
   Table,
@@ -32,6 +33,7 @@ import { ConfirmationDialog } from "@/components/common/confirmation-dialog";
 import Link from "next/link";
 import { format, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { PaginationControls } from "@/components/common/pagination-controls";
 
 type Status = "Planifiée" | "En cours" | "Terminée" | "Annulée";
 
@@ -51,6 +53,8 @@ export default function MissionsPage() {
   const { toast } = useToast();
   const router = useRouter();
   const [deleteTarget, setDeleteTarget] = useState<Mission | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   
   const formatDateRange = (start: string, end: string) => {
     try {
@@ -115,7 +119,7 @@ export default function MissionsPage() {
   }
 
   const filteredMissions = useMemo(() => {
-    return missions.filter(mission => {
+    const filtered = missions.filter(mission => {
       const searchTermLower = searchTerm.toLowerCase();
       // Ensure participants array exists before trying to access it
       const participantsString = (mission.participants || []).map(p => p.employeeName).join(" ").toLowerCase();
@@ -123,7 +127,18 @@ export default function MissionsPage() {
              participantsString.includes(searchTermLower) ||
              mission.description.toLowerCase().includes(searchTermLower);
     });
-  }, [missions, searchTerm]);
+    if (currentPage > Math.ceil(filtered.length / itemsPerPage)) {
+        setCurrentPage(1);
+    }
+    return filtered;
+  }, [missions, searchTerm, currentPage, itemsPerPage]);
+
+  const paginatedMissions = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredMissions.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredMissions, currentPage, itemsPerPage]);
+
+  const totalPages = Math.ceil(filteredMissions.length / itemsPerPage);
 
   return (
     <>
@@ -193,9 +208,9 @@ export default function MissionsPage() {
                         </TableRow>
                     ))
                 ) : (
-                    filteredMissions.map((mission, index) => (
+                    paginatedMissions.map((mission, index) => (
                         <TableRow key={mission.id} onClick={() => router.push(`/missions/${mission.id}`)} className="cursor-pointer">
-                          <TableCell className="font-mono text-muted-foreground">{index + 1}</TableCell>
+                          <TableCell className="font-mono text-muted-foreground">{(currentPage - 1) * itemsPerPage + index + 1}</TableCell>
                           <TableCell className="font-medium">{mission.title}</TableCell>
                           <TableCell>
                             <div className="flex flex-wrap gap-1">
@@ -240,11 +255,11 @@ export default function MissionsPage() {
                     <Card key={i}><CardContent className="p-4"><Skeleton className="h-20 w-full" /></CardContent></Card>
                  ))
               ) : (
-                filteredMissions.map((mission, index) => (
+                paginatedMissions.map((mission, index) => (
                     <Card key={mission.id} onClick={() => router.push(`/missions/${mission.id}`)}>
                         <CardHeader>
                             <CardTitle className="text-base">
-                               {index + 1}. {mission.title}
+                               {(currentPage - 1) * itemsPerPage + index + 1}. {mission.title}
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="p-4 pt-0 space-y-2">
@@ -258,12 +273,24 @@ export default function MissionsPage() {
                 ))
               )}
             </div>
-          {!loading && filteredMissions.length === 0 && (
+          {!loading && paginatedMissions.length === 0 && (
             <div className="text-center py-10 text-muted-foreground">
                 Aucune mission trouvée.
             </div>
           )}
         </CardContent>
+         {totalPages > 1 && (
+            <CardFooter>
+                <PaginationControls
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setCurrentPage}
+                    itemsPerPage={itemsPerPage}
+                    onItemsPerPageChange={setItemsPerPage}
+                    totalItems={filteredMissions.length}
+                />
+            </CardFooter>
+        )}
       </Card>
       <AddMissionSheet
         isOpen={isSheetOpen}

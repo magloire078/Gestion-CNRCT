@@ -6,7 +6,7 @@ import { useState, useEffect, useMemo } from "react";
 import { PlusCircle, Search, Eye, Pencil, Trash2, MoreHorizontal, Laptop, Monitor, Printer as PrinterIcon, Keyboard, Mouse, FileCode, Package as PackageIcon, Download, Server, Printer } from "lucide-react";
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import type { Asset, OrganizationSettings } from "@/lib/data";
@@ -23,6 +23,7 @@ import { useRouter } from "next/navigation";
 import Papa from "papaparse";
 import { ImportAssetsDataCard } from "@/components/it-assets/import-assets-data-card";
 import { PrintAssetsDialog } from "@/components/it-assets/print-assets-dialog";
+import { PaginationControls } from "@/components/common/pagination-controls";
 
 
 type Status = 'En utilisation' | 'En stock' | 'En réparation' | 'Retiré';
@@ -80,6 +81,9 @@ export default function ItAssetsPage() {
   const [organizationLogos, setOrganizationLogos] = useState<OrganizationSettings | null>(null);
   const [printDate, setPrintDate] = useState('');
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+
 
   useEffect(() => {
     const unsubscribe = subscribeToAssets(
@@ -135,7 +139,7 @@ export default function ItAssetsPage() {
   };
 
   const filteredAssets = useMemo(() => {
-    return assets.filter(asset => {
+    const filtered = assets.filter(asset => {
       const searchTermLower = searchTerm.toLowerCase();
       const matchesSearch = 
           asset.tag.toLowerCase().includes(searchTermLower) ||
@@ -149,7 +153,20 @@ export default function ItAssetsPage() {
       const matchesStatus = statusFilter === 'all' || asset.status === statusFilter;
       return matchesSearch && matchesType && matchesStatus;
     });
-  }, [assets, searchTerm, typeFilter, statusFilter]);
+
+    if (currentPage > Math.ceil(filtered.length / itemsPerPage)) {
+        setCurrentPage(1);
+    }
+    return filtered;
+
+  }, [assets, searchTerm, typeFilter, statusFilter, currentPage, itemsPerPage]);
+  
+  const paginatedAssets = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredAssets.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredAssets, currentPage, itemsPerPage]);
+
+  const totalPages = Math.ceil(filteredAssets.length / itemsPerPage);
 
   const downloadFile = (content: string, fileName: string, contentType: string) => {
       const blob = new Blob([content], { type: contentType });
@@ -305,7 +322,7 @@ export default function ItAssetsPage() {
                       </TableRow>
                       ))
                   ) : (
-                      filteredAssets.map((asset) => {
+                      paginatedAssets.map((asset) => {
                         const Icon = assetIcons[asset.type] || PackageIcon;
                         return (
                           <TableRow key={asset.tag} onClick={() => router.push(`/it-assets/${asset.tag}/edit`)} className="cursor-pointer">
@@ -369,7 +386,7 @@ export default function ItAssetsPage() {
                     <Card key={i}><CardContent className="p-4"><Skeleton className="h-24 w-full" /></CardContent></Card>
                   ))
                 ) : (
-                  filteredAssets.map((asset) => {
+                  paginatedAssets.map((asset) => {
                     const Icon = assetIcons[asset.type] || PackageIcon;
                     return (
                       <Card key={asset.tag} onClick={() => router.push(`/it-assets/${asset.tag}/edit`)} className="cursor-pointer">
@@ -393,12 +410,24 @@ export default function ItAssetsPage() {
                   })
                 )}
               </div>
-            { !loading && filteredAssets.length === 0 && (
+            { !loading && paginatedAssets.length === 0 && (
               <div className="text-center py-10 text-muted-foreground">
                   Aucun actif trouvé.
               </div>
             )}
           </CardContent>
+          {totalPages > 1 && (
+            <CardFooter>
+                <PaginationControls
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setCurrentPage}
+                    itemsPerPage={itemsPerPage}
+                    onItemsPerPageChange={setItemsPerPage}
+                    totalItems={filteredAssets.length}
+                />
+            </CardFooter>
+        )}
         </Card>
         <AddAssetSheet
           isOpen={isSheetOpen}

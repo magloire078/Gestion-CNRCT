@@ -10,6 +10,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from "@/components/ui/card";
 import {
   Table,
@@ -42,6 +43,8 @@ import { subscribeToSupplies, addSupply, updateSupply, deleteSupply } from "@/se
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { Progress } from "@/components/ui/progress";
+import { PaginationControls } from "@/components/common/pagination-controls";
+
 
 export const supplyCategories = ["Papeterie", "Cartouches d'encre", "Matériel de nettoyage", "Autre"];
 
@@ -57,6 +60,9 @@ export default function SuppliesPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const { toast } = useToast();
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   useEffect(() => {
     const unsubscribe = subscribeToSupplies(
@@ -127,13 +133,26 @@ export default function SuppliesPage() {
   }
 
   const filteredSupplies = useMemo(() => {
-    return supplies.filter(supply => {
+    const filtered = supplies.filter(supply => {
       const searchTermLower = searchTerm.toLowerCase();
       const matchesSearch = supply.name.toLowerCase().includes(searchTermLower);
       const matchesCategory = categoryFilter === 'all' || supply.category === categoryFilter;
       return matchesSearch && matchesCategory;
     });
-  }, [supplies, searchTerm, categoryFilter]);
+
+    if (currentPage > Math.ceil(filtered.length / itemsPerPage)) {
+        setCurrentPage(1);
+    }
+    return filtered;
+
+  }, [supplies, searchTerm, categoryFilter, currentPage, itemsPerPage]);
+
+  const paginatedSupplies = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredSupplies.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredSupplies, currentPage, itemsPerPage]);
+
+  const totalPages = Math.ceil(filteredSupplies.length / itemsPerPage);
 
   const getStockStatus = (quantity: number, reorderLevel: number) => {
     if (quantity <= 0) return { text: "Rupture", color: "destructive" as const, value: 5, className: "bg-destructive" };
@@ -213,7 +232,7 @@ export default function SuppliesPage() {
                         </TableRow>
                     ))
                 ) : (
-                    filteredSupplies.map((supply) => {
+                    paginatedSupplies.map((supply) => {
                       const stockStatus = getStockStatus(supply.quantity, supply.reorderLevel);
                       return(
                         <TableRow key={supply.id}>
@@ -259,7 +278,7 @@ export default function SuppliesPage() {
                     <Card key={i}><CardContent className="p-4"><Skeleton className="h-24 w-full" /></CardContent></Card>
                  ))
               ) : (
-                filteredSupplies.map((supply) => {
+                paginatedSupplies.map((supply) => {
                    const stockStatus = getStockStatus(supply.quantity, supply.reorderLevel);
                    return (
                     <Card key={supply.id} onClick={() => openEditSheet(supply)}>
@@ -297,13 +316,25 @@ export default function SuppliesPage() {
                 })
               )}
             </div>
-          {!loading && filteredSupplies.length === 0 && (
+          {!loading && paginatedSupplies.length === 0 && (
             <div className="text-center py-10 text-muted-foreground">
                 <Package className="mx-auto h-12 w-12 text-muted-foreground" />
                 <p className="mt-4">Aucune fourniture trouvée.</p>
             </div>
           )}
         </CardContent>
+        {totalPages > 1 && (
+            <CardFooter>
+                <PaginationControls
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setCurrentPage}
+                    itemsPerPage={itemsPerPage}
+                    onItemsPerPageChange={setItemsPerPage}
+                    totalItems={filteredSupplies.length}
+                />
+            </CardFooter>
+        )}
       </Card>
       <AddSupplySheet
         isOpen={isAddSheetOpen}
@@ -329,5 +360,3 @@ export default function SuppliesPage() {
     </>
   );
 }
-
-    

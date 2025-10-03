@@ -1,5 +1,4 @@
 
-
 export type Employe = {
   id: string; // Firestore document ID
   matricule: string;

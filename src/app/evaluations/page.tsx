@@ -10,6 +10,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from "@/components/ui/card";
 import {
   Table,
@@ -27,6 +28,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { AddEvaluationSheet } from "@/components/evaluations/add-evaluation-sheet";
 import { useRouter } from "next/navigation";
+import { PaginationControls } from "@/components/common/pagination-controls";
 
 type Status = "Draft" | "Pending Manager Review" | "Pending Employee Sign-off" | "Completed";
 
@@ -45,6 +47,9 @@ export default function EvaluationsPage() {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const router = useRouter();
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   useEffect(() => {
     const unsubscribe = subscribeToEvaluations(
@@ -78,11 +83,22 @@ export default function EvaluationsPage() {
   };
 
   const filteredEvaluations = useMemo(() => {
-    return evaluations.filter(e => 
+    const filtered = evaluations.filter(e => 
       e.employeeName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       e.managerName.toLowerCase().includes(searchTerm.toLowerCase())
     );
-  }, [evaluations, searchTerm]);
+    if (currentPage > Math.ceil(filtered.length / itemsPerPage)) {
+        setCurrentPage(1);
+    }
+    return filtered;
+  }, [evaluations, searchTerm, currentPage, itemsPerPage]);
+
+  const paginatedEvaluations = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredEvaluations.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredEvaluations, currentPage, itemsPerPage]);
+
+  const totalPages = Math.ceil(filteredEvaluations.length / itemsPerPage);
 
   return (
     <>
@@ -146,9 +162,9 @@ export default function EvaluationsPage() {
                         </TableRow>
                     ))
                 ) : (
-                    filteredEvaluations.map((evaluation, index) => (
+                    paginatedEvaluations.map((evaluation, index) => (
                         <TableRow key={evaluation.id} className="cursor-pointer" onClick={() => router.push(`/evaluations/${evaluation.id}`)}>
-                          <TableCell>{index + 1}</TableCell>
+                          <TableCell>{(currentPage - 1) * itemsPerPage + index + 1}</TableCell>
                           <TableCell className="font-medium">{evaluation.employeeName}</TableCell>
                           <TableCell>{evaluation.managerName}</TableCell>
                           <TableCell>{evaluation.reviewPeriod}</TableCell>
@@ -168,12 +184,24 @@ export default function EvaluationsPage() {
                 </TableBody>
             </Table>
             </div>
-          {!loading && filteredEvaluations.length === 0 && (
+          {!loading && paginatedEvaluations.length === 0 && (
             <div className="text-center py-10 text-muted-foreground">
                 Aucune évaluation trouvée.
             </div>
           )}
         </CardContent>
+         {totalPages > 1 && (
+          <CardFooter>
+            <PaginationControls
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+              itemsPerPage={itemsPerPage}
+              onItemsPerPageChange={setItemsPerPage}
+              totalItems={filteredEvaluations.length}
+            />
+          </CardFooter>
+        )}
       </Card>
     </div>
     <AddEvaluationSheet

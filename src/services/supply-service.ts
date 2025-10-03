@@ -54,7 +54,14 @@ export async function addSupply(supplyDataToAdd: Omit<Supply, "id">): Promise<Su
 
 export async function updateSupply(id: string, dataToUpdate: Partial<Omit<Supply, 'id'>>): Promise<void> {
     const supplyDocRef = doc(db, 'supplies', id);
-    await updateDoc(supplyDocRef, dataToUpdate);
+    
+    const updatePayload: Partial<Supply> = { ...dataToUpdate };
+    if (updatePayload.category !== 'Cartouches d\'encre') {
+        updatePayload.inkType = undefined;
+        updatePayload.linkedAssetTag = undefined;
+    }
+
+    await updateDoc(supplyDocRef, updatePayload);
 
     // Check stock level after update
      if (dataToUpdate.quantity !== undefined && dataToUpdate.reorderLevel !== undefined && dataToUpdate.quantity <= dataToUpdate.reorderLevel) {

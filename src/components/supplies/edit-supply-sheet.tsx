@@ -41,6 +41,7 @@ export function EditSupplySheet({
 }: EditSupplyDialogProps) {
   const [name, setName] = useState("");
   const [category, setCategory] = useState<Supply['category'] | "">("");
+  const [inkType, setInkType] = useState("");
   const [quantity, setQuantity] = useState(0);
   const [reorderLevel, setReorderLevel] = useState(10);
   const [linkedAssetTag, setLinkedAssetTag] = useState<string | "">("");
@@ -53,6 +54,7 @@ export function EditSupplySheet({
     if (supply) {
         setName(supply.name);
         setCategory(supply.category);
+        setInkType(supply.inkType || "");
         setQuantity(supply.quantity);
         setReorderLevel(supply.reorderLevel);
         setLinkedAssetTag(supply.linkedAssetTag || "");
@@ -99,6 +101,7 @@ export function EditSupplySheet({
         category, 
         quantity, 
         reorderLevel,
+        inkType: category === 'Cartouches d\'encre' ? inkType : undefined,
         linkedAssetTag: category === 'Cartouches d\'encre' ? linkedAssetTag : undefined,
       });
       handleClose();
@@ -136,22 +139,28 @@ export function EditSupplySheet({
               </Select>
             </div>
             {category === 'Cartouches d\'encre' && (
-               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="linkedAssetTag-edit" className="text-right">Imprimante</Label>
-                 <Select value={linkedAssetTag} onValueChange={setLinkedAssetTag}>
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Lier à une imprimante..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="">Aucune</SelectItem>
-                    {printers.map(printer => (
-                        <SelectItem key={printer.tag} value={printer.tag}>
-                            {printer.modele} ({printer.tag})
-                        </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              <>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="inkType-edit" className="text-right">Type/N° d'encre</Label>
+                  <Input id="inkType-edit" value={inkType} onChange={(e) => setInkType(e.target.value)} className="col-span-3" placeholder="Ex: HP 651, Toner 12A"/>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="linkedAssetTag-edit" className="text-right">Imprimante</Label>
+                  <Select value={linkedAssetTag} onValueChange={setLinkedAssetTag}>
+                    <SelectTrigger className="col-span-3">
+                      <SelectValue placeholder="Lier à une imprimante..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Aucune</SelectItem>
+                      {printers.map(printer => (
+                          <SelectItem key={printer.tag} value={printer.tag}>
+                              {printer.modele} ({printer.tag})
+                          </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </>
             )}
              <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="quantity-edit" className="text-right">Quantité</Label>

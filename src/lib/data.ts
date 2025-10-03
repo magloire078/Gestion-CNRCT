@@ -170,6 +170,7 @@ export type Supply = {
   id: string; // Firestore document ID
   name: string;
   category: "Papeterie" | "Cartouches d'encre" | "Matériel de nettoyage" | "Autre";
+  inkType?: string; // e.g., 'HP 651', 'Toner 12A'
   quantity: number;
   reorderLevel: number;
   lastRestockDate: string; // YYYY-MM-DD

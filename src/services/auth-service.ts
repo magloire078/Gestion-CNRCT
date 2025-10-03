@@ -43,9 +43,8 @@ async function getUserProfile(userId: string): Promise<User | null> {
 async function createUserProfile(user: FirebaseUser, name: string): Promise<User> {
     const userDocRef = doc(db, 'users', user.uid);
     
-    // Assign 'administrateur' role if the email matches the super admin email
-    const superAdminEmail = "magloire078@gmail.com";
-    const assignedRoleId = user.email === superAdminEmail ? 'administrateur' : 'employe';
+    // Assign 'employe-operationnel' role by default for new signups
+    const assignedRoleId = 'employe-operationnel';
 
     const userProfile: Omit<User, 'id' | 'role' | 'permissions'> = {
         name,

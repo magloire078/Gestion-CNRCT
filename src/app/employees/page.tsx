@@ -20,10 +20,7 @@ import { Badge } from "@/components/ui/badge";
 import type { Employe, Department, Direction, Service } from "@/lib/data";
 import { AddEmployeeSheet } from "@/components/employees/add-employee-sheet";
 import { PrintDialog } from "@/components/employees/print-dialog";
-import { subscribeToEmployees, addEmployee, deleteEmployee, getOrganizationSettings, updateEmployee, getEmployeeGroup } from "@/services/employee-service";
-import { getDepartments } from "@/services/department-service";
-import { getDirections } from "@/services/direction-service";
-import { getServices } from "@/services/service-service";
+import { subscribeToEmployees, addEmployee, deleteEmployee, getOrganizationSettings, updateEmployee, getEmployeeGroup, getOrganizationalUnits } from "@/services/employee-service";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -130,14 +127,10 @@ export default function EmployeesPage() {
 
     async function fetchOrgData() {
         try {
-            const [depts, dirs, svcs] = await Promise.all([
-                getDepartments(),
-                getDirections(),
-                getServices(),
-            ]);
-            setDepartments(depts);
-            setDirections(dirs);
-            setServices(svcs);
+            const { departments, directions, services } = await getOrganizationalUnits();
+            setDepartments(departments);
+            setDirections(directions);
+            setServices(services);
         } catch (error) {
             console.error("Failed to fetch organizational structure", error);
         }
@@ -518,7 +511,7 @@ export default function EmployeesPage() {
                                             </Avatar>
                                         </TableCell>
                                         <TableCell>
-                                            <div className="font-medium">{(employee.lastName || '').toUpperCase()} {employee.firstName}</div>
+                                            <div className="font-medium">{`${employee.lastName || ''} ${employee.firstName || ''}`.trim()}</div>
                                         </TableCell>
                                         <TableCell>{employee.matricule}</TableCell>
                                         <TableCell>{employee.poste}</TableCell>
@@ -679,5 +672,3 @@ export default function EmployeesPage() {
 
 
     
-
-

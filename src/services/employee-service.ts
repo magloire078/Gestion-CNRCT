@@ -4,6 +4,9 @@ import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, onSnapshot, Uns
 import type { Employe, Chief } from '@/lib/data';
 import { db, storage } from '@/lib/firebase';
 import { getOrganizationSettings } from './organization-service';
+import { getDepartments } from './department-service';
+import { getDirections } from './direction-service';
+import { getServices } from './service-service';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 const employeesCollection = collection(db, 'employees');
@@ -252,6 +255,15 @@ export async function getLatestMatricule(): Promise<string> {
 
     // Fallback if no number is found, append '1'
     return `${lastMatricule}1`;
+}
+
+export async function getOrganizationalUnits() {
+    const [departments, directions, services] = await Promise.all([
+        getDepartments(),
+        getDirections(),
+        getServices(),
+    ]);
+    return { departments, directions, services };
 }
 
 

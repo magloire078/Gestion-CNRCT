@@ -178,7 +178,7 @@ export default function EmployeeDetailPage() {
         return <div className="text-center py-10">Employé non trouvé.</div>;
     }
 
-    const fullName = `${employee.firstName || ''} ${employee.lastName || ''}`.trim() || employee.name;
+    const fullName = `${employee.lastName || ''} ${employee.firstName || ''}`.trim() || employee.name;
     const departmentName = orgStructure.departments.find(d => d.id === employee.departmentId)?.name || employee.department;
     const directionName = orgStructure.directions.find(d => d.id === employee.directionId)?.name;
     const serviceName = orgStructure.services.find(s => s.id === employee.serviceId)?.name;

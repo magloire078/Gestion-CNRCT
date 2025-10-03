@@ -133,7 +133,7 @@ export default function EmployeeEditPage() {
         if (!employee || typeof id !== 'string') return;
         setIsSaving(true);
         try {
-            const fullName = `${employee.firstName || ''} ${employee.lastName || ''}`.trim();
+            const fullName = `${employee.lastName || ''} ${employee.firstName || ''}`.trim();
             const updatedData = {
                 ...employee,
                 name: fullName,
@@ -150,7 +150,7 @@ export default function EmployeeEditPage() {
         }
     };
 
-    const fullName = employee ? `${employee.firstName || ''} ${employee.lastName || ''}`.trim() || employee.name || "Chargement..." : "Chargement...";
+    const fullName = employee ? `${employee.lastName || ''} ${employee.firstName || ''}`.trim() || employee.name || "Chargement..." : "Chargement...";
 
 
     if (loading) {

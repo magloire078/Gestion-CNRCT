@@ -278,7 +278,7 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
                                 <div className="flex justify-between items-center">
                                     <Label htmlFor="baseSalary">Salaire de Base</Label>
                                     {originalBaseSalary !== null && (
-                                        <Button type="button" variant="link" size="sm" className="h-auto p-0 text-xs" onClick={handleRevertSalary}>
+                                        <Button type="button" variant="link" size="sm" className="h-auto p-0 pl-2 text-xs" onClick={handleRevertSalary}>
                                             <Undo2 className="mr-1 h-3 w-3" /> Rétablir
                                         </Button>
                                     )}

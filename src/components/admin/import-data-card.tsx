@@ -80,7 +80,7 @@ export function ImportDataCard() {
                   return isNaN(num) ? undefined : num;
               }
 
-              const combinedName = `${row.prenom || ''} ${row.nom || ''}`.trim();
+              const combinedName = `${row.nom || ''} ${row.prenom || ''}`.trim();
               const photoPath = row.photo ? String(row.photo).trim() : null;
 
               const employeeData: Omit<Employe, 'id'> = {

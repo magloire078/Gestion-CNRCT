@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -120,7 +121,7 @@ export default function ChiefDetailPage() {
                             <InfoItem label="Contact" value={chief.contact} icon={Phone} />
                             <InfoItem label="Date de naissance" value={formatDate(chief.dateOfBirth)} icon={Calendar} />
                             {parentChief && (
-                                <InfoItem label="Autorité Supérieure" value={parentChief.name} icon={Users} />
+                                <InfoItem label="Autorité Supérieure" value={`${parentChief.lastName || ''} ${parentChief.firstName || ''}`} icon={Users} />
                             )}
                             {chief.regencyStartDate && (
                                 <InfoItem label="Début de régence" value={formatDate(chief.regencyStartDate)} icon={Calendar} />

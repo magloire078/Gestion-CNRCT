@@ -94,10 +94,10 @@ const LatestRecruitsCard = ({ employees, loading }: { employees: Employe[], load
                     <div key={emp.id} className="flex items-center gap-3">
                          <Avatar className="h-9 w-9">
                             <AvatarImage src={emp.photoUrl} alt={emp.name} data-ai-hint="employee photo" />
-                            <AvatarFallback>{emp.name.charAt(0)}</AvatarFallback>
+                            <AvatarFallback>{emp.lastName?.charAt(0)}</AvatarFallback>
                         </Avatar>
                         <div className="text-xs">
-                            <p className="font-medium text-sm">{emp.name}</p>
+                            <p className="font-medium text-sm">{`${emp.lastName || ''} ${emp.firstName || ''}`.trim()}</p>
                             <p className="text-muted-foreground">{emp.poste} ({emp.matricule})</p>
                             <p className="text-muted-foreground">
                                 Décision: {emp.Num_Decision || 'N/A'} du {formatDate(emp.dateEmbauche)}
@@ -446,7 +446,7 @@ export default function DashboardPage() {
                                     <AvatarFallback><Cake className="h-4 w-4" /></AvatarFallback>
                                 </Avatar>
                                 <div>
-                                    <p className="font-medium">{emp.name}</p>
+                                    <p className="font-medium">{`${emp.lastName || ''} ${emp.firstName || ''}`.trim()}</p>
                                     <p className="text-sm text-muted-foreground">{emp.poste}</p>
                                 </div>
                                 </div>
@@ -493,10 +493,10 @@ export default function DashboardPage() {
                                     alt={emp.name}
                                     data-ai-hint="user avatar"
                                 />
-                                <AvatarFallback>{emp.name?.charAt(0) || 'E'}</AvatarFallback>
+                                <AvatarFallback>{emp.lastName?.charAt(0) || 'E'}</AvatarFallback>
                                 </Avatar>
                                 <div>
-                                <p className="font-medium">{emp.name}</p>
+                                <p className="font-medium">{`${emp.lastName || ''} ${emp.firstName || ''}`.trim()}</p>
                                 <p className="text-sm text-muted-foreground">{emp.poste}</p>
                                 </div>
                             </div>
@@ -544,7 +544,7 @@ export default function DashboardPage() {
             ]}
             data={seniorityAnniversaries.map((emp, index) => ({
                 index: index + 1,
-                name: emp.name,
+                name: `${emp.lastName || ''} ${emp.firstName || ''}`.trim(),
                 poste: emp.poste,
                 dateEmbauche: emp.dateEmbauche,
                 seniority: `${differenceInYears(new Date(parseInt(selectedAnniversaryYear), parseInt(selectedAnniversaryMonth)), parseISO(emp.dateEmbauche!))} ans`,
@@ -564,7 +564,7 @@ export default function DashboardPage() {
             ]}
             data={upcomingRetirements.map((emp, index) => ({
                 index: index + 1,
-                name: emp.name,
+                name: `${emp.lastName || ''} ${emp.firstName || ''}`.trim(),
                 poste: emp.poste,
                 dateOfBirth: emp.Date_Naissance,
                 retirementDate: format(emp.calculatedRetirementDate, 'dd/MM/yyyy'),

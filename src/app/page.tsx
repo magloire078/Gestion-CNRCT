@@ -72,7 +72,7 @@ const LatestRecruitsCard = ({ employees, loading }: { employees: Employe[], load
 
     const cadres = getRecruitsByPrefix('C 0', 3);
     const chauffeurs = getRecruitsByPrefix('R 0', 3);
-    const ouvriers = getRecruitsByPrefix('V O', 3);
+    const operationnels = getRecruitsByPrefix('V O', 3);
     
     const formatDate = (dateString?: string) => {
         if (!dateString) return 'N/A';
@@ -83,9 +83,12 @@ const LatestRecruitsCard = ({ employees, loading }: { employees: Employe[], load
         }
     }
 
-    const RecruitGroup = ({ title, recruits }: { title: string, recruits: Employe[] }) => (
+    const RecruitGroup = ({ title, recruits, description }: { title: string, recruits: Employe[], description?: string }) => (
         <div className="space-y-3">
-            <h4 className="font-semibold text-sm">{title}</h4>
+            <div>
+                <h4 className="font-semibold text-sm">{title}</h4>
+                {description && <p className="text-xs text-muted-foreground">{description}</p>}
+            </div>
             {recruits.length > 0 ? (
                 recruits.map(emp => (
                     <div key={emp.id} className="flex items-center gap-3">
@@ -119,7 +122,7 @@ const LatestRecruitsCard = ({ employees, loading }: { employees: Employe[], load
                     <div className="space-y-6">
                         <RecruitGroup title="Cadres" recruits={cadres} />
                         <RecruitGroup title="Chauffeurs Régionaux" recruits={chauffeurs} />
-                        <RecruitGroup title="Ouvriers" recruits={ouvriers} />
+                        <RecruitGroup title="Opérationnels" recruits={operationnels} description="Techniciens, agents, assistants" />
                     </div>
                 )}
             </CardContent>
@@ -571,6 +574,8 @@ export default function DashboardPage() {
     </>
   );
 }
+
+    
 
     
 

@@ -1,16 +1,12 @@
 
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
-import type { Leave, Employe, Evaluation, Asset, Mission } from "@/lib/data";
-import { subscribeToLeaves, addLeave, calculateLeaveBalance } from "@/services/leave-service";
-import { getEmployee } from "@/services/employee-service";
-import { subscribeToEvaluations } from "@/services/evaluation-service";
-import { getAssets } from "@/services/asset-service";
-import { getMissions } from "@/services/mission-service";
-
+import type { Leave, Evaluation, Asset, Mission } from "@/lib/data";
+import { addLeave } from "@/services/leave-service";
+import { useMySpaceData } from "@/hooks/use-my-space-data";
 
 import {
   Card,
@@ -35,8 +31,8 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { AddLeaveRequestSheet } from "@/components/leave/add-leave-request-sheet";
-import { Mail, Phone, Calendar, Briefcase, ChevronRight, Landmark, Eye, Laptop, Rocket, PlusCircle, CheckCircle, FileClock, Hourglass, FilePlus2, Receipt } from "lucide-react";
-import { lastDayOfMonth, format, subMonths, parseISO, isAfter, isBefore } from 'date-fns';
+import { Mail, Phone, Calendar, Briefcase, ChevronRight, Landmark, Eye, Laptop, Rocket, PlusCircle, CheckCircle, FileClock, Hourglass, FilePlus2, Receipt, Loader2 } from "lucide-react";
+import { lastDayOfMonth, format, subMonths, parseISO, isAfter } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import Link from "next/link";
 
@@ -70,16 +66,20 @@ export default function MySpacePage() {
     const { user, loading: authLoading } = useAuth();
     const router = useRouter();
     const { toast } = useToast();
-
-    const [employeeDetails, setEmployeeDetails] = useState<Employe | null>(null);
-    const [leaves, setLeaves] = useState<Leave[]>([]);
-    const [evaluations, setEvaluations] = useState<Evaluation[]>([]);
-    const [assets, setAssets] = useState<Asset[]>([]);
-    const [missions, setMissions] = useState<Mission[]>([]);
-    const [leaveBalance, setLeaveBalance] = useState<number | null>(null);
-    const [loadingData, setLoadingData] = useState(true);
-
-    const [isSheetOpen, setIsSheetOpen] = useState(false);
+    
+    const {
+        employeeDetails,
+        leaves,
+        evaluations,
+        assets,
+        missions,
+        leaveBalance,
+        loading: dataLoading,
+        isSheetOpen,
+        setIsSheetOpen
+    } = useMySpaceData(user);
+    
+    const loading = authLoading || dataLoading;
     
     const formatDate = (dateString?: string) => {
         if (!dateString) return 'N/A';
@@ -89,36 +89,6 @@ export default function MySpacePage() {
             return dateString; // Fallback to original string if parsing fails
         }
     };
-
-    useEffect(() => {
-        if (user) {
-            const unsubLeaves = subscribeToLeaves((allLeaves) => {
-                const userLeaves = allLeaves.filter(l => l.employee === user.name);
-                setLeaves(userLeaves);
-                calculateLeaveBalance(userLeaves).then(setLeaveBalance);
-            }, console.error);
-            
-            const unsubEvals = subscribeToEvaluations((allEvals) => {
-                setEvaluations(allEvals.filter(e => e.employeeId === user.id));
-            }, console.error);
-
-            Promise.all([
-                getEmployee(user.id),
-                getAssets(),
-                getMissions(),
-            ]).then(([details, allAssets, allMissions]) => {
-                setEmployeeDetails(details);
-                setAssets(allAssets.filter(a => a.assignedTo === user.name));
-                setMissions(allMissions.filter(m => m.participants.some(p => p.employeeName === user.name)));
-            }).catch(console.error).finally(() => setLoadingData(false));
-
-
-            return () => {
-                unsubLeaves();
-                unsubEvals();
-            }
-        }
-    }, [user]);
 
     const handleAddLeaveRequest = async (newLeaveRequest: Omit<Leave, 'id' | 'status'>) => {
         try {
@@ -143,7 +113,6 @@ export default function MySpacePage() {
         };
     });
 
-    const loading = authLoading || loadingData;
 
     const latestEvaluation = useMemo(() => {
         if (evaluations.length === 0) return null;
@@ -204,12 +173,14 @@ export default function MySpacePage() {
                             Voir le Dernier Bulletin
                         </Link>
                     </Button>
-                    <Button variant="outline" asChild>
-                         <Link href={`/evaluations/${latestEvaluation?.id}`}>
+                    {latestEvaluation && (
+                      <Button variant="outline" asChild>
+                         <Link href={`/evaluations/${latestEvaluation.id}`}>
                             <Eye className="mr-2 h-4 w-4" />
                             Consulter ma Dernière Évaluation
                         </Link>
-                    </Button>
+                      </Button>
+                    )}
                 </CardContent>
             </Card>
 

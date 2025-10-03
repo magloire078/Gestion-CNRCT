@@ -319,7 +319,7 @@ export default function LeavePage() {
                             ))
                         ) : (
                             paginatedLeaves.map((leave) => {
-                                const displayName = leave.employeeDetails ? `${leave.employeeDetails.lastName || ''} ${leave.employeeDetails.firstName || ''}`.trim() : leave.employee;
+                                const displayName = `${leave.employeeDetails?.lastName || ''} ${leave.employeeDetails?.firstName || ''}`.trim() || leave.employee;
                                 const workingDays = calculateWorkingDays(leave.startDate, leave.endDate);
                                 return (
                                 <TableRow key={leave.id}>
@@ -390,7 +390,7 @@ export default function LeavePage() {
                             ))
                         ) : (
                             paginatedLeaves.map((leave) => {
-                                const displayName = leave.employeeDetails ? `${leave.employeeDetails.lastName || ''} ${leave.employeeDetails.firstName || ''}`.trim() : leave.employee;
+                                const displayName = `${leave.employeeDetails?.lastName || ''} ${leave.employeeDetails?.firstName || ''}`.trim() || leave.employee;
                                 const workingDays = calculateWorkingDays(leave.startDate, leave.endDate);
                                 return (
                                 <Card key={leave.id}>
@@ -505,5 +505,7 @@ export default function LeavePage() {
     </div>
   );
 }
+
+    
 
     

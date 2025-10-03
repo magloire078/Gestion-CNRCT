@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,14 +23,15 @@ import {
 import { PlusCircle, Trash2, Pencil, ChevronRight, Link2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
+import { useAdminData } from "@/hooks/use-admin-data";
 
 import type { User, Role, Department, Direction, Service, Employe } from "@/lib/data";
-import { subscribeToUsers, deleteUser, updateUser } from "@/services/user-service";
-import { subscribeToRoles, deleteRole, updateRole } from "@/services/role-service";
-import { subscribeToDepartments, addDepartment, updateDepartment, deleteDepartment } from "@/services/department-service";
-import { subscribeToDirections, addDirection, updateDirection, deleteDirection } from "@/services/direction-service";
-import { subscribeToServices, addService, updateService, deleteService } from "@/services/service-service";
-import { getEmployees, updateEmployee } from "@/services/employee-service";
+import { deleteUser, updateUser } from "@/services/user-service";
+import { deleteRole, updateRole } from "@/services/role-service";
+import { addDepartment, updateDepartment, deleteDepartment } from "@/services/department-service";
+import { addDirection, updateDirection, deleteDirection } from "@/services/direction-service";
+import { addService, updateService, deleteService } from "@/services/service-service";
+import { updateEmployee } from "@/services/employee-service";
 
 import { AddUserSheet } from "@/components/admin/add-user-sheet";
 import { AddRoleSheet } from "@/components/admin/add-role-sheet";
@@ -46,14 +47,17 @@ import { LinkUserEmployeeDialog } from "@/components/admin/link-user-employee-di
 import { PaginationControls } from "@/components/common/pagination-controls";
 
 export default function AdminPage() {
-  const [users, setUsers] = useState<User[] | null>(null);
-  const [roles, setRoles] = useState<Role[] | null>(null);
-  const [departments, setDepartments] = useState<Department[] | null>(null);
-  const [directions, setDirections] = useState<Direction[] | null>(null);
-  const [services, setServices] = useState<Service[] | null>(null);
-  const [allEmployees, setAllEmployees] = useState<Employe[]>([]);
-
-  const [error, setError] = useState<string | null>(null);
+  const { 
+    users, 
+    roles, 
+    departments, 
+    directions, 
+    services, 
+    allEmployees, 
+    loading, 
+    error 
+  } = useAdminData();
+  
   const { toast } = useToast();
 
   const [isAddUserSheetOpen, setIsAddUserSheetOpen] = useState(false);
@@ -76,54 +80,6 @@ export default function AdminPage() {
   const [userCurrentPage, setUserCurrentPage] = useState(1);
   const [userItemsPerPage, setUserItemsPerPage] = useState(5);
 
-  useEffect(() => {
-    const unsubUsers = subscribeToUsers(
-      (userList) => {
-        setUsers(userList);
-        // We also update the roles list from the user data if available
-        const uniqueRoles = Array.from(new Map(userList.map(u => u.role).filter(Boolean).map(r => [r!.id, r])).values());
-        if(uniqueRoles.length > 0) {
-            setRoles(uniqueRoles as Role[]);
-        }
-      },
-      (err) => { setError("Impossible de charger les utilisateurs."); console.error(err); }
-    );
-    
-    // We still subscribe to roles separately to get the full list for assignment dialogs
-    const unsubRoles = subscribeToRoles(
-      (roleList) => { setRoles(roleList); },
-      (err) => { setError("Impossible de charger les rôles."); console.error(err); }
-    );
-    
-    const unsubDepartments = subscribeToDepartments(
-      (deptList) => { setDepartments(deptList); },
-      (err) => { setError("Impossible de charger les départements."); console.error(err); }
-    );
-    
-    const unsubDirections = subscribeToDirections(
-      (dirList) => { setDirections(dirList); },
-      (err) => { setError("Impossible de charger les directions."); console.error(err); }
-    );
-    
-    const unsubServices = subscribeToServices(
-      (svcList) => { setServices(svcList); },
-      (err) => { setError("Impossible de charger les services."); console.error(err); }
-    );
-
-    getEmployees().then(setAllEmployees).catch(err => {
-        setError("Impossible de charger les employés."); console.error(err);
-    })
-
-
-    return () => {
-      unsubUsers();
-      unsubRoles();
-      unsubDepartments();
-      unsubDirections();
-      unsubServices();
-    };
-  }, []);
-
   const paginatedUsers = useMemo(() => {
     if (!users) return [];
     const startIndex = (userCurrentPage - 1) * userItemsPerPage;
@@ -135,11 +91,9 @@ export default function AdminPage() {
     return Math.ceil(users.length / userItemsPerPage);
   }, [users, userItemsPerPage]);
 
-  const loading = users === null || roles === null || departments === null || directions === null || services === null || allEmployees.length === 0;
-
-  const handleAddUser = (newUser: User) => {
+  const handleAddUser = () => {
     setIsAddUserSheetOpen(false);
-    toast({ title: "Utilisateur ajouté", description: `${newUser.name} a été ajouté avec succès.` });
+    toast({ title: "Utilisateur ajouté", description: `Le nouvel utilisateur a été ajouté avec succès.` });
   };
 
   const handleAddRole = (newRole: Role) => {
@@ -198,9 +152,7 @@ export default function AdminPage() {
 
   const handleLinkUserToEmployee = async (userId: string, employeeId: string) => {
     try {
-        // Link user to employee
         await updateUser(userId, { employeeId });
-        // Link employee to user
         await updateEmployee(employeeId, { userId });
 
         toast({ title: "Utilisateur lié", description: "Le compte utilisateur a été lié au profil employé." });
@@ -233,6 +185,8 @@ export default function AdminPage() {
       <div className="flex flex-col gap-6">
         <h1 className="text-3xl font-bold tracking-tight">Administration</h1>
         
+        {error && <p className="text-destructive text-center py-4">{error}</p>}
+
         <div className="grid gap-6 md:grid-cols-2">
             <ImportDataCard />
              <Card>
@@ -262,7 +216,6 @@ export default function AdminPage() {
               </CardHeader>
               <CardContent>
               <div className="flex justify-end mb-4"><Button onClick={() => setIsAddUserSheetOpen(true)}><PlusCircle className="mr-2 h-4 w-4" />Ajouter un utilisateur</Button></div>
-              {error && <p className="text-destructive text-center py-4">{error}</p>}
               <Table><TableHeader><TableRow><TableHead>N°</TableHead><TableHead>Nom</TableHead><TableHead>Email</TableHead><TableHead>Rôle</TableHead><TableHead>Permissions</TableHead><TableHead><span className="sr-only">Actions</span></TableHead></TableRow></TableHeader>
                   <TableBody>
                   {loading ? Array.from({ length: 3 }).map((_, i) => (
@@ -315,7 +268,6 @@ export default function AdminPage() {
             <CardHeader><CardTitle>Gestion des Rôles</CardTitle><CardDescription>Définissez les rôles et leurs permissions.</CardDescription></CardHeader>
             <CardContent>
             <div className="flex justify-end mb-4"><Button onClick={() => setIsAddRoleSheetOpen(true)}><PlusCircle className="mr-2 h-4 w-4" />Ajouter un rôle</Button></div>
-            {error && <p className="text-destructive text-center py-4">{error}</p>}
             <Table><TableHeader><TableRow><TableHead>N°</TableHead><TableHead>Rôle</TableHead><TableHead>Permissions</TableHead><TableHead className="text-right w-[100px]">Actions</TableHead></TableRow></TableHeader>
                 <TableBody>
                 {loading ? Array.from({ length: 2 }).map((_, i) => (
@@ -412,7 +364,7 @@ export default function AdminPage() {
         </div>
 
 
-        <AddUserSheet isOpen={isAddUserSheetOpen} onClose={() => setIsAddUserSheetOpen(false)} onAddUser={handleAddUser} />
+        <AddUserSheet isOpen={isAddUserSheetOpen} onClose={() => setIsAddUserSheetOpen(false)} onAddUser={handleAddUser} roles={roles || []} />
         <AddRoleSheet isOpen={isAddRoleSheetOpen} onClose={() => setIsAddRoleSheetOpen(false)} onAddRole={handleAddRole} roles={roles || []} />
         {editingRole && <EditRoleSheet isOpen={isEditRoleSheetOpen} onClose={() => setIsEditRoleSheetOpen(false)} onUpdateRole={handleUpdateRole} role={editingRole} />}
         <DepartmentDialog isOpen={isDepartmentDialogOpen} onClose={() => setIsDepartmentDialogOpen(false)} onConfirm={handleSaveDepartment} department={editingDepartment} />

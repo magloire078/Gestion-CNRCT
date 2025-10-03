@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,45 +23,28 @@ import {
 } from "@/components/ui/select";
 import type { User, Role } from "@/lib/data";
 import { addUser } from "@/services/user-service";
-import { getRoles } from "@/services/role-service";
 import { useToast } from "@/hooks/use-toast";
 
 interface AddUserDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onAddUser: (user: User) => void;
+  onAddUser: () => void;
+  roles: Role[];
 }
 
-export function AddUserSheet({ isOpen, onClose, onAddUser }: AddUserDialogProps) {
+export function AddUserSheet({ isOpen, onClose, onAddUser, roles }: AddUserDialogProps) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [roleId, setRoleId] = useState("");
-  const [roles, setRoles] = useState<Role[]>([]);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
-  
-  useEffect(() => {
-    if (isOpen) {
-        async function fetchRoles() {
-            try {
-                const fetchedRoles = await getRoles();
-                setRoles(fetchedRoles);
-            } catch(err) {
-                console.error("Failed to fetch roles:", err);
-                setError("Impossible de charger les rôles.");
-            }
-        }
-        fetchRoles();
-    }
-  }, [isOpen]);
 
   const resetForm = () => {
     setName("");
     setEmail("");
     setRoleId("");
     setError("");
-    setRoles([]);
   };
 
   const handleClose = () => {
@@ -81,9 +64,8 @@ export function AddUserSheet({ isOpen, onClose, onAddUser }: AddUserDialogProps)
     try {
       // Note: This only creates the user in Firestore. The auth user must be created separately.
       // In a real app, this might be a Cloud Function that does both.
-      const newUser = await addUser({ name, email, roleId });
-      onAddUser(newUser);
-      toast({ title: "Utilisateur ajouté", description: `${name} a été ajouté avec succès. Il doit maintenant être invité ou créer un mot de passe.` });
+      await addUser({ name, email, roleId });
+      onAddUser();
       handleClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Échec de l'ajout de l'utilisateur.");

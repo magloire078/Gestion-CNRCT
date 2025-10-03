@@ -10,6 +10,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from "@/components/ui/card";
 import {
   Table,
@@ -37,6 +38,7 @@ import { subscribeToConflicts, addConflict } from "@/services/conflict-service";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { getConflictResolutionAdvice, type ConflictResolutionOutput } from "@/ai/flows/conflict-resolution-flow";
+import { PaginationControls } from "@/components/common/pagination-controls";
 
 type Status = "En cours" | "Résolu" | "En médiation";
 
@@ -58,6 +60,9 @@ export default function ConflictsPage() {
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [currentConflict, setCurrentConflict] = useState<Conflict | null>(null);
   const [aiSuggestions, setAiSuggestions] = useState<ConflictResolutionOutput | null>(null);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   useEffect(() => {
     const unsubscribe = subscribeToConflicts(
@@ -113,12 +118,23 @@ export default function ConflictsPage() {
   }
 
   const filteredConflicts = useMemo(() => {
-    return conflicts.filter(conflict => {
+    const filtered = conflicts.filter(conflict => {
       const searchTermLower = searchTerm.toLowerCase();
       return conflict.village.toLowerCase().includes(searchTermLower) ||
              conflict.description.toLowerCase().includes(searchTermLower);
     });
-  }, [conflicts, searchTerm]);
+     if (currentPage > Math.ceil(filtered.length / itemsPerPage)) {
+        setCurrentPage(1);
+    }
+    return filtered;
+  }, [conflicts, searchTerm, currentPage, itemsPerPage]);
+
+  const paginatedConflicts = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredConflicts.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredConflicts, currentPage, itemsPerPage]);
+
+  const totalPages = Math.ceil(filteredConflicts.length / itemsPerPage);
 
   return (
     <div className="flex flex-col gap-6">
@@ -179,9 +195,9 @@ export default function ConflictsPage() {
                         </TableRow>
                     ))
                 ) : (
-                    filteredConflicts.map((conflict, index) => (
+                    paginatedConflicts.map((conflict, index) => (
                         <TableRow key={conflict.id}>
-                          <TableCell>{index + 1}</TableCell>
+                          <TableCell>{(currentPage - 1) * itemsPerPage + index + 1}</TableCell>
                           <TableCell className="font-medium">{conflict.village}</TableCell>
                           <TableCell className="max-w-xs truncate">{conflict.description}</TableCell>
                           <TableCell>{conflict.reportedDate}</TableCell>
@@ -206,11 +222,11 @@ export default function ConflictsPage() {
                     <Card key={i}><CardContent className="p-4"><Skeleton className="h-28 w-full" /></CardContent></Card>
                  ))
               ) : (
-                filteredConflicts.map((conflict, index) => (
+                paginatedConflicts.map((conflict, index) => (
                     <Card key={conflict.id}>
                         <CardHeader>
                             <CardTitle className="text-base">
-                               {index + 1}. {conflict.village}
+                               {(currentPage - 1) * itemsPerPage + index + 1}. {conflict.village}
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="p-4 pt-0 space-y-2">
@@ -226,12 +242,24 @@ export default function ConflictsPage() {
                 ))
               )}
             </div>
-          {!loading && filteredConflicts.length === 0 && (
+          {!loading && paginatedConflicts.length === 0 && (
             <div className="text-center py-10 text-muted-foreground">
                 Aucun conflit trouvé.
             </div>
           )}
         </CardContent>
+        {totalPages > 1 && (
+            <CardFooter>
+                <PaginationControls
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setCurrentPage}
+                    itemsPerPage={itemsPerPage}
+                    onItemsPerPageChange={setItemsPerPage}
+                    totalItems={filteredConflicts.length}
+                />
+            </CardFooter>
+        )}
       </Card>
       <AddConflictSheet
         isOpen={isSheetOpen}

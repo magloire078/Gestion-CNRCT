@@ -10,6 +10,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from "@/components/ui/card";
 import {
   Table,
@@ -40,6 +41,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { AddBudgetLineSheet } from "@/components/budget/add-budget-line-sheet";
 import { EditBudgetLineSheet } from "@/components/budget/edit-budget-line-sheet";
+import { PaginationControls } from "@/components/common/pagination-controls";
 
 export default function BudgetPage() {
   const [budgetLines, setBudgetLines] = useState<BudgetLine[]>([]);
@@ -55,6 +57,9 @@ export default function BudgetPage() {
   const [yearFilter, setYearFilter] = useState<string>("all");
   
   const { toast } = useToast();
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   useEffect(() => {
     const unsubscribe = subscribeToBudgetLines(
@@ -121,14 +126,25 @@ export default function BudgetPage() {
   }, [budgetLines]);
 
   const filteredLines = useMemo(() => {
-    return budgetLines.filter(line => {
+    const filtered = budgetLines.filter(line => {
       const matchesYear = yearFilter === "all" || line.year.toString() === yearFilter;
       const matchesSearch = searchTerm === "" || 
                             line.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             line.code.toLowerCase().includes(searchTerm.toLowerCase());
       return matchesYear && matchesSearch;
     });
-  }, [budgetLines, yearFilter, searchTerm]);
+     if (currentPage > Math.ceil(filtered.length / itemsPerPage)) {
+        setCurrentPage(1);
+    }
+    return filtered;
+  }, [budgetLines, yearFilter, searchTerm, currentPage, itemsPerPage]);
+  
+  const paginatedLines = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredLines.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredLines, currentPage, itemsPerPage]);
+
+  const totalPages = Math.ceil(filteredLines.length / itemsPerPage);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('fr-CI', { style: 'currency', currency: 'XOF' }).format(amount);
@@ -212,10 +228,10 @@ export default function BudgetPage() {
                         <TableCell><Skeleton className="h-8 w-8 ml-auto" /></TableCell>
                       </TableRow>
                     ))
-                  ) : filteredLines.length > 0 ? (
-                    filteredLines.map((line, index) => (
+                  ) : paginatedLines.length > 0 ? (
+                    paginatedLines.map((line, index) => (
                       <TableRow key={line.id}>
-                        <TableCell>{index + 1}</TableCell>
+                        <TableCell>{(currentPage - 1) * itemsPerPage + index + 1}</TableCell>
                         <TableCell className="font-mono">{line.code}</TableCell>
                         <TableCell className="font-medium">{line.name}</TableCell>
                         <TableCell>{line.year}</TableCell>
@@ -246,6 +262,18 @@ export default function BudgetPage() {
               </Table>
             </div>
           </CardContent>
+           {totalPages > 1 && (
+            <CardFooter>
+                <PaginationControls
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setCurrentPage}
+                    itemsPerPage={itemsPerPage}
+                    onItemsPerPageChange={setItemsPerPage}
+                    totalItems={filteredLines.length}
+                />
+            </CardFooter>
+        )}
         </Card>
       </div>
 

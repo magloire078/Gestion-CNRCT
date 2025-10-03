@@ -122,7 +122,7 @@ const LatestRecruitsCard = ({ employees, loading }: { employees: Employe[], load
                     <div className="space-y-6">
                         <RecruitGroup title="Cadres" recruits={cadres} />
                         <RecruitGroup title="Chauffeurs Régionaux" recruits={chauffeurs} />
-                        <RecruitGroup title="Opérationnels" recruits={operationnels} description="Techniciens, agents, assistants" />
+                        <RecruitGroup title="Ouvriers" recruits={operationnels} />
                     </div>
                 )}
             </CardContent>

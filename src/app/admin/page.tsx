@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,6 +10,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from "@/components/ui/card";
 import {
   Table,
@@ -42,6 +43,7 @@ import { DirectionDialog } from "@/components/admin/direction-dialog";
 import { ServiceDialog } from "@/components/admin/service-dialog";
 import { Badge } from "@/components/ui/badge";
 import { LinkUserEmployeeDialog } from "@/components/admin/link-user-employee-dialog";
+import { PaginationControls } from "@/components/common/pagination-controls";
 
 export default function AdminPage() {
   const [users, setUsers] = useState<User[] | null>(null);
@@ -70,6 +72,9 @@ export default function AdminPage() {
   const [linkingUser, setLinkingUser] = useState<User | null>(null);
   const [editingRole, setEditingRole] = useState<Role | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; type: 'user' | 'role' | 'department' | 'direction' | 'service'; name: string } | null>(null);
+
+  const [userCurrentPage, setUserCurrentPage] = useState(1);
+  const [userItemsPerPage, setUserItemsPerPage] = useState(5);
 
   useEffect(() => {
     const unsubUsers = subscribeToUsers(
@@ -118,6 +123,17 @@ export default function AdminPage() {
       unsubServices();
     };
   }, []);
+
+  const paginatedUsers = useMemo(() => {
+    if (!users) return [];
+    const startIndex = (userCurrentPage - 1) * userItemsPerPage;
+    return users.slice(startIndex, startIndex + userItemsPerPage);
+  }, [users, userCurrentPage, userItemsPerPage]);
+
+  const totalUserPages = useMemo(() => {
+    if (!users) return 1;
+    return Math.ceil(users.length / userItemsPerPage);
+  }, [users, userItemsPerPage]);
 
   const loading = users === null || roles === null || departments === null || directions === null || services === null || allEmployees.length === 0;
 
@@ -251,9 +267,9 @@ export default function AdminPage() {
                   <TableBody>
                   {loading ? Array.from({ length: 3 }).map((_, i) => (
                       <TableRow key={i}><TableCell><Skeleton className="h-4 w-4" /></TableCell><TableCell><Skeleton className="h-4 w-24" /></TableCell><TableCell><Skeleton className="h-4 w-40" /></TableCell><TableCell><Skeleton className="h-4 w-20" /></TableCell><TableCell><Skeleton className="h-4 w-12" /></TableCell><TableCell><div className="flex justify-end gap-2"><Skeleton className="h-8 w-8" /><Skeleton className="h-8 w-8" /></div></TableCell></TableRow>
-                  )) : (users?.map((user, index) => (
+                  )) : (paginatedUsers.map((user, index) => (
                       <TableRow key={user.id}>
-                        <TableCell>{index + 1}</TableCell>
+                        <TableCell>{(userCurrentPage - 1) * userItemsPerPage + index + 1}</TableCell>
                         <TableCell className="font-medium">
                             {user.name}
                             {user.employeeId && (
@@ -281,6 +297,18 @@ export default function AdminPage() {
                   </TableBody>
               </Table>
               </CardContent>
+               {users && totalUserPages > 1 && (
+                <CardFooter>
+                    <PaginationControls
+                        currentPage={userCurrentPage}
+                        totalPages={totalUserPages}
+                        onPageChange={setUserCurrentPage}
+                        itemsPerPage={userItemsPerPage}
+                        onItemsPerPageChange={setUserItemsPerPage}
+                        totalItems={users.length}
+                    />
+                </CardFooter>
+            )}
           </Card>
           
           <Card>

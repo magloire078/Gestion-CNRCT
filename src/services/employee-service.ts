@@ -9,6 +9,35 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 const employeesCollection = collection(db, 'employees');
 const chiefsCollection = collection(db, 'chiefs');
 
+// Department IDs for special groups
+const GROUPE_DIRECTOIRE_ID = 'DVeCoGfRfL3p43eQeYwz';
+const GROUPE_GARDE_ID = 'YOUR_GARDE_ID'; // Replace with actual ID
+const GROUPE_GENDARME_ID = 'YOUR_GENDARME_ID'; // Replace with actual ID
+
+export type EmployeeGroup = 'directoire' | 'regional' | 'personnel' | 'garde-republicaine' | 'gendarme' | 'all';
+
+/**
+ * Determines the group an employee belongs to based on their properties.
+ * @param employee The employee object.
+ * @returns The group name as a string.
+ */
+export function getEmployeeGroup(employee: Employe): EmployeeGroup {
+  if (employee.departmentId === GROUPE_DIRECTOIRE_ID) {
+    return 'directoire';
+  }
+  if (employee.Region && employee.Region !== '') {
+    return 'regional';
+  }
+  if (employee.departmentId === GROUPE_GARDE_ID) {
+    return 'garde-republicaine';
+  }
+  if (employee.departmentId === GROUPE_GENDARME_ID) {
+    return 'gendarme';
+  }
+  return 'personnel';
+}
+
+
 async function createOrUpdateChiefFromEmployee(employee: Employe) {
     if (employee.departmentId === 'DVeCoGfRfL3p43eQeYwz' || (employee.Region && employee.Village)) {
         const chiefsQuery = query(chiefsCollection, where('name', '==', employee.name));

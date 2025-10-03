@@ -20,7 +20,7 @@ import { Badge } from "@/components/ui/badge";
 import type { Employe, Department, Direction, Service } from "@/lib/data";
 import { AddEmployeeSheet } from "@/components/employees/add-employee-sheet";
 import { PrintDialog } from "@/components/employees/print-dialog";
-import { subscribeToEmployees, addEmployee, deleteEmployee, getOrganizationSettings, updateEmployee } from "@/services/employee-service";
+import { subscribeToEmployees, addEmployee, deleteEmployee, getOrganizationSettings, updateEmployee, getEmployeeGroup } from "@/services/employee-service";
 import { getDepartments } from "@/services/department-service";
 import { getDirections } from "@/services/direction-service";
 import { getServices } from "@/services/service-service";
@@ -214,31 +214,8 @@ export default function EmployeesPage() {
       const matchesCnps = cnpsFilter === 'all' || employee.CNPS === cnpsFilter;
       const matchesSexe = sexeFilter === 'all' || employee.sexe === sexeFilter;
       
-      const isDirectoire = employee.departmentId === 'DVeCoGfRfL3p43eQeYwz'; // Replace with actual ID for Directoire
-      const isRegional = !!employee.Region;
-      const isGardeRepublicaine = employee.departmentId === 'YOUR_GARDE_ID'; // Replace with actual ID
-      const isGendarme = employee.departmentId === 'YOUR_GENDARME_ID'; // Replace with actual ID
-
-      let matchesPersonnelType = true;
-      switch (personnelTypeFilter) {
-          case 'directoire':
-              matchesPersonnelType = isDirectoire;
-              break;
-          case 'regional':
-              matchesPersonnelType = isRegional;
-              break;
-          case 'personnel':
-              matchesPersonnelType = !isDirectoire && !isRegional && !isGardeRepublicaine && !isGendarme;
-              break;
-          case 'garde-republicaine':
-              matchesPersonnelType = isGardeRepublicaine;
-              break;
-          case 'gendarme':
-              matchesPersonnelType = isGendarme;
-              break;
-          default:
-              break;
-      }
+      const employeeGroup = getEmployeeGroup(employee);
+      const matchesPersonnelType = personnelTypeFilter === 'all' || personnelTypeFilter === employeeGroup;
       
       return matchesSearchTerm && matchesDepartment && matchesStatus && matchesCnps && matchesSexe && matchesPersonnelType;
     });
@@ -702,4 +679,5 @@ export default function EmployeesPage() {
 
 
     
+
 

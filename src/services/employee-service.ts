@@ -1,6 +1,6 @@
 
 
-import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, onSnapshot, Unsubscribe, query, orderBy, where, writeBatch, getDoc, setDoc } from 'firebase/firestore';
+import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, onSnapshot, Unsubscribe, query, orderBy, where, writeBatch, getDoc, setDoc, limit } from 'firebase/firestore';
 import type { Employe, Chief } from '@/lib/data';
 import { db, storage } from '@/lib/firebase';
 import { getOrganizationSettings } from './organization-service';
@@ -200,5 +200,30 @@ export async function deleteEmployee(employeeId: string): Promise<void> {
     const employeeDocRef = doc(db, 'employees', employeeId);
     await deleteDoc(employeeDocRef);
 }
+
+export async function getLatestMatricule(): Promise<string> {
+    const q = query(employeesCollection, orderBy("matricule", "desc"), limit(1));
+    const snapshot = await getDocs(q);
+
+    if (snapshot.empty) {
+        return "C 0001"; // Default starting matricule
+    }
+
+    const lastMatricule = snapshot.docs[0].data().matricule as string;
+    
+    // Attempt to extract and increment the numeric part
+    const numericPartMatch = lastMatricule.match(/\d+/);
+    if (numericPartMatch) {
+        const lastNumber = parseInt(numericPartMatch[0], 10);
+        const nextNumber = lastNumber + 1;
+        const prefix = lastMatricule.split(numericPartMatch[0])[0] || 'C ';
+        const padding = numericPartMatch[0].length;
+        return `${prefix}${String(nextNumber).padStart(padding, '0')}`;
+    }
+
+    // Fallback if no number is found, append '1'
+    return `${lastMatricule}1`;
+}
+
 
 export { getOrganizationSettings };

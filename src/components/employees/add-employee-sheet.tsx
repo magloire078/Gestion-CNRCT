@@ -26,6 +26,7 @@ import type { Employe, Department, Direction, Service } from "@/lib/data";
 import { getDepartments } from "@/services/department-service";
 import { getDirections } from "@/services/direction-service";
 import { getServices } from "@/services/service-service";
+import { getLatestMatricule } from "@/services/employee-service";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Upload, Sparkles, Loader2 } from "lucide-react";
 import { Textarea } from "../ui/textarea";
@@ -77,18 +78,23 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
   useEffect(() => {
     if (isOpen) {
       async function fetchInitialData() {
+        setIsSubmitting(true); // Use isSubmitting to show a loader
         try {
-          const [depts, dirs, svcs] = await Promise.all([
+          const [depts, dirs, svcs, nextMatricule] = await Promise.all([
             getDepartments(),
             getDirections(),
             getServices(),
+            getLatestMatricule(),
           ]);
           setDepartmentList(depts);
           setDirectionList(dirs);
           setServiceList(svcs);
+          setMatricule(nextMatricule);
         } catch (err) {
           console.error("Failed to fetch organizational data", err);
-          setError("Impossible de charger les données de l'organisation.");
+          setError("Impossible de charger les données de l'organisation ou le prochain matricule.");
+        } finally {
+          setIsSubmitting(false);
         }
       }
       fetchInitialData();
@@ -247,6 +253,11 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
             <ScrollArea className="h-[60vh] p-1 -mx-6 pr-6">
+                {isSubmitting ? (
+                    <div className="flex items-center justify-center h-full">
+                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    </div>
+                ) : (
                 <div className="grid gap-4 px-6">
                     <div className="flex items-center gap-4">
                     <Label>Photo</Label>
@@ -280,6 +291,7 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
                     
                     {error && <p className="text-sm text-destructive text-center">{error}</p>}
                 </div>
+                )}
             </ScrollArea>
             <DialogFooter>
                 <DialogClose asChild><Button type="button" variant="outline" onClick={handleClose}>Annuler</Button></DialogClose>

@@ -61,6 +61,61 @@ const StatCard = ({ title, value, icon: Icon, description, href, loading }: Stat
 };
 
 
+const LatestRecruitsCard = ({ employees, loading }: { employees: Employe[], loading: boolean }) => {
+
+    const getRecruitsByPrefix = (prefix: string, limit: number) => {
+        return employees
+            .filter(e => e.matricule && e.matricule.startsWith(prefix))
+            .sort((a, b) => new Date(b.dateEmbauche || 0).getTime() - new Date(a.dateEmbauche || 0).getTime())
+            .slice(0, limit);
+    };
+
+    const cadres = getRecruitsByPrefix('C 0', 3);
+    const chauffeurs = getRecruitsByPrefix('R 0', 3);
+    const ouvriers = getRecruitsByPrefix('V O', 3);
+
+    const RecruitGroup = ({ title, recruits }: { title: string, recruits: Employe[] }) => (
+        <div className="space-y-3">
+            <h4 className="font-semibold text-sm">{title}</h4>
+            {recruits.length > 0 ? (
+                recruits.map(emp => (
+                    <div key={emp.id} className="flex items-center gap-3">
+                         <Avatar className="h-9 w-9">
+                            <AvatarImage src={emp.photoUrl} alt={emp.name} data-ai-hint="employee photo" />
+                            <AvatarFallback>{emp.name.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                            <p className="font-medium text-sm">{emp.name}</p>
+                            <p className="text-xs text-muted-foreground">{emp.poste} ({emp.matricule})</p>
+                        </div>
+                    </div>
+                ))
+            ) : (
+                <p className="text-xs text-muted-foreground italic">Aucune recrue récente.</p>
+            )}
+        </div>
+    );
+
+    return (
+        <Card className="lg:col-span-1 xl:col-span-1">
+            <CardHeader>
+                <CardTitle>Dernières Recrues</CardTitle>
+                <CardDescription>Aperçu des nouveaux employés par catégorie.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                {loading ? <Skeleton className="h-48 w-full" /> : (
+                    <div className="space-y-6">
+                        <RecruitGroup title="Cadres" recruits={cadres} />
+                        <RecruitGroup title="Chauffeurs Régionaux" recruits={chauffeurs} />
+                        <RecruitGroup title="Ouvriers" recruits={ouvriers} />
+                    </div>
+                )}
+            </CardContent>
+        </Card>
+    );
+};
+
+
 export default function DashboardPage() {
     const [employees, setEmployees] = useState<Employe[]>([]);
     const [leaves, setLeaves] = useState<Leave[]>([]);
@@ -336,55 +391,7 @@ export default function DashboardPage() {
                         )}
                     </CardContent>
                     </Card>
-                     <Card>
-                     <CardHeader>
-                        <div className="flex justify-between items-start">
-                            <div>
-                                <CardTitle>Départs à la Retraite</CardTitle>
-                                <CardDescription>Employés partant pour l'année choisie.</CardDescription>
-                            </div>
-                             <div className="flex items-center gap-2">
-                                <div className="w-28">
-                                    <Select value={selectedRetirementYear} onValueChange={setSelectedRetirementYear}>
-                                        <SelectTrigger id="retirement-year"><SelectValue/></SelectTrigger>
-                                        <SelectContent>
-                                            {retirementYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <Button variant="outline" size="icon" className="h-9 w-9" onClick={handlePrintRetirements} disabled={upcomingRetirements.length === 0}>
-                                    <Printer className="h-4 w-4" />
-                                    <span className="sr-only">Imprimer</span>
-                                </Button>
-                            </div>
-                        </div>
-                    </CardHeader>
-                    <CardContent>
-                        {loading ? <Skeleton className="h-24 w-full" /> : (
-                        <div className="space-y-4">
-                        {upcomingRetirements.length > 0 ? upcomingRetirements.map(emp => (
-                            <div key={emp.id} className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <Avatar>
-                                <AvatarImage
-                                    src={emp.photoUrl}
-                                    alt={emp.name}
-                                    data-ai-hint="user avatar"
-                                />
-                                <AvatarFallback>{emp.name?.charAt(0) || 'E'}</AvatarFallback>
-                                </Avatar>
-                                <div>
-                                <p className="font-medium">{emp.name}</p>
-                                <p className="text-sm text-muted-foreground">{emp.poste}</p>
-                                </div>
-                            </div>
-                            <span className="text-sm text-muted-foreground">{emp.calculatedRetirementDate && format(emp.calculatedRetirementDate, 'dd/MM/yyyy')}</span>
-                            </div>
-                        )) : <p className="text-sm text-muted-foreground text-center py-8">Aucun départ prévu pour {selectedRetirementYear}.</p>}
-                        </div>
-                        )}
-                    </CardContent>
-                    </Card>
+                    <LatestRecruitsCard employees={employees} loading={loading} />
                     <Card>
                     <CardHeader className="flex flex-row items-start justify-between pb-2">
                         <div className="flex-1">
@@ -432,6 +439,55 @@ export default function DashboardPage() {
                             </div>
                             )
                         }) : <p className="text-sm text-muted-foreground text-center py-8">Aucun anniversaire pour cette période.</p>}
+                        </div>
+                        )}
+                    </CardContent>
+                    </Card>
+                     <Card className="lg:col-span-2 xl:col-span-1">
+                     <CardHeader>
+                        <div className="flex justify-between items-start">
+                            <div>
+                                <CardTitle>Départs à la Retraite</CardTitle>
+                                <CardDescription>Employés partant pour l'année choisie.</CardDescription>
+                            </div>
+                             <div className="flex items-center gap-2">
+                                <div className="w-28">
+                                    <Select value={selectedRetirementYear} onValueChange={setSelectedRetirementYear}>
+                                        <SelectTrigger id="retirement-year"><SelectValue/></SelectTrigger>
+                                        <SelectContent>
+                                            {retirementYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <Button variant="outline" size="icon" className="h-9 w-9" onClick={handlePrintRetirements} disabled={upcomingRetirements.length === 0}>
+                                    <Printer className="h-4 w-4" />
+                                    <span className="sr-only">Imprimer</span>
+                                </Button>
+                            </div>
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        {loading ? <Skeleton className="h-24 w-full" /> : (
+                        <div className="space-y-4">
+                        {upcomingRetirements.length > 0 ? upcomingRetirements.map(emp => (
+                            <div key={emp.id} className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <Avatar>
+                                <AvatarImage
+                                    src={emp.photoUrl}
+                                    alt={emp.name}
+                                    data-ai-hint="user avatar"
+                                />
+                                <AvatarFallback>{emp.name?.charAt(0) || 'E'}</AvatarFallback>
+                                </Avatar>
+                                <div>
+                                <p className="font-medium">{emp.name}</p>
+                                <p className="text-sm text-muted-foreground">{emp.poste}</p>
+                                </div>
+                            </div>
+                            <span className="text-sm text-muted-foreground">{emp.calculatedRetirementDate && format(emp.calculatedRetirementDate, 'dd/MM/yyyy')}</span>
+                            </div>
+                        )) : <p className="text-sm text-muted-foreground text-center py-8">Aucun départ prévu pour {selectedRetirementYear}.</p>}
                         </div>
                         )}
                     </CardContent>

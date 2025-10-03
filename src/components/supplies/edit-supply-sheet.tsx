@@ -102,7 +102,7 @@ export function EditSupplySheet({
         quantity, 
         reorderLevel,
         inkType: category === 'Cartouches d\'encre' ? inkType : undefined,
-        linkedAssetTag: category === 'Cartouches d\'encre' ? linkedAssetTag : undefined,
+        linkedAssetTag: (category === 'Cartouches d\'encre' && linkedAssetTag !== 'none') ? linkedAssetTag : undefined,
       });
       handleClose();
     } catch (err) {
@@ -146,12 +146,12 @@ export function EditSupplySheet({
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="linkedAssetTag-edit" className="text-right">Imprimante</Label>
-                  <Select value={linkedAssetTag} onValueChange={setLinkedAssetTag}>
+                  <Select value={linkedAssetTag || 'none'} onValueChange={setLinkedAssetTag}>
                     <SelectTrigger className="col-span-3">
                       <SelectValue placeholder="Lier à une imprimante..." />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Aucune</SelectItem>
+                      <SelectItem value="none">Aucune</SelectItem>
                       {printers.map(printer => (
                           <SelectItem key={printer.tag} value={printer.tag}>
                               {printer.modele} ({printer.tag})

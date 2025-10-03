@@ -17,10 +17,11 @@ import {
 } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import type { Employe, Department, Direction, Service } from "@/lib/data";
+import type { Employe, Department, Direction, Service, OrganizationSettings } from "@/lib/data";
 import { AddEmployeeSheet } from "@/components/employees/add-employee-sheet";
 import { PrintDialog } from "@/components/employees/print-dialog";
-import { subscribeToEmployees, addEmployee, deleteEmployee, getOrganizationSettings, updateEmployee, getEmployeeGroup, getOrganizationalUnits } from "@/services/employee-service";
+import { subscribeToEmployees, addEmployee, deleteEmployee, getEmployeeGroup, getOrganizationalUnits } from "@/services/employee-service";
+import { getOrganizationSettings } from "@/services/organization-service";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -664,11 +665,3 @@ export default function EmployeesPage() {
     </>
   );
 }
-
-    
-
-    
-
-
-
-    

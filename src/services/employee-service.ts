@@ -265,6 +265,3 @@ export async function getOrganizationalUnits() {
     ]);
     return { departments, directions, services };
 }
-
-
-export { getOrganizationSettings };

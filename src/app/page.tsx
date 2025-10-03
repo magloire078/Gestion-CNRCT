@@ -17,7 +17,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { EmployeeDistributionChart } from '@/components/charts/employee-distribution-chart';
 import { AssetStatusChart } from '@/components/charts/asset-status-chart';
 import { EmployeeActivityReport } from '@/components/reports/employee-activity-report';
-import { subscribeToEmployees, getOrganizationSettings } from '@/services/employee-service';
+import { subscribeToEmployees } from '@/services/employee-service';
+import { getOrganizationSettings } from '@/services/organization-service';
 import { subscribeToLeaves } from '@/services/leave-service';
 import { subscribeToAssets } from '@/services/asset-service';
 import { subscribeToVehicles } from '@/services/fleet-service';
@@ -574,9 +575,3 @@ export default function DashboardPage() {
     </>
   );
 }
-
-    
-
-    
-
-    

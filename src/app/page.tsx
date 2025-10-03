@@ -73,6 +73,15 @@ const LatestRecruitsCard = ({ employees, loading }: { employees: Employe[], load
     const cadres = getRecruitsByPrefix('C 0', 3);
     const chauffeurs = getRecruitsByPrefix('R 0', 3);
     const ouvriers = getRecruitsByPrefix('V O', 3);
+    
+    const formatDate = (dateString?: string) => {
+        if (!dateString) return 'N/A';
+        try {
+            return format(parseISO(dateString), 'dd/MM/yyyy');
+        } catch {
+            return dateString;
+        }
+    }
 
     const RecruitGroup = ({ title, recruits }: { title: string, recruits: Employe[] }) => (
         <div className="space-y-3">
@@ -84,9 +93,12 @@ const LatestRecruitsCard = ({ employees, loading }: { employees: Employe[], load
                             <AvatarImage src={emp.photoUrl} alt={emp.name} data-ai-hint="employee photo" />
                             <AvatarFallback>{emp.name.charAt(0)}</AvatarFallback>
                         </Avatar>
-                        <div>
+                        <div className="text-xs">
                             <p className="font-medium text-sm">{emp.name}</p>
-                            <p className="text-xs text-muted-foreground">{emp.poste} ({emp.matricule})</p>
+                            <p className="text-muted-foreground">{emp.poste} ({emp.matricule})</p>
+                            <p className="text-muted-foreground">
+                                Décision: {emp.Num_Decision || 'N/A'} du {formatDate(emp.dateEmbauche)}
+                            </p>
                         </div>
                     </div>
                 ))
@@ -559,5 +571,7 @@ export default function DashboardPage() {
     </>
   );
 }
+
+    
 
     

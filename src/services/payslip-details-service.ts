@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import type { Employe, PayslipDetails, PayslipEarning, PayslipDeduction, PayslipEmployerContribution, EmployeeEvent } from '@/lib/data';
@@ -19,7 +20,7 @@ import { fr } from 'date-fns/locale';
  * @param payslipDateStr - La date du bulletin de paie pour le calcul (chaîne YYYY-MM-DD).
  * @returns Un objet contenant le texte de l'ancienneté et le nombre d'années.
  */
-function calculateSeniority(hireDateStr: string | undefined, payslipDateStr: string): { text: string, years: number } {
+export function calculateSeniority(hireDateStr: string | undefined, payslipDateStr: string): { text: string, years: number } {
     if (!hireDateStr || !payslipDateStr) return { text: 'N/A', years: 0 };
     
     const hireDate = parseISO(hireDateStr);

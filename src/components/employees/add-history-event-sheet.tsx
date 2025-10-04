@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
@@ -25,9 +26,10 @@ import { Textarea } from "@/components/ui/textarea";
 import type { EmployeeEvent, Employe } from "@/lib/data";
 import { addEmployeeHistoryEvent, updateEmployeeHistoryEvent } from "@/services/employee-history-service";
 import { getEmployee } from "@/services/employee-service";
+import { calculateSeniority } from "@/services/payslip-details-service";
 import { useToast } from "@/hooks/use-toast";
 import { ScrollArea } from "../ui/scroll-area";
-import { differenceInYears, parseISO, isValid, differenceInMonths, addYears, addMonths, differenceInDays } from "date-fns";
+import { differenceInYears, parseISO, isValid } from "date-fns";
 import { Calculator, Undo2 } from "lucide-react";
 
 interface AddHistoryEventDialogProps {
@@ -55,9 +57,8 @@ function calculatePreview(details: Record<string, any>, employee: Employe | null
 
     const baseSalary = Number(details.baseSalary || 0);
 
-    const hireDate = employee.dateEmbauche ? parseISO(employee.dateEmbauche) : new Date();
-    const eventDate = effectiveDate ? parseISO(effectiveDate) : new Date();
-    const yearsOfService = isValid(hireDate) && isValid(eventDate) ? differenceInYears(eventDate, hireDate) : 0;
+    const seniorityInfo = calculateSeniority(employee.dateEmbauche, effectiveDate);
+    const yearsOfService = seniorityInfo.years;
     
     let primeAnciennete = 0;
     if (yearsOfService >= 2) {
@@ -75,16 +76,11 @@ function calculatePreview(details: Record<string, any>, employee: Employe | null
     const cnps = employee.CNPS ? brutImposable * 0.063 : 0;
     const net = brutImposable + transportNonImposable - cnps;
     
-    const dateAfterYears = addYears(hireDate, yearsOfService);
-    const months = differenceInMonths(eventDate, dateAfterYears);
-    const dateAfterMonths = addMonths(dateAfterYears, months);
-    const days = differenceInDays(eventDate, dateAfterMonths);
-
     return {
         brut: Math.round(brutImposable),
         net: Math.round(net),
         cnps: Math.round(cnps),
-        anciennete: `${yearsOfService} an(s), ${months} mois`,
+        anciennete: seniorityInfo.text,
     };
 }
 
@@ -160,9 +156,7 @@ export function AddHistoryEventSheet({ isOpen, onClose, employeeId, eventToEdit,
     
     setOriginalBaseSalary(details.baseSalary || 0);
 
-    const hireDate = employee.dateEmbauche ? parseISO(employee.dateEmbauche) : new Date();
-    const eventDate = effectiveDate ? parseISO(effectiveDate) : new Date();
-    const years = isValid(hireDate) && isValid(eventDate) ? differenceInYears(eventDate, hireDate) : 0;
+    const years = calculateSeniority(employee.dateEmbauche, effectiveDate).years;
     const primeRate = years >= 2 ? Math.min(25, years) / 100 : 0;
     const cnpsRate = employee.CNPS ? 0.063 : 0;
 

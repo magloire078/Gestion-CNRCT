@@ -135,7 +135,7 @@ Le Président
 -----555---
 N° {{employeeContext.numeroMission}}/CNRCT/DIR/PDT.               Yamoussoukro, le {{employeeContext.dateRedaction}}
 
-ORDRE DE MISSION{{#if employeeContext.missionType}} ({{employeeContext.missionType}}){{/if}}
+ORDRE DE MISSION{{#if employeeContext.missionType}} {{employeeContext.missionType}}{{/if}}
 
 LE PRESIDENT DU DIRECTOIRE
 
@@ -202,7 +202,7 @@ const generateDocumentFlow = ai.defineFlow(
             name: input.employeeContext.name || '',
             baseSalary: input.employeeContext.baseSalary || 0,
             matricule: '',
-            department: '',
+            departmentId: '',
             poste: '',
             status: 'Actif',
             photoUrl: '',

@@ -24,6 +24,7 @@ import Papa from "papaparse";
 import { ImportAssetsDataCard } from "@/components/it-assets/import-assets-data-card";
 import { PrintAssetsDialog } from "@/components/it-assets/print-assets-dialog";
 import { PaginationControls } from "@/components/common/pagination-controls";
+import { useAuth } from "@/hooks/use-auth";
 
 
 type Status = 'En utilisation' | 'En stock' | 'En réparation' | 'Retiré';
@@ -68,6 +69,7 @@ export default function ItAssetsPage() {
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   const router = useRouter();
+  const { hasPermission } = useAuth();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
@@ -83,6 +85,8 @@ export default function ItAssetsPage() {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  
+  const canImport = hasPermission('feature:it-assets:import');
 
 
   useEffect(() => {
@@ -253,9 +257,9 @@ export default function ItAssetsPage() {
             </Button>
           </div>
         </div>
-        <div className="mb-6">
+        {canImport && <div className="mb-6">
           <ImportAssetsDataCard />
-        </div>
+        </div>}
         <Card>
           <CardHeader>
             <CardTitle>Inventaire des actifs</CardTitle>

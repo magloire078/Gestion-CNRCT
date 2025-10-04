@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { getMission, updateMission } from "@/services/mission-service";
+import { getMission, updateMission, getLatestMissionNumber } from "@/services/mission-service";
 import type { Mission, Employe, MissionParticipant, Fleet } from "@/lib/data";
 import { getEmployees } from "@/services/employee-service";
 import { getVehicles } from "@/services/fleet-service";
@@ -23,7 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Loader2, Save, X, Check, Trash2, Euro } from "lucide-react";
+import { ArrowLeft, Loader2, Save, X, Check, Trash2, Euro, PlusCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
@@ -74,18 +74,27 @@ export default function MissionEditPage() {
         setMission(prev => prev ? { ...prev, [name]: value } : null);
     };
 
-    const toggleParticipant = (employeeName: string) => {
-        setMission(prev => {
-            if (!prev) return null;
-            const currentParticipants = prev.participants || [];
-            const isAssigned = currentParticipants.some(p => p.employeeName === employeeName);
+    const toggleParticipant = async (employeeName: string) => {
+       const isAssigned = mission?.participants?.some(p => p.employeeName === employeeName);
 
-            if (isAssigned) {
-                return { ...prev, participants: currentParticipants.filter(p => p.employeeName !== employeeName) };
-            } else {
-                return { ...prev, participants: [...currentParticipants, { employeeName, moyenTransport: undefined, immatriculation: '' }] };
-            }
-        });
+        if (isAssigned) {
+             setMission(prev => {
+                if (!prev) return null;
+                return { ...prev, participants: (prev.participants || []).filter(p => p.employeeName !== employeeName) };
+            });
+        } else {
+             const nextOrderNumber = await getLatestMissionNumber(false);
+             const newParticipant: MissionParticipant = { 
+                employeeName, 
+                moyenTransport: undefined, 
+                immatriculation: '',
+                numeroOrdre: nextOrderNumber.toString().padStart(5,'0')
+            };
+             setMission(prev => {
+                if (!prev) return null;
+                return { ...prev, participants: [...(prev.participants || []), newParticipant] };
+            });
+        }
     };
     
     const handleParticipantChange = (employeeName: string, field: keyof Omit<MissionParticipant, 'employeeName' | 'numeroOrdre'>, value: string | number) => {
@@ -191,7 +200,7 @@ export default function MissionEditPage() {
                         <Popover>
                             <PopoverTrigger asChild>
                             <Button variant="outline" className="w-full justify-start font-normal">
-                                Ajouter / Retirer des participants...
+                               <PlusCircle className="mr-2 h-4 w-4" /> Ajouter / Retirer des participants...
                             </Button>
                             </PopoverTrigger>
                             <PopoverContent className="w-[300px] p-0">

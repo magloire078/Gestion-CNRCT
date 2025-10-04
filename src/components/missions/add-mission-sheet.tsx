@@ -30,12 +30,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { Mission, Employe, MissionParticipant, Fleet } from "@/lib/data";
-import { getEmployees } from "@/services/employee-service";
 import { getLatestMissionNumber } from "@/services/mission-service";
-import { getVehicles } from "@/services/fleet-service";
 import { cn } from "@/lib/utils";
 import { CalendarIcon, Loader2, X, Check, Trash2 } from "lucide-react";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { ScrollArea } from "../ui/scroll-area";
 
 
@@ -53,14 +50,11 @@ export function AddMissionSheet({
   const [numeroMission, setNumeroMission] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [participants, setParticipants] = useState<MissionParticipant[]>([]);
   const [lieuMission, setLieuMission] = useState("");
   const [startDate, setStartDate] = useState<Date>();
   const [endDate, setEndDate] = useState<Date>();
   const [status, setStatus] = useState<Mission['status']>('Planifiée');
   
-  const [allEmployees, setAllEmployees] = useState<Employe[]>([]);
-  const [fleetVehicles, setFleetVehicles] = useState<Fleet[]>([]);
   const [loadingInitial, setLoadingInitial] = useState(true);
 
   const [error, setError] = useState("");
@@ -71,13 +65,7 @@ export function AddMissionSheet({
       async function fetchInitialData() {
         setLoadingInitial(true);
         try {
-          const [employees, missionNumber, vehicles] = await Promise.all([
-            getEmployees(),
-            getLatestMissionNumber(true),
-            getVehicles(),
-          ]);
-          setAllEmployees(employees.filter(e => e.status === 'Actif'));
-          setFleetVehicles(vehicles);
+          const missionNumber = await getLatestMissionNumber(true);
           setNumeroMission(missionNumber.toString().padStart(3, '0'));
         } catch (err) {
           console.error("Failed to load initial data for mission sheet", err);
@@ -93,7 +81,6 @@ export function AddMissionSheet({
   const resetForm = () => {
     setTitle("");
     setDescription("");
-    setParticipants([]);
     setStartDate(undefined);
     setEndDate(undefined);
     setLieuMission("");
@@ -108,8 +95,8 @@ export function AddMissionSheet({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title || participants.length === 0 || !startDate || !endDate) {
-      setError("Le titre, au moins un participant et les dates sont obligatoires.");
+    if (!title || !startDate || !endDate) {
+      setError("Le titre et les dates sont obligatoires.");
       return;
     }
     
@@ -117,20 +104,11 @@ export function AddMissionSheet({
     setError("");
 
     try {
-        let lastOrderNumber = await getLatestMissionNumber(false); 
-        const participantsWithOrderNumber = participants.map(p => {
-            const nextOrderNumber = lastOrderNumber++;
-            return {
-                ...p,
-                numeroOrdre: nextOrderNumber.toString().padStart(5,'0')
-            }
-        });
-
         await onAddMission({ 
             numeroMission,
             title, 
             description, 
-            participants: participantsWithOrderNumber,
+            participants: [],
             startDate: format(startDate, "yyyy-MM-dd"),
             endDate: format(endDate, "yyyy-MM-dd"),
             status,
@@ -144,35 +122,14 @@ export function AddMissionSheet({
     }
   };
 
-  const handleAddParticipant = (employeeName: string) => {
-    if (!participants.some(p => p.employeeName === employeeName)) {
-        setParticipants(prev => [...prev, { employeeName, moyenTransport: undefined, immatriculation: '' }]);
-    }
-  };
-  
-  const handleRemoveParticipant = (employeeName: string) => {
-    setParticipants(prev => prev.filter(p => p.employeeName !== employeeName));
-  };
-
-  const handleParticipantVehicleChange = (employeeName: string, field: keyof Omit<MissionParticipant, 'employeeName' | 'numeroOrdre'>, value: string) => {
-    setParticipants(prev => prev.map(p => {
-        if (p.employeeName === employeeName) {
-            const finalValue = value === 'none' ? '' : value;
-            return { ...p, [field]: finalValue };
-        }
-        return p;
-    }));
-  };
-
-
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="sm:max-w-2xl">
+      <DialogContent className="sm:max-w-lg">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Ajouter une nouvelle mission</DialogTitle>
             <DialogDescription>
-              Remplissez les détails pour planifier une nouvelle mission.
+              Remplissez les détails pour planifier une nouvelle mission. Les participants seront ajoutés à l'étape suivante.
             </DialogDescription>
           </DialogHeader>
           
@@ -244,74 +201,6 @@ export function AddMissionSheet({
                   </Select>
                 </div>
 
-                <div className="space-y-4 pt-4 border-t">
-                    <Label>Participants & Véhicules</Label>
-                     <Popover>
-                        <PopoverTrigger asChild>
-                        <Button variant="outline" className="w-full justify-start font-normal">Ajouter un participant...</Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-[300px] p-0">
-                        <Command>
-                            <CommandInput placeholder="Rechercher un employé..."/>
-                            <CommandList>
-                            <CommandEmpty>Aucun employé trouvé.</CommandEmpty>
-                            <CommandGroup>
-                                {allEmployees.map(emp => (
-                                <CommandItem key={emp.id} onSelect={() => handleAddParticipant(emp.name)} disabled={participants.some(p => p.employeeName === emp.name)}>
-                                    <div className={cn("mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary", participants.some(p => p.employeeName === emp.name) ? "bg-primary text-primary-foreground" : "opacity-50 [&_svg]:invisible")}>
-                                    <Check className="h-4 w-4" />
-                                    </div>
-                                    <span>{emp.name}</span>
-                                </CommandItem>
-                                ))}
-                            </CommandGroup>
-                            </CommandList>
-                        </Command>
-                        </PopoverContent>
-                    </Popover>
-
-                    <div className="space-y-4">
-                        {participants.map(p => (
-                            <div key={p.employeeName} className="p-3 border rounded-md space-y-3">
-                                <div className="flex justify-between items-center">
-                                    <p className="font-medium">{p.employeeName}</p>
-                                    <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleRemoveParticipant(p.employeeName)}>
-                                        <Trash2 className="h-4 w-4 text-destructive"/>
-                                    </Button>
-                                </div>
-                                <div className="grid grid-cols-2 gap-2">
-                                    <div className="space-y-1">
-                                        <Label htmlFor={`transport-${p.employeeName}`} className="text-xs">Moyen de Transport</Label>
-                                         <Select value={p.moyenTransport} onValueChange={(value: MissionParticipant['moyenTransport']) => handleParticipantVehicleChange(p.employeeName, 'moyenTransport', value!)}>
-                                            <SelectTrigger id={`transport-${p.employeeName}`}>
-                                                <SelectValue placeholder="Sélectionnez..." />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="Véhicule personnel">Véhicule personnel</SelectItem>
-                                                <SelectItem value="Véhicule CNRCT">Véhicule CNRCT</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                     <div className="space-y-1">
-                                        <Label htmlFor={`immat-${p.employeeName}`} className="text-xs">Immatriculation</Label>
-                                        <Select value={p.immatriculation || 'none'} onValueChange={(value) => handleParticipantVehicleChange(p.employeeName, 'immatriculation', value)}>
-                                            <SelectTrigger id={`immat-${p.employeeName}`}>
-                                                <SelectValue placeholder="Sélectionnez un véhicule..." />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="none">Aucun</SelectItem>
-                                                {fleetVehicles.map(v => (
-                                                    <SelectItem key={v.plate} value={v.plate}>{v.plate} ({v.makeModel})</SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
                 {error && (
                   <p className="text-center text-sm text-destructive">{error}</p>
                 )}
@@ -324,7 +213,7 @@ export function AddMissionSheet({
               <Button type="button" variant="outline" onClick={handleClose}>Annuler</Button>
             </DialogClose>
             <Button type="submit" disabled={isSubmitting || loadingInitial}>
-              {isSubmitting ? "Enregistrement..." : "Enregistrer la Mission"}
+              {isSubmitting ? "Enregistrement..." : "Créer et continuer"}
             </Button>
           </DialogFooter>
         </form>

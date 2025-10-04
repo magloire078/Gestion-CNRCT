@@ -33,7 +33,6 @@ export const allPermissions = {
 
   // Report permissions
   "Voir le rapport DISA": "page:reports:disa:view",
-  "Voir le rapport Nominatif": "page:reports:nominative:view",
 
   // Feature permissions
   "Importer les employés": "feature:employees:import",

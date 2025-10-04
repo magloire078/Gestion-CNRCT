@@ -113,7 +113,6 @@ const allMenuItems = [
     permission: "group:reports:view", // New group permission
     subItems: [
         { href: "/reports/disa", label: "DISA", icon: FileText, permission: "page:reports:disa:view" },
-        { href: "/reports/nominative", label: "Nominatif", icon: FileText, permission: "page:reports:nominative:view" },
         { href: "/leave/report", label: "Rapport Congés", icon: FileClock, permission: "page:leave:view" },
     ]
   },

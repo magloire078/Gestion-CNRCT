@@ -248,7 +248,7 @@ export default function ChiefsPage() {
                 <TableRow>
                   <TableHead>N°</TableHead>
                   <TableHead className="w-[80px]">Photo</TableHead>
-                  <TableHead>Nom & Titre</TableHead>
+                  <TableHead>Nom &amp; Titre</TableHead>
                   <TableHead>Rôle</TableHead>
                   <TableHead>Localisation</TableHead>
                   <TableHead>Contact</TableHead>

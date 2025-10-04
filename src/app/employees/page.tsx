@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
@@ -471,7 +470,7 @@ export default function EmployeesPage() {
                         <TableHeader>
                             <TableRow>
                             <TableHead className="w-[80px]">Photo</TableHead>
-                            <TableHead>NOM & Prénoms</TableHead>
+                            <TableHead>NOM &amp; Prénoms</TableHead>
                             <TableHead>Matricule</TableHead>
                             <TableHead>Poste</TableHead>
                             <TableHead>Service</TableHead>

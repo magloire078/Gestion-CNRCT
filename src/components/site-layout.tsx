@@ -113,6 +113,7 @@ const allMenuItems = [
     permission: "group:reports:view", // New group permission
     subItems: [
         { href: "/reports/disa", label: "DISA", icon: FileText, permission: "page:reports:disa:view" },
+        { href: "/reports/nominative", label: "Tableau Nominatif", icon: FileText, permission: "page:reports:nominative:view" },
         { href: "/leave/report", label: "Rapport Congés", icon: FileClock, permission: "page:leave:view" },
     ]
   },
@@ -398,6 +399,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
 
 export function SiteLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   
   const isPublicPage = ['/login', '/signup', '/forgot-password'].includes(pathname);
 

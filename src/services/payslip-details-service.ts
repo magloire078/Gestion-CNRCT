@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import type { Employe, PayslipDetails, PayslipEarning, PayslipDeduction, PayslipEmployerContribution, EmployeeEvent } from '@/lib/data';

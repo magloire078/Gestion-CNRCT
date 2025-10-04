@@ -30,9 +30,10 @@ import {
 } from "@/components/ui/accordion";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { Employe } from "@/lib/data";
-import { differenceInYears, differenceInMonths, differenceInDays, addYears, addMonths, parseISO, isValid } from 'date-fns';
 import { Calculator, Undo2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { calculateSeniority } from "@/services/payslip-details-service";
+
 
 interface EditPayrollSheetProps {
   isOpen: boolean;
@@ -40,29 +41,6 @@ interface EditPayrollSheetProps {
   onUpdatePayroll: (employeeId: string, payroll: Partial<Employe>) => Promise<void>;
   employee: Employe;
 }
-
-function calculateSeniority(hireDateStr: string | undefined, payslipDateStr: string): { text: string, years: number } {
-    if (!hireDateStr || !payslipDateStr) return { text: 'N/A', years: 0 };
-    
-    const hireDate = parseISO(hireDateStr);
-    const payslipDate = parseISO(payslipDateStr);
-
-    if (!isValid(hireDate) || !isValid(payslipDate)) return { text: 'Dates invalides', years: 0 };
-
-    const years = differenceInYears(payslipDate, hireDate);
-    const dateAfterYears = addYears(hireDate, years);
-    
-    const months = differenceInMonths(payslipDate, dateAfterYears);
-    const dateAfterMonths = addMonths(dateAfterYears, months);
-
-    const days = differenceInDays(payslipDate, dateAfterMonths);
-
-    return {
-        text: `${years} an(s), ${months} mois, ${days} jour(s)`,
-        years: years
-    };
-}
-
 
 export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }: EditPayrollSheetProps) {
   const [formState, setFormState] = useState<Partial<Employe>>(employee);

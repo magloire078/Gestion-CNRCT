@@ -61,9 +61,9 @@ export default function OrganizationChartPage() {
 
   const { departments, directions, services, employees } = data;
 
-  const employeesByService = (serviceId: string) => employees.filter(e => e.service && services.find(s => s.id === serviceId)?.name === e.service);
-  const employeesByDirection = (directionId: string) => employees.filter(e => e.direction && !e.service && directions.find(d => d.id === directionId)?.name === e.direction);
-  const employeesByDepartment = (departmentId: string) => employees.filter(e => e.department && !e.direction && !e.service && departments.find(d => d.id === departmentId)?.name === e.department);
+  const employeesByService = (serviceId: string) => employees.filter(e => e.serviceId === serviceId);
+  const employeesByDirection = (directionId: string) => employees.filter(e => e.directionId === directionId && !e.serviceId);
+  const employeesByDepartment = (departmentId: string) => employees.filter(e => e.departmentId === departmentId && !e.directionId && !e.serviceId);
   
   const servicesInDirection = (directionId: string) => services.filter(s => s.directionId === directionId);
   const servicesInDepartment = (departmentId: string) => services.filter(s => s.departmentId === departmentId && !s.directionId);

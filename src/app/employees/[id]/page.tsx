@@ -179,7 +179,7 @@ export default function EmployeeDetailPage() {
     }
 
     const fullName = `${employee.lastName || ''} ${employee.firstName || ''}`.trim() || employee.name;
-    const departmentName = orgStructure.departments.find(d => d.id === employee.departmentId)?.name || employee.department;
+    const departmentName = orgStructure.departments.find(d => d.id === employee.departmentId)?.name;
     const directionName = orgStructure.directions.find(d => d.id === employee.directionId)?.name;
     const serviceName = orgStructure.services.find(s => s.id === employee.serviceId)?.name;
 

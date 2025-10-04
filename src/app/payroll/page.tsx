@@ -37,7 +37,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import type { Employe, PayslipDetails } from "@/lib/data";
+import type { Employe, PayslipDetails, Department } from "@/lib/data";
 import { subscribeToEmployees, updateEmployee } from "@/services/employee-service";
 import { getPayslipDetails } from "@/services/payslip-details-service";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -51,6 +51,7 @@ import { fr } from "date-fns/locale";
 import QRCode from "react-qr-code";
 import { useAuth } from "@/hooks/use-auth";
 import { PaginationControls } from "@/components/common/pagination-controls";
+import { getDepartments } from "@/services/department-service";
 
 
 type EmployeeWithDetails = Employe & { netSalary?: number; grossSalary?: number };
@@ -69,6 +70,7 @@ export default function PayrollPage() {
   // State for search and filters
   const [searchTerm, setSearchTerm] = useState("");
   const [departmentFilter, setDepartmentFilter] = useState("all");
+  const [departments, setDepartments] = useState<Department[]>([]);
   const [statusFilter, setStatusFilter] = useState("all");
 
   // State for the date selection dialog
@@ -88,6 +90,7 @@ export default function PayrollPage() {
 
   useEffect(() => {
     setLoading(true);
+    getDepartments().then(setDepartments).catch(console.error);
     const unsubscribe = subscribeToEmployees(
       async (fetchedEmployees) => {
         // Filter for employees who should be on payroll
@@ -175,16 +178,11 @@ export default function PayrollPage() {
     }
   };
 
-  const departments = useMemo(() => {
-    const allDepartments = employees.map(e => e.department).filter(Boolean);
-    return [...new Set(allDepartments)].sort();
-  }, [employees]);
-
   const filteredEmployees = useMemo(() => {
     const filtered = employees.filter(employee => {
       const fullName = (employee.firstName && employee.lastName) ? `${employee.lastName} ${employee.firstName}`.toLowerCase() : (employee.name || '').toLowerCase();
       const matchesSearchTerm = fullName.includes(searchTerm.toLowerCase()) || (employee.matricule || '').toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesDepartment = departmentFilter === 'all' || employee.department === departmentFilter;
+      const matchesDepartment = departmentFilter === 'all' || employee.departmentId === departmentFilter;
       const matchesStatus = statusFilter === 'all' || employee.status === statusFilter;
       return matchesSearchTerm && matchesDepartment && matchesStatus;
     });
@@ -315,7 +313,7 @@ export default function PayrollPage() {
                   </SelectTrigger>
                   <SelectContent>
                       <SelectItem value="all">Tous les services</SelectItem>
-                      {departments.map(dep => <SelectItem key={dep} value={dep}>{dep}</SelectItem>)}
+                      {departments.map(dep => <SelectItem key={dep.id} value={dep.id}>{dep.name}</SelectItem>)}
                   </SelectContent>
                   </Select>
                   <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -558,7 +556,7 @@ export default function PayrollPage() {
 function PayslipTemplate({ payslipDetails }: { payslipDetails: PayslipDetails }) {
     const { employeeInfo, earnings, deductions, totals, employerContributions, organizationLogos } = payslipDetails;
     const fullName = `${employeeInfo.lastName || ''} ${employeeInfo.firstName || ''}`.trim() || employeeInfo.name;
-    const qrCodeValue = `${fullName} | ${employeeInfo.matricule} | ${employeeInfo.department}`;
+    const qrCodeValue = `${fullName} | ${employeeInfo.matricule} | ${employeeInfo.departmentId}`;
 
     const payslipDate = lastDayOfMonth(new Date(payslipDetails.employeeInfo.paymentDate || ''));
     const periodDisplay = format(payslipDate, "MMMM yyyy", { locale: fr });
@@ -614,7 +612,7 @@ function PayslipTemplate({ payslipDetails }: { payslipDetails: PayslipDetails })
                             <p><span className="font-bold inline-block w-[140px]">SITUATION MATRIMONIALE</span>: {employeeInfo.situationMatrimoniale}</p>
                             <p><span className="font-bold inline-block w-[140px]">BANQUE</span>: {employeeInfo.banque}</p>
                             <p><span className="font-bold inline-block w-[140px]">NUMERO DE COMPTE</span>: {employeeInfo.numeroCompteComplet || employeeInfo.numeroCompte}</p>
-                            <p><span className="font-bold inline-block w-[140px]">SERVICE</span>: {employeeInfo.department}</p>
+                            <p><span className="font-bold inline-block w-[140px]">SERVICE</span>: {employeeInfo.departmentId}</p>
                             <p><span className="font-bold inline-block w-[140px]">DATE DE CONGE</span>: __/__/____</p>
                             <p><span className="font-bold inline-block w-[140px]">ANCIENNETE</span>: {employeeInfo.anciennete}</p>
                             <p><span className="font-bold inline-block w-[140px]">ENFANT(S)</span>: {employeeInfo.enfants}</p>

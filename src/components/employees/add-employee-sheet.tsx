@@ -226,10 +226,6 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
           Region: region,
           Village: village,
           photoUrl: '', // This will be set by the service after upload
-          // Legacy fields for compatibility - should be removed later
-          department: departmentList.find(d => d.id === departmentId)?.name || '',
-          direction: directionList.find(d => d.id === directionId)?.name || '',
-          service: serviceList.find(s => s.id === serviceId)?.name || '',
       };
       await onAddEmployee(employeeData, photoFile);
       handleClose();

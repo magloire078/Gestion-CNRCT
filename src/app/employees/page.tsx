@@ -194,11 +194,6 @@ export default function EmployeesPage() {
       }
   };
   
-  const departmentOptions = useMemo(() => {
-    const allDepartments = employees.map(e => e.department).filter(Boolean);
-    return [...new Set(allDepartments)].sort();
-  }, [employees]);
-
   const filteredEmployees = useMemo(() => {
     const filtered = employees.filter(employee => {
       const fullName = (employee.lastName || '').toLowerCase() + ' ' + (employee.firstName || '').toLowerCase();
@@ -250,12 +245,11 @@ export default function EmployeesPage() {
         prenom: e.firstName,
         email: e.email, 
         poste: e.poste, 
-        department: e.department, 
+        department: departments.find(d => d.id === e.departmentId)?.name || '', 
         status: e.status, 
         photoUrl: e.photoUrl
     })), {
         header: true,
-        columns: ["matricule", "nom", "prenom", "email", "poste", "department", "status", "photoUrl"]
     });
     downloadFile(csvData, 'export_employes.csv', 'text/csv;charset=utf-8;');
     toast({ title: "Exportation CSV réussie" });
@@ -283,7 +277,7 @@ export default function EmployeesPage() {
     };
 
     const tableName = 'employees';
-    const columns = ['id', 'matricule', 'firstName', 'lastName', 'name', 'email', 'poste', 'department', 'status', 'photoUrl'];
+    const columns = ['id', 'matricule', 'firstName', 'lastName', 'name', 'email', 'poste', 'departmentId', 'status', 'photoUrl'];
     
     const sqlContent = filteredEmployees.map(emp => {
       const values = [
@@ -294,7 +288,7 @@ export default function EmployeesPage() {
         escapeSql(emp.name),
         escapeSql(emp.email),
         escapeSql(emp.poste),
-        escapeSql(emp.department),
+        escapeSql(emp.departmentId),
         escapeSql(emp.status),
         escapeSql(emp.photoUrl),
       ].join(', ');
@@ -348,7 +342,7 @@ export default function EmployeesPage() {
       if (direction) return direction.name;
       const department = departments.find(d => d.id === employee.departmentId);
       if (department) return department.name;
-      return employee.department || 'Non spécifié';
+      return 'Non spécifié';
   }
 
 
@@ -636,8 +630,9 @@ export default function EmployeesPage() {
                                     let value: React.ReactNode = employee[key as keyof Employe] as string || '';
                                     if (key === 'name') {
                                         value = `${(employee.lastName || '').toUpperCase()} ${employee.firstName || ''}`.trim();
-                                    }
-                                    if (key === 'CNPS') {
+                                    } else if (key === 'department') {
+                                        value = getEmployeeOrgUnit(employee);
+                                    } else if (key === 'CNPS') {
                                         value = employee.CNPS ? 'Oui' : 'Non';
                                     }
                                     return <td key={key} className="border border-black p-1">{value}</td>

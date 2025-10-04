@@ -209,7 +209,7 @@ export default function MySpacePage() {
                                 <div>
                                     <h2 className="text-2xl font-bold">{fullName}</h2>
                                     <p className="text-muted-foreground">{employeeDetails?.poste}</p>
-                                    <Badge variant="secondary" className="mt-2">{employeeDetails?.department}</Badge>
+                                    <Badge variant="secondary" className="mt-2">{employeeDetails?.departmentId}</Badge>
                                 </div>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

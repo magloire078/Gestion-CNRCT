@@ -82,8 +82,6 @@ export type Employe = {
   calculatedRetirementDate?: Date;
   age?: number;
   retirementNotificationSent?: boolean;
-  // DEPRECATED: Use departmentId instead.
-  department?: string;
 };
 
 export type Leave = {

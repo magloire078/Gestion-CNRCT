@@ -13,7 +13,7 @@ const employeesCollection = collection(db, 'employees');
 const chiefsCollection = collection(db, 'chiefs');
 
 // Department IDs for special groups
-const GROUPE_DIRECTOIRE_ID = 'DVeCoGfRfL3p43eQeYwz';
+const GROUPE_DIRECTOIRE_ID = 'DVeCoGfRfL3p43eQeYwz'; // This should be a real ID from your departments collection
 const GROUPE_GARDE_ID = 'YOUR_GARDE_ID'; // Replace with actual ID
 const GROUPE_GENDARME_ID = 'YOUR_GENDARME_ID'; // Replace with actual ID
 

@@ -43,8 +43,11 @@ async function getUserProfile(userId: string): Promise<User | null> {
 async function createUserProfile(user: FirebaseUser, name: string): Promise<User> {
     const userDocRef = doc(db, 'users', user.uid);
     
-    // Assign 'employe-operationnel' role by default for new signups
-    const assignedRoleId = 'employe-operationnel';
+    // Ensure default roles are present before assigning one
+    await initializeDefaultRoles();
+
+    // Assign 'Employé Opérationnel' role by default for new signups
+    const assignedRoleId = 'employ-oprationnel'; // Corrected ID from defaultRoles
 
     const userProfile: Omit<User, 'id' | 'role' | 'permissions'> = {
         name,
@@ -65,7 +68,6 @@ export async function signUp(userData: { name: string, email: string }, password
     await updateProfile(user, { displayName: userData.name });
 
     try {
-        await initializeDefaultRoles();
         const userProfile = await createUserProfile(user, userData.name);
         return userProfile;
     } catch (profileError) {
@@ -86,7 +88,6 @@ export async function signIn(email: string, password: string): Promise<User> {
     if (!userProfile) {
         console.warn(`User profile not found for uid: ${user.uid}. Creating one now.`);
         try {
-            await initializeDefaultRoles();
             userProfile = await createUserProfile(user, user.displayName || user.email!);
         } catch(profileError) {
             console.error("Just-in-time profile creation failed:", profileError);

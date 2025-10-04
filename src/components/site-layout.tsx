@@ -40,7 +40,6 @@ import {
 
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { signOut } from "@/services/auth-service";
-import { getOrganizationSettings, type OrganizationSettings } from '@/services/organization-service';
 
 import {
   SidebarProvider,
@@ -218,6 +217,24 @@ function AppLayout({ children }: { children: React.ReactNode }) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { user, loading, hasPermission, settings } = useAuth();
+
+  React.useEffect(() => {
+    if (settings) {
+       // Set dynamic title and favicon
+        if (settings.organizationName) {
+            document.title = settings.organizationName;
+        }
+        if (settings.faviconUrl) {
+            let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
+            if (!link) {
+                link = document.createElement('link');
+                link.rel = 'icon';
+                document.getElementsByTagName('head')[0].appendChild(link);
+            }
+            link.href = settings.faviconUrl;
+        }
+    }
+  }, [settings]);
   
   const handleLogout = async () => {
     await signOut();
@@ -385,15 +402,15 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
   
   const isPublicPage = ['/login', '/signup', '/forgot-password'].includes(pathname);
 
-  if (isPublicPage) {
-    return <>{children}</>;
-  }
-
   return (
     <AuthProvider>
+      {isPublicPage ? (
+        children
+      ) : (
         <AppLayout>
-            {children}
+          {children}
         </AppLayout>
+      )}
     </AuthProvider>
-  )
+  );
 }

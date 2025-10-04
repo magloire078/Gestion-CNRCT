@@ -4,8 +4,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { onAuthStateChange } from '@/services/auth-service';
-import type { User, Role, OrganizationSettings } from '@/lib/data';
-import { getRoles, initializeDefaultRoles } from '@/services/role-service';
+import type { User, OrganizationSettings } from '@/lib/data';
 import { getOrganizationSettings } from '@/services/organization-service';
 
 interface AuthContextType {
@@ -26,43 +25,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
 
   useEffect(() => {
-    let settingsDone = false;
+    let isMounted = true;
     let authDone = false;
+    let settingsDone = false;
 
     const checkDone = () => {
-      if (settingsDone && authDone) {
+      if (isMounted && authDone && settingsDone) {
         setLoading(false);
       }
     };
-
-    const unsubscribe = onAuthStateChange((currentUser) => {
-      setUser(currentUser);
-      authDone = true;
-      checkDone();
-    });
     
-    getOrganizationSettings().then(orgSettings => {
-        setSettings(orgSettings);
-        // Set dynamic title and favicon
-        if (orgSettings.organizationName) {
-            document.title = orgSettings.organizationName;
+    // Subscribe to auth state changes
+    const unsubscribeAuth = onAuthStateChange((currentUser) => {
+        if(isMounted) {
+          setUser(currentUser);
+          authDone = true;
+          checkDone();
         }
-        if (orgSettings.faviconUrl) {
-            let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
-            if (!link) {
-                link = document.createElement('link');
-                link.rel = 'icon';
-                document.getElementsByTagName('head')[0].appendChild(link);
-            }
-            link.href = orgSettings.faviconUrl;
-        }
-    }).catch(console.error)
-      .finally(() => {
-        settingsDone = true;
-        checkDone();
-      });
+    });
 
-    return () => unsubscribe();
+    // Fetch organization settings once
+    getOrganizationSettings().then(orgSettings => {
+        if(isMounted) {
+            setSettings(orgSettings);
+            settingsDone = true;
+            checkDone();
+        }
+    }).catch(console.error);
+
+    return () => {
+      isMounted = false;
+      unsubscribeAuth();
+    };
   }, []);
 
   useEffect(() => {

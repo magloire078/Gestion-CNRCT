@@ -565,7 +565,3 @@ function EmployeeDetailSkeleton() {
         </div>
     )
 }
-
-
-
-    

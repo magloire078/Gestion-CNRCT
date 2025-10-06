@@ -61,10 +61,9 @@ const conflictTypeVariantMap: Record<ConflictType, "default" | "secondary" | "ou
 };
 
 export default function ConflictsPage() {
-  const [conflicts, setConflicts] = useState<Conflict[]>([]);
-  const [chiefs, setChiefs] = useState<Chief[]>([]);
+  const [conflicts, setConflicts] = useState<Conflict[] | null>(null);
+  const [chiefs, setChiefs] = useState<Chief[] | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
@@ -76,28 +75,28 @@ export default function ConflictsPage() {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  
+  const loading = conflicts === null || chiefs === null;
 
   useEffect(() => {
     const unsubscribe = subscribeToConflicts(
       (fetchedConflicts) => {
         setConflicts(fetchedConflicts);
-        if(chiefs.length > 0) setLoading(false);
         setError(null);
       },
       (err) => {
         setError("Impossible de charger les conflits.");
         console.error(err);
-        setLoading(false);
+        setConflicts([]); // Set to empty array on error
       }
     );
 
     getChiefs().then(fetchedChiefs => {
         setChiefs(fetchedChiefs);
-        if(conflicts.length > 0) setLoading(false);
     }).catch(err => {
         setError("Impossible de charger les données de localisation des chefs.");
         console.error(err);
-        setLoading(false);
+        setChiefs([]); // Set to empty array on error
     });
 
     return () => unsubscribe();
@@ -141,6 +140,7 @@ export default function ConflictsPage() {
   }
 
   const filteredConflicts = useMemo(() => {
+    if (!conflicts) return [];
     const filtered = conflicts.filter(conflict => {
       const searchTermLower = searchTerm.toLowerCase();
       return conflict.village.toLowerCase().includes(searchTermLower) ||
@@ -315,7 +315,7 @@ export default function ConflictsPage() {
                         />
                     </div>
                     <div className="h-[600px] w-full rounded-lg border overflow-hidden">
-                        {loading ? <Skeleton className="h-[600px] w-full" /> : <ConflictMap conflicts={filteredConflicts} chiefs={chiefs} />}
+                        {loading ? <Skeleton className="h-[600px] w-full" /> : <ConflictMap conflicts={filteredConflicts} chiefs={chiefs || []} />}
                     </div>
                 </CardContent>
             </Card>

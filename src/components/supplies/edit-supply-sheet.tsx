@@ -6,14 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogClose,
-} from "@/components/ui/dialog";
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetClose,
+} from "@/components/ui/sheet";
 import {
   Select,
   SelectContent,
@@ -26,7 +26,7 @@ import { supplyCategories } from "@/app/supplies/page";
 import { getAssets } from "@/services/asset-service";
 import { useToast } from "@/hooks/use-toast";
 
-interface EditSupplyDialogProps {
+interface EditSupplySheetProps {
   isOpen: boolean;
   onClose: () => void;
   onUpdateSupply: (id: string, data: Partial<Omit<Supply, 'id'>>) => Promise<void>;
@@ -38,7 +38,7 @@ export function EditSupplySheet({
   onClose,
   onUpdateSupply,
   supply
-}: EditSupplyDialogProps) {
+}: EditSupplySheetProps) {
   const [name, setName] = useState("");
   const [category, setCategory] = useState<Supply['category'] | "">("");
   const [inkType, setInkType] = useState("");
@@ -113,15 +113,15 @@ export function EditSupplySheet({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="sm:max-w-lg">
+    <Sheet open={isOpen} onOpenChange={(open) => !open && handleClose()}>
+      <SheetContent className="sm:max-w-lg">
         <form onSubmit={handleSubmit}>
-          <DialogHeader>
-            <DialogTitle>Modifier la fourniture</DialogTitle>
-            <DialogDescription>
+          <SheetHeader>
+            <SheetTitle>Modifier la fourniture</SheetTitle>
+            <SheetDescription>
               Mettez à jour les informations de cet article.
-            </DialogDescription>
-          </DialogHeader>
+            </SheetDescription>
+          </SheetHeader>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="name-edit" className="text-right">Nom</Label>
@@ -176,16 +176,16 @@ export function EditSupplySheet({
               </p>
             )}
           </div>
-          <DialogFooter>
-            <DialogClose asChild>
+          <SheetFooter>
+            <SheetClose asChild>
               <Button type="button" variant="outline" onClick={handleClose}>Annuler</Button>
-            </DialogClose>
+            </SheetClose>
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? "Enregistrement..." : "Enregistrer"}
             </Button>
-          </DialogFooter>
+          </SheetFooter>
         </form>
-      </DialogContent>
-    </Dialog>
+      </SheetContent>
+    </Sheet>
   );
 }

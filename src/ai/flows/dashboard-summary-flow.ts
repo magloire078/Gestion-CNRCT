@@ -28,8 +28,9 @@ const dashboardSummaryPrompt = ai.definePrompt({
   If all stats are zero, output a message like: "Bonjour ! Il n'y a pas d'activité particulière pour le moment."
   Otherwise, keep it to a single, welcoming sentence. For example: "Bonjour ! Il y a actuellement X employés actifs, Y demandes de congé en attente et Z missions en cours."
   
-  IMPORTANT: Your entire response MUST BE A SINGLE, RAW STRING, not a JSON object or null.
-  DO NOT output JSON.
+  IMPORTANT: Your entire response MUST BE A SINGLE, RAW STRING, not a JSON object, null, or markdown.
+  DO NOT output JSON or Markdown.
+  The entire response should be a simple string.
   `,
 });
 
@@ -41,10 +42,10 @@ const dashboardSummaryFlow = ai.defineFlow(
   async () => {
     try {
       const { output } = await dashboardSummaryPrompt();
-      return output || "Résumé non disponible pour le moment.";
+      return output || "Résumé de l'assistant non disponible pour le moment.";
     } catch (error) {
       console.error("[dashboardSummaryFlow] Error calling AI:", error);
-      return "Résumé non disponible pour le moment.";
+      return "Le résumé de l'assistant n'a pas pu être chargé en raison d'une erreur.";
     }
   }
 );

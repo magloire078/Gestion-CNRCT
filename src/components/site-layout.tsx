@@ -102,7 +102,7 @@ const allMenuItems = [
         { href: "/missions", label: "Missions", icon: Briefcase, permission: "page:missions:view" },
         { href: "/budget", label: "Budget", icon: Wallet, permission: "page:budget:view" },
         { href: "/fleet", label: "Flotte de Véhicules", icon: Car, permission: "page:fleet:view" },
-        { href: "/supplies", label: "Fournitures", icon: Package, permission: "page:supplies:view" },
+        { href: "/supplies", label: "Fournitures", icon: Package, permission: "page:repository:view" },
         { href: "/repository", label: "Référentiel", icon: Archive, permission: "page:repository:view" },
     ]
   },
@@ -279,7 +279,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
         <Sidebar>
           <SidebarHeader>
             <div className="flex items-center gap-3">
-              <Avatar className="size-16 rounded-md">
+              <Avatar className="size-20 rounded-md">
                 <AvatarImage src={settings?.mainLogoUrl} alt={settings?.organizationName} />
                 <AvatarFallback><Building2 className="size-8" /></AvatarFallback>
               </Avatar>

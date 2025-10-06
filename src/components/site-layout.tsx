@@ -115,6 +115,8 @@ const allMenuItems = [
         { href: "/reports/disa", label: "DISA", icon: FileText, permission: "page:reports:disa:view" },
         { href: "/reports/nominative", label: "Tableau Nominatif", icon: FileText, permission: "page:reports:nominative:view" },
         { href: "/leave/report", label: "Rapport Congés", icon: FileClock, permission: "page:leave:view" },
+        { href: "/missions/report", label: "Rapport Missions", icon: FileClock, permission: "page:missions:view" },
+        { href: "/conflicts/report", label: "Rapport Conflits", icon: FileClock, permission: "page:conflicts:view" },
     ]
   },
    { 
@@ -279,11 +281,11 @@ function AppLayout({ children }: { children: React.ReactNode }) {
         <Sidebar>
           <SidebarHeader>
             <div className="flex items-center gap-3">
-              <Avatar className="size-16 rounded-md">
+              <Avatar className="h-12 w-12 rounded-md">
                 <AvatarImage src={settings?.mainLogoUrl} alt={settings?.organizationName} />
-                <AvatarFallback><Building2 className="size-7" /></AvatarFallback>
+                <AvatarFallback><Building2 className="size-6" /></AvatarFallback>
               </Avatar>
-              <span className="text-xl font-semibold">
+              <span className="text-lg font-semibold">
                 {settings?.organizationName}
               </span>
             </div>

@@ -8,6 +8,8 @@ import { getDepartments } from './department-service';
 import { getDirections } from './direction-service';
 import { getServices } from './service-service';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { FirestorePermissionError } from '@/lib/errors';
+
 
 const employeesCollection = collection(db, 'employees');
 const chiefsCollection = collection(db, 'chiefs');
@@ -86,8 +88,7 @@ export function subscribeToEmployees(
             callback(employees);
         },
         (error) => {
-            console.error("Error subscribing to employees:", error);
-            onError(error);
+            onError(new FirestorePermissionError("Impossible de charger les employés.", { query: "allEmployees" }));
         }
     );
     return unsubscribe;
@@ -124,30 +125,36 @@ export async function getEmployee(id: string): Promise<Employe | null> {
 }
 
 export async function addEmployee(employeeData: Omit<Employe, 'id'>, photoFile: File | null): Promise<Employe> {
-    let photoUrl = 'https://placehold.co/100x100.png';
-    const docRef = doc(collection(db, "employees"));
+    try {
+        let photoUrl = 'https://placehold.co/100x100.png';
+        const docRef = doc(collection(db, "employees"));
 
-    if (photoFile) {
-        const photoRef = ref(storage, `employee_photos/${docRef.id}/${photoFile.name}`);
-        const snapshot = await uploadBytes(photoRef, photoFile);
-        photoUrl = await getDownloadURL(snapshot.ref);
-    }
-    
-    const finalEmployeeData: { [key: string]: any } = { ...employeeData, photoUrl };
-    
-    // Remove undefined fields before sending to Firestore
-    Object.keys(finalEmployeeData).forEach(key => {
-        if (finalEmployeeData[key] === undefined) {
-            delete finalEmployeeData[key];
+        if (photoFile) {
+            const photoRef = ref(storage, `employee_photos/${docRef.id}/${photoFile.name}`);
+            const snapshot = await uploadBytes(photoRef, photoFile);
+            photoUrl = await getDownloadURL(snapshot.ref);
         }
-    });
+        
+        const finalEmployeeData: { [key: string]: any } = { ...employeeData, photoUrl };
+        
+        Object.keys(finalEmployeeData).forEach(key => {
+            if (finalEmployeeData[key] === undefined) {
+                delete finalEmployeeData[key];
+            }
+        });
 
-    await setDoc(docRef, finalEmployeeData);
-    
-    const newEmployee = { id: docRef.id, ...finalEmployeeData } as Employe;
-    await createOrUpdateChiefFromEmployee(newEmployee);
-    
-    return newEmployee;
+        await setDoc(docRef, finalEmployeeData);
+        
+        const newEmployee = { id: docRef.id, ...finalEmployeeData } as Employe;
+        await createOrUpdateChiefFromEmployee(newEmployee);
+        
+        return newEmployee;
+    } catch(error: any) {
+        if(error.code === 'permission-denied') {
+            throw new FirestorePermissionError("Vous n'avez pas la permission d'ajouter un nouvel employé.", { operation: 'add', path: 'employees' });
+        }
+        throw error;
+    }
 }
 
 
@@ -173,43 +180,55 @@ export async function batchAddEmployees(employees: Omit<Employe, 'id'>[]): Promi
     });
 
     if (addedCount > 0) {
-        await batch.commit();
-        // Sync to chiefs after commit
-        for (const emp of employeesToSyncToChiefs) {
-            await createOrUpdateChiefFromEmployee(emp);
+        try {
+            await batch.commit();
+            // Sync to chiefs after commit
+            for (const emp of employeesToSyncToChiefs) {
+                await createOrUpdateChiefFromEmployee(emp);
+            }
+        } catch(error: any) {
+             if(error.code === 'permission-denied') {
+                throw new FirestorePermissionError("Vous n'avez pas la permission d'importer des employés en masse.", { operation: 'batch-add', path: 'employees' });
+            }
+            throw error;
         }
     }
     return addedCount;
 }
 
 export async function updateEmployee(employeeId: string, employeeDataToUpdate: Partial<Employe>, photoFile: File | null = null): Promise<void> {
-    const employeeDocRef = doc(db, 'employees', employeeId);
-    
-    const updateData: { [key: string]: any } = { ...employeeDataToUpdate };
+    try {
+        const employeeDocRef = doc(db, 'employees', employeeId);
+        
+        const updateData: { [key: string]: any } = { ...employeeDataToUpdate };
 
-    if (photoFile) {
-        const photoRef = ref(storage, `employee_photos/${employeeId}/${photoFile.name}`);
-        const snapshot = await uploadBytes(photoRef, photoFile);
-        updateData.photoUrl = await getDownloadURL(snapshot.ref);
-    }
-    
-    // Remove undefined fields before sending to Firestore
-    Object.keys(updateData).forEach(key => {
-        if (updateData[key] === undefined) {
-            delete updateData[key];
+        if (photoFile) {
+            const photoRef = ref(storage, `employee_photos/${employeeId}/${photoFile.name}`);
+            const snapshot = await uploadBytes(photoRef, photoFile);
+            updateData.photoUrl = await getDownloadURL(snapshot.ref);
         }
-    });
+        
+        Object.keys(updateData).forEach(key => {
+            if (updateData[key] === undefined) {
+                delete updateData[key];
+            }
+        });
 
-    // Make sure not to send `id` inside the update payload
-    if ('id' in updateData) {
-        delete (updateData as any).id;
-    }
+        if ('id' in updateData) {
+            delete (updateData as any).id;
+        }
 
-    await updateDoc(employeeDocRef, updateData);
-    
-    const updatedEmployee = await getEmployee(employeeId);
-    if (updatedEmployee) {
-        await createOrUpdateChiefFromEmployee(updatedEmployee);
+        await updateDoc(employeeDocRef, updateData);
+        
+        const updatedEmployee = await getEmployee(employeeId);
+        if (updatedEmployee) {
+            await createOrUpdateChiefFromEmployee(updatedEmployee);
+        }
+    } catch(error: any) {
+         if(error.code === 'permission-denied') {
+            throw new FirestorePermissionError(`Vous n'avez pas la permission de modifier l'employé ${employeeDataToUpdate.name}.`, { operation: 'update', path: `employees/${employeeId}` });
+        }
+        throw error;
     }
 }
 
@@ -229,8 +248,15 @@ export async function searchEmployees(queryText: string): Promise<Employe[]> {
 }
 
 export async function deleteEmployee(employeeId: string): Promise<void> {
-    const employeeDocRef = doc(db, 'employees', employeeId);
-    await deleteDoc(employeeDocRef);
+    try {
+        const employeeDocRef = doc(db, 'employees', employeeId);
+        await deleteDoc(employeeDocRef);
+    } catch(error: any) {
+         if(error.code === 'permission-denied') {
+            throw new FirestorePermissionError(`Vous n'avez pas la permission de supprimer cet employé.`, { operation: 'delete', path: `employees/${employeeId}` });
+        }
+        throw error;
+    }
 }
 
 export async function getLatestMatricule(): Promise<string> {
@@ -258,10 +284,17 @@ export async function getLatestMatricule(): Promise<string> {
 }
 
 export async function getOrganizationalUnits() {
-    const [departments, directions, services] = await Promise.all([
-        getDepartments(),
-        getDirections(),
-        getServices(),
-    ]);
-    return { departments, directions, services };
+    try {
+        const [departments, directions, services] = await Promise.all([
+            getDepartments(),
+            getDirections(),
+            getServices(),
+        ]);
+        return { departments, directions, services };
+    } catch(error: any) {
+        if(error.code === 'permission-denied') {
+            throw new FirestorePermissionError("Vous n'avez pas la permission de charger la structure organisationnelle.", { operation: 'read-organization' });
+        }
+        throw error;
+    }
 }

@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useState } from "react";
@@ -8,28 +7,28 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogClose,
-} from "@/components/ui/dialog";
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetClose,
+} from "@/components/ui/sheet";
 import type { Role } from "@/lib/data";
 import { addRole } from "@/services/role-service";
 import { useToast } from "@/hooks/use-toast";
 import { allPermissions, type PermissionValue } from "@/lib/permissions";
 import { ScrollArea } from "../ui/scroll-area";
 
-interface AddRoleDialogProps {
+interface AddRoleSheetProps {
   isOpen: boolean;
   onClose: () => void;
   onAddRole: (role: Role) => void;
   roles: Role[];
 }
 
-export function AddRoleSheet({ isOpen, onClose, onAddRole, roles }: AddRoleDialogProps) {
+export function AddRoleSheet({ isOpen, onClose, onAddRole, roles }: AddRoleSheetProps) {
   const [name, setName] = useState('');
   const [selectedPermissions, setSelectedPermissions] = useState<PermissionValue[]>([]);
   const [error, setError] = useState("");
@@ -84,15 +83,15 @@ export function AddRoleSheet({ isOpen, onClose, onAddRole, roles }: AddRoleDialo
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="sm:max-w-lg">
+    <Sheet open={isOpen} onOpenChange={(open) => !open && handleClose()}>
+      <SheetContent className="sm:max-w-lg">
         <form onSubmit={handleSubmit}>
-          <DialogHeader>
-            <DialogTitle>Ajouter un nouveau rôle</DialogTitle>
-            <DialogDescription>
+          <SheetHeader>
+            <SheetTitle>Ajouter un nouveau rôle</SheetTitle>
+            <SheetDescription>
               Définissez un nouveau rôle et ses permissions associées.
-            </DialogDescription>
-          </DialogHeader>
+            </SheetDescription>
+          </SheetHeader>
           <div className="py-4 space-y-4">
             <div>
               <Label htmlFor="name">Nom du Rôle</Label>
@@ -117,16 +116,16 @@ export function AddRoleSheet({ isOpen, onClose, onAddRole, roles }: AddRoleDialo
             </ScrollArea>
             {error && <p className="text-sm text-destructive px-1 text-center">{error}</p>}
           </div>
-          <DialogFooter>
-            <DialogClose asChild>
+          <SheetFooter>
+            <SheetClose asChild>
               <Button type="button" variant="outline">Annuler</Button>
-            </DialogClose>
+            </SheetClose>
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? "Enregistrement..." : "Enregistrer le Rôle"}
             </Button>
-          </DialogFooter>
+          </SheetFooter>
         </form>
-      </DialogContent>
-    </Dialog>
+      </SheetContent>
+    </Sheet>
   );
 }

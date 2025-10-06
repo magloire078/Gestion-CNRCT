@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,7 +22,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { Conflict } from "@/lib/data";
+import type { Conflict, Chief } from "@/lib/data";
+import { getChiefs } from "@/services/chief-service";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandInput,
+  CommandGroup,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface AddConflictDialogProps {
   isOpen: boolean;
@@ -35,6 +51,10 @@ export function AddConflictSheet({
   onClose,
   onAddConflict,
 }: AddConflictDialogProps) {
+  const [allChiefs, setAllChiefs] = useState<Chief[]>([]);
+  const [loadingChiefs, setLoadingChiefs] = useState(true);
+  const [isComboboxOpen, setIsComboboxOpen] = useState(false);
+
   const [village, setVillage] = useState("");
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState<Conflict['status']>('En cours');
@@ -43,6 +63,23 @@ export function AddConflictSheet({
 
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      async function fetchChiefs() {
+        try {
+          setLoadingChiefs(true);
+          const chiefs = await getChiefs();
+          setAllChiefs(chiefs);
+        } catch (error) {
+          console.error("Failed to fetch chiefs:", error);
+        } finally {
+          setLoadingChiefs(false);
+        }
+      }
+      fetchChiefs();
+    }
+  }, [isOpen]);
 
   const resetForm = () => {
     setVillage("");
@@ -56,6 +93,13 @@ export function AddConflictSheet({
   const handleClose = () => {
     resetForm();
     onClose();
+  }
+
+  const handleSelectChief = (chief: Chief) => {
+    setVillage(chief.village);
+    if(chief.latitude) setLatitude(chief.latitude.toString());
+    if(chief.longitude) setLongitude(chief.longitude.toString());
+    setIsComboboxOpen(false);
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -98,41 +142,69 @@ export function AddConflictSheet({
           <SheetHeader>
             <SheetTitle>Signaler un nouveau conflit</SheetTitle>
             <SheetDescription>
-              Remplissez les détails ci-dessous pour enregistrer un nouveau conflit. Les coordonnées sont optionnelles.
+              Remplissez les détails ci-dessous pour enregistrer un nouveau conflit.
             </SheetDescription>
           </SheetHeader>
           <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="village" className="text-right">
-                Village
-              </Label>
-              <Input
-                id="village"
-                value={village}
-                onChange={(e) => setVillage(e.target.value)}
-                className="col-span-3"
-                placeholder="Nom du village"
-              />
+             <div className="space-y-2">
+              <Label htmlFor="village">Village / Localité</Label>
+               <Popover open={isComboboxOpen} onOpenChange={setIsComboboxOpen}>
+                    <PopoverTrigger asChild>
+                        <Button
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={isComboboxOpen}
+                            className="w-full justify-between font-normal"
+                        >
+                            {village || "Sélectionnez ou entrez un village..."}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                        <Command>
+                            <CommandInput 
+                                placeholder="Rechercher un village..."
+                                value={village}
+                                onValueChange={setVillage}
+                            />
+                            <CommandList>
+                                <CommandEmpty>Aucun village trouvé. Vous pouvez entrer une nouvelle valeur.</CommandEmpty>
+                                <CommandGroup>
+                                    {allChiefs.filter(c => c.village).map((chief) => (
+                                        <CommandItem
+                                            key={chief.id}
+                                            value={chief.village}
+                                            onSelect={() => handleSelectChief(chief)}
+                                        >
+                                            <Check
+                                                className={cn(
+                                                    "mr-2 h-4 w-4",
+                                                    village === chief.village ? "opacity-100" : "opacity-0"
+                                                )}
+                                            />
+                                            {chief.village} <span className="text-xs text-muted-foreground ml-2">({chief.region})</span>
+                                        </CommandItem>
+                                    ))}
+                                </CommandGroup>
+                            </CommandList>
+                        </Command>
+                    </PopoverContent>
+                </Popover>
             </div>
-            <div className="grid grid-cols-4 items-start gap-4">
-              <Label htmlFor="description" className="text-right pt-2">
-                Description
-              </Label>
+            <div className="space-y-2">
+              <Label htmlFor="description">Description</Label>
               <Textarea
                 id="description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="col-span-3"
                 rows={5}
                 placeholder="Décrivez la nature du conflit..."
               />
             </div>
-             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="status" className="text-right">
-                Statut Initial
-              </Label>
+             <div className="space-y-2">
+              <Label htmlFor="status">Statut Initial</Label>
                <Select value={status} onValueChange={(value: Conflict['status']) => setStatus(value)}>
-                  <SelectTrigger className="col-span-3">
+                  <SelectTrigger>
                       <SelectValue placeholder="Sélectionnez un statut" />
                   </SelectTrigger>
                   <SelectContent>
@@ -144,12 +216,12 @@ export function AddConflictSheet({
             </div>
             <div className="grid grid-cols-2 gap-4">
                 <div>
-                    <Label htmlFor="latitude">Latitude (Optionnel)</Label>
-                    <Input id="latitude" type="number" step="any" value={latitude} onChange={e => setLatitude(e.target.value)} placeholder="Ex: 5.345" />
+                    <Label htmlFor="latitude">Latitude</Label>
+                    <Input id="latitude" type="number" step="any" value={latitude} onChange={e => setLatitude(e.target.value)} placeholder="Auto-rempli ou manuel"/>
                 </div>
                  <div>
-                    <Label htmlFor="longitude">Longitude (Optionnel)</Label>
-                    <Input id="longitude" type="number" step="any" value={longitude} onChange={e => setLongitude(e.target.value)} placeholder="Ex: -4.028" />
+                    <Label htmlFor="longitude">Longitude</Label>
+                    <Input id="longitude" type="number" step="any" value={longitude} onChange={e => setLongitude(e.target.value)} placeholder="Auto-rempli ou manuel"/>
                 </div>
             </div>
             {error && (

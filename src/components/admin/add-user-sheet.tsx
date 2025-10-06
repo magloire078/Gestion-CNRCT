@@ -6,14 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogClose,
-} from "@/components/ui/dialog";
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetClose,
+} from "@/components/ui/sheet";
 import {
   Select,
   SelectContent,
@@ -25,14 +25,14 @@ import type { User, Role } from "@/lib/data";
 import { addUser } from "@/services/user-service";
 import { useToast } from "@/hooks/use-toast";
 
-interface AddUserDialogProps {
+interface AddUserSheetProps {
   isOpen: boolean;
   onClose: () => void;
   onAddUser: () => void;
   roles: Role[];
 }
 
-export function AddUserSheet({ isOpen, onClose, onAddUser, roles }: AddUserDialogProps) {
+export function AddUserSheet({ isOpen, onClose, onAddUser, roles }: AddUserSheetProps) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [roleId, setRoleId] = useState("");
@@ -75,28 +75,28 @@ export function AddUserSheet({ isOpen, onClose, onAddUser, roles }: AddUserDialo
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="sm:max-w-lg">
+    <Sheet open={isOpen} onOpenChange={(open) => !open && handleClose()}>
+      <SheetContent>
         <form onSubmit={handleSubmit}>
-          <DialogHeader>
-            <DialogTitle>Ajouter un nouvel utilisateur</DialogTitle>
-            <DialogDescription>
+          <SheetHeader>
+            <SheetTitle>Ajouter un nouvel utilisateur</SheetTitle>
+            <SheetDescription>
               Remplissez les détails pour ajouter un nouvel utilisateur au système. L'utilisateur devra ensuite s'inscrire avec le même email pour se connecter.
-            </DialogDescription>
-          </DialogHeader>
+            </SheetDescription>
+          </SheetHeader>
           <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="name" className="text-right">Nom</Label>
-              <Input id="name" value={name} onChange={(e) => setName(e.target.value)} className="col-span-3" />
+            <div className="space-y-2">
+              <Label htmlFor="name">Nom</Label>
+              <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="email" className="text-right">Email</Label>
-              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="col-span-3" />
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="role" className="text-right">Rôle</Label>
+            <div className="space-y-2">
+              <Label htmlFor="role">Rôle</Label>
               <Select value={roleId} onValueChange={setRoleId}>
-                <SelectTrigger className="col-span-3">
+                <SelectTrigger id="role">
                   <SelectValue placeholder="Sélectionnez un rôle" />
                 </SelectTrigger>
                 <SelectContent>
@@ -106,18 +106,18 @@ export function AddUserSheet({ isOpen, onClose, onAddUser, roles }: AddUserDialo
                 </SelectContent>
               </Select>
             </div>
-            {error && <p className="text-sm text-destructive col-span-4 text-center">{error}</p>}
+            {error && <p className="text-sm text-destructive text-center">{error}</p>}
           </div>
-          <DialogFooter>
-            <DialogClose asChild>
+          <SheetFooter>
+            <SheetClose asChild>
               <Button type="button" variant="outline">Annuler</Button>
-            </DialogClose>
+            </SheetClose>
             <Button type="submit" disabled={isSubmitting || roles.length === 0}>
               {isSubmitting ? "Enregistrement..." : "Enregistrer"}
             </Button>
-          </DialogFooter>
+          </SheetFooter>
         </form>
-      </DialogContent>
-    </Dialog>
+      </SheetContent>
+    </Sheet>
   );
 }

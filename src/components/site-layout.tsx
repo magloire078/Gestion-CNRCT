@@ -279,9 +279,9 @@ function AppLayout({ children }: { children: React.ReactNode }) {
         <Sidebar>
           <SidebarHeader>
             <div className="flex items-center gap-3">
-              <Avatar className="size-10 rounded-md">
+              <Avatar className="size-14 rounded-md">
                 <AvatarImage src={settings?.mainLogoUrl} alt={settings?.organizationName} />
-                <AvatarFallback><Building2 className="size-6" /></AvatarFallback>
+                <AvatarFallback><Building2 className="size-7" /></AvatarFallback>
               </Avatar>
               <span className="text-lg font-semibold">
                 {settings?.organizationName}

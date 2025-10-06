@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -12,7 +11,8 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart"
 import { getEmployees } from "@/services/employee-service"
-import type { Employe } from "@/lib/data"
+import { getDepartments } from "@/services/department-service"
+import type { Employe, Department } from "@/lib/data"
 import { Skeleton } from "../ui/skeleton"
 
 const chartConfig = {
@@ -40,16 +40,29 @@ export function EmployeeDistributionChart() {
   React.useEffect(() => {
     async function fetchData() {
       try {
-        const employeeData = await getEmployees();
+        const [employeeData, departments] = await Promise.all([
+          getEmployees(),
+          getDepartments(),
+        ]);
+        
+        const departmentMap = new Map(departments.map(d => [d.id, d.name]));
+
         const departmentData = employeeData.reduce((acc, employee) => {
-          let department = employee.department || "Other";
-          if (department === "Directoire") {
-            department = "Membres du Directoire";
+          let departmentName = "Other";
+          if (employee.departmentId && departmentMap.has(employee.departmentId)) {
+            departmentName = departmentMap.get(employee.departmentId)!;
+          } else if (employee.department) { // Fallback for old data structure
+             departmentName = employee.department;
           }
-          if (!acc[department]) {
-            acc[department] = { name: department, value: 0, fill: '' };
+          
+          if (departmentName === "Directoire") {
+            departmentName = "Membres du Directoire";
           }
-          acc[department].value += 1;
+
+          if (!acc[departmentName]) {
+            acc[departmentName] = { name: departmentName, value: 0, fill: '' };
+          }
+          acc[departmentName].value += 1;
           return acc;
         }, {} as Record<string, { name: string, value: number, fill: string }>);
 

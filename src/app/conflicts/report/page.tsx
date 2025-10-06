@@ -19,18 +19,21 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { getConflicts } from "@/services/conflict-service";
-import type { Conflict, ConflictType } from "@/lib/data";
+import type { Conflict, ConflictType, OrganizationSettings } from "@/lib/data";
 import { Loader2, Printer, FileText } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { format, parseISO, startOfMonth, endOfMonth } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { PrintLayout } from "@/components/reports/print-layout";
+import { useAuth } from "@/hooks/use-auth";
 
 interface ReportData {
   conflicts: Conflict[];
 }
 
 export default function ConflictReportPage() {
+  const { settings } = useAuth();
   const [year, setYear] = useState<string>(new Date().getFullYear().toString());
   const [month, setMonth] = useState<string>((new Date().getMonth() + 1).toString());
   const [statusFilter, setStatusFilter] = useState<"all" | Conflict['status']>("all");
@@ -227,47 +230,28 @@ export default function ConflictReportPage() {
 
     </div>
     
-    {isPrinting && reportData && (
-        <div id="print-section" className="bg-white text-black p-8 font-sans">
-             <div className="text-center mb-8">
-                <h1 className="text-xl font-bold">RAPPORT MENSUEL DES CONFLITS</h1>
-                <h2 className="text-lg">Période de {selectedPeriodText}</h2>
-            </div>
-            <table className="w-full text-xs border-collapse border border-black">
-                <thead className="bg-gray-200">
-                    <tr>
-                        <th className="border border-black p-1">N°</th>
-                        <th className="border border-black p-1 text-left">Village</th>
-                        <th className="border border-black p-1 text-left">Type</th>
-                        <th className="border border-black p-1 text-left">Date</th>
-                        <th className="border border-black p-1 text-left">Description</th>
-                        <th className="border border-black p-1 text-left">Statut</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {reportData.conflicts.map((conflict, index) => (
-                        <tr key={conflict.id}>
-                            <td className="border border-black p-1 text-center">{index + 1}</td>
-                            <td className="border border-black p-1">{conflict.village}</td>
-                            <td className="border border-black p-1">{conflict.type}</td>
-                            <td className="border border-black p-1">{format(parseISO(conflict.reportedDate), 'dd/MM/yyyy')}</td>
-                            <td className="border border-black p-1 max-w-sm truncate">{conflict.description}</td>
-                            <td className="border border-black p-1">{conflict.status}</td>
-                        </tr>
-                    ))}
-                </tbody>
-                 <tfoot>
-                    <tr className="font-bold bg-gray-100">
-                        <td colSpan={5} className="text-right p-2 border border-black">Total des conflits pour la période :</td>
-                        <td className="text-center p-2 border border-black">{reportData.conflicts.length}</td>
-                    </tr>
-                </tfoot>
-            </table>
-             <footer className="mt-12 text-center text-xs text-gray-500">
-                <p>Rapport généré le {format(new Date(), 'dd/MM/yyyy HH:mm')}</p>
-                 <div className="mt-4"><p className="page-number"></p></div>
-            </footer>
-        </div>
+    {isPrinting && reportData && settings && (
+         <PrintLayout
+            logos={settings}
+            title="RAPPORT MENSUEL DES CONFLITS"
+            subtitle={`Période de ${selectedPeriodText}`}
+            columns={[
+                { header: 'N°', key: 'index', align: 'center' },
+                { header: 'Village', key: 'village' },
+                { header: 'Type', key: 'type' },
+                { header: 'Date', key: 'date' },
+                { header: 'Description', key: 'description' },
+                { header: 'Statut', key: 'status' },
+            ]}
+            data={reportData.conflicts.map((conflict, index) => ({
+                index: index + 1,
+                village: conflict.village,
+                type: conflict.type,
+                date: format(parseISO(conflict.reportedDate), 'dd/MM/yyyy'),
+                description: conflict.description,
+                status: conflict.status,
+            }))}
+        />
     )}
     </>
   );

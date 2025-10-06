@@ -25,7 +25,7 @@ import type { Asset, Employe } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
 import { getEmployees } from "@/services/employee-service";
 
-interface EditAssetDialogProps {
+interface EditAssetSheetProps {
   isOpen: boolean;
   onClose: () => void;
   onUpdateAsset: (tag: string, assetData: Partial<Asset>) => Promise<void>;
@@ -36,7 +36,7 @@ const assetTypes: Asset['type'][] = ["Ordinateur", "Moniteur", "Imprimante", "Cl
 const computerTypes: Asset['typeOrdinateur'][] = ["Portable", "De Bureau", "Serveur"];
 const assetStatuses: Asset['status'][] = ['En utilisation', 'En stock', 'En réparation', 'Retiré'];
 
-export function EditAssetSheet({ isOpen, onClose, onUpdateAsset, asset }: EditAssetDialogProps) {
+export function EditAssetSheet({ isOpen, onClose, onUpdateAsset, asset }: EditAssetSheetProps) {
     const [formData, setFormData] = useState<Partial<Asset>>({});
     const [error, setError] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -73,8 +73,6 @@ export function EditAssetSheet({ isOpen, onClose, onUpdateAsset, asset }: EditAs
 
         try {
           await onUpdateAsset(asset.tag, formData);
-          toast({ title: "Actif mis à jour", description: "Les informations de l'actif ont été modifiées." });
-          onClose();
         } catch(err) {
           const errorMessage = err instanceof Error ? err.message : "Échec de la mise à jour de l'actif.";
           setError(errorMessage);

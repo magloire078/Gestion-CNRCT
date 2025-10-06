@@ -38,6 +38,9 @@ export function AddConflictSheet({
   const [village, setVillage] = useState("");
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState<Conflict['status']>('En cours');
+  const [latitude, setLatitude] = useState<string>('');
+  const [longitude, setLongitude] = useState<string>('');
+
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -45,6 +48,8 @@ export function AddConflictSheet({
     setVillage("");
     setDescription("");
     setStatus("En cours");
+    setLatitude('');
+    setLongitude('');
     setError("");
   }
 
@@ -65,7 +70,19 @@ export function AddConflictSheet({
 
     try {
         const reportedDate = new Date().toISOString().split('T')[0];
-        await onAddConflict({ village, description, status, reportedDate });
+        const conflictData: Omit<Conflict, "id"> = { 
+            village, 
+            description, 
+            status, 
+            reportedDate 
+        };
+
+        if (latitude && longitude) {
+            conflictData.latitude = parseFloat(latitude);
+            conflictData.longitude = parseFloat(longitude);
+        }
+
+        await onAddConflict(conflictData);
         handleClose();
     } catch (err) {
         setError(err instanceof Error ? err.message : "Échec de l'ajout du conflit.");
@@ -81,7 +98,7 @@ export function AddConflictSheet({
           <SheetHeader>
             <SheetTitle>Signaler un nouveau conflit</SheetTitle>
             <SheetDescription>
-              Remplissez les détails ci-dessous pour enregistrer un nouveau conflit.
+              Remplissez les détails ci-dessous pour enregistrer un nouveau conflit. Les coordonnées sont optionnelles.
             </SheetDescription>
           </SheetHeader>
           <div className="grid gap-4 py-4">
@@ -124,6 +141,16 @@ export function AddConflictSheet({
                       <SelectItem value="Résolu">Résolu</SelectItem>
                   </SelectContent>
                </Select>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+                <div>
+                    <Label htmlFor="latitude">Latitude (Optionnel)</Label>
+                    <Input id="latitude" type="number" step="any" value={latitude} onChange={e => setLatitude(e.target.value)} placeholder="Ex: 5.345" />
+                </div>
+                 <div>
+                    <Label htmlFor="longitude">Longitude (Optionnel)</Label>
+                    <Input id="longitude" type="number" step="any" value={longitude} onChange={e => setLongitude(e.target.value)} placeholder="Ex: -4.028" />
+                </div>
             </div>
             {error && (
               <p className="col-span-4 text-center text-sm text-destructive">

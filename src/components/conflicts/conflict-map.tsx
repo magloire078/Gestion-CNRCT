@@ -37,7 +37,7 @@ export function ConflictMap({ conflicts, chiefs }: ConflictMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const markersRef = useRef<L.LayerGroup>(new L.LayerGroup());
 
-  // Create a mapping from village name to chief's location
+  // Create a mapping from village name to chief's location for fallback
   const villageLocations = useMemo(() => {
     const locations = new Map<string, { lat: number; lng: number }>();
     chiefs.forEach(chief => {
@@ -75,7 +75,16 @@ export function ConflictMap({ conflicts, chiefs }: ConflictMapProps) {
       markersRef.current.clearLayers();
 
       conflicts.forEach(conflict => {
-        const location = villageLocations.get(conflict.village.toLowerCase());
+        let location: { lat: number; lng: number } | undefined;
+
+        // Prioritize conflict's own coordinates
+        if (conflict.latitude && conflict.longitude) {
+          location = { lat: conflict.latitude, lng: conflict.longitude };
+        } else {
+          // Fallback to village location from chiefs data
+          location = villageLocations.get(conflict.village.toLowerCase());
+        }
+
         if (location) {
             const marker = L.marker([location.lat, location.lng], { icon: conflictIcon });
             marker.bindPopup(`

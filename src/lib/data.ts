@@ -162,6 +162,8 @@ export type Conflict = {
     description: string;
     reportedDate: string; // YYYY-MM-DD
     status: 'En cours' | 'Résolu' | 'En médiation';
+    latitude?: number;
+    longitude?: number;
 }
 
 export type Supply = {

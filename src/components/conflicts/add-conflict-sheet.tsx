@@ -7,14 +7,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogClose,
-} from "@/components/ui/dialog";
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetClose,
+} from "@/components/ui/sheet";
 import {
   Select,
   SelectContent,
@@ -75,15 +75,15 @@ export function AddConflictSheet({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="sm:max-w-lg">
+    <Sheet open={isOpen} onOpenChange={(open) => !open && handleClose()}>
+      <SheetContent className="sm:max-w-lg">
         <form onSubmit={handleSubmit}>
-          <DialogHeader>
-            <DialogTitle>Signaler un nouveau conflit</DialogTitle>
-            <DialogDescription>
+          <SheetHeader>
+            <SheetTitle>Signaler un nouveau conflit</SheetTitle>
+            <SheetDescription>
               Remplissez les détails ci-dessous pour enregistrer un nouveau conflit.
-            </DialogDescription>
-          </DialogHeader>
+            </SheetDescription>
+          </SheetHeader>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="village" className="text-right">
@@ -131,18 +131,18 @@ export function AddConflictSheet({
               </p>
             )}
           </div>
-          <DialogFooter>
-            <DialogClose asChild>
+          <SheetFooter>
+            <SheetClose asChild>
               <Button type="button" variant="outline" onClick={handleClose}>
                 Annuler
               </Button>
-            </DialogClose>
+            </SheetClose>
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? "Enregistrement..." : "Enregistrer"}
             </Button>
-          </DialogFooter>
+          </SheetFooter>
         </form>
-      </DialogContent>
-    </Dialog>
+      </SheetContent>
+    </Sheet>
   );
 }

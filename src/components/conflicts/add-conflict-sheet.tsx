@@ -22,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { Conflict, Chief } from "@/lib/data";
+import type { Conflict, Chief, ConflictType } from "@/lib/data";
 import { getChiefs } from "@/services/chief-service";
 import {
   Popover,
@@ -46,6 +46,8 @@ interface AddConflictDialogProps {
   onAddConflict: (conflict: Omit<Conflict, "id">) => Promise<void>;
 }
 
+const conflictTypes: ConflictType[] = ["Foncier", "Succession", "Intercommunautaire", "Politique", "Autre"];
+
 export function AddConflictSheet({
   isOpen,
   onClose,
@@ -57,6 +59,7 @@ export function AddConflictSheet({
 
   const [village, setVillage] = useState("");
   const [description, setDescription] = useState("");
+  const [conflictType, setConflictType] = useState<ConflictType>("Autre");
   const [status, setStatus] = useState<Conflict['status']>('En cours');
   const [latitude, setLatitude] = useState<string>('');
   const [longitude, setLongitude] = useState<string>('');
@@ -84,6 +87,7 @@ export function AddConflictSheet({
   const resetForm = () => {
     setVillage("");
     setDescription("");
+    setConflictType("Autre");
     setStatus("En cours");
     setLatitude('');
     setLongitude('');
@@ -104,8 +108,8 @@ export function AddConflictSheet({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!village || !description) {
-      setError("Le nom du village et la description sont obligatoires.");
+    if (!village || !description || !conflictType) {
+      setError("Le village, la description et le type de conflit sont obligatoires.");
       return;
     }
     
@@ -116,6 +120,7 @@ export function AddConflictSheet({
         const reportedDate = new Date().toISOString().split('T')[0];
         const conflictData: Omit<Conflict, "id"> = { 
             village, 
+            type: conflictType,
             description, 
             status, 
             reportedDate 
@@ -190,6 +195,17 @@ export function AddConflictSheet({
                         </Command>
                     </PopoverContent>
                 </Popover>
+            </div>
+             <div className="space-y-2">
+              <Label htmlFor="conflictType">Type de Conflit</Label>
+               <Select value={conflictType} onValueChange={(value: ConflictType) => setConflictType(value)}>
+                  <SelectTrigger>
+                      <SelectValue placeholder="Sélectionnez un type..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                      {conflictTypes.map(type => <SelectItem key={type} value={type}>{type}</SelectItem>)}
+                  </SelectContent>
+               </Select>
             </div>
             <div className="space-y-2">
               <Label htmlFor="description">Description</Label>

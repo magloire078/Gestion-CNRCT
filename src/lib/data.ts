@@ -155,10 +155,12 @@ export type Mission = {
   lieuMission?: string;
 };
 
+export type ConflictType = "Foncier" | "Succession" | "Intercommunautaire" | "Politique" | "Autre";
 
 export type Conflict = {
     id: string; // Firestore document ID
     village: string;
+    type: ConflictType;
     description: string;
     reportedDate: string; // YYYY-MM-DD
     status: 'En cours' | 'Résolu' | 'En médiation';

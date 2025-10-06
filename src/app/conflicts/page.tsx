@@ -31,7 +31,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 import { Badge } from "@/components/ui/badge";
-import type { Conflict, Chief } from "@/lib/data";
+import type { Conflict, Chief, ConflictType } from "@/lib/data";
 import { AddConflictSheet } from "@/components/conflicts/add-conflict-sheet";
 import { Input } from "@/components/ui/input";
 import { subscribeToConflicts, addConflict } from "@/services/conflict-service";
@@ -50,6 +50,14 @@ const statusVariantMap: Record<Status, "destructive" | "default" | "secondary"> 
   "En cours": "destructive",
   "Résolu": "default",
   "En médiation": "secondary",
+};
+
+const conflictTypeVariantMap: Record<ConflictType, "default" | "secondary" | "outline" | "destructive"> = {
+    "Foncier": "default",
+    "Succession": "secondary",
+    "Intercommunautaire": "destructive",
+    "Politique": "outline",
+    "Autre": "outline",
 };
 
 export default function ConflictsPage() {
@@ -198,6 +206,7 @@ export default function ConflictsPage() {
                         <TableRow>
                             <TableHead>N°</TableHead>
                             <TableHead>Village</TableHead>
+                            <TableHead>Type</TableHead>
                             <TableHead>Description</TableHead>
                             <TableHead>Date Signalée</TableHead>
                             <TableHead>Statut</TableHead>
@@ -210,6 +219,7 @@ export default function ConflictsPage() {
                                 <TableRow key={i}>
                                     <TableCell><Skeleton className="h-4 w-4" /></TableCell>
                                     <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                                    <TableCell><Skeleton className="h-6 w-28 rounded-full" /></TableCell>
                                     <TableCell><Skeleton className="h-4 w-64" /></TableCell>
                                     <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                                     <TableCell><Skeleton className="h-6 w-24 rounded-full" /></TableCell>
@@ -221,6 +231,7 @@ export default function ConflictsPage() {
                                 <TableRow key={conflict.id}>
                                 <TableCell>{(currentPage - 1) * itemsPerPage + index + 1}</TableCell>
                                 <TableCell className="font-medium">{conflict.village}</TableCell>
+                                <TableCell><Badge variant={conflictTypeVariantMap[conflict.type] || 'outline'}>{conflict.type}</Badge></TableCell>
                                 <TableCell className="max-w-xs truncate">{conflict.description}</TableCell>
                                 <TableCell>{conflict.reportedDate}</TableCell>
                                 <TableCell>
@@ -250,6 +261,9 @@ export default function ConflictsPage() {
                                     <CardTitle className="text-base">
                                     {(currentPage - 1) * itemsPerPage + index + 1}. {conflict.village}
                                     </CardTitle>
+                                    <CardDescription>
+                                        <Badge variant={conflictTypeVariantMap[conflict.type] || 'outline'}>{conflict.type}</Badge>
+                                    </CardDescription>
                                 </CardHeader>
                                 <CardContent className="p-4 pt-0 space-y-2">
                                     <Badge variant={statusVariantMap[conflict.status] || 'default'}>{conflict.status}</Badge>

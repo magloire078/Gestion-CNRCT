@@ -89,8 +89,9 @@ export function ConflictMap({ conflicts, chiefs }: ConflictMapProps) {
             const marker = L.marker([location.lat, location.lng], { icon: conflictIcon });
             marker.bindPopup(`
                 <div class="font-sans">
-                    <h3 class="font-bold text-base mb-1">Conflit à ${conflict.village}</h3>
-                    <p class="text-sm m-0">${conflict.description}</p>
+                    <h3 class="font-bold text-base mb-1">${conflict.village}</h3>
+                    <p class="text-sm font-medium m-0">Type: ${conflict.type}</p>
+                    <p class="text-sm text-muted-foreground m-0 mt-1">${conflict.description}</p>
                     <p class="text-sm font-medium m-0 mt-2">Statut: ${conflict.status}</p>
                 </div>
             `);

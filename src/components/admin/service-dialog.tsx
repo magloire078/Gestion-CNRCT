@@ -55,16 +55,16 @@ export function ServiceDialog({ isOpen, onClose, service, directions, department
           setParentType('department');
           setParentId(service.departmentId);
         } else {
-            setParentType('direction');
+            setParentType(directions.length > 0 ? 'direction' : 'department');
             setParentId('');
         }
       } else {
         setName("");
-        setParentType('direction');
+        setParentType(directions.length > 0 ? 'direction' : 'department');
         setParentId("");
       }
     }
-  }, [service, isOpen]);
+  }, [service, isOpen, directions]);
 
   const handleClose = () => {
     setError("");
@@ -84,12 +84,14 @@ export function ServiceDialog({ isOpen, onClose, service, directions, department
     try {
       const dataToSave: { name: string; directionId?: string; departmentId?: string; } = {
         name,
+        directionId: parentType === 'direction' ? parentId : undefined,
+        departmentId: parentType === 'department' ? parentId : undefined,
       };
-
+      
+      // Ensure only one parent type is set
       if(parentType === 'direction') {
-        dataToSave.directionId = parentId;
-      } else {
-        dataToSave.departmentId = parentId;
+          const selectedDirection = directions.find(d => d.id === parentId);
+          dataToSave.departmentId = selectedDirection?.departmentId;
       }
 
       if (isEditMode) {
@@ -143,11 +145,11 @@ export function ServiceDialog({ isOpen, onClose, service, directions, department
                 <Label>Dépend de</Label>
                 <RadioGroup value={parentType} onValueChange={handleParentTypeChange} className="flex gap-4 mt-2">
                     <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="direction" id="r-direction" />
+                        <RadioGroupItem value="direction" id="r-direction" disabled={directions.length === 0} />
                         <Label htmlFor="r-direction">Direction</Label>
                     </div>
                     <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="department" id="r-department" />
+                        <RadioGroupItem value="department" id="r-department" disabled={departments.length === 0} />
                         <Label htmlFor="r-department">Département</Label>
                     </div>
                 </RadioGroup>

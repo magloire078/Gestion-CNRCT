@@ -16,6 +16,15 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetClose,
+} from "@/components/ui/sheet";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -239,22 +248,23 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
 
   return (
     <>
-    <Dialog open={isOpen} onOpenChange={(open) => { if (!open) handleClose(); }}>
-      <DialogContent className="sm:max-w-xl">
-        <DialogHeader>
-            <DialogTitle>Ajouter un nouvel employé</DialogTitle>
-            <DialogDescription>
+    <Sheet open={isOpen} onOpenChange={(open) => { if (!open) handleClose(); }}>
+      <SheetContent className="sm:max-w-xl">
+        <form onSubmit={handleSubmit}>
+        <SheetHeader>
+            <SheetTitle>Ajouter un nouvel employé</SheetTitle>
+            <SheetDescription>
             Remplissez les détails ci-dessous pour ajouter un nouvel employé au système.
-            </DialogDescription>
-        </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-            <ScrollArea className="h-[60vh] p-1 -mx-6 pr-6">
+            </SheetDescription>
+        </SheetHeader>
+            <div className="py-4 h-[calc(100vh-150px)]">
+            <ScrollArea className="h-full w-full pr-6">
                 {isSubmitting ? (
                     <div className="flex items-center justify-center h-full">
                         <Loader2 className="h-8 w-8 animate-spin text-primary" />
                     </div>
                 ) : (
-                <div className="grid gap-4 px-6">
+                <div className="grid gap-4">
                     <div className="flex items-center gap-4">
                     <Label>Photo</Label>
                     <div className="flex items-center gap-4">
@@ -289,13 +299,14 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
                 </div>
                 )}
             </ScrollArea>
-            <DialogFooter>
-                <DialogClose asChild><Button type="button" variant="outline" onClick={handleClose}>Annuler</Button></DialogClose>
+            </div>
+            <SheetFooter>
+                <SheetClose asChild><Button type="button" variant="outline" onClick={handleClose}>Annuler</Button></SheetClose>
                 <Button type="submit" disabled={isSubmitting}>{isSubmitting ? "Enregistrement..." : "Enregistrer"}</Button>
-            </DialogFooter>
+            </SheetFooter>
         </form>
-      </DialogContent>
-    </Dialog>
+      </SheetContent>
+    </Sheet>
     
     <Dialog open={isAvatarDialogOpen} onOpenChange={setIsAvatarDialogOpen}>
         <DialogContent>

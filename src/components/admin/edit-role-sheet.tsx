@@ -7,27 +7,27 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogClose,
-} from "@/components/ui/dialog";
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetClose,
+} from "@/components/ui/sheet";
 import type { Role } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
 import { allPermissions, type PermissionValue } from "@/lib/permissions";
 import { ScrollArea } from "../ui/scroll-area";
 
-interface EditRoleDialogProps {
+interface EditRoleSheetProps {
   isOpen: boolean;
   onClose: () => void;
   onUpdateRole: (roleId: string, permissions: string[]) => Promise<void>;
   role: Role;
 }
 
-export function EditRoleSheet({ isOpen, onClose, onUpdateRole, role }: EditRoleDialogProps) {
+export function EditRoleSheet({ isOpen, onClose, onUpdateRole, role }: EditRoleSheetProps) {
   const [selectedPermissions, setSelectedPermissions] = useState<PermissionValue[]>([]);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -71,15 +71,15 @@ export function EditRoleSheet({ isOpen, onClose, onUpdateRole, role }: EditRoleD
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="sm:max-w-lg">
+    <Sheet open={isOpen} onOpenChange={(open) => !open && handleClose()}>
+      <SheetContent className="sm:max-w-lg">
         <form onSubmit={handleSubmit}>
-          <DialogHeader>
-            <DialogTitle>Modifier le rôle : {role.name}</DialogTitle>
-            <DialogDescription>
+          <SheetHeader>
+            <SheetTitle>Modifier le rôle : {role.name}</SheetTitle>
+            <SheetDescription>
               Ajustez les permissions pour ce rôle.
-            </DialogDescription>
-          </DialogHeader>
+            </SheetDescription>
+          </SheetHeader>
           <div className="py-4 space-y-4">
             <div>
               <Label htmlFor="name">Nom du Rôle</Label>
@@ -104,16 +104,16 @@ export function EditRoleSheet({ isOpen, onClose, onUpdateRole, role }: EditRoleD
             </ScrollArea>
             {error && <p className="text-sm text-destructive px-1 text-center">{error}</p>}
           </div>
-          <DialogFooter>
-            <DialogClose asChild>
+          <SheetFooter>
+            <SheetClose asChild>
               <Button type="button" variant="outline">Annuler</Button>
-            </DialogClose>
+            </SheetClose>
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? "Enregistrement..." : "Enregistrer les Permissions"}
             </Button>
-          </DialogFooter>
+          </SheetFooter>
         </form>
-      </DialogContent>
-    </Dialog>
+      </SheetContent>
+    </Sheet>
   );
 }

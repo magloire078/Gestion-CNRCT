@@ -283,7 +283,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
                 <AvatarImage src={settings?.mainLogoUrl} alt={settings?.organizationName} />
                 <AvatarFallback><Building2 className="size-7" /></AvatarFallback>
               </Avatar>
-              <span className="text-lg font-semibold">
+              <span className="text-xl font-semibold">
                 {settings?.organizationName}
               </span>
             </div>

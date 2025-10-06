@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import * as React from "react";
@@ -279,10 +278,10 @@ function AppLayout({ children }: { children: React.ReactNode }) {
     <SidebarProvider>
         <Sidebar>
           <SidebarHeader>
-            <div className="flex items-center gap-2">
-              <Avatar className="size-8 rounded-md">
+            <div className="flex items-center gap-3">
+              <Avatar className="size-10 rounded-md">
                 <AvatarImage src={settings?.mainLogoUrl} alt={settings?.organizationName} />
-                <AvatarFallback><Building2 className="size-5" /></AvatarFallback>
+                <AvatarFallback><Building2 className="size-6" /></AvatarFallback>
               </Avatar>
               <span className="text-lg font-semibold">
                 {settings?.organizationName}

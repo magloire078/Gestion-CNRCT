@@ -1,4 +1,5 @@
 
+
 export type Employe = {
   id: string; // Firestore document ID
   matricule: string;
@@ -166,7 +167,8 @@ export type Conflict = {
     status: 'En cours' | 'Résolu' | 'En médiation';
     latitude?: number;
     longitude?: number;
-}
+    mediatorName?: string;
+};
 
 export type Supply = {
   id: string; // Firestore document ID

@@ -1,5 +1,6 @@
 
-import { collection, getDocs, addDoc, onSnapshot, Unsubscribe, query, orderBy } from 'firebase/firestore';
+
+import { collection, getDocs, addDoc, onSnapshot, Unsubscribe, query, orderBy, doc, updateDoc } from 'firebase/firestore';
 import type { Conflict } from '@/lib/data';
 import { db } from '@/lib/firebase';
 
@@ -37,4 +38,9 @@ export async function getConflicts(): Promise<Conflict[]> {
 export async function addConflict(conflictDataToAdd: Omit<Conflict, 'id'>): Promise<Conflict> {
     const docRef = await addDoc(conflictsCollection, conflictDataToAdd);
     return { id: docRef.id, ...conflictDataToAdd };
+}
+
+export async function updateConflict(id: string, dataToUpdate: Partial<Omit<Conflict, 'id'>>): Promise<void> {
+    const conflictDocRef = doc(db, 'conflicts', id);
+    await updateDoc(conflictDocRef, dataToUpdate);
 }

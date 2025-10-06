@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { PlusCircle, Search, Sparkles, Loader2, List, Map } from "lucide-react";
+import { PlusCircle, Search, Sparkles, Loader2, List, Map, MoreHorizontal, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -29,12 +29,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 import { Badge } from "@/components/ui/badge";
 import type { Conflict, Chief, ConflictType } from "@/lib/data";
 import { AddConflictSheet } from "@/components/conflicts/add-conflict-sheet";
+import { EditConflictSheet } from "@/components/conflicts/edit-conflict-sheet";
 import { Input } from "@/components/ui/input";
-import { subscribeToConflicts, addConflict } from "@/services/conflict-service";
+import { subscribeToConflicts, addConflict, updateConflict } from "@/services/conflict-service";
 import { getChiefs } from "@/services/chief-service";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
@@ -63,7 +65,10 @@ const conflictTypeVariantMap: Record<ConflictType, "default" | "secondary" | "ou
 export default function ConflictsPage() {
   const [conflicts, setConflicts] = useState<Conflict[] | null>(null);
   const [chiefs, setChiefs] = useState<Chief[] | null>(null);
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
+  const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
+  const [editingTarget, setEditingTarget] = useState<Conflict | null>(null);
+
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
@@ -105,14 +110,27 @@ export default function ConflictsPage() {
   const handleAddConflict = async (newConflictData: Omit<Conflict, "id">) => {
      try {
         await addConflict(newConflictData);
-        // State is managed by real-time subscription
-        setIsSheetOpen(false);
+        setIsAddSheetOpen(false);
         toast({
             title: "Conflit ajouté",
             description: `Le conflit à ${newConflictData.village} a été enregistré.`,
         });
      } catch (err) {
         console.error("Failed to add conflict:", err);
+        throw err;
+     }
+  };
+  
+   const handleUpdateConflict = async (id: string, data: Partial<Omit<Conflict, 'id'>>) => {
+     try {
+        await updateConflict(id, data);
+        setIsEditSheetOpen(false);
+        setEditingTarget(null);
+        toast({
+            title: "Conflit mis à jour",
+        });
+     } catch (err) {
+        console.error("Failed to update conflict:", err);
         throw err;
      }
   };
@@ -132,19 +150,24 @@ export default function ConflictsPage() {
             description: "Impossible d'obtenir des suggestions de l'IA. Veuillez réessayer."
         })
         console.error(err);
-        // Optionally close the dialog on error
-        // setIsAnalysisDialogOpen(false); 
     } finally {
         setIsAiLoading(false);
     }
   }
+
+  const openEditSheet = (conflict: Conflict) => {
+    setEditingTarget(conflict);
+    setIsEditSheetOpen(true);
+  };
+
 
   const filteredConflicts = useMemo(() => {
     if (!conflicts) return [];
     const filtered = conflicts.filter(conflict => {
       const searchTermLower = searchTerm.toLowerCase();
       return conflict.village.toLowerCase().includes(searchTermLower) ||
-             conflict.description.toLowerCase().includes(searchTermLower);
+             conflict.description.toLowerCase().includes(searchTermLower) ||
+             (conflict.mediatorName || '').toLowerCase().includes(searchTermLower);
     });
      if (currentPage > Math.ceil(filtered.length / itemsPerPage)) {
         setCurrentPage(1);
@@ -165,7 +188,7 @@ export default function ConflictsPage() {
         <h1 className="text-3xl font-bold tracking-tight">
           Gestion des Conflits
         </h1>
-        <Button onClick={() => setIsSheetOpen(true)} className="w-full sm:w-auto">
+        <Button onClick={() => setIsAddSheetOpen(true)} className="w-full sm:w-auto">
           <PlusCircle className="mr-2 h-4 w-4" />
           Signaler un conflit
         </Button>
@@ -189,7 +212,7 @@ export default function ConflictsPage() {
                     <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                     <Input
-                        placeholder="Rechercher par village, description..."
+                        placeholder="Rechercher par village, médiateur..."
                         className="pl-10"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
@@ -208,7 +231,7 @@ export default function ConflictsPage() {
                             <TableHead>Village</TableHead>
                             <TableHead>Type</TableHead>
                             <TableHead>Description</TableHead>
-                            <TableHead>Date Signalée</TableHead>
+                            <TableHead>Médiateur</TableHead>
                             <TableHead>Statut</TableHead>
                             <TableHead>Actions</TableHead>
                         </TableRow>
@@ -218,12 +241,12 @@ export default function ConflictsPage() {
                             Array.from({ length: 5 }).map((_, i) => (
                                 <TableRow key={i}>
                                     <TableCell><Skeleton className="h-4 w-4" /></TableCell>
-                                    <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                                    <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                                     <TableCell><Skeleton className="h-6 w-28 rounded-full" /></TableCell>
-                                    <TableCell><Skeleton className="h-4 w-64" /></TableCell>
+                                    <TableCell><Skeleton className="h-4 w-48" /></TableCell>
                                     <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                                     <TableCell><Skeleton className="h-6 w-24 rounded-full" /></TableCell>
-                                    <TableCell><Skeleton className="h-8 w-8" /></TableCell>
+                                    <TableCell><Skeleton className="h-8 w-16" /></TableCell>
                                 </TableRow>
                             ))
                         ) : (
@@ -233,15 +256,24 @@ export default function ConflictsPage() {
                                 <TableCell className="font-medium">{conflict.village}</TableCell>
                                 <TableCell><Badge variant={conflictTypeVariantMap[conflict.type] || 'outline'}>{conflict.type}</Badge></TableCell>
                                 <TableCell className="max-w-xs truncate">{conflict.description}</TableCell>
-                                <TableCell>{conflict.reportedDate}</TableCell>
+                                <TableCell>{conflict.mediatorName || 'Non assigné'}</TableCell>
                                 <TableCell>
                                     <Badge variant={statusVariantMap[conflict.status] || 'default'}>{conflict.status}</Badge>
                                 </TableCell>
                                 <TableCell>
-                                    <Button variant="ghost" size="icon" onClick={() => handleAnalyzeConflict(conflict)}>
-                                        <Sparkles className="h-4 w-4" />
-                                        <span className="sr-only">Analyser avec IA</span>
-                                    </Button>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuItem onSelect={() => openEditSheet(conflict)}>
+                                                <Pencil className="mr-2 h-4 w-4"/> Modifier
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem onSelect={() => handleAnalyzeConflict(conflict)}>
+                                                <Sparkles className="mr-2 h-4 w-4" /> Analyser avec IA
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
                                 </TableCell>
                                 </TableRow>
                             ))
@@ -267,11 +299,14 @@ export default function ConflictsPage() {
                                 </CardHeader>
                                 <CardContent className="p-4 pt-0 space-y-2">
                                     <Badge variant={statusVariantMap[conflict.status] || 'default'}>{conflict.status}</Badge>
+                                    <p className="text-sm"><span className="font-medium">Médiateur:</span> {conflict.mediatorName || 'Non assigné'}</p>
                                     <p className="text-sm text-muted-foreground">{conflict.description}</p>
                                     <p className="text-sm"><span className="font-medium">Signalé le:</span> {conflict.reportedDate}</p>
+                                    <Button variant="outline" size="sm" onClick={() => openEditSheet(conflict)} className="mt-2 mr-2">
+                                        <Pencil className="mr-2 h-4 w-4" /> Modifier
+                                    </Button>
                                     <Button variant="outline" size="sm" onClick={() => handleAnalyzeConflict(conflict)} className="mt-2">
-                                        <Sparkles className="mr-2 h-4 w-4" />
-                                        Analyser avec IA
+                                        <Sparkles className="mr-2 h-4 w-4" /> Analyser
                                     </Button>
                                 </CardContent>
                             </Card>
@@ -322,10 +357,18 @@ export default function ConflictsPage() {
         </TabsContent>
       </Tabs>
       <AddConflictSheet
-        isOpen={isSheetOpen}
-        onClose={() => setIsSheetOpen(false)}
+        isOpen={isAddSheetOpen}
+        onClose={() => setIsAddSheetOpen(false)}
         onAddConflict={handleAddConflict}
       />
+      {editingTarget && (
+        <EditConflictSheet
+            isOpen={isEditSheetOpen}
+            onClose={() => setIsEditSheetOpen(false)}
+            onUpdateConflict={handleUpdateConflict}
+            conflict={editingTarget}
+        />
+      )}
       <AlertDialog open={isAnalysisDialogOpen} onOpenChange={setIsAnalysisDialogOpen}>
         <AlertDialogContent className="max-w-2xl">
             <AlertDialogHeader>

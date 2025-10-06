@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -22,8 +23,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { Conflict, Chief, ConflictType } from "@/lib/data";
+import type { Conflict, Chief, ConflictType, Employe } from "@/lib/data";
 import { getChiefs } from "@/services/chief-service";
+import { getEmployees } from "@/services/employee-service";
 import {
   Popover,
   PopoverContent,
@@ -54,8 +56,10 @@ export function AddConflictSheet({
   onAddConflict,
 }: AddConflictDialogProps) {
   const [allChiefs, setAllChiefs] = useState<Chief[]>([]);
-  const [loadingChiefs, setLoadingChiefs] = useState(true);
-  const [isComboboxOpen, setIsComboboxOpen] = useState(false);
+  const [allEmployees, setAllEmployees] = useState<Employe[]>([]);
+  const [loadingInitialData, setLoadingInitialData] = useState(true);
+  
+  const [isVillageComboboxOpen, setIsVillageComboboxOpen] = useState(false);
 
   const [village, setVillage] = useState("");
   const [description, setDescription] = useState("");
@@ -63,24 +67,27 @@ export function AddConflictSheet({
   const [status, setStatus] = useState<Conflict['status']>('En cours');
   const [latitude, setLatitude] = useState<string>('');
   const [longitude, setLongitude] = useState<string>('');
+  const [mediatorName, setMediatorName] = useState<string | undefined>(undefined);
 
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
-      async function fetchChiefs() {
+      async function fetchInitialData() {
         try {
-          setLoadingChiefs(true);
-          const chiefs = await getChiefs();
+          setLoadingInitialData(true);
+          const [chiefs, employees] = await Promise.all([getChiefs(), getEmployees()]);
           setAllChiefs(chiefs);
+          setAllEmployees(employees.filter(e => e.status === 'Actif'));
         } catch (error) {
-          console.error("Failed to fetch chiefs:", error);
+          console.error("Failed to fetch initial data:", error);
+          setError("Impossible de charger les données nécessaires.");
         } finally {
-          setLoadingChiefs(false);
+          setLoadingInitialData(false);
         }
       }
-      fetchChiefs();
+      fetchInitialData();
     }
   }, [isOpen]);
 
@@ -91,6 +98,7 @@ export function AddConflictSheet({
     setStatus("En cours");
     setLatitude('');
     setLongitude('');
+    setMediatorName(undefined);
     setError("");
   }
 
@@ -103,7 +111,7 @@ export function AddConflictSheet({
     setVillage(chief.village);
     if(chief.latitude) setLatitude(chief.latitude.toString());
     if(chief.longitude) setLongitude(chief.longitude.toString());
-    setIsComboboxOpen(false);
+    setIsVillageComboboxOpen(false);
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -123,7 +131,8 @@ export function AddConflictSheet({
             type: conflictType,
             description, 
             status, 
-            reportedDate 
+            reportedDate,
+            mediatorName,
         };
 
         if (latitude && longitude) {
@@ -153,13 +162,14 @@ export function AddConflictSheet({
           <div className="grid gap-4 py-4">
              <div className="space-y-2">
               <Label htmlFor="village">Village / Localité</Label>
-               <Popover open={isComboboxOpen} onOpenChange={setIsComboboxOpen}>
+               <Popover open={isVillageComboboxOpen} onOpenChange={setIsVillageComboboxOpen}>
                     <PopoverTrigger asChild>
                         <Button
                             variant="outline"
                             role="combobox"
-                            aria-expanded={isComboboxOpen}
+                            aria-expanded={isVillageComboboxOpen}
                             className="w-full justify-between font-normal"
+                            disabled={loadingInitialData}
                         >
                             {village || "Sélectionnez ou entrez un village..."}
                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -217,6 +227,18 @@ export function AddConflictSheet({
                 placeholder="Décrivez la nature du conflit..."
               />
             </div>
+            <div className="space-y-2">
+                <Label htmlFor="mediatorName">Médiateur / Gestionnaire</Label>
+                <Select value={mediatorName} onValueChange={setMediatorName}>
+                    <SelectTrigger><SelectValue placeholder="Assigner un responsable..." /></SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="">Non assigné</SelectItem>
+                        {allEmployees.map(emp => (
+                            <SelectItem key={emp.id} value={emp.name}>{emp.name}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            </div>
              <div className="space-y-2">
               <Label htmlFor="status">Statut Initial</Label>
                <Select value={status} onValueChange={(value: Conflict['status']) => setStatus(value)}>
@@ -252,7 +274,7 @@ export function AddConflictSheet({
                 Annuler
               </Button>
             </SheetClose>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" disabled={isSubmitting || loadingInitialData}>
               {isSubmitting ? "Enregistrement..." : "Enregistrer"}
             </Button>
           </SheetFooter>

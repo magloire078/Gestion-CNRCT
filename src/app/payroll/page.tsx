@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
@@ -37,7 +36,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import type { Employe, PayslipDetails, Department } from "@/lib/data";
+import type { Employe, PayslipDetails, Department, OrganizationSettings } from "@/lib/data";
 import { subscribeToEmployees, updateEmployee } from "@/services/employee-service";
 import { getPayslipDetails } from "@/services/payslip-details-service";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -571,7 +570,7 @@ function PayslipTemplate({ payslipDetails }: { payslipDetails: PayslipDetails })
         <div className="w-full max-w-4xl mx-auto bg-white p-6 border-b border-gray-300 text-black font-arial text-[8px] leading-tight print-page-break">
            {/* Header */}
             <header className="flex justify-between items-center pt-4 pb-2 mb-2 h-[120px]">
-                <div className="w-1/4 text-center flex flex-col justify-center items-center h-full">
+                 <div className="w-1/4 text-center flex flex-col justify-center items-center h-full">
                      <div className='font-bold text-[10px] leading-tight'>
                         <p>Chambre Nationale des Rois</p>
                         <p className="-mt-1">et Chefs Traditionnels</p>
@@ -607,16 +606,16 @@ function PayslipTemplate({ payslipDetails }: { payslipDetails: PayslipDetails })
                     </div>
                     <div className="w-2/3 pl-4">
                         <div className="border border-gray-400 rounded-lg p-2 text-[9px] grid grid-cols-1 gap-y-1">
-                            <p><span className="font-bold inline-block w-[140px]">NOM & PRENOMS</span>: {fullName}</p>
-                            <p><span className="font-bold inline-block w-[140px]">MATRICULE</span>: {employeeInfo.matricule}</p>
-                            <p><span className="font-bold inline-block w-[140px]">SITUATION MATRIMONIALE</span>: {employeeInfo.situationMatrimoniale}</p>
-                            <p><span className="font-bold inline-block w-[140px]">BANQUE</span>: {employeeInfo.banque}</p>
-                            <p><span className="font-bold inline-block w-[140px]">NUMERO DE COMPTE</span>: {employeeInfo.numeroCompteComplet || employeeInfo.numeroCompte}</p>
-                            <p><span className="font-bold inline-block w-[140px]">SERVICE</span>: {employeeInfo.departmentId}</p>
-                            <p><span className="font-bold inline-block w-[140px]">DATE DE CONGE</span>: __/__/____</p>
-                            <p><span className="font-bold inline-block w-[140px]">ANCIENNETE</span>: {employeeInfo.anciennete}</p>
-                            <p><span className="font-bold inline-block w-[140px]">ENFANT(S)</span>: {employeeInfo.enfants}</p>
-                            <p><span className="font-bold inline-block w-[140px]">CATEGORIE</span>: {employeeInfo.categorie}</p>
+                            <p><span className="font-bold inline-block w-[140px]">NOM & PRENOMS</span>: <span className="pl-1">{fullName}</span></p>
+                            <p><span className="font-bold inline-block w-[140px]">MATRICULE</span>: <span className="pl-1">{employeeInfo.matricule}</span></p>
+                            <p><span className="font-bold inline-block w-[140px]">SITUATION MATRIMONIALE</span>: <span className="pl-1">{employeeInfo.situationMatrimoniale}</span></p>
+                            <p><span className="font-bold inline-block w-[140px]">BANQUE</span>: <span className="pl-1">{employeeInfo.banque}</span></p>
+                            <p><span className="font-bold inline-block w-[140px]">NUMERO DE COMPTE</span>: <span className="pl-1">{employeeInfo.numeroCompteComplet || employeeInfo.numeroCompte}</span></p>
+                            <p><span className="font-bold inline-block w-[140px]">SERVICE</span>: <span className="pl-1">{employeeInfo.departmentId}</span></p>
+                            <p><span className="font-bold inline-block w-[140px]">DATE DE CONGE</span>: <span className="pl-1">__/__/____</span></p>
+                            <p><span className="font-bold inline-block w-[140px]">ANCIENNETE</span>: <span className="pl-1">{employeeInfo.anciennete}</span></p>
+                            <p><span className="font-bold inline-block w-[140px]">ENFANT(S)</span>: <span className="pl-1">{employeeInfo.enfants}</span></p>
+                            <p><span className="font-bold inline-block w-[140px]">CATEGORIE</span>: <span className="pl-1">{employeeInfo.categorie}</span></p>
                         </div>
                     </div>
                 </section>

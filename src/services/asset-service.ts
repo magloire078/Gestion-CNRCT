@@ -2,6 +2,7 @@
 import { collection, getDocs, addDoc, doc, setDoc, onSnapshot, Unsubscribe, query, orderBy, getDoc, updateDoc, deleteDoc, writeBatch, where } from 'firebase/firestore';
 import type { Asset } from '@/lib/data';
 import { db } from '@/lib/firebase';
+import { FirestorePermissionError } from '@/lib/errors';
 
 const assetsCollection = collection(db, 'assets');
 
@@ -61,8 +62,15 @@ export async function addAsset(assetDataToAdd: Omit<Asset, 'tag'> & { tag: strin
         }
     });
 
-    await setDoc(assetRef, dataToSave);
-    return { tag, ...dataToSave };
+    try {
+        await setDoc(assetRef, dataToSave);
+        return { tag, ...dataToSave };
+    } catch (error: any) {
+        if (error.code === 'permission-denied') {
+            throw new FirestorePermissionError("Vous n'avez pas la permission d'ajouter un actif.", { operation: 'add', path: 'assets' });
+        }
+        throw error;
+    }
 }
 
 export async function batchAddAssets(assets: (Omit<Asset, 'tag'> & { tag: string })[]): Promise<number> {
@@ -101,7 +109,14 @@ export async function batchAddAssets(assets: (Omit<Asset, 'tag'> & { tag: string
     }
 
     if (processedCount > 0) {
-        await batch.commit();
+        try {
+            await batch.commit();
+        } catch (error: any) {
+             if (error.code === 'permission-denied') {
+                throw new FirestorePermissionError("Vous n'avez pas la permission d'importer des actifs en masse.", { operation: 'batch-add', path: 'assets' });
+            }
+            throw error;
+        }
     }
     return processedCount;
 }
@@ -109,10 +124,24 @@ export async function batchAddAssets(assets: (Omit<Asset, 'tag'> & { tag: string
 
 export async function updateAsset(tag: string, assetData: Partial<Asset>): Promise<void> {
     const assetDocRef = doc(db, 'assets', tag);
-    await updateDoc(assetDocRef, assetData);
+    try {
+        await updateDoc(assetDocRef, assetData);
+    } catch (error: any) {
+        if (error.code === 'permission-denied') {
+            throw new FirestorePermissionError(`Vous n'avez pas la permission de modifier l'actif ${tag}.`, { operation: 'update', path: `assets/${tag}` });
+        }
+        throw error;
+    }
 }
 
 export async function deleteAsset(tag: string): Promise<void> {
     const assetDocRef = doc(db, 'assets', tag);
-    await deleteDoc(assetDocRef);
+    try {
+        await deleteDoc(assetDocRef);
+    } catch (error: any) {
+        if (error.code === 'permission-denied') {
+            throw new FirestorePermissionError(`Vous n'avez pas la permission de supprimer l'actif ${tag}.`, { operation: 'delete', path: `assets/${tag}` });
+        }
+        throw error;
+    }
 }

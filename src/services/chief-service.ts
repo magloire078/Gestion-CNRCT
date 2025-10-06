@@ -3,6 +3,7 @@ import { collection, getDocs, addDoc, onSnapshot, Unsubscribe, query, orderBy, d
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import type { Chief } from '@/lib/data';
 import { db, storage } from '@/lib/firebase';
+import { FirestorePermissionError } from '@/lib/errors';
 
 const chiefsCollection = collection(db, 'chiefs');
 
@@ -68,8 +69,15 @@ export async function addChief(chiefData: Omit<Chief, "id">, photoFile: File | n
     }
 
     const finalChiefData = { ...chiefData, photoUrl };
-    await setDoc(docRef, finalChiefData);
-    return { id: docRef.id, ...finalChiefData };
+    try {
+        await setDoc(docRef, finalChiefData);
+        return { id: docRef.id, ...finalChiefData };
+    } catch (error: any) {
+         if (error.code === 'permission-denied') {
+            throw new FirestorePermissionError("Vous n'avez pas la permission d'ajouter un nouveau chef.", { operation: 'add', path: 'chiefs' });
+        }
+        throw error;
+    }
 }
 
 export async function batchAddChiefs(chiefs: Omit<Chief, 'id'>[]): Promise<number> {
@@ -91,7 +99,14 @@ export async function batchAddChiefs(chiefs: Omit<Chief, 'id'>[]): Promise<numbe
     });
 
     if (addedCount > 0) {
-        await batch.commit();
+        try {
+            await batch.commit();
+        } catch (error: any) {
+             if (error.code === 'permission-denied') {
+                throw new FirestorePermissionError("Vous n'avez pas la permission d'importer des chefs en masse.", { operation: 'batch-add', path: 'chiefs' });
+            }
+            throw error;
+        }
     }
     return addedCount;
 }
@@ -121,11 +136,25 @@ export async function updateChief(id: string, chiefData: Partial<Omit<Chief, 'id
             delete updateData[key as keyof typeof updateData];
         }
     });
-
-    await updateDoc(chiefDocRef, updateData);
+    
+    try {
+        await updateDoc(chiefDocRef, updateData);
+    } catch (error: any) {
+        if (error.code === 'permission-denied') {
+            throw new FirestorePermissionError(`Vous n'avez pas la permission de modifier le chef ${chiefData.name}.`, { operation: 'update', path: `chiefs/${id}` });
+        }
+        throw error;
+    }
 }
 
 export async function deleteChief(id: string): Promise<void> {
     const chiefDocRef = doc(db, 'chiefs', id);
-    await deleteDoc(chiefDocRef);
+     try {
+        await deleteDoc(chiefDocRef);
+    } catch (error: any) {
+        if (error.code === 'permission-denied') {
+            throw new FirestorePermissionError(`Vous n'avez pas la permission de supprimer ce chef.`, { operation: 'delete', path: `chiefs/${id}` });
+        }
+        throw error;
+    }
 }

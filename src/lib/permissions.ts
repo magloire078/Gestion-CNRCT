@@ -23,6 +23,7 @@ export const allPermissions = {
   "Accès à l'Assistant IA": "page:assistant:view",
   "Accès à l'Administration": "page:admin:view",
   "Voir l'Organigramme": "page:organization-chart:view",
+  "Accès Sauvegarde & Restauration": "page:backup:view",
 
   // Group permissions
   "Voir le groupe Personnel": "group:personnel:view",

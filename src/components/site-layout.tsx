@@ -4,7 +4,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Car,
   FileText,
@@ -36,6 +36,7 @@ import {
   Archive,
   Wallet,
   FileClock,
+  DatabaseBackup,
 } from "lucide-react";
 
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
@@ -128,6 +129,7 @@ const allMenuItems = [
         { href: "/it-assets", label: "Actifs TI", icon: Laptop, permission: "page:it-assets:view" },
         { href: "/documents", label: "Documents", icon: FileText, permission: "page:documents:view" },
         { href: "/assistant", label: "Assistant IA", icon: MessageSquare, permission: "page:assistant:view" },
+        { href: "/backup", label: "Sauvegarde & Restauration", icon: DatabaseBackup, permission: "page:backup:view" },
         { href: "/admin", label: "Paramètres Admin", icon: Shield, permission: "page:admin:view" },
     ]
   },
@@ -214,7 +216,6 @@ function ProtectedPage({ children }: { children: React.ReactNode }) {
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const router = useRouter();
   const { user, loading, hasPermission, settings } = useAuth();
 
@@ -241,10 +242,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
     router.push("/login");
   };
   
-  const currentPath = React.useMemo(() => {
-    const paramsString = searchParams.toString();
-    return `${pathname}${paramsString ? `?${paramsString}` : ''}`;
-  }, [pathname, searchParams]);
+  const currentPath = pathname;
 
 
   const menuItems = React.useMemo(() => {
@@ -399,7 +397,6 @@ function AppLayout({ children }: { children: React.ReactNode }) {
 
 export function SiteLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   
   const isPublicPage = ['/login', '/signup', '/forgot-password'].includes(pathname);
 

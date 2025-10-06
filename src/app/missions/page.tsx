@@ -87,12 +87,13 @@ export default function MissionsPage() {
 
   const handleAddMission = async (newMissionData: Omit<Mission, "id">) => {
      try {
-        await addMission(newMissionData);
+        const newMission = await addMission(newMissionData);
         setIsSheetOpen(false);
         toast({
             title: "Mission ajoutée",
             description: `La mission "${newMissionData.title}" a été ajoutée avec succès.`,
         });
+        router.push(`/missions/${newMission.id}/edit`);
      } catch (err) {
         console.error("Failed to add mission:", err);
         throw err;

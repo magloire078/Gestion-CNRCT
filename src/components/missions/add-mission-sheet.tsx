@@ -14,14 +14,14 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogClose,
-} from "@/components/ui/dialog";
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetClose,
+} from "@/components/ui/sheet";
 import {
   Select,
   SelectContent,
@@ -29,14 +29,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { Mission, Employe, MissionParticipant, Fleet } from "@/lib/data";
+import type { Mission } from "@/lib/data";
 import { getLatestMissionNumber } from "@/services/mission-service";
 import { cn } from "@/lib/utils";
-import { CalendarIcon, Loader2, X, Check, Trash2 } from "lucide-react";
+import { CalendarIcon, Loader2 } from "lucide-react";
 import { ScrollArea } from "../ui/scroll-area";
 
 
-interface AddMissionDialogProps {
+interface AddMissionSheetProps {
   isOpen: boolean;
   onClose: () => void;
   onAddMission: (mission: Omit<Mission, "id">) => Promise<void>;
@@ -46,7 +46,7 @@ export function AddMissionSheet({
   isOpen,
   onClose,
   onAddMission,
-}: AddMissionDialogProps) {
+}: AddMissionSheetProps) {
   const [numeroMission, setNumeroMission] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -123,101 +123,103 @@ export function AddMissionSheet({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="sm:max-w-lg">
+    <Sheet open={isOpen} onOpenChange={(open) => !open && handleClose()}>
+      <SheetContent className="sm:max-w-lg">
         <form onSubmit={handleSubmit}>
-          <DialogHeader>
-            <DialogTitle>Ajouter une nouvelle mission</DialogTitle>
-            <DialogDescription>
+          <SheetHeader>
+            <SheetTitle>Ajouter une nouvelle mission</SheetTitle>
+            <SheetDescription>
               Remplissez les détails pour planifier une nouvelle mission. Les participants seront ajoutés à l'étape suivante.
-            </DialogDescription>
-          </DialogHeader>
+            </SheetDescription>
+          </SheetHeader>
           
-          <div className="py-4 max-h-[70vh] overflow-y-auto pr-4">
-            {loadingInitial ? (
-              <div className="flex items-center justify-center h-full">
-                <Loader2 className="h-8 w-8 animate-spin" />
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="numeroMission">N° Dossier Mission</Label>
-                  <Input id="numeroMission" value={numeroMission} className="bg-muted" readOnly />
+          <div className="py-4 h-[calc(100vh-150px)]">
+             <ScrollArea className="h-full w-full pr-6">
+                {loadingInitial ? (
+                <div className="flex items-center justify-center h-full">
+                    <Loader2 className="h-8 w-8 animate-spin" />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="title">Titre</Label>
-                  <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} />
-                </div>
-                 <div className="space-y-2">
-                  <Label htmlFor="description">Description</Label>
-                  <Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} rows={3}/>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="lieuMission">Lieu</Label>
-                  <Input id="lieuMission" value={lieuMission} onChange={(e) => setLieuMission(e.target.value)} placeholder="Ville ou lieu de la mission"/>
-                </div>
-                 <div className="grid grid-cols-2 gap-4">
+                ) : (
+                <div className="space-y-4">
                     <div className="space-y-2">
-                        <Label htmlFor="startDate">Date de début</Label>
-                        <Popover>
-                        <PopoverTrigger asChild>
-                            <Button variant={"outline"} className={cn("w-full justify-start text-left font-normal", !startDate && "text-muted-foreground")}>
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {startDate ? format(startDate, "PPP") : <span>Choisissez une date</span>}
-                            </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0">
-                            <Calendar mode="single" selected={startDate} onSelect={setStartDate} initialFocus/>
-                        </PopoverContent>
-                        </Popover>
+                    <Label htmlFor="numeroMission">N° Dossier Mission</Label>
+                    <Input id="numeroMission" value={numeroMission} className="bg-muted" readOnly />
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="endDate">Date de fin</Label>
-                        <Popover>
-                        <PopoverTrigger asChild>
-                            <Button variant={"outline"} className={cn("w-full justify-start text-left font-normal", !endDate && "text-muted-foreground")}>
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {endDate ? format(endDate, "PPP") : <span>Choisissez une date</span>}
-                            </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0">
-                            <Calendar mode="single" selected={endDate} onSelect={setEndDate} initialFocus/>
-                        </PopoverContent>
-                        </Popover>
+                    <Label htmlFor="title">Titre</Label>
+                    <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} />
                     </div>
-                 </div>
-                 <div className="space-y-2">
-                  <Label htmlFor="status">Statut</Label>
-                  <Select value={status} onValueChange={(value: Mission['status']) => setStatus(value)}>
-                      <SelectTrigger>
-                          <SelectValue placeholder="Sélectionnez un statut" />
-                      </SelectTrigger>
-                      <SelectContent>
-                          <SelectItem value="Planifiée">Planifiée</SelectItem>
-                          <SelectItem value="En cours">En cours</SelectItem>
-                          <SelectItem value="Terminée">Terminée</SelectItem>
-                          <SelectItem value="Annulée">Annulée</SelectItem>
-                      </SelectContent>
-                  </Select>
-                </div>
+                    <div className="space-y-2">
+                    <Label htmlFor="description">Description</Label>
+                    <Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} rows={3}/>
+                    </div>
+                    <div className="space-y-2">
+                    <Label htmlFor="lieuMission">Lieu</Label>
+                    <Input id="lieuMission" value={lieuMission} onChange={(e) => setLieuMission(e.target.value)} placeholder="Ville ou lieu de la mission"/>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="startDate">Date de début</Label>
+                            <Popover>
+                            <PopoverTrigger asChild>
+                                <Button variant={"outline"} className={cn("w-full justify-start text-left font-normal", !startDate && "text-muted-foreground")}>
+                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                {startDate ? format(startDate, "PPP") : <span>Choisissez une date</span>}
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0">
+                                <Calendar mode="single" selected={startDate} onSelect={setStartDate} initialFocus/>
+                            </PopoverContent>
+                            </Popover>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="endDate">Date de fin</Label>
+                            <Popover>
+                            <PopoverTrigger asChild>
+                                <Button variant={"outline"} className={cn("w-full justify-start text-left font-normal", !endDate && "text-muted-foreground")}>
+                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                {endDate ? format(endDate, "PPP") : <span>Choisissez une date</span>}
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0">
+                                <Calendar mode="single" selected={endDate} onSelect={setEndDate} initialFocus/>
+                            </PopoverContent>
+                            </Popover>
+                        </div>
+                    </div>
+                    <div className="space-y-2">
+                    <Label htmlFor="status">Statut</Label>
+                    <Select value={status} onValueChange={(value: Mission['status']) => setStatus(value)}>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Sélectionnez un statut" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="Planifiée">Planifiée</SelectItem>
+                            <SelectItem value="En cours">En cours</SelectItem>
+                            <SelectItem value="Terminée">Terminée</SelectItem>
+                            <SelectItem value="Annulée">Annulée</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    </div>
 
-                {error && (
-                  <p className="text-center text-sm text-destructive">{error}</p>
+                    {error && (
+                    <p className="text-center text-sm text-destructive">{error}</p>
+                    )}
+                </div>
                 )}
-              </div>
-            )}
+             </ScrollArea>
           </div>
           
-          <DialogFooter className="p-6 border-t">
-            <DialogClose asChild>
+          <SheetFooter>
+            <SheetClose asChild>
               <Button type="button" variant="outline" onClick={handleClose}>Annuler</Button>
-            </DialogClose>
+            </SheetClose>
             <Button type="submit" disabled={isSubmitting || loadingInitial}>
               {isSubmitting ? "Enregistrement..." : "Créer et continuer"}
             </Button>
-          </DialogFooter>
+          </SheetFooter>
         </form>
-      </DialogContent>
-    </Dialog>
+      </SheetContent>
+    </Sheet>
   );
 }

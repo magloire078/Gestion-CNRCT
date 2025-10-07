@@ -6,14 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogClose,
-} from "@/components/ui/dialog";
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetClose,
+} from "@/components/ui/sheet";
 import {
   Select,
   SelectContent,
@@ -24,8 +24,9 @@ import {
 import type { Evaluation, Employe } from "@/lib/data";
 import { getEmployees } from "@/services/employee-service";
 import { Loader2 } from "lucide-react";
+import { ScrollArea } from "../ui/scroll-area";
 
-interface AddEvaluationDialogProps {
+interface AddEvaluationSheetProps {
   isOpen: boolean;
   onClose: () => void;
   onAddEvaluation: (evaluation: Omit<Evaluation, "id">) => Promise<void>;
@@ -35,7 +36,7 @@ export function AddEvaluationSheet({
   isOpen,
   onClose,
   onAddEvaluation,
-}: AddEvaluationDialogProps) {
+}: AddEvaluationSheetProps) {
   const [allEmployees, setAllEmployees] = useState<Employe[]>([]);
   const [loadingEmployees, setLoadingEmployees] = useState(true);
 
@@ -126,76 +127,78 @@ export function AddEvaluationSheet({
   ];
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="sm:max-w-lg">
+    <Sheet open={isOpen} onOpenChange={(open) => !open && handleClose()}>
+      <SheetContent className="sm:max-w-lg">
         <form onSubmit={handleSubmit}>
-          <DialogHeader>
-            <DialogTitle>Lancer une nouvelle évaluation</DialogTitle>
-            <DialogDescription>
+          <SheetHeader>
+            <SheetTitle>Lancer une nouvelle évaluation</SheetTitle>
+            <SheetDescription>
               Sélectionnez l'employé, le manager et la période pour commencer.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-             {loadingEmployees && (
-                <div className="flex items-center justify-center col-span-4 py-8">
-                    <Loader2 className="h-8 w-8 animate-spin" />
-                </div>
-            )}
-            {!loadingEmployees && (
-                <>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="employee" className="text-right">Employé</Label>
-                        <Select value={employeeId} onValueChange={setEmployeeId}>
-                            <SelectTrigger className="col-span-3">
-                                <SelectValue placeholder="Sélectionnez l'employé à évaluer" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {allEmployees.map(emp => (
-                                    <SelectItem key={emp.id} value={emp.id}>{emp.name}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+            </SheetDescription>
+          </SheetHeader>
+           <div className="py-4 h-[calc(100vh-150px)]">
+             <ScrollArea className="h-full w-full pr-6">
+                 {loadingEmployees && (
+                    <div className="flex items-center justify-center col-span-4 py-8">
+                        <Loader2 className="h-8 w-8 animate-spin" />
                     </div>
-                     <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="manager" className="text-right">Manager</Label>
-                        <Select value={managerId} onValueChange={setManagerId}>
-                            <SelectTrigger className="col-span-3">
-                                <SelectValue placeholder="Sélectionnez le manager" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {allEmployees.map(emp => (
-                                    <SelectItem key={emp.id} value={emp.id}>{emp.name}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                )}
+                {!loadingEmployees && (
+                    <div className="space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="employee">Employé</Label>
+                            <Select value={employeeId} onValueChange={setEmployeeId}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Sélectionnez l'employé à évaluer" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {allEmployees.map(emp => (
+                                        <SelectItem key={emp.id} value={emp.id}>{emp.name}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                         <div className="space-y-2">
+                            <Label htmlFor="manager">Manager</Label>
+                            <Select value={managerId} onValueChange={setManagerId}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Sélectionnez le manager" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {allEmployees.map(emp => (
+                                        <SelectItem key={emp.id} value={emp.id}>{emp.name}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="reviewPeriod">Période d'évaluation</Label>
+                            <Input id="reviewPeriod" value={reviewPeriod} onChange={(e) => setReviewPeriod(e.target.value)} list="period-suggestions" placeholder="Ex: Annuel 2024"/>
+                            <datalist id="period-suggestions">
+                                {periodSuggestions.map(p => <option key={p} value={p} />)}
+                            </datalist>
+                        </div>
                     </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="reviewPeriod" className="text-right">Période</Label>
-                        <Input id="reviewPeriod" value={reviewPeriod} onChange={(e) => setReviewPeriod(e.target.value)} list="period-suggestions" className="col-span-3" placeholder="Ex: Annuel 2024"/>
-                        <datalist id="period-suggestions">
-                            {periodSuggestions.map(p => <option key={p} value={p} />)}
-                        </datalist>
-                    </div>
-                </>
-            )}
-            {error && (
-              <p className="col-span-4 text-center text-sm text-destructive">
-                {error}
-              </p>
-            )}
-          </div>
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button type="button" variant="outline" onClick={handleClose}>
+                )}
+                {error && (
+                  <p className="col-span-4 text-center text-sm text-destructive pt-4">
+                    {error}
+                  </p>
+                )}
+             </ScrollArea>
+           </div>
+          <SheetFooter>
+            <SheetClose asChild>
+              <Button type="button" variant="outline">
                 Annuler
               </Button>
-            </DialogClose>
+            </SheetClose>
             <Button type="submit" disabled={isSubmitting || loadingEmployees}>
               {isSubmitting ? "Lancement..." : "Lancer l'évaluation"}
             </Button>
-          </DialogFooter>
+          </SheetFooter>
         </form>
-      </DialogContent>
-    </Dialog>
+      </SheetContent>
+    </Sheet>
   );
 }

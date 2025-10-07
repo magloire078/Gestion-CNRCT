@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
@@ -36,8 +35,9 @@ import {
 import { Badge } from "@/components/ui/badge";
 import type { Fleet } from "@/lib/data";
 import { AddVehicleSheet } from "@/components/fleet/add-vehicle-sheet";
+import { EditVehicleSheet } from "@/components/fleet/edit-vehicle-sheet";
 import { Input } from "@/components/ui/input";
-import { subscribeToVehicles, addVehicle, deleteVehicle } from "@/services/fleet-service";
+import { subscribeToVehicles, addVehicle, deleteVehicle, updateVehicle } from "@/services/fleet-service";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
@@ -54,7 +54,10 @@ const statusVariantMap: Record<Fleet['status'], "default" | "secondary" | "outli
 
 export default function FleetPage() {
   const [vehicles, setVehicles] = useState<Fleet[]>([]);
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
+  const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
+  const [editingTarget, setEditingTarget] = useState<Fleet | null>(null);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -87,7 +90,7 @@ export default function FleetPage() {
      try {
         await addVehicle(newVehicleData);
         // State is managed by real-time subscription
-        setIsSheetOpen(false);
+        setIsAddSheetOpen(false);
         toast({
             title: "Véhicule ajouté",
             description: `Le véhicule ${newVehicleData.makeModel} a été ajouté avec succès.`,
@@ -98,6 +101,17 @@ export default function FleetPage() {
      }
   };
 
+  const handleUpdateVehicle = async (plate: string, vehicleData: Partial<Fleet>) => {
+    try {
+      await updateVehicle(plate, vehicleData);
+      setIsEditSheetOpen(false);
+      toast({ title: "Véhicule mis à jour", description: "Les informations du véhicule ont été modifiées." });
+    } catch(err) {
+      console.error(err);
+      throw(err);
+    }
+  };
+  
   const handleDeleteConfirm = async () => {
     if (!deleteTarget) return;
     try {
@@ -115,6 +129,11 @@ export default function FleetPage() {
     } finally {
         setDeleteTarget(null);
     }
+  };
+  
+  const openEditSheet = (vehicle: Fleet) => {
+    setEditingTarget(vehicle);
+    setIsEditSheetOpen(true);
   };
 
   const filteredVehicles = useMemo(() => {
@@ -150,7 +169,7 @@ export default function FleetPage() {
         <h1 className="text-3xl font-bold tracking-tight">
           Gestion de la Flotte
         </h1>
-        <Button onClick={() => setIsSheetOpen(true)} className="w-full sm:w-auto">
+        <Button onClick={() => setIsAddSheetOpen(true)} className="w-full sm:w-auto">
           <PlusCircle className="mr-2 h-4 w-4" />
           Ajouter un véhicule
         </Button>
@@ -219,15 +238,15 @@ export default function FleetPage() {
                     ))
                 ) : (
                     paginatedVehicles.map((vehicle, index) => (
-                        <TableRow key={vehicle.plate} onClick={() => router.push(`/fleet/${vehicle.plate}/edit`)} className="cursor-pointer">
-                          <TableCell>{(currentPage - 1) * itemsPerPage + index + 1}</TableCell>
-                          <TableCell className="font-medium">{vehicle.plate}</TableCell>
-                          <TableCell>{vehicle.makeModel}</TableCell>
-                          <TableCell>{vehicle.assignedTo}</TableCell>
-                           <TableCell>
+                        <TableRow key={vehicle.plate} className="cursor-pointer">
+                          <TableCell onClick={() => openEditSheet(vehicle)}>{(currentPage - 1) * itemsPerPage + index + 1}</TableCell>
+                          <TableCell onClick={() => openEditSheet(vehicle)} className="font-medium">{vehicle.plate}</TableCell>
+                          <TableCell onClick={() => openEditSheet(vehicle)}>{vehicle.makeModel}</TableCell>
+                          <TableCell onClick={() => openEditSheet(vehicle)}>{vehicle.assignedTo}</TableCell>
+                           <TableCell onClick={() => openEditSheet(vehicle)}>
                             <Badge variant={statusVariantMap[vehicle.status]}>{vehicle.status}</Badge>
                           </TableCell>
-                          <TableCell>{vehicle.maintenanceDue}</TableCell>
+                          <TableCell onClick={() => openEditSheet(vehicle)}>{vehicle.maintenanceDue}</TableCell>
                           <TableCell className="text-right">
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
@@ -236,7 +255,7 @@ export default function FleetPage() {
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-                                    <DropdownMenuItem onClick={() => router.push(`/fleet/${vehicle.plate}/edit`)}>
+                                    <DropdownMenuItem onClick={() => openEditSheet(vehicle)}>
                                         <Pencil className="mr-2 h-4 w-4"/> Modifier
                                     </DropdownMenuItem>
                                      <DropdownMenuItem onClick={() => setDeleteTarget(vehicle)} className="text-destructive focus:text-destructive">
@@ -258,7 +277,7 @@ export default function FleetPage() {
                  ))
               ) : (
                 paginatedVehicles.map((vehicle, index) => (
-                    <Card key={vehicle.plate} onClick={() => router.push(`/fleet/${vehicle.plate}/edit`)}>
+                    <Card key={vehicle.plate} onClick={() => openEditSheet(vehicle)}>
                          <CardHeader>
                             <CardTitle className="text-base">
                                {index + 1}. {vehicle.makeModel}
@@ -294,10 +313,18 @@ export default function FleetPage() {
         )}
       </Card>
       <AddVehicleSheet
-        isOpen={isSheetOpen}
-        onClose={() => setIsSheetOpen(false)}
+        isOpen={isAddSheetOpen}
+        onClose={() => setIsAddSheetOpen(false)}
         onAddVehicle={handleAddVehicle}
       />
+      {editingTarget && (
+        <EditVehicleSheet
+          isOpen={isEditSheetOpen}
+          onClose={() => setIsEditSheetOpen(false)}
+          onUpdateVehicle={handleUpdateVehicle}
+          vehicle={editingTarget}
+        />
+      )}
     </div>
     <ConfirmationDialog
         isOpen={!!deleteTarget}
@@ -309,3 +336,5 @@ export default function FleetPage() {
     </>
   );
 }
+
+    

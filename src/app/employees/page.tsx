@@ -30,7 +30,7 @@ import Papa from "papaparse";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PaginationControls } from "@/components/common/pagination-controls";
-import { ImportDataCard } from "@/components/admin/import-data-card";
+import { ImportEmployeesDataCard } from "@/components/employees/import-employees-data-card";
 import { useAuth } from "@/hooks/use-auth";
 import { ConfirmationDialog } from "@/components/common/confirmation-dialog";
 
@@ -391,7 +391,7 @@ export default function EmployeesPage() {
                 
                 {canImport && (personnelTypeFilter === 'all' || personnelTypeFilter === 'personnel') && (
                   <div className="mb-6">
-                      <ImportDataCard />
+                      <ImportEmployeesDataCard />
                   </div>
                 )}
 

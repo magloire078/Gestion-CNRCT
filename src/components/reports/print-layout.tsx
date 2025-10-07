@@ -1,4 +1,3 @@
-
 "use client";
 
 import type { OrganizationSettings } from "@/lib/data";

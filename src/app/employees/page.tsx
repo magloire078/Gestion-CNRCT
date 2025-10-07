@@ -33,6 +33,7 @@ import { PaginationControls } from "@/components/common/pagination-controls";
 import { ImportEmployeesDataCard } from "@/components/employees/import-employees-data-card";
 import { useAuth } from "@/hooks/use-auth";
 import { ConfirmationDialog } from "@/components/common/confirmation-dialog";
+import { PrintLayout } from "@/components/reports/print-layout";
 
 
 type Status = 'Actif' | 'En congé' | 'Licencié' | 'Retraité' | 'Décédé';
@@ -86,7 +87,7 @@ export default function EmployeesPage() {
   const [personnelTypeFilter, setPersonnelTypeFilter] = useState(initialFilter || 'all');
 
   const [columnsToPrint, setColumnsToPrint] = useState<ColumnKeys[]>(Object.keys(allColumns) as ColumnKeys[]);
-  const [organizationLogos, setOrganizationLogos] = useState({ mainLogoUrl: '', secondaryLogoUrl: '', organizationName: '' });
+  const [organizationLogos, setOrganizationLogos] = useState<OrganizationSettings | null>(null);
 
   const [printDate, setPrintDate] = useState('');
 
@@ -592,69 +593,33 @@ export default function EmployeesPage() {
             </div>
         </div>
         
-        {isPrinting && (
-            <div id="print-section" className="bg-white text-black p-8 w-full print:shadow-none print:border-none print:p-0">
-                <header className="flex justify-between items-start mb-8">
-                    <div className="text-center">
-                        <h2 className="font-bold">Chambre Nationale des Rois et Chefs Traditionnels</h2>
-                         {organizationLogos.mainLogoUrl && <img src={organizationLogos.mainLogoUrl} alt="Logo CNRCT" width={80} height={80} className="mx-auto mt-2" />}
-                        <p className="font-bold mt-1 text-sm">UN CHEF NOUVEAU</p>
-                        <p className="text-xs mt-4">LE DIRECTOIRE</p>
-                        <p className="text-xs">LE CABINET / LE SERVICE INFORMATIQUE</p>
-                    </div>
-                    <div className="text-center">
-                        <p className="font-bold">République de Côte d'Ivoire</p>
-                        {organizationLogos.secondaryLogoUrl && <img src={organizationLogos.secondaryLogoUrl} alt="Logo Cote d'Ivoire" width={80} height={80} className="mx-auto my-2" />}
-                        <p>Union - Discipline - Travail</p>
-                    </div>
-                </header>
-
-                <div className="text-center my-6">
-                    <h1 className="text-lg font-bold underline">LISTE ALPHABETIQUE DES MEMBRES DU DIRECTIORE EN DATE DU {printDate}</h1>
-                    <h2 className="text-md font-bold mt-4">PERSONNELS ACTIFS</h2>
-                </div>
-                
-                <table className="w-full text-xs border-collapse border border-black">
-                    <thead>
-                        <tr className="bg-gray-200">
-                            <th className="border border-black p-1">N°</th>
-                            {columnsToPrint.map(key => <th key={key} className="border border-black p-1 text-left font-bold">{allColumns[key]}</th>)}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {filteredEmployees.filter(e => e.status === 'Actif').map((employee, index) => (
-                            <tr key={employee.id}>
-                                <td className="border border-black p-1 text-center">{index + 1}</td>
-                                {columnsToPrint.map(key => {
-                                    let value: React.ReactNode = employee[key as keyof Employe] as string || '';
-                                    if (key === 'name') {
-                                        value = `${(employee.lastName || '').toUpperCase()} ${employee.firstName || ''}`.trim();
-                                    } else if (key === 'department') {
-                                        value = getEmployeeOrgUnit(employee);
-                                    } else if (key === 'CNPS') {
-                                        value = employee.CNPS ? 'Oui' : 'Non';
-                                    }
-                                    return <td key={key} className="border border-black p-1">{value}</td>
-                               })}
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-
-                <footer className="mt-8 text-xs">
-                    <div className="flex justify-between items-end">
-                        <div>
-                            
-                        </div>
-                        <div className="text-center">
-                            <p className="font-bold">{organizationLogos.organizationName || "Chambre Nationale de Rois et Chefs Traditionnels (CNRCT)"}</p>
-                        </div>
-                        <div>
-                            <p>1</p>
-                        </div>
-                    </div>
-                </footer>
-            </div>
+        {isPrinting && organizationLogos && (
+           <PrintLayout
+                logos={organizationLogos}
+                title={`LISTE DU PERSONNEL - ${pageTitle.toUpperCase()}`}
+                subtitle={`EN DATE DU ${printDate}`}
+                columns={columnsToPrint.map(key => ({
+                    header: allColumns[key],
+                    key,
+                    align: 'left',
+                }))}
+                data={filteredEmployees.map((employee, index) => {
+                    const row: Record<string, any> = {
+                        index: index + 1,
+                        name: `${(employee.lastName || '').toUpperCase()} ${employee.firstName || ''}`.trim(),
+                    };
+                    columnsToPrint.forEach(key => {
+                        if (key === 'department') {
+                            row[key] = getEmployeeOrgUnit(employee);
+                        } else if (key === 'CNPS') {
+                            row[key] = employee.CNPS ? 'Oui' : 'Non';
+                        } else {
+                            row[key] = employee[key as keyof Employe] || '';
+                        }
+                    });
+                    return row;
+                })}
+            />
         )}
     </>
   );

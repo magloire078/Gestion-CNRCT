@@ -30,11 +30,11 @@ function PayslipTemplate({ payslipDetails }: { payslipDetails: PayslipDetails })
     }
 
     return (
-        <div className="w-full max-w-4xl mx-auto bg-white p-4 border-b border-gray-300 text-black font-arial text-[10px] leading-tight print-page-break flex flex-col">
+        <div className="w-full max-w-4xl mx-auto bg-white p-6 border-b border-gray-300 text-black font-arial text-[10px] leading-tight print-page-break flex flex-col">
            {/* Header */}
             <header className="flex justify-between items-center pt-4 pb-2 mb-2 h-[120px]">
                  <div className="w-1/4 text-center flex flex-col justify-center items-center h-full">
-                     <div className='font-bold text-base leading-tight'>
+                    <div className='font-bold text-base leading-tight'>
                         <p>Chambre Nationale des Rois</p>
                         <p>et Chefs Traditionnels</p>
                     </div>

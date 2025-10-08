@@ -106,7 +106,7 @@ const defaultChiefs: Omit<Chief, 'id'>[] = [
   { name: "KOUAME KOUAME", lastName: "KOUAME", firstName: "KOUAME", title: "CHEF DE VILLAGE", role: "Chef de Village", village: "KOKO-KONANKRO", region: "GBEKE", department: "SAKASSOU", subPrefecture: "SAKASSOU", contact: "", bio: "ARRETE N° 513/P.BKE/SG/S.LET", photoUrl: "https://placehold.co/100x100.png" },
   { name: "N'GUESSAN KOFFI", lastName: "N'GUESSAN", firstName: "KOFFI", title: "CHEF DE VILLAGE", role: "Chef de Village", village: "ADJUE-YAOKRO", region: "GBEKE", department: "SAKASSOU", subPrefecture: "AYAOU-SRAN", contact: "", bio: "ARRETE N° 514/P.BKE/SG/S.LET", photoUrl: "https://placehold.co/100x100.png" },
   { name: "KOUAKOU KAN", lastName: "KOUAKOU", firstName: "KAN", title: "CHEF DE VILLAGE", role: "Chef de Village", village: "KOKO-KOUAKOUKRO", region: "GBEKE", department: "SAKASSOU", subPrefecture: "SAKASSOU", contact: "", bio: "ARRETE N° 515/P.BKE/SG/S.LET", photoUrl: "https://placehold.co/100x100.png" },
-  { name: "YAO KOUAME", lastName: "YAO", firstName: "KOUAME", title: "CHEF DE VILLAGE", role: "Chef de Village", village: "FOUEKRO-YAOKRO", region: "GBEKE", department: "SAKASSOU", subPrefecture: "SAKASSOU", contact: "", bio: "ARRETE N° 516/P.BKE/SG/S.LET", photoUrl: "https://placehold.co/100x100.png" },
+  { name: "YAO KOUAKOU", lastName: "YAO", firstName: "KOUAKOU", title: "CHEF DE VILLAGE", role: "Chef de Village", village: "FOUEKRO-YAOKRO", region: "GBEKE", department: "SAKASSOU", subPrefecture: "SAKASSOU", contact: "", bio: "ARRETE N° 516/P.BKE/SG/S.LET", photoUrl: "https://placehold.co/100x100.png" },
 ];
 
 export async function initializeDefaultChiefs() {

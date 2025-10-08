@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -11,7 +10,7 @@ import { getEmployee } from "@/services/employee-service";
 import { getPayslipDetails, PayslipDetails } from "@/services/payslip-details-service";
 import { ArrowLeft, Printer } from "lucide-react";
 import QRCode from "react-qr-code";
-import { format, parseISO } from "date-fns";
+import { format, parseISO, lastDayOfMonth } from "date-fns";
 import { fr } from "date-fns/locale";
 import { DocumentLayout } from "@/components/common/document-layout";
 
@@ -294,3 +293,4 @@ export default function PayslipPage() {
     );
 }
 
+    

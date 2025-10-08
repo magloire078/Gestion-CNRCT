@@ -12,7 +12,7 @@ export function DocumentLayout({ children }: DocumentLayoutProps) {
   const { settings } = useAuth();
 
   return (
-    <div className="bg-white text-black p-8 font-serif w-[210mm] min-h-[297mm] flex flex-col">
+    <div className="bg-white text-black p-8 font-serif w-[210mm] min-h-[297mm] flex flex-col print:shadow-none">
       <header className="flex justify-between items-center pb-4 border-b-2 border-gray-600 h-[120px]">
         <div className="w-1/4 text-center flex flex-col justify-center items-center h-full">
            <div className='font-bold text-base leading-tight'>
@@ -39,7 +39,7 @@ export function DocumentLayout({ children }: DocumentLayoutProps) {
         </div>
       </header>
 
-      <main className="flex-1 py-4">{children}</main>
+      <main className="flex-grow py-4">{children}</main>
 
       <footer className="text-center pt-4 border-t-2 border-gray-600 mt-auto text-xs">
         <div className="flex justify-between items-end">

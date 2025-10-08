@@ -107,7 +107,7 @@ export default function PayslipPage() {
             </div>
             <div id="print-section">
                 <DocumentLayout>
-                    <div className="font-arial text-[8px] leading-tight text-black">
+                    <div className="font-arial text-[10px] leading-tight text-black">
                         <div className="text-center my-2 p-1 bg-gray-200 font-bold rounded-md text-sm">
                             BULLETIN DE PAIE CNRCT : Période de {periodDisplay}
                         </div>
@@ -115,14 +115,14 @@ export default function PayslipPage() {
                         {/* Employee Info */}
                         <section className="flex">
                             <div className="w-1/3 space-y-1">
-                                <p className="text-[9px]"><span className="font-bold">N° CNPS EMPLOYEUR</span>: {employeeInfo.cnpsEmployeur}</p>
-                                <p className="text-[9px]"><span className="font-bold">N° CNPS EMPLOYE</span>: {employeeInfo.cnpsEmploye}</p>
+                                <p className="text-[10px]"><span className="font-bold">N° CNPS EMPLOYEUR</span>: {employeeInfo.cnpsEmployeur}</p>
+                                <p className="text-[10px]"><span className="font-bold">N° CNPS EMPLOYE</span>: {employeeInfo.cnpsEmploye}</p>
                                 <div className="mt-2 bg-white p-1 w-fit">
                                   <QRCode value={qrCodeValue} size={32} />
                                 </div>
                             </div>
                             <div className="w-2/3 pl-4">
-                                <div className="border border-gray-400 rounded-lg p-2 text-[9px] grid grid-cols-1 gap-y-1">
+                                <div className="border border-gray-400 rounded-lg p-2 text-[10px] grid grid-cols-1 gap-y-1">
                                     <p><span className="font-bold inline-block w-[140px]">NOM & PRENOMS</span>: <span className="pl-1">{fullName}</span></p>
                                     <p><span className="font-bold inline-block w-[140px]">MATRICULE</span>: <span className="pl-1">{employeeInfo.matricule}</span></p>
                                     <p><span className="font-bold inline-block w-[140px]">SITUATION MATRIMONIALE</span>: <span className="pl-1">{employeeInfo.situationMatrimoniale}</span></p>
@@ -138,7 +138,7 @@ export default function PayslipPage() {
                         </section>
                         
                          {/* Job Info Table */}
-                         <table className="w-full border-collapse border border-gray-400 rounded-lg mt-2 text-[9px]">
+                         <table className="w-full border-collapse border border-gray-400 rounded-lg mt-2 text-[10px]">
                             <thead className="bg-gray-200 font-bold text-center">
                                 <tr>
                                     <td className="p-1 border-r border-gray-400">EMPLOI</td>
@@ -158,7 +158,7 @@ export default function PayslipPage() {
                         </table>
                         
                         {/* Earnings & Deductions */}
-                        <div className="border border-gray-400 rounded-lg mt-2 text-[9px]">
+                        <div className="border border-gray-400 rounded-lg mt-2 text-[10px]">
                             <table className="w-full border-collapse">
                                 <thead className="bg-gray-200 font-bold">
                                     <tr>
@@ -214,7 +214,7 @@ export default function PayslipPage() {
                          <div className="grid grid-cols-12 mt-2">
                             <div className="col-span-8">
                                 <p className="font-bold text-center underline mb-1 text-sm">Impôts à la charge de l'employeur</p>
-                                <div className="border border-gray-400 rounded-lg p-1 text-[9px]">
+                                <div className="border border-gray-400 rounded-lg p-1 text-[10px]">
                                      <table className="w-full">
                                         <tbody>
                                             {employerContributions.map(item => (

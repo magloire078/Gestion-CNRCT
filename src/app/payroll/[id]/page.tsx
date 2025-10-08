@@ -32,9 +32,9 @@ function PayslipTemplate({ payslipDetails }: { payslipDetails: PayslipDetails })
     return (
         <div className="w-full max-w-4xl mx-auto bg-white p-4 text-black font-arial text-[10px] leading-tight print-page-break flex flex-col">
            {/* Header */}
-            <header className="flex justify-between items-start pb-2 pt-2 h-[120px] px-2">
-                 <div className="flex-1 text-center flex flex-col justify-center items-center h-full">
-                    <div className='font-bold text-base leading-tight'>
+            <header className="flex justify-between items-start pb-2 px-2 mb-2">
+                <div className="flex-1 text-center flex flex-col justify-center items-center h-full">
+                    <div className='font-bold text-sm leading-tight'>
                         <p className="whitespace-nowrap">Chambre Nationale des Rois</p>
                         <p className="whitespace-nowrap">et Chefs Traditionnels</p>
                     </div>
@@ -46,13 +46,13 @@ function PayslipTemplate({ payslipDetails }: { payslipDetails: PayslipDetails })
                 </div>
 
                 <div className="flex-1 text-center flex flex-col justify-center items-center h-full">
-                    <p className="font-bold text-sm whitespace-nowrap">REPUBLIQUE DE CÔTE D'IVOIRE</p>
+                    <p className="font-bold text-xs whitespace-nowrap">REPUBLIQUE DE CÔTE D'IVOIRE</p>
                     {organizationLogos.secondaryLogoUrl && <img src={organizationLogos.secondaryLogoUrl} alt="Emblème de la Côte d'Ivoire" className="max-h-[80px] max-w-full h-auto w-auto my-1" />}
-                    <p className="text-sm whitespace-nowrap">Union - Discipline - Travail</p>
+                    <p className="text-xs whitespace-nowrap">Union - Discipline - Travail</p>
                 </div>
             </header>
 
-            <main className="flex-grow">
+            <main>
                 <div className="text-center my-2 p-1 bg-gray-200 font-bold rounded-md text-sm">
                     BULLETIN DE PAIE CNRCT : Période de {periodDisplay}
                 </div>
@@ -193,7 +193,7 @@ function PayslipTemplate({ payslipDetails }: { payslipDetails: PayslipDetails })
                     <div className="leading-tight text-center">
                         <p className="font-bold">Chambre Nationale de Rois et Chefs Traditionnels (CNRCT)</p>
                         <p>Yamoussoukro, Riviera - BP 201 Yamoussoukro | Tél : (225) 30 64 06 60 | Fax : (+255) 30 64 06 63</p>
-                        <p>www.cnrct.ci  -  Email : info@cnrct.ci</p>
+                        <p>www.cnrct.ci - Email : info@cnrct.ci</p>
                     </div>
                     <div><p className="page-number"></p></div>
                  </div>
@@ -291,3 +291,5 @@ export default function PayslipPage() {
         </>
     );
 }
+
+    

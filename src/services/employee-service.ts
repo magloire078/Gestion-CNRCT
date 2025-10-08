@@ -53,7 +53,7 @@ async function createOrUpdateChiefFromEmployee(employee: Employe) {
             firstName: employee.firstName,
             lastName: employee.lastName,
             title: employee.poste,
-            role: 'Chef de Canton',
+            role: (employee.Region && employee.Village) ? 'Chef de Village' : 'Chef de Canton',
             sexe: employee.sexe,
             region: employee.Region,
             department: employee.Departement,

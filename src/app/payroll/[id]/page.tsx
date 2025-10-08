@@ -54,7 +54,7 @@ function PayslipTemplate({ payslipDetails }: { payslipDetails: PayslipDetails })
             <div className='border-t-2 border-gray-400'></div>
 
             <main className="flex-grow">
-                <div className="text-center my-1 p-1 bg-gray-200 font-bold rounded-md text-sm">
+                <div className="text-center my-2 p-1 bg-gray-200 font-bold rounded-md text-sm">
                     BULLETIN DE PAIE CNRCT : Période de {periodDisplay}
                 </div>
 

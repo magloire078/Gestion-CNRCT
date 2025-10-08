@@ -20,7 +20,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { getEmployees } from "@/services/employee-service";
 import { getPayslipDetails } from "@/services/payslip-details-service";
-import type { Employe } from "@/lib/data";
+import type { Employe, OrganizationSettings } from "@/lib/data";
 import { Loader2, FileText, Check, ChevronsUpDown, Printer } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -29,6 +29,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { cn } from "@/lib/utils";
 import { parseISO, differenceInCalendarYears, getYear, format, startOfYear, endOfYear, isAfter } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { getOrganizationSettings } from "@/services/organization-service";
+import { PrintLayout } from "@/components/reports/print-layout";
 
 
 interface ReportData {
@@ -52,15 +54,19 @@ export default function NominativeReportPage() {
   const [reportData, setReportData] = useState<ReportData | null>(null);
 
   const [isComboboxOpen, setIsComboboxOpen] = useState(false);
+  const [organizationLogos, setOrganizationLogos] = useState<OrganizationSettings | null>(null);
 
   useEffect(() => {
     async function fetchInitialData() {
       try {
-        const data = await getEmployees();
-        // Fetch all employees regardless of status
+        const [data, settings] = await Promise.all([
+          getEmployees(),
+          getOrganizationSettings(),
+        ]);
         setEmployees(data);
+        setOrganizationLogos(settings);
       } catch (err) {
-        setError("Impossible de charger la liste des employés.");
+        setError("Impossible de charger les données initiales.");
       } finally {
         setLoading(false);
       }
@@ -276,40 +282,39 @@ export default function NominativeReportPage() {
       )}
     </div>
 
-     {isPrinting && reportData && (
-        <div id="print-section" className="bg-white text-black p-8 font-sans">
-             <div className="text-center mb-8">
-                <h1 className="text-xl font-bold">TABLEAU NOMINATIF DES SALAIRES BRUTS</h1>
-                <h2 className="text-lg">Employé : {reportData.employee.name} (Mle: {reportData.employee.matricule})</h2>
-                 <h3 className="text-md">Période du {reportData.startYear} au {reportData.endYear}</h3>
-            </div>
-            <table className="w-full text-xs border-collapse border border-black">
-                <thead className="bg-gray-200">
-                    <tr>
-                        <th className="border border-black p-1">Année</th>
-                        {reportData.annualSalaries[0]?.months.map(m => <th key={m.month} className="border border-black p-1">{m.month}</th>)}
-                        <th className="border border-black p-1">Total Annuel</th>
-                    </tr>
-                </thead>
-                <tbody>
-                     {reportData.annualSalaries.map(yearData => (
-                        <tr key={yearData.year}>
-                            <td className="border border-black p-1 text-center font-bold">{yearData.year}</td>
-                            {yearData.months.map((m, i) => <td key={i} className="border border-black p-1 text-right">{m.gross > 0 ? m.gross.toLocaleString('fr-FR') : '-'}</td>)}
-                            <td className="border border-black p-1 text-right font-bold">{yearData.total.toLocaleString('fr-FR')}</td>
-                        </tr>
-                    ))}
-                    <tr className="bg-gray-100 font-bold">
-                        <td colSpan={13} className="border border-black p-1 text-right">TOTAL GÉNÉRAL</td>
-                        <td className="border border-black p-1 text-right">{reportData.grandTotal.toLocaleString('fr-FR')}</td>
-                    </tr>
-                </tbody>
-            </table>
-             <footer className="mt-12 text-center text-xs text-gray-500">
-                <p>Rapport généré le {format(new Date(), 'dd/MM/yyyy HH:mm')}</p>
-                 <div className="mt-4"><p className="page-number"></p></div>
-            </footer>
-        </div>
+     {isPrinting && reportData && organizationLogos && (
+        <PrintLayout
+            logos={organizationLogos}
+            title="TABLEAU NOMINATIF DES SALAIRES BRUTS"
+            subtitle={`Période du ${reportData.startYear} au ${reportData.endYear} pour ${reportData.employee.name} (Mle: ${reportData.employee.matricule})`}
+            columns={[
+                { header: "Année", key: "year" },
+                ...(reportData.annualSalaries[0]?.months.map(m => ({ header: m.month.toUpperCase(), key: m.month, align: 'right' as const })) || []),
+                { header: "Total Annuel", key: "total", align: 'right' as const },
+            ]}
+            data={[
+                ...reportData.annualSalaries.map(yearData => {
+                    const row: Record<string, any> = { year: yearData.year };
+                    yearData.months.forEach(m => {
+                        row[m.month] = yearData.total > 0 ? m.gross.toLocaleString('fr-FR') : '-';
+                    });
+                    row.total = yearData.total > 0 ? yearData.total.toLocaleString('fr-FR') : '-';
+                    return row;
+                }),
+                // Add the total row
+                (() => {
+                    const totalRow: Record<string, any> = { year: "TOTAL GÉNÉRAL" };
+                     // Calculate monthly totals
+                    reportData.annualSalaries[0]?.months.forEach((_, monthIndex) => {
+                        const monthKey = reportData.annualSalaries[0].months[monthIndex].month;
+                        const monthlyTotal = reportData.annualSalaries.reduce((acc, yearData) => acc + yearData.months[monthIndex].gross, 0);
+                        totalRow[monthKey] = monthlyTotal > 0 ? monthlyTotal.toLocaleString('fr-FR') : '-';
+                    });
+                    totalRow.total = reportData.grandTotal > 0 ? reportData.grandTotal.toLocaleString('fr-FR') : '-';
+                    return totalRow;
+                })()
+            ]}
+        />
      )}
     </>
   );

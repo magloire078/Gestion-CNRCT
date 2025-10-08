@@ -10,7 +10,7 @@ import { getEmployee } from "@/services/employee-service";
 import { getPayslipDetails, PayslipDetails } from "@/services/payslip-details-service";
 import { ArrowLeft, Printer } from "lucide-react";
 import QRCode from "react-qr-code";
-import { format, parseISO, lastDayOfMonth, isValid } from "date-fns";
+import { format, parseISO, isValid, lastDayOfMonth } from "date-fns";
 import { fr } from "date-fns/locale";
 import { DocumentLayout } from "@/components/common/document-layout";
 
@@ -32,7 +32,7 @@ function PayslipTemplate({ payslipDetails }: { payslipDetails: PayslipDetails })
     return (
         <div className="w-full max-w-4xl mx-auto bg-white p-4 border-b border-gray-300 text-black font-arial text-[10px] leading-tight print-page-break flex flex-col">
            {/* Header */}
-            <header className="flex justify-between items-center pb-2 mb-2 h-[120px]">
+            <header className="flex justify-between items-center pb-2 pt-2 h-[120px] px-4">
                  <div className="flex-1 text-center flex flex-col justify-center items-center h-full">
                     <div className='font-bold text-base leading-tight'>
                         <p className="whitespace-nowrap">Chambre Nationale des Rois</p>
@@ -41,7 +41,7 @@ function PayslipTemplate({ payslipDetails }: { payslipDetails: PayslipDetails })
                      {organizationLogos.mainLogoUrl && <img src={organizationLogos.mainLogoUrl} alt="Logo CNRCT" className="max-h-20 max-w-full h-auto w-auto mt-1" />}
                 </div>
                 
-                 <div className="w-1/2 text-center pt-2">
+                 <div className="flex-1 text-center pt-2">
                    {/* Content removed as requested */}
                 </div>
 
@@ -53,8 +53,8 @@ function PayslipTemplate({ payslipDetails }: { payslipDetails: PayslipDetails })
             </header>
             <div className='border-t-2 border-gray-400'></div>
 
-            <main className="flex-grow py-2">
-                <div className="text-center my-2 p-1 bg-gray-200 font-bold rounded-md text-sm">
+            <main className="flex-grow">
+                <div className="text-center my-1 p-1 bg-gray-200 font-bold rounded-md text-sm">
                     BULLETIN DE PAIE CNRCT : Période de {periodDisplay}
                 </div>
 
@@ -195,7 +195,7 @@ function PayslipTemplate({ payslipDetails }: { payslipDetails: PayslipDetails })
                     <div className="leading-tight text-center">
                         <p className="font-bold">Chambre Nationale de Rois et Chefs Traditionnels (CNRCT)</p>
                         <p>Yamoussoukro, Riviera - BP 201 Yamoussoukro | Tél : (225) 30 64 06 60 | Fax : (+255) 30 64 06 63</p>
-                        <p>www.cnrct.ci - Email : info@cnrct.ci</p>
+                        <p>www.cnrct.ci  -  Email : info@cnrct.ci</p>
                     </div>
                     <div><p className="page-number"></p></div>
                  </div>

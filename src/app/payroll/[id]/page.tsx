@@ -10,7 +10,7 @@ import { getEmployee } from "@/services/employee-service";
 import { getPayslipDetails, PayslipDetails } from "@/services/payslip-details-service";
 import { ArrowLeft, Printer } from "lucide-react";
 import QRCode from "react-qr-code";
-import { format, parseISO, lastDayOfMonth } from "date-fns";
+import { format, parseISO, lastDayOfMonth, isValid } from "date-fns";
 import { fr } from "date-fns/locale";
 import { DocumentLayout } from "@/components/common/document-layout";
 
@@ -20,7 +20,7 @@ function PayslipTemplate({ payslipDetails }: { payslipDetails: PayslipDetails })
     const fullName = `${employeeInfo.lastName || ''} ${employeeInfo.firstName || ''}`.trim() || employeeInfo.name;
     const qrCodeValue = `${fullName} | ${employeeInfo.matricule} | ${employeeInfo.departmentId}`;
 
-    const payslipDate = lastDayOfMonth(new Date(payslipDetails.employeeInfo.paymentDate || ''));
+    const payslipDate = isValid(parseISO(payslipDetails.employeeInfo.paymentDate || '')) ? lastDayOfMonth(parseISO(payslipDetails.employeeInfo.paymentDate || '')) : new Date();
     const periodDisplay = format(payslipDate, "MMMM yyyy", { locale: fr });
     const paymentDateDisplay = format(new Date(payslipDetails.employeeInfo.paymentDate!), "EEEE dd MMMM yyyy", { locale: fr });
     
@@ -48,7 +48,7 @@ function PayslipTemplate({ payslipDetails }: { payslipDetails: PayslipDetails })
                 <div className="w-1/4 text-center flex flex-col justify-center items-center h-full">
                     <p className="font-bold text-sm whitespace-nowrap">REPUBLIQUE DE CÔTE D'IVOIRE</p>
                     {organizationLogos.secondaryLogoUrl && <img src={organizationLogos.secondaryLogoUrl} alt="Emblème de la Côte d'Ivoire" className="max-h-[80px] max-w-full h-auto w-auto my-1" />}
-                    <p className="text-sm">Union - Discipline - Travail</p>
+                    <p className="text-sm whitespace-nowrap">Union - Discipline - Travail</p>
                 </div>
             </header>
             <div className='border-t-2 border-gray-400 mt-2'></div>

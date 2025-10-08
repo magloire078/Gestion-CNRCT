@@ -35,7 +35,7 @@ export function DocumentLayout({ children }: DocumentLayoutProps) {
               className="max-h-[80px] max-w-full h-auto w-auto my-1"
             />
           )}
-          <p className="text-sm">Union - Discipline - Travail</p>
+          <p className="text-sm whitespace-nowrap">Union - Discipline - Travail</p>
         </div>
       </header>
 

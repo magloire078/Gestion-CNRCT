@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import type { OrganizationSettings } from "@/lib/data";
@@ -28,7 +27,7 @@ export function DocumentLayout({ children }: DocumentLayoutProps) {
         </div>
 
         <div className="w-1/4 text-center flex flex-col justify-center items-center h-full">
-          <p className="font-bold text-base">REPUBLIQUE DE CÔTE D'IVOIRE</p>
+          <p className="font-bold text-base whitespace-nowrap">REPUBLIQUE DE CÔTE D'IVOIRE</p>
           {settings?.secondaryLogoUrl && (
             <img
               src={settings.secondaryLogoUrl}

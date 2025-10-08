@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
@@ -583,7 +584,7 @@ function PayslipTemplate({ payslipDetails }: { payslipDetails: PayslipDetails })
                 </div>
 
                 <div className="w-1/4 text-center flex flex-col justify-center items-center h-full">
-                    <p className="font-bold text-[10px] leading-tight">REPUBLIQUE DE CÔTE D'IVOIRE</p>
+                    <p className="font-bold text-[10px] leading-tight whitespace-nowrap">REPUBLIQUE DE CÔTE D'IVOIRE</p>
                     {organizationLogos.secondaryLogoUrl && <img src={organizationLogos.secondaryLogoUrl} alt="Emblème de la Côte d'Ivoire" className="max-h-[80px] max-w-full h-auto w-auto my-1" />}
                     <p className="text-[9px]">Union - Discipline - Travail</p>
                 </div>

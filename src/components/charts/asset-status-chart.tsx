@@ -2,7 +2,7 @@
 "use client"
 
 import { useEffect, useState } from 'react';
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts"
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Cell } from "recharts"
 
 import {
   ChartContainer,
@@ -17,8 +17,11 @@ import { Skeleton } from '../ui/skeleton';
 const chartConfig = {
   count: {
     label: "Nombre",
-    color: "hsl(var(--chart-1))",
   },
+  "En utilisation": { color: "hsl(var(--chart-1))" },
+  "En stock": { color: "hsl(var(--chart-2))" },
+  "En réparation": { color: "hsl(var(--chart-3))" },
+  "Retiré": { color: "hsl(var(--chart-4))" },
 } satisfies ChartConfig
 
 export function AssetStatusChart() {
@@ -29,16 +32,13 @@ export function AssetStatusChart() {
     async function fetchData() {
       try {
         const assetData = await getAssets();
-        const statusData = assetData.reduce((acc, asset) => {
-          const status = asset.status;
-          if (!acc[status]) {
-            acc[status] = { status, count: 0 };
-          }
-          acc[status].count += 1;
-          return acc;
-        }, {} as Record<string, { status: string, count: number }>);
+        const statusOrder = ['En utilisation', 'En stock', 'En réparation', 'Retiré'];
+        const statusData = statusOrder.map(status => ({
+            status,
+            count: assetData.filter(asset => asset.status === status).length
+        }));
 
-        setChartData(Object.values(statusData));
+        setChartData(statusData);
       } catch (error) {
         console.error("Failed to fetch asset data for chart:", error);
       } finally {
@@ -70,13 +70,18 @@ export function AssetStatusChart() {
           tickLine={false}
           tickMargin={10}
           axisLine={false}
+          fontSize={10}
         />
         <YAxis />
         <ChartTooltip
           cursor={false}
           content={<ChartTooltipContent hideLabel />}
         />
-        <Bar dataKey="count" fill="var(--color-count)" radius={4} />
+        <Bar dataKey="count" radius={4}>
+            {chartData.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={chartConfig[entry.status as keyof typeof chartConfig]?.color} />
+            ))}
+        </Bar>
       </BarChart>
     </ChartContainer>
   )

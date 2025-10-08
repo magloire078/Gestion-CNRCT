@@ -48,11 +48,11 @@ export default {
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
         chart: {
-          '1': 'hsl(var(--primary))',
-          '2': 'hsl(142.1, 76.2%, 36.3%)',
-          '3': 'hsl(346.8, 77.2%, 49.8%)',
-          '4': 'hsl(262.1, 83.3%, 57.8%)',
-          '5': 'hsl(35, 100%, 65%)',
+          '1': 'hsl(var(--chart-1))',
+          '2': 'hsl(var(--chart-2))',
+          '3': 'hsl(var(--chart-3))',
+          '4': 'hsl(var(--chart-4))',
+          '5': 'hsl(var(--chart-5))',
         },
         sidebar: {
           DEFAULT: 'hsl(var(--sidebar-background))',

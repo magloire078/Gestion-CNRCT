@@ -31,7 +31,7 @@ const chartConfig = {
   "Protocole": { label: "Protocole", color: "hsl(var(--chart-3))" },
   "Cabinet": { label: "Cabinet", color: "hsl(var(--chart-4))" },
   "Direction des Affaires sociales": { label: "Social", color: "hsl(var(--chart-5))" },
-  "Other": { label: "Autre", color: "hsl(var(--muted))" },
+  "Autre": { label: "Autre", color: "hsl(var(--muted))" },
 } satisfies ChartConfig
 
 const RADIAN = Math.PI / 180;
@@ -73,7 +73,7 @@ export function EmployeeDistributionChart() {
         const departmentMap = new Map(departments.map(d => [d.id, d.name]));
 
         const departmentData = employeeData.reduce((acc, employee) => {
-          let departmentName = "Other";
+          let departmentName = "Autre";
           if (employee.departmentId && departmentMap.has(employee.departmentId)) {
             departmentName = departmentMap.get(employee.departmentId)!;
           } else if (employee.department) { // Fallback for old data structure
@@ -129,8 +129,8 @@ export function EmployeeDistributionChart() {
           labelLine={false}
           label={renderCustomizedLabel}
         >
-           {chartData.map((entry) => (
-            <Cell key={`cell-${entry.name}`} fill={(chartConfig[entry.name as keyof typeof chartConfig] as any)?.color || chartConfig.Other.color} />
+           {chartData.map((entry, index) => (
+            <Cell key={`cell-${entry.name}`} fill={`hsl(var(--chart-${index + 1}))`} />
           ))}
         </Pie>
          <text

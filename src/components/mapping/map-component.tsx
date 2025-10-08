@@ -5,9 +5,10 @@ import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import type { Chief } from '@/lib/data';
 import { useEffect, useMemo, useRef } from 'react';
+import Link from 'next/link';
 
 // Fix for default Leaflet icon issue with Webpack
-const icon = L.icon({
+const defaultIcon = L.icon({
   iconUrl: "/marker-icon.png",
   iconRetinaUrl: "/marker-icon-2x.png",
   shadowUrl: "/marker-shadow.png",
@@ -17,36 +18,37 @@ const icon = L.icon({
   shadowSize: [41, 41]
 });
 
+const selectedIcon = L.icon({
+  iconUrl: "/marker-icon-red.png",
+  iconRetinaUrl: "/marker-icon-red-2x.png",
+  shadowUrl: "/marker-shadow.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
+
 interface MapComponentProps {
-  searchTerm: string;
   chiefs: Chief[];
+  selectedChiefId: string | null;
+  onMarkerClick: (chiefId: string) => void;
 }
 
-export default function MapComponent({ searchTerm, chiefs: allChiefs }: MapComponentProps) {
+export default function MapComponent({ chiefs, selectedChiefId, onMarkerClick }: MapComponentProps) {
   const mapRef = useRef<L.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
-  const markersRef = useRef<L.LayerGroup>(new L.LayerGroup());
-
-  const filteredChiefs = useMemo(() => {
-    if (!searchTerm) {
-      return allChiefs;
-    }
-    const lowercasedTerm = searchTerm.toLowerCase();
-    return allChiefs.filter(
-      (chief) =>
-        chief.name.toLowerCase().includes(lowercasedTerm) ||
-        chief.village.toLowerCase().includes(lowercasedTerm) ||
-        chief.region.toLowerCase().includes(lowercasedTerm)
-    );
-  }, [allChiefs, searchTerm]);
+  const markersRef = useRef<Map<string, L.Marker>>(new Map());
 
   useEffect(() => {
     if (mapContainerRef.current && !mapRef.current) {
-        mapRef.current = L.map(mapContainerRef.current).setView([7.539989, -5.54708], 7);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        mapRef.current = L.map(mapContainerRef.current, {
+            zoomControl: false // Disable default zoom control
+        }).setView([7.539989, -5.54708], 7);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(mapRef.current);
-        markersRef.current.addTo(mapRef.current);
+        L.control.zoom({ position: 'topright' }).addTo(mapRef.current);
     }
     
     return () => {
@@ -60,38 +62,76 @@ export default function MapComponent({ searchTerm, chiefs: allChiefs }: MapCompo
   useEffect(() => {
       const map = mapRef.current;
       if (!map) return;
+      
+      const chiefMap = new Map(chiefs.map(c => [c.id, c]));
+      const newMarkers = new Map<string, L.Marker>();
 
-      // Clear existing markers
-      markersRef.current.clearLayers();
-
-      // Add new markers
-      filteredChiefs.forEach(chief => {
+      // Add/Update markers
+      chiefs.forEach(chief => {
         if (chief.latitude && chief.longitude) {
-            const marker = L.marker([chief.latitude, chief.longitude], { icon });
-            marker.bindPopup(`
+            let marker;
+            if(markersRef.current.has(chief.id)) {
+                marker = markersRef.current.get(chief.id)!;
+                marker.setLatLng([chief.latitude, chief.longitude]);
+            } else {
+                marker = L.marker([chief.latitude, chief.longitude], { icon: defaultIcon });
+                marker.on('click', () => onMarkerClick(chief.id));
+                marker.addTo(map);
+            }
+            
+            const popupContent = `
                 <div class="font-sans">
                     <h3 class="font-bold text-base mb-1">${chief.name}</h3>
                     <p class="text-sm text-muted-foreground m-0">${chief.title}</p>
                     <p class="text-sm m-0">${chief.village}, ${chief.region}</p>
-                    ${chief.contact ? `<p class="text-sm m-0">Contact: ${chief.contact}</p>`: ''}
+                    <a href="/chiefs/${chief.id}" class="text-primary text-sm mt-2 block hover:underline">Voir les détails</a>
                 </div>
-            `);
-            markersRef.current.addLayer(marker);
+            `;
+            marker.bindPopup(popupContent);
+            newMarkers.set(chief.id, marker);
         }
       });
       
-      // Recenter map
-       if (filteredChiefs && filteredChiefs.length > 0) {
-            const firstChief = filteredChiefs[0];
-            if (firstChief.latitude && firstChief.longitude) {
-                 map.setView([firstChief.latitude, firstChief.longitude], 8);
-            }
-        } else if (filteredChiefs) {
-            // If no results, zoom out to country view
-            map.setView([7.539989, -5.54708], 7);
-        }
+      // Remove old markers
+      markersRef.current.forEach((marker, id) => {
+          if (!chiefMap.has(id)) {
+              marker.remove();
+          }
+      });
+      
+      markersRef.current = newMarkers;
 
-  }, [filteredChiefs]);
+  }, [chiefs, onMarkerClick]);
+  
+  useEffect(() => {
+      const map = mapRef.current;
+      if (!map) return;
+
+      markersRef.current.forEach((marker, id) => {
+          const isSelected = id === selectedChiefId;
+          marker.setIcon(isSelected ? selectedIcon : defaultIcon);
+          if (isSelected) {
+              marker.setZIndexOffset(1000);
+          } else {
+              marker.setZIndexOffset(0);
+          }
+      });
+      
+      if (selectedChiefId) {
+        const selectedChief = chiefs.find(c => c.id === selectedChiefId);
+        if (selectedChief && selectedChief.latitude && selectedChief.longitude) {
+            map.flyTo([selectedChief.latitude, selectedChief.longitude], 12, {
+                animate: true,
+                duration: 1
+            });
+            const marker = markersRef.current.get(selectedChiefId);
+            if (marker && !marker.isPopupOpen()) {
+                marker.openPopup();
+            }
+        }
+      }
+
+  }, [selectedChiefId, chiefs]);
 
 
   return <div ref={mapContainerRef} style={{ height: '100%', width: '100%' }} />;

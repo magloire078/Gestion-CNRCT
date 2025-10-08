@@ -11,4 +11,3 @@ import '@/ai/tools/hr-tools.ts';
 import '@/ai/tools/mission-tools.ts';
 import '@/ai/tools/fleet-tools.ts';
 import '@/ai/tools/dashboard-tools.ts';
-import '@/scripts/seed-chiefs.ts';

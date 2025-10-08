@@ -572,7 +572,7 @@ function PayslipTemplate({ payslipDetails }: { payslipDetails: PayslipDetails })
            {/* Header */}
             <header className="flex justify-between items-center pt-4 pb-2 mb-2 h-[120px]">
                  <div className="w-1/4 text-center flex flex-col justify-center items-center h-full">
-                     <div className='font-bold text-[10px] leading-tight'>
+                     <div className='font-bold text-base leading-tight'>
                         <p>Chambre Nationale des Rois</p>
                         <p>et Chefs Traditionnels</p>
                     </div>
@@ -584,9 +584,9 @@ function PayslipTemplate({ payslipDetails }: { payslipDetails: PayslipDetails })
                 </div>
 
                 <div className="w-1/4 text-center flex flex-col justify-center items-center h-full">
-                    <p className="font-bold text-[10px] leading-tight whitespace-nowrap">REPUBLIQUE DE CÔTE D'IVOIRE</p>
+                    <p className="font-bold text-sm whitespace-nowrap">REPUBLIQUE DE CÔTE D'IVOIRE</p>
                     {organizationLogos.secondaryLogoUrl && <img src={organizationLogos.secondaryLogoUrl} alt="Emblème de la Côte d'Ivoire" className="max-h-[80px] max-w-full h-auto w-auto my-1" />}
-                    <p className="text-[9px]">Union - Discipline - Travail</p>
+                    <p className="text-sm">Union - Discipline - Travail</p>
                 </div>
             </header>
             <div className='border-t-2 border-gray-400 mt-2'></div>

@@ -32,7 +32,7 @@ function PayslipTemplate({ payslipDetails }: { payslipDetails: PayslipDetails })
     return (
         <div className="w-full max-w-4xl mx-auto bg-white p-4 border-b border-gray-300 text-black font-arial text-[10px] leading-tight print-page-break flex flex-col">
            {/* Header */}
-            <header className="flex justify-between items-center pb-2 pt-2 h-[120px] px-4">
+            <header className="flex justify-between items-center pb-2 pt-2 h-[120px] px-2">
                  <div className="flex-1 text-center flex flex-col justify-center items-center h-full">
                     <div className='font-bold text-base leading-tight'>
                         <p className="whitespace-nowrap">Chambre Nationale des Rois</p>
@@ -294,4 +294,3 @@ export default function PayslipPage() {
     );
 }
 
-    

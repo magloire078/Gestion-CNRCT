@@ -12,7 +12,7 @@ import { getPayslipDetails, PayslipDetails } from "@/services/payslip-details-se
 import { ArrowLeft, Printer } from "lucide-react";
 import QRCode from "react-qr-code";
 import { format, parseISO } from "date-fns";
-import { fr } from 'date-fns/locale';
+import { fr } from "date-fns/locale";
 import { DocumentLayout } from "@/components/common/document-layout";
 
 export default function PayslipPage() {
@@ -244,5 +244,3 @@ export default function PayslipPage() {
         </>
     );
 }
-
-    

@@ -17,7 +17,7 @@ export function DocumentLayout({ children }: DocumentLayoutProps) {
         <div className="w-1/4 text-center flex flex-col justify-center items-center h-full">
            <div className='font-bold text-base leading-tight'>
               <p>Chambre Nationale des Rois</p>
-              <p className="-mt-1">et Chefs Traditionnels</p>
+              <p>et Chefs Traditionnels</p>
           </div>
            {settings?.mainLogoUrl && <img src={settings.mainLogoUrl} alt="Logo Principal" className="max-h-20 max-w-full h-auto w-auto mt-1" />}
         </div>

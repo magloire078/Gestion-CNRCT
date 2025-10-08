@@ -252,7 +252,7 @@ export default function DisaReportPage() {
                    {organizationLogos.mainLogoUrl && <img src={organizationLogos.mainLogoUrl} alt="Logo Principal" className="max-h-20 max-w-full h-auto w-auto mt-1" />}
                 </div>
                 <div className="w-2/4 text-center pt-2">
-                    <h1 className="font-bold text-lg">Chambre Nationale de Rois et Chefs Traditionnels (CNRCT)</h1>
+                    {/* Empty space as requested */}
                 </div>
                 <div className="w-1/4 text-center flex flex-col justify-center items-center h-24">
                     <p className="font-bold text-base">République de Côte d'Ivoire</p>
@@ -260,7 +260,7 @@ export default function DisaReportPage() {
                     <p className="text-sm">Union - Discipline - Travail</p>
                 </div>
             </header>
-            <div className="text-center mb-8">
+            <div className="text-center my-4">
                 <h1 className="text-xl font-bold underline">DÉCLARATION INDIVIDUELLE DES SALAIRES ET APPOINTEMENTS (DISA) - ANNEE {year}</h1>
             </div>
             <table className="w-full text-[8px] border-collapse border border-black">
@@ -297,9 +297,16 @@ export default function DisaReportPage() {
                     </tr>
                 </tbody>
             </table>
-            <footer className="mt-12 text-center text-xs text-gray-500">
-                <p>Rapport généré le {format(new Date(), 'dd/MM/yyyy HH:mm')} par Chambre Nationale de Rois et Chefs Traditionnels (CNRCT)</p>
-                <div className="mt-4"><p className="page-number"></p></div>
+            <footer className="mt-8 text-xs">
+                 <div className="flex justify-between items-end">
+                    <div></div>
+                    <div className="text-center leading-tight">
+                        <p className="font-bold">Chambre Nationale de Rois et Chefs Traditionnels (CNRCT)</p>
+                        <p>Yamoussoukro, Riviera - BP 201 Yamoussoukro | Tél : (225) 30 64 06 60 | Fax : (+255) 30 64 06 63</p>
+                        <p>www.cnrct.ci - Email : info@cnrct.ci</p>
+                    </div>
+                    <div><p className="page-number"></p></div>
+                 </div>
             </footer>
         </div>
     )}

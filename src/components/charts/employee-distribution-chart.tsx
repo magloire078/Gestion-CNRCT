@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -32,6 +33,30 @@ const chartConfig = {
   "Direction des Affaires sociales": { label: "Social", color: "hsl(var(--chart-5))" },
   "Other": { label: "Autre", color: "hsl(var(--muted))" },
 } satisfies ChartConfig
+
+const RADIAN = Math.PI / 180;
+const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, name }: any) => {
+  const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+  const x = cx + radius * Math.cos(-midAngle * RADIAN);
+  const y = cy + radius * Math.sin(-midAngle * RADIAN);
+  const textRadius = outerRadius + 10;
+  const x2 = cx + textRadius * Math.cos(-midAngle * RADIAN);
+  const y2 = cy + textRadius * Math.sin(-midAngle * RADIAN);
+  const ex = x2;
+  const ey = y2;
+  const textAnchor = x2 > cx ? 'start' : 'end';
+
+
+  return (
+     <g>
+      <path d={`M${x},${y}L${x2},${y2}L${ex},${ey}`} stroke="hsl(var(--muted-foreground))" fill="none" strokeWidth={0.5}/>
+      <text x={ex + (x2 > cx ? 1 : -1) * 4} y={ey} textAnchor={textAnchor} fill="hsl(var(--muted-foreground))" fontSize="10px" dominantBaseline="central">
+        {`${name} (${(percent * 100).toFixed(0)}%)`}
+      </text>
+    </g>
+  );
+};
+
 
 export function EmployeeDistributionChart() {
   const [chartData, setChartData] = React.useState<any[]>([]);
@@ -82,13 +107,13 @@ export function EmployeeDistributionChart() {
 
 
   if (loading) {
-    return <Skeleton className="h-[250px] aspect-square mx-auto rounded-full" />;
+    return <Skeleton className="h-[250px] w-full" />;
   }
 
   return (
     <ChartContainer
       config={chartConfig}
-      className="mx-auto aspect-square h-[250px]"
+      className="mx-auto aspect-square h-[300px]"
     >
       <PieChart>
         <ChartTooltip
@@ -99,8 +124,10 @@ export function EmployeeDistributionChart() {
           data={chartData}
           dataKey="value"
           nameKey="name"
-          innerRadius={60}
-          strokeWidth={5}
+          innerRadius={50}
+          outerRadius={80}
+          labelLine={false}
+          label={renderCustomizedLabel}
         >
            {chartData.map((entry) => (
             <Cell key={`cell-${entry.name}`} fill={(chartConfig[entry.name as keyof typeof chartConfig] as any)?.color || chartConfig.Other.color} />
@@ -115,10 +142,6 @@ export function EmployeeDistributionChart() {
         >
           {totalEmployees.toLocaleString()}
         </text>
-        <ChartLegend
-          content={<ChartLegendContent nameKey="name" />}
-          className="-translate-y-2 flex-wrap gap-2 [&>*]:basis-1/4 [&>*]:justify-center"
-        />
       </PieChart>
     </ChartContainer>
   )

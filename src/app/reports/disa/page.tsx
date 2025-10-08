@@ -252,7 +252,7 @@ export default function DisaReportPage() {
                    {organizationLogos.mainLogoUrl && <img src={organizationLogos.mainLogoUrl} alt="Logo Principal" className="max-h-20 max-w-full h-auto w-auto mt-1" />}
                 </div>
                 <div className="w-2/4 text-center pt-2">
-                    <h1 className="font-bold text-lg">{organizationLogos.organizationName}</h1>
+                    <h1 className="font-bold text-lg">Chambre Nationale de Rois et Chefs Traditionnels (CNRCT)</h1>
                 </div>
                 <div className="w-1/4 text-center flex flex-col justify-center items-center h-24">
                     <p className="font-bold text-base">République de Côte d'Ivoire</p>
@@ -298,7 +298,7 @@ export default function DisaReportPage() {
                 </tbody>
             </table>
             <footer className="mt-12 text-center text-xs text-gray-500">
-                <p>Rapport généré le {format(new Date(), 'dd/MM/yyyy HH:mm')} par {organizationLogos.organizationName}</p>
+                <p>Rapport généré le {format(new Date(), 'dd/MM/yyyy HH:mm')} par Chambre Nationale de Rois et Chefs Traditionnels (CNRCT)</p>
                 <div className="mt-4"><p className="page-number"></p></div>
             </footer>
         </div>

@@ -51,9 +51,9 @@ function PayslipTemplate({ payslipDetails }: { payslipDetails: PayslipDetails })
                     <p className="text-sm whitespace-nowrap">Union - Discipline - Travail</p>
                 </div>
             </header>
-            <div className='border-t-2 border-gray-400 mt-2'></div>
+            <div className='border-t-2 border-gray-400'></div>
 
-            <main className="flex-grow py-4">
+            <main className="flex-grow py-2">
                 <div className="text-center my-2 p-1 bg-gray-200 font-bold rounded-md text-sm">
                     BULLETIN DE PAIE CNRCT : Période de {periodDisplay}
                 </div>
@@ -188,7 +188,7 @@ function PayslipTemplate({ payslipDetails }: { payslipDetails: PayslipDetails })
             </main>
 
             {/* Footer */}
-            <footer className="text-center pt-2 mt-auto text-xs">
+            <footer className="text-center pt-2">
                  <div className='border-t-2 border-gray-400 mb-1'></div>
                 <div className="flex justify-between items-end">
                     <div></div>

@@ -35,8 +35,8 @@ function PayslipTemplate({ payslipDetails }: { payslipDetails: PayslipDetails })
             <header className="flex justify-between items-center pt-4 pb-2 mb-2 h-[120px]">
                  <div className="w-1/4 text-center flex flex-col justify-center items-center h-full">
                     <div className='font-bold text-base leading-tight'>
-                        <p>Chambre Nationale des Rois</p>
-                        <p>et Chefs Traditionnels</p>
+                        <p className="whitespace-nowrap">Chambre Nationale des Rois</p>
+                        <p className="whitespace-nowrap">et Chefs Traditionnels</p>
                     </div>
                      {organizationLogos.mainLogoUrl && <img src={organizationLogos.mainLogoUrl} alt="Logo CNRCT" className="max-h-20 max-w-full h-auto w-auto mt-1" />}
                 </div>

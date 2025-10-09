@@ -5,7 +5,7 @@ import type { EmployeeEvent, Employe } from '@/lib/data';
 import { db } from '@/lib/firebase';
 import { getEmployee } from './employee-service';
 import { getPayslipDetails } from './payslip-details-service';
-import { parseISO } from 'date-fns';
+import { parseISO, isValid } from 'date-fns';
 
 /**
  * Retrieves the professional history for a specific employee.
@@ -108,7 +108,11 @@ export async function addEmployeeHistoryEvent(employeeId: string, eventData: Omi
  */
 export async function updateEmployeeHistoryEvent(employeeId: string, eventId: string, eventData: Partial<EmployeeEvent>): Promise<EmployeeEvent> {
     const eventDocRef = doc(db, `employees/${employeeId}/history`, eventId);
-    await updateDoc(eventDocRef, eventData);
+    
+    // Create a clean object to prevent sending undefined values to Firestore
+    const cleanEventData = JSON.parse(JSON.stringify(eventData));
+    
+    await updateDoc(eventDocRef, cleanEventData);
     
     // If it's an Augmentation, re-apply changes to the main employee doc
     if (eventData.eventType === 'Augmentation' && eventData.details) {

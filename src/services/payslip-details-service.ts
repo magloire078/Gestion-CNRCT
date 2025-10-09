@@ -82,7 +82,6 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
         .sort((a, b) => parseISO(b.effectiveDate).getTime() - parseISO(a.effectiveDate).getTime())[0];
     
     const getSalaryStructure = () => {
-        // Default structure is the current one on the employee object
         const currentEmployeeStructure = {
             baseSalary: employee.baseSalary || 0,
             indemniteTransportImposable: employee.indemniteTransportImposable || 0,
@@ -94,8 +93,7 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
             transportNonImposable: employee.transportNonImposable || 0,
         };
 
-        if (relevantEvent && relevantEvent.details) {
-            // If a relevant historical event is found, use its salary details.
+        if (relevantEvent?.details) {
             return {
                 baseSalary: Number(relevantEvent.details.baseSalary || 0),
                 indemniteTransportImposable: Number(relevantEvent.details.indemniteTransportImposable || 0),
@@ -108,12 +106,11 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
             };
         }
         
-        // If no relevant event is found for the payslip date, we need to determine the "starting" salary.
         const oldestEvent = history
-            .filter(event => event.eventType === 'Augmentation' && event.details && event.details.previous_baseSalary !== undefined)
+            .filter(event => event.eventType === 'Augmentation' && event.details?.previous_baseSalary !== undefined)
             .sort((a, b) => parseISO(a.effectiveDate).getTime() - parseISO(b.effectiveDate).getTime())[0];
 
-        if (oldestEvent && oldestEvent.details) {
+        if (oldestEvent?.details) {
              const firstAugmentationDate = parseISO(oldestEvent.effectiveDate);
              if (isBefore(payslipDateObj, firstAugmentationDate)) {
                  return {
@@ -129,8 +126,6 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
              }
         }
         
-        // If no augmentation history at all, or if the payslip date is after the last event,
-        // use current employee data.
         return currentEmployeeStructure;
     };
     

@@ -1,4 +1,3 @@
-
 "use client";
 
 // A custom error class for Firestore permission issues.

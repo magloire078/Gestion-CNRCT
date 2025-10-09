@@ -36,6 +36,7 @@ import {
   Wallet,
   FileClock,
   DatabaseBackup,
+  BookText,
 } from "lucide-react";
 
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
@@ -79,7 +80,6 @@ const allMenuItems = [
         { href: "/indemnities", label: "Indemnités", icon: Scale, permission: "page:indemnities:view" },
     ]
   },
-  { href: "/chiefs", label: "Rois & Chefs", icon: Crown, permission: "page:chiefs:view" },
   { 
     isCollapsible: true,
     label: "Organisation", 
@@ -91,6 +91,16 @@ const allMenuItems = [
         { href: "/organization-chart", label: "Organigramme", icon: Network, permission: "page:organization-chart:view" },
         { href: "/conflicts", label: "Gestion des Conflits", icon: Scale, permission: "page:conflicts:view" },
         { href: "/mapping", label: "Cartographie", icon: MapIcon, permission: "page:mapping:view" },
+    ]
+  },
+   { 
+    isCollapsible: true,
+    label: "Répertoires", 
+    icon: Archive,
+    permission: "group:repertoires:view",
+    subItems: [
+        { href: "/chiefs", label: "Rois & Chefs", icon: Crown, permission: "page:chiefs:view" },
+        { href: "/us-et-coutumes", label: "Us & Coutumes", icon: BookText, permission: "page:us-et-coutumes:view" },
     ]
   },
    { 

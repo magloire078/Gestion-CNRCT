@@ -23,10 +23,12 @@ export const allPermissions = {
   "Accès à l'Administration": "page:admin:view",
   "Voir l'Organigramme": "page:organization-chart:view",
   "Accès Sauvegarde & Restauration": "page:backup:view",
+  "Accès aux Us & Coutumes": "page:us-et-coutumes:view",
 
   // Group permissions
   "Voir le groupe Personnel": "group:personnel:view",
   "Voir le groupe Organisation": "group:organization:view",
+  "Voir le groupe Répertoires": "group:repertoires:view",
   "Voir le groupe Opérations": "group:operations:view",
   "Voir le groupe Administration": "group:admin:view",
   "Voir le groupe Rapports": "group:reports:view",

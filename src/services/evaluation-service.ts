@@ -97,7 +97,7 @@ export async function updateEvaluation(evaluationId: string, dataToUpdate: Parti
              await createNotification({
                 userId: currentEval.employeeId,
                 title: 'Évaluation Finalisée',
-                description: `Votre évaluation de performance pour la période ${currentEval.reviewPeriod} est finalisée.`,
+                description: `Votre évaluation de performance pour la période ${currentEval.reviewPeriod} a été finalisée.`,
                 href: `/evaluations/${evaluationId}`
             });
              await createNotification({

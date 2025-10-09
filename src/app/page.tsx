@@ -30,6 +30,7 @@ import { differenceInYears, parseISO, format, addMonths } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { getDashboardSummary } from '@/ai/flows/dashboard-summary-flow';
 import { PrintLayout } from '@/components/reports/print-layout';
+import { Badge } from '@/components/ui/badge';
 
 
 interface StatCardProps {
@@ -391,55 +392,58 @@ export default function DashboardPage() {
                     </Card>
                     <LatestRecruitsCard employees={employees} loading={loading} />
                     <Card>
-                    <CardHeader className="flex flex-row items-start justify-between pb-2">
-                        <div className="flex-1">
-                            <CardTitle>Anniversaires d'Ancienneté</CardTitle>
-                            <CardDescription>Employés atteignant un anniversaire d'embauche.</CardDescription>
-                        </div>
-                        <Button variant="outline" size="icon" onClick={handlePrintAnniversaries} disabled={seniorityAnniversaries.length === 0}>
-                            <Printer className="h-4 w-4" />
-                            <span className="sr-only">Imprimer</span>
-                        </Button>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="flex gap-2 my-4">
-                            <Select value={selectedAnniversaryMonth} onValueChange={setSelectedAnniversaryMonth}>
-                                <SelectTrigger><SelectValue/></SelectTrigger>
-                                <SelectContent>
-                                    {monthsForSelect.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}
-                                </SelectContent>
-                            </Select>
-                            <Select value={selectedAnniversaryYear} onValueChange={setSelectedAnniversaryYear}>
-                                <SelectTrigger><SelectValue/></SelectTrigger>
-                                <SelectContent>
-                                    {anniversaryYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
-                                </SelectContent>
-                            </Select>
-                        </div>
-
-                        {loading ? <Skeleton className="h-24 w-full" /> : (
-                        <div className="space-y-4">
-                        {seniorityAnniversaries.length > 0 ? seniorityAnniversaries.map(emp => {
-                            const years = differenceInYears(new Date(parseInt(selectedAnniversaryYear), parseInt(selectedAnniversaryMonth)), parseISO(emp.dateEmbauche!));
-                            return (
-                            <div key={emp.id} className="flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                <Avatar>
-                                    <AvatarImage src={emp.photoUrl} alt={emp.name} data-ai-hint="user avatar"/>
-                                    <AvatarFallback><Cake className="h-4 w-4" /></AvatarFallback>
-                                </Avatar>
-                                <div>
-                                    <p className="font-medium">{`${emp.lastName || ''} ${emp.firstName || ''}`.trim()}</p>
-                                    <p className="text-sm text-muted-foreground">{emp.poste}</p>
-                                </div>
-                                </div>
-                                <span className="text-sm font-semibold text-primary">{years} an{years > 1 ? 's' : ''}</span>
+                        <CardHeader className="flex-row items-start justify-between">
+                            <div>
+                                <CardTitle>Anniversaires d'Ancienneté</CardTitle>
+                                <CardDescription>Employés fêtant un anniversaire d'embauche.</CardDescription>
                             </div>
-                            )
-                        }) : <p className="text-sm text-muted-foreground text-center py-8">Aucun anniversaire pour cette période.</p>}
-                        </div>
-                        )}
-                    </CardContent>
+                            <div className="flex items-center gap-2">
+                                <div className="w-28">
+                                    <Select value={selectedAnniversaryMonth} onValueChange={setSelectedAnniversaryMonth}>
+                                        <SelectTrigger id="anniversary-month" aria-label="Mois"><SelectValue/></SelectTrigger>
+                                        <SelectContent>
+                                            {monthsForSelect.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="w-24">
+                                     <Select value={selectedAnniversaryYear} onValueChange={setSelectedAnniversaryYear}>
+                                        <SelectTrigger id="anniversary-year" aria-label="Année"><SelectValue/></SelectTrigger>
+                                        <SelectContent>
+                                            {anniversaryYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <Button variant="outline" size="icon" className="h-9 w-9" onClick={handlePrintAnniversaries} disabled={seniorityAnniversaries.length === 0}>
+                                    <Printer className="h-4 w-4" />
+                                    <span className="sr-only">Imprimer</span>
+                                </Button>
+                            </div>
+                        </CardHeader>
+                        <CardContent>
+                            {loading ? <Skeleton className="h-24 w-full" /> : (
+                            <div className="space-y-4">
+                            {seniorityAnniversaries.length > 0 ? seniorityAnniversaries.map(emp => {
+                                const years = differenceInYears(new Date(parseInt(selectedAnniversaryYear), parseInt(selectedAnniversaryMonth)), parseISO(emp.dateEmbauche!));
+                                return (
+                                <div key={emp.id} className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                    <Avatar>
+                                        <AvatarImage src={emp.photoUrl} alt={emp.name} data-ai-hint="user avatar"/>
+                                        <AvatarFallback><Cake className="h-4 w-4" /></AvatarFallback>
+                                    </Avatar>
+                                    <div>
+                                        <p className="font-medium">{`${emp.lastName || ''} ${emp.firstName || ''}`.trim()}</p>
+                                        <p className="text-sm text-muted-foreground">{emp.poste}</p>
+                                    </div>
+                                    </div>
+                                    <Badge>{years} an{years > 1 ? 's' : ''}</Badge>
+                                </div>
+                                )
+                            }) : <p className="text-sm text-muted-foreground text-center py-8">Aucun anniversaire pour cette période.</p>}
+                            </div>
+                            )}
+                        </CardContent>
                     </Card>
                      <Card className="lg:col-span-2 xl:col-span-1">
                      <CardHeader>

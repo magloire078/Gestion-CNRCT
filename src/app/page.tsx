@@ -64,16 +64,10 @@ const StatCard = ({ title, value, icon: Icon, description, href, loading }: Stat
 
 const LatestRecruitsCard = ({ employees, loading }: { employees: Employe[], loading: boolean }) => {
 
-    const getRecruitsByPrefix = (prefix: string, limit: number) => {
-        return employees
-            .filter(e => e.matricule && e.matricule.startsWith(prefix))
-            .sort((a, b) => new Date(b.dateEmbauche || 0).getTime() - new Date(a.dateEmbauche || 0).getTime())
-            .slice(0, limit);
-    };
-
-    const cadres = getRecruitsByPrefix('C 0', 3);
-    const chauffeurs = getRecruitsByPrefix('R 0', 3);
-    const operationnels = getRecruitsByPrefix('V O', 3);
+    const latestRecruits = employees
+        .filter(e => e.dateEmbauche)
+        .sort((a, b) => new Date(b.dateEmbauche!).getTime() - new Date(a.dateEmbauche!).getTime())
+        .slice(0, 5);
     
     const formatDate = (dateString?: string) => {
         if (!dateString) return 'N/A';
@@ -84,46 +78,34 @@ const LatestRecruitsCard = ({ employees, loading }: { employees: Employe[], load
         }
     }
 
-    const RecruitGroup = ({ title, recruits, description }: { title: string, recruits: Employe[], description?: string }) => (
-        <div className="space-y-3">
-            <div>
-                <h4 className="font-semibold text-sm">{title}</h4>
-                {description && <p className="text-xs text-muted-foreground">{description}</p>}
-            </div>
-            {recruits.length > 0 ? (
-                recruits.map(emp => (
-                    <div key={emp.id} className="flex items-center gap-3">
-                         <Avatar className="h-9 w-9">
-                            <AvatarImage src={emp.photoUrl} alt={emp.name} data-ai-hint="employee photo" />
-                            <AvatarFallback>{emp.lastName?.charAt(0)}</AvatarFallback>
-                        </Avatar>
-                        <div className="text-xs">
-                            <p className="font-medium text-sm">{`${emp.lastName || ''} ${emp.firstName || ''}`.trim()}</p>
-                            <p className="text-muted-foreground">{emp.poste} ({emp.matricule})</p>
-                            <p className="text-muted-foreground">
-                                Décision: {emp.Num_Decision || 'N/A'} du {formatDate(emp.dateEmbauche)}
-                            </p>
-                        </div>
-                    </div>
-                ))
-            ) : (
-                <p className="text-xs text-muted-foreground italic">Aucune recrue récente.</p>
-            )}
-        </div>
-    );
-
     return (
         <Card className="lg:col-span-1 xl:col-span-1">
             <CardHeader>
-                <CardTitle>Dernières Recrues</CardTitle>
-                <CardDescription>Aperçu des nouveaux employés par catégorie.</CardDescription>
+                <CardTitle>Derniers Arrivants</CardTitle>
+                <CardDescription>Aperçu des nouveaux employés.</CardDescription>
             </CardHeader>
             <CardContent>
                 {loading ? <Skeleton className="h-48 w-full" /> : (
-                    <div className="space-y-6">
-                        <RecruitGroup title="Cadres" recruits={cadres} />
-                        <RecruitGroup title="Chauffeurs Régionaux" recruits={chauffeurs} />
-                        <RecruitGroup title="Ouvriers" recruits={operationnels} />
+                    <div className="space-y-4">
+                        {latestRecruits.length > 0 ? (
+                            latestRecruits.map(emp => (
+                                <div key={emp.id} className="flex items-center gap-3">
+                                     <Avatar className="h-9 w-9">
+                                        <AvatarImage src={emp.photoUrl} alt={emp.name} data-ai-hint="employee photo" />
+                                        <AvatarFallback>{emp.lastName?.charAt(0)}</AvatarFallback>
+                                    </Avatar>
+                                    <div className="text-xs">
+                                        <p className="font-medium text-sm">{`${emp.lastName || ''} ${emp.firstName || ''}`.trim()}</p>
+                                        <p className="text-muted-foreground">{emp.poste}</p>
+                                        <p className="text-muted-foreground">
+                                            Embauché le : {formatDate(emp.dateEmbauche)}
+                                        </p>
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                             <p className="text-sm text-muted-foreground italic text-center py-10">Aucun nouvel employé récemment.</p>
+                        )}
                     </div>
                 )}
             </CardContent>

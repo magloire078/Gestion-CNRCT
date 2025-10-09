@@ -10,10 +10,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import type { Asset, OrganizationSettings } from "@/lib/data";
 import { AddAssetSheet } from "@/components/it-assets/add-asset-sheet";
-import { EditAssetSheet } from "@/components/it-assets/edit-asset-sheet";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { subscribeToAssets, addAsset, deleteAsset, updateAsset } from "@/services/asset-service";
+import { subscribeToAssets, addAsset, deleteAsset } from "@/services/asset-service";
 import { getOrganizationSettings } from "@/services/organization-service";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
@@ -65,9 +64,7 @@ export type AssetColumnKeys = keyof typeof allAssetColumns;
 export default function ItAssetsPage() {
   const [assets, setAssets] = useState<Asset[]>([]);
   const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
-  const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
-  const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
-
+  
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
@@ -90,11 +87,6 @@ export default function ItAssetsPage() {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   
   const canImport = hasPermission('feature:it-assets:import');
-
-  const openEditSheet = (asset: Asset) => {
-    setSelectedAsset(asset);
-    setIsEditSheetOpen(true);
-  };
 
   useEffect(() => {
     const unsubscribe = subscribeToAssets(
@@ -132,17 +124,6 @@ export default function ItAssetsPage() {
     } catch (err) {
       console.error("Failed to add asset:", err);
       throw err;
-    }
-  };
-
-  const handleUpdateAsset = async (tag: string, assetData: Partial<Asset>) => {
-    try {
-      await updateAsset(tag, assetData);
-      setIsEditSheetOpen(false);
-      toast({ title: "Actif mis à jour", description: "Les informations de l'actif ont été modifiées." });
-    } catch(err) {
-      console.error(err);
-      throw(err);
     }
   };
   
@@ -385,8 +366,10 @@ export default function ItAssetsPage() {
                                       </DropdownMenuTrigger>
                                       <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
                                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                          <DropdownMenuItem onSelect={() => openEditSheet(asset)}>
+                                          <DropdownMenuItem asChild>
+                                              <Link href={`/it-assets/${asset.tag}/edit`}>
                                                 <Pencil className="mr-2 h-4 w-4" /> Modifier
+                                              </Link>
                                           </DropdownMenuItem>
                                           <DropdownMenuItem onClick={() => setDeleteTarget(asset)} className="text-destructive focus:text-destructive">
                                               <Trash2 className="mr-2 h-4 w-4" /> Supprimer
@@ -410,7 +393,7 @@ export default function ItAssetsPage() {
                   paginatedAssets.map((asset) => {
                     const Icon = assetIcons[asset.type] || PackageIcon;
                     return (
-                      <Card key={asset.tag} onClick={() => openEditSheet(asset)} className="cursor-pointer">
+                      <Card key={asset.tag} onClick={() => router.push(`/it-assets/${asset.tag}/edit`)} className="cursor-pointer">
                         <CardContent className="p-4 space-y-2">
                           <div className="flex justify-between items-start">
                             <div>
@@ -455,14 +438,6 @@ export default function ItAssetsPage() {
           onClose={() => setIsAddSheetOpen(false)}
           onAddAsset={handleAddAsset}
         />
-        {selectedAsset && (
-            <EditAssetSheet
-                isOpen={isEditSheetOpen}
-                onClose={() => setIsEditSheetOpen(false)}
-                onUpdateAsset={handleUpdateAsset}
-                asset={selectedAsset}
-            />
-        )}
         <PrintAssetsDialog
             isOpen={isPrintDialogOpen}
             onClose={() => setIsPrintDialogOpen(false)}

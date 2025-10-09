@@ -4,6 +4,8 @@ import { collection, getDocs, addDoc, query, where, orderBy, doc, updateDoc, del
 import type { EmployeeEvent, Employe } from '@/lib/data';
 import { db } from '@/lib/firebase';
 import { getEmployee } from './employee-service';
+import { getPayslipDetails } from './payslip-details-service';
+import { parseISO } from 'date-fns';
 
 /**
  * Retrieves the professional history for a specific employee.
@@ -33,21 +35,24 @@ export async function addEmployeeHistoryEvent(employeeId: string, eventData: Omi
     let finalDetails = { ...eventData.details };
 
     if (eventData.eventType === 'Augmentation' && employee) {
-        const previousValues: Record<string, any> = {};
-        const indemnityFields = [
-            'baseSalary', 'primeAnciennete', 'indemniteTransportImposable', 'indemniteSujetion', 
-            'indemniteCommunication', 'indemniteRepresentation', 'indemniteResponsabilite', 
-            'indemniteLogement', 'transportNonImposable'
-        ];
-        
-        indemnityFields.forEach(field => {
-            previousValues[`previous_${field}`] = employee[field as keyof Employe] || 0;
-        });
-        
-        // Add employee's hire date to details for consistent seniority calculation
-        previousValues['employeeHireDate'] = employee.dateEmbauche;
-        previousValues['cnpsEnabled'] = employee.CNPS;
+        // Use the payslip service to get the true state before the effective date
+        const dayBefore = parseISO(eventData.effectiveDate);
+        dayBefore.setDate(dayBefore.getDate() - 1);
+        const previousState = await getPayslipDetails(employee, dayBefore.toISOString().split('T')[0]);
 
+        const previousValues: Record<string, any> = {
+            previous_baseSalary: previousState.earnings.find(e => e.label === 'SALAIRE DE BASE')?.amount || 0,
+            previous_primeAnciennete: previousState.earnings.find(e => e.label === 'PRIME D\'ANCIENNETE')?.amount || 0,
+            previous_indemniteTransportImposable: previousState.earnings.find(e => e.label === 'INDEMNITE DE TRANSPORT IMPOSABLE')?.amount || 0,
+            previous_indemniteResponsabilite: previousState.earnings.find(e => e.label === 'INDEMNITE DE RESPONSABILITE')?.amount || 0,
+            previous_indemniteLogement: previousState.earnings.find(e => e.label === 'INDEMNITE DE LOGEMENT')?.amount || 0,
+            previous_indemniteSujetion: previousState.earnings.find(e => e.label === 'INDEMNITE DE SUJETION')?.amount || 0,
+            previous_indemniteCommunication: previousState.earnings.find(e => e.label === 'INDEMNITE DE COMMUNICATION')?.amount || 0,
+            previous_indemniteRepresentation: previousState.earnings.find(e => e.label === 'INDEMNITE DE REPRESENTATION')?.amount || 0,
+            previous_transportNonImposable: previousState.totals.transportNonImposable.amount || 0,
+            employeeHireDate: employee.dateEmbauche,
+            cnpsEnabled: employee.CNPS,
+        };
 
         finalDetails = { 
             ...finalDetails, 
@@ -74,6 +79,11 @@ export async function addEmployeeHistoryEvent(employeeId: string, eventData: Omi
                 (salaryUpdates as any)[field] = Number(eventData.details![field]);
             }
         });
+
+        // Also update primeAnciennete if it was manually set
+        if (eventData.details.primeAnciennete !== undefined) {
+            salaryUpdates.primeAnciennete = Number(eventData.details.primeAnciennete);
+        }
 
         if (Object.keys(salaryUpdates).length > 0) {
             await updateDoc(employeeDocRef, salaryUpdates);

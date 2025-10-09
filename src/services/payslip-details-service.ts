@@ -130,28 +130,7 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
         }
         
         // If no augmentation history at all, or if the payslip date is after the last event,
-        // check if payslip date is in the current month/year. If so, use current data.
-        // Otherwise, it's a historical date before any recorded changes, so we assume the earliest known salary.
-        const today = new Date();
-        if (payslipDateObj.getFullYear() === today.getFullYear() && payslipDateObj.getMonth() === today.getMonth()) {
-            return currentEmployeeStructure;
-        }
-
-        // If it's a past date with no applicable augmentation event, use the "oldest" known salary structure.
-        if (oldestEvent?.details) {
-            return {
-                baseSalary: Number(oldestEvent.details.previous_baseSalary || 0),
-                indemniteTransportImposable: Number(oldestEvent.details.previous_indemniteTransportImposable || 0),
-                indemniteResponsabilite: Number(oldestEvent.details.previous_indemniteResponsabilite || 0),
-                indemniteLogement: Number(oldestEvent.details.previous_indemniteLogement || 0),
-                indemniteSujetion: Number(oldestEvent.details.previous_indemniteSujetion || 0),
-                indemniteCommunication: Number(oldestEvent.details.previous_indemniteCommunication || 0),
-                indemniteRepresentation: Number(oldestEvent.details.previous_indemniteRepresentation || 0),
-                transportNonImposable: Number(oldestEvent.details.previous_transportNonImposable || 0),
-            };
-        }
-        
-        // Fallback to current structure if no history exists at all
+        // use current employee data.
         return currentEmployeeStructure;
     };
     
@@ -239,5 +218,3 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
         organizationLogos
     };
 }
-
-    

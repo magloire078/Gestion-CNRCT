@@ -8,6 +8,7 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -19,6 +20,7 @@ import { subscribeToCustoms, addCustom, deleteCustom } from "@/services/customs-
 import { AddCustomSheet } from "@/components/customs/add-custom-sheet";
 import { ConfirmationDialog } from "@/components/common/confirmation-dialog";
 import Link from 'next/link';
+import { useRouter } from "next/navigation";
 
 export default function UsEtCoutumesPage() {
   const [customs, setCustoms] = useState<Custom[]>([]);
@@ -28,6 +30,7 @@ export default function UsEtCoutumesPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
   const [deleteTarget, setDeleteTarget] = useState<Custom | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     const unsubscribe = subscribeToCustoms(
@@ -119,24 +122,27 @@ export default function UsEtCoutumesPage() {
               Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-48 w-full" />)
             ) : filteredCustoms.length > 0 ? (
               filteredCustoms.map((custom) => (
-                <Card key={custom.id}>
+                <Card key={custom.id} className="flex flex-col hover:shadow-md transition-shadow">
                     <CardHeader>
                         <CardTitle className="flex items-center justify-between">
                             {custom.ethnicGroup}
-                            <div className="flex gap-1">
-                                <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
-                                    <Link href={`/us-et-coutumes/${custom.id}/edit`}><Edit className="h-4 w-4"/></Link>
-                                </Button>
-                                 <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDeleteTarget(custom)}>
-                                    <Trash2 className="h-4 w-4 text-destructive"/>
-                                </Button>
-                            </div>
                         </CardTitle>
                         <CardDescription>{custom.regions}</CardDescription>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="flex-grow">
                         <p className="text-sm text-muted-foreground line-clamp-3 h-[60px]">{custom.historicalOrigin || "Aucune description."}</p>
                     </CardContent>
+                    <CardFooter className="mt-auto pt-4 flex justify-end gap-2">
+                        <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); setDeleteTarget(custom); }}>
+                            <Trash2 className="mr-2 h-4 w-4 text-destructive"/> Supprimer
+                        </Button>
+                         <Button variant="outline" size="sm" asChild>
+                            <Link href={`/us-et-coutumes/${custom.id}/edit`}><Edit className="mr-2 h-4 w-4"/> Modifier</Link>
+                        </Button>
+                         <Button size="sm" asChild>
+                           <Link href={`/us-et-coutumes/${custom.id}`}><Eye className="mr-2 h-4 w-4"/> Voir</Link>
+                        </Button>
+                    </CardFooter>
                 </Card>
               ))
             ) : (

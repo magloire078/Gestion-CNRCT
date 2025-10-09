@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { PlusCircle, Search, Sparkles, Loader2, List, Map, MoreHorizontal, Pencil } from "lucide-react";
+import { PlusCircle, Search, Sparkles, Loader2, List, Map, MoreHorizontal, Pencil, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -30,13 +30,13 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
 import type { Conflict, Chief, ConflictType } from "@/lib/data";
 import { AddConflictSheet } from "@/components/conflicts/add-conflict-sheet";
-import { EditConflictSheet } from "@/components/conflicts/edit-conflict-sheet";
 import { Input } from "@/components/ui/input";
-import { subscribeToConflicts, addConflict, updateConflict } from "@/services/conflict-service";
+import { subscribeToConflicts, addConflict } from "@/services/conflict-service";
 import { getChiefs } from "@/services/chief-service";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
@@ -66,9 +66,7 @@ export default function ConflictsPage() {
   const [conflicts, setConflicts] = useState<Conflict[] | null>(null);
   const [chiefs, setChiefs] = useState<Chief[] | null>(null);
   const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
-  const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
-  const [editingTarget, setEditingTarget] = useState<Conflict | null>(null);
-
+  
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
@@ -121,20 +119,6 @@ export default function ConflictsPage() {
      }
   };
   
-   const handleUpdateConflict = async (id: string, data: Partial<Omit<Conflict, 'id'>>) => {
-     try {
-        await updateConflict(id, data);
-        setIsEditSheetOpen(false);
-        setEditingTarget(null);
-        toast({
-            title: "Conflit mis à jour",
-        });
-     } catch (err) {
-        console.error("Failed to update conflict:", err);
-        throw err;
-     }
-  };
-
   const handleAnalyzeConflict = async (conflict: Conflict) => {
     setCurrentConflict(conflict);
     setIsAnalysisDialogOpen(true);
@@ -154,12 +138,6 @@ export default function ConflictsPage() {
         setIsAiLoading(false);
     }
   }
-
-  const openEditSheet = (conflict: Conflict) => {
-    setEditingTarget(conflict);
-    setIsEditSheetOpen(true);
-  };
-
 
   const filteredConflicts = useMemo(() => {
     if (!conflicts) return [];
@@ -266,8 +244,10 @@ export default function ConflictsPage() {
                                             <Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="end">
-                                            <DropdownMenuItem onSelect={() => openEditSheet(conflict)}>
+                                            <DropdownMenuItem asChild>
+                                              <Link href={`/conflicts/${conflict.id}/edit`}>
                                                 <Pencil className="mr-2 h-4 w-4"/> Modifier
+                                              </Link>
                                             </DropdownMenuItem>
                                             <DropdownMenuItem onSelect={() => handleAnalyzeConflict(conflict)}>
                                                 <Sparkles className="mr-2 h-4 w-4" /> Analyser avec IA
@@ -302,12 +282,16 @@ export default function ConflictsPage() {
                                     <p className="text-sm"><span className="font-medium">Médiateur:</span> {conflict.mediatorName || 'Non assigné'}</p>
                                     <p className="text-sm text-muted-foreground">{conflict.description}</p>
                                     <p className="text-sm"><span className="font-medium">Signalé le:</span> {conflict.reportedDate}</p>
-                                    <Button variant="outline" size="sm" onClick={() => openEditSheet(conflict)} className="mt-2 mr-2">
-                                        <Pencil className="mr-2 h-4 w-4" /> Modifier
-                                    </Button>
-                                    <Button variant="outline" size="sm" onClick={() => handleAnalyzeConflict(conflict)} className="mt-2">
-                                        <Sparkles className="mr-2 h-4 w-4" /> Analyser
-                                    </Button>
+                                    <div className="flex gap-2 pt-2">
+                                        <Button variant="outline" size="sm" asChild>
+                                          <Link href={`/conflicts/${conflict.id}/edit`}>
+                                            <Pencil className="mr-2 h-4 w-4" /> Modifier
+                                          </Link>
+                                        </Button>
+                                        <Button variant="outline" size="sm" onClick={() => handleAnalyzeConflict(conflict)}>
+                                            <Sparkles className="mr-2 h-4 w-4" /> Analyser
+                                        </Button>
+                                    </div>
                                 </CardContent>
                             </Card>
                         ))
@@ -361,14 +345,7 @@ export default function ConflictsPage() {
         onClose={() => setIsAddSheetOpen(false)}
         onAddConflict={handleAddConflict}
       />
-      {editingTarget && (
-        <EditConflictSheet
-            isOpen={isEditSheetOpen}
-            onClose={() => setIsEditSheetOpen(false)}
-            onUpdateConflict={handleUpdateConflict}
-            conflict={editingTarget}
-        />
-      )}
+      
       <AlertDialog open={isAnalysisDialogOpen} onOpenChange={setIsAnalysisDialogOpen}>
         <AlertDialogContent className="max-w-2xl">
             <AlertDialogHeader>

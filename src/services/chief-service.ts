@@ -1,5 +1,4 @@
 
-
 import { collection, getDocs, addDoc, onSnapshot, Unsubscribe, query, orderBy, deleteDoc, doc, updateDoc, getDoc, writeBatch, where, setDoc, limit } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import type { Chief } from '@/lib/data';
@@ -99,6 +98,12 @@ const defaultChiefs: Omit<Chief, 'id'>[] = [
   { name: "N'GUESSAN KOFFI", lastName: "N'GUESSAN", firstName: "KOFFI", title: "CHEF DE VILLAGE", role: "Chef de Village", village: "ADJUE-YAOKRO", region: "GBEKE", department: "SAKASSOU", subPrefecture: "AYAOU-SRAN", contact: "", bio: "ARRETE N° 506/P.BKE/SG/S.LET", photoUrl: "https://placehold.co/100x100.png" },
   { name: "KOUAKOU KAN", lastName: "KOUAKOU", firstName: "KAN", title: "CHEF DE VILLAGE", role: "Chef de Village", village: "KOKO-KOUAKOUKRO", region: "GBEKE", department: "SAKASSOU", subPrefecture: "SAKASSOU", contact: "", bio: "ARRETE N° 515/P.BKE/SG/S.LET", photoUrl: "https://placehold.co/100x100.png" },
   { name: "YAO KOUAKOU", lastName: "YAO", firstName: "KOUAKOU", title: "CHEF DE VILLAGE", role: "Chef de Village", village: "FOUEKRO-YAOKRO", region: "GBEKE", department: "SAKASSOU", subPrefecture: "SAKASSOU", contact: "", bio: "ARRETE N° 516/P.BKE/SG/S.LET", photoUrl: "https://placehold.co/100x100.png" },
+  { name: "AKA KOUADIO", lastName: "AKA", firstName: "KOUADIO", title: "CHEF DU VILLAGE", role: "Chef de Village", village: "M'POZAKRO", region: "INDENIE-DJUABLIN", department: "ABENGOUROU", subPrefecture: "AMELAKIA", bio: "ARRETE N° 007/PA/CAB", photoUrl: "https://placehold.co/100x100.png", contact: "" },
+  { name: "ADOU KOUA", lastName: "ADOU", firstName: "KOUA", title: "CHEF DU VILLAGE", role: "Chef de Village", village: "PADIENAN", region: "INDENIE-DJUABLIN", department: "ABENGOUROU", subPrefecture: "ABENGOUROU", bio: "ARRETE N° 001/P.ABGO/SG", photoUrl: "https://placehold.co/100x100.png", contact: "" },
+  { name: "KAMAGATE ADAMA", lastName: "KAMAGATE", firstName: "ADAMA", title: "CHEF DU VILLAGE", role: "Chef de Village", village: "MASSAMANKRO", region: "INDENIE-DJUABLIN", department: "ABENGOUROU", subPrefecture: "NIABLE", bio: "N° 002/P.ABGO/SG", photoUrl: "https://placehold.co/100x100.png", contact: "" },
+  { name: "KOUADIO BOSSON", lastName: "KOUADIO", firstName: "BOSSON", title: "CHEF DU VILLAGE", role: "Chef de Village", village: "APOUESSO", region: "INDENIE-DJUABLIN", department: "ABENGOUROU", subPrefecture: "ABENGOUROU", bio: "N°003/P.ABGO/SG", photoUrl: "https://placehold.co/100x100.png", contact: "" },
+  { name: "TANO KASSI", lastName: "TANO", firstName: "KASSI", title: "CHEF DU VILLAGE", role: "Chef de Village", village: "KOUADIO-ADJEI", region: "INDENIE-DJUABLIN", department: "ABENGOUROU", subPrefecture: "NIABLE", bio: "N°004/P.ABGO/SG", photoUrl: "https://placehold.co/100x100.png", contact: "" },
+  { name: "KOUAKOU ADOU", lastName: "KOUAKOU", firstName: "ADOU", title: "CHEF DE VILLAGE", role: "Chef de Village", village: "SOUBIS", region: "INDENIE-DJUABLIN", department: "ABENGOUROU", subPrefecture: "ABENGOUROU", bio: "N°005/P.ABGO/SG", photoUrl: "https://placehold.co/100x100.png", contact: "" },
 ];
 
 export async function initializeDefaultChiefs() {

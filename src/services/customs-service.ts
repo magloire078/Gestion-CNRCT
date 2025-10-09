@@ -1,5 +1,5 @@
 
-import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, onSnapshot, Unsubscribe, query, orderBy } from 'firebase/firestore';
+import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, onSnapshot, Unsubscribe, query, orderBy, getDoc } from 'firebase/firestore';
 import type { Custom } from '@/lib/data';
 import { db } from '@/lib/firebase';
 
@@ -24,6 +24,15 @@ export function subscribeToCustoms(
         }
     );
     return unsubscribe;
+}
+
+export async function getCustom(id: string): Promise<Custom | null> {
+    const docRef = doc(db, 'customs', id);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+        return { id: docSnap.id, ...docSnap.data() } as Custom;
+    }
+    return null;
 }
 
 export async function addCustom(customData: Omit<Custom, 'id'>): Promise<Custom> {

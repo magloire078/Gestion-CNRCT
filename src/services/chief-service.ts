@@ -224,7 +224,7 @@ export async function batchAddChiefs(chiefs: Omit<Chief, 'id'>[]): Promise<numbe
 
 export async function updateChief(id: string, chiefData: Partial<Omit<Chief, 'id'>>, photoFile: File | null): Promise<void> {
     const chiefDocRef = doc(db, 'chiefs', id);
-    const updateData = { ...chiefData };
+    const updateData: { [key: string]: any } = { ...chiefData };
 
     if (photoFile) {
         const photoRef = ref(storage, `chief_photos/${id}/${photoFile.name}`);
@@ -269,3 +269,5 @@ export async function deleteChief(id: string): Promise<void> {
         throw error;
     }
 }
+
+    

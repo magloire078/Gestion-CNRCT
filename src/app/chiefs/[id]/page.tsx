@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Pencil, User, MapPin, Phone, Crown, Calendar, Users, Building, Shield } from "lucide-react";
+import { ArrowLeft, Pencil, User, MapPin, Phone, Crown, Calendar, Users, Building, Shield, Mail, Landmark, Milestone, Languages, FileText } from "lucide-react";
 import { Label } from "@/components/ui/label";
 
 export default function ChiefDetailPage() {
@@ -96,12 +96,18 @@ export default function ChiefDetailPage() {
                             <Badge variant="secondary" className="mt-2">{chief.role}</Badge>
                         </CardContent>
                     </Card>
+                    <Card className="mt-6">
+                        <CardHeader><CardTitle className="flex items-center gap-2 text-xl"><Phone className="h-5 w-5 text-primary"/> Contact</CardTitle></CardHeader>
+                        <CardContent className="space-y-4">
+                            <InfoItem label="Téléphone" value={chief.contact} />
+                            <InfoItem label="Email" value={chief.email} />
+                            <InfoItem label="Adresse" value={chief.address} />
+                        </CardContent>
+                    </Card>
                 </div>
                 <div className="lg:col-span-2 space-y-6">
                      <Card>
-                         <CardHeader>
-                             <CardTitle className="flex items-center gap-2 text-xl"><MapPin className="h-5 w-5 text-primary"/> Localisation</CardTitle>
-                        </CardHeader>
+                         <CardHeader><CardTitle className="flex items-center gap-2 text-xl"><MapPin className="h-5 w-5 text-primary"/> Localisation</CardTitle></CardHeader>
                         <CardContent className="grid grid-cols-2 gap-4">
                             <InfoItem label="Région" value={chief.region} icon={Shield} />
                             <InfoItem label="Département" value={chief.department} icon={Building} />
@@ -112,33 +118,34 @@ export default function ChiefDetailPage() {
                             }
                         </CardContent>
                     </Card>
-
                     <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2 text-xl"><User className="h-5 w-5 text-primary"/> Informations Personnelles</CardTitle>
-                        </CardHeader>
+                        <CardHeader><CardTitle className="flex items-center gap-2 text-xl"><User className="h-5 w-5 text-primary"/> Informations Personnelles</CardTitle></CardHeader>
                         <CardContent className="grid grid-cols-2 gap-4">
-                            <InfoItem label="Contact" value={chief.contact} icon={Phone} />
                             <InfoItem label="Date de naissance" value={formatDate(chief.dateOfBirth)} icon={Calendar} />
+                            <InfoItem label="Sexe" value={chief.sexe} />
                             {parentChief && (
                                 <InfoItem label="Autorité Supérieure" value={`${parentChief.lastName || ''} ${parentChief.firstName || ''}`} icon={Users} />
                             )}
-                            {chief.regencyStartDate && (
-                                <InfoItem label="Début de régence" value={formatDate(chief.regencyStartDate)} icon={Calendar} />
-                            )}
-                            {chief.regencyEndDate && (
-                                <InfoItem label="Fin de régence / Décès" value={formatDate(chief.regencyEndDate)} icon={Calendar} />
-                            )}
+                             <InfoItem label="Groupe ethnique" value={chief.ethnicGroup} icon={Users} />
+                             <InfoItem label="Langues" value={chief.languages?.join(', ')} icon={Languages} />
                         </CardContent>
                     </Card>
-                    
-                    {chief.bio && (
+                     <Card>
+                        <CardHeader><CardTitle className="flex items-center gap-2 text-xl"><Landmark className="h-5 w-5 text-primary"/> Chefferie & Statut Légal</CardTitle></CardHeader>
+                        <CardContent className="grid grid-cols-2 gap-4">
+                             <InfoItem label="Date de désignation" value={formatDate(chief.designationDate)} icon={Milestone} />
+                             <InfoItem label="Mode de désignation" value={chief.designationMode} />
+                             <InfoItem label="N° d'enregistrement CNRCT" value={chief.cnrctRegistrationNumber} />
+                             <InfoItem label="Début de régence" value={formatDate(chief.regencyStartDate)} icon={Calendar} />
+                             <InfoItem label="Fin de régence / Décès" value={formatDate(chief.regencyEndDate)} icon={Calendar} />
+                        </CardContent>
+                    </Card>
+                    {(chief.bio || chief.officialDocuments) && (
                          <Card>
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-2 text-xl"><Crown className="h-5 w-5 text-primary"/> Biographie & Notes</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <p className="text-sm text-muted-foreground whitespace-pre-wrap">{chief.bio}</p>
+                            <CardHeader><CardTitle className="flex items-center gap-2 text-xl"><Crown className="h-5 w-5 text-primary"/> Biographie & Documents</CardTitle></CardHeader>
+                            <CardContent className="space-y-4">
+                                {chief.bio && <InfoItem label="Biographie / Us et coutumes"><p className="text-sm text-muted-foreground whitespace-pre-wrap mt-1">{chief.bio}</p></InfoItem>}
+                                {chief.officialDocuments && <InfoItem label="Documents officiels"><p className="text-sm text-muted-foreground whitespace-pre-wrap mt-1">{chief.officialDocuments}</p></InfoItem>}
                             </CardContent>
                         </Card>
                     )}

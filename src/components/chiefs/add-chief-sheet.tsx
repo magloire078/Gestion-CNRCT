@@ -22,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { Chief, ChiefRole } from "@/lib/data";
+import type { Chief, ChiefRole, DesignationMode } from "@/lib/data";
 import { getChiefs } from "@/services/chief-service";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Upload } from "lucide-react";
@@ -47,6 +47,14 @@ export function AddChiefSheet({ isOpen, onClose, onAddChief }: AddChiefDialogPro
   const [lastName, setLastName] = useState("");
   const [title, setTitle] = useState("");
   const [role, setRole] = useState<ChiefRole>("Chef de Village");
+  const [designationDate, setDesignationDate] = useState("");
+  const [designationMode, setDesignationMode] = useState<DesignationMode | "">("");
+  const [ethnicGroup, setEthnicGroup] = useState("");
+  const [languages, setLanguages] = useState("");
+  const [cnrctRegistrationNumber, setCnrctRegistrationNumber] = useState("");
+  const [officialDocuments, setOfficialDocuments] = useState("");
+  const [email, setEmail] = useState("");
+  const [address, setAddress] = useState("");
   const [sexe, setSexe] = useState<Chief['sexe'] | "">("");
   const [contact, setContact] = useState("");
   const [bio, setBio] = useState("");
@@ -105,6 +113,8 @@ export function AddChiefSheet({ isOpen, onClose, onAddChief }: AddChiefDialogPro
     setLatitude(''); setLongitude('');
     setParentChiefId(null); setDateOfBirth("");
     setRegencyStartDate(""); setRegencyEndDate(""); setError("");
+    setDesignationDate(""); setDesignationMode(""); setEthnicGroup(""); setLanguages("");
+    setCnrctRegistrationNumber(""); setOfficialDocuments(""); setEmail(""); setAddress("");
     if(fileInputRef.current) fileInputRef.current.value = "";
   }
 
@@ -146,12 +156,20 @@ export function AddChiefSheet({ isOpen, onClose, onAddChief }: AddChiefDialogPro
             lastName,
             title,
             role,
+            designationDate: designationDate || undefined,
+            designationMode: designationMode as DesignationMode,
             sexe: sexe as Chief['sexe'],
             region: finalRegion,
             department: finalDepartment,
             subPrefecture: finalSubPrefecture,
             village: finalVillage,
+            ethnicGroup: ethnicGroup || undefined,
+            languages: languages ? languages.split(',').map(s => s.trim()) : undefined,
             contact,
+            email: email || undefined,
+            address: address || undefined,
+            cnrctRegistrationNumber: cnrctRegistrationNumber || undefined,
+            officialDocuments: officialDocuments || undefined,
             bio,
             photoUrl: '', // This will be set by the service after upload
         };
@@ -175,7 +193,7 @@ export function AddChiefSheet({ isOpen, onClose, onAddChief }: AddChiefDialogPro
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open) handleClose(); }}>
-      <DialogContent className="sm:max-w-2xl">
+      <DialogContent className="sm:max-w-3xl">
         <DialogHeader>
           <DialogTitle>Ajouter un nouveau Chef</DialogTitle>
           <DialogDescription>
@@ -183,13 +201,13 @@ export function AddChiefSheet({ isOpen, onClose, onAddChief }: AddChiefDialogPro
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <ScrollArea className="h-[60vh] p-1 -mr-6 pr-6">
-            <Accordion type="multiple" defaultValue={['item-1', 'item-2', 'item-3']} className="w-full">
+          <ScrollArea className="h-[65vh] p-1 -mr-6 pr-6">
+            <Accordion type="multiple" defaultValue={['item-1', 'item-2', 'item-3', 'item-4', 'item-5']} className="w-full">
               <AccordionItem value="item-1">
-                <AccordionTrigger>Informations Principales</AccordionTrigger>
+                <AccordionTrigger>Identité</AccordionTrigger>
                 <AccordionContent>
-                  <div className="grid gap-4 pt-4">
-                    <div className="flex items-center gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
+                    <div className="space-y-2 col-span-2 flex items-center gap-4">
                         <Label>Photo</Label>
                         <Avatar className="h-16 w-16"><AvatarImage src={photoPreview} alt="Aperçu de la photo" data-ai-hint="chief portrait" /><AvatarFallback>{lastName ? lastName.charAt(0) : 'C'}</AvatarFallback></Avatar>
                         <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}><Upload className="mr-2 h-4 w-4" />Télécharger</Button>
@@ -197,16 +215,20 @@ export function AddChiefSheet({ isOpen, onClose, onAddChief }: AddChiefDialogPro
                     </div>
                     <div><Label htmlFor="lastName">Nom</Label><Input id="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} required /></div>
                     <div><Label htmlFor="firstName">Prénom(s)</Label><Input id="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} required /></div>
-                    <div><Label htmlFor="title">Titre</Label><Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Ex: Roi des N'zima" required /></div>
-                    <div><Label htmlFor="role">Rôle</Label><Select value={role} onValueChange={(v: ChiefRole) => setRole(v)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Chef de Village">Chef de Village</SelectItem><SelectItem value="Chef de Canton">Chef de Canton</SelectItem><SelectItem value="Roi">Roi</SelectItem></SelectContent></Select></div>
-                    <div><Label htmlFor="parentChief">Chef Supérieur</Label><Select value={parentChiefId ?? 'none'} onValueChange={(v) => setParentChiefId(v === 'none' ? null : v)}><SelectTrigger><SelectValue placeholder="Aucun (optionnel)" /></SelectTrigger><SelectContent><SelectItem value="none">Aucun</SelectItem>{allChiefs.map(c => <SelectItem key={c.id} value={c.id}>{`${c.lastName || ''} ${c.firstName || ''}`} ({c.title})</SelectItem>)}</SelectContent></Select></div>
+                    <div><Label htmlFor="title">Titre traditionnel</Label><Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Ex: Roi des N'zima" required /></div>
+                    <div><Label htmlFor="role">Rôle</Label><Select value={role} onValueChange={(v: ChiefRole) => setRole(v)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Roi">Roi</SelectItem><SelectItem value="Chef de province">Chef de province</SelectItem><SelectItem value="Chef de canton">Chef de canton</SelectItem><SelectItem value="Chef de tribu">Chef de tribu</SelectItem><SelectItem value="Chef de Village">Chef de Village</SelectItem></SelectContent></Select></div>
+                    <div><Label htmlFor="designationDate">Date de désignation</Label><Input id="designationDate" type="date" value={designationDate} onChange={e => setDesignationDate(e.target.value)} /></div>
+                    <div><Label htmlFor="designationMode">Mode de désignation</Label><Select value={designationMode} onValueChange={(v: DesignationMode) => setDesignationMode(v)}><SelectTrigger><SelectValue placeholder="Sélectionnez..."/></SelectTrigger><SelectContent><SelectItem value="Héritage">Héritage</SelectItem><SelectItem value="Élection">Élection</SelectItem><SelectItem value="Nomination coutumière">Nomination coutumière</SelectItem><SelectItem value="Autre">Autre</SelectItem></SelectContent></Select></div>
+                    <div><Label htmlFor="parentChief">Autorité Supérieure</Label><Select value={parentChiefId ?? 'none'} onValueChange={(v) => setParentChiefId(v === 'none' ? null : v)}><SelectTrigger><SelectValue placeholder="Aucun (optionnel)" /></SelectTrigger><SelectContent><SelectItem value="none">Aucun</SelectItem>{allChiefs.map(c => <SelectItem key={c.id} value={c.id}>{`${c.lastName || ''} ${c.firstName || ''}`} ({c.title})</SelectItem>)}</SelectContent></Select></div>
+                    <div><Label htmlFor="dateOfBirth">Date de Naissance</Label><Input id="dateOfBirth" type="date" value={dateOfBirth} onChange={(e) => setDateOfBirth(e.target.value)} /></div>
+                    <div><Label htmlFor="sexe">Sexe</Label><Select value={sexe} onValueChange={(value: Chief['sexe']) => setSexe(value)}><SelectTrigger><SelectValue placeholder="Sélectionnez..." /></SelectTrigger><SelectContent><SelectItem value="Homme">Homme</SelectItem><SelectItem value="Femme">Femme</SelectItem><SelectItem value="Autre">Autre</SelectItem></SelectContent></Select></div>
                   </div>
                 </AccordionContent>
               </AccordionItem>
-              <AccordionItem value="item-2">
+               <AccordionItem value="item-2">
                 <AccordionTrigger>Localisation</AccordionTrigger>
                 <AccordionContent>
-                  <div className="grid gap-4 pt-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
                     <div><Label htmlFor="region">Région</Label><Select value={selectedRegion} onValueChange={v => {setSelectedRegion(v); setSelectedDepartment(''); setSelectedSubPrefecture(''); setSelectedVillage('');}}><SelectTrigger><SelectValue placeholder="Sélectionnez une région..." /></SelectTrigger><SelectContent>{Object.keys(divisions).map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}<SelectItem value="AUTRE">Autre...</SelectItem></SelectContent></Select></div>
                     {selectedRegion === 'AUTRE' && <div><Label htmlFor="customRegion">Nouvelle Région</Label><Input id="customRegion" value={customRegion} onChange={e => setCustomRegion(e.target.value)} placeholder="Nom de la nouvelle région" /></div>}
 
@@ -219,23 +241,39 @@ export function AddChiefSheet({ isOpen, onClose, onAddChief }: AddChiefDialogPro
                     <div><Label htmlFor="village">Village/Commune</Label><Select value={selectedVillage} onValueChange={setSelectedVillage} disabled={!selectedSubPrefecture || selectedSubPrefecture === 'AUTRE'}><SelectTrigger><SelectValue placeholder="Sélectionnez un village..." /></SelectTrigger><SelectContent>{villages.map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}<SelectItem value="AUTRE">Autre...</SelectItem></SelectContent></Select></div>
                     {selectedVillage === 'AUTRE' && <div><Label htmlFor="customVillage">Nouveau Village</Label><Input id="customVillage" value={customVillage} onChange={e => setCustomVillage(e.target.value)} placeholder="Nom du nouveau village" /></div>}
                     
-                    <div className="grid grid-cols-2 gap-4">
-                        <div><Label htmlFor="latitude">Latitude</Label><Input id="latitude" type="number" step="any" value={latitude} onChange={(e) => setLatitude(e.target.value === '' ? '' : parseFloat(e.target.value))} placeholder="Ex: 5.345" /></div>
-                        <div><Label htmlFor="longitude">Longitude</Label><Input id="longitude" type="number" step="any" value={longitude} onChange={(e) => setLongitude(e.target.value === '' ? '' : parseFloat(e.target.value))} placeholder="Ex: -4.028" /></div>
-                    </div>
+                    <div><Label htmlFor="latitude">Latitude</Label><Input id="latitude" type="number" step="any" value={latitude} onChange={(e) => setLatitude(e.target.value === '' ? '' : parseFloat(e.target.value))} placeholder="Ex: 5.345" /></div>
+                    <div><Label htmlFor="longitude">Longitude</Label><Input id="longitude" type="number" step="any" value={longitude} onChange={(e) => setLongitude(e.target.value === '' ? '' : parseFloat(e.target.value))} placeholder="Ex: -4.028" /></div>
                   </div>
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="item-3">
-                <AccordionTrigger>Informations Additionnelles</AccordionTrigger>
+                <AccordionTrigger>Affiliation Culturelle</AccordionTrigger>
                 <AccordionContent>
-                   <div className="grid gap-4 pt-4">
-                        <div><Label htmlFor="sexe">Sexe</Label><Select value={sexe} onValueChange={(value: Chief['sexe']) => setSexe(value)}><SelectTrigger><SelectValue placeholder="Sélectionnez..." /></SelectTrigger><SelectContent><SelectItem value="Homme">Homme</SelectItem><SelectItem value="Femme">Femme</SelectItem><SelectItem value="Autre">Autre</SelectItem></SelectContent></Select></div>
-                        <div><Label htmlFor="dateOfBirth">Date de Naissance</Label><Input id="dateOfBirth" type="date" value={dateOfBirth} onChange={(e) => setDateOfBirth(e.target.value)} /></div>
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
+                        <div><Label htmlFor="ethnicGroup">Groupe ethnique</Label><Input id="ethnicGroup" value={ethnicGroup} onChange={e => setEthnicGroup(e.target.value)} /></div>
+                        <div><Label htmlFor="languages">Langue(s) parlée(s)</Label><Input id="languages" value={languages} onChange={e => setLanguages(e.target.value)} placeholder="Séparées par une virgule"/></div>
+                        <div className="col-span-2"><Label htmlFor="bio">Biographie / Us et coutumes</Label><Textarea id="bio" value={bio} onChange={(e) => setBio(e.target.value)} rows={3} placeholder="Brève biographie, historique, us et coutumes..."/></div>
+                   </div>
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="item-4">
+                <AccordionTrigger>Contact</AccordionTrigger>
+                <AccordionContent>
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
+                        <div><Label htmlFor="contact">Numéro de téléphone</Label><Input id="contact" type="text" value={contact} onChange={(e) => setContact(e.target.value)} /></div>
+                        <div><Label htmlFor="email">Adresse email</Label><Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} /></div>
+                        <div className="col-span-2"><Label htmlFor="address">Adresse postale</Label><Input id="address" value={address} onChange={e => setAddress(e.target.value)} /></div>
+                   </div>
+                </AccordionContent>
+              </AccordionItem>
+                <AccordionItem value="item-5">
+                <AccordionTrigger>Informations Légales</AccordionTrigger>
+                <AccordionContent>
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
+                        <div><Label htmlFor="cnrctRegistrationNumber">N° d'enregistrement CNRCT</Label><Input id="cnrctRegistrationNumber" value={cnrctRegistrationNumber} onChange={e => setCnrctRegistrationNumber(e.target.value)} /></div>
+                        <div className="col-span-2"><Label htmlFor="officialDocuments">Documents officiels</Label><Textarea id="officialDocuments" value={officialDocuments} onChange={(e) => setOfficialDocuments(e.target.value)} rows={2} placeholder="Listez les décrets, arrêtés..."/></div>
                         <div><Label htmlFor="regencyStartDate">Début de Régence</Label><Input id="regencyStartDate" type="date" value={regencyStartDate} onChange={(e) => setRegencyStartDate(e.target.value)} /></div>
                         <div><Label htmlFor="regencyEndDate">Fin de Régence / Décès</Label><Input id="regencyEndDate" type="date" value={regencyEndDate} onChange={(e) => setRegencyEndDate(e.target.value)} /></div>
-                        <div><Label htmlFor="contact">Contact</Label><Input id="contact" type="text" value={contact} onChange={(e) => setContact(e.target.value)} placeholder="Numéro de téléphone ou email" /></div>
-                        <div><Label htmlFor="bio">Biographie</Label><Textarea id="bio" value={bio} onChange={(e) => setBio(e.target.value)} rows={3} placeholder="Brève biographie ou notes..."/></div>
                    </div>
                 </AccordionContent>
               </AccordionItem>

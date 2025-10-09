@@ -216,26 +216,38 @@ export type PayslipDetails = {
     }
 };
 
-export type ChiefRole = "Chef de Village" | "Chef de Canton" | "Roi";
+export type ChiefRole = "Roi" | "Chef de province" | "Chef de canton" | "Chef de tribu" | "Chef de Village";
+export type DesignationMode = "Héritage" | "Élection" | "Nomination coutumière" | "Autre";
+
 
 export type Chief = {
-  id: string; // Firestore document ID
-  name: string; // Combined name
+  id: string;
+  name: string;
   lastName?: string;
   firstName?: string;
-  title: string; // e.g., "Roi des N'zima", "Chef de Canton"
+  title: string;
   role: ChiefRole;
-  sexe?: 'Homme' | 'Femme' | 'Autre';
+  designationDate?: string;
+  designationMode?: DesignationMode;
   region: string;
   department: string;
   subPrefecture: string;
   village: string;
+  ethnicGroup?: string;
+  customs?: string;
+  languages?: string[];
   contact: string;
+  email?: string;
+  address?: string;
+  cnrctRegistrationNumber?: string;
+  officialDocuments?: string;
   bio: string;
   photoUrl: string;
+  territoryMapUrl?: string;
   latitude?: number;
   longitude?: number;
   parentChiefId?: string | null;
+  sexe?: 'Homme' | 'Femme' | 'Autre';
   dateOfBirth?: string;
   regencyStartDate?: string;
   regencyEndDate?: string;

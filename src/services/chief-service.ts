@@ -2,7 +2,7 @@
 
 import { collection, getDocs, addDoc, onSnapshot, Unsubscribe, query, orderBy, deleteDoc, doc, updateDoc, getDoc, writeBatch, where, setDoc, limit } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import type { Chief } from '@/lib/data';
+import type { Chief, ChiefRole } from '@/lib/data';
 import { db, storage } from '@/lib/firebase';
 import { FirestorePermissionError } from '@/lib/errors';
 
@@ -108,9 +108,13 @@ const defaultChiefs: Omit<Chief, 'id'>[] = [
 ];
 
 export async function initializeDefaultChiefs() {
-    console.log("Checking if chief seeding is necessary...");
-    // Instead of checking if empty, we will always try to add missing ones.
-    await batchAddChiefs(defaultChiefs);
+    const snapshot = await getDocs(query(chiefsCollection, limit(1)));
+    if (snapshot.empty) {
+        console.log("No chiefs found, initializing default chiefs...");
+        await batchAddChiefs(defaultChiefs);
+    } else {
+        console.log("Chiefs collection is not empty, skipping initialization.");
+    }
 }
 
 
@@ -147,7 +151,6 @@ export function subscribeToChiefs(
 }
 
 export async function getChiefs(): Promise<Chief[]> {
-    // This function will now ensure the default data is seeded on first load or when needed.
     await initializeDefaultChiefs(); 
     const snapshot = await getDocs(query(chiefsCollection, orderBy("lastName", "asc")));
     const chiefs = snapshot.docs.map(doc => ({
@@ -192,7 +195,7 @@ export async function addChief(chiefData: Omit<Chief, "id">, photoFile: File | n
 export async function batchAddChiefs(chiefs: Omit<Chief, 'id'>[]): Promise<number> {
     const batch = writeBatch(db);
     const chiefNames = chiefs.map(c => c.name);
-    // Firestore 'in' query can have max 30 elements. We need to chunk it.
+    
     const existingNames = new Set<string>();
 
     for (let i = 0; i < chiefNames.length; i += 30) {
@@ -241,12 +244,18 @@ export async function updateChief(id: string, chiefData: Partial<Omit<Chief, 'id
     }
 
     // Ensure numeric values are stored as numbers
-    if (updateData.latitude !== undefined) {
+    if (updateData.latitude !== undefined && updateData.latitude !== null) {
         updateData.latitude = Number(updateData.latitude);
     }
-     if (updateData.longitude !== undefined) {
+     if (updateData.longitude !== undefined && updateData.longitude !== null) {
         updateData.longitude = Number(updateData.longitude);
     }
+
+    // Convert comma-separated string to array for languages
+    if (typeof updateData.languages === 'string') {
+        updateData.languages = updateData.languages.split(',').map((s:string) => s.trim()).filter(Boolean);
+    }
+
 
     // Remove any keys with undefined values before sending to Firestore
     Object.keys(updateData).forEach(key => {
@@ -276,8 +285,3 @@ export async function deleteChief(id: string): Promise<void> {
         throw error;
     }
 }
-
-    
-
-
-    

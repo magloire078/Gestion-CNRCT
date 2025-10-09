@@ -126,7 +126,12 @@ export default function ChiefEditPage() {
     const fullName = chief ? `${chief.lastName || ''} ${chief.firstName || ''}`.trim() : "Chargement...";
 
     if (loading) {
-        return <p>Chargement...</p>; // Replace with a proper skeleton loader
+        return (
+             <div className="max-w-4xl mx-auto flex flex-col gap-6">
+                <Skeleton className="h-10 w-48" />
+                <Card><CardContent className="p-6"><Skeleton className="h-96 w-full" /></CardContent></Card>
+            </div>
+        );
     }
 
     if (!chief) {
@@ -294,3 +299,5 @@ export default function ChiefEditPage() {
         </div>
     );
 }
+
+    

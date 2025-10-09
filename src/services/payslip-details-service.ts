@@ -42,23 +42,6 @@ export function calculateSeniority(hireDateStr: string | undefined, payslipDateS
     };
 }
 
-/**
- * Trouve le dernier jour ouvrable d'un mois donné (exclut samedi et dimanche).
- * @param date - La date du mois concerné.
- * @returns Le dernier jour ouvrable.
- */
-function getLastWorkingDay(date: Date): Date {
-    let lastDay = lastDayOfMonth(date);
-    let dayOfWeek = getDay(lastDay); // 0 = Sunday, 6 = Saturday
-
-    if (dayOfWeek === 6) { // Saturday
-        lastDay.setDate(lastDay.getDate() - 1);
-    } else if (dayOfWeek === 0) { // Sunday
-        lastDay.setDate(lastDay.getDate() - 2);
-    }
-    return lastDay;
-}
-
 
 /**
  * Calcule tous les détails nécessaires pour un bulletin de paie.
@@ -180,7 +163,7 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
     ];
     
     const organizationLogos = await getOrganizationSettings();
-    const paymentDateObject = isValid(payslipDateObj) ? getLastWorkingDay(payslipDateObj) : new Date();
+    const paymentDateObject = isValid(payslipDateObj) ? lastDayOfMonth(payslipDateObj) : new Date();
     const numeroCompteComplet = [employee.CB, employee.CG, employee.numeroCompte, employee.Cle_RIB].filter(Boolean).join(' ');
 
     const formattedDateEmbauche = employee.dateEmbauche && isValid(parseISO(employee.dateEmbauche)) 

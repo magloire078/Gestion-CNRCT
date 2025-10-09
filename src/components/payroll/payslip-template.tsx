@@ -1,4 +1,3 @@
-
 "use client";
 
 import type { PayslipDetails } from "@/lib/data";
@@ -195,5 +194,3 @@ export function PayslipTemplate({ payslipDetails }: { payslipDetails: PayslipDet
         </div>
     );
 }
-
-    

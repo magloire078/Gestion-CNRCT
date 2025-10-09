@@ -66,12 +66,19 @@ export function subscribeToLeaves(
 }
 
 export async function getLeaves(): Promise<Leave[]> {
-  const q = query(leavesCollection, orderBy("startDate", "desc"));
-  const snapshot = await getDocs(q);
-  return snapshot.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data()
-  } as Leave));
+    try {
+        const q = query(leavesCollection, orderBy("startDate", "desc"));
+        const snapshot = await getDocs(q);
+        return snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        } as Leave));
+    } catch(error: any) {
+        if (error.code === 'permission-denied') {
+            throw new FirestorePermissionError("Vous n'avez pas la permission de consulter les congés.", { operation: 'read-all', path: 'leaves' });
+        }
+        throw error;
+    }
 }
 
 export async function addLeave(leaveDataToAdd: Omit<Leave, 'id' | 'status'>): Promise<Leave> {

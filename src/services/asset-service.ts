@@ -21,28 +21,46 @@ export function subscribeToAssets(
         },
         (error) => {
             console.error("Error subscribing to assets:", error);
-            onError(error);
+            if (error.code === 'permission-denied') {
+                onError(new FirestorePermissionError("Vous n'avez pas la permission de consulter les actifs.", { query: "allAssets" }));
+            } else {
+                onError(error);
+            }
         }
     );
     return unsubscribe;
 }
 
 export async function getAssets(): Promise<Asset[]> {
-  const snapshot = await getDocs(query(assetsCollection, orderBy("modele", "asc")));
-  return snapshot.docs.map(doc => ({
-    tag: doc.id,
-    ...doc.data()
-  } as Asset));
+  try {
+    const snapshot = await getDocs(query(assetsCollection, orderBy("modele", "asc")));
+    return snapshot.docs.map(doc => ({
+      tag: doc.id,
+      ...doc.data()
+    } as Asset));
+  } catch(error: any) {
+    if (error.code === 'permission-denied') {
+        throw new FirestorePermissionError("Vous n'avez pas la permission de consulter les actifs.", { operation: 'read-all', path: 'assets' });
+    }
+    throw error;
+  }
 }
 
 export async function getAsset(tag: string): Promise<Asset | null> {
     if (!tag) return null;
     const assetDocRef = doc(db, 'assets', tag);
-    const docSnap = await getDoc(assetDocRef);
-    if (docSnap.exists()) {
-        return { tag: docSnap.id, ...docSnap.data() } as Asset;
+    try {
+        const docSnap = await getDoc(assetDocRef);
+        if (docSnap.exists()) {
+            return { tag: docSnap.id, ...docSnap.data() } as Asset;
+        }
+        return null;
+    } catch(error: any) {
+        if (error.code === 'permission-denied') {
+            throw new FirestorePermissionError(`Vous n'avez pas la permission de consulter l'actif ${tag}.`, { operation: 'read', path: `assets/${tag}` });
+        }
+        throw error;
     }
-    return null;
 }
 
 export async function addAsset(assetDataToAdd: Omit<Asset, 'tag'> & { tag: string }): Promise<Asset> {

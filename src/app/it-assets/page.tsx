@@ -207,7 +207,7 @@ export default function ItAssetsPage() {
       toast({ variant: "destructive", title: "Aucune donnée à exporter" });
       return;
     }
-    const escapeSql = (str: any) => str ? `'${String(str).replace(/'/g, "''")}'` : 'NULL';
+    const escapeSql = (str: any) => str ? `'\'\'\'${String(str).replace(/'/g, "''")}\'\'\''` : 'NULL';
     const tableName = 'assets';
     const columns = ['tag', 'type', 'typeOrdinateur', 'fabricant', 'modele', 'numeroDeSerie', 'assignedTo', 'status', 'ipAddress', 'password'];
     const sqlContent = filteredAssets.map(asset => {

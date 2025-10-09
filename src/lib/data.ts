@@ -253,6 +253,31 @@ export type Chief = {
   regencyEndDate?: string;
 };
 
+export type Custom = {
+    id: string;
+    ethnicGroup: string;
+    regions: string; // Comma-separated
+    languages: string; // Comma-separated
+    historicalOrigin: string; // Text
+    socialStructure: string; // Text
+    politicalStructure: string; // Text
+    successionSystem: string; // Text
+    traditionalMarriage: string; // Text
+    funerals: string; // Text
+    initiations: string; // Text
+    celebrations: string; // Text
+    beliefs: string; // Text
+    religiousPractices: string; // Text
+    sacredPlaces: string; // Text
+    culturalSymbols: string; // Text
+    normsAndValues: string; // Text
+    conflictResolutionSystem: string; // Text
+    modernityImpact: string;
+    preservationInitiatives: string;
+    intergenerationalTransmission: string;
+};
+
+
 export type Goal = {
     id: string;
     title: string;

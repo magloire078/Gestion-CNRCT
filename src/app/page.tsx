@@ -392,32 +392,34 @@ export default function DashboardPage() {
                     </Card>
                     <LatestRecruitsCard employees={employees} loading={loading} />
                     <Card>
-                        <CardHeader className="flex-row items-start justify-between">
-                            <div>
-                                <CardTitle>Anniversaires d'Ancienneté</CardTitle>
-                                <CardDescription>Employés fêtant un anniversaire d'embauche.</CardDescription>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <div className="w-28">
-                                    <Select value={selectedAnniversaryMonth} onValueChange={setSelectedAnniversaryMonth}>
-                                        <SelectTrigger id="anniversary-month" aria-label="Mois"><SelectValue/></SelectTrigger>
-                                        <SelectContent>
-                                            {monthsForSelect.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}
-                                        </SelectContent>
-                                    </Select>
+                        <CardHeader>
+                           <div className="flex justify-between items-start">
+                                <div>
+                                    <CardTitle>Anniversaires d'Ancienneté</CardTitle>
+                                    <CardDescription>Employés fêtant une date d'embauche.</CardDescription>
                                 </div>
-                                <div className="w-24">
-                                     <Select value={selectedAnniversaryYear} onValueChange={setSelectedAnniversaryYear}>
-                                        <SelectTrigger id="anniversary-year" aria-label="Année"><SelectValue/></SelectTrigger>
-                                        <SelectContent>
-                                            {anniversaryYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
-                                        </SelectContent>
-                                    </Select>
+                                <div className="flex items-center gap-2">
+                                    <div className="w-28">
+                                        <Select value={selectedAnniversaryMonth} onValueChange={setSelectedAnniversaryMonth}>
+                                            <SelectTrigger id="anniversary-month" aria-label="Mois" className="h-8"><SelectValue/></SelectTrigger>
+                                            <SelectContent>
+                                                {monthsForSelect.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="w-24">
+                                        <Select value={selectedAnniversaryYear} onValueChange={setSelectedAnniversaryYear}>
+                                            <SelectTrigger id="anniversary-year" aria-label="Année" className="h-8"><SelectValue/></SelectTrigger>
+                                            <SelectContent>
+                                                {anniversaryYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <Button variant="outline" size="icon" className="h-8 w-8" onClick={handlePrintAnniversaries} disabled={seniorityAnniversaries.length === 0}>
+                                        <Printer className="h-4 w-4" />
+                                        <span className="sr-only">Imprimer</span>
+                                    </Button>
                                 </div>
-                                <Button variant="outline" size="icon" className="h-9 w-9" onClick={handlePrintAnniversaries} disabled={seniorityAnniversaries.length === 0}>
-                                    <Printer className="h-4 w-4" />
-                                    <span className="sr-only">Imprimer</span>
-                                </Button>
                             </div>
                         </CardHeader>
                         <CardContent>
@@ -455,13 +457,13 @@ export default function DashboardPage() {
                              <div className="flex items-center gap-2">
                                 <div className="w-28">
                                     <Select value={selectedRetirementYear} onValueChange={setSelectedRetirementYear}>
-                                        <SelectTrigger id="retirement-year"><SelectValue/></SelectTrigger>
+                                        <SelectTrigger id="retirement-year" className="h-8"><SelectValue/></SelectTrigger>
                                         <SelectContent>
                                             {retirementYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
                                         </SelectContent>
                                     </Select>
                                 </div>
-                                <Button variant="outline" size="icon" className="h-9 w-9" onClick={handlePrintRetirements} disabled={upcomingRetirements.length === 0}>
+                                <Button variant="outline" size="icon" className="h-8 w-8" onClick={handlePrintRetirements} disabled={upcomingRetirements.length === 0}>
                                     <Printer className="h-4 w-4" />
                                     <span className="sr-only">Imprimer</span>
                                 </Button>
@@ -475,11 +477,7 @@ export default function DashboardPage() {
                             <div key={emp.id} className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
                                 <Avatar>
-                                <AvatarImage
-                                    src={emp.photoUrl}
-                                    alt={emp.name}
-                                    data-ai-hint="user avatar"
-                                />
+                                <AvatarImage src={emp.photoUrl} alt={emp.name} data-ai-hint="user avatar"/>
                                 <AvatarFallback>{emp.lastName?.charAt(0) || 'E'}</AvatarFallback>
                                 </Avatar>
                                 <div>
@@ -487,7 +485,7 @@ export default function DashboardPage() {
                                 <p className="text-sm text-muted-foreground">{emp.poste}</p>
                                 </div>
                             </div>
-                            <span className="text-sm text-muted-foreground">{emp.calculatedRetirementDate && format(emp.calculatedRetirementDate, 'dd/MM/yyyy')}</span>
+                            <Badge variant="secondary">{emp.calculatedRetirementDate && format(emp.calculatedRetirementDate, 'dd/MM/yyyy')}</Badge>
                             </div>
                         )) : <p className="text-sm text-muted-foreground text-center py-8">Aucun départ prévu pour {selectedRetirementYear}.</p>}
                         </div>

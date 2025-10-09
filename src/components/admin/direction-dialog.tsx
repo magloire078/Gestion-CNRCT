@@ -14,12 +14,20 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Command,
+  CommandEmpty,
+  CommandInput,
+  CommandGroup,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 import type { Direction, Department } from "@/lib/data";
 
 interface DirectionDialogProps {
@@ -35,6 +43,7 @@ export function DirectionDialog({ isOpen, onClose, onConfirm, direction, departm
   const [departmentId, setDepartmentId] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isComboboxOpen, setIsComboboxOpen] = useState(false);
 
   const isEditMode = !!direction;
 
@@ -96,16 +105,37 @@ export function DirectionDialog({ isOpen, onClose, onConfirm, direction, departm
             </div>
             <div>
               <Label htmlFor="departmentId">Département</Label>
-              <Select value={departmentId} onValueChange={setDepartmentId}>
-                <SelectTrigger id="departmentId">
-                  <SelectValue placeholder="Sélectionnez un département..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {departments.map((dept) => (
-                    <SelectItem key={dept.id} value={dept.id}>{dept.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+               <Popover open={isComboboxOpen} onOpenChange={setIsComboboxOpen}>
+                <PopoverTrigger asChild>
+                    <Button variant="outline" role="combobox" aria-expanded={isComboboxOpen} className="w-full justify-between font-normal mt-1">
+                        {departmentId ? departments.find(d => d.id === departmentId)?.name : "Sélectionnez un département..."}
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                    <Command>
+                        <CommandInput placeholder="Rechercher un département..." />
+                        <CommandList>
+                          <CommandEmpty>Aucun département trouvé.</CommandEmpty>
+                          <CommandGroup>
+                            {departments.map((dept) => (
+                                <CommandItem
+                                    key={dept.id}
+                                    value={dept.name}
+                                    onSelect={() => {
+                                        setDepartmentId(dept.id);
+                                        setIsComboboxOpen(false);
+                                    }}
+                                >
+                                    <Check className={cn("mr-2 h-4 w-4", departmentId === dept.id ? "opacity-100" : "opacity-0")} />
+                                    {dept.name}
+                                </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                    </Command>
+                </PopoverContent>
+              </Popover>
             </div>
             {error && <p className="text-sm text-destructive mt-2">{error}</p>}
           </div>
@@ -120,5 +150,3 @@ export function DirectionDialog({ isOpen, onClose, onConfirm, direction, departm
     </Dialog>
   );
 }
-
-    

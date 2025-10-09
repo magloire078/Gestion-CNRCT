@@ -275,7 +275,7 @@ export default function DashboardPage() {
     
     const activeEmployees = employees.filter(e => e.status === 'Actif');
     const cnpsEmployees = activeEmployees.filter(e => e.CNPS === true);
-    const directoireEmployees = activeEmployees.filter(e => e.department === 'Directoire');
+    const directoireEmployees = activeEmployees.filter(e => e.departmentId === 'DVeCoGfRfL3p43eQeYwz');
 
     const recentLeaves = leaves.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()).slice(0, 3);
   

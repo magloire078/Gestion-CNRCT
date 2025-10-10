@@ -400,7 +400,7 @@ export default function MissionDetailPage() {
 
       {isPrintingCostReport && mission && (
         <div id="print-section">
-            <MissionCostReport mission={mission} participants={participantsDetails} duration={missionDuration} totalCost={totalMissionCost} />
+            <MissionCostReport mission={mission} participants={participantsDetails} duration={missionDuration} totalCost={totalCost} />
         </div>
       )}
     </>
@@ -464,3 +464,5 @@ function MissionDetailSkeleton() {
     </div>
   );
 }
+
+    

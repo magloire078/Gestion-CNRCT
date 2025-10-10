@@ -80,3 +80,5 @@ export async function generateMissionOrderAction(mission: Mission): Promise<{ do
 export async function deleteMissionAction(missionId: string): Promise<void> {
     await deleteMission(missionId);
 }
+
+    

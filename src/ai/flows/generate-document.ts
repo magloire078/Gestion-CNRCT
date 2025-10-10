@@ -167,7 +167,7 @@ Le Directeur des Affaires Sociales
 Document Type: {{{documentType}}}
 Content: {{{documentContent}}}
   {{/if}}
-  `,
+  `
 });
 
 
@@ -229,3 +229,5 @@ const generateDocumentFlow = ai.defineFlow(
     return output!;
   }
 );
+
+    

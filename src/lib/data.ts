@@ -383,6 +383,7 @@ export type Ticket = {
   assignedTo?: string; // agent userId
   assignedToName?: string; // denormalized agent name
   updatedAt: string; // ISO Date string
+  messages: TicketMessage[];
 };
 
 export type TicketMessage = {

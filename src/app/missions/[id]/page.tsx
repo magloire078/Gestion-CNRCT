@@ -464,5 +464,3 @@ function MissionDetailSkeleton() {
     </div>
   );
 }
-
-    

@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { OrganizationSettings } from "@/lib/data";
@@ -70,3 +71,5 @@ export function PrintLayout({ logos, title, subtitle, columns, data }: PrintLayo
         </div>
     );
 }
+
+    

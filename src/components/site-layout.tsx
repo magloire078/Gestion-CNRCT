@@ -37,6 +37,7 @@ import {
   FileClock,
   DatabaseBackup,
   BookText,
+  LifeBuoy,
 } from "lucide-react";
 
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
@@ -140,6 +141,7 @@ const allMenuItems = [
         { href: "/it-assets", label: "Actifs TI", icon: Laptop, permission: "page:it-assets:view" },
         { href: "/documents", label: "Documents", icon: FileText, permission: "page:documents:view" },
         { href: "/assistant", label: "Assistant IA", icon: MessageSquare, permission: "page:assistant:view" },
+        { href: "/helpdesk", label: "Helpdesk", icon: LifeBuoy, permission: "page:helpdesk:view" },
         { href: "/backup", label: "Sauvegarde & Restauration", icon: DatabaseBackup, permission: "page:backup:view" },
         { href: "/admin", label: "Paramètres Admin", icon: Shield, permission: "page:admin:view" },
     ]

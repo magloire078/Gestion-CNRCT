@@ -1,4 +1,3 @@
-
 // src/lib/permissions.ts
 
 export const allPermissions = {
@@ -24,6 +23,7 @@ export const allPermissions = {
   "Voir l'Organigramme": "page:organization-chart:view",
   "Accès Sauvegarde & Restauration": "page:backup:view",
   "Accès aux Us & Coutumes": "page:us-et-coutumes:view",
+  "Accès au Helpdesk": "page:helpdesk:view",
 
   // Group permissions
   "Voir le groupe Personnel": "group:personnel:view",

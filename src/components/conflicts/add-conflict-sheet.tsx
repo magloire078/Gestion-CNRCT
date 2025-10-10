@@ -132,7 +132,7 @@ export function AddConflictSheet({
             description, 
             status, 
             reportedDate,
-            mediatorName,
+            mediatorName: mediatorName === 'none' ? undefined : mediatorName,
         };
 
         if (latitude && longitude) {
@@ -232,7 +232,7 @@ export function AddConflictSheet({
                 <Select value={mediatorName} onValueChange={setMediatorName}>
                     <SelectTrigger><SelectValue placeholder="Assigner un responsable..." /></SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="">Non assigné</SelectItem>
+                        <SelectItem value="none">Non assigné</SelectItem>
                         {allEmployees.map(emp => (
                             <SelectItem key={emp.id} value={emp.name}>{emp.name}</SelectItem>
                         ))}

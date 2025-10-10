@@ -56,7 +56,14 @@ const statusVariantMap: Record<
   Annulée: "destructive",
 };
 
-interface ParticipantWithDetails extends Employe, MissionParticipant {}
+interface ParticipantWithDetails extends Employe {
+    moyenTransport?: string;
+    immatriculation?: string;
+    numeroOrdre?: string;
+    coutTransport?: number;
+    coutHebergement?: number;
+    totalIndemnites?: number;
+}
 
 export default function MissionDetailPage() {
   const params = useParams();
@@ -316,10 +323,15 @@ export default function MissionDetailPage() {
         
         <Card>
              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="h-5 w-5 text-muted-foreground" />
-                  Détails Financiers par Participant
-                </CardTitle>
+                <div className="flex justify-between items-center">
+                    <CardTitle className="flex items-center gap-2">
+                    <Users className="h-5 w-5 text-muted-foreground" />
+                    Détails Financiers par Participant
+                    </CardTitle>
+                    <Button asChild variant="outline" size="sm">
+                        <Link href={`/missions/${id}/participants`}>Voir la liste détaillée</Link>
+                    </Button>
+                </div>
                 <CardDescription>
                   Détail des coûts et indemnités pour chaque participant.
                 </CardDescription>

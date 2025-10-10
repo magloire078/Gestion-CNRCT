@@ -72,7 +72,8 @@ export default function ConflictEditPage() {
     };
 
     const handleSelectChange = (name: keyof Conflict, value: string) => {
-        setConflict(prev => prev ? { ...prev, [name]: value } : null);
+        const finalValue = value === 'none' ? '' : value;
+        setConflict(prev => prev ? { ...prev, [name]: finalValue } : null);
     };
 
     const handleSave = async () => {
@@ -152,10 +153,10 @@ export default function ConflictEditPage() {
                     </div>
                      <div className="space-y-2">
                         <Label htmlFor="mediatorName">Médiateur / Gestionnaire</Label>
-                        <Select value={conflict.mediatorName || ''} onValueChange={(v) => handleSelectChange('mediatorName', v)}>
+                        <Select value={conflict.mediatorName || 'none'} onValueChange={(v) => handleSelectChange('mediatorName', v)}>
                             <SelectTrigger id="mediatorName"><SelectValue placeholder="Non assigné"/></SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="">Non assigné</SelectItem>
+                                <SelectItem value="none">Non assigné</SelectItem>
                                 {employees.map(e => <SelectItem key={e.id} value={e.name}>{e.name}</SelectItem>)}
                             </SelectContent>
                         </Select>

@@ -249,7 +249,7 @@ export default function NominativeReportPage() {
                         <TableHeader>
                             <TableRow>
                                 <TableHead className="font-bold">Année</TableHead>
-                                {reportData.annualSalaries[0]?.months.map(m => <TableHead key={m.month} className="text-right">{m.month}</TableHead>)}
+                                {reportData.annualSalaries[0]?.months.map(m => <TableHead key={m.month} className="text-right">{m.month.toUpperCase()}</TableHead>)}
                                 <TableHead className="text-right font-bold">Total Annuel</TableHead>
                             </TableRow>
                         </TableHeader>

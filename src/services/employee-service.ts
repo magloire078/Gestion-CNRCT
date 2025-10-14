@@ -19,7 +19,7 @@ const GROUPE_DIRECTOIRE_ID = 'DVeCoGfRfL3p43eQeYwz';
 const GROUPE_GARDE_ID = 'YOUR_GARDE_ID'; // Replace with actual ID
 const GROUPE_GENDARME_ID = 'YOUR_GENDARME_ID'; // Replace with actual ID
 
-export type EmployeeGroup = 'directoire' | 'regional' | 'personnel-siege' | 'personnel-non-siege' | 'garde-republicaine' | 'gendarme' | 'all';
+export type EmployeeGroup = 'directoire' | 'regional' | 'personnel-siege' | 'chauffeur-directoire' | 'garde-republicaine' | 'gendarme' | 'all';
 
 /**
  * Determines the group an employee belongs to based on their properties.
@@ -34,7 +34,7 @@ export function getEmployeeGroup(employee: Employe): EmployeeGroup {
     return 'regional';
   }
   if (employee.matricule?.startsWith('R 0') && employee.CNPS === true) {
-      return 'personnel-non-siege';
+      return 'chauffeur-directoire';
   }
   if (employee.departmentId === GROUPE_GARDE_ID) {
     return 'garde-republicaine';

@@ -79,7 +79,7 @@ const allMenuItems = [
     permission: "group:personnel:view",
     subItems: [
         { href: "/employees?filter=personnel-siege", label: "Personnel Siège", icon: Users, permission: "page:employees:view" },
-        { href: "/employees?filter=personnel-non-siege", label: "Personnel Non-Siège", icon: Users, permission: "page:employees:view" },
+        { href: "/employees?filter=chauffeur-directoire", label: "Chauffeur Directoire", icon: Car, permission: "page:employees:view" },
         { href: "/payroll", label: "Paie", icon: Landmark, permission: "page:payroll:view" },
         { href: "/leave", label: "Congés", icon: CalendarOff, permission: "page:leave:view" },
         { href: "/evaluations", label: "Évaluations", icon: ClipboardCheck, permission: "page:evaluations:view" },

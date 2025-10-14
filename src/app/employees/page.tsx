@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
@@ -103,7 +104,7 @@ export default function EmployeesPage() {
     switch (personnelTypeFilter) {
       case 'directoire': return 'Membres du Directoire';
       case 'personnel-siege': return 'Personnel Siège';
-      case 'personnel-non-siege': return 'Personnel Non-Siège';
+      case 'chauffeur-directoire': return 'Chauffeurs du Directoire';
       case 'regional': return 'Comités Régionaux';
       case 'garde-republicaine': return 'Garde Républicaine';
       case 'gendarme': return 'Gendarmes';
@@ -386,7 +387,7 @@ export default function EmployeesPage() {
                         <TabsTrigger value="all">Effectif Global</TabsTrigger>
                         <TabsTrigger value="directoire">Directoire</TabsTrigger>
                         <TabsTrigger value="personnel-siege">Personnel Siège</TabsTrigger>
-                        <TabsTrigger value="personnel-non-siege">Personnel Non-Siège</TabsTrigger>
+                        <TabsTrigger value="chauffeur-directoire">Chauffeur Directoire</TabsTrigger>
                         <TabsTrigger value="regional">Comités Régionaux</TabsTrigger>
                         <TabsTrigger value="garde-republicaine">Garde Républicaine</TabsTrigger>
                         <TabsTrigger value="gendarme">Gendarmes</TabsTrigger>

@@ -5,8 +5,9 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { getChief, getChiefs } from "@/services/chief-service";
-import type { Chief } from "@/lib/data";
+import { getChief } from "@/services/chief-service";
+import { subscribeToCustoms } from "@/services/customs-service";
+import type { Chief, Custom } from "@/lib/data";
 import { format, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
@@ -24,6 +25,7 @@ export default function ChiefDetailPage() {
     const { id } = params;
     const [chief, setChief] = useState<Chief | null>(null);
     const [parentChief, setParentChief] = useState<Chief | null>(null);
+    const [allCustoms, setAllCustoms] = useState<Custom[]>([]);
     const [loading, setLoading] = useState(true);
     
     const formatDate = (dateString?: string) => {
@@ -38,25 +40,45 @@ export default function ChiefDetailPage() {
     useEffect(() => {
         if (typeof id !== 'string') return;
         
+        let isMounted = true;
+
+        const unsubCustoms = subscribeToCustoms(
+            (customs) => {
+                if(isMounted) setAllCustoms(customs);
+            },
+            console.error
+        );
+
         async function fetchData() {
             try {
                 const chiefData = await getChief(id);
+                 if (!isMounted) return;
+
                 setChief(chiefData);
 
                 if (chiefData?.parentChiefId) {
                     const parentData = await getChief(chiefData.parentChiefId);
-                    setParentChief(parentData);
+                    if (isMounted) setParentChief(parentData);
                 }
             } catch (error) {
                 console.error("Failed to fetch chief details", error);
             } finally {
-                setLoading(false);
+                if (isMounted) setLoading(false);
             }
         }
         fetchData();
+        
+        return () => {
+            isMounted = false;
+            unsubCustoms();
+        }
     }, [id]);
     
     const fullName = chief ? `${chief.lastName || ''} ${chief.firstName || ''}`.trim() : "Chargement...";
+    
+    const customLink = chief?.ethnicGroup 
+        ? allCustoms.find(c => c.ethnicGroup.toLowerCase() === chief.ethnicGroup?.toLowerCase())
+        : null;
 
 
     if (loading) {
@@ -126,7 +148,15 @@ export default function ChiefDetailPage() {
                             {parentChief && (
                                 <InfoItem label="Autorité Supérieure" value={`${parentChief.lastName || ''} ${parentChief.firstName || ''}`} icon={Users} />
                             )}
-                             <InfoItem label="Groupe ethnique" value={chief.ethnicGroup} icon={Users} />
+                             <InfoItem label="Groupe ethnique">
+                                {customLink ? (
+                                    <Link href={`/us-et-coutumes/${customLink.id}`} className="font-medium text-primary hover:underline">
+                                        {chief.ethnicGroup}
+                                    </Link>
+                                ) : (
+                                    <p className="font-medium">{chief.ethnicGroup}</p>
+                                )}
+                             </InfoItem>
                              <InfoItem label="Langues" value={chief.languages?.join(', ')} icon={Languages} />
                         </CardContent>
                     </Card>

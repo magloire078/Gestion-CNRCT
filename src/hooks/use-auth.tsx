@@ -64,9 +64,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const isPublicPage = pathname === '/login' || pathname === '/signup' || pathname === '/forgot-password';
 
-    if (!user && !isPublicPage) {
-      router.push('/login');
-    } else if (user && isPublicPage) {
+    // Remove redirection for public access
+    // if (!user && !isPublicPage) {
+    //   router.push('/login');
+    // } else 
+    if (user && isPublicPage) {
       router.push('/');
     }
   }, [user, loading, pathname, router]);

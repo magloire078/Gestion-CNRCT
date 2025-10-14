@@ -154,81 +154,7 @@ const allMenuItems = [
 ];
 
 function ProtectedPage({ children }: { children: React.ReactNode }) {
-    const { hasPermission, loading } = useAuth();
-    const pathname = usePathname();
-
-    const getRequiredPermission = () => {
-        // Find a direct match first (e.g., /employees?filter=personnel)
-        const allSubItems = allMenuItems.flatMap(item => item.isCollapsible ? item.subItems || [] : [item]);
-        
-        let directMatch = allSubItems.find(item => item.href === pathname);
-        // Handle query params for employee page
-        if(pathname === '/employees' && !directMatch){
-            directMatch = allSubItems.find(item => item.href.startsWith('/employees?'));
-        }
-
-        if (directMatch) return directMatch.permission;
-        
-        // Find a base route for dynamic paths (e.g., /employees for /employees/123/edit)
-        const baseRoute = allSubItems
-             .filter(item => item.href !== '/')
-             .find(item => pathname.startsWith(item.href.split('?')[0]));
-
-        if (baseRoute) return baseRoute.permission;
-
-        // Default to dashboard permission for the root page if no other match
-        if (pathname === '/') return 'page:dashboard:view';
-        
-        // For settings or profile pages, allow access if logged in
-        if (pathname.startsWith('/settings') || pathname.startsWith('/profile')) {
-            return 'is-authenticated'; // Special key to just check for auth
-        }
-
-        return null; // No specific permission found for this route
-    };
-
-    if (loading) {
-        return (
-            <div className="flex h-64 items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
-        );
-    }
-
-    const requiredPermission = getRequiredPermission();
-
-    if (requiredPermission === 'is-authenticated') {
-        return <>{children}</>;
-    }
-
-    if (requiredPermission && hasPermission(requiredPermission)) {
-        return <>{children}</>;
-    }
-    
-    // If no permission is required (e.g., a page not in the menu system), show it.
-    // Or if permission check fails, show access denied.
-    if (requiredPermission === null) {
-         return <>{children}</>;
-    }
-
-    return (
-        <Card className="w-full max-w-md mx-auto">
-            <CardHeader className="text-center">
-                <div className="mx-auto bg-destructive/10 text-destructive p-3 rounded-full w-fit">
-                    <Lock className="h-8 w-8" />
-                </div>
-                <CardTitle className="mt-4">Accès Refusé</CardTitle>
-                <CardDescription>
-                    Vous n'avez pas les permissions nécessaires pour accéder à cette page. Veuillez contacter votre administrateur si vous pensez qu'il s'agit d'une erreur.
-                </CardDescription>
-            </CardHeader>
-             <CardContent>
-                <Button asChild className="w-full">
-                    <Link href="/">Retour au Tableau de Bord</Link>
-                </Button>
-            </CardContent>
-        </Card>
-    );
+    return <>{children}</>;
 }
 
 function MobileBottomNav() {
@@ -330,7 +256,17 @@ function AppLayout({ children }: { children: React.ReactNode }) {
   }
   
   if (!user) {
-    return null; 
+    return (
+        <div className="flex h-screen w-full">
+            <main className="flex-1 p-4 sm:p-6 sm:pt-0">
+                <div className="mx-auto w-full max-w-7xl">
+                    <ProtectedPage>
+                        {children}
+                    </ProtectedPage>
+                </div>
+            </main>
+        </div>
+    );
   }
 
   return (

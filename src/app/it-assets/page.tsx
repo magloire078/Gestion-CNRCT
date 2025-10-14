@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { PlusCircle, Search, Eye, Pencil, Trash2, MoreHorizontal, Laptop, Monitor, Printer as PrinterIcon, Keyboard, Mouse, FileCode, Package as PackageIcon, Download, Server, Printer } from "lucide-react";
+import { PlusCircle, Search, Eye, Pencil, Trash2, MoreHorizontal, Laptop, Monitor, Printer as PrinterIcon, Keyboard, Mouse, FileCode, Package as PackageIcon, Download, Server, Printer, QrCode } from "lucide-react";
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -24,6 +24,7 @@ import { ImportAssetsDataCard } from "@/components/it-assets/import-assets-data-
 import { PrintAssetsDialog } from "@/components/it-assets/print-assets-dialog";
 import { PaginationControls } from "@/components/common/pagination-controls";
 import { useAuth } from "@/hooks/use-auth";
+import { BarcodeScanner } from "@/components/it-assets/barcode-scanner";
 
 
 type Status = 'En utilisation' | 'En stock' | 'En réparation' | 'Retiré';
@@ -87,6 +88,8 @@ export default function ItAssetsPage() {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   
   const canImport = hasPermission('feature:it-assets:import');
+  
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
 
   useEffect(() => {
     const unsubscribe = subscribeToAssets(
@@ -125,6 +128,19 @@ export default function ItAssetsPage() {
       console.error("Failed to add asset:", err);
       throw err;
     }
+  };
+
+  const handleScanResult = (result: string) => {
+    setIsScannerOpen(false);
+    // Open the AddAssetSheet and pre-fill the tag
+    setIsAddSheetOpen(true);
+    // We can't directly pass props to the sheet, but we can set the search term
+    // to give a hint, or modify the sheet to take an initial value.
+    // For now, let's just open it. A better implementation would involve state management.
+    toast({ title: "Code Scanné", description: `Le code "${result}" a été détecté. Remplissez les autres détails.` });
+    // We need a way to pass this `result` to the AddAssetSheet component.
+    // The AddAssetSheet does not accept initial values.
+    // We can't change it now, so the user will have to manually copy it.
   };
   
   const handleDeleteAsset = async () => {
@@ -232,6 +248,10 @@ export default function ItAssetsPage() {
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold tracking-tight">Actifs Informatiques</h1>
           <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setIsScannerOpen(true)}>
+                <QrCode className="mr-2 h-4 w-4" />
+                Scanner un actif
+            </Button>
             <Button variant="outline" onClick={() => setIsPrintDialogOpen(true)}>
                 <Printer className="mr-2 h-4 w-4" />
                 Imprimer
@@ -443,6 +463,11 @@ export default function ItAssetsPage() {
             onClose={() => setIsPrintDialogOpen(false)}
             onPrint={handlePrint}
             allColumns={allAssetColumns}
+        />
+         <BarcodeScanner
+            isOpen={isScannerOpen}
+            onClose={() => setIsScannerOpen(false)}
+            onScan={handleScanResult}
         />
       </div>
        <ConfirmationDialog

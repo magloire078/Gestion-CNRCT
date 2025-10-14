@@ -39,6 +39,7 @@ import {
   DatabaseBackup,
   BookText,
   LifeBuoy,
+  Menu,
 } from "lucide-react";
 
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
@@ -65,6 +66,7 @@ import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel } from "./ui/dropdown-menu";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { NotificationBell } from "./common/notification-bell";
+import { cn } from "@/lib/utils";
 
 const allMenuItems = [
   { href: "/", label: "Tableau de Bord", icon: LayoutDashboard, permission: "page:dashboard:view" },
@@ -225,6 +227,46 @@ function ProtectedPage({ children }: { children: React.ReactNode }) {
             </CardContent>
         </Card>
     );
+}
+
+function MobileBottomNav() {
+  const { toggleSidebar } = useSidebar();
+  const pathname = usePathname();
+
+  const navItems = [
+    { href: "/", label: "Tableau de Bord", icon: LayoutDashboard },
+    { href: "/my-space", label: "Mon Espace", icon: UserSquareIcon },
+    { href: "/employees", label: "Personnel", icon: Users },
+    { href: "/organization-chart", label: "Organisation", icon: Building },
+  ];
+
+  return (
+    <div className="fixed bottom-0 left-0 z-50 w-full h-16 bg-background border-t border-border md:hidden">
+      <div className="grid h-full max-w-lg grid-cols-5 mx-auto font-medium">
+        {navItems.map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            className={cn(
+              "inline-flex flex-col items-center justify-center px-2 hover:bg-muted group",
+              pathname === item.href ? "text-primary" : "text-muted-foreground"
+            )}
+          >
+            <item.icon className="w-5 h-5 mb-1" />
+            <span className="text-[10px] text-center">{item.label}</span>
+          </Link>
+        ))}
+        <button
+          onClick={toggleSidebar}
+          type="button"
+          className="inline-flex flex-col items-center justify-center px-2 text-muted-foreground hover:bg-muted group"
+        >
+          <Menu className="w-5 h-5 mb-1" />
+          <span className="text-[10px]">Plus</span>
+        </button>
+      </div>
+    </div>
+  );
 }
 
 
@@ -397,13 +439,14 @@ function AppLayout({ children }: { children: React.ReactNode }) {
                     <NotificationBell />
                 </div>
             </header>
-            <main className="flex-1 p-4 sm:p-6 sm:pt-0">
+            <main className="flex-1 p-4 sm:p-6 sm:pt-0 mb-16 md:mb-0">
                 <div className="mx-auto w-full max-w-7xl">
                     <ProtectedPage>
                         {children}
                     </ProtectedPage>
                 </div>
             </main>
+             <MobileBottomNav />
         </SidebarInset>
     </SidebarProvider>
   );

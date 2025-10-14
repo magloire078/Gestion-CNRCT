@@ -47,6 +47,7 @@ import { signOut } from "@/services/auth-service";
 
 import {
   SidebarProvider,
+  useSidebar,
   Sidebar,
   SidebarContent,
   SidebarHeader,

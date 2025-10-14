@@ -1,7 +1,7 @@
 
 
 import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, onSnapshot, Unsubscribe, query, orderBy, where, writeBatch, getDoc, setDoc, limit } from 'firebase/firestore';
-import type { Employe, Chief } from '@/lib/data';
+import type { Employe, Chief, Department } from '@/lib/data';
 import { db, storage } from '@/lib/firebase';
 import { getOrganizationSettings } from './organization-service';
 import { getDepartments } from './department-service';
@@ -16,17 +16,18 @@ const chiefsCollection = collection(db, 'chiefs');
 
 // Department IDs for special groups
 const GROUPE_DIRECTOIRE_ID = 'DVeCoGfRfL3p43eQeYwz'; 
-const GROUPE_GARDE_ID = 'YOUR_GARDE_ID'; // Replace with actual ID
-const GROUPE_GENDARME_ID = 'YOUR_GENDARME_ID'; // Replace with actual ID
 
 export type EmployeeGroup = 'directoire' | 'regional' | 'personnel-siege' | 'chauffeur-directoire' | 'garde-republicaine' | 'gendarme' | 'all';
 
 /**
  * Determines the group an employee belongs to based on their properties.
  * @param employee The employee object.
+ * @param departments A list of all available departments.
  * @returns The group name as a string.
  */
-export function getEmployeeGroup(employee: Employe): EmployeeGroup {
+export function getEmployeeGroup(employee: Employe, departments: Department[]): EmployeeGroup {
+  const departmentName = departments.find(d => d.id === employee.departmentId)?.name;
+
   if (employee.departmentId === GROUPE_DIRECTOIRE_ID || employee.matricule?.startsWith('D 0')) {
     return 'directoire';
   }
@@ -36,10 +37,10 @@ export function getEmployeeGroup(employee: Employe): EmployeeGroup {
   if (employee.matricule?.startsWith('R 0') && employee.CNPS === true) {
       return 'chauffeur-directoire';
   }
-  if (employee.departmentId === GROUPE_GARDE_ID) {
+  if (departmentName === 'Garde Républicaine') {
     return 'garde-republicaine';
   }
-  if (employee.departmentId === GROUPE_GENDARME_ID) {
+  if (departmentName === 'Gendarmerie') {
     return 'gendarme';
   }
   
@@ -307,3 +308,4 @@ export async function getOrganizationalUnits() {
         throw error;
     }
 }
+

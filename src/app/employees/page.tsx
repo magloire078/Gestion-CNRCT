@@ -206,7 +206,7 @@ export default function EmployeesPage() {
       const matchesCnps = cnpsFilter === 'all' || employee.CNPS === cnpsFilter;
       const matchesSexe = sexeFilter === 'all' || employee.sexe === sexeFilter;
       
-      const employeeGroup = getEmployeeGroup(employee);
+      const employeeGroup = getEmployeeGroup(employee, departments);
       const matchesPersonnelType = personnelTypeFilter === 'all' || personnelTypeFilter === employeeGroup;
       
       return matchesSearchTerm && matchesDepartment && matchesStatus && matchesCnps && matchesSexe && matchesPersonnelType;
@@ -216,7 +216,7 @@ export default function EmployeesPage() {
         setCurrentPage(1);
     }
     return filtered;
-  }, [employees, searchTerm, departmentFilter, statusFilter, cnpsFilter, sexeFilter, personnelTypeFilter, currentPage, itemsPerPage]);
+  }, [employees, searchTerm, departmentFilter, statusFilter, cnpsFilter, sexeFilter, personnelTypeFilter, currentPage, itemsPerPage, departments]);
 
   const paginatedEmployees = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;

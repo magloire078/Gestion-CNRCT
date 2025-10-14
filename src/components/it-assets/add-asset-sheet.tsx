@@ -29,13 +29,14 @@ interface AddAssetDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onAddAsset: (asset: Omit<Asset, 'tag'> & { tag: string }) => Promise<void>;
+  initialTag?: string;
 }
 
 const assetTypes: Asset['type'][] = ["Ordinateur", "Moniteur", "Imprimante", "Clavier", "Souris", "Logiciel", "Équipement Réseau", "Autre"];
 const computerTypes: Asset['typeOrdinateur'][] = ["Portable", "De Bureau", "Serveur"];
 const assetStatuses: Asset['status'][] = ['En utilisation', 'En stock', 'En réparation', 'Retiré'];
 
-export function AddAssetSheet({ isOpen, onClose, onAddAsset }: AddAssetDialogProps) {
+export function AddAssetSheet({ isOpen, onClose, onAddAsset, initialTag }: AddAssetDialogProps) {
   const [tag, setTag] = useState("");
   const [type, setType] = useState<Asset['type'] | "">("");
   const [typeOrdinateur, setTypeOrdinateur] = useState<Asset['typeOrdinateur'] | undefined>(undefined);
@@ -50,6 +51,12 @@ export function AddAssetSheet({ isOpen, onClose, onAddAsset }: AddAssetDialogPro
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (initialTag) {
+        setTag(initialTag);
+    }
+  }, [initialTag]);
 
   useEffect(() => {
     if (isOpen) {

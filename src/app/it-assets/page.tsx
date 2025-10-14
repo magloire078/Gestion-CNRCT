@@ -90,6 +90,7 @@ export default function ItAssetsPage() {
   const canImport = hasPermission('feature:it-assets:import');
   
   const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const [initialAssetTag, setInitialAssetTag] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     const unsubscribe = subscribeToAssets(
@@ -132,15 +133,9 @@ export default function ItAssetsPage() {
 
   const handleScanResult = (result: string) => {
     setIsScannerOpen(false);
-    // Open the AddAssetSheet and pre-fill the tag
+    setInitialAssetTag(result);
     setIsAddSheetOpen(true);
-    // We can't directly pass props to the sheet, but we can set the search term
-    // to give a hint, or modify the sheet to take an initial value.
-    // For now, let's just open it. A better implementation would involve state management.
-    toast({ title: "Code Scanné", description: `Le code "${result}" a été détecté. Remplissez les autres détails.` });
-    // We need a way to pass this `result` to the AddAssetSheet component.
-    // The AddAssetSheet does not accept initial values.
-    // We can't change it now, so the user will have to manually copy it.
+    toast({ title: "Code Scanné", description: `Le N° d'inventaire a été pré-rempli.` });
   };
   
   const handleDeleteAsset = async () => {
@@ -455,8 +450,9 @@ export default function ItAssetsPage() {
         </Card>
         <AddAssetSheet
           isOpen={isAddSheetOpen}
-          onClose={() => setIsAddSheetOpen(false)}
+          onClose={() => { setIsAddSheetOpen(false); setInitialAssetTag(undefined); }}
           onAddAsset={handleAddAsset}
+          initialTag={initialAssetTag}
         />
         <PrintAssetsDialog
             isOpen={isPrintDialogOpen}

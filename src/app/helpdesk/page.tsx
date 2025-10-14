@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { PlusCircle, Search, Eye, Filter, ListFilter, User, Calendar, Tag } from "lucide-react";
+import { PlusCircle, Search, Eye, ListFilter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -23,7 +23,6 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuCheckboxItem,
   DropdownMenuTrigger,
   DropdownMenuLabel,

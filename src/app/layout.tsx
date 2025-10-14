@@ -4,13 +4,13 @@ import './globals.css';
 import {Toaster} from '@/components/ui/toaster';
 import { SiteLayout } from '@/components/site-layout';
 import { ThemeProvider } from "@/components/theme-provider"
+import { BASE_URL } from '@/lib/constants';
 
-// Metadata must be static in this context to avoid server-side Firebase calls during build.
-// Dynamic metadata will be handled client-side.
 export const metadata: Metadata = {
+  metadataBase: new URL(BASE_URL),
   title: 'Gestion RH&M CNRCT',
   description: 'Application de gestion des ressources humaines et matérielles.',
-  manifest: "/manifest.json",
+  manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -35,7 +35,6 @@ export default async function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Arial&display=swap"
           rel="stylesheet"
         />
-        <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#2C3E50" />
       </head>
       <body className="font-body antialiased">

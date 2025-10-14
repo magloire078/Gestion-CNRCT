@@ -133,3 +133,4 @@ export async function updateTicket(ticketId: string, dataToUpdate: Partial<Ticke
     await updateDoc(ticketDocRef, updatePayload);
 }
 
+

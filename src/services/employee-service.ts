@@ -27,7 +27,7 @@ export type EmployeeGroup = 'directoire' | 'regional' | 'personnel' | 'garde-rep
  * @returns The group name as a string.
  */
 export function getEmployeeGroup(employee: Employe): EmployeeGroup {
-  if (employee.departmentId === GROUPE_DIRECTOIRE_ID) {
+  if (employee.departmentId === GROUPE_DIRECTOIRE_ID || employee.matricule?.startsWith('D 0')) {
     return 'directoire';
   }
   // This was too exclusive. An employee can have a region but still be "personnel".
@@ -308,3 +308,4 @@ export async function getOrganizationalUnits() {
         throw error;
     }
 }
+

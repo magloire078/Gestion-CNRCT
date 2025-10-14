@@ -29,6 +29,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ArrowLeft, Send, Loader2, User, Calendar, Tag, Shield, Bot, UserCog, Ticket as TicketIcon } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 
 const statusVariantMap: Record<Ticket['status'], "default" | "secondary" | "outline" | "destructive"> = {
@@ -59,6 +60,7 @@ export default function TicketDetailPage() {
   const router = useRouter();
   const { id: ticketId } = params as { id: string };
   const { user, hasPermission } = useAuth();
+  const { toast } = useToast();
   
   const [ticket, setTicket] = useState<Ticket | null>(null);
   const [messages, setMessages] = useState<TicketMessage[]>([]);
@@ -111,22 +113,48 @@ export default function TicketDetailPage() {
 
   const handleStatusChange = async (status: Ticket['status']) => {
     if (!ticket || !isAgent) return;
-    try {
-        await updateTicketStatusAndAssignee(ticket.id, { status });
-        setTicket(prev => prev ? { ...prev, status } : null);
-    } catch(err) {
-        console.error(err);
+    const originalStatus = ticket.status;
+    setTicket(prev => prev ? { ...prev, status } : null); // Optimistic update
+    const result = await updateTicketStatusAndAssignee(ticket.id, { status });
+    if (!result.success) {
+        setTicket(prev => prev ? { ...prev, status: originalStatus } : null);
+        toast({
+            variant: "destructive",
+            title: "Erreur",
+            description: result.error,
+        });
+    } else {
+        toast({
+            title: "Statut mis à jour",
+            description: `Le ticket est maintenant : ${status}.`,
+        });
     }
   }
   
   const handleAssigneeChange = async (agentId: string) => {
     if (!ticket || !isAgent) return;
-    try {
-        const agent = employees.find(e => e.id === agentId);
-        await updateTicketStatusAndAssignee(ticket.id, { assignedTo: agentId, assignedToName: agent?.name });
-        setTicket(prev => prev ? { ...prev, assignedTo: agentId, assignedToName: agent?.name } : null);
-    } catch(err) {
-        console.error(err);
+    const originalAssigneeId = ticket.assignedTo;
+    const originalAssigneeName = ticket.assignedToName;
+
+    const agent = employees.find(e => e.id === agentId);
+    const newAssignedTo = agentId === 'none' ? undefined : agentId;
+    const newAssignedToName = agentId === 'none' ? undefined : agent?.name;
+
+    setTicket(prev => prev ? { ...prev, assignedTo: newAssignedTo, assignedToName: newAssignedToName } : null); // Optimistic update
+
+    const result = await updateTicketStatusAndAssignee(ticket.id, { assignedTo: newAssignedTo, assignedToName: newAssignedToName });
+     if (!result.success) {
+        setTicket(prev => prev ? { ...prev, assignedTo: originalAssigneeId, assignedToName: originalAssigneeName } : null);
+        toast({
+            variant: "destructive",
+            title: "Erreur",
+            description: result.error,
+        });
+    } else {
+        toast({
+            title: "Assignation mise à jour",
+            description: newAssignedToName ? `Ticket assigné à ${newAssignedToName}.` : "Ticket non assigné.",
+        });
     }
   }
 
@@ -199,7 +227,7 @@ export default function TicketDetailPage() {
                        )}
                     </div>
                 </CardContent>
-                 {(isOwner || isAgent) && (
+                 {(isOwner || isAgent) && ticket.status !== 'Fermé' && (
                     <CardFooter className="border-t pt-4">
                         <form
                             ref={formRef}
@@ -239,9 +267,9 @@ export default function TicketDetailPage() {
                     <InfoItem icon={Shield} label="Priorité" value={<Badge variant={priorityVariantMap[ticket.priority]}>{ticket.priority}</Badge>} />
 
                     <div className="space-y-2">
-                        <Label className="flex items-center gap-2"><UserCog className="h-4 w-4"/> Agent Assigné</Label>
+                        <Label className="flex items-center gap-2 text-sm text-muted-foreground"><UserCog className="h-4 w-4"/> Agent Assigné</Label>
                         {isAgent ? (
-                            <Select value={ticket.assignedTo || 'none'} onValueChange={handleAssigneeChange}>
+                            <Select value={ticket.assignedTo || 'none'} onValueChange={handleAssigneeChange} disabled={!isAgent}>
                                 <SelectTrigger><SelectValue /></SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="none">Non assigné</SelectItem>
@@ -256,9 +284,9 @@ export default function TicketDetailPage() {
                     </div>
 
                      <div className="space-y-2">
-                        <Label className="flex items-center gap-2"><UserCog className="h-4 w-4"/> Statut</Label>
+                        <Label className="flex items-center gap-2 text-sm text-muted-foreground"><UserCog className="h-4 w-4"/> Statut</Label>
                         {isAgent ? (
-                            <Select value={ticket.status} onValueChange={handleStatusChange}>
+                            <Select value={ticket.status} onValueChange={(v: Ticket['status']) => handleStatusChange(v)} disabled={!isAgent}>
                                 <SelectTrigger><SelectValue /></SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="Ouvert">Ouvert</SelectItem>
@@ -294,3 +322,5 @@ function InfoItem({ label, value, icon: Icon }: { label: string; value: string |
         </div>
     )
 }
+
+    

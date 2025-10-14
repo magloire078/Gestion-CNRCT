@@ -19,7 +19,7 @@ const GROUPE_DIRECTOIRE_ID = 'DVeCoGfRfL3p43eQeYwz';
 const GROUPE_GARDE_ID = 'YOUR_GARDE_ID'; // Replace with actual ID
 const GROUPE_GENDARME_ID = 'YOUR_GENDARME_ID'; // Replace with actual ID
 
-export type EmployeeGroup = 'directoire' | 'regional' | 'personnel' | 'garde-republicaine' | 'gendarme' | 'chauffeur-directoire' | 'all';
+export type EmployeeGroup = 'directoire' | 'regional' | 'personnel-siege' | 'personnel-non-siege' | 'garde-republicaine' | 'gendarme' | 'all';
 
 /**
  * Determines the group an employee belongs to based on their properties.
@@ -30,13 +30,9 @@ export function getEmployeeGroup(employee: Employe): EmployeeGroup {
   if (employee.departmentId === GROUPE_DIRECTOIRE_ID || employee.matricule?.startsWith('D 0')) {
     return 'directoire';
   }
-  if (employee.matricule?.startsWith('R 0')) {
-      return 'chauffeur-directoire';
+  if (employee.matricule?.startsWith('R 0') && employee.CNPS === true) {
+      return 'personnel-non-siege';
   }
-  // This was too exclusive. An employee can have a region but still be "personnel".
-  // if (employee.Region && employee.Region !== '') {
-  //   return 'regional';
-  // }
   if (employee.departmentId === GROUPE_GARDE_ID) {
     return 'garde-republicaine';
   }
@@ -44,15 +40,12 @@ export function getEmployeeGroup(employee: Employe): EmployeeGroup {
     return 'gendarme';
   }
   
-  // If none of the special groups match, they are 'personnel'
-  // Or if they are linked to a region for example.
-  // The 'regional' tab could be a filter on top of the personnel list.
-  if (employee.departmentId && employee.departmentId !== GROUPE_DIRECTOIRE_ID) {
-    return 'personnel';
+  if (employee.CNPS === true) {
+      return 'personnel-siege';
   }
   
-  // Default fallback
-  return 'personnel';
+  // Default fallback for employees not declared to CNPS or without specific matricules
+  return 'personnel-siege';
 }
 
 
@@ -311,5 +304,6 @@ export async function getOrganizationalUnits() {
         throw error;
     }
 }
+
 
 

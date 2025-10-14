@@ -101,8 +101,8 @@ export default function EmployeesPage() {
   const pageTitle = useMemo(() => {
     switch (personnelTypeFilter) {
       case 'directoire': return 'Membres du Directoire';
-      case 'regional': return 'Comités Régionaux';
-      case 'personnel': return 'Personnel';
+      case 'personnel-siege': return 'Personnel Siège';
+      case 'personnel-non-siege': return 'Personnel Non-Siège';
       case 'garde-republicaine': return 'Garde Républicaine';
       case 'gendarme': return 'Gendarmes';
       default: return 'Effectif Global';
@@ -321,7 +321,7 @@ export default function EmployeesPage() {
     }
   };
   
-  const showDepartmentFilter = personnelTypeFilter === 'all' || personnelTypeFilter === 'personnel';
+  const showDepartmentFilter = personnelTypeFilter === 'all' || personnelTypeFilter === 'personnel-siege';
 
   const handleTabChange = (value: string) => {
     setPersonnelTypeFilter(value);
@@ -382,15 +382,15 @@ export default function EmployeesPage() {
                 <Tabs value={personnelTypeFilter} onValueChange={handleTabChange}>
                     <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-6 mb-6">
                         <TabsTrigger value="all">Effectif Global</TabsTrigger>
-                        <TabsTrigger value="directoire">Membres du Directoire</TabsTrigger>
-                        <TabsTrigger value="regional">Comités Régionaux</TabsTrigger>
-                        <TabsTrigger value="personnel">Personnel</TabsTrigger>
+                        <TabsTrigger value="directoire">Directoire</TabsTrigger>
+                        <TabsTrigger value="personnel-siege">Personnel Siège</TabsTrigger>
+                        <TabsTrigger value="personnel-non-siege">Personnel Non-Siège</TabsTrigger>
                         <TabsTrigger value="garde-republicaine">Garde Républicaine</TabsTrigger>
                         <TabsTrigger value="gendarme">Gendarmes</TabsTrigger>
                     </TabsList>
                 </Tabs>
                 
-                {canImport && (personnelTypeFilter === 'all' || personnelTypeFilter === 'personnel') && (
+                {canImport && (personnelTypeFilter === 'all' || personnelTypeFilter === 'personnel-siege') && (
                   <div className="mb-6">
                       <ImportEmployeesDataCard />
                   </div>

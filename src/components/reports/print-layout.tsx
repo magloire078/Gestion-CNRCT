@@ -14,18 +14,18 @@ interface PrintLayoutProps {
 export function PrintLayout({ logos, title, subtitle, columns, data }: PrintLayoutProps) {
     return (
         <div id="print-section" className="bg-white text-black p-8 w-full print:shadow-none print:border-none print:p-0">
-            <header className="flex justify-between items-start mb-8">
-                <div className="w-1/4 text-center flex flex-col justify-center items-center h-24">
-                   <p className="font-bold text-base">Chambre Nationale des Rois et Chefs Traditionnels</p>
+            <header className="flex justify-between items-start mb-8 h-[100px]">
+                <div className="w-1/4 text-center flex flex-col justify-center items-center h-full">
+                   <p className="font-bold text-sm leading-tight">Chambre Nationale des Rois et Chefs Traditionnels</p>
                    {logos.mainLogoUrl && <img src={logos.mainLogoUrl} alt="Logo Principal" className="max-h-20 max-w-full h-auto w-auto mt-1" />}
                 </div>
                 <div className="w-2/4 text-center pt-2">
                     <h1 className="font-bold text-lg">{logos.organizationName || "Chambre Nationale des Rois et Chefs Traditionnels"}</h1>
                 </div>
-                <div className="w-1/4 text-center flex flex-col justify-center items-center h-24">
-                    <p className="font-bold text-base">République de Côte d'Ivoire</p>
+                <div className="w-1/4 text-center flex flex-col justify-center items-center h-full">
+                    <p className="font-bold text-sm whitespace-nowrap">REPUBLIQUE DE CÔTE D'IVOIRE</p>
                     {logos.secondaryLogoUrl && <img src={logos.secondaryLogoUrl} alt="Logo Secondaire" className="max-h-16 max-w-full h-auto w-auto my-1" />}
-                    <p className="text-sm">Union - Discipline - Travail</p>
+                    <p className="text-xs">Union - Discipline - Travail</p>
                 </div>
             </header>
 
@@ -34,11 +34,11 @@ export function PrintLayout({ logos, title, subtitle, columns, data }: PrintLayo
                 {subtitle && <h2 className="text-md font-bold mt-4 uppercase">{subtitle}</h2>}
             </div>
             
-            <table className="w-full text-sm border-collapse border border-black">
+            <table className="w-full text-xs border-collapse border border-black">
                 <thead>
                     <tr className="bg-gray-200">
                         {columns.map(col => (
-                           <th key={col.key} className={`border border-black p-2 text-left font-bold text-${col.align || 'left'}`}>
+                           <th key={col.key} className={`border border-black p-1 text-left font-bold text-${col.align || 'left'}`}>
                                 {col.header}
                            </th>
                         ))}
@@ -48,7 +48,7 @@ export function PrintLayout({ logos, title, subtitle, columns, data }: PrintLayo
                     {data.map((row, index) => (
                         <tr key={index}>
                            {columns.map(col => (
-                               <td key={col.key} className={`border border-black p-2 text-${col.align || 'left'}`}>
+                               <td key={col.key} className={`border border-black p-1 text-${col.align || 'left'}`}>
                                    {row[col.key]}
                                </td>
                            ))}
@@ -71,5 +71,3 @@ export function PrintLayout({ logos, title, subtitle, columns, data }: PrintLayo
         </div>
     );
 }
-
-    

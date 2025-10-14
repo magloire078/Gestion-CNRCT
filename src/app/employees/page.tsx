@@ -47,6 +47,7 @@ const statusVariantMap: Record<Status, "default" | "secondary" | "destructive" |
 };
 
 export const allColumns = {
+  index: "N°",
   matricule: "N° MAT",
   name: "NOM ET PRENOMS",
   poste: "POSTE",
@@ -597,7 +598,7 @@ export default function EmployeesPage() {
            <PrintLayout
                 logos={organizationLogos}
                 title={`LISTE DU PERSONNEL - ${pageTitle.toUpperCase()}`}
-                subtitle={`EN DATE DU ${printDate}`}
+                subtitle={`Effectif: ${filteredEmployees.length} | Date: ${printDate}`}
                 columns={columnsToPrint.map(key => ({
                     header: allColumns[key],
                     key,
@@ -609,6 +610,8 @@ export default function EmployeesPage() {
                         name: `${(employee.lastName || '').toUpperCase()} ${employee.firstName || ''}`.trim(),
                     };
                     columnsToPrint.forEach(key => {
+                        if (key === 'index') return;
+                        if (key === 'name') return;
                         if (key === 'department') {
                             row[key] = getEmployeeOrgUnit(employee);
                         } else if (key === 'CNPS') {

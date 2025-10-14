@@ -19,7 +19,7 @@ const GROUPE_DIRECTOIRE_ID = 'DVeCoGfRfL3p43eQeYwz';
 const GROUPE_GARDE_ID = 'YOUR_GARDE_ID'; // Replace with actual ID
 const GROUPE_GENDARME_ID = 'YOUR_GENDARME_ID'; // Replace with actual ID
 
-export type EmployeeGroup = 'directoire' | 'regional' | 'personnel' | 'garde-republicaine' | 'gendarme' | 'all';
+export type EmployeeGroup = 'directoire' | 'regional' | 'personnel' | 'garde-republicaine' | 'gendarme' | 'chauffeur-directoire' | 'all';
 
 /**
  * Determines the group an employee belongs to based on their properties.
@@ -29,6 +29,9 @@ export type EmployeeGroup = 'directoire' | 'regional' | 'personnel' | 'garde-rep
 export function getEmployeeGroup(employee: Employe): EmployeeGroup {
   if (employee.departmentId === GROUPE_DIRECTOIRE_ID || employee.matricule?.startsWith('D 0')) {
     return 'directoire';
+  }
+  if (employee.matricule?.startsWith('R 0')) {
+      return 'chauffeur-directoire';
   }
   // This was too exclusive. An employee can have a region but still be "personnel".
   // if (employee.Region && employee.Region !== '') {
@@ -308,4 +311,5 @@ export async function getOrganizationalUnits() {
         throw error;
     }
 }
+
 

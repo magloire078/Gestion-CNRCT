@@ -12,7 +12,7 @@ import { getTicket, subscribeToTicketMessages } from "@/services/helpdesk-servic
 import { getEmployees } from "@/services/employee-service";
 import type { Ticket, TicketMessage, Employe } from "@/lib/data";
 import { useAuth } from "@/hooks/use-auth";
-import { continueTicketConversation, updateTicketStatusAndAssignee } from "./actions";
+import { continueTicketConversation, updateTicketStatusAndAssignee, suggestReplyAction, type SuggestReplyInput } from "./actions";
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -28,7 +28,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft, Send, Loader2, User, Calendar, Tag, Shield, Bot, UserCog, Ticket as TicketIcon } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+
+import { ArrowLeft, Send, Loader2, User, Calendar, Tag, Shield, Bot, UserCog, Ticket as TicketIcon, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 
@@ -69,6 +79,11 @@ export default function TicketDetailPage() {
 
   const [state, formAction] = useActionState(continueTicketConversation, { messages: [] });
   const formRef = useRef<HTMLFormElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const [isSuggestionLoading, setIsSuggestionLoading] = useState(false);
+  const [suggestion, setSuggestion] = useState<string | null>(null);
+  const [isSuggestionDialogOpen, setIsSuggestionDialogOpen] = useState(false);
 
   const isAgent = hasPermission('page:helpdesk:view');
 
@@ -157,7 +172,39 @@ export default function TicketDetailPage() {
         });
     }
   }
+  
+   const handleSuggestReply = async () => {
+    if (!ticket || !user) return;
+    
+    setIsSuggestionLoading(true);
+    setSuggestion(null);
+    setIsSuggestionDialogOpen(true);
 
+    const input: SuggestReplyInput = {
+        history: messages.map(m => ({
+            role: m.authorId === user.id ? 'assistant' : 'user',
+            content: m.content
+        })),
+        ticketTitle: ticket.title,
+        userName: ticket.createdByName,
+    };
+
+    const result = await suggestReplyAction(input);
+    if(result.suggestion) {
+        setSuggestion(result.suggestion);
+    } else {
+        toast({ variant: 'destructive', title: 'Erreur', description: result.error });
+        setIsSuggestionDialogOpen(false);
+    }
+    setIsSuggestionLoading(false);
+  }
+
+  const useSuggestion = () => {
+    if (textareaRef.current && suggestion) {
+        textareaRef.current.value = suggestion;
+    }
+    setIsSuggestionDialogOpen(false);
+  }
 
   if (loading) {
     return <Skeleton className="h-[600px] w-full" />
@@ -170,6 +217,7 @@ export default function TicketDetailPage() {
   const isOwner = user?.id === ticket.createdBy;
 
   return (
+    <>
     <div className="flex flex-col gap-6 max-w-4xl mx-auto">
       <div className="flex items-center gap-4">
         <Button variant="outline" size="icon" onClick={() => router.back()}>
@@ -235,19 +283,28 @@ export default function TicketDetailPage() {
                                 await formAction(formData);
                                 formRef.current?.reset();
                             }}
-                            className="w-full flex items-center gap-2"
+                            className="w-full flex flex-col gap-2"
                         >
                             <input type="hidden" name="ticketId" value={ticketId} />
                             <input type="hidden" name="authorId" value={user?.id} />
                             <input type="hidden" name="authorName" value={user?.name} />
                             <Textarea
+                                ref={textareaRef}
                                 name="content"
                                 placeholder="Tapez votre message ici..."
                                 className="flex-1"
-                                rows={1}
+                                rows={3}
                                 required
                             />
-                            <SubmitButton />
+                            <div className="flex justify-between items-center">
+                               {isAgent ? (
+                                <Button type="button" variant="outline" size="sm" onClick={handleSuggestReply} disabled={isSuggestionLoading}>
+                                   {isSuggestionLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Sparkles className="mr-2 h-4 w-4"/>}
+                                   Suggérer une réponse
+                                </Button>
+                               ) : <div />}
+                                <SubmitButton />
+                            </div>
                         </form>
                     </CardFooter>
                  )}
@@ -309,6 +366,33 @@ export default function TicketDetailPage() {
         </div>
       </div>
     </div>
+    
+      <AlertDialog open={isSuggestionDialogOpen} onOpenChange={setIsSuggestionDialogOpen}>
+        <AlertDialogContent className="max-w-2xl">
+            <AlertDialogHeader>
+                <AlertDialogTitle>Suggestion de Réponse IA</AlertDialogTitle>
+                <AlertDialogDescription>
+                    L'IA a généré la suggestion de réponse suivante. Vous pouvez la copier ou l'utiliser comme inspiration.
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <div className="py-4">
+                {isSuggestionLoading ? (
+                    <div className="flex items-center justify-center h-24">
+                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    </div>
+                ) : (
+                    <div className="p-4 bg-muted rounded-md text-sm whitespace-pre-wrap max-h-64 overflow-y-auto">
+                        {suggestion}
+                    </div>
+                )}
+            </div>
+            <AlertDialogFooter>
+                <Button variant="outline" onClick={() => setIsSuggestionDialogOpen(false)}>Fermer</Button>
+                <Button onClick={useSuggestion} disabled={isSuggestionLoading || !suggestion}>Utiliser cette suggestion</Button>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
 

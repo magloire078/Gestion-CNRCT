@@ -3,7 +3,9 @@ import {genkit} from 'genkit';
 import {googleAI} from '@genkit-ai/google-genai';
 import { config } from 'dotenv';
 
-config({ path: `.env` });
+if (process.env.NODE_ENV === 'development') {
+    config({ path: `.env` });
+}
 
 
 export const ai = genkit({

@@ -104,6 +104,7 @@ export default function EmployeesPage() {
       case 'directoire': return 'Membres du Directoire';
       case 'personnel-siege': return 'Personnel Siège';
       case 'personnel-non-siege': return 'Personnel Non-Siège';
+      case 'regional': return 'Comités Régionaux';
       case 'garde-republicaine': return 'Garde Républicaine';
       case 'gendarme': return 'Gendarmes';
       default: return 'Effectif Global';
@@ -274,7 +275,7 @@ export default function EmployeesPage() {
 
     const escapeSql = (str: string | undefined | null) => {
       if (str === null || str === undefined) return 'NULL';
-      return `'${String(str).replace(/'/g, "''")}'`;
+      return `'\'\'\'${String(str).replace(/'/g, "''")}\'\'\''`;
     };
 
     const tableName = 'employees';
@@ -381,11 +382,12 @@ export default function EmployeesPage() {
                 </div>
 
                 <Tabs value={personnelTypeFilter} onValueChange={handleTabChange}>
-                    <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-6 mb-6">
+                    <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-7 mb-6">
                         <TabsTrigger value="all">Effectif Global</TabsTrigger>
                         <TabsTrigger value="directoire">Directoire</TabsTrigger>
                         <TabsTrigger value="personnel-siege">Personnel Siège</TabsTrigger>
                         <TabsTrigger value="personnel-non-siege">Personnel Non-Siège</TabsTrigger>
+                        <TabsTrigger value="regional">Comités Régionaux</TabsTrigger>
                         <TabsTrigger value="garde-republicaine">Garde Républicaine</TabsTrigger>
                         <TabsTrigger value="gendarme">Gendarmes</TabsTrigger>
                     </TabsList>

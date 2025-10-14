@@ -30,6 +30,9 @@ export function getEmployeeGroup(employee: Employe): EmployeeGroup {
   if (employee.departmentId === GROUPE_DIRECTOIRE_ID || employee.matricule?.startsWith('D 0')) {
     return 'directoire';
   }
+  if (employee.poste === 'Membre Comité Régional') {
+    return 'regional';
+  }
   if (employee.matricule?.startsWith('R 0') && employee.CNPS === true) {
       return 'personnel-non-siege';
   }
@@ -304,6 +307,3 @@ export async function getOrganizationalUnits() {
         throw error;
     }
 }
-
-
-

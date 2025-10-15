@@ -42,7 +42,7 @@ export async function addSupply(supplyDataToAdd: Omit<Supply, "id">): Promise<Su
     // Check if stock is low and create notification
     if (supplyDataToAdd.quantity <= supplyDataToAdd.reorderLevel) {
         await createNotification({
-            userId: 'all', // Or target a specific 'inventory_manager' role
+            userId: 'manager', // Target a specific 'inventory_manager' role or admin/managers
             title: 'Stock de Fournitures Bas',
             description: `Le stock pour "${supplyDataToAdd.name}" est bas (${supplyDataToAdd.quantity}).`,
             href: '/supplies'
@@ -66,7 +66,7 @@ export async function updateSupply(id: string, dataToUpdate: Partial<Omit<Supply
     // Check stock level after update
      if (dataToUpdate.quantity !== undefined && dataToUpdate.reorderLevel !== undefined && dataToUpdate.quantity <= dataToUpdate.reorderLevel) {
         await createNotification({
-            userId: 'all',
+            userId: 'manager',
             title: 'Stock Bas',
             description: `Le stock pour "${dataToUpdate.name || 'un article'}" est bas.`,
             href: '/supplies'

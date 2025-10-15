@@ -56,8 +56,8 @@ export default function MappingPage() {
     return chiefs.filter(
       (chief) =>
         chief.name.toLowerCase().includes(lowercasedTerm) ||
-        chief.village.toLowerCase().includes(lowercasedTerm) ||
-        chief.region.toLowerCase().includes(lowercasedTerm)
+        (chief.village || '').toLowerCase().includes(lowercasedTerm) ||
+        (chief.region || '').toLowerCase().includes(lowercasedTerm)
     );
   }, [chiefs, searchTerm]);
 

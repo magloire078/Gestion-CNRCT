@@ -162,6 +162,14 @@ export type ConflictType = typeof conflictTypes[number];
 export const conflictStatuses = ["En cours", "Résolu", "En médiation"] as const;
 export type ConflictStatus = typeof conflictStatuses[number];
 
+export const conflictTypeVariantMap: Record<ConflictType, "default" | "secondary" | "outline" | "destructive"> = {
+    "Foncier": "default",
+    "Succession": "secondary",
+    "Intercommunautaire": "destructive",
+    "Politique": "outline",
+    "Autre": "outline",
+};
+
 export type Conflict = {
     id: string; // Firestore document ID
     village: string;

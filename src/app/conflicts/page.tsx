@@ -34,9 +34,11 @@ import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
 import type { Conflict, Chief, ConflictType } from "@/lib/data";
+import { conflictTypeVariantMap, conflictTypes, conflictStatuses } from "@/lib/data";
 import { AddConflictSheet } from "@/components/conflicts/add-conflict-sheet";
+import { EditConflictSheet } from "@/components/conflicts/edit-conflict-sheet";
 import { Input } from "@/components/ui/input";
-import { subscribeToConflicts, addConflict } from "@/services/conflict-service";
+import { subscribeToConflicts, addConflict, updateConflict } from "@/services/conflict-service";
 import { getChiefs } from "@/services/chief-service";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
@@ -54,18 +56,13 @@ const statusVariantMap: Record<Status, "destructive" | "default" | "secondary"> 
   "En médiation": "secondary",
 };
 
-const conflictTypeVariantMap: Record<ConflictType, "default" | "secondary" | "outline" | "destructive"> = {
-    "Foncier": "default",
-    "Succession": "secondary",
-    "Intercommunautaire": "destructive",
-    "Politique": "outline",
-    "Autre": "outline",
-};
-
 export default function ConflictsPage() {
   const [conflicts, setConflicts] = useState<Conflict[] | null>(null);
   const [chiefs, setChiefs] = useState<Chief[] | null>(null);
+  
   const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
+  const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
+  const [editingConflict, setEditingConflict] = useState<Conflict | null>(null);
   
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -118,6 +115,25 @@ export default function ConflictsPage() {
         throw err;
      }
   };
+
+  const handleUpdateConflict = async (id: string, data: Partial<Omit<Conflict, 'id'>>) => {
+      try {
+        await updateConflict(id, data);
+        setIsEditSheetOpen(false);
+        setEditingConflict(null);
+        toast({
+            title: "Conflit mis à jour",
+        });
+      } catch (err) {
+        console.error("Failed to update conflict:", err);
+        throw err;
+      }
+  }
+
+  const handleEditClick = (conflict: Conflict) => {
+    setEditingConflict(conflict);
+    setIsEditSheetOpen(true);
+  }
   
   const handleAnalyzeConflict = async (conflict: Conflict) => {
     setCurrentConflict(conflict);
@@ -244,10 +260,8 @@ export default function ConflictsPage() {
                                             <Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="end">
-                                            <DropdownMenuItem asChild>
-                                              <Link href={`/conflicts/${conflict.id}/edit`}>
+                                            <DropdownMenuItem onSelect={() => handleEditClick(conflict)}>
                                                 <Pencil className="mr-2 h-4 w-4"/> Modifier
-                                              </Link>
                                             </DropdownMenuItem>
                                             <DropdownMenuItem onSelect={() => handleAnalyzeConflict(conflict)}>
                                                 <Sparkles className="mr-2 h-4 w-4" /> Analyser avec IA
@@ -283,10 +297,8 @@ export default function ConflictsPage() {
                                     <p className="text-sm text-muted-foreground">{conflict.description}</p>
                                     <p className="text-sm"><span className="font-medium">Signalé le:</span> {conflict.reportedDate}</p>
                                     <div className="flex gap-2 pt-2">
-                                        <Button variant="outline" size="sm" asChild>
-                                          <Link href={`/conflicts/${conflict.id}/edit`}>
-                                            <Pencil className="mr-2 h-4 w-4" /> Modifier
-                                          </Link>
+                                        <Button variant="outline" size="sm" onClick={() => handleEditClick(conflict)}>
+                                          <Pencil className="mr-2 h-4 w-4" /> Modifier
                                         </Button>
                                         <Button variant="outline" size="sm" onClick={() => handleAnalyzeConflict(conflict)}>
                                             <Sparkles className="mr-2 h-4 w-4" /> Analyser
@@ -345,6 +357,14 @@ export default function ConflictsPage() {
         onClose={() => setIsAddSheetOpen(false)}
         onAddConflict={handleAddConflict}
       />
+       {editingConflict && (
+         <EditConflictSheet
+            isOpen={isEditSheetOpen}
+            onClose={() => setIsEditSheetOpen(false)}
+            onUpdateConflict={handleUpdateConflict}
+            conflict={editingConflict}
+        />
+      )}
       
       <AlertDialog open={isAnalysisDialogOpen} onOpenChange={setIsAnalysisDialogOpen}>
         <AlertDialogContent className="max-w-2xl">

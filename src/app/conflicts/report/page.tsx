@@ -91,11 +91,13 @@ export default function ConflictReportPage() {
   };
   
   const handlePrint = () => {
-    setIsPrinting(true);
-    setTimeout(() => {
-        window.print();
-        setIsPrinting(false);
-    }, 300);
+    if (reportData && settings) {
+      setIsPrinting(true);
+      setTimeout(() => {
+          window.print();
+          setIsPrinting(false);
+      }, 300);
+    }
   };
 
   return (

@@ -6,7 +6,7 @@ import { getStorage, FirebaseStorage } from "firebase/storage";
 import { getAnalytics } from "firebase/analytics";
 
 const firebaseConfig: FirebaseOptions = {
-  apiKey: "AIzaSyCilrvsY82p5T9i1sNmRGot0pXq_8iJq8s",
+  apiKey: "AIzaSyBYi_AfeH238aR3XFw8v2a4mcpd-y2b5pY",
   authDomain: "gestion-cnrct-w8ljs.firebaseapp.com",
   databaseURL: "https://gestion-cnrct-w8ljs-default-rtdb.europe-west1.firebasedatabase.app",
   projectId: "gestion-cnrct-w8ljs",

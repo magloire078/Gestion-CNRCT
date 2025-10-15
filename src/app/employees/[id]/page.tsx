@@ -491,20 +491,6 @@ export default function EmployeeDetailPage() {
     );
 }
 
-function InfoSection({ title, icon: Icon, children }: { title: string; icon: React.ElementType, children: React.ReactNode }) {
-    return (
-        <div>
-            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 border-b pb-2">
-                <Icon className="h-5 w-5 text-primary" />
-                {title}
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
-                {children}
-            </div>
-        </div>
-    );
-}
-
 function InfoItem({ label, value, icon: Icon, children }: { label: string; value?: string | number | null; icon?: React.ElementType, children?: React.ReactNode }) {
     if (!value && !children) return null;
     return (
@@ -565,3 +551,4 @@ function EmployeeDetailSkeleton() {
         </div>
     )
 }
+

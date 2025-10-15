@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
@@ -20,10 +20,12 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Upload, FileText, Loader2, Download, PackageOpen, X } from "lucide-react";
+import { Upload, FileText, Loader2, Download, PackageOpen, X, Search } from "lucide-react";
 import { useDropzone } from 'react-dropzone';
 import { format, parseISO } from "date-fns";
 import { fr } from "date-fns/locale";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 
 function formatBytes(bytes: number, decimals = 2) {
   if (bytes === 0) return '0 Octets';
@@ -45,6 +47,9 @@ export default function RepositoryPage() {
 
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loadingDocs, setLoadingDocs] = useState(true);
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [typeFilter, setTypeFilter] = useState("all");
 
    useEffect(() => {
     const unsubscribe = subscribeToDocuments(
@@ -109,6 +114,24 @@ export default function RepositoryPage() {
         setUploadProgress(0);
     }
   };
+  
+    const fileTypes = useMemo(() => {
+        if (!documents) return [];
+        const allTypes = documents.map(doc => {
+            const parts = doc.fileName.split('.');
+            return parts.length > 1 ? parts.pop()!.toUpperCase() : 'INCONNU';
+        });
+        return [...new Set(allTypes)].sort();
+    }, [documents]);
+
+    const filteredDocuments = useMemo(() => {
+        return documents.filter(doc => {
+            const matchesSearch = doc.fileName.toLowerCase().includes(searchTerm.toLowerCase());
+            const fileExtension = (doc.fileName.split('.').pop() || '').toUpperCase();
+            const matchesType = typeFilter === 'all' || fileExtension === typeFilter;
+            return matchesSearch && matchesType;
+        });
+    }, [documents, searchTerm, typeFilter]);
 
 
   return (
@@ -167,9 +190,30 @@ export default function RepositoryPage() {
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
+                    <div className="flex flex-col sm:flex-row gap-4 mb-4">
+                        <div className="relative flex-1">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                            <Input
+                                placeholder="Rechercher par nom..."
+                                className="pl-10"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        </div>
+                        <Select value={typeFilter} onValueChange={setTypeFilter}>
+                            <SelectTrigger className="w-full sm:w-[180px]">
+                                <SelectValue placeholder="Filtrer par type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">Tous les types</SelectItem>
+                                {fileTypes.map(type => <SelectItem key={type} value={type}>{type}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
+                    </div>
+
                      {loadingDocs ? (
                         <Skeleton className="h-48 w-full" />
-                     ) : documents.length > 0 ? (
+                     ) : filteredDocuments.length > 0 ? (
                         <Table>
                             <TableHeader>
                                 <TableRow>
@@ -181,7 +225,7 @@ export default function RepositoryPage() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {documents.map((doc, index) => (
+                                {filteredDocuments.map((doc, index) => (
                                     <TableRow key={doc.id}>
                                         <TableCell>{index + 1}</TableCell>
                                         <TableCell className="font-medium flex items-center gap-2">
@@ -205,7 +249,7 @@ export default function RepositoryPage() {
                     ) : (
                         <div className="flex flex-col items-center justify-center h-64 border-2 border-dashed rounded-lg">
                             <PackageOpen className="h-12 w-12 text-muted-foreground" />
-                            <p className="text-muted-foreground mt-4">Aucun document dans le référentiel.</p>
+                            <p className="text-muted-foreground mt-4">Aucun document trouvé.</p>
                         </div>
                     )}
                 </CardContent>

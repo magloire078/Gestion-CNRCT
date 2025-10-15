@@ -17,14 +17,15 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { EmployeeDistributionChart } from '@/components/charts/employee-distribution-chart';
 import { AssetStatusChart } from '@/components/charts/asset-status-chart';
 import { EmployeeActivityReport } from '@/components/reports/employee-activity-report';
-import { subscribeToEmployees } from '@/services/employee-service';
+import { subscribeToEmployees, getEmployeeGroup } from '@/services/employee-service';
 import { getOrganizationSettings } from '@/services/organization-service';
 import { subscribeToLeaves } from '@/services/leave-service';
 import { subscribeToAssets } from '@/services/asset-service';
 import { subscribeToVehicles } from '@/services/fleet-service';
 import { subscribeToChiefs } from '@/services/chief-service';
+import { subscribeToDepartments } from '@/services/department-service';
 import { checkAndNotifyForUpcomingRetirements } from '@/services/notification-service';
-import type { Employe, Leave, Asset, Fleet, OrganizationSettings, Chief } from '@/lib/data';
+import type { Employe, Leave, Asset, Fleet, OrganizationSettings, Chief, Department } from '@/lib/data';
 import { Skeleton } from '@/components/ui/skeleton';
 import { differenceInYears, parseISO, format, addMonths } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -117,6 +118,7 @@ const LatestRecruitsCard = ({ employees, loading }: { employees: Employe[], load
 
 export default function DashboardPage() {
     const [employees, setEmployees] = useState<Employe[]>([]);
+    const [departments, setDepartments] = useState<Department[]>([]);
     const [leaves, setLeaves] = useState<Leave[]>([]);
     const [assets, setAssets] = useState<Asset[]>([]);
     const [fleet, setFleet] = useState<Fleet[]>([]);
@@ -151,6 +153,7 @@ export default function DashboardPage() {
         setLoading(true);
         const unsubscribers = [
             subscribeToEmployees(setEmployees, console.error),
+            subscribeToDepartments(setDepartments, console.error),
             subscribeToLeaves(setLeaves, console.error),
             subscribeToAssets(setAssets, console.error),
             subscribeToVehicles(setFleet, console.error),
@@ -258,7 +261,7 @@ export default function DashboardPage() {
     
     const activeEmployees = employees.filter(e => e.status === 'Actif');
     const cnpsEmployees = activeEmployees.filter(e => e.CNPS === true);
-    const directoireEmployees = activeEmployees.filter(e => e.departmentId === 'DVeCoGfRfL3p43eQeYwz');
+    const directoireEmployees = activeEmployees.filter(e => getEmployeeGroup(e, departments) === 'directoire');
 
     const recentLeaves = leaves.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()).slice(0, 3);
   

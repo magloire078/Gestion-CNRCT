@@ -20,6 +20,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { getConflicts } from "@/services/conflict-service";
 import type { Conflict, ConflictType, OrganizationSettings } from "@/lib/data";
+import { conflictTypes, conflictStatuses } from "@/lib/data";
 import { Loader2, Printer, FileText } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -46,8 +47,6 @@ export default function ConflictReportPage() {
   
   const years = Array.from({ length: 10 }, (_, i) => (new Date().getFullYear() - i).toString());
   const months = Array.from({ length: 12 }, (_, i) => ({ value: (i + 1).toString(), label: format(new Date(2000, i, 1), 'MMMM', { locale: fr }) }));
-  const conflictTypes: ConflictType[] = ["Foncier", "Succession", "Intercommunautaire", "Politique", "Autre"];
-  const conflictStatuses: Conflict['status'][] = ["En cours", "Résolu", "En médiation"];
   
   const selectedPeriodText = `${months.find(m => m.value === month)?.label || ''} ${year}`;
 

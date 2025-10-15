@@ -6,6 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import { getConflict, updateConflict } from "@/services/conflict-service";
 import { getEmployees } from "@/services/employee-service";
 import type { Conflict, Employe, ConflictType } from "@/lib/data";
+import { conflictTypes, conflictStatuses } from "@/lib/data";
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -22,9 +23,6 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, Loader2, Save } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-
-const conflictTypes: ConflictType[] = ["Foncier", "Succession", "Intercommunautaire", "Politique", "Autre"];
-const conflictStatuses: Conflict['status'][] = ["En cours", "Résolu", "En médiation"];
 
 export default function ConflictEditPage() {
     const params = useParams();

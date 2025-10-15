@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { Conflict, Chief, ConflictType, Employe } from "@/lib/data";
+import { conflictTypes, conflictStatuses } from "@/lib/data";
 import { getChiefs } from "@/services/chief-service";
 import { getEmployees } from "@/services/employee-service";
 import {
@@ -47,8 +48,6 @@ interface AddConflictDialogProps {
   onClose: () => void;
   onAddConflict: (conflict: Omit<Conflict, "id">) => Promise<void>;
 }
-
-const conflictTypes: ConflictType[] = ["Foncier", "Succession", "Intercommunautaire", "Politique", "Autre"];
 
 export function AddConflictSheet({
   isOpen,
@@ -246,9 +245,7 @@ export function AddConflictSheet({
                       <SelectValue placeholder="Sélectionnez un statut" />
                   </SelectTrigger>
                   <SelectContent>
-                      <SelectItem value="En cours">En cours</SelectItem>
-                      <SelectItem value="En médiation">En médiation</SelectItem>
-                      <SelectItem value="Résolu">Résolu</SelectItem>
+                      {conflictStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
                   </SelectContent>
                </Select>
             </div>

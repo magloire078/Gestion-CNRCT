@@ -156,7 +156,11 @@ export type Mission = {
   lieuMission?: string;
 };
 
-export type ConflictType = "Foncier" | "Succession" | "Intercommunautaire" | "Politique" | "Autre";
+export const conflictTypes = ["Foncier", "Succession", "Intercommunautaire", "Politique", "Autre"] as const;
+export type ConflictType = typeof conflictTypes[number];
+
+export const conflictStatuses = ["En cours", "Résolu", "En médiation"] as const;
+export type ConflictStatus = typeof conflictStatuses[number];
 
 export type Conflict = {
     id: string; // Firestore document ID
@@ -164,7 +168,7 @@ export type Conflict = {
     type: ConflictType;
     description: string;
     reportedDate: string; // YYYY-MM-DD
-    status: 'En cours' | 'Résolu' | 'En médiation';
+    status: ConflictStatus;
     latitude?: number;
     longitude?: number;
     mediatorName?: string;

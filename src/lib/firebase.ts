@@ -6,14 +6,14 @@ import { getStorage, FirebaseStorage } from "firebase/storage";
 import { getAnalytics } from "firebase/analytics";
 
 const firebaseConfig: FirebaseOptions = {
-  apiKey: "AIzaSyBuMgqk-I_mngDw4SYuNhOOLcF6JNchXhw",
-  authDomain: "gestion-cnrct.firebaseapp.com",
-  databaseURL: "https://gestion-cnrct-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "gestion-cnrct",
-  storageBucket: "gestion-cnrct.firebasestorage.app",
-  messagingSenderId: "126727792063",
-  appId: "1:126727792063:web:55513c7e21531a87286d0a",
-  measurementId: "G-TDXM581DZ5"
+  apiKey: "AIzaSyCilrvsY82p5T9i1sNmRGot0pXq_8iJq8s",
+  authDomain: "gestion-cnrct-w8ljs.firebaseapp.com",
+  databaseURL: "https://gestion-cnrct-w8ljs-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "gestion-cnrct-w8ljs",
+  storageBucket: "gestion-cnrct-w8ljs.appspot.com",
+  messagingSenderId: "333734188554",
+  appId: "1:333734188554:web:e0586f1e635c91f1a547b7",
+  measurementId: "G-85P0P7EVQ7"
 };
 
 // Initialize Firebase

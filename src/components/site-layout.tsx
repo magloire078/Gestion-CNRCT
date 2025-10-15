@@ -84,6 +84,9 @@ const allMenuItems = [
         { href: "/leave", label: "Congés", icon: CalendarOff, permission: "page:leave:view" },
         { href: "/evaluations", label: "Évaluations", icon: ClipboardCheck, permission: "page:evaluations:view" },
         { href: "/indemnities", label: "Indemnités", icon: Scale, permission: "page:indemnities:view" },
+        { href: "/employees?filter=directoire", label: "Membres du Directoire", icon: Building, permission: "page:employees:view" },
+        { href: "/employees?filter=regional", label: "Comités Régionaux", icon: Globe, permission: "page:employees:view" },
+        { href: "/organization-chart", label: "Organigramme", icon: Network, permission: "page:organization-chart:view" },
     ]
   },
   { 
@@ -92,9 +95,6 @@ const allMenuItems = [
     icon: Building,
     permission: "group:organization:view",
     subItems: [
-        { href: "/employees?filter=directoire", label: "Membres du Directoire", icon: Building, permission: "page:employees:view" },
-        { href: "/employees?filter=regional", label: "Comités Régionaux", icon: Globe, permission: "page:employees:view" },
-        { href: "/organization-chart", label: "Organigramme", icon: Network, permission: "page:organization-chart:view" },
         { href: "/conflicts", label: "Gestion des Conflits", icon: Scale, permission: "page:conflicts:view" },
         { href: "/mapping", label: "Cartographie", icon: MapIcon, permission: "page:mapping:view" },
     ]

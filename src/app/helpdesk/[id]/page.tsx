@@ -406,5 +406,3 @@ function InfoItem({ label, value, icon: Icon }: { label: string; value: string |
         </div>
     )
 }
-
-    

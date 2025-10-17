@@ -25,9 +25,10 @@ import { subscribeToLeaves } from '@/services/leave-service';
 import { subscribeToAssets } from '@/services/asset-service';
 import { subscribeToVehicles } from '@/services/fleet-service';
 import { subscribeToChiefs } from '@/services/chief-service';
+import { subscribeToMissions } from '@/services/mission-service';
 import { subscribeToDepartments } from '@/services/department-service';
 import { checkAndNotifyForUpcomingRetirements } from '@/services/notification-service';
-import type { Employe, Leave, Asset, Fleet, OrganizationSettings, Chief, Department } from '@/lib/data';
+import type { Employe, Leave, Asset, Fleet, OrganizationSettings, Chief, Department, Mission } from '@/lib/data';
 import { Skeleton } from '@/components/ui/skeleton';
 import { differenceInYears, parseISO, format, addMonths } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -615,4 +616,3 @@ export default function DashboardPage() {
     </>
   );
 }
-

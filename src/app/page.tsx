@@ -1,8 +1,10 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 import {
   Card,
   CardHeader,
@@ -123,6 +125,7 @@ export default function DashboardPage() {
     const [assets, setAssets] = useState<Asset[]>([]);
     const [fleet, setFleet] = useState<Fleet[]>([]);
     const [chiefs, setChiefs] = useState<Chief[]>([]);
+    const [missions, setMissions] = useState<Mission[]>([]);
     const [loading, setLoading] = useState(true);
     const [seniorityAnniversaries, setSeniorityAnniversaries] = useState<Employe[]>([]);
     const [upcomingRetirements, setUpcomingRetirements] = useState<(Employe & { calculatedRetirementDate: Date })[]>([]);
@@ -133,7 +136,9 @@ export default function DashboardPage() {
 
     const [isPrintingAnniversaries, setIsPrintingAnniversaries] = useState(false);
     const [isPrintingRetirements, setIsPrintingRetirements] = useState(false);
+    const [isDownloading, setIsDownloading] = useState(false);
     const [organizationLogos, setOrganizationLogos] = useState<OrganizationSettings | null>(null);
+    const printRef = useRef<HTMLDivElement>(null);
 
     const [summary, setSummary] = useState<string | null>(null);
     const [loadingSummary, setLoadingSummary] = useState(true);
@@ -158,6 +163,7 @@ export default function DashboardPage() {
             subscribeToAssets(setAssets, console.error),
             subscribeToVehicles(setFleet, console.error),
             subscribeToChiefs(setChiefs, console.error),
+            subscribeToMissions(setMissions, console.error),
         ];
         
         getOrganizationSettings().then(setOrganizationLogos);
@@ -253,6 +259,29 @@ export default function DashboardPage() {
         setIsPrintingRetirements(true);
     };
 
+    const handleDownload = async () => {
+        const reportElement = printRef.current;
+        if (!reportElement) return;
+
+        setIsDownloading(true);
+        try {
+            const canvas = await html2canvas(reportElement, { scale: 2 });
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = pdf.internal.pageSize.getHeight();
+            const imgProps = pdf.getImageProperties(imgData);
+            const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, imgHeight);
+            pdf.save(`rapport-dashboard-${new Date().toISOString().split('T')[0]}.pdf`);
+        } catch (error) {
+            console.error("Error generating PDF:", error);
+        } finally {
+            setIsDownloading(false);
+        }
+    };
+
     const getGenderBreakdown = (list: (Employe | Chief)[]) => {
       const men = list.filter(p => p.sexe === 'Homme').length;
       const women = list.filter(p => p.sexe === 'Femme').length;
@@ -262,12 +291,14 @@ export default function DashboardPage() {
     const activeEmployees = employees.filter(e => e.status === 'Actif');
     const cnpsEmployees = activeEmployees.filter(e => e.CNPS === true);
     const directoireEmployees = activeEmployees.filter(e => getEmployeeGroup(e, departments) === 'directoire');
+    const pendingLeavesCount = leaves.filter(l => l.status === "En attente").length;
+    const missionsInProgressCount = missions.filter(m => m.status === "En cours").length;
 
     const recentLeaves = leaves.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()).slice(0, 3);
   
   return (
     <>
-    <div className={isPrintingAnniversaries || isPrintingRetirements ? 'print-hidden' : ''}>
+    <div className={(isPrintingAnniversaries || isPrintingRetirements) ? 'print-hidden' : ''}>
         <div className="flex flex-col gap-6">
         <h1 className="text-3xl font-bold tracking-tight">Tableau de Bord</h1>
         
@@ -279,10 +310,10 @@ export default function DashboardPage() {
                 <TabsTrigger value="reports">Rapports</TabsTrigger>
                 </TabsList>
                 <div className="ml-auto flex items-center gap-2">
-                <Button size="sm" variant="outline" className="h-7 gap-1">
-                    <Download className="h-3.5 w-3.5" />
+                <Button onClick={handleDownload} disabled={isDownloading} size="sm" variant="outline" className="h-7 gap-1">
+                    {isDownloading ? <LoaderIcon className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
                     <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                    Télécharger
+                        {isDownloading ? "Génération..." : "Télécharger"}
                     </span>
                 </Button>
                 </div>
@@ -518,6 +549,28 @@ export default function DashboardPage() {
         </Tabs>
         </div>
     </div>
+    
+    <div className="absolute -z-10 -left-[9999px]">
+        <div ref={printRef}>
+            <PrintLayout
+                logos={organizationLogos || { organizationName: "Rapport", mainLogoUrl: "", secondaryLogoUrl: "", faviconUrl: ""}}
+                title="Rapport d'Activité du Tableau de Bord"
+                subtitle={`Généré le ${new Date().toLocaleDateString('fr-FR')}`}
+                columns={[
+                    { header: "Métrique", key: "metric" },
+                    { header: "Valeur", key: "value", align: "center" }
+                ]}
+                data={[
+                    { metric: "Employés Actifs", value: activeEmployees.length },
+                    { metric: "Congés en Attente", value: pendingLeavesCount },
+                    { metric: "Missions en Cours", value: missionsInProgressCount },
+                    { metric: "Actifs Informatiques", value: assets.length },
+                    { metric: "Véhicules dans la Flotte", value: fleet.length },
+                ]}
+            />
+        </div>
+    </div>
+
     {isPrintingAnniversaries && organizationLogos && (
         <PrintLayout
             logos={organizationLogos}
@@ -562,3 +615,4 @@ export default function DashboardPage() {
     </>
   );
 }
+

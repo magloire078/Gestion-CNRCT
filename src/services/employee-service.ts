@@ -34,7 +34,8 @@ export function getEmployeeGroup(employee: Employe, departments: Department[]): 
   if (employee.poste === 'Membre Comité Régional') {
     return 'regional';
   }
-  if ((employee.matricule?.startsWith('R 0') && employee.CNPS === true) || employee.poste === 'Chauffeur') {
+  // Chauffeurs du Directoire are identified by having a Region specified.
+  if (employee.poste?.startsWith('Chauffeur') && employee.Region) {
       return 'chauffeur-directoire';
   }
   if (departmentName === 'Garde Républicaine') {
@@ -44,11 +45,12 @@ export function getEmployeeGroup(employee: Employe, departments: Department[]): 
     return 'gendarme';
   }
   
+  // All other employees, including regular chauffeurs, are considered personnel-siege if they are on CNPS
   if (employee.CNPS === true) {
       return 'personnel-siege';
   }
   
-  // Default fallback for employees not declared to CNPS or without specific matricules
+  // Default fallback
   return 'personnel-siege';
 }
 

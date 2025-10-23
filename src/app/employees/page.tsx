@@ -35,6 +35,7 @@ import { ImportEmployeesDataCard } from "@/components/employees/import-employees
 import { useAuth } from "@/hooks/use-auth";
 import { ConfirmationDialog } from "@/components/common/confirmation-dialog";
 import { PrintLayout } from "@/components/reports/print-layout";
+import { format, parseISO } from "date-fns";
 
 
 type Status = 'Actif' | 'En congé' | 'Licencié' | 'Retraité' | 'Décédé';
@@ -516,7 +517,14 @@ export default function EmployeesPage() {
                                         <TableCell>{employee.poste}</TableCell>
                                         <TableCell>{getEmployeeOrgUnit(employee)}</TableCell>
                                         <TableCell>
-                                            <Badge variant={statusVariantMap[employee.status as Status] || 'default'}>{employee.status}</Badge>
+                                            <div>
+                                                <Badge variant={statusVariantMap[employee.status as Status] || 'default'}>{employee.status}</Badge>
+                                                {employee.status === 'Actif' && employee.dateEmbauche && (
+                                                    <div className="text-xs text-muted-foreground">
+                                                        depuis le {format(parseISO(employee.dateEmbauche), 'dd/MM/yyyy')}
+                                                    </div>
+                                                )}
+                                            </div>
                                         </TableCell>
                                         <TableCell className="text-center">
                                             {employee.CNPS && <ShieldCheck className="h-5 w-5 text-green-600" />}

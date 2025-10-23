@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import type { Employe, PayslipDetails, PayslipEarning, PayslipDeduction, PayslipEmployerContribution, EmployeeEvent } from '@/lib/data';
@@ -66,7 +67,8 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
         .sort((a, b) => parseISO(b.effectiveDate).getTime() - parseISO(a.effectiveDate).getTime())[0];
     
     const getSalaryStructure = () => {
-        const currentEmployeeStructure = {
+        // The default structure is the employee's own record.
+        const employeeBaseStructure = {
             baseSalary: employee.baseSalary || 0,
             indemniteTransportImposable: employee.indemniteTransportImposable || 0,
             indemniteResponsabilite: employee.indemniteResponsabilite || 0,
@@ -78,6 +80,7 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
         };
 
         if (relevantEvent?.details) {
+            // If a relevant past event is found, use its salary structure.
             return {
                 baseSalary: Number(relevantEvent.details.baseSalary || 0),
                 indemniteTransportImposable: Number(relevantEvent.details.indemniteTransportImposable || 0),
@@ -90,30 +93,9 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
             };
         }
         
-        // Find the event that occurred right AFTER the payslip date to get the "previous" state
-        const nextEvent = history
-            .filter(event =>
-                salaryEventTypes.includes(event.eventType as any) &&
-                event.details &&
-                isValid(parseISO(event.effectiveDate)) &&
-                isAfter(parseISO(event.effectiveDate), payslipDateObj)
-            )
-            .sort((a, b) => parseISO(a.effectiveDate).getTime() - parseISO(b.effectiveDate).getTime())[0];
-        
-        if (nextEvent?.details) {
-             return {
-                baseSalary: Number(nextEvent.details.previous_baseSalary || 0),
-                indemniteTransportImposable: Number(nextEvent.details.previous_indemniteTransportImposable || 0),
-                indemniteResponsabilite: Number(nextEvent.details.previous_indemniteResponsabilite || 0),
-                indemniteLogement: Number(nextEvent.details.previous_indemniteLogement || 0),
-                indemniteSujetion: Number(nextEvent.details.previous_indemniteSujetion || 0),
-                indemniteCommunication: Number(nextEvent.details.previous_indemniteCommunication || 0),
-                indemniteRepresentation: Number(nextEvent.details.previous_indemniteRepresentation || 0),
-                transportNonImposable: Number(nextEvent.details.previous_transportNonImposable || 0),
-             }
-        }
-        
-        return currentEmployeeStructure;
+        // If no past event is found, it means we are calculating for a period
+        // before any recorded salary changes. We should use the employee's base data.
+        return employeeBaseStructure;
     };
     
     let salaryStructure = getSalaryStructure();
@@ -196,11 +178,11 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
     const employeeInfoWithStaticData: Employe & { numeroCompteComplet?: string } = {
         ...employee,
         dateEmbauche: formattedDateEmbauche,
-        cnpsEmployeur: "320491",
         anciennete: seniorityInfo.text,
+        categorie: employee.categorie || 'Catégorie',
+        cnpsEmployeur: "320491",
         paymentDate: paymentDateObject.toISOString(),
         paymentLocation: 'Yamoussoukro',
-        categorie: employee.categorie || 'Catégorie',
         parts: employee.parts || 1.5,
         numeroCompteComplet: numeroCompteComplet
     };
@@ -219,5 +201,3 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
         organizationLogos
     };
 }
-
-    

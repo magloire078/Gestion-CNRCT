@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import type { Employe, PayslipDetails, PayslipEarning, PayslipDeduction, PayslipEmployerContribution, EmployeeEvent } from '@/lib/data';
@@ -80,8 +79,27 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
                 transportNonImposable: Number(relevantEvent.details.transportNonImposable || 0),
             };
         }
+
+        // If no relevant event is found for the period, check for the *earliest* event to get the "previous" state
+        const firstEverEvent = history
+            .filter(event => salaryEventTypes.includes(event.eventType as any) && event.details)
+            .sort((a,b) => parseISO(a.effectiveDate).getTime() - parseISO(b.effectiveDate).getTime())[0];
+            
+        if (firstEverEvent && firstEverEvent.details) {
+            // We are in a period before the first raise, so use the "previous" values from that first raise event
+            return {
+                baseSalary: Number(firstEverEvent.details.previous_baseSalary || employee.baseSalary || 0),
+                indemniteTransportImposable: Number(firstEverEvent.details.previous_indemniteTransportImposable || employee.indemniteTransportImposable || 0),
+                indemniteResponsabilite: Number(firstEverEvent.details.previous_indemniteResponsabilite || employee.indemniteResponsabilite || 0),
+                indemniteLogement: Number(firstEverEvent.details.previous_indemniteLogement || employee.indemniteLogement || 0),
+                indemniteSujetion: Number(firstEverEvent.details.previous_indemniteSujetion || employee.indemniteSujetion || 0),
+                indemniteCommunication: Number(firstEverEvent.details.previous_indemniteCommunication || employee.indemniteCommunication || 0),
+                indemniteRepresentation: Number(firstEverEvent.details.previous_indemniteRepresentation || employee.indemniteRepresentation || 0),
+                transportNonImposable: Number(firstEverEvent.details.previous_transportNonImposable || employee.transportNonImposable || 0),
+            }
+        }
         
-        // If no past event is found, use the employee's base data.
+        // If no salary events exist at all, use the employee's base data.
         return {
             baseSalary: employee.baseSalary || 0,
             indemniteTransportImposable: employee.indemniteTransportImposable || 0,

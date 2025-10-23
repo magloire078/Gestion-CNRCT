@@ -5,7 +5,9 @@ import type { EmployeeEvent, Employe } from '@/lib/data';
 import { db } from '@/lib/firebase';
 import { getEmployee } from './employee-service';
 import { getPayslipDetails } from './payslip-details-service';
-import { parseISO, isValid, isBefore } from 'date-fns';
+import { parseISO, isValid, isBefore, isEqual } from 'date-fns';
+
+const salaryEventTypes: EmployeeEvent['eventType'][] = ['Augmentation au Mérite', 'Promotion', 'Ajustement de Marché', 'Revalorisation Salariale'];
 
 /**
  * Retrieves the professional history for a specific employee.
@@ -34,12 +36,14 @@ export async function addEmployeeHistoryEvent(employeeId: string, eventData: Omi
     const employee = await getEmployee(employeeId);
     let finalDetails = { ...eventData.details };
 
-    if (eventData.eventType === 'Augmentation' && employee) {
+    const isSalaryEvent = salaryEventTypes.includes(eventData.eventType as any);
+
+    if (isSalaryEvent && employee) {
         
         const history = await getEmployeeHistory(employee.id);
         const previousEvent = history
             .filter(event => 
-                event.eventType === 'Augmentation' && 
+                salaryEventTypes.includes(event.eventType as any) && 
                 event.details &&
                 isValid(parseISO(event.effectiveDate)) && 
                 isBefore(parseISO(event.effectiveDate), parseISO(eventData.effectiveDate))
@@ -74,7 +78,7 @@ export async function addEmployeeHistoryEvent(employeeId: string, eventData: Omi
     const docRef = await addDoc(historyCollection, finalEventData);
     
     // If the event is a salary increase, also update the main employee document
-    if (eventData.eventType === 'Augmentation' && eventData.details) {
+    if (isSalaryEvent && eventData.details) {
         const employeeDocRef = doc(db, 'employees', employeeId);
         const salaryUpdates: Partial<Employe> = {};
         const fieldsToUpdate = [
@@ -123,8 +127,10 @@ export async function updateEmployeeHistoryEvent(employeeId: string, eventId: st
     
     await updateDoc(eventDocRef, cleanEventData);
     
+    const isSalaryEvent = eventData.eventType ? salaryEventTypes.includes(eventData.eventType as any) : false;
+
     // If it's an Augmentation, re-apply changes to the main employee doc
-    if (eventData.eventType === 'Augmentation' && eventData.details) {
+    if (isSalaryEvent && eventData.details) {
         const employeeDocRef = doc(db, 'employees', employeeId);
         const salaryUpdates: Partial<Employe> = {};
         const fieldsToUpdate = [
@@ -168,10 +174,18 @@ export async function deleteEmployeeHistoryEvent(employeeId: string, eventId: st
 
     // First, delete the event
     await deleteDoc(eventDocRef);
+    
+    const isSalaryEvent = salaryEventTypes.includes(eventToDelete.eventType as any);
 
-    // If it was the most recent salary increase, revert the employee's main document
+    if (!isSalaryEvent) {
+        return; // Nothing more to do if it wasn't a salary event
+    }
+
+    // After deletion, find the new latest salary event
     const remainingHistory = await getEmployeeHistory(employeeId);
-    const latestAugmentation = remainingHistory.find(e => e.eventType === 'Augmentation');
+    const latestAugmentation = remainingHistory
+        .filter(e => salaryEventTypes.includes(e.eventType as any))
+        .sort((a, b) => parseISO(b.effectiveDate).getTime() - parseISO(a.effectiveDate).getTime())[0];
 
     const employeeDocRef = doc(db, 'employees', employeeId);
 
@@ -193,10 +207,8 @@ export async function deleteEmployeeHistoryEvent(employeeId: string, eventId: st
             console.log(`Reverted salary for employee ${employeeId} to state from event ${latestAugmentation.id}.`);
         }
     } else {
-        // No augmentations left, revert to original employee data if possible
-        // This part is complex as we don't store the "original" state separate from the employee doc
-        // The most robust way is to revert to what was the "previous" state of the deleted event.
-        if (eventToDelete.eventType === 'Augmentation' && eventToDelete.details) {
+        // No augmentations left, revert to the "previous" state stored in the deleted event
+        if (eventToDelete.details) {
              const salaryRevertData: Partial<Employe> = {};
              const fieldsToRevert: Record<keyof Employe, string> = {
                 baseSalary: 'previous_baseSalary',

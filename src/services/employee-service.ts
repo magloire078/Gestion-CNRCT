@@ -34,8 +34,8 @@ export function getEmployeeGroup(employee: Employe, departments: Department[]): 
   if (employee.poste === 'Membre Comité Régional') {
     return 'regional';
   }
-  // Chauffeurs du Directoire are identified by having a Region specified.
-  if (employee.poste?.startsWith('Chauffeur') && employee.Region) {
+  // Chauffeurs du Directoire are identified by matricule starting with "R 0"
+  if (employee.matricule?.startsWith('R 0')) {
       return 'chauffeur-directoire';
   }
   if (departmentName === 'Garde Républicaine') {
@@ -310,4 +310,5 @@ export async function getOrganizationalUnits() {
         throw error;
     }
 }
+
 

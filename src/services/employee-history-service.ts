@@ -40,8 +40,9 @@ export async function addEmployeeHistoryEvent(employeeId: string, eventData: Omi
         const previousEvent = history
             .filter(event => 
                 event.eventType === 'Augmentation' && 
+                event.details &&
                 isValid(parseISO(event.effectiveDate)) && 
-                parseISO(event.effectiveDate) < parseISO(eventData.effectiveDate)
+                isBefore(parseISO(event.effectiveDate), parseISO(eventData.effectiveDate))
             )
             .sort((a, b) => parseISO(b.effectiveDate).getTime() - parseISO(a.effectiveDate).getTime())[0];
 
@@ -151,11 +152,50 @@ export async function updateEmployeeHistoryEvent(employeeId: string, eventId: st
 
 /**
  * Deletes an event from an employee's professional history.
+ * If the event is a salary increase, it reverts the employee's salary to the previous state.
  * @param employeeId The ID of the employee.
  * @param eventId The ID of the event to delete.
  */
 export async function deleteEmployeeHistoryEvent(employeeId: string, eventId: string): Promise<void> {
     const eventDocRef = doc(db, `employees/${employeeId}/history`, eventId);
-    await deleteDoc(eventDocRef);
-}
+    const eventSnap = await getDoc(eventDocRef);
 
+    if (!eventSnap.exists()) {
+        throw new Error("Événement non trouvé.");
+    }
+
+    const eventToDelete = eventSnap.data() as EmployeeEvent;
+
+    // First, delete the event
+    await deleteDoc(eventDocRef);
+
+    // If it was a salary increase, revert the employee's main document
+    if (eventToDelete.eventType === 'Augmentation' && eventToDelete.details) {
+        const employeeDocRef = doc(db, 'employees', employeeId);
+        const salaryRevertData: Partial<Employe> = {};
+
+        // Map 'previous_*' fields back to their original names
+        const fieldsToRevert: Record<keyof Employe, string> = {
+            baseSalary: 'previous_baseSalary',
+            indemniteTransportImposable: 'previous_indemniteTransportImposable',
+            indemniteSujetion: 'previous_indemniteSujetion',
+            indemniteCommunication: 'previous_indemniteCommunication',
+            indemniteRepresentation: 'previous_indemniteRepresentation',
+            indemniteResponsabilite: 'previous_indemniteResponsabilite',
+            indemniteLogement: 'previous_indemniteLogement',
+            transportNonImposable: 'previous_transportNonImposable',
+            primeAnciennete: 'previous_primeAnciennete',
+        };
+
+        for (const [key, prevKey] of Object.entries(fieldsToRevert)) {
+            if (eventToDelete.details[prevKey] !== undefined) {
+                (salaryRevertData as any)[key] = eventToDelete.details[prevKey];
+            }
+        }
+        
+        if (Object.keys(salaryRevertData).length > 0) {
+            await updateDoc(employeeDocRef, salaryRevertData);
+            console.log(`Reverted salary for employee ${employeeId} to previous state.`);
+        }
+    }
+}

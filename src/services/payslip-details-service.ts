@@ -53,10 +53,10 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
     const history = await getEmployeeHistory(employee.id);
     const payslipDateObj = parseISO(payslipDate);
 
-    // Find the most recent 'Augmentation' event that is effective on or before the payslip date.
+    // Find the most recent salary event that is effective on or before the payslip date.
     const relevantEvent = history
         .filter(event => 
-            event.eventType === 'Augmentation' &&
+            salaryEventTypes.includes(event.eventType as any) &&
             event.details &&
             isValid(parseISO(event.effectiveDate)) &&
             (isBefore(parseISO(event.effectiveDate), payslipDateObj) || isEqual(parseISO(event.effectiveDate), payslipDateObj))
@@ -91,7 +91,7 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
         // Find the event that occurred right AFTER the payslip date to get the "previous" state
         const nextEvent = history
             .filter(event =>
-                event.eventType === 'Augmentation' &&
+                salaryEventTypes.includes(event.eventType as any) &&
                 event.details &&
                 isValid(parseISO(event.effectiveDate)) &&
                 isAfter(parseISO(event.effectiveDate), payslipDateObj)

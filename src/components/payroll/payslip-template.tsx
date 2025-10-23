@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { PayslipDetails } from "@/lib/data";
@@ -68,9 +69,7 @@ export function PayslipTemplate({ payslipDetails }: { payslipDetails: PayslipDet
                             <p><span className="font-bold inline-block w-[140px]">NUMERO DE COMPTE</span>: <span className="pl-1">{employeeInfo.numeroCompteComplet || employeeInfo.numeroCompte}</span></p>
                             <p><span className="font-bold inline-block w-[140px]">SERVICE</span>: <span className="pl-1">{employeeInfo.departmentId}</span></p>
                             <p><span className="font-bold inline-block w-[140px]">DATE DE CONGE</span>: <span className="pl-1">__/__/____</span></p>
-                            <p><span className="font-bold inline-block w-[140px]">ANCIENNETE</span>: <span className="pl-1">{employeeInfo.anciennete}</span></p>
                             <p><span className="font-bold inline-block w-[140px]">ENFANT(S)</span>: <span className="pl-1">{employeeInfo.enfants}</span></p>
-                            <p><span className="font-bold inline-block w-[140px]">CATEGORIE</span>: <span className="pl-1">{employeeInfo.categorie}</span></p>
                         </div>
                     </div>
                 </section>
@@ -80,7 +79,8 @@ export function PayslipTemplate({ payslipDetails }: { payslipDetails: PayslipDet
                     <thead className="bg-gray-200 font-bold text-center">
                         <tr>
                             <td className="p-1 border-r border-gray-400">EMPLOI</td>
-                            <td className="p-1 border-r border-gray-400">MATRICULE</td>
+                            <td className="p-1 border-r border-gray-400">CATEGORIE</td>
+                            <td className="p-1 border-r border-gray-400">ANCIENNETE</td>
                             <td className="p-1 border-r border-gray-400">NBRE DE PARTS</td>
                             <td className="p-1">DATE D'EMBAUCHE</td>
                         </tr>
@@ -88,7 +88,8 @@ export function PayslipTemplate({ payslipDetails }: { payslipDetails: PayslipDet
                     <tbody className="text-center">
                         <tr>
                             <td className="p-1 border-r border-gray-400">{employeeInfo.poste}</td>
-                            <td className="p-1 border-r border-gray-400">{employeeInfo.matricule}</td>
+                            <td className="p-1 border-r border-gray-400">{employeeInfo.categorie}</td>
+                            <td className="p-1 border-r border-gray-400">{employeeInfo.anciennete}</td>
                             <td className="p-1 border-r border-gray-400">{employeeInfo.parts}</td>
                             <td className="p-1">{employeeInfo.dateEmbauche}</td>
                         </tr>

@@ -13,6 +13,8 @@ import { fr } from 'date-fns/locale';
 // Note : Les taux d'imposition et de cotisation sont des approximations simplifiées.
 // Une application réelle nécessiterait des taux et des réglementations précis et à jour.
 
+const salaryEventTypes: EmployeeEvent['eventType'][] = ['Augmentation au Mérite', 'Promotion', 'Ajustement de Marché', 'Revalorisation Salariale'];
+
 /**
  * Calcule l'ancienneté d'un employé à une date donnée.
  * @param hireDateStr - La date d'embauche (chaîne YYYY-MM-DD).
@@ -217,3 +219,5 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
         organizationLogos
     };
 }
+
+    

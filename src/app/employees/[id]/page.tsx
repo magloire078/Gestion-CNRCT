@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -20,7 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Pencil, User, Briefcase, Mail, Phone, MapPin, BadgeCheck, FileText, Calendar, Laptop, Rocket, FolderArchive, LogOut, Globe, Landmark, ChevronRight, Users, Cake, History, PlusCircle, Trash2, Binary } from "lucide-react";
+import { ArrowLeft, Pencil, User, Briefcase, Mail, Phone, MapPin, BadgeCheck, FileText, Calendar, Laptop, Rocket, FolderArchive, LogOut, Globe, Landmark, ChevronRight, Users, Cake, History, PlusCircle, Trash2, Binary, Printer } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -301,10 +300,18 @@ export default function EmployeeDetailPage() {
                             </CardHeader>
                             <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-4">
-                                    <h4 className="font-semibold">Génération Spécifique</h4>
-                                    <div className="flex items-center justify-between p-4 border rounded-lg">
+                                    <h4 className="font-semibold">Génération</h4>
+                                     <div className="flex items-center justify-between p-4 border rounded-lg">
                                         <p className="text-sm">Générer un bulletin pour une période personnalisée.</p>
                                         <Button onClick={() => setIsDateDialogOpen(true)} size="sm">Générer</Button>
+                                    </div>
+                                    <div className="flex items-center justify-between p-4 border rounded-lg">
+                                        <p className="text-sm">Imprimer les 3 derniers bulletins de paie.</p>
+                                        <Button asChild size="sm" variant="outline">
+                                            <Link href={`/payroll/${id}/bulk-print?months=3`}>
+                                                <Printer className="mr-2 h-4 w-4"/> Imprimer
+                                            </Link>
+                                        </Button>
                                     </div>
                                 </div>
                                 <div className="space-y-4">
@@ -552,3 +559,6 @@ function EmployeeDetailSkeleton() {
     )
 }
 
+
+
+    

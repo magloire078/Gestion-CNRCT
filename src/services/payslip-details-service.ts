@@ -67,20 +67,8 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
         .sort((a, b) => parseISO(b.effectiveDate).getTime() - parseISO(a.effectiveDate).getTime())[0];
     
     const getSalaryStructure = () => {
-        // The default structure is the employee's own record.
-        const employeeBaseStructure = {
-            baseSalary: employee.baseSalary || 0,
-            indemniteTransportImposable: employee.indemniteTransportImposable || 0,
-            indemniteResponsabilite: employee.indemniteResponsabilite || 0,
-            indemniteLogement: employee.indemniteLogement || 0,
-            indemniteSujetion: employee.indemniteSujetion || 0,
-            indemniteCommunication: employee.indemniteCommunication || 0,
-            indemniteRepresentation: employee.indemniteRepresentation || 0,
-            transportNonImposable: employee.transportNonImposable || 0,
-        };
-
+        // If a relevant past event is found, use its salary structure.
         if (relevantEvent?.details) {
-            // If a relevant past event is found, use its salary structure.
             return {
                 baseSalary: Number(relevantEvent.details.baseSalary || 0),
                 indemniteTransportImposable: Number(relevantEvent.details.indemniteTransportImposable || 0),
@@ -93,9 +81,17 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
             };
         }
         
-        // If no past event is found, it means we are calculating for a period
-        // before any recorded salary changes. We should use the employee's base data.
-        return employeeBaseStructure;
+        // If no past event is found, use the employee's base data.
+        return {
+            baseSalary: employee.baseSalary || 0,
+            indemniteTransportImposable: employee.indemniteTransportImposable || 0,
+            indemniteResponsabilite: employee.indemniteResponsabilite || 0,
+            indemniteLogement: employee.indemniteLogement || 0,
+            indemniteSujetion: employee.indemniteSujetion || 0,
+            indemniteCommunication: employee.indemniteCommunication || 0,
+            indemniteRepresentation: employee.indemniteRepresentation || 0,
+            transportNonImposable: employee.transportNonImposable || 0,
+        };
     };
     
     let salaryStructure = getSalaryStructure();

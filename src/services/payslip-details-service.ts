@@ -89,23 +89,26 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
             };
         }
         
-        const oldestEvent = history
-            .filter(event => event.eventType === 'Augmentation' && event.details?.previous_baseSalary !== undefined)
+        // Find the event that occurred right AFTER the payslip date to get the "previous" state
+        const nextEvent = history
+            .filter(event =>
+                event.eventType === 'Augmentation' &&
+                event.details &&
+                isValid(parseISO(event.effectiveDate)) &&
+                isAfter(parseISO(event.effectiveDate), payslipDateObj)
+            )
             .sort((a, b) => parseISO(a.effectiveDate).getTime() - parseISO(b.effectiveDate).getTime())[0];
-
-        if (oldestEvent?.details) {
-             const firstAugmentationDate = parseISO(oldestEvent.effectiveDate);
-             if (isBefore(payslipDateObj, firstAugmentationDate)) {
-                 return {
-                    baseSalary: Number(oldestEvent.details.previous_baseSalary || 0),
-                    indemniteTransportImposable: Number(oldestEvent.details.previous_indemniteTransportImposable || 0),
-                    indemniteResponsabilite: Number(oldestEvent.details.previous_indemniteResponsabilite || 0),
-                    indemniteLogement: Number(oldestEvent.details.previous_indemniteLogement || 0),
-                    indemniteSujetion: Number(oldestEvent.details.previous_indemniteSujetion || 0),
-                    indemniteCommunication: Number(oldestEvent.details.previous_indemniteCommunication || 0),
-                    indemniteRepresentation: Number(oldestEvent.details.previous_indemniteRepresentation || 0),
-                    transportNonImposable: Number(oldestEvent.details.previous_transportNonImposable || 0),
-                 }
+        
+        if (nextEvent?.details) {
+             return {
+                baseSalary: Number(nextEvent.details.previous_baseSalary || 0),
+                indemniteTransportImposable: Number(nextEvent.details.previous_indemniteTransportImposable || 0),
+                indemniteResponsabilite: Number(nextEvent.details.previous_indemniteResponsabilite || 0),
+                indemniteLogement: Number(nextEvent.details.previous_indemniteLogement || 0),
+                indemniteSujetion: Number(nextEvent.details.previous_indemniteSujetion || 0),
+                indemniteCommunication: Number(nextEvent.details.previous_indemniteCommunication || 0),
+                indemniteRepresentation: Number(nextEvent.details.previous_indemniteRepresentation || 0),
+                transportNonImposable: Number(nextEvent.details.previous_transportNonImposable || 0),
              }
         }
         

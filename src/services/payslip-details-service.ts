@@ -6,7 +6,7 @@ import type { Employe, PayslipDetails, PayslipEarning, PayslipDeduction, Payslip
 import { numberToWords } from '@/lib/utils';
 import { getOrganizationSettings } from './organization-service';
 import { getEmployeeHistory } from './employee-history-service';
-import { differenceInYears, differenceInMonths, differenceInDays, addYears, addMonths, parseISO, isValid, lastDayOfMonth, getDay, isBefore, isEqual, isAfter, format } from 'date-fns';
+import { differenceInYears, differenceInMonths, differenceInDays, addYears, addMonths, parseISO, isValid, lastDayOfMonth, getDay, isBefore, isEqual, isAfter } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
 

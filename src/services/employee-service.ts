@@ -34,7 +34,7 @@ export function getEmployeeGroup(employee: Employe, departments: Department[]): 
   if (employee.poste === 'Membre Comité Régional') {
     return 'regional';
   }
-  if (employee.matricule?.startsWith('R 0') && employee.CNPS === true) {
+  if ((employee.matricule?.startsWith('R 0') && employee.CNPS === true) || employee.poste === 'Chauffeur') {
       return 'chauffeur-directoire';
   }
   if (departmentName === 'Garde Républicaine') {

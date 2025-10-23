@@ -19,7 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Pencil, User, Briefcase, Mail, Phone, MapPin, BadgeCheck, FileText, Calendar, Laptop, Rocket, FolderArchive, LogOut, Globe, Landmark, ChevronRight, Users, Cake, History, PlusCircle, Trash2, Binary, Printer } from "lucide-react";
+import { ArrowLeft, Pencil, User, Briefcase, Mail, Phone, MapPin, BadgeCheck, FileText, Calendar, Laptop, Rocket, FolderArchive, LogOut, Globe, Landmark, ChevronRight, Users, Cake, History, PlusCircle, Trash2, Binary, Printer, Receipt } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -159,7 +159,7 @@ export default function EmployeeDetailPage() {
         { value: "11", label: "Novembre" }, { value: "12", label: "Décembre" },
     ];
     
-     const payslipHistory = Array.from({ length: 12 }).map((_, i) => {
+     const lastThreePayslips = Array.from({ length: 3 }).map((_, i) => {
         const date = subMonths(new Date(), i);
         const lastDay = lastDayOfMonth(date);
         return {
@@ -300,33 +300,23 @@ export default function EmployeeDetailPage() {
                             </CardHeader>
                             <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-4">
-                                    <h4 className="font-semibold">Génération</h4>
-                                     <div className="flex items-center justify-between p-4 border rounded-lg">
-                                        <p className="text-sm">Générer un bulletin pour une période personnalisée.</p>
-                                        <Button onClick={() => setIsDateDialogOpen(true)} size="sm">Générer</Button>
-                                    </div>
-                                    <div className="flex items-center justify-between p-4 border rounded-lg">
-                                        <p className="text-sm">Imprimer les 3 derniers bulletins de paie.</p>
-                                        <Button asChild size="sm" variant="outline">
-                                            <Link href={`/payroll/${id}/bulk-print?months=3`}>
-                                                <Printer className="mr-2 h-4 w-4"/> Imprimer
-                                            </Link>
-                                        </Button>
+                                    <h4 className="font-semibold">Bulletins Récents</h4>
+                                    <div className="space-y-2">
+                                        {lastThreePayslips.map(item => (
+                                            <Button key={item.dateParam} variant="outline" className="w-full justify-start" asChild>
+                                                <Link href={`/payroll/${id}?payslipDate=${item.dateParam}`}>
+                                                    <Receipt className="mr-2 h-4 w-4"/>
+                                                    Bulletin de {item.period}
+                                                </Link>
+                                            </Button>
+                                        ))}
                                     </div>
                                 </div>
                                 <div className="space-y-4">
-                                    <h4 className="font-semibold">Historique des 12 derniers mois</h4>
-                                    <div className="border rounded-lg max-h-60 overflow-y-auto">
-                                        <ul className="divide-y">
-                                        {payslipHistory.map(item => (
-                                            <li key={item.dateParam}>
-                                                <Link href={`/payroll/${id}?payslipDate=${item.dateParam}`} className="flex items-center justify-between p-3 hover:bg-muted/50 transition-colors">
-                                                    <span className="font-medium text-sm capitalize">{item.period}</span>
-                                                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                                                </Link>
-                                            </li>
-                                        ))}
-                                        </ul>
+                                    <h4 className="font-semibold">Générer un autre bulletin</h4>
+                                     <div className="flex items-center justify-between p-4 border rounded-lg">
+                                        <p className="text-sm">Générer un bulletin pour une période personnalisée.</p>
+                                        <Button onClick={() => setIsDateDialogOpen(true)} size="sm">Générer</Button>
                                     </div>
                                 </div>
                             </CardContent>
@@ -558,7 +548,3 @@ function EmployeeDetailSkeleton() {
         </div>
     )
 }
-
-
-
-    

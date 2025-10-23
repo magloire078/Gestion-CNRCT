@@ -112,7 +112,26 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
         return currentEmployeeStructure;
     };
     
-    const salaryStructure = getSalaryStructure();
+    let salaryStructure = getSalaryStructure();
+    
+     // Check if payslipDate is before hireDate
+    if (employee.dateEmbauche && isValid(parseISO(employee.dateEmbauche))) {
+        if (isBefore(payslipDateObj, parseISO(employee.dateEmbauche))) {
+            // If before hire date, set all salary fields to 0
+            salaryStructure = {
+                baseSalary: 0,
+                indemniteTransportImposable: 0,
+                indemniteResponsabilite: 0,
+                indemniteLogement: 0,
+                indemniteSujetion: 0,
+                indemniteCommunication: 0,
+                indemniteRepresentation: 0,
+                transportNonImposable: 0,
+            };
+        }
+    }
+
+
     const { baseSalary, ...indemnityFields } = salaryStructure;
     
     const seniorityInfo = calculateSeniority(employee.dateEmbauche || '', payslipDate);

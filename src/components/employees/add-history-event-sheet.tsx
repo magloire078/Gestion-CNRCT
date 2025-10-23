@@ -40,7 +40,9 @@ interface AddHistoryEventDialogProps {
   onEventSaved: (savedEvent: EmployeeEvent) => void;
 }
 
-const eventTypes: EmployeeEvent['eventType'][] = ['Promotion', 'Augmentation', 'Changement de poste', 'Départ', 'Autre'];
+const eventTypes: EmployeeEvent['eventType'][] = ['Promotion', 'Augmentation au Mérite', 'Ajustement de Marché', 'Revalorisation Salariale', 'Changement de poste', 'Départ', 'Autre'];
+const salaryEventTypes: EmployeeEvent['eventType'][] = ['Augmentation au Mérite', 'Promotion', 'Ajustement de Marché', 'Revalorisation Salariale'];
+
 const indemnityFields = [
     { id: 'baseSalary', label: 'Salaire de Base' },
     { id: 'indemniteTransportImposable', label: 'Ind. Transport (Imposable)' },
@@ -99,6 +101,8 @@ export function AddHistoryEventSheet({ isOpen, onClose, employeeId, eventToEdit,
   const [originalBaseSalary, setOriginalBaseSalary] = useState<number | null>(null);
 
   const isEditMode = !!eventToEdit;
+  const isSalaryEventType = eventType ? salaryEventTypes.includes(eventType as any) : false;
+
 
   useEffect(() => {
     async function loadInitialData() {
@@ -132,11 +136,11 @@ export function AddHistoryEventSheet({ isOpen, onClose, employeeId, eventToEdit,
   }, [isOpen, eventToEdit, employeeId]);
   
    const livePreview = useMemo(() => {
-        if (eventType === 'Augmentation') {
+        if (isSalaryEventType) {
             return calculatePreview(details, employee, effectiveDate);
         }
         return null;
-    }, [details, employee, effectiveDate, eventType]);
+    }, [details, employee, effectiveDate, eventType, isSalaryEventType]);
 
 
   const handleClose = () => {
@@ -271,7 +275,7 @@ export function AddHistoryEventSheet({ isOpen, onClose, employeeId, eventToEdit,
                     />
                 </div>
                 
-                {eventType === 'Augmentation' && (
+                {isSalaryEventType && (
                     <div className="col-span-4 space-y-4 pt-4 border-t">
                         <p className="text-sm font-medium text-center">Détails de l'Augmentation (nouvelles valeurs)</p>
                         

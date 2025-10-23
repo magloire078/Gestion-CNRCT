@@ -15,11 +15,13 @@ interface EmployeeHistoryTimelineProps {
 }
 
 const eventTypeConfig = {
-  Promotion: { icon: TrendingUp, color: "bg-green-500" },
-  Augmentation: { icon: TrendingUp, color: "bg-blue-500" },
+  'Promotion': { icon: TrendingUp, color: "bg-green-500" },
+  'Augmentation au Mérite': { icon: TrendingUp, color: "bg-blue-500" },
+  'Ajustement de Marché': { icon: TrendingUp, color: "bg-sky-500" },
+  'Revalorisation Salariale': { icon: TrendingUp, color: "bg-indigo-500" },
   "Changement de poste": { icon: Briefcase, color: "bg-purple-500" },
-  Départ: { icon: UserX, color: "bg-red-500" },
-  Autre: { icon: Briefcase, color: "bg-gray-500" },
+  'Départ': { icon: UserX, color: "bg-red-500" },
+  'Autre': { icon: Briefcase, color: "bg-gray-500" },
 };
 
 const formatCurrency = (value: number | undefined | null) => {
@@ -40,6 +42,7 @@ const indemnityLabels: Record<string, string> = {
 };
 
 const indemnityFields = Object.keys(indemnityLabels);
+const salaryEventTypes: EmployeeEvent['eventType'][] = ['Augmentation au Mérite', 'Promotion', 'Ajustement de Marché', 'Revalorisation Salariale'];
 
 const calculateTotals = (details: Record<string, any>, prefix = '') => {
     const base = Number(details[`${prefix}baseSalary`] || 0);
@@ -91,18 +94,18 @@ export function EmployeeHistoryTimeline({ events, onEdit, onDelete }: EmployeeHi
       <ul className="space-y-8">
         {events.map((event, index) => {
           const config = eventTypeConfig[event.eventType] || eventTypeConfig.Autre;
-          const isAugmentation = event.eventType === 'Augmentation' && event.details;
+          const isSalaryEvent = salaryEventTypes.includes(event.eventType as any) && event.details;
           
           const eventDetailsWithContext = {
             ...event.details,
             eventEffectiveDate: event.effectiveDate,
           };
           
-          const { brut: newBrut, net: newNet, anciennete } = isAugmentation ? calculateTotals(eventDetailsWithContext, '') : { brut: 0, net: 0, anciennete: '' };
-          const { brut: oldBrut, net: oldNet } = isAugmentation ? calculateTotals(eventDetailsWithContext, 'previous_') : { brut: 0, net: 0 };
+          const { brut: newBrut, net: newNet, anciennete } = isSalaryEvent ? calculateTotals(eventDetailsWithContext, '') : { brut: 0, net: 0, anciennete: '' };
+          const { brut: oldBrut, net: oldNet } = isSalaryEvent ? calculateTotals(eventDetailsWithContext, 'previous_') : { brut: 0, net: 0 };
           
           const getOldPeriod = () => {
-              if(!isAugmentation) return null;
+              if(!isSalaryEvent) return null;
               
               const currentEventDate = parseISO(event.effectiveDate);
               const previousEvent = events[index + 1];
@@ -144,7 +147,7 @@ export function EmployeeHistoryTimeline({ events, onEdit, onDelete }: EmployeeHi
                     {event.details?.newPoste && (
                         <p className="font-medium">Nouveau poste : <span className="text-purple-600">{event.details.newPoste}</span></p>
                     )}
-                    {isAugmentation && (
+                    {isSalaryEvent && (
                       <div className="p-3 border rounded-md bg-muted/50 space-y-2">
                         <div className="grid grid-cols-3 gap-2 font-medium">
                             <span>Élément</span>

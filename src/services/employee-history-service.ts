@@ -35,21 +35,29 @@ export async function addEmployeeHistoryEvent(employeeId: string, eventData: Omi
     let finalDetails = { ...eventData.details };
 
     if (eventData.eventType === 'Augmentation' && employee) {
-        // Use the payslip service to get the true state before the effective date
-        const dayBefore = parseISO(eventData.effectiveDate);
-        dayBefore.setDate(dayBefore.getDate() - 1);
-        const previousState = await getPayslipDetails(employee, dayBefore.toISOString().split('T')[0]);
+        
+        const history = await getEmployeeHistory(employee.id);
+        const previousEvent = history
+            .filter(event => 
+                event.eventType === 'Augmentation' && 
+                isValid(parseISO(event.effectiveDate)) && 
+                parseISO(event.effectiveDate) < parseISO(eventData.effectiveDate)
+            )
+            .sort((a, b) => parseISO(b.effectiveDate).getTime() - parseISO(a.effectiveDate).getTime())[0];
+
+        // Use the details from the most recent previous event, or the employee's base data if none exists
+        const baseValues = previousEvent?.details || employee;
 
         const previousValues: Record<string, any> = {
-            previous_baseSalary: previousState.earnings.find(e => e.label === 'SALAIRE DE BASE')?.amount || 0,
-            previous_primeAnciennete: previousState.earnings.find(e => e.label === 'PRIME D\'ANCIENNETE')?.amount || 0,
-            previous_indemniteTransportImposable: previousState.earnings.find(e => e.label === 'INDEMNITE DE TRANSPORT IMPOSABLE')?.amount || 0,
-            previous_indemniteResponsabilite: previousState.earnings.find(e => e.label === 'INDEMNITE DE RESPONSABILITE')?.amount || 0,
-            previous_indemniteLogement: previousState.earnings.find(e => e.label === 'INDEMNITE DE LOGEMENT')?.amount || 0,
-            previous_indemniteSujetion: previousState.earnings.find(e => e.label === 'INDEMNITE DE SUJETION')?.amount || 0,
-            previous_indemniteCommunication: previousState.earnings.find(e => e.label === 'INDEMNITE DE COMMUNICATION')?.amount || 0,
-            previous_indemniteRepresentation: previousState.earnings.find(e => e.label === 'INDEMNITE DE REPRESENTATION')?.amount || 0,
-            previous_transportNonImposable: previousState.totals.transportNonImposable.amount || 0,
+            previous_baseSalary: baseValues.baseSalary || 0,
+            previous_indemniteTransportImposable: baseValues.indemniteTransportImposable || 0,
+            previous_indemniteResponsabilite: baseValues.indemniteResponsabilite || 0,
+            previous_indemniteLogement: baseValues.indemniteLogement || 0,
+            previous_indemniteSujetion: baseValues.indemniteSujetion || 0,
+            previous_indemniteCommunication: baseValues.indemniteCommunication || 0,
+            previous_indemniteRepresentation: baseValues.indemniteRepresentation || 0,
+            previous_transportNonImposable: baseValues.transportNonImposable || 0,
+            previous_primeAnciennete: baseValues.primeAnciennete || 0,
             employeeHireDate: employee.dateEmbauche,
             cnpsEnabled: employee.CNPS,
         };
@@ -150,3 +158,4 @@ export async function deleteEmployeeHistoryEvent(employeeId: string, eventId: st
     const eventDocRef = doc(db, `employees/${employeeId}/history`, eventId);
     await deleteDoc(eventDocRef);
 }
+

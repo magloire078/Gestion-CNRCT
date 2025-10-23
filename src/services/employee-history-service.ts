@@ -7,7 +7,7 @@ import { getEmployee } from './employee-service';
 import { getPayslipDetails } from './payslip-details-service';
 import { parseISO, isValid, isBefore, isEqual } from 'date-fns';
 
-const salaryEventTypes: EmployeeEvent['eventType'][] = ['Augmentation au Mérite', 'Promotion', 'Ajustement de Marché', 'Revalorisation Salariale'];
+const salaryEventTypes: EmployeeEvent['eventType'][] = ['Promotion', 'Augmentation au Mérite', 'Ajustement de Marché', 'Revalorisation Salariale'];
 
 /**
  * Retrieves the professional history for a specific employee.
@@ -77,7 +77,7 @@ export async function addEmployeeHistoryEvent(employeeId: string, eventData: Omi
 
     const docRef = await addDoc(historyCollection, finalEventData);
     
-    // If the event is a salary increase, also update the main employee document
+    // If the event is a salary event, also update the main employee document
     if (isSalaryEvent && eventData.details) {
         const employeeDocRef = doc(db, 'employees', employeeId);
         const salaryUpdates: Partial<Employe> = {};
@@ -96,6 +96,10 @@ export async function addEmployeeHistoryEvent(employeeId: string, eventData: Omi
         // Also update primeAnciennete if it was manually set
         if (eventData.details.primeAnciennete !== undefined) {
             salaryUpdates.primeAnciennete = Number(eventData.details.primeAnciennete);
+        }
+        
+         if (eventData.eventType === 'Promotion' && eventData.details.newPoste) {
+            salaryUpdates.poste = eventData.details.newPoste;
         }
 
         if (Object.keys(salaryUpdates).length > 0) {
@@ -129,7 +133,7 @@ export async function updateEmployeeHistoryEvent(employeeId: string, eventId: st
     
     const isSalaryEvent = eventData.eventType ? salaryEventTypes.includes(eventData.eventType as any) : false;
 
-    // If it's an Augmentation, re-apply changes to the main employee doc
+    // If it's a salary event, re-apply changes to the main employee doc
     if (isSalaryEvent && eventData.details) {
         const employeeDocRef = doc(db, 'employees', employeeId);
         const salaryUpdates: Partial<Employe> = {};
@@ -171,46 +175,41 @@ export async function deleteEmployeeHistoryEvent(employeeId: string, eventId: st
     }
 
     const eventToDelete = eventSnap.data() as EmployeeEvent;
+    const isSalaryEvent = salaryEventTypes.includes(eventToDelete.eventType as any);
 
     // First, delete the event
     await deleteDoc(eventDocRef);
-    
-    const isSalaryEvent = salaryEventTypes.includes(eventToDelete.eventType as any);
 
     if (!isSalaryEvent) {
         return; // Nothing more to do if it wasn't a salary event
     }
 
-    // After deletion, find the new latest salary event
+    // After deletion, find the new latest salary event from the remaining history
     const remainingHistory = await getEmployeeHistory(employeeId);
-    const latestAugmentation = remainingHistory
+    const latestSalaryEvent = remainingHistory
         .filter(e => salaryEventTypes.includes(e.eventType as any))
         .sort((a, b) => parseISO(b.effectiveDate).getTime() - parseISO(a.effectiveDate).getTime())[0];
 
     const employeeDocRef = doc(db, 'employees', employeeId);
+    let salaryUpdates: Partial<Employe> = {};
 
-    if (latestAugmentation && latestAugmentation.details) {
-        // Revert to the latest remaining augmentation
-        const salaryUpdates: Partial<Employe> = {};
+    if (latestSalaryEvent && latestSalaryEvent.details) {
+        // Revert to the state defined in the new latest event
         const fieldsToUpdate = [
             'baseSalary', 'indemniteTransportImposable', 'indemniteSujetion', 
             'indemniteCommunication', 'indemniteRepresentation', 'indemniteResponsabilite', 
             'indemniteLogement', 'transportNonImposable', 'primeAnciennete'
         ];
         fieldsToUpdate.forEach(field => {
-            if (latestAugmentation.details![field] !== undefined) {
-                (salaryUpdates as any)[field] = Number(latestAugmentation.details![field]);
+            if (latestSalaryEvent.details![field] !== undefined) {
+                (salaryUpdates as any)[field] = Number(latestSalaryEvent.details![field]);
             }
         });
-        if (Object.keys(salaryUpdates).length > 0) {
-            await updateDoc(employeeDocRef, salaryUpdates);
-            console.log(`Reverted salary for employee ${employeeId} to state from event ${latestAugmentation.id}.`);
-        }
+        console.log(`Reverting salary for ${employeeId} to state from event ${latestSalaryEvent.id}.`);
     } else {
-        // No augmentations left, revert to the "previous" state stored in the deleted event
+        // No salary events left, revert to the "previous" state stored in the deleted event
         if (eventToDelete.details) {
-             const salaryRevertData: Partial<Employe> = {};
-             const fieldsToRevert: Record<keyof Employe, string> = {
+            const fieldsToRevert: Record<keyof Employe, string> = {
                 baseSalary: 'previous_baseSalary',
                 indemniteTransportImposable: 'previous_indemniteTransportImposable',
                 indemniteSujetion: 'previous_indemniteSujetion',
@@ -224,14 +223,14 @@ export async function deleteEmployeeHistoryEvent(employeeId: string, eventId: st
             
             for (const [key, prevKey] of Object.entries(fieldsToRevert)) {
                 if (eventToDelete.details[prevKey] !== undefined) {
-                    (salaryRevertData as any)[key] = eventToDelete.details[prevKey];
+                    (salaryUpdates as any)[key] = eventToDelete.details[prevKey];
                 }
             }
-
-            if (Object.keys(salaryRevertData).length > 0) {
-                 await updateDoc(employeeDocRef, salaryRevertData);
-                 console.log(`Reverted salary for employee ${employeeId} to previous state stored in deleted event.`);
-            }
+            console.log(`Reverting salary for ${employeeId} to state stored in deleted event.`);
         }
+    }
+
+    if (Object.keys(salaryUpdates).length > 0) {
+        await updateDoc(employeeDocRef, salaryUpdates);
     }
 }

@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
@@ -29,7 +28,7 @@ import { getEmployee } from "@/services/employee-service";
 import { calculateSeniority } from "@/services/payslip-details-service";
 import { useToast } from "@/hooks/use-toast";
 import { ScrollArea } from "../ui/scroll-area";
-import { differenceInYears, parseISO, isValid } from "date-fns";
+import { differenceInYears, parseISO, isValid, isBefore, isEqual } from "date-fns";
 import { Calculator, Undo2 } from "lucide-react";
 
 interface AddHistoryEventDialogProps {

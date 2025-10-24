@@ -6,14 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogClose,
-} from "@/components/ui/dialog";
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetClose,
+} from "@/components/ui/sheet";
 import {
   Select,
   SelectContent,
@@ -25,7 +25,7 @@ import type { Asset, Employe } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
 import { getEmployees } from "@/services/employee-service";
 
-interface AddAssetDialogProps {
+interface AddAssetSheetProps {
   isOpen: boolean;
   onClose: () => void;
   onAddAsset: (asset: Omit<Asset, 'tag'> & { tag: string }) => Promise<void>;
@@ -36,7 +36,7 @@ const assetTypes: Asset['type'][] = ["Ordinateur", "Moniteur", "Imprimante", "Cl
 const computerTypes: Asset['typeOrdinateur'][] = ["Portable", "De Bureau", "Serveur"];
 const assetStatuses: Asset['status'][] = ['En utilisation', 'En stock', 'En réparation', 'Retiré'];
 
-export function AddAssetSheet({ isOpen, onClose, onAddAsset, initialTag }: AddAssetDialogProps) {
+export function AddAssetSheet({ isOpen, onClose, onAddAsset, initialTag }: AddAssetSheetProps) {
   const [tag, setTag] = useState("");
   const [type, setType] = useState<Asset['type'] | "">("");
   const [typeOrdinateur, setTypeOrdinateur] = useState<Asset['typeOrdinateur'] | undefined>(undefined);
@@ -139,15 +139,15 @@ export function AddAssetSheet({ isOpen, onClose, onAddAsset, initialTag }: AddAs
   const showPasswordField = type === 'Équipement Réseau' || typeOrdinateur === 'Serveur';
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-lg">
+    <Sheet open={isOpen} onOpenChange={handleClose}>
+      <SheetContent className="sm:max-w-lg">
         <form onSubmit={handleSubmit}>
-          <DialogHeader>
-            <DialogTitle>Ajouter un nouvel actif</DialogTitle>
-            <DialogDescription>
+          <SheetHeader>
+            <SheetTitle>Ajouter un nouvel actif</SheetTitle>
+            <SheetDescription>
               Remplissez les détails ci-dessous pour ajouter un nouvel actif à l'inventaire.
-            </DialogDescription>
-          </DialogHeader>
+            </SheetDescription>
+          </SheetHeader>
           <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto pr-4">
             <div className="space-y-2">
               <Label htmlFor="tag">N° d'Inventaire</Label>
@@ -216,16 +216,16 @@ export function AddAssetSheet({ isOpen, onClose, onAddAsset, initialTag }: AddAs
             </div>
             {error && <p className="text-sm text-destructive text-center">{error}</p>}
           </div>
-          <DialogFooter className="border-t pt-4">
-            <DialogClose asChild>
+          <SheetFooter className="border-t pt-4">
+            <SheetClose asChild>
               <Button type="button" variant="outline" onClick={handleClose}>Annuler</Button>
-            </DialogClose>
+            </SheetClose>
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? "Enregistrement..." : "Enregistrer l'Actif"}
             </Button>
-          </DialogFooter>
+          </SheetFooter>
         </form>
-      </DialogContent>
-    </Dialog>
+      </SheetContent>
+    </Sheet>
   );
 }

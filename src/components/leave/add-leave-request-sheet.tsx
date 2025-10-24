@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -10,14 +9,14 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Label } from "@/components/ui/label";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogClose,
-} from "@/components/ui/dialog";
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetClose,
+} from "@/components/ui/sheet";
 import {
   Popover,
   PopoverContent,
@@ -132,15 +131,15 @@ export function AddLeaveRequestSheet({
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="sm:max-w-lg">
+    <Sheet open={isOpen} onOpenChange={(open) => !open && handleClose()}>
+      <SheetContent className="sm:max-w-lg">
         <form onSubmit={handleSubmit}>
-        <DialogHeader>
-          <DialogTitle>Nouvelle demande de congé</DialogTitle>
-          <DialogDescription>
+        <SheetHeader>
+          <SheetTitle>Nouvelle demande de congé</SheetTitle>
+          <SheetDescription>
             Remplissez les détails ci-dessous pour soumettre une nouvelle demande de congé.
-          </DialogDescription>
-        </DialogHeader>
+          </SheetDescription>
+        </SheetHeader>
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="employee" className="text-right">
@@ -285,18 +284,18 @@ export function AddLeaveRequestSheet({
             </p>
           )}
         </div>
-        <DialogFooter>
-          <DialogClose asChild>
+        <SheetFooter>
+          <SheetClose asChild>
             <Button type="button" variant="outline" onClick={handleClose}>
               Annuler
             </Button>
-          </DialogClose>
+          </SheetClose>
           <Button type="submit" disabled={isSubmitting}>
              {isSubmitting ? "Soumission..." : "Soumettre la Demande"}
           </Button>
-        </DialogFooter>
+        </SheetFooter>
         </form>
-      </DialogContent>
-    </Dialog>
+      </SheetContent>
+    </Sheet>
   );
 }

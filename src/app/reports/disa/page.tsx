@@ -23,7 +23,7 @@ import { getEmployees } from "@/services/employee-service";
 import { getPayslipDetails, type PayslipDetails } from "@/services/payslip-details-service";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { format } from 'date-fns';
+import { format, parseISO, isValid } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { getOrganizationSettings } from "@/services/organization-service";
 import type { OrganizationSettings } from "@/lib/data";
@@ -64,23 +64,40 @@ export default function DisaReportPage() {
     setLoading(true);
     setError(null);
     setReportData(null);
+    const reportYear = parseInt(year);
 
     try {
       const allEmployees = await getEmployees();
-      const activeEmployees = allEmployees.filter(e => e.status === 'Actif' && e.CNPS && e.matricule);
+      
+      const employeesForYear = allEmployees.filter(e => {
+        if (!e.matricule || !e.CNPS) return false;
+        
+        const hireDate = e.dateEmbauche ? parseISO(e.dateEmbauche) : null;
+        const departureDate = e.Date_Depart ? parseISO(e.Date_Depart) : null;
+
+        if (!hireDate || !isValid(hireDate)) return false;
+
+        // Include if hired before or during the report year
+        const hiredInTime = hireDate.getFullYear() <= reportYear;
+        // Include if they have not left, OR they left during or after the report year
+        const notLeftTooEarly = !departureDate || !isValid(departureDate) || departureDate.getFullYear() >= reportYear;
+
+        return hiredInTime && notLeftTooEarly;
+      });
+
       const logos = await getOrganizationSettings();
       setOrganizationLogos(logos);
 
       const reportRows: DisaRow[] = [];
       const matriculeSet = new Set<string>();
 
-      for (const employee of activeEmployees) {
+      for (const employee of employeesForYear) {
           if (matriculeSet.has(employee.matricule)) continue; // Ensure unique matricule per report
           matriculeSet.add(employee.matricule);
 
           const monthlyPayslipPromises: Promise<PayslipDetails>[] = [];
           for (let month = 0; month < 12; month++) {
-              const date = new Date(parseInt(year), month, 15);
+              const date = new Date(reportYear, month, 15);
               const payslipDate = date.toISOString().split('T')[0];
               monthlyPayslipPromises.push(getPayslipDetails(employee, payslipDate));
           }

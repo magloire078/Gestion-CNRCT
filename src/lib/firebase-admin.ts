@@ -1,12 +1,8 @@
 
 import * as admin from 'firebase-admin';
 
-// Assurez-vous que votre variable d'environnement pointe vers votre fichier de clé JSON
-// Par exemple: GOOGLE_APPLICATION_CREDENTIALS=./serviceAccountKey.json
-if (!process.env.GOOGLE_APPLICATION_CREDENTIALS) {
-    console.warn("La variable d'environnement GOOGLE_APPLICATION_CREDENTIALS n'est pas définie. L'initialisation du SDK Admin pourrait échouer.");
-}
-
+// Le SDK Admin utilisera automatiquement les GOOGLE_APPLICATION_CREDENTIALS
+// si cette variable d'environnement est définie dans votre environnement de production/déploiement.
 if (!admin.apps.length) {
   try {
     admin.initializeApp({
@@ -15,7 +11,7 @@ if (!admin.apps.length) {
     });
     console.log("Firebase Admin SDK initialized successfully.");
   } catch (error: any) {
-    console.error("Firebase Admin SDK initialization error:", error.message);
+    console.error("Firebase Admin SDK initialization error. Ensure GOOGLE_APPLICATION_CREDENTIALS is set in your environment.", error.message);
   }
 }
 

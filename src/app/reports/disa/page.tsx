@@ -222,7 +222,6 @@ export default function DisaReportPage() {
                                 <TableHead>N°</TableHead>
                                 <TableHead>Matricule</TableHead>
                                 <TableHead>Nom et Prénoms</TableHead>
-                                <TableHead>CNPS</TableHead>
                                 {monthLabels.map((m, i) => <TableHead key={`header-month-${i}`} className="text-right">{m}</TableHead>)}
                                 <TableHead className="text-right font-bold">Total Brut</TableHead>
                                 <TableHead className="text-right font-bold">Total CNPS</TableHead>
@@ -234,7 +233,6 @@ export default function DisaReportPage() {
                                     <TableCell>{index + 1}</TableCell>
                                     <TableCell>{row.matricule}</TableCell>
                                     <TableCell className="font-medium whitespace-nowrap">{row.name}</TableCell>
-                                    <TableCell>{row.cnpsStatus ? 'Oui' : 'Non'}</TableCell>
                                     {row.monthlySalaries.map((salary, i) => (
                                         <TableCell key={`${row.matricule}-month-${i}`} className="text-right font-mono text-xs">{formatCurrency(salary)}</TableCell>
                                     ))}
@@ -244,7 +242,7 @@ export default function DisaReportPage() {
                             ))}
                             {grandTotal && (
                                 <TableRow className="font-bold bg-muted hover:bg-muted">
-                                    <TableCell colSpan={4} className="text-right">TOTAUX</TableCell>
+                                    <TableCell colSpan={3} className="text-right">TOTAUX</TableCell>
                                     {grandTotal.monthly.map((total, index) => (
                                         <TableCell key={`total-month-${index}`} className="text-right font-mono text-xs">{formatCurrency(total)}</TableCell>
                                     ))}
@@ -294,7 +292,6 @@ export default function DisaReportPage() {
                         <th className="border border-black p-1">N°</th>
                         <th className="border border-black p-1">Mat.</th>
                         <th className="border border-black p-1">Nom et Prénoms</th>
-                        <th className="border border-black p-1">CNPS</th>
                         {monthLabels.map((m, i) => <th key={`header-print-month-${i}`} className="border border-black p-1">{m}</th>)}
                         <th className="border border-black p-1">Total Brut</th>
                         <th className="border border-black p-1">Total CNPS</th>
@@ -306,7 +303,6 @@ export default function DisaReportPage() {
                             <td className="border border-black p-1 text-center">{index + 1}</td>
                             <td className="border border-black p-1">{row.matricule}</td>
                             <td className="border border-black p-1 whitespace-nowrap">{row.name}</td>
-                            <td className="border border-black p-1 text-center">{row.cnpsStatus ? 'Oui' : 'Non'}</td>
                             {row.monthlySalaries.map((salary, i) => (
                                 <td key={`print-cell-${row.matricule}-month-${i}`} className="border border-black p-1 text-right">{formatCurrency(salary)}</td>
                             ))}
@@ -315,7 +311,7 @@ export default function DisaReportPage() {
                         </tr>
                     ))}
                     <tr className="font-bold bg-gray-100">
-                        <td colSpan={4} className="border border-black p-1 text-right">TOTAL</td>
+                        <td colSpan={3} className="border border-black p-1 text-right">TOTAL</td>
                         {grandTotal.monthly.map((total, index) => (
                            <td key={`print-total-month-${index}`} className="border border-black p-1 text-right">{formatCurrency(total)}</td>
                         ))}

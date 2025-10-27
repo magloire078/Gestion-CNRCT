@@ -71,7 +71,7 @@ export default function DisaReportPage() {
       const allEmployees = await getEmployees();
       
       const employeesForYear = allEmployees.filter(e => {
-        if (!e.matricule || !e.CNPS) return false;
+        if (!e.matricule) return false;
         
         const hireDate = e.dateEmbauche ? parseISO(e.dateEmbauche) : null;
         if (!hireDate || !isValid(hireDate)) return false;
@@ -80,7 +80,6 @@ export default function DisaReportPage() {
         if (e.Date_Depart && isValid(parseISO(e.Date_Depart))) {
             departureDate = parseISO(e.Date_Depart);
         } else if (e.status === 'Actif' && e.Date_Naissance && isValid(parseISO(e.Date_Naissance))) {
-            // Pour les employés actifs, on calcule une date de retraite théorique à 60 ans
             departureDate = addYears(parseISO(e.Date_Naissance), 60);
         }
 
@@ -97,7 +96,7 @@ export default function DisaReportPage() {
       const matriculeSet = new Set<string>();
 
       for (const employee of employeesForYear) {
-          if (matriculeSet.has(employee.matricule)) continue; // Ensure unique matricule per report
+          if (matriculeSet.has(employee.matricule)) continue;
           matriculeSet.add(employee.matricule);
 
           const monthlyPayslipPromises: Promise<PayslipDetails>[] = [];
@@ -219,35 +218,35 @@ export default function DisaReportPage() {
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead className="sticky left-0 z-10 w-16">N°</TableHead>
-                                <TableHead className="sticky left-16 z-10 w-32">Matricule</TableHead>
-                                <TableHead className="sticky left-48 z-10 min-w-[200px]">Nom et Prénoms</TableHead>
-                                {monthLabels.map((m, i) => <TableHead key={`header-month-${i}`} className="text-right">{m}</TableHead>)}
-                                <TableHead className="text-right font-bold">Total Brut</TableHead>
-                                <TableHead className="text-right font-bold">Total CNPS</TableHead>
+                                <TableHead className="sticky left-0 z-10 w-16 px-1">N°</TableHead>
+                                <TableHead className="sticky left-16 z-10 w-32 px-1">Matricule</TableHead>
+                                <TableHead className="sticky left-48 z-10 min-w-[200px] px-1">Nom et Prénoms</TableHead>
+                                {monthLabels.map((m, i) => <TableHead key={`header-month-${i}`} className="text-right px-1">{m}</TableHead>)}
+                                <TableHead className="text-right font-bold px-1">Total Brut</TableHead>
+                                <TableHead className="text-right font-bold px-1">Total CNPS</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {reportData.map((row, index) => (
                                 <TableRow key={row.matricule}>
-                                    <TableCell className="sticky left-0">{index + 1}</TableCell>
-                                    <TableCell className="sticky left-16">{row.matricule}</TableCell>
-                                    <TableCell className="font-medium whitespace-nowrap sticky left-48">{row.name}</TableCell>
+                                    <TableCell className="sticky left-0 px-1">{index + 1}</TableCell>
+                                    <TableCell className="sticky left-16 px-1">{row.matricule}</TableCell>
+                                    <TableCell className="font-medium whitespace-nowrap sticky left-48 px-1">{row.name}</TableCell>
                                     {row.monthlySalaries.map((salary, i) => (
-                                        <TableCell key={`${row.matricule}-month-${i}`} className="text-right font-mono text-xs">{formatCurrency(salary)}</TableCell>
+                                        <TableCell key={`${row.matricule}-month-${i}`} className="text-right font-mono text-xs px-1">{formatCurrency(salary)}</TableCell>
                                     ))}
-                                    <TableCell className="text-right font-mono font-bold">{formatCurrency(row.totalBrut)}</TableCell>
-                                    <TableCell className="text-right font-mono font-bold">{formatCurrency(row.totalCNPS)}</TableCell>
+                                    <TableCell className="text-right font-mono font-bold px-1">{formatCurrency(row.totalBrut)}</TableCell>
+                                    <TableCell className="text-right font-mono font-bold px-1">{formatCurrency(row.totalCNPS)}</TableCell>
                                 </TableRow>
                             ))}
                             {grandTotal && (
                                 <TableRow className="font-bold bg-muted hover:bg-muted">
-                                    <TableCell colSpan={3} className="text-right sticky left-0">TOTAUX</TableCell>
+                                    <TableCell colSpan={3} className="text-right sticky left-0 px-1">TOTAUX</TableCell>
                                     {grandTotal.monthly.map((total, index) => (
-                                        <TableCell key={`total-month-${index}`} className="text-right font-mono text-xs">{formatCurrency(total)}</TableCell>
+                                        <TableCell key={`total-month-${index}`} className="text-right font-mono text-xs px-1">{formatCurrency(total)}</TableCell>
                                     ))}
-                                    <TableCell className="text-right font-mono">{formatCurrency(grandTotal.brut)}</TableCell>
-                                    <TableCell className="text-right font-mono">{formatCurrency(grandTotal.cnps)}</TableCell>
+                                    <TableCell className="text-right font-mono px-1">{formatCurrency(grandTotal.brut)}</TableCell>
+                                    <TableCell className="text-right font-mono px-1">{formatCurrency(grandTotal.cnps)}</TableCell>
                                 </TableRow>
                             )}
                         </TableBody>

@@ -101,6 +101,7 @@ export function DirectionDialog({ isOpen, onClose, onConfirm, direction, departm
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Nom de la direction"
+                className="mt-1"
               />
             </div>
             <div>

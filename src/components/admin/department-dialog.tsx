@@ -73,12 +73,13 @@ export function DepartmentDialog({ isOpen, onClose, onConfirm, department }: Dep
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
-            <Label htmlFor="name" className="sr-only">Nom</Label>
+            <Label htmlFor="name">Nom du département</Label>
             <Input
               id="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Nom du département"
+              className="mt-1"
             />
             {error && <p className="text-sm text-destructive mt-2">{error}</p>}
           </div>

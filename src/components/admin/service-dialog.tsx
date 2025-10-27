@@ -143,6 +143,7 @@ export function ServiceDialog({ isOpen, onClose, service, directions, department
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Nom du service"
+                className="mt-1"
               />
             </div>
              <div>

@@ -83,6 +83,30 @@
     @apply bg-background text-foreground;
   }
 
+  /* Zebra-striping for tables */
+  tbody tr:nth-child(even) {
+    @apply bg-muted/25;
+  }
+  tbody tr:hover {
+      @apply bg-muted/50;
+  }
+
+  /* Ensure sticky table header cells have a background */
+  th.sticky {
+    @apply bg-card;
+  }
+  /* Ensure sticky table body cells have a background */
+  tbody td.sticky {
+    @apply bg-card;
+  }
+  tbody tr:nth-child(even) td.sticky {
+    @apply bg-muted/25;
+  }
+  tbody tr:hover td.sticky {
+    @apply bg-muted/50;
+  }
+
+
   @media print {
     @page {
         size: a4 portrait;

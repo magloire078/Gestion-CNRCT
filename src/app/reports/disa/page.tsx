@@ -215,13 +215,13 @@ export default function DisaReportPage() {
                 </div>
             </CardHeader>
             <CardContent>
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto border rounded-lg">
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>N°</TableHead>
-                                <TableHead>Matricule</TableHead>
-                                <TableHead>Nom et Prénoms</TableHead>
+                                <TableHead className="sticky left-0 bg-card z-10 w-16">N°</TableHead>
+                                <TableHead className="sticky left-16 bg-card z-10 w-32">Matricule</TableHead>
+                                <TableHead className="sticky left-48 bg-card z-10 min-w-[200px]">Nom et Prénoms</TableHead>
                                 {monthLabels.map((m, i) => <TableHead key={`header-month-${i}`} className="text-right">{m}</TableHead>)}
                                 <TableHead className="text-right font-bold">Total Brut</TableHead>
                                 <TableHead className="text-right font-bold">Total CNPS</TableHead>
@@ -230,9 +230,9 @@ export default function DisaReportPage() {
                         <TableBody>
                             {reportData.map((row, index) => (
                                 <TableRow key={row.matricule}>
-                                    <TableCell>{index + 1}</TableCell>
-                                    <TableCell>{row.matricule}</TableCell>
-                                    <TableCell className="font-medium whitespace-nowrap">{row.name}</TableCell>
+                                    <TableCell className="sticky left-0 bg-card z-10">{index + 1}</TableCell>
+                                    <TableCell className="sticky left-16 bg-card z-10">{row.matricule}</TableCell>
+                                    <TableCell className="font-medium whitespace-nowrap sticky left-48 bg-card z-10">{row.name}</TableCell>
                                     {row.monthlySalaries.map((salary, i) => (
                                         <TableCell key={`${row.matricule}-month-${i}`} className="text-right font-mono text-xs">{formatCurrency(salary)}</TableCell>
                                     ))}
@@ -242,7 +242,7 @@ export default function DisaReportPage() {
                             ))}
                             {grandTotal && (
                                 <TableRow className="font-bold bg-muted hover:bg-muted">
-                                    <TableCell colSpan={3} className="text-right">TOTAUX</TableCell>
+                                    <TableCell colSpan={3} className="text-right sticky left-0 bg-muted z-10">TOTAUX</TableCell>
                                     {grandTotal.monthly.map((total, index) => (
                                         <TableCell key={`total-month-${index}`} className="text-right font-mono text-xs">{formatCurrency(total)}</TableCell>
                                     ))}

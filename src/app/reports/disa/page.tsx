@@ -23,7 +23,7 @@ import { getEmployees } from "@/services/employee-service";
 import { getPayslipDetails, type PayslipDetails } from "@/services/payslip-details-service";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { format, parseISO, isValid } from 'date-fns';
+import { format, parseISO, isValid, addYears } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { getOrganizationSettings } from "@/services/organization-service";
 import type { OrganizationSettings } from "@/lib/data";
@@ -71,17 +71,21 @@ export default function DisaReportPage() {
       const allEmployees = await getEmployees();
       
       const employeesForYear = allEmployees.filter(e => {
-        if (!e.matricule) return false;
+        if (!e.matricule || !e.CNPS) return false;
         
         const hireDate = e.dateEmbauche ? parseISO(e.dateEmbauche) : null;
-        const departureDate = e.Date_Depart ? parseISO(e.Date_Depart) : null;
-
         if (!hireDate || !isValid(hireDate)) return false;
 
-        // Include if hired before or during the report year
+        let departureDate: Date | null = null;
+        if (e.Date_Depart && isValid(parseISO(e.Date_Depart))) {
+            departureDate = parseISO(e.Date_Depart);
+        } else if (e.status === 'Actif' && e.Date_Naissance && isValid(parseISO(e.Date_Naissance))) {
+            // Pour les employés actifs, on calcule une date de retraite théorique à 60 ans
+            departureDate = addYears(parseISO(e.Date_Naissance), 60);
+        }
+
         const hiredInTime = hireDate.getFullYear() <= reportYear;
-        // Include if they have not left, OR they left during or after the report year
-        const notLeftTooEarly = !departureDate || !isValid(departureDate) || departureDate.getFullYear() >= reportYear;
+        const notLeftTooEarly = !departureDate || departureDate.getFullYear() >= reportYear;
 
         return hiredInTime && notLeftTooEarly;
       });
@@ -336,5 +340,3 @@ export default function DisaReportPage() {
     </>
   );
 }
-
-    

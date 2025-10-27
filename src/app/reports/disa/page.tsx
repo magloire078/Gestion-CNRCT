@@ -218,9 +218,9 @@ export default function DisaReportPage() {
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead className="sticky left-0 z-10 w-12 px-0.5">N°</TableHead>
-                                <TableHead className="sticky left-[48px] z-10 w-28 px-0.5">Matricule</TableHead>
-                                <TableHead className="sticky left-[160px] z-10 min-w-[200px] px-0.5">Nom et Prénoms</TableHead>
+                                <TableHead className="sticky left-0 z-10 w-10 px-0.5">N°</TableHead>
+                                <TableHead className="sticky left-[40px] z-10 w-24 px-0.5">Matricule</TableHead>
+                                <TableHead className="sticky left-[136px] z-10 min-w-[150px] px-0.5">Nom et Prénoms</TableHead>
                                 {monthLabels.map((m, i) => <TableHead key={`header-month-${i}`} className="text-right px-0.5">{m}</TableHead>)}
                                 <TableHead className="text-right font-bold px-0.5">Total Brut</TableHead>
                                 <TableHead className="text-right font-bold px-0.5">Total CNPS</TableHead>
@@ -230,8 +230,8 @@ export default function DisaReportPage() {
                             {reportData.map((row, index) => (
                                 <TableRow key={row.matricule}>
                                     <TableCell className="sticky left-0 px-0.5">{index + 1}</TableCell>
-                                    <TableCell className="sticky left-[48px] px-0.5">{row.matricule}</TableCell>
-                                    <TableCell className="font-medium whitespace-nowrap sticky left-[160px] px-0.5">{row.name}</TableCell>
+                                    <TableCell className="sticky left-[40px] px-0.5">{row.matricule}</TableCell>
+                                    <TableCell className="font-medium whitespace-nowrap sticky left-[136px] px-0.5">{row.name}</TableCell>
                                     {row.monthlySalaries.map((salary, i) => (
                                         <TableCell key={`${row.matricule}-month-${i}`} className="text-right font-mono text-xs px-0.5">{formatCurrency(salary)}</TableCell>
                                     ))}

@@ -9,6 +9,7 @@ import { getDirections } from './direction-service';
 import { getServices } from './service-service';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { FirestorePermissionError } from '@/lib/errors';
+import { parseISO, addYears, format, isValid } from 'date-fns';
 
 
 const employeesCollection = collection(db, 'employees');
@@ -136,6 +137,45 @@ export async function getEmployee(id: string): Promise<Employe | null> {
     return null;
 }
 
+const processEmployeeData = (employeeData: Partial<Employe>): Partial<Employe> => {
+    const data = { ...employeeData };
+
+    // Si l'employé est actif, n'a pas de date de départ, mais a une date de naissance
+    if (data.status === 'Actif' && !data.Date_Depart && data.Date_Naissance) {
+        try {
+            const birthDate = parseISO(data.Date_Naissance);
+            if (isValid(birthDate)) {
+                const retirementDate = addYears(birthDate, 60);
+                data.Date_Depart = format(retirementDate, 'yyyy-MM-dd');
+            }
+        } catch (e) {
+            console.error(`Could not calculate retirement date for employee with birthdate ${data.Date_Naissance}`, e);
+        }
+    }
+    
+    // Ensure numeric fields are numbers
+    const numericFields: (keyof Employe)[] = [
+        'baseSalary', 'primeAnciennete', 'indemniteTransportImposable', 'indemniteResponsabilite', 
+        'indemniteLogement', 'indemniteSujetion', 'indemniteCommunication', 'indemniteRepresentation', 
+        'Salaire_Brut', 'transportNonImposable', 'Salaire_Net', 'enfants'
+    ];
+    numericFields.forEach(field => {
+        if (data[field] !== undefined && typeof data[field] !== 'number') {
+            const num = parseFloat(String(data[field]));
+            (data as any)[field] = isNaN(num) ? 0 : num;
+        }
+    });
+
+    Object.keys(data).forEach(key => {
+        if ((data as any)[key] === undefined) {
+            delete (data as any)[key];
+        }
+    });
+
+    return data;
+}
+
+
 export async function addEmployee(employeeData: Omit<Employe, 'id'>, photoFile: File | null): Promise<Employe> {
     try {
         let photoUrl = 'https://placehold.co/100x100.png';
@@ -147,17 +187,11 @@ export async function addEmployee(employeeData: Omit<Employe, 'id'>, photoFile: 
             photoUrl = await getDownloadURL(snapshot.ref);
         }
         
-        const finalEmployeeData: { [key: string]: any } = { ...employeeData, photoUrl };
-        
-        Object.keys(finalEmployeeData).forEach(key => {
-            if (finalEmployeeData[key] === undefined) {
-                delete finalEmployeeData[key];
-            }
-        });
+        const processedData = processEmployeeData({ ...employeeData, photoUrl });
 
-        await setDoc(docRef, finalEmployeeData);
+        await setDoc(docRef, processedData);
         
-        const newEmployee = { id: docRef.id, ...finalEmployeeData } as Employe;
+        const newEmployee = { id: docRef.id, ...processedData } as Employe;
         await createOrUpdateChiefFromEmployee(newEmployee);
         
         return newEmployee;
@@ -185,8 +219,9 @@ export async function batchAddEmployees(employees: Omit<Employe, 'id'>[]): Promi
     employees.forEach(employee => {
         if (employee.matricule && !existingMatricules.has(employee.matricule)) {
             const newDocRef = doc(employeesCollection); // Auto-generate ID
-            batch.set(newDocRef, employee);
-            employeesToSyncToChiefs.push({ id: newDocRef.id, ...employee });
+            const processedData = processEmployeeData(employee);
+            batch.set(newDocRef, processedData);
+            employeesToSyncToChiefs.push({ id: newDocRef.id, ...processedData } as Employe);
             addedCount++;
         }
     });
@@ -212,7 +247,7 @@ export async function updateEmployee(employeeId: string, employeeDataToUpdate: P
     try {
         const employeeDocRef = doc(db, 'employees', employeeId);
         
-        const updateData: { [key: string]: any } = { ...employeeDataToUpdate };
+        let updateData: Partial<Employe> = { ...employeeDataToUpdate };
 
         if (photoFile) {
             const photoRef = ref(storage, `employee_photos/${employeeId}/${photoFile.name}`);
@@ -220,12 +255,8 @@ export async function updateEmployee(employeeId: string, employeeDataToUpdate: P
             updateData.photoUrl = await getDownloadURL(snapshot.ref);
         }
         
-        Object.keys(updateData).forEach(key => {
-            if (updateData[key] === undefined) {
-                delete updateData[key];
-            }
-        });
-
+        updateData = processEmployeeData(updateData);
+        
         if ('id' in updateData) {
             delete (updateData as any).id;
         }
@@ -310,5 +341,6 @@ export async function getOrganizationalUnits() {
         throw error;
     }
 }
+
 
 

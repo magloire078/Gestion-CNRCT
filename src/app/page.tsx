@@ -19,7 +19,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { EmployeeDistributionChart } from '@/components/charts/employee-distribution-chart';
 import { AssetStatusChart } from '@/components/charts/asset-status-chart';
 import { EmployeeActivityReport } from '@/components/reports/employee-activity-report';
-import { subscribeToEmployees, getEmployeeGroup } from '@/services/employee-service';
+import { subscribeToEmployees, getEmployeeGroup, type EmployeeGroup } from '@/services/employee-service';
 import { getOrganizationSettings } from '@/services/organization-service';
 import { subscribeToLeaves } from '@/services/leave-service';
 import { subscribeToAssets } from '@/services/asset-service';
@@ -67,56 +67,85 @@ const StatCard = ({ title, value, icon: Icon, description, href, loading }: Stat
 };
 
 
-const LatestRecruitsCard = ({ employees, loading }: { employees: Employe[], loading: boolean }) => {
+const categoryLabels: Record<EmployeeGroup, string> = {
+    'personnel-siege': "Personnel Siège",
+    'chauffeur-directoire': "Chauffeurs Directoire",
+    'garde-republicaine': "Garde Républicaine",
+    'gendarme': "Gendarmes",
+    'directoire': "Membres du Directoire",
+    'regional': "Comités Régionaux",
+    'all': 'Tous'
+};
 
-    const latestRecruits = employees
-        .filter(e => e.dateEmbauche)
-        .sort((a, b) => new Date(b.dateEmbauche!).getTime() - new Date(a.dateEmbauche!).getTime())
-        .slice(0, 5);
+const LatestRecruitsCard = ({ employees, loading, departments }: { employees: Employe[], loading: boolean, departments: Department[] }) => {
     
+    const recruitsByCategory = employees
+        .filter(e => e.dateEmbauche)
+        .reduce((acc, emp) => {
+            const group = getEmployeeGroup(emp, departments);
+            if (!acc[group]) {
+                acc[group] = [];
+            }
+            acc[group].push(emp);
+            return acc;
+        }, {} as Record<EmployeeGroup, Employe[]>);
+
+    Object.values(recruitsByCategory).forEach(group => {
+        group.sort((a, b) => new Date(b.dateEmbauche!).getTime() - new Date(a.dateEmbauche!).getTime());
+    });
+
     const formatDate = (dateString?: string) => {
         if (!dateString) return 'N/A';
-        try {
-            return format(parseISO(dateString), 'dd/MM/yyyy');
-        } catch {
-            return dateString;
-        }
+        try { return format(parseISO(dateString), 'dd/MM/yyyy'); } catch { return dateString; }
     }
+
+    const categoriesWithRecruits = Object.entries(recruitsByCategory)
+        .filter(([_, recruits]) => recruits.length > 0)
+        .sort(([groupA], [groupB]) => (categoryLabels[groupA] || groupA).localeCompare(categoryLabels[groupB] || groupB));
+
 
     return (
         <Card className="lg:col-span-1 xl:col-span-1">
             <CardHeader>
-                <CardTitle>Derniers Arrivants</CardTitle>
-                <CardDescription>Aperçu des nouveaux employés.</CardDescription>
+                <CardTitle>Derniers Arrivants par Catégorie</CardTitle>
+                <CardDescription>Aperçu des nouveaux employés et de leurs matricules.</CardDescription>
             </CardHeader>
             <CardContent>
                 {loading ? <Skeleton className="h-48 w-full" /> : (
-                    <div className="space-y-4">
-                        {latestRecruits.length > 0 ? (
-                            latestRecruits.map(emp => (
-                                <div key={emp.id} className="flex items-center gap-3">
-                                     <Avatar className="h-9 w-9">
-                                        <AvatarImage src={emp.photoUrl} alt={emp.name} data-ai-hint="employee photo" />
-                                        <AvatarFallback>{emp.lastName?.charAt(0)}</AvatarFallback>
-                                    </Avatar>
-                                    <div className="text-xs">
-                                        <p className="font-medium text-sm">{`${emp.lastName || ''} ${emp.firstName || ''}`.trim()}</p>
-                                        <p className="text-muted-foreground">{emp.poste}</p>
-                                        <p className="text-muted-foreground">
-                                            Embauché le : {formatDate(emp.dateEmbauche)}
-                                        </p>
+                    categoriesWithRecruits.length > 0 ? (
+                        <Tabs defaultValue={categoriesWithRecruits[0][0]}>
+                            <TabsList className="grid w-full grid-cols-2 h-auto flex-wrap">
+                                {categoriesWithRecruits.map(([group, _]) => (
+                                    <TabsTrigger key={group} value={group} className="text-xs">{categoryLabels[group] || group}</TabsTrigger>
+                                ))}
+                            </TabsList>
+                            {categoriesWithRecruits.map(([group, recruits]) => (
+                                <TabsContent key={group} value={group}>
+                                    <div className="space-y-3 pt-4">
+                                        {recruits.slice(0, 3).map(emp => (
+                                            <div key={emp.id} className="flex items-center gap-3">
+                                                <Avatar className="h-9 w-9"><AvatarImage src={emp.photoUrl} alt={emp.name} data-ai-hint="employee photo" /><AvatarFallback>{emp.lastName?.charAt(0)}</AvatarFallback></Avatar>
+                                                <div className="text-xs flex-1">
+                                                    <p className="font-medium text-sm">{`${emp.lastName || ''} ${emp.firstName || ''}`.trim()}</p>
+                                                    <p className="text-muted-foreground">{emp.poste}</p>
+                                                    <p className="text-muted-foreground">Embauché le : {formatDate(emp.dateEmbauche)}</p>
+                                                </div>
+                                                <Badge variant="secondary" className="font-mono">{emp.matricule}</Badge>
+                                            </div>
+                                        ))}
                                     </div>
-                                </div>
-                            ))
-                        ) : (
-                             <p className="text-sm text-muted-foreground italic text-center py-10">Aucun nouvel employé récemment.</p>
-                        )}
-                    </div>
+                                </TabsContent>
+                            ))}
+                        </Tabs>
+                    ) : (
+                        <p className="text-sm text-muted-foreground italic text-center py-10">Aucun nouvel employé récemment.</p>
+                    )
                 )}
             </CardContent>
         </Card>
     );
 };
+
 
 
 export default function DashboardPage() {
@@ -425,7 +454,7 @@ export default function DashboardPage() {
                         )}
                     </CardContent>
                     </Card>
-                    <LatestRecruitsCard employees={employees} loading={loading} />
+                    <LatestRecruitsCard employees={employees} loading={loading} departments={departments}/>
                     <Card>
                         <CardHeader>
                            <div className="flex justify-between items-start">

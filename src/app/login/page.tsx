@@ -18,6 +18,7 @@ import { Building2, Eye, EyeOff, Loader2, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { signIn } from "@/services/auth-service";
 import { getOrganizationSettings } from "@/services/organization-service";
+import Image from "next/image";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -27,10 +28,12 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [orgName, setOrgName] = useState("Gestion App");
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
 
   useEffect(() => {
     getOrganizationSettings().then(settings => {
         setOrgName(settings.organizationName || "Gestion App");
+        setLogoUrl(settings.mainLogoUrl);
     })
   }, []);
 
@@ -66,9 +69,13 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <div className="flex items-center justify-center gap-2 mb-4">
-              <Building2 className="h-8 w-8 text-primary" />
-              <h1 className="text-xl font-semibold tracking-tight">{orgName}</h1>
+          <div className="flex flex-col items-center justify-center gap-2 mb-4">
+             {logoUrl ? (
+                  <Image src={logoUrl} alt={orgName} width={80} height={80} className="object-contain" />
+              ) : (
+                  <Building2 className="h-10 w-10 text-primary" />
+              )}
+              <h1 className="text-2xl font-semibold tracking-tight text-center">{orgName}</h1>
           </div>
           <CardTitle className="text-2xl text-center">Connexion</CardTitle>
           <CardDescription className="text-center">

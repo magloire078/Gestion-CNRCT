@@ -85,7 +85,7 @@
 
   /* Styling for tables headers */
   thead {
-    @apply bg-secondary text-secondary-foreground;
+    @apply bg-muted/70 text-secondary-foreground;
   }
   
   /* Zebra-striping for tables */
@@ -98,7 +98,7 @@
 
   /* Ensure sticky table header cells have a background */
   th.sticky {
-    @apply bg-secondary;
+    @apply bg-muted/70;
   }
   
   /* Ensure sticky table body cells have a background */

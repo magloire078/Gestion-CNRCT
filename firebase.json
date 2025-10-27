@@ -1,11 +1,5 @@
 
 {
-  "firestore": {
-    "rules": "firestore.rules"
-  },
-  "storage": {
-    "rules": "storage.rules"
-  },
   "hosting": {
     "source": ".",
     "ignore": [
@@ -16,6 +10,12 @@
     "frameworksBackend": {
       "region": "us-central1"
     }
+  },
+  "firestore": {
+    "rules": "firestore.rules"
+  },
+  "storage": {
+    "rules": "storage.rules"
   },
   "emulators": {
     "auth": {
@@ -31,5 +31,6 @@
       "enabled": true,
       "port": 4000
     }
-  }
+  },
+  "project": "gestion-cnrct"
 }

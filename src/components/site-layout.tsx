@@ -71,7 +71,6 @@ import { cn } from "@/lib/utils";
 
 const allMenuItems = [
   { href: "/", label: "Tableau de Bord", icon: LayoutDashboard, permission: "page:dashboard:view" },
-  { href: "/my-space", label: "Mon Espace", icon: UserSquareIcon, permission: "page:my-space:view" },
   { 
     isCollapsible: true,
     label: "Personnel", 
@@ -163,8 +162,8 @@ function MobileBottomNav() {
 
   const navItems = [
     { href: "/", label: "Tableau de Bord", icon: LayoutDashboard },
-    { href: "/my-space", label: "Mon Espace", icon: UserSquareIcon },
     { href: "/employees", label: "Personnel", icon: Users },
+    { href: "/missions", label: "Missions", icon: Briefcase },
     { href: "/organization-chart", label: "Organisation", icon: Building },
   ];
 

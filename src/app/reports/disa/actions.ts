@@ -3,9 +3,9 @@
 
 import { getEmployees } from "@/services/employee-service";
 import { getOrganizationSettings } from "@/services/organization-service";
-import type { Employe, OrganizationSettings } from "@/lib/data";
-import { getPayslipDetails } from "@/services/payslip-details-service";
-import { lastDayOfMonth, parseISO, getYear, isValid, isBefore } from 'date-fns';
+import type { Employe, OrganizationSettings, EmployeeEvent } from "@/lib/data";
+import { getEmployeeHistory } from "@/services/employee-history-service";
+import { lastDayOfMonth, parseISO, getYear, isValid, isBefore, startOfYear, endOfYear, getMonth, isAfter } from 'date-fns';
 
 interface DisaRow {
   matricule: string;
@@ -24,6 +24,62 @@ export interface DisaReportState {
     error: string | null;
 }
 
+const salaryEventTypes: EmployeeEvent['eventType'][] = ['Promotion', 'Augmentation au Mérite', 'Ajustement de Marché', 'Revalorisation Salariale'];
+
+function calculateBrutSalary(baseSalary: number, primeAnciennete: number, details: Record<string, any>): number {
+    const otherIndemnities = [
+        'indemniteTransportImposable', 'indemniteSujetion', 'indemniteCommunication',
+        'indemniteRepresentation', 'indemniteResponsabilite', 'indemniteLogement'
+    ].reduce((sum, key) => sum + Number(details[key] || 0), 0);
+    return baseSalary + primeAnciennete + otherIndemnities;
+}
+
+function calculatePrimeAnciennete(baseSalary: number, hireDate: Date, payslipDate: Date): number {
+    if (!isValid(hireDate) || !isValid(payslipDate)) return 0;
+    const yearsOfService = differenceInYears(payslipDate, hireDate);
+    if (yearsOfService < 2) return 0;
+    const bonusRate = Math.min(25, yearsOfService);
+    return baseSalary * (bonusRate / 100);
+}
+
+function getSalaryStructureForDate(employee: Employe, history: EmployeeEvent[], date: Date): Record<string, any> {
+    const relevantEvent = history
+        .filter(event => 
+            salaryEventTypes.includes(event.eventType as any) &&
+            event.details &&
+            isValid(parseISO(event.effectiveDate)) &&
+            (isBefore(parseISO(event.effectiveDate), date) || isEqual(parseISO(event.effectiveDate), date))
+        )
+        .sort((a, b) => parseISO(b.effectiveDate).getTime() - parseISO(a.effectiveDate).getTime())[0];
+
+    if (relevantEvent) {
+        return relevantEvent.details || {};
+    }
+
+    // Fallback: if no salary event before this date, check if this date is before the *first ever* salary event.
+    const firstEverEvent = history
+        .filter(event => salaryEventTypes.includes(event.eventType as any) && event.details)
+        .sort((a,b) => parseISO(a.effectiveDate).getTime() - parseISO(b.effectiveDate).getTime())[0];
+
+    if (firstEverEvent && isBefore(date, parseISO(firstEverEvent.effectiveDate))) {
+         // Use the "previous" state from the first event
+         return {
+            baseSalary: firstEverEvent.details?.previous_baseSalary || employee.baseSalary || 0,
+            indemniteTransportImposable: firstEverEvent.details?.previous_indemniteTransportImposable || employee.indemniteTransportImposable || 0,
+            indemniteResponsabilite: firstEverEvent.details?.previous_indemniteResponsabilite || employee.indemniteResponsabilite || 0,
+            indemniteLogement: firstEverEvent.details?.previous_indemniteLogement || employee.indemniteLogement || 0,
+            indemniteSujetion: firstEverEvent.details?.previous_indemniteSujetion || employee.indemniteSujetion || 0,
+            indemniteCommunication: firstEverEvent.details?.previous_indemniteCommunication || employee.indemniteCommunication || 0,
+            indemniteRepresentation: firstEverEvent.details?.previous_indemniteRepresentation || employee.indemniteRepresentation || 0,
+            transportNonImposable: firstEverEvent.details?.previous_transportNonImposable || employee.transportNonImposable || 0,
+        };
+    }
+    
+    // Default to the employee's main record
+    return employee;
+}
+
+
 export async function generateDisaReportAction(
   prevState: DisaReportState,
   formData: FormData
@@ -40,19 +96,14 @@ export async function generateDisaReportAction(
       getOrganizationSettings(),
     ]);
     
-    // Filter for employees who were active at any point during the year.
     const employeesForYear = allEmployees.filter(e => {
         if (!e.dateEmbauche || !isValid(parseISO(e.dateEmbauche))) return false;
-        
-        const hireYear = getYear(parseISO(e.dateEmbauche));
-        
-        // If the employee has a departure date, check if it's in or after the report year.
+        const hireDate = parseISO(e.dateEmbauche);
+        const hireYear = getYear(hireDate);
         if (e.Date_Depart && isValid(parseISO(e.Date_Depart))) {
             const departureYear = getYear(parseISO(e.Date_Depart));
             return hireYear <= reportYear && departureYear >= reportYear;
         }
-
-        // If no departure date, just check if they were hired in or before the report year.
         return hireYear <= reportYear;
     });
 
@@ -60,59 +111,48 @@ export async function generateDisaReportAction(
         return { reportData: [], grandTotal: { brut: 0, cnps: 0, monthly: Array(12).fill(0) }, organizationLogos, year: yearStr, error: null };
     }
     
+    const employeeHistories = new Map<string, EmployeeEvent[]>();
+    const historyPromises = employeesForYear.map(e => getEmployeeHistory(e.id).then(h => employeeHistories.set(e.id, h)));
+    await Promise.all(historyPromises);
+
     const reportRows: DisaRow[] = [];
 
-    // Process employees in chunks to avoid overwhelming the server
-    const chunkSize = 10;
-    for (let i = 0; i < employeesForYear.length; i += chunkSize) {
-        const chunk = employeesForYear.slice(i, i + chunkSize);
+    for (const employee of employeesForYear) {
+      const monthlySalaries: number[] = [];
+      let totalCNPS = 0;
+      const employeeHistory = employeeHistories.get(employee.id) || [];
+
+      for (let month = 0; month < 12; month++) {
+        const dateForPayslip = lastDayOfMonth(new Date(reportYear, month));
+        const hireDate = employee.dateEmbauche ? parseISO(employee.dateEmbauche) : null;
+        const departureDate = employee.Date_Depart ? parseISO(employee.Date_Depart) : null;
         
-        const chunkPromises = chunk.map(async (employee) => {
-            const monthlySalaries: number[] = [];
-            let totalCNPS = 0;
+        let brutImposable = 0;
 
-            for (let month = 0; month < 12; month++) {
-                const dateForPayslip = lastDayOfMonth(new Date(reportYear, month)).toISOString().split('T')[0];
-                const payslipDateObj = parseISO(dateForPayslip);
-
-                const hireDate = employee.dateEmbauche ? parseISO(employee.dateEmbauche) : null;
-                const departureDate = employee.Date_Depart ? parseISO(employee.Date_Depart) : null;
-
-                // Do not calculate for months before hiring or after departure
-                if ((hireDate && isBefore(payslipDateObj, hireDate)) || (departureDate && isBefore(departureDate, payslipDateObj))) {
-                    monthlySalaries.push(0);
-                    continue;
-                }
-
-                try {
-                    const details = await getPayslipDetails(employee, dateForPayslip);
-                    const brutImposable = details.totals.brutImposable;
-                    const cnps = details.deductions.find(d => d.label === 'CNPS')?.amount || 0;
-                    
-                    monthlySalaries.push(Math.round(brutImposable));
-                    totalCNPS += Math.round(cnps);
-                } catch (error) {
-                    console.warn(`Could not calculate payslip for ${employee.name} for ${dateForPayslip}:`, error);
-                    monthlySalaries.push(0);
-                }
+        if (hireDate && isAfter(dateForPayslip, hireDate) && (!departureDate || isBefore(dateForPayslip, departureDate))) {
+            const salaryStructure = getSalaryStructureForDate(employee, employeeHistory, dateForPayslip);
+            const baseSalary = Number(salaryStructure.baseSalary || 0);
+            const primeAnciennete = calculatePrimeAnciennete(baseSalary, hireDate, dateForPayslip);
+            brutImposable = calculateBrutSalary(baseSalary, primeAnciennete, salaryStructure);
+            
+            if (employee.CNPS === true) {
+                totalCNPS += brutImposable * 0.063;
             }
+        }
+        monthlySalaries.push(Math.round(brutImposable));
+      }
 
-            const totalBrut = monthlySalaries.reduce((sum, current) => sum + current, 0);
+      const totalBrut = monthlySalaries.reduce((sum, current) => sum + current, 0);
 
-            return {
-                matricule: employee.matricule || 'N/A',
-                name: `${(employee.lastName || '').toUpperCase()} ${employee.firstName || ''}`.trim(),
-                cnpsStatus: employee.CNPS || false,
-                monthlySalaries,
-                totalBrut,
-                totalCNPS,
-            };
-        });
-        
-        const chunkResults = await Promise.all(chunkPromises);
-        reportRows.push(...chunkResults);
+      reportRows.push({
+        matricule: employee.matricule || 'N/A',
+        name: `${(employee.lastName || '').toUpperCase()} ${employee.firstName || ''}`.trim(),
+        cnpsStatus: employee.CNPS || false,
+        monthlySalaries,
+        totalBrut: Math.round(totalBrut),
+        totalCNPS: Math.round(totalCNPS),
+      });
     }
-
 
     const grandTotal = reportRows.reduce((acc, row) => {
       acc.brut += row.totalBrut;
@@ -125,7 +165,11 @@ export async function generateDisaReportAction(
 
     return {
         reportData: reportRows.sort((a, b) => a.name.localeCompare(b.name)),
-        grandTotal,
+        grandTotal: {
+            brut: Math.round(grandTotal.brut),
+            cnps: Math.round(grandTotal.cnps),
+            monthly: grandTotal.monthly.map(m => Math.round(m))
+        },
         organizationLogos,
         year: yearStr,
         error: null,

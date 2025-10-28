@@ -1,7 +1,8 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useActionState } from "react";
+import { useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -19,120 +20,40 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Loader2, FileText, Printer } from "lucide-react";
-import { getEmployees } from "@/services/employee-service";
-import { getPayslipDetails, type PayslipDetails } from "@/services/payslip-details-service";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { format, parseISO, isValid, addYears } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { getOrganizationSettings } from "@/services/organization-service";
 import type { OrganizationSettings } from "@/lib/data";
+import { generateDisaReportAction, type DisaReportState } from "./actions";
 
-interface DisaRow {
-  matricule: string;
-  name: string;
-  cnpsStatus: boolean;
-  monthlySalaries: number[];
-  totalBrut: number;
-  totalCNPS: number;
+const initialState: DisaReportState = {
+    reportData: null,
+    grandTotal: null,
+    organizationLogos: null,
+    year: null,
+    error: null,
+};
+
+function SubmitButton() {
+    const { pending } = useFormStatus();
+    return (
+        <Button type="submit" disabled={pending} className="w-full sm:w-auto">
+            {pending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileText className="mr-2 h-4 w-4" />}
+            Générer le rapport
+        </Button>
+    )
 }
 
 export default function DisaReportPage() {
+  const [state, formAction] = useActionState(generateDisaReportAction, initialState);
   const [year, setYear] = useState<string>(new Date().getFullYear().toString());
-  const [loading, setLoading] = useState(true); // Set to true initially
   const [isPrinting, setIsPrinting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [reportData, setReportData] = useState<DisaRow[] | null>(null);
-  const [organizationLogos, setOrganizationLogos] = useState<OrganizationSettings | null>(null);
   
   const years = Array.from({ length: 10 }, (_, i) => (new Date().getFullYear() - i).toString());
   const monthLabels = Array.from({ length: 12 }, (_, i) => {
     const monthName = fr.localize?.month(i, { width: 'short' }) || `M${i+1}`;
     return monthName.charAt(0).toUpperCase() + monthName.slice(1);
   });
-
-  useEffect(() => {
-    const generateReport = async () => {
-      setLoading(true);
-      setError(null);
-      setReportData(null);
-      const reportYear = parseInt(year);
-
-      try {
-        const allEmployees = await getEmployees();
-        
-        const employeesForYear = allEmployees.filter(e => {
-          if (!e.matricule) return false;
-          
-          const hireDate = e.dateEmbauche ? parseISO(e.dateEmbauche) : null;
-          if (!hireDate || !isValid(hireDate)) return false;
-
-          let departureDate: Date | null = null;
-          if (e.Date_Depart && isValid(parseISO(e.Date_Depart))) {
-              departureDate = parseISO(e.Date_Depart);
-          } else if (e.status === 'Actif' && e.Date_Naissance && isValid(parseISO(e.Date_Naissance))) {
-              departureDate = addYears(parseISO(e.Date_Naissance), 60);
-          }
-
-          const hiredInTime = hireDate.getFullYear() <= reportYear;
-          const notLeftTooEarly = !departureDate || departureDate.getFullYear() >= reportYear;
-
-          return hiredInTime && notLeftTooEarly;
-        });
-
-        const logos = await getOrganizationSettings();
-        setOrganizationLogos(logos);
-
-        const reportRows: DisaRow[] = [];
-        const matriculeSet = new Set<string>();
-
-        for (const employee of employeesForYear) {
-            if (matriculeSet.has(employee.matricule)) continue;
-            matriculeSet.add(employee.matricule);
-
-            const monthlyPayslipPromises: Promise<PayslipDetails>[] = [];
-            for (let month = 0; month < 12; month++) {
-                const date = new Date(reportYear, month, 15);
-                const payslipDate = date.toISOString().split('T')[0];
-                monthlyPayslipPromises.push(getPayslipDetails(employee, payslipDate));
-            }
-            const annualTotals = await calculateAnnualData(monthlyPayslipPromises);
-            
-            reportRows.push({
-                matricule: employee.matricule,
-                name: `${(employee.lastName || '').toUpperCase()} ${employee.firstName || ''}`.trim(),
-                cnpsStatus: employee.CNPS || false,
-                monthlySalaries: annualTotals.monthlySalaries,
-                totalBrut: annualTotals.totalBrut,
-                totalCNPS: annualTotals.totalCNPS,
-            });
-        }
-        setReportData(reportRows);
-
-      } catch (err) {
-        console.error(err);
-        setError("Impossible de générer le rapport. Veuillez réessayer.");
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    generateReport();
-  }, [year]);
-
-
-  const calculateAnnualData = async (payslipPromises: Promise<PayslipDetails>[]): Promise<{ monthlySalaries: number[], totalBrut: number, totalCNPS: number }> => {
-    const monthlyDetails = await Promise.all(payslipPromises);
-    const monthlySalaries = monthlyDetails.map(details => Math.round(details.totals.brutImposable));
-    const totalBrut = monthlySalaries.reduce((sum, current) => sum + current, 0);
-    const totalCNPS = monthlyDetails.reduce((sum, details) => sum + (details.deductions.find(d => d.label === 'CNPS')?.amount || 0), 0);
-    
-    return {
-        monthlySalaries,
-        totalBrut: Math.round(totalBrut),
-        totalCNPS: Math.round(totalCNPS),
-    };
-  };
 
   const formatCurrency = (value: number) => value === 0 ? '-' : Math.round(value).toLocaleString('fr-FR');
   
@@ -154,15 +75,6 @@ export default function DisaReportPage() {
     }
   }, [isPrinting]);
   
-  const grandTotal = reportData?.reduce((acc, row) => {
-    acc.brut += row.totalBrut;
-    acc.cnps += row.totalCNPS;
-    row.monthlySalaries.forEach((salary, index) => {
-        acc.monthly[index] = (acc.monthly[index] || 0) + salary;
-    });
-    return acc;
-  }, { brut: 0, cnps: 0, monthly: Array(12).fill(0) });
-
   return (
     <>
     <div className={`flex flex-col gap-6 ${isPrinting ? 'print-hidden' : ''}`}>
@@ -177,39 +89,36 @@ export default function DisaReportPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col sm:flex-row gap-4 items-end mb-6 p-4 border rounded-lg max-w-md">
-            <div className="grid gap-2 flex-1 w-full">
-              <Label htmlFor="year">Année de la déclaration</Label>
-              <Select value={year} onValueChange={setYear}>
-                <SelectTrigger id="year"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {years.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
-                </SelectContent>
-              </Select>
+          <form action={formAction}>
+            <div className="flex flex-col sm:flex-row gap-4 items-end mb-6 p-4 border rounded-lg max-w-md">
+                <div className="grid gap-2 flex-1 w-full">
+                <Label htmlFor="year">Année de la déclaration</Label>
+                <Select name="year" value={year} onValueChange={setYear}>
+                    <SelectTrigger id="year"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                    {years.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
+                    </SelectContent>
+                </Select>
+                </div>
+                <SubmitButton />
             </div>
-          </div>
-           {error && (
+          </form>
+           {state.error && (
             <Alert variant="destructive">
               <AlertTitle>Erreur</AlertTitle>
-              <AlertDescription>{error}</AlertDescription>
+              <AlertDescription>{state.error}</AlertDescription>
             </Alert>
           )}
         </CardContent>
       </Card>
       
-      {loading && (
-          <div className="flex justify-center items-center h-64">
-             <Loader2 className="h-10 w-10 animate-spin text-primary" />
-          </div>
-      )}
-
-      {reportData && (
+      {state.reportData && (
         <Card>
             <CardHeader>
                 <div className="flex justify-between items-center">
                     <div>
-                        <CardTitle>Rapport DISA pour {year}</CardTitle>
-                        <CardDescription>Total de {reportData.length} employé(s) listé(s).</CardDescription>
+                        <CardTitle>Rapport DISA pour {state.year}</CardTitle>
+                        <CardDescription>Total de {state.reportData.length} employé(s) listé(s).</CardDescription>
                     </div>
                     <Button variant="outline" onClick={handlePrint}>
                         <Printer className="mr-2 h-4 w-4" />
@@ -231,7 +140,7 @@ export default function DisaReportPage() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {reportData.map((row, index) => (
+                            {state.reportData.map((row, index) => (
                                 <TableRow key={row.matricule}>
                                     <TableCell className="sticky left-0 px-0.5">{index + 1}</TableCell>
                                     <TableCell className="sticky left-[40px] px-0.5">{row.matricule}</TableCell>
@@ -243,14 +152,14 @@ export default function DisaReportPage() {
                                     <TableCell className="text-right font-mono font-bold px-0.5">{formatCurrency(row.totalCNPS)}</TableCell>
                                 </TableRow>
                             ))}
-                            {grandTotal && (
+                            {state.grandTotal && (
                                 <TableRow className="font-bold bg-muted hover:bg-muted">
                                     <TableCell colSpan={3} className="text-right sticky left-0 px-0.5">TOTAUX</TableCell>
-                                    {grandTotal.monthly.map((total, index) => (
+                                    {state.grandTotal.monthly.map((total, index) => (
                                         <TableCell key={`total-month-${index}`} className="text-right font-mono text-xs px-0.5">{formatCurrency(total)}</TableCell>
                                     ))}
-                                    <TableCell className="text-right font-mono px-0.5">{formatCurrency(grandTotal.brut)}</TableCell>
-                                    <TableCell className="text-right font-mono px-0.5">{formatCurrency(grandTotal.cnps)}</TableCell>
+                                    <TableCell className="text-right font-mono px-0.5">{formatCurrency(state.grandTotal.brut)}</TableCell>
+                                    <TableCell className="text-right font-mono px-0.5">{formatCurrency(state.grandTotal.cnps)}</TableCell>
                                 </TableRow>
                             )}
                         </TableBody>
@@ -260,7 +169,7 @@ export default function DisaReportPage() {
         </Card>
       )}
 
-      {!reportData && !loading && (
+      {!state.reportData && !useFormStatus().pending && (
         <Card className="flex items-center justify-center min-h-[300px]">
             <div className="text-center text-muted-foreground">
                 <FileText className="mx-auto h-12 w-12" />
@@ -270,24 +179,24 @@ export default function DisaReportPage() {
       )}
     </div>
     
-     {isPrinting && reportData && organizationLogos && grandTotal && (
+     {isPrinting && state.reportData && state.organizationLogos && state.grandTotal && (
         <div id="print-section" className="bg-white text-black p-8 font-sans">
              <header className="flex justify-between items-start mb-8">
                 <div className="w-1/4 text-center flex flex-col justify-center items-center h-24">
                    <p className="font-bold text-base">Chambre Nationale des Rois et Chefs Traditionnels</p>
-                   {organizationLogos.mainLogoUrl && <img src={organizationLogos.mainLogoUrl} alt="Logo Principal" className="max-h-20 max-w-full h-auto w-auto mt-1" />}
+                   {state.organizationLogos.mainLogoUrl && <img src={state.organizationLogos.mainLogoUrl} alt="Logo Principal" className="max-h-20 max-w-full h-auto w-auto mt-1" />}
                 </div>
                 <div className="w-2/4 text-center pt-2">
                     {/* Empty space as requested */}
                 </div>
                 <div className="w-1/4 text-center flex flex-col justify-center items-center h-24">
                     <p className="font-bold text-base">République de Côte d'Ivoire</p>
-                    {organizationLogos.secondaryLogoUrl && <img src={organizationLogos.secondaryLogoUrl} alt="Logo Secondaire" className="max-h-16 max-w-full h-auto w-auto my-1" />}
+                    {state.organizationLogos.secondaryLogoUrl && <img src={state.organizationLogos.secondaryLogoUrl} alt="Logo Secondaire" className="max-h-16 max-w-full h-auto w-auto my-1" />}
                     <p className="text-sm">Union - Discipline - Travail</p>
                 </div>
             </header>
             <div className="text-center my-4">
-                <h1 className="text-xl font-bold underline">DÉCLARATION INDIVIDUELLE DES SALAIRES ET APPOINTEMENTS (DISA) - ANNEE {year}</h1>
+                <h1 className="text-xl font-bold underline">DÉCLARATION INDIVIDUELLE DES SALAIRES ET APPOINTEMENTS (DISA) - ANNEE {state.year}</h1>
             </div>
             <table className="w-full text-[8px] border-collapse border border-black">
                 <thead className="bg-gray-200">
@@ -301,7 +210,7 @@ export default function DisaReportPage() {
                     </tr>
                 </thead>
                 <tbody>
-                    {reportData.map((row, index) => (
+                    {state.reportData.map((row, index) => (
                         <tr key={`print-row-${row.matricule}`}>
                             <td className="border border-black p-1 text-center">{index + 1}</td>
                             <td className="border border-black p-1">{row.matricule}</td>
@@ -315,11 +224,11 @@ export default function DisaReportPage() {
                     ))}
                     <tr className="font-bold bg-gray-100">
                         <td colSpan={3} className="border border-black p-1 text-right">TOTAL</td>
-                        {grandTotal.monthly.map((total, index) => (
+                        {state.grandTotal.monthly.map((total, index) => (
                            <td key={`print-total-month-${index}`} className="border border-black p-1 text-right">{formatCurrency(total)}</td>
                         ))}
-                        <td className="border border-black p-1 text-right">{formatCurrency(grandTotal.brut)}</td>
-                        <td className="border border-black p-1 text-right">{formatCurrency(grandTotal.cnps)}</td>
+                        <td className="border border-black p-1 text-right">{formatCurrency(state.grandTotal.brut)}</td>
+                        <td className="border border-black p-1 text-right">{formatCurrency(state.grandTotal.cnps)}</td>
                     </tr>
                 </tbody>
             </table>
@@ -339,4 +248,3 @@ export default function DisaReportPage() {
     </>
   );
 }
-

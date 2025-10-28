@@ -75,7 +75,7 @@ export function PayslipTemplate({ payslipDetails }: { payslipDetails: PayslipDet
                 </section>
                 
                 {/* Job Info Table */}
-                <table className="w-full border-collapse border border-gray-400 rounded-lg mt-2 text-[10px]">
+                <table className="w-full border-collapse border border-gray-400 rounded-lg mt-2 text-[10px] no-zebra">
                     <thead className="bg-gray-200 font-bold text-center">
                         <tr>
                             <td className="p-1 border-r border-gray-400">EMPLOI</td>
@@ -99,7 +99,7 @@ export function PayslipTemplate({ payslipDetails }: { payslipDetails: PayslipDet
 
                 {/* Earnings & Deductions */}
                 <div className="border border-gray-400 rounded-lg mt-2 text-[10px]">
-                        <table className="w-full border-collapse">
+                        <table className="w-full border-collapse no-zebra">
                             <thead className="bg-gray-200 font-bold">
                                 <tr>
                                     <th className="p-1 text-left w-[50%]">ELEMENTS</th>
@@ -155,7 +155,7 @@ export function PayslipTemplate({ payslipDetails }: { payslipDetails: PayslipDet
                     <div className="col-span-8">
                         <p className="font-bold text-center underline mb-1 text-sm">Impôts à la charge de l'employeur</p>
                         <div className="border border-gray-400 rounded-lg p-1 text-[10px]">
-                                <table className="w-full">
+                                <table className="w-full no-zebra">
                                 <tbody>
                                     {employerContributions.map(item => (
                                             <tr key={item.label}>

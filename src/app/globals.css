@@ -96,6 +96,15 @@
       @apply bg-accent;
   }
 
+  /* Disable zebra-striping for specific tables */
+  .no-zebra tbody tr:nth-child(even) {
+    background-color: transparent;
+  }
+  .no-zebra tbody tr:hover {
+      background-color: transparent;
+  }
+
+
   /* Ensure sticky table header cells have a background */
   th.sticky {
     @apply bg-muted/70;

@@ -39,7 +39,7 @@ interface DisaRow {
 
 export default function DisaReportPage() {
   const [year, setYear] = useState<string>(new Date().getFullYear().toString());
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true); // Set to true initially
   const [isPrinting, setIsPrinting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [reportData, setReportData] = useState<DisaRow[] | null>(null);
@@ -47,6 +47,76 @@ export default function DisaReportPage() {
   
   const years = Array.from({ length: 10 }, (_, i) => (new Date().getFullYear() - i).toString());
   const monthLabels = Array.from({ length: 12 }, (_, i) => fr.localize?.month(i, { width: 'short' }).toUpperCase() || `M${i+1}`);
+
+  useEffect(() => {
+    const generateReport = async () => {
+      setLoading(true);
+      setError(null);
+      setReportData(null);
+      const reportYear = parseInt(year);
+
+      try {
+        const allEmployees = await getEmployees();
+        
+        const employeesForYear = allEmployees.filter(e => {
+          if (!e.matricule) return false;
+          
+          const hireDate = e.dateEmbauche ? parseISO(e.dateEmbauche) : null;
+          if (!hireDate || !isValid(hireDate)) return false;
+
+          let departureDate: Date | null = null;
+          if (e.Date_Depart && isValid(parseISO(e.Date_Depart))) {
+              departureDate = parseISO(e.Date_Depart);
+          } else if (e.status === 'Actif' && e.Date_Naissance && isValid(parseISO(e.Date_Naissance))) {
+              departureDate = addYears(parseISO(e.Date_Naissance), 60);
+          }
+
+          const hiredInTime = hireDate.getFullYear() <= reportYear;
+          const notLeftTooEarly = !departureDate || departureDate.getFullYear() >= reportYear;
+
+          return hiredInTime && notLeftTooEarly;
+        });
+
+        const logos = await getOrganizationSettings();
+        setOrganizationLogos(logos);
+
+        const reportRows: DisaRow[] = [];
+        const matriculeSet = new Set<string>();
+
+        for (const employee of employeesForYear) {
+            if (matriculeSet.has(employee.matricule)) continue;
+            matriculeSet.add(employee.matricule);
+
+            const monthlyPayslipPromises: Promise<PayslipDetails>[] = [];
+            for (let month = 0; month < 12; month++) {
+                const date = new Date(reportYear, month, 15);
+                const payslipDate = date.toISOString().split('T')[0];
+                monthlyPayslipPromises.push(getPayslipDetails(employee, payslipDate));
+            }
+            const annualTotals = await calculateAnnualData(monthlyPayslipPromises);
+            
+            reportRows.push({
+                matricule: employee.matricule,
+                name: `${(employee.lastName || '').toUpperCase()} ${employee.firstName || ''}`.trim(),
+                cnpsStatus: employee.CNPS || false,
+                monthlySalaries: annualTotals.monthlySalaries,
+                totalBrut: annualTotals.totalBrut,
+                totalCNPS: annualTotals.totalCNPS,
+            });
+        }
+        setReportData(reportRows);
+
+      } catch (err) {
+        console.error(err);
+        setError("Impossible de générer le rapport. Veuillez réessayer.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    generateReport();
+  }, [year]);
+
 
   const calculateAnnualData = async (payslipPromises: Promise<PayslipDetails>[]): Promise<{ monthlySalaries: number[], totalBrut: number, totalCNPS: number }> => {
     const monthlyDetails = await Promise.all(payslipPromises);
@@ -59,71 +129,6 @@ export default function DisaReportPage() {
         totalBrut: Math.round(totalBrut),
         totalCNPS: Math.round(totalCNPS),
     };
-  };
-  
-  const generateReport = async () => {
-    setLoading(true);
-    setError(null);
-    setReportData(null);
-    const reportYear = parseInt(year);
-
-    try {
-      const allEmployees = await getEmployees();
-      
-      const employeesForYear = allEmployees.filter(e => {
-        if (!e.matricule) return false;
-        
-        const hireDate = e.dateEmbauche ? parseISO(e.dateEmbauche) : null;
-        if (!hireDate || !isValid(hireDate)) return false;
-
-        let departureDate: Date | null = null;
-        if (e.Date_Depart && isValid(parseISO(e.Date_Depart))) {
-            departureDate = parseISO(e.Date_Depart);
-        } else if (e.status === 'Actif' && e.Date_Naissance && isValid(parseISO(e.Date_Naissance))) {
-            departureDate = addYears(parseISO(e.Date_Naissance), 60);
-        }
-
-        const hiredInTime = hireDate.getFullYear() <= reportYear;
-        const notLeftTooEarly = !departureDate || departureDate.getFullYear() >= reportYear;
-
-        return hiredInTime && notLeftTooEarly;
-      });
-
-      const logos = await getOrganizationSettings();
-      setOrganizationLogos(logos);
-
-      const reportRows: DisaRow[] = [];
-      const matriculeSet = new Set<string>();
-
-      for (const employee of employeesForYear) {
-          if (matriculeSet.has(employee.matricule)) continue;
-          matriculeSet.add(employee.matricule);
-
-          const monthlyPayslipPromises: Promise<PayslipDetails>[] = [];
-          for (let month = 0; month < 12; month++) {
-              const date = new Date(reportYear, month, 15);
-              const payslipDate = date.toISOString().split('T')[0];
-              monthlyPayslipPromises.push(getPayslipDetails(employee, payslipDate));
-          }
-          const annualTotals = await calculateAnnualData(monthlyPayslipPromises);
-          
-          reportRows.push({
-              matricule: employee.matricule,
-              name: `${(employee.lastName || '').toUpperCase()} ${employee.firstName || ''}`.trim(),
-              cnpsStatus: employee.CNPS || false,
-              monthlySalaries: annualTotals.monthlySalaries,
-              totalBrut: annualTotals.totalBrut,
-              totalCNPS: annualTotals.totalCNPS,
-          });
-      }
-      setReportData(reportRows);
-
-    } catch (err) {
-      console.error(err);
-      setError("Impossible de générer le rapport. Veuillez réessayer.");
-    } finally {
-      setLoading(false);
-    }
   };
 
   const formatCurrency = (value: number) => value === 0 ? '-' : Math.round(value).toLocaleString('fr-FR');
@@ -179,10 +184,6 @@ export default function DisaReportPage() {
                 </SelectContent>
               </Select>
             </div>
-            <Button onClick={generateReport} disabled={loading} className="w-full sm:w-auto">
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Générer le rapport
-            </Button>
           </div>
            {error && (
             <Alert variant="destructive">
@@ -335,3 +336,5 @@ export default function DisaReportPage() {
     </>
   );
 }
+
+    

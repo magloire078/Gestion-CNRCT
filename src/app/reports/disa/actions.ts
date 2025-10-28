@@ -5,7 +5,7 @@ import { getEmployees } from "@/services/employee-service";
 import { getOrganizationSettings } from "@/services/organization-service";
 import type { Employe, OrganizationSettings } from "@/lib/data";
 import { getPayslipDetails } from "@/services/payslip-details-service";
-import { lastDayOfMonth, parseISO, getYear, isValid, isBefore, isEqual } from 'date-fns';
+import { lastDayOfMonth, parseISO, getYear, isValid, isBefore } from 'date-fns';
 
 interface DisaRow {
   matricule: string;
@@ -40,11 +40,20 @@ export async function generateDisaReportAction(
       getOrganizationSettings(),
     ]);
     
+    // Filter for employees who were active at any point during the year.
     const employeesForYear = allEmployees.filter(e => {
         if (!e.dateEmbauche || !isValid(parseISO(e.dateEmbauche))) return false;
+        
         const hireYear = getYear(parseISO(e.dateEmbauche));
-        const departureYear = e.Date_Depart && isValid(parseISO(e.Date_Depart)) ? getYear(parseISO(e.Date_Depart)) : null;
-        return hireYear <= reportYear && (!departureYear || departureYear >= reportYear);
+        
+        // If the employee has a departure date, check if it's in or after the report year.
+        if (e.Date_Depart && isValid(parseISO(e.Date_Depart))) {
+            const departureYear = getYear(parseISO(e.Date_Depart));
+            return hireYear <= reportYear && departureYear >= reportYear;
+        }
+
+        // If no departure date, just check if they were hired in or before the report year.
+        return hireYear <= reportYear;
     });
 
     if (employeesForYear.length === 0) {
@@ -53,47 +62,57 @@ export async function generateDisaReportAction(
     
     const reportRows: DisaRow[] = [];
 
-    for (const employee of employeesForYear) {
-        const monthlySalaries: number[] = [];
-        let totalCNPS = 0;
+    // Process employees in chunks to avoid overwhelming the server
+    const chunkSize = 10;
+    for (let i = 0; i < employeesForYear.length; i += chunkSize) {
+        const chunk = employeesForYear.slice(i, i + chunkSize);
+        
+        const chunkPromises = chunk.map(async (employee) => {
+            const monthlySalaries: number[] = [];
+            let totalCNPS = 0;
 
-        for (let month = 0; month < 12; month++) {
-            const dateForPayslip = lastDayOfMonth(new Date(reportYear, month)).toISOString().split('T')[0];
-            
-            // Do not calculate for months before hiring or after departure
-            const hireDate = employee.dateEmbauche ? parseISO(employee.dateEmbauche) : null;
-            const departureDate = employee.Date_Depart ? parseISO(employee.Date_Depart) : null;
-            const payslipDateObj = parseISO(dateForPayslip);
-            
-            if ((hireDate && isBefore(payslipDateObj, hireDate)) || (departureDate && isBefore(departureDate, payslipDateObj))) {
-                 monthlySalaries.push(0);
-                 continue;
+            for (let month = 0; month < 12; month++) {
+                const dateForPayslip = lastDayOfMonth(new Date(reportYear, month)).toISOString().split('T')[0];
+                const payslipDateObj = parseISO(dateForPayslip);
+
+                const hireDate = employee.dateEmbauche ? parseISO(employee.dateEmbauche) : null;
+                const departureDate = employee.Date_Depart ? parseISO(employee.Date_Depart) : null;
+
+                // Do not calculate for months before hiring or after departure
+                if ((hireDate && isBefore(payslipDateObj, hireDate)) || (departureDate && isBefore(departureDate, payslipDateObj))) {
+                    monthlySalaries.push(0);
+                    continue;
+                }
+
+                try {
+                    const details = await getPayslipDetails(employee, dateForPayslip);
+                    const brutImposable = details.totals.brutImposable;
+                    const cnps = details.deductions.find(d => d.label === 'CNPS')?.amount || 0;
+                    
+                    monthlySalaries.push(Math.round(brutImposable));
+                    totalCNPS += Math.round(cnps);
+                } catch (error) {
+                    console.warn(`Could not calculate payslip for ${employee.name} for ${dateForPayslip}:`, error);
+                    monthlySalaries.push(0);
+                }
             }
 
-            try {
-                const details = await getPayslipDetails(employee, dateForPayslip);
-                const brutImposable = details.totals.brutImposable;
-                const cnps = details.deductions.find(d => d.label === 'CNPS')?.amount || 0;
-                
-                monthlySalaries.push(Math.round(brutImposable));
-                totalCNPS += Math.round(cnps);
-            } catch (error) {
-                console.warn(`Could not calculate payslip for ${employee.name} for ${dateForPayslip}:`, error);
-                monthlySalaries.push(0);
-            }
-        }
+            const totalBrut = monthlySalaries.reduce((sum, current) => sum + current, 0);
 
-        const totalBrut = monthlySalaries.reduce((sum, current) => sum + current, 0);
-
-        reportRows.push({
-            matricule: employee.matricule || 'N/A',
-            name: `${(employee.lastName || '').toUpperCase()} ${employee.firstName || ''}`.trim(),
-            cnpsStatus: employee.CNPS || false,
-            monthlySalaries,
-            totalBrut,
-            totalCNPS,
+            return {
+                matricule: employee.matricule || 'N/A',
+                name: `${(employee.lastName || '').toUpperCase()} ${employee.firstName || ''}`.trim(),
+                cnpsStatus: employee.CNPS || false,
+                monthlySalaries,
+                totalBrut,
+                totalCNPS,
+            };
         });
+        
+        const chunkResults = await Promise.all(chunkPromises);
+        reportRows.push(...chunkResults);
     }
+
 
     const grandTotal = reportRows.reduce((acc, row) => {
       acc.brut += row.totalBrut;

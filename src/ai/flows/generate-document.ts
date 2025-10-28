@@ -40,7 +40,7 @@ const GenerateDocumentInputSchema = z.object({
       // Fields for Ordre de Mission
       numeroMission: z.string().optional(),
       villeRedaction: z.string().optional().default('Yamoussoukro'),
-      dateRedaction: z.string().optional(),
+      dateRedaction: z-string().optional(),
       destination: z.string().optional(),
       objetMission: z.string().optional(),
       moyenTransport: z.string().optional(),
@@ -49,6 +49,11 @@ const GenerateDocumentInputSchema = z.object({
       dateRetour: z.string().optional(),
       imputationBudgetaire: z.string().optional().default('Chambre Nationale des Rois et Chefs Traditionnels'),
       missionType: z.string().optional(),
+      totalIndemnites: z.number().optional(),
+      coutTransport: z.number().optional(),
+      coutHebergement: z.number().optional(),
+      totalFraisMission: z.number().optional(),
+
 
   }).optional().describe("Contextual information about the employee for document generation."),
 });
@@ -156,6 +161,12 @@ Date de départ : {{employeeContext.dateDepart}}
 Date de retour : {{employeeContext.dateRetour}}
 
 Imputation budgétaire : {{employeeContext.imputationBudgetaire}}
+
+Frais de Mission (en FCFA):
+- Indemnités: {{employeeContext.totalIndemnites}}
+- Coût Transport: {{employeeContext.coutTransport}}
+- Coût Hébergement: {{employeeContext.coutHebergement}}
+- TOTAL: {{employeeContext.totalFraisMission}}
 
 P. Le Président du Directoire et P.O
 Le Directeur des Affaires Sociales

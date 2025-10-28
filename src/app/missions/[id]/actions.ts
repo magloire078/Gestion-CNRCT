@@ -23,6 +23,8 @@ export async function generateMissionOrderAction(mission: Mission): Promise<{ do
         for (const participant of mission.participants) {
             const employeesWithName = await searchEmployees(participant.employeeName);
             const employeeDetails = employeesWithName.length > 0 ? employeesWithName[0] : null;
+            
+            const totalFrais = (participant.totalIndemnites || 0) + (participant.coutTransport || 0) + (participant.coutHebergement || 0);
 
              const input = {
                 documentType: 'Ordre de Mission' as const,
@@ -38,6 +40,10 @@ export async function generateMissionOrderAction(mission: Mission): Promise<{ do
                     immatriculation: participant.immatriculation,
                     dateDepart: mission.startDate,
                     dateRetour: mission.endDate,
+                    totalIndemnites: participant.totalIndemnites || 0,
+                    coutTransport: participant.coutTransport || 0,
+                    coutHebergement: participant.coutHebergement || 0,
+                    totalFraisMission: totalFrais,
                 }
             };
 

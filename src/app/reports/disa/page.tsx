@@ -46,7 +46,10 @@ export default function DisaReportPage() {
   const [organizationLogos, setOrganizationLogos] = useState<OrganizationSettings | null>(null);
   
   const years = Array.from({ length: 10 }, (_, i) => (new Date().getFullYear() - i).toString());
-  const monthLabels = Array.from({ length: 12 }, (_, i) => fr.localize?.month(i, { width: 'short' }).toUpperCase() || `M${i+1}`);
+  const monthLabels = Array.from({ length: 12 }, (_, i) => {
+    const monthName = fr.localize?.month(i, { width: 'short' }) || `M${i+1}`;
+    return monthName.charAt(0).toUpperCase() + monthName.slice(1);
+  });
 
   useEffect(() => {
     const generateReport = async () => {
@@ -337,4 +340,3 @@ export default function DisaReportPage() {
   );
 }
 
-    

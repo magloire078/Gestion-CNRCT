@@ -47,7 +47,7 @@ export async function updateTicketStatusAndAssignee(
     return { success: true };
   } catch (error) {
     console.error("Failed to update ticket:", error);
-    const errorMessage = error instanceof Error ? error.message : "Une erreur inconnue est survenue.";
+    const errorMessage = error instanceof Error ? error.message : "Mise à jour échouée: ${errorMessage}";
     return { success: false, error: `Mise à jour échouée: ${errorMessage}` };
   }
 }

@@ -29,21 +29,20 @@ export type EmployeeGroup = 'directoire' | 'regional' | 'personnel-siege' | 'cha
 export function getEmployeeGroup(employee: Employe, departments: Department[]): EmployeeGroup {
   const departmentName = departments.find(d => d.id === employee.departmentId)?.name;
 
+  if (departmentName === 'Garde Républicaine') {
+    return 'garde-republicaine';
+  }
+  if (departmentName === 'Gendarmerie') {
+    return 'gendarme';
+  }
   if (employee.departmentId === GROUPE_DIRECTOIRE_ID || employee.matricule?.startsWith('D 0')) {
     return 'directoire';
   }
   if (employee.poste === 'Membre Comité Régional') {
     return 'regional';
   }
-  // Chauffeurs du Directoire are identified by matricule starting with "R 0"
   if (employee.matricule?.startsWith('R 0')) {
       return 'chauffeur-directoire';
-  }
-  if (departmentName === 'Garde Républicaine') {
-    return 'garde-republicaine';
-  }
-  if (departmentName === 'Gendarmerie') {
-    return 'gendarme';
   }
   
   // All other employees, including regular chauffeurs, are considered personnel-siege if they are on CNPS
@@ -341,6 +340,3 @@ export async function getOrganizationalUnits() {
         throw error;
     }
 }
-
-
-

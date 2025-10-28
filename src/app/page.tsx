@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import Link from 'next/link';
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/card';
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, FileWarning, Laptop, Car, Download, ShieldCheck, User as UserIcon, Building, Cake, Printer, Crown, LogOut as LogOutIcon, Globe, Bot, Loader2 as LoaderIcon } from 'lucide-react';
+import { Users, FileWarning, Laptop, Car, Download, ShieldCheck, User as UserIcon, Building, Cake, Printer, Crown, LogOut as LogOutIcon, Globe, Bot, Loader2 as LoaderIcon, Briefcase, CalendarOff, PlusCircle } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { EmployeeDistributionChart } from '@/components/charts/employee-distribution-chart';
 import { AssetStatusChart } from '@/components/charts/asset-status-chart';
@@ -265,6 +265,45 @@ export default function DashboardPage() {
 
     }, [employees, selectedAnniversaryMonth, selectedAnniversaryYear, selectedRetirementYear]);
     
+    const recentActivity = useMemo(() => {
+        if (loading) return [];
+
+        const hireActivities = employees.map(emp => ({
+            id: emp.id,
+            type: 'embauche',
+            date: parseISO(emp.dateEmbauche || '1970-01-01'),
+            icon: PlusCircle,
+            title: `Nouvelle embauche: ${emp.name}`,
+            description: `Poste: ${emp.poste}`,
+            href: `/employees/${emp.id}`,
+        }));
+
+        const leaveActivities = leaves.map(leave => ({
+            id: leave.id,
+            type: 'conge',
+            date: parseISO(leave.startDate),
+            icon: CalendarOff,
+            title: `Demande de congé: ${leave.employee}`,
+            description: `${leave.type} - Statut: ${leave.status}`,
+            href: `/leave`,
+        }));
+
+        const missionActivities = missions.map(mission => ({
+            id: mission.id,
+            type: 'mission',
+            date: parseISO(mission.startDate),
+            icon: Briefcase,
+            title: `Mission: ${mission.title}`,
+            description: `Participants: ${mission.participants.length}`,
+            href: `/missions/${mission.id}`,
+        }));
+
+        return [...hireActivities, ...leaveActivities, ...missionActivities]
+            .sort((a, b) => b.date.getTime() - a.date.getTime())
+            .slice(0, 5);
+
+    }, [employees, leaves, missions, loading]);
+    
     useEffect(() => {
       if (isPrintingAnniversaries) {
           document.body.classList.add('print-landscape');
@@ -413,48 +452,36 @@ export default function DashboardPage() {
                         <EmployeeDistributionChart />
                     </CardContent>
                     </Card>
-                    <Card>
-                    <CardHeader>
-                        <CardTitle>État des Actifs Informatiques</CardTitle>
-                        <CardDescription>Aperçu du statut actuel de tous les actifs informatiques.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <AssetStatusChart />
-                    </CardContent>
+                     <Card>
+                        <CardHeader>
+                            <CardTitle>Activité Récente</CardTitle>
+                            <CardDescription>Un aperçu des derniers événements dans l'entreprise.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            {loading ? <Skeleton className="h-48 w-full" /> : (
+                                <div className="space-y-4">
+                                {recentActivity.map(activity => (
+                                    <Link key={activity.id} href={activity.href} className="flex items-center gap-4 group">
+                                        <div className="bg-muted rounded-full p-2">
+                                            <activity.icon className="h-5 w-5 text-muted-foreground" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <p className="font-medium group-hover:underline">{activity.title}</p>
+                                            <p className="text-sm text-muted-foreground">{activity.description}</p>
+                                        </div>
+                                        <span className="text-xs text-muted-foreground">{format(activity.date, 'dd/MM/yy')}</span>
+                                    </Link>
+                                ))}
+                                {recentActivity.length === 0 && (
+                                    <p className="text-sm text-muted-foreground text-center py-10">Aucune activité récente.</p>
+                                )}
+                                </div>
+                            )}
+                        </CardContent>
                     </Card>
                 </div>
                 <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
-                    <Card>
-                    <CardHeader>
-                        <CardTitle>Demandes de Congé Récentes</CardTitle>
-                        <CardDescription>Un aperçu rapide des dernières demandes de congé.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        {loading ? <Skeleton className="h-24 w-full" /> : (
-                        <div className="space-y-4">
-                        {recentLeaves.map(leave => (
-                            <div key={leave.id} className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <Avatar>
-                                <AvatarImage
-                                    src={`https://placehold.co/40x40.png`}
-                                    data-ai-hint="user avatar"
-                                />
-                                <AvatarFallback>{leave.employee.charAt(0)}</AvatarFallback>
-                                </Avatar>
-                                <div>
-                                <p className="font-medium">{leave.employee}</p>
-                                <p className="text-sm text-muted-foreground">{leave.type}</p>
-                                </div>
-                            </div>
-                            <span className="text-sm text-muted-foreground">{leave.status}</span>
-                            </div>
-                        ))}
-                        </div>
-                        )}
-                    </CardContent>
-                    </Card>
-                    <LatestRecruitsCard employees={employees} loading={loading} departments={departments}/>
+                     <LatestRecruitsCard employees={employees} loading={loading} departments={departments}/>
                     <Card>
                         <CardHeader>
                            <div className="flex justify-between items-start">
@@ -567,9 +594,7 @@ export default function DashboardPage() {
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <div className="flex flex-col items-center justify-center h-64 text-center border-2 border-dashed rounded-lg">
-                            <p className="mt-4 text-muted-foreground">Contenu des analyses à venir.</p>
-                        </div>
+                         <AssetStatusChart />
                     </CardContent>
                 </Card>
             </TabsContent>
@@ -645,3 +670,5 @@ export default function DashboardPage() {
     </>
   );
 }
+
+    

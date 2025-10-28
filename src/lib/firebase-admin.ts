@@ -7,7 +7,6 @@ if (!admin.apps.length) {
   try {
     admin.initializeApp({
       credential: admin.credential.applicationDefault(),
-      databaseURL: "https://gestion-cnrct-default-rtdb.europe-west1.firebasedatabase.app"
     });
     console.log("Firebase Admin SDK initialized successfully.");
   } catch (error: any) {

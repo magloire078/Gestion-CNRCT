@@ -105,7 +105,7 @@ export default function DocumentGeneratorPage() {
 `;
     }
     else {
-        content = `Employé: ${employee.name}\nMatricule: ${employee.matricule}\nPoste: ${employee.poste}\nDépartement: ${employee.department}\n`;
+        content = `Employé: ${employee.name}\nMatricule: ${employee.matricule}\nPoste: ${employee.poste}\nDépartement: ${employee.departmentId}\n`;
     }
     setDocumentContent(content);
   }
@@ -119,6 +119,7 @@ export default function DocumentGeneratorPage() {
     } else if (!selectedEmployeeId || selectedEmployeeId === 'none') {
        setDocumentContent('');
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedEmployeeId, documentType, employees]);
 
 
@@ -147,7 +148,8 @@ export default function DocumentGeneratorPage() {
         setIsPrinting(false);
       }, 300);
     }
-  }, [isPrinting, documentType, selectedEmployeeId, employees]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isPrinting]);
 
   const handlePrint = () => {
     if(state.document) {
@@ -331,3 +333,5 @@ export default function DocumentGeneratorPage() {
     </>
   );
 }
+
+    

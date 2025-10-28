@@ -36,7 +36,7 @@ function parseEmployeeContext(content: string) {
             context.baseSalary = parseFloat(salaryString) || 0;
         }
         if (key.includes('décision')) context.decisionDetails = value;
-        if (key.includes("dated'embauche")) context.dateEmbauche = value;
+        if (key.includes("date'embauche")) context.dateEmbauche = value;
         if (key.includes('lieudenaissance')) context.lieuNaissance = value;
         
         // Ordre de Mission fields
@@ -98,3 +98,5 @@ export async function generateDocumentAction(
     };
   }
 }
+
+    

@@ -54,23 +54,24 @@ export async function generateDisaReportAction(
     ]);
     
     const employeesForYear = allEmployees.filter(e => {
-      if (!e.matricule) return false;
-      
-      const hireDate = e.dateEmbauche ? parseISO(e.dateEmbauche) : null;
-      if (!hireDate || !isValid(hireDate)) return false;
+        if (!e.matricule) return false;
+        
+        const hireDate = e.dateEmbauche ? parseISO(e.dateEmbauche) : null;
+        if (!hireDate || !isValid(hireDate)) return false;
 
-      let departureDate: Date | null = null;
-      if (e.Date_Depart && isValid(parseISO(e.Date_Depart))) {
-          departureDate = parseISO(e.Date_Depart);
-      } else if (e.status === 'Actif' && e.Date_Naissance && isValid(parseISO(e.Date_Naissance))) {
-          departureDate = addYears(parseISO(e.Date_Naissance), 60);
-      }
+        // An employee is relevant if they were hired before or during the report year
+        const hiredInTime = hireDate.getFullYear() <= reportYear;
 
-      const hiredInTime = hireDate.getFullYear() <= reportYear;
-      const notLeftTooEarly = !departureDate || departureDate.getFullYear() >= reportYear;
+        // And if they left, it was during or after the report year
+        let departureDate: Date | null = null;
+        if (e.Date_Depart && isValid(parseISO(e.Date_Depart))) {
+            departureDate = parseISO(e.Date_Depart);
+        }
+        const notLeftTooEarly = !departureDate || departureDate.getFullYear() >= reportYear;
 
-      return hiredInTime && notLeftTooEarly;
+        return hiredInTime && notLeftTooEarly;
     });
+
 
     const reportRows: DisaRow[] = [];
     const matriculeSet = new Set<string>();

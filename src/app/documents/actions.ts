@@ -23,20 +23,20 @@ function parseEmployeeContext(content: string) {
         const parts = line.split(':');
         if (parts.length < 2) return;
         
-        let key = parts[0].replace(/\*|\s/g, '').trim().toLowerCase();
+        let key = parts[0].trim().toLowerCase().replace(/\s/g, '');
         const value = parts.slice(1).join(':').trim();
 
         if (key.includes('nom')) context.name = value;
         if (key.includes('matricule')) context.matricule = value;
-        if (key.includes('fonction') || key.includes('poste')) context.poste = value;
+        if (key.includes('poste') || key.includes('fonction')) context.poste = value;
         if (key.includes('compte')) context.numeroCompte = value;
         if (key.includes('banque')) context.banque = value;
         if (key.includes('salaire')) {
             const salaryString = value.replace(/[^0-9]/g, '');
             context.baseSalary = parseFloat(salaryString) || 0;
         }
-        if (key.includes('décision')) context.decisionDetails = value;
-        if (key.includes("date'embauche")) context.dateEmbauche = value;
+        if (key.includes('decision')) context.decisionDetails = value;
+        if (key.includes("datedembauche")) context.dateEmbauche = value;
         if (key.includes('lieudenaissance')) context.lieuNaissance = value;
         
         // Ordre de Mission fields

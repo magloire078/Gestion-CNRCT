@@ -66,42 +66,32 @@ export default function DocumentGeneratorPage() {
   const prefillContent = (employee: Employe, type: string) => {
     let content = '';
     if (type === 'Attestation de Virement') {
-        content = `## Contexte pour l'Attestation de Virement Irrévocable
-
-### Informations sur l'employé
-*   **Nom et Prénoms** : ${employee.name || ''}
-*   **Matricule Solde** : ${employee.matricule || ''}
-*   **Poste** : ${employee.poste || ''}
-*   **Numéro de compte** : ${employee.numeroCompte || ''}
-*   **Banque** : ${employee.banque || ''}
-*   **Salaire de base (pour calcul)** : ${employee.baseSalary || 0}
-
-### Informations sur la décision
-*   **Détails de la décision** : n°024/CNRCT/DIR/P. du 01 Août 2017
+        content = `Nom: ${employee.name || ''}
+Matricule: ${employee.matricule || ''}
+Poste: ${employee.poste || ''}
+Numero Compte: ${employee.numeroCompte || ''}
+Banque: ${employee.banque || ''}
+Salaire de base: ${employee.baseSalary || 0}
+Decision: n°024/CNRCT/DIR/P. du 01 Août 2017
 `;
     } else if (type === 'Employment Contract') {
-      content = `## Contexte pour le Contrat de Travail
-
-### Informations sur l'employé
-*   **Nom et Prénoms** : ${employee.name || ''}
-*   **Poste** : ${employee.poste || ''}
-*   **Date d'embauche** : ${employee.dateEmbauche || new Date().toISOString().split('T')[0]}
-*   **Lieu de naissance** : ${employee.Lieu_Naissance || ''}
-*   **Salaire de base** : ${employee.baseSalary || 0}
+      content = `Nom: ${employee.name || ''}
+Poste: ${employee.poste || ''}
+Date d embauche: ${employee.dateEmbauche || new Date().toISOString().split('T')[0]}
+Lieu de naissance: ${employee.Lieu_Naissance || ''}
+Salaire de base: ${employee.baseSalary || 0}
 `;
     } else if (type === 'Ordre de Mission') {
-       content = `## Contexte pour l'Ordre de Mission
-
-*   **Numero Mission** : 947
-*   **Type Mission** : REGULARISATION
-*   **Nom Employe** : ${employee.name || ''}
-*   **Fonction** : ${employee.poste || ''}
-*   **Destination** : Abidjan
-*   **Objet Mission** : Accompagner le 5ème Vice-Président du Directoire de la CNRCT...
-*   **Moyen Transport** : Véhicule CNRCT
-*   **Immatriculation** : D 22 009
-*   **Date Depart** : Mardi 12 août 2025
-*   **Date Retour** : Samedi 16 août 2025
+       content = `Numero Mission: 947
+Type Mission: REGULARISATION
+Nom: ${employee.name || ''}
+Poste: ${employee.poste || ''}
+Destination: Abidjan
+Objet Mission: Accompagner le 5ème Vice-Président du Directoire de la CNRCT...
+Moyen Transport: Véhicule CNRCT
+Immatriculation: D 22 009
+Date Depart: Mardi 12 août 2025
+Date Retour: Samedi 16 août 2025
 `;
     }
     else {

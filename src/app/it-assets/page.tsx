@@ -316,6 +316,7 @@ export default function ItAssetsPage() {
               <Table>
                   <TableHeader>
                   <TableRow>
+                      <TableHead>N°</TableHead>
                       <TableHead>N° Inventaire</TableHead>
                       <TableHead>Type</TableHead>
                       <TableHead>Fabricant/Modèle</TableHead>
@@ -329,6 +330,7 @@ export default function ItAssetsPage() {
                   {loading ? (
                       Array.from({ length: 5 }).map((_, i) => (
                       <TableRow key={i}>
+                          <TableCell><Skeleton className="h-4 w-4" /></TableCell>
                           <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                           <TableCell><Skeleton className="h-4 w-20" /></TableCell>
                           <TableCell><Skeleton className="h-4 w-32" /></TableCell>
@@ -339,10 +341,11 @@ export default function ItAssetsPage() {
                       </TableRow>
                       ))
                   ) : (
-                      paginatedAssets.map((asset) => {
+                      paginatedAssets.map((asset, index) => {
                         const Icon = assetIcons[asset.type] || PackageIcon;
                         return (
                           <TableRow key={asset.tag}>
+                              <TableCell>{(currentPage - 1) * itemsPerPage + index + 1}</TableCell>
                               <TableCell className="font-medium">{asset.tag}</TableCell>
                               <TableCell>
                                 <div className="flex items-center gap-2">
@@ -405,22 +408,24 @@ export default function ItAssetsPage() {
                     <Card key={i}><CardContent className="p-4"><Skeleton className="h-24 w-full" /></CardContent></Card>
                   ))
                 ) : (
-                  paginatedAssets.map((asset) => {
+                  paginatedAssets.map((asset, index) => {
                     const Icon = assetIcons[asset.type] || PackageIcon;
                     return (
                       <Card key={asset.tag} onClick={() => router.push(`/it-assets/${asset.tag}/edit`)} className="cursor-pointer">
-                        <CardContent className="p-4 space-y-2">
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <p className="font-bold">{asset.fabricant} {asset.modele}</p>
-                              <p className="text-sm text-muted-foreground flex items-center gap-2">
-                                <Icon className="h-4 w-4" />
-                                {asset.type}
-                              </p>
-                            </div>
+                        <CardHeader>
+                            <CardTitle className="text-base">
+                               {(currentPage - 1) * itemsPerPage + index + 1}. {asset.fabricant} {asset.modele}
+                            </CardTitle>
+                             <CardDescription>
+                                <div className="flex items-center gap-2">
+                                  <Icon className="h-4 w-4" />
+                                  {asset.type}
+                                </div>
+                              </CardDescription>
+                        </CardHeader>
+                        <CardContent className="p-4 pt-0 space-y-2">
                             <Badge variant={statusVariantMap[asset.status as Status] || 'default'}>{asset.status}</Badge>
-                          </div>
-                          <p className="text-sm"><span className="font-medium">N° Inventaire:</span> {asset.tag}</p>
+                            <p className="text-sm"><span className="font-medium">N° Inventaire:</span> {asset.tag}</p>
                            {asset.ipAddress && <p className="text-sm"><span className="font-medium">IP:</span> {asset.ipAddress}</p>}
                           <p className="text-sm"><span className="font-medium">Assigné à:</span> {asset.assignedTo}</p>
                         </CardContent>

@@ -219,6 +219,7 @@ export default function HelpdeskPage() {
             <Table>
                 <TableHeader>
                 <TableRow>
+                    <TableHead>N°</TableHead>
                     <TableHead className="w-[120px]">Ticket ID</TableHead>
                     <TableHead>Titre</TableHead>
                     <TableHead>Demandeur</TableHead>
@@ -233,6 +234,7 @@ export default function HelpdeskPage() {
                 {loading ? (
                     Array.from({ length: 5 }).map((_, i) => (
                         <TableRow key={i}>
+                            <TableCell><Skeleton className="h-4 w-4" /></TableCell>
                             <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                             <TableCell><Skeleton className="h-4 w-48" /></TableCell>
                             <TableCell><Skeleton className="h-4 w-24" /></TableCell>
@@ -244,8 +246,9 @@ export default function HelpdeskPage() {
                         </TableRow>
                     ))
                 ) : (
-                    paginatedTickets.map((ticket) => (
+                    paginatedTickets.map((ticket, index) => (
                         <TableRow key={ticket.id} onClick={() => router.push(`/helpdesk/${ticket.id}`)} className="cursor-pointer">
+                          <TableCell>{(currentPage - 1) * itemsPerPage + index + 1}</TableCell>
                           <TableCell className="font-mono text-xs">{ticket.id}</TableCell>
                           <TableCell className="font-medium max-w-xs truncate">{ticket.title}</TableCell>
                           <TableCell>{ticket.createdByName}</TableCell>

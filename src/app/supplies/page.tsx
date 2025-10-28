@@ -209,6 +209,7 @@ export default function SuppliesPage() {
             <Table>
                 <TableHeader>
                 <TableRow>
+                    <TableHead>N°</TableHead>
                     <TableHead>Nom</TableHead>
                     <TableHead>Catégorie</TableHead>
                     <TableHead className="text-center">Quantité</TableHead>
@@ -222,6 +223,7 @@ export default function SuppliesPage() {
                 {loading ? (
                     Array.from({ length: 5 }).map((_, i) => (
                         <TableRow key={i}>
+                            <TableCell><Skeleton className="h-4 w-4" /></TableCell>
                             <TableCell><Skeleton className="h-4 w-40" /></TableCell>
                             <TableCell><Skeleton className="h-4 w-32" /></TableCell>
                             <TableCell><Skeleton className="h-4 w-16 mx-auto" /></TableCell>
@@ -232,10 +234,11 @@ export default function SuppliesPage() {
                         </TableRow>
                     ))
                 ) : (
-                    paginatedSupplies.map((supply) => {
+                    paginatedSupplies.map((supply, index) => {
                       const stockStatus = getStockStatus(supply.quantity, supply.reorderLevel);
                       return(
                         <TableRow key={supply.id}>
+                          <TableCell>{(currentPage - 1) * itemsPerPage + index + 1}</TableCell>
                           <TableCell className="font-medium">{supply.name}</TableCell>
                           <TableCell>{supply.category}</TableCell>
                           <TableCell className="text-center">{supply.quantity}</TableCell>
@@ -278,34 +281,18 @@ export default function SuppliesPage() {
                     <Card key={i}><CardContent className="p-4"><Skeleton className="h-24 w-full" /></CardContent></Card>
                  ))
               ) : (
-                paginatedSupplies.map((supply) => {
+                paginatedSupplies.map((supply, index) => {
                    const stockStatus = getStockStatus(supply.quantity, supply.reorderLevel);
                    return (
                     <Card key={supply.id} onClick={() => openEditSheet(supply)}>
-                        <CardContent className="p-4 space-y-2">
-                            <div className="flex justify-between items-start">
-                                <div>
-                                    <p className="font-bold">{supply.name}</p>
-                                    <p className="text-sm text-muted-foreground">{supply.category}</p>
-                                </div>
-                                <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="h-8 w-8 -mr-2" onClick={(e) => e.stopPropagation()}>
-                                        <MoreHorizontal className="h-4 w-4" />
-                                        <span className="sr-only">Menu</span>
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-                                    <DropdownMenuItem onClick={() => openEditSheet(supply)}>
-                                        <Pencil className="mr-2 h-4 w-4" /> Modifier
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => setDeleteTarget(supply)} className="text-destructive focus:text-destructive">
-                                        <Trash2 className="mr-2 h-4 w-4" /> Supprimer
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                            </div>
-                           <div className="space-y-1 text-sm">
+                        <CardHeader>
+                            <CardTitle className="text-base">
+                                {(currentPage - 1) * itemsPerPage + index + 1}. {supply.name}
+                            </CardTitle>
+                            <CardDescription>{supply.category}</CardDescription>
+                        </CardHeader>
+                        <CardContent className="p-4 pt-0 space-y-2">
+                            <div className="space-y-1 text-sm">
                                 <p><span className="font-medium">Quantité:</span> {supply.quantity} (Seuil: {supply.reorderLevel})</p>
                                 <Progress value={stockStatus.value} className="h-2" indicatorClassName={stockStatus.className} />
                             </div>

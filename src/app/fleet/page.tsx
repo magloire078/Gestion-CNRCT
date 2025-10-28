@@ -264,18 +264,35 @@ export default function FleetPage() {
                 paginatedVehicles.map((vehicle, index) => (
                     <Card key={vehicle.plate} className="cursor-pointer">
                          <CardHeader>
-                             <Link href={`/fleet/${vehicle.plate}/edit`} className="w-full">
-                                <CardTitle className="text-base">
-                                   {index + 1}. {vehicle.makeModel}
-                                </CardTitle>
-                             </Link>
+                            <CardTitle className="text-base">
+                                {(currentPage - 1) * itemsPerPage + index + 1}. {vehicle.makeModel}
+                            </CardTitle>
+                             <CardDescription>
+                                Plaque: {vehicle.plate}
+                             </CardDescription>
                         </CardHeader>
                         <CardContent className="p-4 pt-0 space-y-2">
                             <Badge variant={statusVariantMap[vehicle.status]}>{vehicle.status}</Badge>
-                            <p className="text-sm"><span className="font-medium">Plaque:</span> {vehicle.plate}</p>
                             <p className="text-sm"><span className="font-medium">Assigné à:</span> {vehicle.assignedTo}</p>
                             <p className="text-sm"><span className="font-medium">Prochain entretien:</span> {vehicle.maintenanceDue}</p>
                         </CardContent>
+                         <CardFooter className="flex justify-end p-4 pt-0">
+                             <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" size="sm" onClick={(e) => e.stopPropagation()}>Actions</Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                                    <DropdownMenuItem asChild>
+                                      <Link href={`/fleet/${vehicle.plate}/edit`}>
+                                        <Pencil className="mr-2 h-4 w-4"/> Modifier
+                                      </Link>
+                                    </DropdownMenuItem>
+                                     <DropdownMenuItem onClick={() => setDeleteTarget(vehicle)} className="text-destructive focus:text-destructive">
+                                        <Trash2 className="mr-2 h-4 w-4"/> Supprimer
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                        </CardFooter>
                     </Card>
                 ))
               )}

@@ -336,6 +336,7 @@ export default function PayrollPage() {
                 <Table>
                     <TableHeader>
                     <TableRow>
+                        <TableHead>N°</TableHead>
                         <TableHead>Employé</TableHead>
                         <TableHead>Poste</TableHead>
                         <TableHead>Date d'embauche</TableHead>
@@ -347,6 +348,7 @@ export default function PayrollPage() {
                     {loading ? (
                         Array.from({ length: 5 }).map((_, i) => (
                         <TableRow key={i}>
+                            <TableCell><Skeleton className="h-4 w-4" /></TableCell>
                             <TableCell><Skeleton className="h-4 w-32" /></TableCell>
                             <TableCell><Skeleton className="h-4 w-32" /></TableCell>
                             <TableCell><Skeleton className="h-4 w-24" /></TableCell>
@@ -355,8 +357,9 @@ export default function PayrollPage() {
                         </TableRow>
                         ))
                     ) : paginatedEmployees.length > 0 ? (
-                        paginatedEmployees.map((employee) => (
+                        paginatedEmployees.map((employee, index) => (
                         <TableRow key={employee.id}>
+                            <TableCell>{(currentPage - 1) * itemsPerPage + index + 1}</TableCell>
                             <TableCell className="font-medium">{`${employee.lastName || ''} ${employee.firstName || ''}`.trim()}</TableCell>
                             <TableCell>{employee.poste}</TableCell>
                             <TableCell>{employee.dateEmbauche ? format(parseISO(employee.dateEmbauche), 'dd/MM/yyyy') : 'N/A'}</TableCell>
@@ -396,41 +399,42 @@ export default function PayrollPage() {
                       <Card key={i}><CardContent className="p-4"><Skeleton className="h-20 w-full" /></CardContent></Card>
                     ))
                 ) : paginatedEmployees.length > 0 ? (
-                    paginatedEmployees.map((employee) => (
+                    paginatedEmployees.map((employee, index) => (
                         <Card key={employee.id}>
-                            <CardContent className="p-4">
-                                <div className="flex justify-between items-start">
-                                    <div>
-                                        <p className="font-bold">{`${employee.lastName || ''} ${employee.firstName || ''}`.trim()}</p>
-                                        <p className="text-sm text-muted-foreground">{employee.poste}</p>
-                                    </div>
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button aria-haspopup="true" size="icon" variant="ghost">
-                                                <MoreHorizontal className="h-4 w-4" />
-                                                <span className="sr-only">Toggle menu</span>
-                                            </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end">
-                                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                            {canViewSalaries && (
-                                                <DropdownMenuItem onClick={() => openEditSheet(employee)}>
-                                                    <Pencil className="mr-2 h-4 w-4" />
-                                                    Modifier les infos de paie
-                                                </DropdownMenuItem>
-                                            )}
-                                            <DropdownMenuItem onClick={() => openDateDialog(employee)}>
-                                              <Eye className="mr-2 h-4 w-4" />
-                                              Afficher le bulletin
-                                            </DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-                                </div>
+                            <CardHeader>
+                                <CardTitle className="text-base">
+                                {(currentPage - 1) * itemsPerPage + index + 1}. {`${employee.lastName || ''} ${employee.firstName || ''}`.trim()}
+                                </CardTitle>
+                                <CardDescription>{employee.poste}</CardDescription>
+                            </CardHeader>
+                            <CardContent className="p-4 pt-0">
                                 <div className="mt-2 space-y-1 text-sm">
                                     <p><span className="font-medium">Embauche:</span> {employee.dateEmbauche ? format(parseISO(employee.dateEmbauche), 'dd/MM/yyyy') : 'N/A'}</p>
                                     {canViewSalaries && <p><span className="font-medium">Salaire Net:</span> {formatCurrency(employee.netSalary)}</p>}
                                 </div>
                             </CardContent>
+                            <CardFooter className="flex justify-end p-4 pt-0">
+                                 <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button aria-haspopup="true" size="sm" variant="outline">
+                                            Actions <MoreHorizontal className="ml-2 h-4 w-4" />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                        {canViewSalaries && (
+                                            <DropdownMenuItem onClick={() => openEditSheet(employee)}>
+                                                <Pencil className="mr-2 h-4 w-4" />
+                                                Modifier
+                                            </DropdownMenuItem>
+                                        )}
+                                        <DropdownMenuItem onClick={() => openDateDialog(employee)}>
+                                          <Eye className="mr-2 h-4 w-4" />
+                                          Bulletin
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </CardFooter>
                         </Card>
                     ))
                 ) : null}

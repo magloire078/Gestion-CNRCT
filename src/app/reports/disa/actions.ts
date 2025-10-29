@@ -60,6 +60,7 @@ function getSalaryStructureForDate(employee: Employe, history: EmployeeEvent[], 
         .filter(event => salaryEventTypes.includes(event.eventType as any) && event.details)
         .sort((a,b) => parseISO(a.effectiveDate).getTime() - parseISO(b.effectiveDate).getTime())[0];
 
+    // If the payslip date is before the first salary event, use the "previous" state from that event.
     if (firstEverEvent && firstEverEvent.details && isBefore(date, parseISO(firstEverEvent.effectiveDate))) {
          return {
             baseSalary: firstEverEvent.details?.previous_baseSalary || employee.baseSalary || 0,
@@ -73,6 +74,7 @@ function getSalaryStructureForDate(employee: Employe, history: EmployeeEvent[], 
         };
     }
     
+    // Fallback to employee's base data if no salary events exist at all, or if we are in the initial period.
     return employee;
 }
 
@@ -128,7 +130,7 @@ export async function generateDisaReportAction(
              monthlySalaries.push(0);
              continue;
         }
-        if (departureDate && isAfter(dateForPayslip, departureDate)) {
+        if (departureDate && isBefore(departureDate, dateForPayslip)) {
             monthlySalaries.push(0);
             continue;
         }

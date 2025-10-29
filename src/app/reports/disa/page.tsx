@@ -131,35 +131,35 @@ export default function DisaReportPage() {
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead className="sticky left-0 z-10 w-10 px-0.5">N°</TableHead>
-                                <TableHead className="sticky left-[40px] z-10 w-24 px-0.5">Matricule</TableHead>
-                                <TableHead className="sticky left-[136px] z-10 min-w-[150px] px-0.5">Nom et Prénoms</TableHead>
-                                {monthLabels.map((m, i) => <TableHead key={`header-month-${i}`} className="text-right px-0.5">{m}</TableHead>)}
-                                <TableHead className="text-right font-bold px-0.5">Total Brut</TableHead>
-                                <TableHead className="text-right font-bold px-0.5">Total CNPS</TableHead>
+                                <TableHead className="sticky left-0 z-10 w-10 px-2 bg-card">N°</TableHead>
+                                <TableHead className="sticky left-10 z-10 w-24 px-2 bg-card">Matricule</TableHead>
+                                <TableHead className="sticky left-32 z-10 min-w-[150px] px-2 bg-card">Nom et Prénoms</TableHead>
+                                {monthLabels.map((m, i) => <TableHead key={`header-month-${i}`} className="text-right px-2">{m}</TableHead>)}
+                                <TableHead className="text-right font-bold px-2">Total Brut</TableHead>
+                                <TableHead className="text-right font-bold px-2">Total CNPS</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {state.reportData.map((row, index) => (
                                 <TableRow key={row.matricule}>
-                                    <TableCell className="sticky left-0 px-0.5">{index + 1}</TableCell>
-                                    <TableCell className="sticky left-[40px] px-0.5">{row.matricule}</TableCell>
-                                    <TableCell className="font-medium whitespace-nowrap sticky left-[136px] px-0.5">{row.name}</TableCell>
+                                    <TableCell className="sticky left-0 px-2 bg-card">{index + 1}</TableCell>
+                                    <TableCell className="sticky left-10 px-2 bg-card">{row.matricule}</TableCell>
+                                    <TableCell className="font-medium whitespace-nowrap sticky left-32 px-2 bg-card">{row.name}</TableCell>
                                     {row.monthlySalaries.map((salary, i) => (
-                                        <TableCell key={`${row.matricule}-month-${i}`} className="text-right font-mono text-xs px-0.5">{formatCurrency(salary)}</TableCell>
+                                        <TableCell key={`${row.matricule}-month-${i}`} className="text-right font-mono text-xs px-2">{formatCurrency(salary)}</TableCell>
                                     ))}
-                                    <TableCell className="text-right font-mono font-bold px-0.5">{formatCurrency(row.totalBrut)}</TableCell>
-                                    <TableCell className="text-right font-mono font-bold px-0.5">{formatCurrency(row.totalCNPS)}</TableCell>
+                                    <TableCell className="text-right font-mono font-bold px-2">{formatCurrency(row.totalBrut)}</TableCell>
+                                    <TableCell className="text-right font-mono font-bold px-2">{formatCurrency(row.totalCNPS)}</TableCell>
                                 </TableRow>
                             ))}
                             {state.grandTotal && (
                                 <TableRow className="font-bold bg-muted hover:bg-muted">
-                                    <TableCell colSpan={3} className="text-right sticky left-0 px-0.5">TOTAUX</TableCell>
+                                    <TableCell colSpan={3} className="text-right sticky left-0 px-2 bg-muted">TOTAUX</TableCell>
                                     {state.grandTotal.monthly.map((total, index) => (
-                                        <TableCell key={`total-month-${index}`} className="text-right font-mono text-xs px-0.5">{formatCurrency(total)}</TableCell>
+                                        <TableCell key={`total-month-${index}`} className="text-right font-mono text-xs px-2">{formatCurrency(total)}</TableCell>
                                     ))}
-                                    <TableCell className="text-right font-mono px-0.5">{formatCurrency(state.grandTotal.brut)}</TableCell>
-                                    <TableCell className="text-right font-mono px-0.5">{formatCurrency(state.grandTotal.cnps)}</TableCell>
+                                    <TableCell className="text-right font-mono px-2">{formatCurrency(state.grandTotal.brut)}</TableCell>
+                                    <TableCell className="text-right font-mono px-2">{formatCurrency(state.grandTotal.cnps)}</TableCell>
                                 </TableRow>
                             )}
                         </TableBody>

@@ -1,10 +1,13 @@
 
 "use client";
 
-import type { Employe, PayslipDetails, PayslipEarning, PayslipDeduction, PayslipEmployerContribution, EmployeeEvent } from '@/lib/data';
+import type { Employe, PayslipDetails, PayslipEarning, PayslipDeduction, PayslipEmployerContribution, EmployeeEvent, Department, Direction, Service } from '@/lib/data';
 import { numberToWords } from '@/lib/utils';
 import { getOrganizationSettings } from './organization-service';
 import { getEmployeeHistory } from './employee-history-service';
+import { getDepartments } from './department-service';
+import { getDirections } from './direction-service';
+import { getServices } from './service-service';
 import { differenceInYears, differenceInMonths, differenceInDays, addYears, addMonths, parseISO, isValid, lastDayOfMonth, getDay, isBefore, isEqual, isAfter, format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
@@ -52,7 +55,12 @@ export function calculateSeniority(hireDateStr: string | undefined, payslipDateS
  */
 export async function getPayslipDetails(employee: Employe, payslipDate: string): Promise<PayslipDetails> {
     
-    const history = await getEmployeeHistory(employee.id);
+    const [history, departments, directions, services] = await Promise.all([
+        getEmployeeHistory(employee.id),
+        getDepartments(),
+        getDirections(),
+        getServices()
+    ]);
     const payslipDateObj = parseISO(payslipDate);
 
     // Find the most recent salary event that is effective on or before the payslip date.
@@ -189,9 +197,24 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
         ? format(parseISO(employee.dateEmbauche), 'dd MMMM yyyy', { locale: fr })
         : 'N/A';
 
+    const getDepartmentName = () => {
+        if (employee.serviceId) {
+            return services.find(s => s.id === employee.serviceId)?.name || employee.serviceId;
+        }
+        if (employee.directionId) {
+            return directions.find(d => d.id === employee.directionId)?.name || employee.directionId;
+        }
+        if (employee.departmentId) {
+            return departments.find(d => d.id === employee.departmentId)?.name || employee.departmentId;
+        }
+        return 'Non spécifié';
+    }
+
+
     const employeeInfoWithStaticData: Employe & { numeroCompteComplet?: string } = {
         ...employee,
         dateEmbauche: formattedDateEmbauche,
+        departmentId: getDepartmentName(), // Overwrite with the resolved name
         anciennete: seniorityInfo.text,
         categorie: employee.categorie || 'Catégorie',
         cnpsEmployeur: "320491",

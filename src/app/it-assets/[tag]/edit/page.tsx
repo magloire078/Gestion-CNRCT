@@ -4,16 +4,21 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { getAsset, updateAsset } from "@/services/asset-service";
-import type { Asset } from "@/lib/data";
+import type { Asset, Employe } from "@/lib/data";
 import { getEmployees } from "@/services/employee-service";
-import type { Employe } from "@/lib/data";
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { ArrowLeft, Loader2, Save } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -50,7 +55,7 @@ export default function AssetEditPage() {
                 }
                 
                 setAsset(assetData);
-                setEmployees(employeesData);
+                setEmployees(employeesData.filter(e => e.status === 'Actif'));
 
             } catch (error) {
                 console.error("Failed to fetch asset data", error);
@@ -68,10 +73,17 @@ export default function AssetEditPage() {
     };
 
     const handleSelectChange = (name: string, value: string) => {
-        const newState = { ...(asset || {}), [name]: value };
+        const finalValue = value === 'none' ? '' : value;
+        const newState = { ...(asset || {}), [name]: finalValue };
+        
         if (name === 'type' && value !== 'Ordinateur') {
             newState.typeOrdinateur = undefined;
         }
+        
+        if (name === 'status' && value === 'En stock') {
+            newState.assignedTo = 'En stock';
+        }
+        
         setAsset(newState as Partial<Asset>);
     };
 
@@ -173,16 +185,24 @@ export default function AssetEditPage() {
                             <Input id="password" name="password" value={asset.password || ''} onChange={handleInputChange} placeholder="Mot de passe de l'équipement" />
                         </div>
                     )}
-                     <div className="space-y-2">
-                        <Label htmlFor="assignedTo">Assigné à</Label>
-                        <Input id="assignedTo" name="assignedTo" value={asset.assignedTo || ''} onChange={handleInputChange} placeholder="Nom de l'employé ou du groupe"/>
-                    </div>
                     <div className="space-y-2">
                         <Label htmlFor="status">Statut</Label>
                          <Select value={asset.status || ''} onValueChange={(v) => handleSelectChange('status', v)}>
                             <SelectTrigger><SelectValue /></SelectTrigger>
                             <SelectContent>
                                 {assetStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                     <div className="space-y-2">
+                        <Label htmlFor="assignedTo">Assigné à</Label>
+                        <Select value={asset.assignedTo || 'none'} onValueChange={(v) => handleSelectChange('assignedTo', v)}>
+                            <SelectTrigger><SelectValue placeholder="Sélectionnez..." /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="En stock">En stock</SelectItem>
+                                {employees.map(emp => (
+                                    <SelectItem key={emp.id} value={emp.name}>{emp.name}</SelectItem>
+                                ))}
                             </SelectContent>
                         </Select>
                     </div>

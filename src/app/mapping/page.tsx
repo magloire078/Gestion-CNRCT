@@ -8,12 +8,14 @@ import { Input } from '@/components/ui/input';
 import { Search, MapPin, User, ChevronRight } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getChiefs } from '@/services/chief-service';
-import type { Chief } from '@/lib/data';
+import { subscribeToConflicts } from '@/services/conflict-service';
+import type { Chief, Conflict } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
+import { ConflictMap } from '@/components/conflicts/conflict-map';
 
 // Dynamically import the map component to avoid SSR issues
 const MapComponent = dynamic(() => import('@/components/mapping/map-component'), {
@@ -24,30 +26,58 @@ const MapComponent = dynamic(() => import('@/components/mapping/map-component'),
 export default function MappingPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [chiefs, setChiefs] = useState<Chief[]>([]);
+  const [conflicts, setConflicts] = useState<Conflict[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
   const [selectedChiefId, setSelectedChiefId] = useState<string | null>(null);
 
   useEffect(() => {
+    let isMounted = true;
+    
     async function fetchChiefs() {
       try {
-        setLoading(true);
         const data = await getChiefs();
-        const chiefsWithCoords = data.filter(c => c.latitude && c.longitude);
-        setChiefs(chiefsWithCoords);
+        if (isMounted) {
+            const chiefsWithCoords = data.filter(c => c.latitude && c.longitude);
+            setChiefs(chiefsWithCoords);
+        }
       } catch (error) {
         console.error('Failed to load chiefs for map', error);
-        toast({
-          variant: 'destructive',
-          title: 'Erreur',
-          description: 'Impossible de charger les données des chefs pour la carte.',
-        });
-      } finally {
-        setLoading(false);
+        if (isMounted) {
+            toast({
+              variant: 'destructive',
+              title: 'Erreur',
+              description: 'Impossible de charger les données des chefs pour la carte.',
+            });
+        }
       }
     }
-    fetchChiefs();
+
+    const unsubConflicts = subscribeToConflicts(
+        (data) => {
+            if(isMounted) setConflicts(data);
+        },
+        (error) => {
+             console.error('Failed to load conflicts for map', error);
+             if (isMounted) {
+                toast({
+                    variant: 'destructive',
+                    title: 'Erreur',
+                    description: 'Impossible de charger les données des conflits.',
+                });
+             }
+        }
+    );
+    
+    Promise.all([fetchChiefs()]).finally(() => {
+        if(isMounted) setLoading(false);
+    });
+
+    return () => {
+        isMounted = false;
+        unsubConflicts();
+    }
   }, [toast]);
   
   const filteredChiefs = useMemo(() => {
@@ -60,6 +90,12 @@ export default function MappingPage() {
         (chief.region || '').toLowerCase().includes(lowercasedTerm)
     );
   }, [chiefs, searchTerm]);
+  
+   const filteredConflicts = useMemo(() => {
+    if (!searchTerm) return conflicts;
+    const lowercasedTerm = searchTerm.toLowerCase();
+    return conflicts.filter(c => c.village.toLowerCase().includes(lowercasedTerm));
+  }, [conflicts, searchTerm]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -68,7 +104,7 @@ export default function MappingPage() {
         <CardHeader>
           <CardTitle>Carte Interactive</CardTitle>
           <CardDescription>
-            Explorez la localisation des Rois et Chefs Traditionnels.
+            Explorez la localisation des Rois, Chefs Traditionnels et des conflits en cours.
           </CardDescription>
         </CardHeader>
         <CardContent className="flex-grow flex flex-col md:flex-row gap-4 overflow-hidden">
@@ -120,7 +156,8 @@ export default function MappingPage() {
           </div>
           <div className="w-full md:w-2/3 lg:w-3/4 h-full min-h-[300px] rounded-lg border overflow-hidden">
              {loading ? <Skeleton className="h-full w-full" /> : 
-              <MapComponent 
+              <ConflictMap 
+                  conflicts={filteredConflicts} 
                   chiefs={filteredChiefs} 
                   selectedChiefId={selectedChiefId}
                   onMarkerClick={setSelectedChiefId}

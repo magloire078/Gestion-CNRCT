@@ -40,6 +40,7 @@ import {
   BookText,
   LifeBuoy,
   Menu,
+  Rocket,
 } from "lucide-react";
 
 import { AuthProvider, useAuth } from "@/hooks/use-auth";

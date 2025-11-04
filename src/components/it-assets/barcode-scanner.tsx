@@ -1,7 +1,6 @@
-
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Scanner } from "react-zxing";
 import {
   Dialog,
@@ -23,15 +22,20 @@ interface BarcodeScannerProps {
 export function BarcodeScanner({ isOpen, onClose, onScan }: BarcodeScannerProps) {
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
   const { toast } = useToast();
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
 
   useEffect(() => {
-    if (isOpen) {
-      // Vérifier les permissions au moment où le dialogue s'ouvre
-      navigator.mediaDevices.getUserMedia({ video: true })
-        .then(() => {
+    const getCameraPermission = async () => {
+      if (isOpen) {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+          streamRef.current = stream;
+          if (videoRef.current) {
+            videoRef.current.srcObject = stream;
+          }
           setHasCameraPermission(true);
-        })
-        .catch((error) => {
+        } catch (error) {
           console.error('Error accessing camera:', error);
           setHasCameraPermission(false);
           toast({
@@ -39,8 +43,24 @@ export function BarcodeScanner({ isOpen, onClose, onScan }: BarcodeScannerProps)
             title: 'Accès Caméra Refusé',
             description: 'Veuillez autoriser l\'accès à la caméra dans les paramètres de votre navigateur.',
           });
-        });
-    }
+        }
+      } else {
+        // Stop camera when dialog is closed
+        if (streamRef.current) {
+          streamRef.current.getTracks().forEach(track => track.stop());
+          streamRef.current = null;
+        }
+      }
+    };
+
+    getCameraPermission();
+
+    return () => {
+      // Cleanup on unmount
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
+    };
   }, [isOpen, toast]);
 
   const handleScanSuccess = (result: any) => {
@@ -50,7 +70,6 @@ export function BarcodeScanner({ isOpen, onClose, onScan }: BarcodeScannerProps)
   };
 
   const handleScanError = (error: any) => {
-    // On ignore les erreurs de "not found" qui arrivent en continu
     if (error && error.name !== 'NotFoundException') {
       console.error("Scan Error:", error);
     }
@@ -66,32 +85,31 @@ export function BarcodeScanner({ isOpen, onClose, onScan }: BarcodeScannerProps)
           </DialogDescription>
         </DialogHeader>
         <div className="relative aspect-video w-full overflow-hidden rounded-md border bg-muted">
-          {isOpen && hasCameraPermission === true && (
+          {isOpen && hasCameraPermission ? (
             <>
               <Scanner
                 onResult={handleScanSuccess}
                 onError={handleScanError}
+                constraints={{
+                  video: {
+                    facingMode: 'environment'
+                  }
+                }}
               />
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                 <div className="w-3/4 h-1/2 border-2 border-dashed border-primary rounded-lg" />
               </div>
             </>
-          )}
-          {hasCameraPermission === null && (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <p>Demande d'accès à la caméra...</p>
-            </div>
-          )}
-          {hasCameraPermission === false && (
+          ) : (
             <div className="absolute inset-0 bg-black/80 text-white flex flex-col items-center justify-center p-4">
-                <CameraOff className="h-12 w-12 mb-4" />
-                <Alert variant="destructive" className="bg-transparent border-destructive/50 text-white [&>svg]:text-white">
-                    <AlertTriangle className="h-4 w-4" />
-                    <AlertTitle>Accès Caméra Refusé</AlertTitle>
-                    <AlertDescription>
-                       Pour utiliser le scanner, veuillez autoriser l'accès à la caméra dans les paramètres de votre navigateur.
-                    </AlertDescription>
-                </Alert>
+              <CameraOff className="h-12 w-12 mb-4" />
+              <Alert variant="destructive" className="bg-transparent border-destructive/50 text-white [&>svg]:text-white">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>Accès Caméra Requis</AlertTitle>
+                <AlertDescription>
+                  Pour utiliser le scanner, veuillez autoriser l'accès à la caméra.
+                </AlertDescription>
+              </Alert>
             </div>
           )}
         </div>

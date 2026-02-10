@@ -26,6 +26,7 @@ import { PaginationControls } from "@/components/common/pagination-controls";
 import { useAuth } from "@/hooks/use-auth";
 import { BarcodeScanner } from "@/components/it-assets/barcode-scanner";
 import { PrintLabels } from "@/components/it-assets/print-labels";
+import { PrintSingleLabel } from "@/components/it-assets/print-single-label";
 
 
 type Status = 'En utilisation' | 'En stock' | 'En réparation' | 'Retiré';
@@ -94,23 +95,24 @@ export default function ItAssetsPage() {
   const [initialAssetTag, setInitialAssetTag] = useState<string | undefined>(undefined);
   
   const [isPrintingLabels, setIsPrintingLabels] = useState(false);
+  const [labelToPrint, setLabelToPrint] = useState<Asset | null>(null);
+
 
   useEffect(() => {
     const unsubscribe = subscribeToAssets(
       (fetchedAssets) => {
         setAssets(fetchedAssets);
-        setLoading(false);
-        setError(null);
+        setLoadingDocs(false);
       },
-      (err) => {
-        setError("Impossible de charger les actifs. Veuillez vérifier la configuration de votre base de données Firestore et les règles de sécurité.");
-        console.error(err);
-        setLoading(false);
+      (error) => {
+        console.error("Failed to subscribe to documents", error);
+        toast({ variant: "destructive", title: "Erreur", description: "Impossible de charger les documents." });
+        setLoadingDocs(false);
       }
     );
-    getOrganizationSettings().then(setOrganizationLogos);
     return () => unsubscribe();
-  }, []);
+  }, [toast]);
+
 
   useEffect(() => {
       if (isPrinting) {
@@ -129,6 +131,18 @@ export default function ItAssetsPage() {
         }, 500);
       }
   }, [isPrinting, isPrintingLabels]);
+
+  useEffect(() => {
+    if (labelToPrint) {
+        document.body.classList.add('print-dymo-label');
+        setTimeout(() => {
+            window.print();
+            document.body.classList.remove('print-dymo-label');
+            setLabelToPrint(null);
+        }, 300);
+    }
+  }, [labelToPrint]);
+
 
   const handleAddAsset = async (newAssetData: Omit<Asset, 'tag'> & { tag: string }) => {
     try {
@@ -257,10 +271,15 @@ export default function ItAssetsPage() {
     }
     setIsPrintingLabels(true);
   };
+  
+  const handlePrintSingleLabel = (asset: Asset) => {
+    setLabelToPrint(asset);
+  };
+
 
   return (
     <>
-      <div className={`flex flex-col gap-6 ${isPrinting || isPrintingLabels ? 'print-hidden' : ''}`}>
+      <div className={`flex flex-col gap-6 ${isPrinting || isPrintingLabels || labelToPrint ? 'print-hidden' : ''}`}>
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold tracking-tight">Actifs Informatiques</h1>
           <div className="flex gap-2">
@@ -414,6 +433,9 @@ export default function ItAssetsPage() {
                                                 <Pencil className="mr-2 h-4 w-4" /> Modifier
                                               </Link>
                                           </DropdownMenuItem>
+                                          <DropdownMenuItem onSelect={() => handlePrintSingleLabel(asset)}>
+                                            <QrCode className="mr-2 h-4 w-4"/> Imprimer Étiquette
+                                          </DropdownMenuItem>
                                           <DropdownMenuItem onClick={() => setDeleteTarget(asset)} className="text-destructive focus:text-destructive">
                                               <Trash2 className="mr-2 h-4 w-4" /> Supprimer
                                           </DropdownMenuItem>
@@ -436,12 +458,12 @@ export default function ItAssetsPage() {
                   paginatedAssets.map((asset, index) => {
                     const Icon = assetIcons[asset.type] || PackageIcon;
                     return (
-                      <Card key={asset.tag} onClick={() => router.push(`/it-assets/${asset.tag}/edit`)} className="cursor-pointer">
+                      <Card key={asset.tag}>
                         <CardHeader>
                             <CardTitle className="text-base">
                                {(currentPage - 1) * itemsPerPage + index + 1}. {asset.fabricant} {asset.modele}
                             </CardTitle>
-                            <div className="text-sm text-muted-foreground">
+                             <div className="text-sm text-muted-foreground">
                                 <div className="flex items-center gap-2">
                                   <Icon className="h-4 w-4" />
                                   {asset.type}
@@ -454,6 +476,26 @@ export default function ItAssetsPage() {
                            {asset.ipAddress && <p className="text-sm"><span className="font-medium">IP:</span> {asset.ipAddress}</p>}
                           <p className="text-sm"><span className="font-medium">Assigné à:</span> {asset.assignedTo}</p>
                         </CardContent>
+                         <CardFooter className="flex justify-end p-4 pt-0">
+                             <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" size="sm" onClick={(e) => e.stopPropagation()}>Actions</Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                                    <DropdownMenuItem asChild>
+                                      <Link href={`/it-assets/${asset.tag}/edit`}>
+                                        <Pencil className="mr-2 h-4 w-4"/> Modifier
+                                      </Link>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onSelect={() => handlePrintSingleLabel(asset)}>
+                                      <QrCode className="mr-2 h-4 w-4"/> Imprimer Étiquette
+                                    </DropdownMenuItem>
+                                     <DropdownMenuItem onClick={() => setDeleteTarget(asset)} className="text-destructive focus:text-destructive">
+                                        <Trash2 className="mr-2 h-4 w-4"/> Supprimer
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                        </CardFooter>
                       </Card>
                     )
                   })
@@ -545,6 +587,10 @@ export default function ItAssetsPage() {
         
         {isPrintingLabels && organizationLogos && (
             <PrintLabels assets={filteredAssets} settings={organizationLogos} />
+        )}
+        
+        {labelToPrint && organizationLogos && (
+            <PrintSingleLabel asset={labelToPrint} settings={organizationLogos} />
         )}
     </>
   );

@@ -133,6 +133,12 @@
         margin: 1cm;
       }
     }
+    body.print-dymo-label {
+      @page {
+        size: 57mm 32mm;
+        margin: 1mm;
+      }
+    }
     .print-page-break {
         page-break-after: always;
     }

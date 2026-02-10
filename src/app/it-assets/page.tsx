@@ -25,6 +25,7 @@ import { PrintAssetsDialog } from "@/components/it-assets/print-assets-dialog";
 import { PaginationControls } from "@/components/common/pagination-controls";
 import { useAuth } from "@/hooks/use-auth";
 import { BarcodeScanner } from "@/components/it-assets/barcode-scanner";
+import { PrintLabels } from "@/components/it-assets/print-labels";
 
 
 type Status = 'En utilisation' | 'En stock' | 'En réparation' | 'Retiré';
@@ -91,6 +92,8 @@ export default function ItAssetsPage() {
   
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [initialAssetTag, setInitialAssetTag] = useState<string | undefined>(undefined);
+  
+  const [isPrintingLabels, setIsPrintingLabels] = useState(false);
 
   useEffect(() => {
     const unsubscribe = subscribeToAssets(
@@ -118,7 +121,14 @@ export default function ItAssetsPage() {
               document.body.classList.remove('print-landscape');
           }, 500);
       }
-  }, [isPrinting]);
+      if (isPrintingLabels) {
+        document.body.classList.remove('print-landscape'); // Ensure portrait mode for labels
+        setTimeout(() => {
+            window.print();
+            setIsPrintingLabels(false);
+        }, 500);
+      }
+  }, [isPrinting, isPrintingLabels]);
 
   const handleAddAsset = async (newAssetData: Omit<Asset, 'tag'> & { tag: string }) => {
     try {
@@ -236,10 +246,21 @@ export default function ItAssetsPage() {
     setIsPrinting(true);
   };
 
+  const handlePrintLabels = () => {
+    if (filteredAssets.length === 0) {
+        toast({
+            variant: "destructive",
+            title: "Aucun actif à imprimer",
+            description: "Veuillez filtrer la liste pour sélectionner les actifs.",
+        });
+        return;
+    }
+    setIsPrintingLabels(true);
+  };
 
   return (
     <>
-      <div className={`flex flex-col gap-6 ${isPrinting ? 'print-hidden' : ''}`}>
+      <div className={`flex flex-col gap-6 ${isPrinting || isPrintingLabels ? 'print-hidden' : ''}`}>
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold tracking-tight">Actifs Informatiques</h1>
           <div className="flex gap-2">
@@ -249,7 +270,11 @@ export default function ItAssetsPage() {
             </Button>
             <Button variant="outline" onClick={() => setIsPrintDialogOpen(true)}>
                 <Printer className="mr-2 h-4 w-4" />
-                Imprimer
+                Imprimer Liste
+            </Button>
+             <Button variant="outline" onClick={handlePrintLabels}>
+                <QrCode className="mr-2 h-4 w-4" />
+                Imprimer Étiquettes
             </Button>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -416,7 +441,7 @@ export default function ItAssetsPage() {
                             <CardTitle className="text-base">
                                {(currentPage - 1) * itemsPerPage + index + 1}. {asset.fabricant} {asset.modele}
                             </CardTitle>
-                             <div className="text-sm text-muted-foreground">
+                            <div className="text-sm text-muted-foreground">
                                 <div className="flex items-center gap-2">
                                   <Icon className="h-4 w-4" />
                                   {asset.type}
@@ -479,7 +504,7 @@ export default function ItAssetsPage() {
         description={`Êtes-vous sûr de vouloir supprimer "${deleteTarget?.modele} (${deleteTarget?.tag})" ? Cette action est irréversible.`}
       />
 
-       {isPrinting && (
+       {isPrinting && organizationLogos && (
             <div id="print-section" className="bg-white text-black p-8 w-full print:shadow-none print:border-none print:p-0">
                 <header className="flex justify-between items-start mb-8">
                     <div className="text-center">
@@ -516,6 +541,10 @@ export default function ItAssetsPage() {
                     </tbody>
                 </table>
             </div>
+        )}
+        
+        {isPrintingLabels && organizationLogos && (
+            <PrintLabels assets={filteredAssets} settings={organizationLogos} />
         )}
     </>
   );

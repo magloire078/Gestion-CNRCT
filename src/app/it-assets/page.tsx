@@ -416,12 +416,12 @@ export default function ItAssetsPage() {
                             <CardTitle className="text-base">
                                {(currentPage - 1) * itemsPerPage + index + 1}. {asset.fabricant} {asset.modele}
                             </CardTitle>
-                             <CardDescription>
+                             <div className="text-sm text-muted-foreground">
                                 <div className="flex items-center gap-2">
                                   <Icon className="h-4 w-4" />
                                   {asset.type}
                                 </div>
-                              </CardDescription>
+                              </div>
                         </CardHeader>
                         <CardContent className="p-4 pt-0 space-y-2">
                             <Badge variant={statusVariantMap[asset.status as Status] || 'default'}>{asset.status}</Badge>

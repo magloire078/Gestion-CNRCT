@@ -102,12 +102,12 @@ export default function ItAssetsPage() {
     const unsubscribe = subscribeToAssets(
       (fetchedAssets) => {
         setAssets(fetchedAssets);
-        setLoadingDocs(false);
+        setLoading(false);
       },
       (error) => {
-        console.error("Failed to subscribe to documents", error);
-        toast({ variant: "destructive", title: "Erreur", description: "Impossible de charger les documents." });
-        setLoadingDocs(false);
+        console.error("Failed to subscribe to assets", error);
+        toast({ variant: "destructive", title: "Erreur", description: "Impossible de charger les actifs." });
+        setLoading(false);
       }
     );
     return () => unsubscribe();

@@ -1,4 +1,3 @@
-
 "use client";
 
 import QRCode from "react-qr-code";
@@ -28,16 +27,16 @@ export function PrintSingleLabel({ asset, settings, isPreview = false }: PrintSi
     >
       <div className="flex justify-between items-center w-full">
           {settings.mainLogoUrl ? (
-              <img src={settings.mainLogoUrl} alt="Logo principal" style={{ height: '9mm', width: 'auto', objectFit: 'contain' }} />
-          ) : <div style={{width: '9mm'}}></div>}
+              <img src={settings.mainLogoUrl} alt="Logo principal" style={{ height: '13.5mm', width: 'auto', objectFit: 'contain' }} />
+          ) : <div style={{width: '13.5mm'}}></div>}
           <div className="text-center leading-tight mx-1">
             <p className="font-bold" style={{ fontSize: '5.5pt' }}>Chambre Nationale des Rois</p>
             <p className="font-bold" style={{ fontSize: '5.5pt' }}>et Chefs Traditionnels</p>
             <p className="mt-0.5" style={{ fontSize: '5pt' }}>Tel : 27 30 64 06 60</p>
           </div>
           {settings.secondaryLogoUrl ? (
-              <img src={settings.secondaryLogoUrl} alt="Logo secondaire" style={{ height: '9mm', width: 'auto', objectFit: 'contain' }} />
-          ) : <div style={{width: '9mm'}}></div>}
+              <img src={settings.secondaryLogoUrl} alt="Logo secondaire" style={{ height: '13.5mm', width: 'auto', objectFit: 'contain' }} />
+          ) : <div style={{width: '13.5mm'}}></div>}
       </div>
 
       <div className="flex w-full items-center justify-between flex-grow mt-1">
@@ -58,6 +57,10 @@ export function PrintSingleLabel({ asset, settings, isPreview = false }: PrintSi
                 <span className="font-semibold">Série:</span> {asset.numeroDeSerie || 'N/A'}
             </p>
         </div>
+      </div>
+      
+      <div className="w-full text-center border-t border-black mt-1 pt-0.5 font-semibold" style={{ fontSize: '5pt' }}>
+        Ce matériel est la propriété de la CNRCT
       </div>
     </div>
   );

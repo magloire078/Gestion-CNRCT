@@ -28,8 +28,8 @@ export function PrintSingleLabel({ asset, settings, isPreview = false }: PrintSi
       <div className="flex justify-between items-center w-full">
           <div className="flex-shrink-0">
             {settings.mainLogoUrl ? (
-                <img src={settings.mainLogoUrl} alt="Logo principal" style={{ height: '15mm', width: 'auto', objectFit: 'contain' }} />
-            ) : <div style={{width: '15mm'}}></div>}
+                <img src={settings.mainLogoUrl} alt="Logo principal" style={{ height: '12mm', width: 'auto', objectFit: 'contain' }} />
+            ) : <div style={{width: '12mm'}}></div>}
           </div>
           <div className="text-center leading-tight mx-1 flex-grow">
             <p className="font-bold" style={{ fontSize: '5.5pt' }}>Chambre Nationale des Rois</p>
@@ -38,8 +38,8 @@ export function PrintSingleLabel({ asset, settings, isPreview = false }: PrintSi
           </div>
           <div className="flex-shrink-0">
             {settings.secondaryLogoUrl ? (
-                <img src={settings.secondaryLogoUrl} alt="Logo secondaire" style={{ height: '15mm', width: 'auto', objectFit: 'contain' }} />
-            ) : <div style={{width: '15mm'}}></div>}
+                <img src={settings.secondaryLogoUrl} alt="Logo secondaire" style={{ height: '12mm', width: 'auto', objectFit: 'contain' }} />
+            ) : <div style={{width: '12mm'}}></div>}
           </div>
       </div>
 

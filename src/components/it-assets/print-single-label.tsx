@@ -1,4 +1,3 @@
-
 "use client";
 
 import QRCode from "react-qr-code";
@@ -27,22 +26,37 @@ export function PrintSingleLabel({ asset, settings, isPreview = false }: PrintSi
       }}
     >
       <div className="flex justify-between items-center w-full">
-          {settings.secondaryLogoUrl ? (
-              <img src={settings.secondaryLogoUrl} alt="Logo secondaire" style={{ height: '6mm', width: 'auto', objectFit: 'contain' }} />
-          ) : <div style={{width: '6mm'}}></div>}
-          <p className="text-[6pt] font-bold leading-tight mx-1 truncate">{settings.organizationName}</p>
           {settings.mainLogoUrl ? (
               <img src={settings.mainLogoUrl} alt="Logo principal" style={{ height: '6mm', width: 'auto', objectFit: 'contain' }} />
           ) : <div style={{width: '6mm'}}></div>}
+          <div className="text-center leading-tight mx-1">
+            <p className="font-bold" style={{ fontSize: '5.5pt' }}>Chambre Nationale des Rois</p>
+            <p className="font-bold" style={{ fontSize: '5.5pt' }}>et Chefs Traditionnels</p>
+            <p className="mt-0.5" style={{ fontSize: '5pt' }}>Tel : 27 30 64 06 60</p>
+          </div>
+          {settings.secondaryLogoUrl ? (
+              <img src={settings.secondaryLogoUrl} alt="Logo secondaire" style={{ height: '6mm', width: 'auto', objectFit: 'contain' }} />
+          ) : <div style={{width: '6mm'}}></div>}
       </div>
 
-      <div className="my-1">
-          <QRCode value={asset.tag} size={48} level="L" />
-      </div>
-      
-      <div className="w-full">
-          <p className="font-mono text-[9pt] font-bold tracking-tight leading-none">{asset.tag}</p>
-          <p className="text-[7pt] leading-tight mt-0.5 truncate w-full">{asset.modele}</p>
+      <div className="flex w-full items-center justify-between flex-grow mt-1">
+        <div className="text-left leading-tight flex-grow pr-1" style={{ fontSize: '7pt' }}>
+            <p className="font-bold font-mono">
+                {asset.tag}
+            </p>
+            <p className="truncate">
+                <span className="font-semibold">Modèle:</span> {asset.modele}
+            </p>
+            <p className="truncate">
+                <span className="font-semibold">Assigné:</span> {asset.assignedTo}
+            </p>
+            <p className="truncate">
+                <span className="font-semibold">Série:</span> {asset.numeroDeSerie || 'N/A'}
+            </p>
+        </div>
+        <div className="flex-shrink-0 p-0.5 bg-white">
+            <QRCode value={asset.tag} size={36} level="L" />
+        </div>
       </div>
     </div>
   );

@@ -1,3 +1,4 @@
+
 "use client";
 
 import QRCode from "react-qr-code";
@@ -40,7 +41,10 @@ export function PrintSingleLabel({ asset, settings, isPreview = false }: PrintSi
       </div>
 
       <div className="flex w-full items-center justify-between flex-grow mt-1">
-        <div className="text-left leading-tight flex-grow pr-1" style={{ fontSize: '7pt' }}>
+        <div className="flex-shrink-0 p-0.5 bg-white">
+            <QRCode value={asset.tag} size={36} level="L" />
+        </div>
+        <div className="text-left leading-tight flex-grow pl-1" style={{ fontSize: '7pt' }}>
             <p className="font-bold font-mono">
                 {asset.tag}
             </p>
@@ -53,9 +57,6 @@ export function PrintSingleLabel({ asset, settings, isPreview = false }: PrintSi
             <p className="truncate">
                 <span className="font-semibold">Série:</span> {asset.numeroDeSerie || 'N/A'}
             </p>
-        </div>
-        <div className="flex-shrink-0 p-0.5 bg-white">
-            <QRCode value={asset.tag} size={36} level="L" />
         </div>
       </div>
     </div>

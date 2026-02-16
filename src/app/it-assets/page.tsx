@@ -25,6 +25,9 @@ import { PrintAssetsDialog } from "@/components/it-assets/print-assets-dialog";
 import { PaginationControls } from "@/components/common/pagination-controls";
 import { useAuth } from "@/hooks/use-auth";
 import { BarcodeScanner } from "@/components/it-assets/barcode-scanner";
+import { PrintLabels } from "@/components/it-assets/print-labels";
+import { PrintSingleLabel } from "@/components/it-assets/print-single-label";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 
 type Status = 'En utilisation' | 'En stock' | 'En réparation' | 'Retiré';
@@ -91,23 +94,29 @@ export default function ItAssetsPage() {
   
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [initialAssetTag, setInitialAssetTag] = useState<string | undefined>(undefined);
+  
+  const [isPrintingLabels, setIsPrintingLabels] = useState(false);
+  const [assetForLabelPreview, setAssetForLabelPreview] = useState<Asset | null>(null);
+  const [assetToPrint, setAssetToPrint] = useState<Asset | null>(null);
+  const [isPrintingSingleLabel, setIsPrintingSingleLabel] = useState(false);
+
 
   useEffect(() => {
     const unsubscribe = subscribeToAssets(
       (fetchedAssets) => {
         setAssets(fetchedAssets);
         setLoading(false);
-        setError(null);
       },
-      (err) => {
-        setError("Impossible de charger les actifs. Veuillez vérifier la configuration de votre base de données Firestore et les règles de sécurité.");
-        console.error(err);
+      (error) => {
+        console.error("Failed to subscribe to assets", error);
+        toast({ variant: "destructive", title: "Erreur", description: "Impossible de charger les actifs." });
         setLoading(false);
       }
     );
     getOrganizationSettings().then(setOrganizationLogos);
     return () => unsubscribe();
-  }, []);
+  }, [toast]);
+
 
   useEffect(() => {
       if (isPrinting) {
@@ -118,7 +127,27 @@ export default function ItAssetsPage() {
               document.body.classList.remove('print-landscape');
           }, 500);
       }
-  }, [isPrinting]);
+      if (isPrintingLabels) {
+        document.body.classList.remove('print-landscape'); // Ensure portrait mode for labels
+        setTimeout(() => {
+            window.print();
+            setIsPrintingLabels(false);
+        }, 500);
+      }
+  }, [isPrinting, isPrintingLabels]);
+
+  useEffect(() => {
+    if (isPrintingSingleLabel && assetToPrint) {
+        document.body.classList.add('print-dymo-label');
+        setTimeout(() => {
+            window.print();
+            document.body.classList.remove('print-dymo-label');
+            setIsPrintingSingleLabel(false);
+            setAssetToPrint(null);
+        }, 300);
+    }
+  }, [isPrintingSingleLabel, assetToPrint]);
+
 
   const handleAddAsset = async (newAssetData: Omit<Asset, 'tag'> & { tag: string }) => {
     try {
@@ -218,7 +247,7 @@ export default function ItAssetsPage() {
       toast({ variant: "destructive", title: "Aucune donnée à exporter" });
       return;
     }
-    const escapeSql = (str: any) => str ? `'\'\'\'${String(str).replace(/'/g, "''")}\'\'\''` : 'NULL';
+    const escapeSql = (str: any) => str ? `'''${String(str).replace(/'/g, "''")}'''` : 'NULL';
     const tableName = 'assets';
     const columns = ['tag', 'type', 'typeOrdinateur', 'fabricant', 'modele', 'numeroDeSerie', 'assignedTo', 'status', 'ipAddress', 'password'];
     const sqlContent = filteredAssets.map(asset => {
@@ -236,10 +265,34 @@ export default function ItAssetsPage() {
     setIsPrinting(true);
   };
 
+  const handlePrintLabels = () => {
+    if (filteredAssets.length === 0) {
+        toast({
+            variant: "destructive",
+            title: "Aucun actif à imprimer",
+            description: "Veuillez filtrer la liste pour sélectionner les actifs.",
+        });
+        return;
+    }
+    setIsPrintingLabels(true);
+  };
+  
+  const handleShowLabelPreview = (asset: Asset) => {
+    setAssetForLabelPreview(asset);
+  };
+
+  const handleConfirmPrintSingleLabel = () => {
+    if (assetForLabelPreview) {
+      setAssetToPrint(assetForLabelPreview);
+      setIsPrintingSingleLabel(true);
+      setAssetForLabelPreview(null);
+    }
+  }
+
 
   return (
     <>
-      <div className={`flex flex-col gap-6 ${isPrinting ? 'print-hidden' : ''}`}>
+      <div className={`flex flex-col gap-6 ${isPrinting || isPrintingLabels || isPrintingSingleLabel ? 'print-hidden' : ''}`}>
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold tracking-tight">Actifs Informatiques</h1>
           <div className="flex gap-2">
@@ -249,7 +302,11 @@ export default function ItAssetsPage() {
             </Button>
             <Button variant="outline" onClick={() => setIsPrintDialogOpen(true)}>
                 <Printer className="mr-2 h-4 w-4" />
-                Imprimer
+                Imprimer Liste
+            </Button>
+             <Button variant="outline" onClick={handlePrintLabels}>
+                <QrCode className="mr-2 h-4 w-4" />
+                Imprimer Étiquettes
             </Button>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -389,6 +446,9 @@ export default function ItAssetsPage() {
                                                 <Pencil className="mr-2 h-4 w-4" /> Modifier
                                               </Link>
                                           </DropdownMenuItem>
+                                          <DropdownMenuItem onSelect={() => handleShowLabelPreview(asset)}>
+                                            <QrCode className="mr-2 h-4 w-4"/> Aperçu Étiquette
+                                          </DropdownMenuItem>
                                           <DropdownMenuItem onClick={() => setDeleteTarget(asset)} className="text-destructive focus:text-destructive">
                                               <Trash2 className="mr-2 h-4 w-4" /> Supprimer
                                           </DropdownMenuItem>
@@ -411,17 +471,17 @@ export default function ItAssetsPage() {
                   paginatedAssets.map((asset, index) => {
                     const Icon = assetIcons[asset.type] || PackageIcon;
                     return (
-                      <Card key={asset.tag} onClick={() => router.push(`/it-assets/${asset.tag}/edit`)} className="cursor-pointer">
+                      <Card key={asset.tag}>
                         <CardHeader>
                             <CardTitle className="text-base">
                                {(currentPage - 1) * itemsPerPage + index + 1}. {asset.fabricant} {asset.modele}
                             </CardTitle>
-                             <CardDescription>
+                             <div className="text-sm text-muted-foreground">
                                 <div className="flex items-center gap-2">
                                   <Icon className="h-4 w-4" />
                                   {asset.type}
                                 </div>
-                              </CardDescription>
+                              </div>
                         </CardHeader>
                         <CardContent className="p-4 pt-0 space-y-2">
                             <Badge variant={statusVariantMap[asset.status as Status] || 'default'}>{asset.status}</Badge>
@@ -429,6 +489,26 @@ export default function ItAssetsPage() {
                            {asset.ipAddress && <p className="text-sm"><span className="font-medium">IP:</span> {asset.ipAddress}</p>}
                           <p className="text-sm"><span className="font-medium">Assigné à:</span> {asset.assignedTo}</p>
                         </CardContent>
+                         <CardFooter className="flex justify-end p-4 pt-0">
+                             <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" size="sm" onClick={(e) => e.stopPropagation()}>Actions</Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                                    <DropdownMenuItem asChild>
+                                      <Link href={`/it-assets/${asset.tag}/edit`}>
+                                        <Pencil className="mr-2 h-4 w-4"/> Modifier
+                                      </Link>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onSelect={() => handleShowLabelPreview(asset)}>
+                                      <QrCode className="mr-2 h-4 w-4"/> Aperçu Étiquette
+                                    </DropdownMenuItem>
+                                     <DropdownMenuItem onClick={() => setDeleteTarget(asset)} className="text-destructive focus:text-destructive">
+                                        <Trash2 className="mr-2 h-4 w-4"/> Supprimer
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                        </CardFooter>
                       </Card>
                     )
                   })
@@ -479,7 +559,7 @@ export default function ItAssetsPage() {
         description={`Êtes-vous sûr de vouloir supprimer "${deleteTarget?.modele} (${deleteTarget?.tag})" ? Cette action est irréversible.`}
       />
 
-       {isPrinting && (
+       {isPrinting && organizationLogos && (
             <div id="print-section" className="bg-white text-black p-8 w-full print:shadow-none print:border-none print:p-0">
                 <header className="flex justify-between items-start mb-8">
                     <div className="text-center">
@@ -494,7 +574,7 @@ export default function ItAssetsPage() {
                 </header>
 
                 <div className="text-center my-6">
-                    <h1 className="text-lg font-bold underline">INVENTAIRE DU MATERIEL INFORMATIQUE - {printDate}</h1>
+                    <h1 className="text-lg font-bold underline">INVENTAIRE DU MATERIEL INFORMATIQUE - ${printDate}</h1>
                 </div>
                 
                 <table className="w-full text-xs border-collapse border border-black">
@@ -516,6 +596,39 @@ export default function ItAssetsPage() {
                     </tbody>
                 </table>
             </div>
+        )}
+        
+        {isPrintingLabels && organizationLogos && (
+            <PrintLabels assets={filteredAssets} settings={organizationLogos} />
+        )}
+        
+        {isPrintingSingleLabel && assetToPrint && organizationLogos && (
+            <PrintSingleLabel asset={assetToPrint} settings={organizationLogos} />
+        )}
+
+        {assetForLabelPreview && organizationLogos && (
+            <Dialog open={!!assetForLabelPreview} onOpenChange={(open) => !open && setAssetForLabelPreview(null)}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Aperçu de l'étiquette</DialogTitle>
+                        <DialogDescription>
+                            Voici à quoi ressemblera l'étiquette pour l'actif {assetForLabelPreview.tag}.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="flex justify-center items-center p-4 my-4 bg-muted rounded-md">
+                        <div className="border shadow-md" style={{ transform: 'scale(1.5)', transformOrigin: 'center' }}>
+                            <PrintSingleLabel asset={assetForLabelPreview} settings={organizationLogos} isPreview={true} />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setAssetForLabelPreview(null)}>Annuler</Button>
+                        <Button onClick={handleConfirmPrintSingleLabel}>
+                            <Printer className="mr-2 h-4 w-4" />
+                            Imprimer
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         )}
     </>
   );

@@ -15,17 +15,31 @@ const firebaseConfig: FirebaseOptions = {
   measurementId: "G-TDXM581DZ5"
 };
 
+
 // Initialize Firebase
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+
+if (typeof window === 'undefined') {
+  // Polyfill for localStorage on the server to avoid error: localStorage.getItem is not a function
+  (global as any).localStorage = {
+    getItem: (key: string) => null,
+    setItem: (key: string, value: string) => { },
+    removeItem: (key: string) => { },
+    clear: () => { },
+    length: 0,
+    key: (index: number) => null,
+  };
+}
+
 const db = getFirestore(app);
 const auth = getAuth(app);
 const storage = getStorage(app);
 if (typeof window !== 'undefined') {
-    try {
-      getAnalytics(app);
-    } catch (error) {
-      console.log("Could not initialize Analytics", error);
-    }
+  try {
+    getAnalytics(app);
+  } catch (error) {
+    console.log("Could not initialize Analytics", error);
+  }
 }
 
 

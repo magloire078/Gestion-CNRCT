@@ -1,5 +1,5 @@
 import { db } from '@/lib/firebase';
-import { collection, addDoc, onSnapshot, Unsubscribe, query, orderBy, doc, updateDoc, deleteDoc } from '@/lib/firebase';
+import { collection, addDoc, onSnapshot, Unsubscribe, query, orderBy, doc, updateDoc, deleteDoc, type QueryDocumentSnapshot, type DocumentData } from '@/lib/firebase';
 import type { BudgetLine } from '@/lib/data';
 
 const budgetLinesCollection = collection(db, 'budgetLines');
@@ -11,7 +11,7 @@ export function subscribeToBudgetLines(
     const q = query(budgetLinesCollection, orderBy("year", "desc"), orderBy("code", "asc"));
     const unsubscribe = onSnapshot(q,
         (snapshot) => {
-            const lines = snapshot.docs.map(doc => ({
+            const lines = snapshot.docs.map((doc: QueryDocumentSnapshot<DocumentData>) => ({
                 id: doc.id,
                 ...doc.data()
             } as BudgetLine));

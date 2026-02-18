@@ -70,7 +70,7 @@ export function subscribeToNotifications(
     }, onError);
 
     const unsubAll = onSnapshot(qAll, (snapshot) => {
-        snapshot.docs.forEach(doc => {
+        snapshot.docs.forEach((doc: QueryDocumentSnapshot<DocumentData>) => {
             notificationMap.set(doc.id, { id: doc.id, ...doc.data() } as Notification);
         });
         updateCombinedAndSort();

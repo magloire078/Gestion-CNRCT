@@ -1,7 +1,7 @@
 
 
 import { db } from '@/lib/firebase';
-import { collection, addDoc, onSnapshot, Unsubscribe, query, where, orderBy, writeBatch, doc, getDocs, updateDoc } from '@/lib/firebase';
+import { collection, addDoc, onSnapshot, Unsubscribe, query, where, orderBy, writeBatch, doc, getDocs, updateDoc, type QueryDocumentSnapshot, type DocumentData } from '@/lib/firebase';
 import type { Notification, Employe } from '@/lib/data';
 import { getEmployees } from './employee-service';
 import { parseISO, differenceInMonths } from 'date-fns';
@@ -10,12 +10,12 @@ const notificationsCollection = collection(db, 'notifications');
 const usersCollection = collection(db, 'users');
 
 async function createNotification(data: Omit<Notification, 'id' | 'isRead' | 'createdAt'>) {
-    
+
     // If userId is a special keyword like 'manager', find all users with that role
     if (data.userId === 'manager') {
         const managerQuery = query(usersCollection, where('roleId', 'in', ['manager-rh', 'administrateur', 'super-admin']));
         const managerSnapshot = await getDocs(managerQuery);
-        
+
         const batch = writeBatch(db);
         managerSnapshot.forEach(managerDoc => {
             const notificationData = {
@@ -30,7 +30,7 @@ async function createNotification(data: Omit<Notification, 'id' | 'isRead' | 'cr
         await batch.commit();
 
     } else {
-         const notificationData = {
+        const notificationData = {
             ...data,
             isRead: false,
             createdAt: new Date().toISOString()
@@ -47,10 +47,10 @@ export function subscribeToNotifications(
     const notificationMap = new Map<string, Notification>();
 
     const qUser = query(
-        notificationsCollection, 
+        notificationsCollection,
         where('userId', '==', userId)
     );
-    
+
     const qAll = query(
         notificationsCollection,
         where('userId', '==', 'all')
@@ -63,17 +63,17 @@ export function subscribeToNotifications(
     };
 
     const unsubUser = onSnapshot(qUser, (snapshot) => {
-        snapshot.docs.forEach(doc => {
+        snapshot.docs.forEach((doc: QueryDocumentSnapshot<DocumentData>) => {
             notificationMap.set(doc.id, { id: doc.id, ...doc.data() } as Notification);
         });
         updateCombinedAndSort();
     }, onError);
 
     const unsubAll = onSnapshot(qAll, (snapshot) => {
-         snapshot.docs.forEach(doc => {
+        snapshot.docs.forEach(doc => {
             notificationMap.set(doc.id, { id: doc.id, ...doc.data() } as Notification);
         });
-         updateCombinedAndSort();
+        updateCombinedAndSort();
     }, onError);
 
     return () => {
@@ -103,7 +103,7 @@ export async function checkAndNotifyForUpcomingRetirements() {
     console.log("Checking for upcoming retirements...");
     const employees = await getEmployees();
     const today = new Date();
-    
+
     // Find all Admin and HR Manager users to notify them
     // This is a placeholder. In a real app, you would query users by role.
     const adminUserId = 'all'; // Notify all admins/managers
@@ -118,12 +118,12 @@ export async function checkAndNotifyForUpcomingRetirements() {
         try {
             const birthDate = parseISO(employee.Date_Naissance);
             const retirementDate = new Date(birthDate.getFullYear() + 60, birthDate.getMonth(), birthDate.getDate());
-            
+
             const monthsUntilRetirement = differenceInMonths(retirementDate, today);
 
             if (monthsUntilRetirement <= 6 && monthsUntilRetirement >= 0) {
                 console.log(`Employee ${employee.name} is retiring soon. Sending notification.`);
-                
+
                 // Create the notification data
                 const notificationData = {
                     userId: adminUserId,
@@ -133,7 +133,7 @@ export async function checkAndNotifyForUpcomingRetirements() {
                     isRead: false,
                     createdAt: new Date().toISOString()
                 };
-                
+
                 const newNotifRef = doc(collection(db, 'notifications'));
                 batch.set(newNotifRef, notificationData);
 

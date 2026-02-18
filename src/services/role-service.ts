@@ -1,6 +1,6 @@
 
 
-import { collection, getDocs, addDoc, deleteDoc, doc, onSnapshot, Unsubscribe, query, orderBy, setDoc, writeBatch, updateDoc } from '@/lib/firebase';
+import { collection, getDocs, addDoc, deleteDoc, doc, onSnapshot, Unsubscribe, query, orderBy, setDoc, writeBatch, updateDoc, type QueryDocumentSnapshot, type DocumentData } from '@/lib/firebase';
 import type { Role } from '@/lib/data';
 import { db } from '@/lib/firebase';
 import { allPermissions } from '@/lib/permissions';
@@ -96,7 +96,7 @@ export function subscribeToRoles(
     const q = query(rolesCollection, orderBy("name", "asc"));
     const unsubscribe = onSnapshot(q,
         (snapshot) => {
-            const roles = snapshot.docs.map(doc => ({
+            const roles = snapshot.docs.map((doc: QueryDocumentSnapshot<DocumentData>) => ({
                 id: doc.id,
                 ...doc.data()
             } as Role));
@@ -111,16 +111,16 @@ export function subscribeToRoles(
 }
 
 export async function getRoles(): Promise<Role[]> {
-  const snapshot = await getDocs(query(rolesCollection, orderBy("name", "asc")));
-  if (snapshot.empty) {
-      await initializeDefaultRoles();
-      const newSnapshot = await getDocs(query(rolesCollection, orderBy("name", "asc")));
-      return newSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Role));
-  }
-  return snapshot.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data()
-  } as Role));
+    const snapshot = await getDocs(query(rolesCollection, orderBy("name", "asc")));
+    if (snapshot.empty) {
+        await initializeDefaultRoles();
+        const newSnapshot = await getDocs(query(rolesCollection, orderBy("name", "asc")));
+        return newSnapshot.docs.map((doc: QueryDocumentSnapshot<DocumentData>) => ({ id: doc.id, ...doc.data() } as Role));
+    }
+    return snapshot.docs.map((doc: QueryDocumentSnapshot<DocumentData>) => ({
+        id: doc.id,
+        ...doc.data()
+    } as Role));
 }
 
 export async function addRole(roleDataToAdd: Omit<Role, 'id'>): Promise<Role> {

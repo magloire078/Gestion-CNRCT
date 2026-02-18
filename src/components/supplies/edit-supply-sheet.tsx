@@ -22,7 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { Supply, Asset } from "@/lib/data";
-import { supplyCategories } from "@/app/supplies/page";
+import { supplyCategories } from "@/lib/constants/supply";
 import { getAssets } from "@/services/asset-service";
 import { useToast } from "@/hooks/use-toast";
 
@@ -52,30 +52,30 @@ export function EditSupplySheet({
 
   useEffect(() => {
     if (supply) {
-        setName(supply.name);
-        setCategory(supply.category);
-        setInkType(supply.inkType || "");
-        setQuantity(supply.quantity);
-        setReorderLevel(supply.reorderLevel);
-        setLinkedAssetTag(supply.linkedAssetTag || "");
+      setName(supply.name);
+      setCategory(supply.category);
+      setInkType(supply.inkType || "");
+      setQuantity(supply.quantity);
+      setReorderLevel(supply.reorderLevel);
+      setLinkedAssetTag(supply.linkedAssetTag || "");
     }
   }, [supply]);
 
   useEffect(() => {
     async function fetchPrinters() {
-        if (category === 'Cartouches d\'encre') {
-            try {
-                const allAssets = await getAssets();
-                const printerAssets = allAssets.filter(asset => asset.type === 'Imprimante');
-                setPrinters(printerAssets);
-            } catch (err) {
-                console.error("Failed to fetch printers:", err);
-                toast({ variant: "destructive", title: "Erreur", description: "Impossible de charger la liste des imprimantes." });
-            }
+      if (category === 'Cartouches d\'encre') {
+        try {
+          const allAssets = await getAssets();
+          const printerAssets = allAssets.filter(asset => asset.type === 'Imprimante');
+          setPrinters(printerAssets);
+        } catch (err) {
+          console.error("Failed to fetch printers:", err);
+          toast({ variant: "destructive", title: "Erreur", description: "Impossible de charger la liste des imprimantes." });
         }
+      }
     }
-    if(isOpen) {
-        fetchPrinters();
+    if (isOpen) {
+      fetchPrinters();
     }
   }, [category, isOpen, toast]);
 
@@ -91,15 +91,15 @@ export function EditSupplySheet({
       setError("Veuillez remplir tous les champs obligatoires avec des valeurs valides.");
       return;
     }
-    
+
     setIsSubmitting(true);
     setError("");
 
     try {
-      await onUpdateSupply(supply.id, { 
-        name, 
-        category, 
-        quantity, 
+      await onUpdateSupply(supply.id, {
+        name,
+        category,
+        quantity,
         reorderLevel,
         inkType: category === 'Cartouches d\'encre' ? inkType : undefined,
         linkedAssetTag: (category === 'Cartouches d\'encre' && linkedAssetTag !== 'none') ? linkedAssetTag : undefined,
@@ -125,7 +125,7 @@ export function EditSupplySheet({
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="name-edit" className="text-right">Nom</Label>
-              <Input id="name-edit" value={name} onChange={(e) => setName(e.target.value)} className="col-span-3"/>
+              <Input id="name-edit" value={name} onChange={(e) => setName(e.target.value)} className="col-span-3" />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="category-edit" className="text-right">Catégorie</Label>
@@ -142,7 +142,7 @@ export function EditSupplySheet({
               <>
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="inkType-edit" className="text-right">Type/N° d'encre</Label>
-                  <Input id="inkType-edit" value={inkType} onChange={(e) => setInkType(e.target.value)} className="col-span-3" placeholder="Ex: HP 651, Toner 12A"/>
+                  <Input id="inkType-edit" value={inkType} onChange={(e) => setInkType(e.target.value)} className="col-span-3" placeholder="Ex: HP 651, Toner 12A" />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="linkedAssetTag-edit" className="text-right">Imprimante</Label>
@@ -153,18 +153,18 @@ export function EditSupplySheet({
                     <SelectContent>
                       <SelectItem value="none">Aucune</SelectItem>
                       {printers.map(printer => (
-                          <SelectItem key={printer.tag} value={printer.tag}>
-                              {printer.modele} ({printer.tag})
-                          </SelectItem>
+                        <SelectItem key={printer.tag} value={printer.tag}>
+                          {printer.modele} ({printer.tag})
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
               </>
             )}
-             <div className="grid grid-cols-4 items-center gap-4">
+            <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="quantity-edit" className="text-right">Quantité</Label>
-              <Input id="quantity-edit" type="number" value={quantity} onChange={(e) => setQuantity(Number(e.target.value))} className="col-span-3"/>
+              <Input id="quantity-edit" type="number" value={quantity} onChange={(e) => setQuantity(Number(e.target.value))} className="col-span-3" />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="reorderLevel-edit" className="text-right">Seuil</Label>

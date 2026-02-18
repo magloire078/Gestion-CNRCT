@@ -53,17 +53,7 @@ const assetIcons: Record<Asset['type'], React.ElementType> = {
   "Autre": PackageIcon,
 };
 
-export const allAssetColumns = {
-  tag: "N° Inventaire",
-  type: "Type",
-  fabricant: "Fabricant",
-  modele: "Modèle",
-  numeroDeSerie: "N° Série",
-  ipAddress: "Adresse IP",
-  assignedTo: "Assigné à",
-  status: "Statut",
-};
-export type AssetColumnKeys = keyof typeof allAssetColumns;
+import { allAssetColumns, type AssetColumnKeys } from "@/lib/constants/asset";
 
 export default function ItAssetsPage() {
   const [assets, setAssets] = useState<Asset[]>([]);

@@ -1,7 +1,7 @@
 
 
 import { db } from '@/lib/firebase';
-import { collection, getDocs, addDoc, onSnapshot, Unsubscribe, query, orderBy, doc, updateDoc, deleteDoc, writeBatch } from 'firebase/firestore';
+import { collection, getDocs, addDoc, onSnapshot, Unsubscribe, query, orderBy, doc, updateDoc, deleteDoc, writeBatch } from '@/lib/firebase';
 import type { Supply } from '@/lib/data';
 import { createNotification } from './notification-service';
 

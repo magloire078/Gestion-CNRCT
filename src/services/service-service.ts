@@ -1,6 +1,7 @@
 
 
-import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, onSnapshot, Unsubscribe, query, orderBy } from 'firebase/firestore';
+import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, onSnapshot, Unsubscribe, query, orderBy } from '@/lib/firebase';
+import type { QuerySnapshot, DocumentData, QueryDocumentSnapshot, FirestoreError } from '@/lib/firebase';
 import type { Service } from '@/lib/data';
 import { db } from '@/lib/firebase';
 
@@ -11,15 +12,15 @@ export function subscribeToServices(
     onError: (error: Error) => void
 ): Unsubscribe {
     const q = query(servicesCollection, orderBy("name", "asc"));
-    const unsubscribe = onSnapshot(q, 
-        (snapshot) => {
-            const services = snapshot.docs.map(doc => ({
+    const unsubscribe = onSnapshot(q,
+        (snapshot: QuerySnapshot<DocumentData>) => {
+            const services = snapshot.docs.map((doc: QueryDocumentSnapshot<DocumentData>) => ({
                 id: doc.id,
                 ...doc.data()
             } as Service));
             callback(services);
         },
-        (error) => {
+        (error: FirestoreError) => {
             console.error("Error subscribing to services:", error);
             onError(error);
         }
@@ -28,12 +29,12 @@ export function subscribeToServices(
 }
 
 export async function getServices(): Promise<Service[]> {
-  const q = query(servicesCollection, orderBy("name", "asc"));
-  const snapshot = await getDocs(q);
-  return snapshot.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data()
-  } as Service));
+    const q = query(servicesCollection, orderBy("name", "asc"));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map((doc: QueryDocumentSnapshot<DocumentData>) => ({
+        id: doc.id,
+        ...doc.data()
+    } as Service));
 }
 
 export async function addService(serviceData: Omit<Service, 'id'>): Promise<Service> {
@@ -51,4 +52,4 @@ export async function deleteService(serviceId: string): Promise<void> {
     await deleteDoc(serviceDocRef);
 }
 
-    
+

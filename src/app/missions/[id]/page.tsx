@@ -57,12 +57,12 @@ const statusVariantMap: Record<
 };
 
 interface ParticipantWithDetails extends Employe {
-    moyenTransport?: string;
-    immatriculation?: string;
-    numeroOrdre?: string;
-    coutTransport?: number;
-    coutHebergement?: number;
-    totalIndemnites?: number;
+  moyenTransport?: string;
+  immatriculation?: string;
+  numeroOrdre?: string;
+  coutTransport?: number;
+  coutHebergement?: number;
+  totalIndemnites?: number;
 }
 
 export default function MissionDetailPage() {
@@ -105,36 +105,36 @@ export default function MissionDetailPage() {
         ]);
 
         if (missionData) {
-            setMission(missionData);
-            
-            const startDate = parseISO(missionData.startDate);
-            const endDate = parseISO(missionData.endDate);
-            const duration = differenceInDays(endDate, startDate) + 1;
-            setMissionDuration(duration > 0 ? duration : 1);
+          setMission(missionData);
 
-            const employeesMap = new Map(allEmployees.map(e => [e.name, e]));
-            
-            let calculatedTotalCost = 0;
-            const participantsWithDetails = (missionData.participants || []).map(p => {
-                const employee = employeesMap.get(p.employeeName);
-                if (!employee) return null;
+          const startDate = parseISO(missionData.startDate);
+          const endDate = parseISO(missionData.endDate);
+          const duration = differenceInDays(endDate, startDate) + 1;
+          setMissionDuration(duration > 0 ? duration : 1);
 
-                // If totalIndemnites is not manually set, calculate it
-                if (p.totalIndemnites === undefined || p.totalIndemnites === 0) {
-                    const rate = getAllowanceRate(employee.categorie);
-                    p.totalIndemnites = Math.round(rate * (duration > 0 ? duration : 1));
-                }
+          const employeesMap = new Map(allEmployees.map(e => [e.name, e]));
 
-                const participantCost = Math.round(p.totalIndemnites || 0) + Math.round(p.coutTransport || 0) + Math.round(p.coutHebergement || 0);
-                calculatedTotalCost += participantCost;
+          let calculatedTotalCost = 0;
+          const participantsWithDetails = (missionData.participants || []).map(p => {
+            const employee = employeesMap.get(p.employeeName);
+            if (!employee) return null;
 
-                return { ...employee, ...p };
-            }).filter((p): p is ParticipantWithDetails => p !== null);
-            
-            setParticipantsDetails(participantsWithDetails);
-            setTotalMissionCost(calculatedTotalCost);
+            // If totalIndemnites is not manually set, calculate it
+            if (p.totalIndemnites === undefined || p.totalIndemnites === 0) {
+              const rate = getAllowanceRate(employee.categorie);
+              p.totalIndemnites = Math.round(rate * (duration > 0 ? duration : 1));
+            }
+
+            const participantCost = Math.round(p.totalIndemnites || 0) + Math.round(p.coutTransport || 0) + Math.round(p.coutHebergement || 0);
+            calculatedTotalCost += participantCost;
+
+            return { ...employee, ...p };
+          }).filter((p) => p !== null) as ParticipantWithDetails[];
+
+          setParticipantsDetails(participantsWithDetails);
+          setTotalMissionCost(calculatedTotalCost);
         }
-        
+
       } catch (error) {
         console.error("Failed to fetch mission details", error);
       } finally {
@@ -158,17 +158,17 @@ export default function MissionDetailPage() {
       } else if (result.document) {
         const printWindow = window.open("", "_blank", "height=800,width=800");
         if (printWindow) {
-            printWindow.document.write(result.document);
-            printWindow.document.close();
-            setTimeout(() => {
+          printWindow.document.write(result.document);
+          printWindow.document.close();
+          setTimeout(() => {
             printWindow.print();
-            }, 500);
+          }, 500);
         } else {
-            toast({
-              variant: "destructive",
-              title: "Erreur d'impression",
-              description: "Impossible d'ouvrir la fenêtre d'impression. Vérifiez les bloqueurs de popups.",
-            });
+          toast({
+            variant: "destructive",
+            title: "Erreur d'impression",
+            description: "Impossible d'ouvrir la fenêtre d'impression. Vérifiez les bloqueurs de popups.",
+          });
         }
       }
     } catch (err) {
@@ -184,16 +184,16 @@ export default function MissionDetailPage() {
   };
 
   const handlePrintCostReport = () => {
-      setIsPrintingCostReport(true);
+    setIsPrintingCostReport(true);
   };
-  
+
   useEffect(() => {
-      if(isPrintingCostReport) {
-          setTimeout(() => {
-            window.print();
-            setIsPrintingCostReport(false);
-          }, 300);
-      }
+    if (isPrintingCostReport) {
+      setTimeout(() => {
+        window.print();
+        setIsPrintingCostReport(false);
+      }, 300);
+    }
   }, [isPrintingCostReport]);
 
   const handleDelete = async () => {
@@ -215,9 +215,9 @@ export default function MissionDetailPage() {
       setIsDeleting(false);
     }
   };
-  
+
   const formatCurrency = (value: number | undefined) => {
-    if(value === undefined) return '0 FCFA';
+    if (value === undefined) return '0 FCFA';
     return Math.round(value).toLocaleString('fr-FR') + ' FCFA';
   };
 
@@ -243,21 +243,21 @@ export default function MissionDetailPage() {
             </h1>
             <p className="text-muted-foreground truncate">{mission.title}</p>
           </div>
-           <div className="flex gap-2">
+          <div className="flex gap-2">
             <Button
-                variant="destructive"
-                size="sm"
-                onClick={() => setShowDeleteConfirm(true)}
-                disabled={isDeleting}
+              variant="destructive"
+              size="sm"
+              onClick={() => setShowDeleteConfirm(true)}
+              disabled={isDeleting}
             >
-                <Trash2 className="mr-2 h-4 w-4" />
-                Supprimer
+              <Trash2 className="mr-2 h-4 w-4" />
+              Supprimer
             </Button>
-             <Button asChild size="sm">
-                <Link href={`/missions/${id}/edit`}>
+            <Button asChild size="sm">
+              <Link href={`/missions/${id}/edit`}>
                 <Pencil className="mr-2 h-4 w-4" />
                 Modifier
-                </Link>
+              </Link>
             </Button>
           </div>
         </div>
@@ -271,31 +271,31 @@ export default function MissionDetailPage() {
                   Dossier Mission N° {mission.numeroMission} - {mission.title}
                 </CardTitle>
                 <div className="mt-2">
-                    <Badge variant={statusVariantMap[mission.status]}>
-                        {mission.status}
-                    </Badge>
+                  <Badge variant={statusVariantMap[mission.status]}>
+                    {mission.status}
+                  </Badge>
                 </div>
               </div>
-               <div className="flex gap-2">
-                 <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handlePrintCostReport}
-                    disabled={isPrintingCostReport}
-                  >
-                    <FileText className="mr-2 h-4 w-4" />
-                    État des Frais
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handlePrintMissionOrder}
-                    disabled={isPrintingOrder}
-                  >
-                    <Printer className="mr-2 h-4 w-4" />
-                    {isPrintingOrder ? "Génération..." : "Ordres de Mission"}
-                  </Button>
-               </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handlePrintCostReport}
+                  disabled={isPrintingCostReport}
+                >
+                  <FileText className="mr-2 h-4 w-4" />
+                  État des Frais
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handlePrintMissionOrder}
+                  disabled={isPrintingOrder}
+                >
+                  <Printer className="mr-2 h-4 w-4" />
+                  {isPrintingOrder ? "Génération..." : "Ordres de Mission"}
+                </Button>
+              </div>
             </div>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -320,73 +320,73 @@ export default function MissionDetailPage() {
             )}
           </CardContent>
         </Card>
-        
+
         <Card>
-             <CardHeader>
-                <div className="flex justify-between items-center">
-                    <CardTitle className="flex items-center gap-2">
-                    <Users className="h-5 w-5 text-muted-foreground" />
-                    Détails Financiers par Participant
-                    </CardTitle>
-                    <Button asChild variant="outline" size="sm">
-                        <Link href={`/missions/${id}/participants`}>Voir la liste détaillée</Link>
-                    </Button>
-                </div>
-                <CardDescription>
-                  Détail des coûts et indemnités pour chaque participant.
-                </CardDescription>
-            </CardHeader>
-             <CardContent>
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Participant</TableHead>
-                            <TableHead className="text-right">Indemnités</TableHead>
-                            <TableHead className="text-right">Transport</TableHead>
-                            <TableHead className="text-right">Hébergement</TableHead>
-                            <TableHead className="text-right">Total Participant</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {participantsDetails.map((p) => {
-                            const totalParticipant = Math.round(p.totalIndemnites || 0) + Math.round(p.coutTransport || 0) + Math.round(p.coutHebergement || 0);
-                            return (
-                                <TableRow key={p.id}>
-                                    <TableCell>
-                                       <Link href={`/employees/${p.id}`} className="flex items-center gap-3 group">
-                                         <Avatar className="h-9 w-9">
-                                            <AvatarImage src={p.photoUrl} alt={p.name} data-ai-hint="employee photo" />
-                                            <AvatarFallback>{p.lastName?.charAt(0)}{p.firstName?.charAt(0)}</AvatarFallback>
-                                         </Avatar>
-                                         <div>
-                                            <div className="font-medium group-hover:underline">{`${p.lastName || ''} ${p.firstName || ''}`.trim()}</div>
-                                            <div className="text-sm text-muted-foreground">{p.poste}</div>
-                                         </div>
-                                       </Link>
-                                    </TableCell>
-                                    <TableCell className="text-right font-mono">{formatCurrency(p.totalIndemnites)}</TableCell>
-                                    <TableCell className="text-right font-mono">{formatCurrency(p.coutTransport)}</TableCell>
-                                    <TableCell className="text-right font-mono">{formatCurrency(p.coutHebergement)}</TableCell>
-                                    <TableCell className="text-right font-bold font-mono">{formatCurrency(totalParticipant)}</TableCell>
-                                </TableRow>
-                            )
-                        })}
-                         {participantsDetails.length === 0 && (
-                            <TableRow>
-                                <TableCell colSpan={5} className="text-center text-muted-foreground py-6">
-                                    Aucun participant assigné à cette mission.
-                                </TableCell>
-                            </TableRow>
-                         )}
-                    </TableBody>
-                </Table>
-                <div className="flex justify-end mt-4 pt-4 border-t">
-                    <div className="text-right">
-                        <p className="text-muted-foreground">Coût total de la mission</p>
-                        <p className="text-xl font-bold">{formatCurrency(totalMissionCost)}</p>
-                    </div>
-                </div>
-            </CardContent>
+          <CardHeader>
+            <div className="flex justify-between items-center">
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5 text-muted-foreground" />
+                Détails Financiers par Participant
+              </CardTitle>
+              <Button asChild variant="outline" size="sm">
+                <Link href={`/missions/${id}/participants`}>Voir la liste détaillée</Link>
+              </Button>
+            </div>
+            <CardDescription>
+              Détail des coûts et indemnités pour chaque participant.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Participant</TableHead>
+                  <TableHead className="text-right">Indemnités</TableHead>
+                  <TableHead className="text-right">Transport</TableHead>
+                  <TableHead className="text-right">Hébergement</TableHead>
+                  <TableHead className="text-right">Total Participant</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {participantsDetails.map((p) => {
+                  const totalParticipant = Math.round(p.totalIndemnites || 0) + Math.round(p.coutTransport || 0) + Math.round(p.coutHebergement || 0);
+                  return (
+                    <TableRow key={p.id}>
+                      <TableCell>
+                        <Link href={`/employees/${p.id}`} className="flex items-center gap-3 group">
+                          <Avatar className="h-9 w-9">
+                            <AvatarImage src={p.photoUrl} alt={p.name} data-ai-hint="employee photo" />
+                            <AvatarFallback>{p.lastName?.charAt(0)}{p.firstName?.charAt(0)}</AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <div className="font-medium group-hover:underline">{`${p.lastName || ''} ${p.firstName || ''}`.trim()}</div>
+                            <div className="text-sm text-muted-foreground">{p.poste}</div>
+                          </div>
+                        </Link>
+                      </TableCell>
+                      <TableCell className="text-right font-mono">{formatCurrency(p.totalIndemnites)}</TableCell>
+                      <TableCell className="text-right font-mono">{formatCurrency(p.coutTransport)}</TableCell>
+                      <TableCell className="text-right font-mono">{formatCurrency(p.coutHebergement)}</TableCell>
+                      <TableCell className="text-right font-bold font-mono">{formatCurrency(totalParticipant)}</TableCell>
+                    </TableRow>
+                  )
+                })}
+                {participantsDetails.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center text-muted-foreground py-6">
+                      Aucun participant assigné à cette mission.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+            <div className="flex justify-end mt-4 pt-4 border-t">
+              <div className="text-right">
+                <p className="text-muted-foreground">Coût total de la mission</p>
+                <p className="text-xl font-bold">{formatCurrency(totalMissionCost)}</p>
+              </div>
+            </div>
+          </CardContent>
         </Card>
 
       </div>
@@ -400,7 +400,7 @@ export default function MissionDetailPage() {
 
       {isPrintingCostReport && mission && (
         <div id="print-section">
-            <MissionCostReport mission={mission} participants={participantsDetails} duration={missionDuration} totalCost={totalCost} />
+          <MissionCostReport mission={mission} participants={participantsDetails} duration={missionDuration} totalCost={totalMissionCost} />
         </div>
       )}
     </>
@@ -456,13 +456,12 @@ function MissionDetailSkeleton() {
         </CardContent>
       </Card>
       <Card>
-          <CardHeader><Skeleton className="h-6 w-1/2" /></CardHeader>
-          <CardContent>
-            <Skeleton className="h-32 w-full" />
-          </CardContent>
+        <CardHeader><Skeleton className="h-6 w-1/2" /></CardHeader>
+        <CardContent>
+          <Skeleton className="h-32 w-full" />
+        </CardContent>
       </Card>
     </div>
   );
 }
 
-    

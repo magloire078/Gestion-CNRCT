@@ -1,5 +1,5 @@
 
-import type {NextConfig} from 'next';
+import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   /* config options here */
@@ -35,6 +35,17 @@ const nextConfig: NextConfig = {
         hostname: "upload.wikimedia.org",
       },
     ],
+  },
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      // Externalize Node.js native modules for server-side bundles
+      config.externals = config.externals || [];
+      config.externals.push({
+        'bufferutil': 'bufferutil',
+        'utf-8-validate': 'utf-8-validate',
+      });
+    }
+    return config;
   },
 };
 

@@ -51,7 +51,7 @@ export default function ChiefsPage() {
   const { toast } = useToast();
   const { hasPermission } = useAuth();
   const [deleteTarget, setDeleteTarget] = useState<Chief | null>(null);
-  
+
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
@@ -102,7 +102,7 @@ export default function ChiefsPage() {
         description: `Impossible de supprimer ${deleteTarget.name}.`,
       });
     } finally {
-        setDeleteTarget(null);
+      setDeleteTarget(null);
     }
   };
 
@@ -114,7 +114,7 @@ export default function ChiefsPage() {
       chief.title.toLowerCase().includes(searchTerm.toLowerCase())
     );
     if (currentPage > Math.ceil(filtered.length / itemsPerPage)) {
-        setCurrentPage(1);
+      setCurrentPage(1);
     }
     return filtered;
   }, [chiefs, searchTerm, currentPage, itemsPerPage]);
@@ -125,17 +125,17 @@ export default function ChiefsPage() {
   }, [filteredChiefs, currentPage, itemsPerPage]);
 
   const totalPages = Math.ceil(filteredChiefs.length / itemsPerPage);
-  
-    const downloadFile = (content: string, fileName: string, contentType: string) => {
-      const blob = new Blob([content], { type: contentType });
-      const link = document.createElement('a');
-      const url = URL.createObjectURL(blob);
-      link.setAttribute('href', url);
-      link.setAttribute('download', fileName);
-      link.style.visibility = 'hidden';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+
+  const downloadFile = (content: string, fileName: string, contentType: string) => {
+    const blob = new Blob([content], { type: contentType });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', fileName);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const handleExportCsv = () => {
@@ -144,12 +144,12 @@ export default function ChiefsPage() {
       return;
     }
     const csvData = Papa.unparse(filteredChiefs, {
-        header: true,
+      header: true,
     });
     downloadFile(csvData, 'export_chefs.csv', 'text/csv;charset=utf-8;');
     toast({ title: "Exportation CSV réussie" });
   };
-  
+
   const handleExportJson = () => {
     if (filteredChiefs.length === 0) {
       toast({ variant: "destructive", title: "Aucune donnée à exporter" });
@@ -159,22 +159,23 @@ export default function ChiefsPage() {
     downloadFile(jsonData, 'export_chefs.json', 'application/json;charset=utf-8;');
     toast({ title: "Exportation JSON réussie" });
   };
-  
+
   const handleExportSql = () => {
     if (filteredChiefs.length === 0) {
       toast({ variant: "destructive", title: "Aucune donnée à exporter" });
       return;
     }
 
-    const escapeSql = (str: string | number | undefined | null) => {
+    const escapeSql = (str: string | number | string[] | undefined | null) => {
       if (str === null || str === undefined) return 'NULL';
+      if (Array.isArray(str)) return `'${str.join(',').replace(/'/g, "''")}'`;
       if (typeof str === 'number') return str;
       return `'${String(str).replace(/'/g, "''")}'`;
     };
 
     const tableName = 'chiefs';
     const columns = ['id', 'name', 'title', 'role', 'region', 'department', 'subPrefecture', 'village', 'contact', 'bio', 'photoUrl', 'latitude', 'longitude', 'parentChiefId', 'dateOfBirth', 'regencyStartDate', 'regencyEndDate'];
-    
+
     const sqlContent = filteredChiefs.map(chief => {
       const values = columns.map(col => escapeSql(chief[col as keyof Chief])).join(', ');
       return `INSERT INTO ${tableName} (${columns.join(', ')}) VALUES (${values});`;
@@ -190,25 +191,25 @@ export default function ChiefsPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight">Rois et Chefs Traditionnels</h1>
         <div className="flex gap-2">
-            {canExport && (
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="outline" className="w-full sm:w-auto">
-                        <Download className="mr-2 h-4 w-4" />
-                        Exporter
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={handleExportCsv}>Exporter en CSV</DropdownMenuItem>
-                        <DropdownMenuItem onClick={handleExportJson}>Exporter en JSON</DropdownMenuItem>
-                        <DropdownMenuItem onClick={handleExportSql}>Exporter en SQL</DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            )}
-            <Button onClick={() => setIsSheetOpen(true)}>
+          {canExport && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="w-full sm:w-auto">
+                  <Download className="mr-2 h-4 w-4" />
+                  Exporter
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={handleExportCsv}>Exporter en CSV</DropdownMenuItem>
+                <DropdownMenuItem onClick={handleExportJson}>Exporter en JSON</DropdownMenuItem>
+                <DropdownMenuItem onClick={handleExportSql}>Exporter en SQL</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+          <Button onClick={() => setIsSheetOpen(true)}>
             <PlusCircle className="mr-2 h-4 w-4" />
             Ajouter un Chef
-            </Button>
+          </Button>
         </div>
       </div>
       {canImport && (
@@ -236,12 +237,12 @@ export default function ChiefsPage() {
             </div>
           </div>
 
-           <div className="mb-4 text-sm text-muted-foreground">
-              {filteredChiefs.length} résultat(s) trouvé(s).
-            </div>
+          <div className="mb-4 text-sm text-muted-foreground">
+            {filteredChiefs.length} résultat(s) trouvé(s).
+          </div>
 
           {error && <p className="text-destructive text-center py-4">{error}</p>}
-          
+
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
@@ -285,7 +286,7 @@ export default function ChiefsPage() {
                       <TableCell>
                         <Badge variant="secondary">{chief.role}</Badge>
                       </TableCell>
-                       <TableCell>
+                      <TableCell>
                         <div className="font-medium">{chief.village}</div>
                         <div className="text-sm text-muted-foreground">{chief.region} / {chief.department}</div>
                       </TableCell>
@@ -301,14 +302,14 @@ export default function ChiefsPage() {
                           <DropdownMenuContent align="end">
                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
                             <DropdownMenuItem asChild>
-                                <Link href={`/chiefs/${chief.id}`}>
-                                   <Eye className="mr-2 h-4 w-4" /> Voir les détails
-                                </Link>
+                              <Link href={`/chiefs/${chief.id}`}>
+                                <Eye className="mr-2 h-4 w-4" /> Voir les détails
+                              </Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem asChild>
-                                <Link href={`/chiefs/${chief.id}/edit`}>
-                                   <Pencil className="mr-2 h-4 w-4" /> Modifier
-                                </Link>
+                              <Link href={`/chiefs/${chief.id}/edit`}>
+                                <Pencil className="mr-2 h-4 w-4" /> Modifier
+                              </Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => setDeleteTarget(chief)} className="text-destructive focus:text-destructive">
                               <Trash2 className="mr-2 h-4 w-4" />
@@ -331,19 +332,19 @@ export default function ChiefsPage() {
           )}
         </CardContent>
         {totalPages > 1 && (
-            <CardFooter>
-                <PaginationControls
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={setCurrentPage}
-                    itemsPerPage={itemsPerPage}
-                    onItemsPerPageChange={setItemsPerPage}
-                    totalItems={filteredChiefs.length}
-                />
-            </CardFooter>
+          <CardFooter>
+            <PaginationControls
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+              itemsPerPage={itemsPerPage}
+              onItemsPerPageChange={setItemsPerPage}
+              totalItems={filteredChiefs.length}
+            />
+          </CardFooter>
         )}
       </Card>
-      <AddChiefSheet 
+      <AddChiefSheet
         isOpen={isSheetOpen}
         onClose={() => setIsSheetOpen(false)}
         onAddChief={handleAddChief}

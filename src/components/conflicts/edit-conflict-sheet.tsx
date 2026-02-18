@@ -10,30 +10,30 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetFooter,
-  SheetClose
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetHeader,
+    SheetTitle,
+    SheetFooter,
+    SheetClose
 } from "@/components/ui/sheet";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 
 interface EditConflictSheetProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onUpdateConflict: (id: string, data: Partial<Omit<Conflict, 'id'>>) => Promise<void>;
-  conflict: Conflict | null;
+    isOpen: boolean;
+    onClose: () => void;
+    onUpdateConflict: (id: string, data: Partial<Omit<Conflict, 'id'>>) => Promise<void>;
+    conflict: Conflict | null;
 }
 
 export function EditConflictSheet({ isOpen, onClose, onUpdateConflict, conflict }: EditConflictSheetProps) {
@@ -55,7 +55,7 @@ export function EditConflictSheet({ isOpen, onClose, onUpdateConflict, conflict 
                 toast({ variant: "destructive", title: "Erreur", description: "Impossible de charger la liste des médiateurs." });
             }
         }
-        
+
         if (isOpen) {
             setLoading(true);
             if (conflict) {
@@ -67,12 +67,12 @@ export function EditConflictSheet({ isOpen, onClose, onUpdateConflict, conflict 
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
-        setFormData(prev => (prev ? { ...prev, [name]: value } : null));
+        setFormData(prev => ({ ...prev, [name]: value }));
     };
 
     const handleSelectChange = (name: keyof Conflict, value: string) => {
         const finalValue = value === 'none' ? undefined : value;
-        setFormData(prev => prev ? { ...prev, [name]: finalValue } : null);
+        setFormData(prev => ({ ...prev, [name]: finalValue }));
     };
 
     const handleSave = async (e: React.FormEvent) => {
@@ -86,7 +86,7 @@ export function EditConflictSheet({ isOpen, onClose, onUpdateConflict, conflict 
 
         setIsSaving(true);
         setError(null);
-        
+
         try {
             await onUpdateConflict(conflict.id, formData);
         } catch (error) {
@@ -96,12 +96,12 @@ export function EditConflictSheet({ isOpen, onClose, onUpdateConflict, conflict 
             setIsSaving(false);
         }
     };
-    
+
     if (!conflict) return null;
 
     return (
-         <Sheet open={isOpen} onOpenChange={onClose}>
-             <SheetContent className="sm:max-w-lg">
+        <Sheet open={isOpen} onOpenChange={onClose}>
+            <SheetContent className="sm:max-w-lg">
                 <form onSubmit={handleSave}>
                     <SheetHeader>
                         <SheetTitle>Modifier le Conflit</SheetTitle>
@@ -116,7 +116,7 @@ export function EditConflictSheet({ isOpen, onClose, onUpdateConflict, conflict 
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="type">Type de Conflit</Label>
-                                    <Select value={formData.type} onValueChange={(v: ConflictType) => handleSelectChange('type', v)}>
+                                    <Select value={formData.type || ''} onValueChange={(v: ConflictType) => handleSelectChange('type', v)}>
                                         <SelectTrigger id="type"><SelectValue /></SelectTrigger>
                                         <SelectContent>
                                             {conflictTypes.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
@@ -125,11 +125,11 @@ export function EditConflictSheet({ isOpen, onClose, onUpdateConflict, conflict 
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="description">Description</Label>
-                                    <Textarea id="description" name="description" value={formData.description || ''} onChange={handleInputChange} rows={5}/>
+                                    <Textarea id="description" name="description" value={formData.description || ''} onChange={handleInputChange} rows={5} />
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="status">Statut</Label>
-                                    <Select value={formData.status} onValueChange={(v: Conflict['status']) => handleSelectChange('status', v)}>
+                                    <Select value={formData.status || ''} onValueChange={(v: Conflict['status']) => handleSelectChange('status', v)}>
                                         <SelectTrigger id="status"><SelectValue /></SelectTrigger>
                                         <SelectContent>
                                             {conflictStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
@@ -139,7 +139,7 @@ export function EditConflictSheet({ isOpen, onClose, onUpdateConflict, conflict 
                                 <div className="space-y-2">
                                     <Label htmlFor="mediatorName">Médiateur / Gestionnaire</Label>
                                     <Select value={formData.mediatorName || 'none'} onValueChange={(v) => handleSelectChange('mediatorName', v)}>
-                                        <SelectTrigger id="mediatorName"><SelectValue placeholder="Non assigné"/></SelectTrigger>
+                                        <SelectTrigger id="mediatorName"><SelectValue placeholder="Non assigné" /></SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value="none">Non assigné</SelectItem>
                                             {employees.map(e => <SelectItem key={e.id} value={e.name}>{e.name}</SelectItem>)}
@@ -153,12 +153,12 @@ export function EditConflictSheet({ isOpen, onClose, onUpdateConflict, conflict 
                     <SheetFooter>
                         <SheetClose asChild><Button type="button" variant="outline">Annuler</Button></SheetClose>
                         <Button type="submit" disabled={isSaving || loading}>
-                            {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
+                            {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                             Enregistrer
                         </Button>
                     </SheetFooter>
                 </form>
-             </SheetContent>
-         </Sheet>
+            </SheetContent>
+        </Sheet>
     );
 }

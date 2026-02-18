@@ -48,10 +48,10 @@ export default function EmployeeEditPage() {
         async function fetchEmployee() {
             try {
                 const [data, depts, dirs, svcs] = await Promise.all([
-                  getEmployee(id),
-                  getDepartments(),
-                  getDirections(),
-                  getServices(),
+                    getEmployee(id as string),
+                    getDepartments(),
+                    getDirections(),
+                    getServices(),
                 ]);
                 setEmployee(data);
                 if (data?.photoUrl) {
@@ -77,7 +77,7 @@ export default function EmployeeEditPage() {
         if (!employee?.departmentId) return [];
         return directionList.filter(dir => dir.departmentId === employee.departmentId);
     }, [employee?.departmentId, directionList]);
-        
+
     const filteredServices = useMemo(() => {
         if (employee?.directionId) {
             return serviceList.filter(s => s.directionId === employee.directionId);
@@ -102,7 +102,7 @@ export default function EmployeeEditPage() {
         });
     };
 
-     const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
             setPhotoFile(file);
@@ -116,7 +116,7 @@ export default function EmployeeEditPage() {
 
     const handleSelectChange = (name: string, value: string) => {
         setEmployee(prev => {
-            if(!prev) return null;
+            if (!prev) return null;
             const newState: Partial<Employe> = { ...prev, [name]: value };
             if (name === 'departmentId') {
                 newState.directionId = '';
@@ -139,7 +139,7 @@ export default function EmployeeEditPage() {
                 name: fullName,
                 skills: skillsString.split(',').map(s => s.trim()).filter(s => s)
             };
-            await updateEmployee(id, updatedData, photoFile);
+            await updateEmployee(id as string, updatedData, photoFile);
             toast({ title: "Succès", description: "Les informations de l'employé ont été mises à jour." });
             router.back();
         } catch (error) {
@@ -162,43 +162,43 @@ export default function EmployeeEditPage() {
     }
 
     return (
-         <div className="max-w-4xl mx-auto flex flex-col gap-6">
+        <div className="max-w-4xl mx-auto flex flex-col gap-6">
             <div className="flex items-center gap-4">
-                 <Button variant="outline" size="icon" onClick={() => router.back()}>
+                <Button variant="outline" size="icon" onClick={() => router.back()}>
                     <ArrowLeft className="h-4 w-4" />
                     <span className="sr-only">Retour</span>
-                 </Button>
-                 <div>
+                </Button>
+                <div>
                     <h1 className="text-2xl font-bold tracking-tight">Modifier l'Employé</h1>
                     <p className="text-muted-foreground">{fullName}</p>
-                 </div>
-                 <Button onClick={handleSave} disabled={isSaving} className="ml-auto">
-                    {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4" />}
+                </div>
+                <Button onClick={handleSave} disabled={isSaving} className="ml-auto">
+                    {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                     Enregistrer
                 </Button>
             </div>
-            
+
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Personal Info */}
                 <Card className="lg:col-span-3">
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2"><User className="h-5 w-5 text-primary"/> Informations Personnelles</CardTitle>
+                        <CardTitle className="flex items-center gap-2"><User className="h-5 w-5 text-primary" /> Informations Personnelles</CardTitle>
                     </CardHeader>
                     <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                           <Label>Photo</Label>
+                            <Label>Photo</Label>
                             <div className="flex items-center gap-4">
-                                 <Avatar className="h-20 w-20">
+                                <Avatar className="h-20 w-20">
                                     <AvatarImage src={photoPreview} alt={employee.name} data-ai-hint="employee photo" />
                                     <AvatarFallback>{employee.name?.charAt(0) || 'E'}</AvatarFallback>
-                                 </Avatar>
-                                 <Button type="button" variant="outline" onClick={() => photoInputRef.current?.click()}>
+                                </Avatar>
+                                <Button type="button" variant="outline" onClick={() => photoInputRef.current?.click()}>
                                     <Upload className="mr-2 h-4 w-4" /> Changer
-                                 </Button>
-                                 <Input ref={photoInputRef} type="file" className="hidden" accept="image/*" onChange={handlePhotoChange}/>
+                                </Button>
+                                <Input ref={photoInputRef} type="file" className="hidden" accept="image/*" onChange={handlePhotoChange} />
                             </div>
                         </div>
-                         <div />
+                        <div />
                         <div className="space-y-2">
                             <Label htmlFor="lastName">Nom</Label>
                             <Input id="lastName" name="lastName" value={employee.lastName || ''} onChange={handleInputChange} />
@@ -224,8 +224,20 @@ export default function EmployeeEditPage() {
                             <Input id="mobile" name="mobile" value={employee.mobile || ''} onChange={handleInputChange} />
                         </div>
                         <div className="space-y-2">
+                            <Label htmlFor="situationMatrimoniale">Situation Matrimoniale</Label>
+                            <Select name="situationMatrimoniale" value={employee.situationMatrimoniale || ''} onValueChange={(v) => handleSelectChange('situationMatrimoniale', v)}>
+                                <SelectTrigger><SelectValue placeholder="Sélectionnez..." /></SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="Célibataire">Célibataire</SelectItem>
+                                    <SelectItem value="Marié(e)">Marié(e)</SelectItem>
+                                    <SelectItem value="Divorcé(e)">Divorcé(e)</SelectItem>
+                                    <SelectItem value="Veuf(ve)">Veuf(ve)</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
                             <Label htmlFor="sexe">Sexe</Label>
-                             <Select name="sexe" value={employee.sexe || ''} onValueChange={(v) => handleSelectChange('sexe', v)}>
+                            <Select name="sexe" value={employee.sexe || ''} onValueChange={(v) => handleSelectChange('sexe', v)}>
                                 <SelectTrigger><SelectValue placeholder="Sélectionnez..." /></SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="Homme">Homme</SelectItem>
@@ -238,11 +250,11 @@ export default function EmployeeEditPage() {
                             <Label htmlFor="enfants">Nombre d'enfants</Label>
                             <Input id="enfants" name="enfants" type="number" value={employee.enfants ?? ''} onChange={handleNumberInputChange} />
                         </div>
-                         <div className="space-y-2">
+                        <div className="space-y-2">
                             <Label htmlFor="Region">Région</Label>
                             <Input id="Region" name="Region" value={employee.Region || ''} onChange={handleInputChange} />
                         </div>
-                         <div className="space-y-2">
+                        <div className="space-y-2">
                             <Label htmlFor="Village">Village</Label>
                             <Input id="Village" name="Village" value={employee.Village || ''} onChange={handleInputChange} />
                         </div>
@@ -252,9 +264,9 @@ export default function EmployeeEditPage() {
                 {/* Professional Info */}
                 <Card className="lg:col-span-3">
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2"><Briefcase className="h-5 w-5 text-primary"/> Informations Professionnelles</CardTitle>
+                        <CardTitle className="flex items-center gap-2"><Briefcase className="h-5 w-5 text-primary" /> Informations Professionnelles</CardTitle>
                     </CardHeader>
-                     <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div className="space-y-2">
                             <Label htmlFor="matricule">Matricule</Label>
                             <Input id="matricule" name="matricule" value={employee.matricule || ''} onChange={handleInputChange} />
@@ -263,7 +275,7 @@ export default function EmployeeEditPage() {
                             <Label htmlFor="poste">Poste</Label>
                             <Input id="poste" name="poste" value={employee.poste || ''} onChange={handleInputChange} />
                         </div>
-                         <div className="space-y-2">
+                        <div className="space-y-2">
                             <Label htmlFor="dateEmbauche">Date d'embauche</Label>
                             <Input id="dateEmbauche" name="dateEmbauche" type="date" value={employee.dateEmbauche || ''} onChange={handleInputChange} />
                         </div>
@@ -298,9 +310,9 @@ export default function EmployeeEditPage() {
                                 </SelectContent>
                             </Select>
                         </div>
-                         <div className="space-y-2">
+                        <div className="space-y-2">
                             <Label htmlFor="status">Statut</Label>
-                             <Select name="status" value={employee.status || ''} onValueChange={(v) => handleSelectChange('status', v)}>
+                            <Select name="status" value={employee.status || ''} onValueChange={(v) => handleSelectChange('status', v)}>
                                 <SelectTrigger><SelectValue placeholder="Sélectionnez..." /></SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="Actif">Actif</SelectItem>
@@ -311,27 +323,56 @@ export default function EmployeeEditPage() {
                                 </SelectContent>
                             </Select>
                         </div>
-                         <div className="space-y-2">
+                        <div className="space-y-2">
                             <Label htmlFor="Date_Depart">Date de départ</Label>
                             <Input id="Date_Depart" name="Date_Depart" type="date" value={employee.Date_Depart || ''} onChange={handleInputChange} />
                         </div>
                     </CardContent>
                 </Card>
 
-                {/* Skills */}
-                 <Card className="lg:col-span-3">
+                {/* Bank Info */}
+                <Card className="lg:col-span-3">
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2"><BadgeCheck className="h-5 w-5 text-primary"/> Compétences</CardTitle>
+                        <CardTitle className="flex items-center gap-2"><MapPin className="h-5 w-5 text-primary" /> Coordonnées Bancaires</CardTitle>
+                    </CardHeader>
+                    <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="banque">Banque</Label>
+                            <Input id="banque" name="banque" value={employee.banque || ''} onChange={handleInputChange} />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="CB">Code Banque</Label>
+                            <Input id="CB" name="CB" value={employee.CB || ''} onChange={handleInputChange} />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="CG">Code Guichet</Label>
+                            <Input id="CG" name="CG" value={employee.CG || ''} onChange={handleInputChange} />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="numeroCompte">Numéro de Compte</Label>
+                            <Input id="numeroCompte" name="numeroCompte" value={employee.numeroCompte || ''} onChange={handleInputChange} />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="Cle_RIB">Clé RIB</Label>
+                            <Input id="Cle_RIB" name="Cle_RIB" value={employee.Cle_RIB || ''} onChange={handleInputChange} />
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* Skills */}
+                <Card className="lg:col-span-3">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2"><BadgeCheck className="h-5 w-5 text-primary" /> Compétences</CardTitle>
                         <CardDescription>Séparez les compétences par une virgule.</CardDescription>
                     </CardHeader>
-                     <CardContent>
-                         <Textarea 
+                    <CardContent>
+                        <Textarea
                             name="skills"
                             value={skillsString}
                             onChange={(e) => setSkillsString(e.target.value)}
                             rows={3}
                             placeholder="Gestion de projet, Leadership, Communication..."
-                         />
+                        />
                     </CardContent>
                 </Card>
             </div>
@@ -341,7 +382,7 @@ export default function EmployeeEditPage() {
 
 function EmployeeEditSkeleton() {
     return (
-         <div className="max-w-4xl mx-auto flex flex-col gap-6">
+        <div className="max-w-4xl mx-auto flex flex-col gap-6">
             <div className="flex items-center gap-4">
                 <Skeleton className="h-10 w-10" />
                 <div className="space-y-2">
@@ -360,7 +401,7 @@ function EmployeeEditSkeleton() {
                         <Skeleton className="h-16 w-full" />
                     </CardContent>
                 </Card>
-                 <Card className="lg:col-span-3">
+                <Card className="lg:col-span-3">
                     <CardHeader><Skeleton className="h-6 w-1/3" /></CardHeader>
                     <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <Skeleton className="h-16 w-full" />
@@ -369,7 +410,7 @@ function EmployeeEditSkeleton() {
                         <Skeleton className="h-16 w-full" />
                     </CardContent>
                 </Card>
-                 <Card className="lg:col-span-3">
+                <Card className="lg:col-span-3">
                     <CardHeader><Skeleton className="h-6 w-1/3" /></CardHeader>
                     <CardContent>
                         <Skeleton className="h-24 w-full" />

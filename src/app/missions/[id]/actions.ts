@@ -23,15 +23,19 @@ export async function generateMissionOrderAction(mission: Mission): Promise<{ do
         for (const participant of mission.participants) {
             const employeesWithName = await searchEmployees(participant.employeeName);
             const employeeDetails = employeesWithName.length > 0 ? employeesWithName[0] : null;
-            
+
             const totalFrais = (participant.totalIndemnites || 0) + (participant.coutTransport || 0) + (participant.coutHebergement || 0);
 
-             const input = {
+            const input = {
                 documentType: 'Ordre de Mission' as const,
                 documentContent: mission.description,
                 employeeContext: {
+                    signerName: "Le Directeur",
+                    signerTitle: "Directeur Général",
+                    villeRedaction: "Abidjan",
+                    imputationBudgetaire: "Budget 2024",
                     numeroMission: participant.numeroOrdre || mission.numeroMission,
-                    missionType: "(REGULARISATION)", 
+                    missionType: "(REGULARISATION)",
                     name: participant.employeeName,
                     poste: employeeDetails?.poste || 'N/A',
                     destination: mission.lieuMission,
@@ -87,4 +91,4 @@ export async function deleteMissionAction(missionId: string): Promise<void> {
     await deleteMission(missionId);
 }
 
-    
+

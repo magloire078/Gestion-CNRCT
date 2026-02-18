@@ -1,0 +1,23 @@
+﻿src/app/chiefs/[id]/edit/page.tsx(114,45): error TS2345: Argument of type '{ name: string; languages: string; id?: string | undefined; lastName?: string | undefined; firstName?: string | undefined; title?: string | undefined; role?: ChiefRole | undefined; designationDate?: string | undefined; ... 21 more ...; regencyEndDate?: string | undefined; }' is not assignable to parameter of type 'Partial<Omit<Chief, "id">>'.
+  Types of property 'languages' are incompatible.
+    Type 'string' is not assignable to type 'string[]'.
+src/app/chiefs/page.tsx(179,51): error TS2345: Argument of type 'string | number | string[] | null | undefined' is not assignable to parameter of type 'string | number | null | undefined'.
+  Type 'string[]' is not assignable to type 'string | number | null | undefined'.
+src/app/documents/actions.ts(83,9): error TS2739: Type 'Record<string, any>' is missing the following properties from type '{ signerName: string; signerTitle: string; villeRedaction: string; imputationBudgetaire: string; name?: string | undefined; matricule?: string | undefined; poste?: string | undefined; ... 21 more ...; totalFraisMission?: number | undefined; }': signerName, signerTitle, villeRedaction, imputationBudgetaire
+src/app/leave/page.tsx(113,35): error TS2345: Argument of type 'Status' is not assignable to parameter of type '"Approuv├®" | "Rejet├®"'.
+  Type '"En attente"' is not assignable to type '"Approuv├®" | "Rejet├®"'.
+src/app/missions/[id]/actions.ts(50,51): error TS2345: Argument of type '{ documentType: "Ordre de Mission"; documentContent: string; employeeContext: { numeroMission: string; missionType: string; name: string; poste: string; destination: string | undefined; ... 8 more ...; totalFraisMission: number; }; }' is not assignable to parameter of type '{ documentType: string; documentContent: string; employeeContext?: { signerName: string; signerTitle: string; villeRedaction: string; imputationBudgetaire: string; name?: string | undefined; ... 23 more ...; totalFraisMission?: number | undefined; } | undefined; }'.
+  Types of property 'employeeContext' are incompatible.
+    Type '{ numeroMission: string; missionType: string; name: string; poste: string; destination: string | undefined; objetMission: string; moyenTransport: "V├®hicule personnel" | "V├®hicule CNRCT" | undefined; ... 6 more ...; totalFraisMission: number; }' is missing the following properties from type '{ signerName: string; signerTitle: string; villeRedaction: string; imputationBudgetaire: string; name?: string | undefined; matricule?: string | undefined; poste?: string | undefined; ... 21 more ...; totalFraisMission?: number | undefined; }': signerName, signerTitle, villeRedaction, imputationBudgetaire
+src/app/missions/[id]/edit/page.tsx(238,78): error TS2322: Type '(value: MissionParticipant["moyenTransport"]) => void' is not assignable to type '(value: string) => void'.
+  Types of parameters 'value' and 'value' are incompatible.
+    Type 'string' is not assignable to type '"V├®hicule personnel" | "V├®hicule CNRCT" | undefined'.
+src/app/reports/disa/page.tsx(54,42): error TS2345: Argument of type 'number' is not assignable to parameter of type 'Month'.
+src/app/reports/nominative/page.tsx(121,66): error TS2345: Argument of type 'number' is not assignable to parameter of type 'Month'.
+src/app/reports/nominative/page.tsx(125,68): error TS2345: Argument of type 'number' is not assignable to parameter of type 'Month'.
+src/app/reports/nominative/page.tsx(128,64): error TS2345: Argument of type 'number' is not assignable to parameter of type 'Month'.
+src/components/helpdesk/add-ticket-sheet.tsx(76,9): error TS2353: Object literal may only specify known properties, and 'status' does not exist in type 'Omit<Ticket, "status" | "id" | "createdAt" | "updatedAt">'.
+src/components/payroll/edit-payroll-sheet.tsx(99,28): error TS18048: 'sum' is possibly 'undefined'.
+src/components/payroll/edit-payroll-sheet.tsx(101,53): error TS18048: 'otherIndemnities' is possibly 'undefined'.
+src/components/payroll/edit-payroll-sheet.tsx(143,28): error TS18048: 'sum' is possibly 'undefined'.
+src/components/payroll/edit-payroll-sheet.tsx(153,66): error TS18048: 'otherIndemnities' is possibly 'undefined'.

@@ -62,16 +62,16 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
   }, [employee]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const { id, value, type } = e.target;
-      setFormState(prev => ({ ...prev, [id]: type === 'number' ? parseFloat(value) || 0 : value }));
+    const { id, value, type } = e.target;
+    setFormState(prev => ({ ...prev, [id]: type === 'number' ? parseFloat(value) || 0 : value }));
   };
 
   const handleCheckboxChange = (id: string, checked: boolean) => {
-      setFormState(prev => ({ ...prev, [id]: checked }));
+    setFormState(prev => ({ ...prev, [id]: checked }));
   }
 
   const handleSelectChange = (id: string, value: string) => {
-      setFormState(prev => ({ ...prev, [id]: value }));
+    setFormState(prev => ({ ...prev, [id]: value }));
   };
 
   const seniorityInfo = useMemo(() => {
@@ -87,90 +87,90 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
 
   const { brutImposable, netAPayer, cnpsEmploye, cnpsEmployeur, baseCalculCotisations, primeAncienneteValue } = useMemo(() => {
     const baseSalary = formState.baseSalary || 0;
-    
+
     let primeAnciennete = formState.primeAnciennete || 0;
     if (seniorityInfo.years >= 2 && !formState.primeAnciennete) {
-        primeAnciennete = baseSalary * (primeAncienneteRate / 100);
+      primeAnciennete = baseSalary * (primeAncienneteRate / 100);
     }
-    
+
     const otherIndemnities = [
-        formState.indemniteTransportImposable, formState.indemniteSujetion, formState.indemniteCommunication, 
-        formState.indemniteRepresentation, formState.indemniteResponsabilite, formState.indemniteLogement
-    ].reduce((sum, val) => sum + (val || 0), 0);
+      formState.indemniteTransportImposable, formState.indemniteSujetion, formState.indemniteCommunication,
+      formState.indemniteRepresentation, formState.indemniteResponsabilite, formState.indemniteLogement
+    ].reduce((sum: number, val) => sum + (val || 0), 0);
 
     const earnings = baseSalary + primeAnciennete + otherIndemnities;
-    
+
     const transportNonImposable = formState.transportNonImposable || 0;
     const brutTotal = earnings + transportNonImposable;
 
     const cnpsBase = earnings;
     const cnpsEmployeCalc = formState.CNPS ? cnpsBase * 0.063 : 0;
     const cnpsEmployeurCalc = formState.CNPS ? cnpsBase * 0.138 : 0;
-    
+
     const its = 0;
     const igr = 0;
     const cn = 0;
     const totalDeductions = cnpsEmployeCalc + its + igr + cn;
 
     const net = earnings + transportNonImposable - totalDeductions;
-    
-    return { 
-        brutImposable: earnings, 
-        netAPayer: net,
-        cnpsEmploye: cnpsEmployeCalc,
-        cnpsEmployeur: cnpsEmployeurCalc,
-        baseCalculCotisations: brutTotal,
-        primeAncienneteValue: primeAnciennete,
+
+    return {
+      brutImposable: earnings,
+      netAPayer: net,
+      cnpsEmploye: cnpsEmployeCalc,
+      cnpsEmployeur: cnpsEmployeurCalc,
+      baseCalculCotisations: brutTotal,
+      primeAncienneteValue: primeAnciennete,
     };
   }, [formState, seniorityInfo.years, primeAncienneteRate]);
 
   const handleSimulation = () => {
     const netTarget = typeof desiredNetSalary === 'string' ? parseFloat(desiredNetSalary) : desiredNetSalary;
     if (!netTarget || netTarget <= 0) {
-        toast({
-            variant: "destructive",
-            title: "Valeur Invalide",
-            description: "Veuillez entrer un salaire net valide pour la simulation."
-        });
-        return;
+      toast({
+        variant: "destructive",
+        title: "Valeur Invalide",
+        description: "Veuillez entrer un salaire net valide pour la simulation."
+      });
+      return;
     }
 
     setOriginalBaseSalary(formState.baseSalary || 0);
-    
+
     const otherIndemnities = [
-        formState.indemniteTransportImposable, formState.indemniteSujetion, formState.indemniteCommunication,
-        formState.indemniteRepresentation, formState.indemniteResponsabilite, formState.indemniteLogement
-    ].reduce((sum, val) => sum + (val || 0), 0);
-    
+      formState.indemniteTransportImposable, formState.indemniteSujetion, formState.indemniteCommunication,
+      formState.indemniteRepresentation, formState.indemniteResponsabilite, formState.indemniteLogement
+    ].reduce((sum, val) => (sum ?? 0) + (val || 0), 0);
+
     const transportNonImposable = formState.transportNonImposable || 0;
     const cnpsRate = formState.CNPS ? 0.063 : 0;
-    
+
     const primeRate = primeAncienneteRate / 100;
 
     let baseSalary = 0;
     const denominator = (1 + primeRate) * (1 - cnpsRate);
     if (denominator > 0) {
-        const numerator = (netTarget - transportNonImposable) - (otherIndemnities * (1-cnpsRate));
-        baseSalary = numerator / denominator;
+      const numerator = (netTarget - transportNonImposable) - ((otherIndemnities ?? 0) * (1 - cnpsRate));
+      baseSalary = numerator / denominator;
     }
 
     if (baseSalary < 0) {
-        toast({
-            variant: "destructive",
-            title: "Calcul Impossible",
-            description: "Le salaire net souhaité est trop bas pour couvrir les indemnités. Le salaire de base serait négatif."
-        });
-        setOriginalBaseSalary(null); // Cancel the simulation state change
-        return;
+      toast({
+        variant: "destructive",
+        title: "Calcul Impossible",
+        description: "Le salaire net souhaité est trop bas pour couvrir les indemnités. Le salaire de base serait négatif."
+      });
+      setOriginalBaseSalary(null); // Cancel the simulation state change
+      return;
     }
 
-    setFormState(prev => ({...prev, baseSalary: Math.round(baseSalary), primeAnciennete: 0 }));
+    setFormState(prev => ({ ...prev, baseSalary: Math.round(baseSalary), primeAnciennete: 0 }));
     toast({
-        title: "Simulation Réussie",
-        description: `Le salaire de base a été ajusté à ${formatCurrency(Math.round(baseSalary))}.`
+      title: "Simulation Réussie",
+      description: `Le salaire de base a été ajusté à ${formatCurrency(Math.round(baseSalary))}.`
     });
   }
-  
+
   const handleRevertSalary = () => {
     if (originalBaseSalary !== null) {
       setFormState(prev => ({ ...prev, baseSalary: originalBaseSalary }));
@@ -192,14 +192,14 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
       setError("Le salaire de base est obligatoire pour les employés déclarés à la CNPS.");
       return;
     }
-    
+
     setIsSubmitting(true);
     setError("");
 
     try {
       await onUpdatePayroll(employee.id, { ...formState, payFrequency: 'Mensuel' });
       onClose();
-    } catch(err) {
+    } catch (err) {
       setError(err instanceof Error ? err.message : "Échec de la mise à jour de l'entrée de paie.");
     } finally {
       setIsSubmitting(false);
@@ -217,194 +217,194 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4 max-h-[70vh] overflow-y-auto pr-4">
-             <Accordion type="single" collapsible defaultValue="item-1" className="w-full">
-                <AccordionItem value="item-1">
-                    <AccordionTrigger>Informations Générales</AccordionTrigger>
-                    <AccordionContent className="space-y-4 pt-2">
-                        <div className="space-y-2">
-                            <Label>Employé</Label>
-                            <p className="font-medium text-muted-foreground">{`${employee.lastName || ''} ${employee.firstName || ''}`.trim()}</p>
-                        </div>
-                        <div className="space-y-2">
-                           <Label>Fréquence de Paie</Label>
-                           <Input value="Mensuel" readOnly className="bg-muted" />
-                        </div>
-                    </AccordionContent>
-                </AccordionItem>
-                <AccordionItem value="item-2">
-                    <AccordionTrigger>Gains & Indemnités</AccordionTrigger>
-                    <AccordionContent className="space-y-4 pt-2">
-                        <div className="p-4 border rounded-md bg-muted/50 space-y-2">
-                            <Label htmlFor="netSimulator">Simuler à partir du Net</Label>
-                            <div className="flex gap-2">
-                                <Input 
-                                    id="netSimulator" 
-                                    type="number" 
-                                    placeholder="Entrez le net souhaité..." 
-                                    value={desiredNetSalary}
-                                    onChange={(e) => setDesiredNetSalary(e.target.value)}
-                                />
-                                <Button type="button" variant="secondary" onClick={handleSimulation}>
-                                    <Calculator className="mr-2 h-4 w-4"/>
-                                    Calculer
-                                </Button>
-                            </div>
-                        </div>
+            <Accordion type="single" collapsible defaultValue="item-1" className="w-full">
+              <AccordionItem value="item-1">
+                <AccordionTrigger>Informations Générales</AccordionTrigger>
+                <AccordionContent className="space-y-4 pt-2">
+                  <div className="space-y-2">
+                    <Label>Employé</Label>
+                    <p className="font-medium text-muted-foreground">{`${employee.lastName || ''} ${employee.firstName || ''}`.trim()}</p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Fréquence de Paie</Label>
+                    <Input value="Mensuel" readOnly className="bg-muted" />
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="item-2">
+                <AccordionTrigger>Gains & Indemnités</AccordionTrigger>
+                <AccordionContent className="space-y-4 pt-2">
+                  <div className="p-4 border rounded-md bg-muted/50 space-y-2">
+                    <Label htmlFor="netSimulator">Simuler à partir du Net</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="netSimulator"
+                        type="number"
+                        placeholder="Entrez le net souhaité..."
+                        value={desiredNetSalary}
+                        onChange={(e) => setDesiredNetSalary(e.target.value)}
+                      />
+                      <Button type="button" variant="secondary" onClick={handleSimulation}>
+                        <Calculator className="mr-2 h-4 w-4" />
+                        Calculer
+                      </Button>
+                    </div>
+                  </div>
 
-                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            <div className="space-y-2">
-                                <div className="flex justify-between items-center">
-                                    <Label htmlFor="baseSalary">Salaire de Base</Label>
-                                    {originalBaseSalary !== null && (
-                                        <Button type="button" variant="link" size="sm" className="h-auto p-0 pl-2 text-xs" onClick={handleRevertSalary}>
-                                            <Undo2 className="mr-1 h-3 w-3" /> Rétablir
-                                        </Button>
-                                    )}
-                                </div>
-                                <Input id="baseSalary" type="number" value={formState.baseSalary || 0} onChange={handleInputChange} />
-                                {originalBaseSalary !== null && (
-                                     <p className="text-xs text-muted-foreground line-through">{formatCurrency(originalBaseSalary)}</p>
-                                )}
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="primeAnciennete">Prime Ancienneté</Label>
-                                <Input id="primeAnciennete" type="number" value={formState.primeAnciennete || 0} onChange={handleInputChange} />
-                                {primeAncienneteRate > 0 && <p className="text-xs text-muted-foreground">Auto-calculée: {formatCurrency(primeAncienneteValue)} ({primeAncienneteRate}%)</p>}
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="indemniteTransportImposable">Ind. Transport (Imposable)</Label>
-                                <Input id="indemniteTransportImposable" type="number" value={formState.indemniteTransportImposable || 0} onChange={handleInputChange} />
-                            </div>
-                             <div className="space-y-2">
-                                <Label htmlFor="indemniteSujetion">Ind. Sujétion</Label>
-                                <Input id="indemniteSujetion" type="number" value={formState.indemniteSujetion || 0} onChange={handleInputChange} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="indemniteCommunication">Ind. Communication</Label>
-                                <Input id="indemniteCommunication" type="number" value={formState.indemniteCommunication || 0} onChange={handleInputChange} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="indemniteRepresentation">Ind. Représentation</Label>
-                                <Input id="indemniteRepresentation" type="number" value={formState.indemniteRepresentation || 0} onChange={handleInputChange} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="indemniteResponsabilite">Ind. Responsabilité</Label>
-                                <Input id="indemniteResponsabilite" type="number" value={formState.indemniteResponsabilite || 0} onChange={handleInputChange} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="indemniteLogement">Ind. Logement</Label>
-                                <Input id="indemniteLogement" type="number" value={formState.indemniteLogement || 0} onChange={handleInputChange} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="transportNonImposable">Transport (Non Imposable)</Label>
-                                <Input id="transportNonImposable" type="number" value={formState.transportNonImposable || 0} onChange={handleInputChange} />
-                            </div>
-                        </div>
-                    </AccordionContent>
-                </AccordionItem>
-                <AccordionItem value="item-4">
-                     <AccordionTrigger>Cotisations & Totaux (Estimations)</AccordionTrigger>
-                     <AccordionContent className="space-y-4 pt-2">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            <div className="space-y-2">
-                                <Label>CNPS Employé</Label>
-                                <Input value={formatCurrency(cnpsEmploye)} readOnly className="font-mono bg-muted" />
-                            </div>
-                            <div className="space-y-2">
-                                <Label>CNPS Employeur</Label>
-                                <Input value={formatCurrency(cnpsEmployeur)} readOnly className="font-mono bg-muted" />
-                            </div>
-                            <div className="space-y-2">
-                                <Label>Base de calcul</Label>
-                                <Input value={formatCurrency(baseCalculCotisations)} readOnly className="font-mono bg-muted" />
-                            </div>
-                        </div>
-                        <div className="mt-4 pt-4 border-t grid grid-cols-1 md:grid-cols-2 gap-4">
-                           <div className="space-y-2">
-                                <Label>Salaire Brut Imposable</Label>
-                                <Input value={formatCurrency(brutImposable)} readOnly className="font-bold bg-muted" />
-                            </div>
-                             <div className="space-y-2">
-                                <Label>Net à Payer</Label>
-                                <Input value={formatCurrency(netAPayer)} readOnly className="font-bold bg-muted" />
-                            </div>
-                        </div>
-                     </AccordionContent>
-                </AccordionItem>
-                 <AccordionItem value="item-3">
-                    <AccordionTrigger>Détails du Bulletin de Paie</AccordionTrigger>
-                    <AccordionContent className="space-y-4 pt-2">
-                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                             <div className="flex items-center space-x-2 md:col-span-2">
-                                <Checkbox 
-                                    id="CNPS" 
-                                    checked={formState.CNPS || false} 
-                                    onCheckedChange={(checked) => handleCheckboxChange('CNPS', Boolean(checked))}
-                                />
-                                <Label htmlFor="CNPS">Enregistré à la CNPS</Label>
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="cnpsEmployeur">CNPS Employeur</Label>
-                                <Input id="cnpsEmployeur" value={formState.cnpsEmployeur || ''} onChange={handleInputChange} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="cnpsEmploye">CNPS Employé</Label>
-                                <Input id="cnpsEmploye" value={formState.cnpsEmploye || ''} onChange={handleInputChange} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="situationMatrimoniale">Sit. Maritale</Label>
-                                <Input id="situationMatrimoniale" value={formState.situationMatrimoniale || ''} onChange={handleInputChange} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="enfants">Enfants</Label>
-                                <Input id="enfants" type="number" value={formState.enfants || 0} onChange={handleInputChange} />
-                            </div>
-                         </div>
-                         <div className="pt-4 mt-4 border-t">
-                             <h4 className="text-sm font-medium mb-2">Informations Bancaires</h4>
-                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-2 md:col-span-2">
-                                    <Label htmlFor="banque">Banque</Label>
-                                    <Input id="banque" value={formState.banque || ''} onChange={handleInputChange} />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="CB">Code Banque</Label>
-                                    <Input id="CB" type="text" value={formState.CB || ''} onChange={handleInputChange} />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="CG">Code Guichet</Label>
-                                    <Input id="CG" type="text" value={formState.CG || ''} onChange={handleInputChange} />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="numeroCompte">N° Compte</Label>
-                                    <Input id="numeroCompte" type="text" value={formState.numeroCompte || ''} onChange={handleInputChange} />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="Cle_RIB">Clé RIB</Label>
-                                    <Input id="Cle_RIB" type="text" value={formState.Cle_RIB || ''} onChange={handleInputChange} />
-                                </div>
-                             </div>
-                         </div>
-                         <div className="pt-4 mt-4 border-t grid grid-cols-1 md:grid-cols-2 gap-4">
-                             <div className="space-y-2">
-                                <Label htmlFor="anciennete">Ancienneté</Label>
-                                <Input id="anciennete" value={seniorityInfo.text} readOnly className="font-mono bg-muted" />
-                            </div>
-                             <div className="space-y-2">
-                                <Label htmlFor="categorie">Catégorie</Label>
-                                <Input id="categorie" value={formState.categorie || ''} onChange={handleInputChange} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="parts">Parts</Label>
-                                <Input id="parts" type="number" step="0.5" value={formState.parts || 0} onChange={handleInputChange} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="dateEmbauche">Date d'embauche</Label>
-                                <Input id="dateEmbauche" type="date" value={formState.dateEmbauche || ''} onChange={handleInputChange} />
-                            </div>
-                         </div>
-                    </AccordionContent>
-                </AccordionItem>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <Label htmlFor="baseSalary">Salaire de Base</Label>
+                        {originalBaseSalary !== null && (
+                          <Button type="button" variant="link" size="sm" className="h-auto p-0 pl-2 text-xs" onClick={handleRevertSalary}>
+                            <Undo2 className="mr-1 h-3 w-3" /> Rétablir
+                          </Button>
+                        )}
+                      </div>
+                      <Input id="baseSalary" type="number" value={formState.baseSalary || 0} onChange={handleInputChange} />
+                      {originalBaseSalary !== null && (
+                        <p className="text-xs text-muted-foreground line-through">{formatCurrency(originalBaseSalary)}</p>
+                      )}
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="primeAnciennete">Prime Ancienneté</Label>
+                      <Input id="primeAnciennete" type="number" value={formState.primeAnciennete || 0} onChange={handleInputChange} />
+                      {primeAncienneteRate > 0 && <p className="text-xs text-muted-foreground">Auto-calculée: {formatCurrency(primeAncienneteValue)} ({primeAncienneteRate}%)</p>}
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="indemniteTransportImposable">Ind. Transport (Imposable)</Label>
+                      <Input id="indemniteTransportImposable" type="number" value={formState.indemniteTransportImposable || 0} onChange={handleInputChange} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="indemniteSujetion">Ind. Sujétion</Label>
+                      <Input id="indemniteSujetion" type="number" value={formState.indemniteSujetion || 0} onChange={handleInputChange} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="indemniteCommunication">Ind. Communication</Label>
+                      <Input id="indemniteCommunication" type="number" value={formState.indemniteCommunication || 0} onChange={handleInputChange} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="indemniteRepresentation">Ind. Représentation</Label>
+                      <Input id="indemniteRepresentation" type="number" value={formState.indemniteRepresentation || 0} onChange={handleInputChange} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="indemniteResponsabilite">Ind. Responsabilité</Label>
+                      <Input id="indemniteResponsabilite" type="number" value={formState.indemniteResponsabilite || 0} onChange={handleInputChange} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="indemniteLogement">Ind. Logement</Label>
+                      <Input id="indemniteLogement" type="number" value={formState.indemniteLogement || 0} onChange={handleInputChange} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="transportNonImposable">Transport (Non Imposable)</Label>
+                      <Input id="transportNonImposable" type="number" value={formState.transportNonImposable || 0} onChange={handleInputChange} />
+                    </div>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="item-4">
+                <AccordionTrigger>Cotisations & Totaux (Estimations)</AccordionTrigger>
+                <AccordionContent className="space-y-4 pt-2">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label>CNPS Employé</Label>
+                      <Input value={formatCurrency(cnpsEmploye)} readOnly className="font-mono bg-muted" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>CNPS Employeur</Label>
+                      <Input value={formatCurrency(cnpsEmployeur)} readOnly className="font-mono bg-muted" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Base de calcul</Label>
+                      <Input value={formatCurrency(baseCalculCotisations)} readOnly className="font-mono bg-muted" />
+                    </div>
+                  </div>
+                  <div className="mt-4 pt-4 border-t grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Salaire Brut Imposable</Label>
+                      <Input value={formatCurrency(brutImposable)} readOnly className="font-bold bg-muted" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Net à Payer</Label>
+                      <Input value={formatCurrency(netAPayer)} readOnly className="font-bold bg-muted" />
+                    </div>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="item-3">
+                <AccordionTrigger>Détails du Bulletin de Paie</AccordionTrigger>
+                <AccordionContent className="space-y-4 pt-2">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex items-center space-x-2 md:col-span-2">
+                      <Checkbox
+                        id="CNPS"
+                        checked={formState.CNPS || false}
+                        onCheckedChange={(checked) => handleCheckboxChange('CNPS', Boolean(checked))}
+                      />
+                      <Label htmlFor="CNPS">Enregistré à la CNPS</Label>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="cnpsEmployeur">CNPS Employeur</Label>
+                      <Input id="cnpsEmployeur" value={formState.cnpsEmployeur || ''} onChange={handleInputChange} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="cnpsEmploye">CNPS Employé</Label>
+                      <Input id="cnpsEmploye" value={formState.cnpsEmploye || ''} onChange={handleInputChange} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="situationMatrimoniale">Sit. Maritale</Label>
+                      <Input id="situationMatrimoniale" value={formState.situationMatrimoniale || ''} onChange={handleInputChange} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="enfants">Enfants</Label>
+                      <Input id="enfants" type="number" value={formState.enfants || 0} onChange={handleInputChange} />
+                    </div>
+                  </div>
+                  <div className="pt-4 mt-4 border-t">
+                    <h4 className="text-sm font-medium mb-2">Informations Bancaires</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2 md:col-span-2">
+                        <Label htmlFor="banque">Banque</Label>
+                        <Input id="banque" value={formState.banque || ''} onChange={handleInputChange} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="CB">Code Banque</Label>
+                        <Input id="CB" type="text" value={formState.CB || ''} onChange={handleInputChange} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="CG">Code Guichet</Label>
+                        <Input id="CG" type="text" value={formState.CG || ''} onChange={handleInputChange} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="numeroCompte">N° Compte</Label>
+                        <Input id="numeroCompte" type="text" value={formState.numeroCompte || ''} onChange={handleInputChange} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="Cle_RIB">Clé RIB</Label>
+                        <Input id="Cle_RIB" type="text" value={formState.Cle_RIB || ''} onChange={handleInputChange} />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="pt-4 mt-4 border-t grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="anciennete">Ancienneté</Label>
+                      <Input id="anciennete" value={seniorityInfo.text} readOnly className="font-mono bg-muted" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="categorie">Catégorie</Label>
+                      <Input id="categorie" value={formState.categorie || ''} onChange={handleInputChange} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="parts">Parts</Label>
+                      <Input id="parts" type="number" step="0.5" value={formState.parts || 0} onChange={handleInputChange} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="dateEmbauche">Date d'embauche</Label>
+                      <Input id="dateEmbauche" type="date" value={formState.dateEmbauche || ''} onChange={handleInputChange} />
+                    </div>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
             </Accordion>
 
             {error && <p className="text-sm text-destructive text-center pt-2">{error}</p>}

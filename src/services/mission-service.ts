@@ -1,8 +1,9 @@
 
 
-import { collection, getDocs, addDoc, onSnapshot, Unsubscribe, query, orderBy, doc, getDoc, updateDoc, deleteDoc, limit, runTransaction, where } from 'firebase/firestore';
+import { collection, getDocs, addDoc, onSnapshot, Unsubscribe, query, orderBy, doc, getDoc, updateDoc, deleteDoc, limit, runTransaction, where } from '@/lib/firebase';
 import type { Mission } from '@/lib/data';
 import { db } from '@/lib/firebase';
+import { missionSchema } from '@/lib/schemas/mission-schema';
 import { createNotification } from './notification-service';
 
 const missionsCollection = collection(db, 'missions');
@@ -12,7 +13,7 @@ async function notifyParticipants(mission: Omit<Mission, 'id'> | Mission) {
     if (!mission.participants || mission.participants.length === 0) return;
 
     const employeeNames = mission.participants.map(p => p.employeeName);
-    
+
     // Firestore 'in' query supports up to 30 items. Chunk if necessary.
     for (let i = 0; i < employeeNames.length; i += 30) {
         const nameChunk = employeeNames.slice(i, i + 30);
@@ -41,10 +42,15 @@ export function subscribeToMissions(
     const q = query(missionsCollection, orderBy("startDate", "desc"));
     const unsubscribe = onSnapshot(q,
         (snapshot) => {
-            const missions = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            } as Mission));
+            const missions = snapshot.docs.map(doc => {
+                const data = { id: doc.id, ...doc.data() };
+                const result = missionSchema.safeParse(data);
+                if (!result.success) {
+                    console.error(`[MissionService] validation error for ${doc.id}:`, result.error.format());
+                    return data as Mission;
+                }
+                return result.data as Mission;
+            });
             callback(missions);
         },
         (error) => {
@@ -57,10 +63,15 @@ export function subscribeToMissions(
 
 export async function getMissions(): Promise<Mission[]> {
     const snapshot = await getDocs(query(missionsCollection, orderBy("startDate", "desc")));
-    return snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-    } as Mission));
+    return snapshot.docs.map(doc => {
+        const data = { id: doc.id, ...doc.data() };
+        const result = missionSchema.safeParse(data);
+        if (!result.success) {
+            console.error(`[MissionService] validation error for ${doc.id}:`, result.error.format());
+            return data as Mission;
+        }
+        return result.data as Mission;
+    });
 }
 
 export async function getMission(id: string): Promise<Mission | null> {
@@ -104,7 +115,7 @@ export async function deleteMission(id: string): Promise<void> {
 export async function getLatestMissionNumber(isDossier: boolean = true): Promise<number> {
     const counterId = isDossier ? 'missions' : 'missionOrders';
     const counterRef = doc(db, 'counters', counterId);
-    
+
     try {
         const newNumber = await runTransaction(db, async (transaction) => {
             const counterDoc = await transaction.get(counterRef);

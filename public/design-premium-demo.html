@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CNRCT - Design Premium Demo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Background gradient mesh */
+        .bg-gradient-mesh {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(at 40% 20%, rgba(96, 165, 250, 0.15) 0px, transparent 50%),
+                radial-gradient(at 80% 0%, rgba(167, 139, 250, 0.15) 0px, transparent 50%),
+                radial-gradient(at 0% 50%, rgba(251, 146, 60, 0.1) 0px, transparent 50%);
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        h1 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            color: #94a3b8;
+            font-size: 1.1rem;
+            margin-bottom: 40px;
+        }
+
+        /* Glassmorphism Card */
+        .glass-card {
+            background: rgba(30, 41, 59, 0.4);
+            backdrop-filter: blur(16px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.3);
+            border-color: rgba(96, 165, 250, 0.3);
+        }
+
+        .card-title {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #f1f5f9;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(96, 165, 250, 0.15) 0%, rgba(59, 130, 246, 0.05) 100%);
+            border: 1px solid rgba(96, 165, 250, 0.2);
+            border-radius: 12px;
+            padding: 24px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(96, 165, 250, 0.1) 0%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-6px) scale(1.02);
+            box-shadow: 0 12px 24px rgba(96, 165, 250, 0.3);
+            border-color: rgba(96, 165, 250, 0.5);
+        }
+
+        .stat-card:hover::before {
+            opacity: 1;
+        }
+
+        .stat-card.purple {
+            background: linear-gradient(135deg, rgba(167, 139, 250, 0.15) 0%, rgba(139, 92, 246, 0.05) 100%);
+            border-color: rgba(167, 139, 250, 0.2);
+        }
+
+        .stat-card.purple:hover {
+            box-shadow: 0 12px 24px rgba(167, 139, 250, 0.3);
+            border-color: rgba(167, 139, 250, 0.5);
+        }
+
+        .stat-card.orange {
+            background: linear-gradient(135deg, rgba(251, 146, 60, 0.15) 0%, rgba(249, 115, 22, 0.05) 100%);
+            border-color: rgba(251, 146, 60, 0.2);
+        }
+
+        .stat-card.orange:hover {
+            box-shadow: 0 12px 24px rgba(251, 146, 60, 0.3);
+            border-color: rgba(251, 146, 60, 0.5);
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: #94a3b8;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stat-value {
+            font-family: 'Poppins', sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+            color: #f1f5f9;
+            margin-bottom: 4px;
+        }
+
+        .stat-change {
+            font-size: 0.875rem;
+            color: #10b981;
+        }
+
+        /* Premium Table */
+        .table-container {
+            overflow-x: auto;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+        }
+
+        thead {
+            background: linear-gradient(180deg, rgba(30, 41, 59, 0.8) 0%, rgba(30, 41, 59, 0.6) 100%);
+            border-bottom: 2px solid rgba(96, 165, 250, 0.3);
+        }
+
+        th {
+            padding: 16px;
+            text-align: left;
+            font-weight: 600;
+            color: #cbd5e1;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+        }
+
+        tbody tr {
+            border-left: 3px solid transparent;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            background: rgba(30, 41, 59, 0.2);
+        }
+
+        tbody tr:nth-child(even) {
+            background: rgba(30, 41, 59, 0.4);
+        }
+
+        tbody tr:hover {
+            background: rgba(96, 165, 250, 0.1);
+            border-left-color: #60a5fa;
+            transform: translateX(4px);
+            box-shadow: 0 2px 8px rgba(96, 165, 250, 0.2);
+        }
+
+        td {
+            padding: 16px;
+            color: #e2e8f0;
+        }
+
+        /* Badge */
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .badge-success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+        }
+
+        .badge-warning {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+        }
+
+        .badge-info {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+        }
+
+        /* Buttons */
+        .btn-premium {
+            padding: 12px 24px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(96, 165, 250, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(96, 165, 250, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .comparison-title {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .old-design {
+            opacity: 0.7;
+            filter: grayscale(0.3);
+        }
+
+        @media (max-width: 768px) {
+            .comparison {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-gradient-mesh"></div>
+    
+    <div class="container">
+        <h1>🎨 Design Premium CNRCT</h1>
+        <p class="subtitle">Aperçu du nouveau système de design avec glassmorphism, gradients modernes et animations fluides</p>
+
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Total Employés</div>
+                <div class="stat-value">1,247</div>
+                <div class="stat-change">↑ 12% ce mois</div>
+            </div>
+            
+            <div class="stat-card purple">
+                <div class="stat-label">Actifs IT</div>
+                <div class="stat-value">856</div>
+                <div class="stat-change">↑ 8% ce mois</div>
+            </div>
+            
+            <div class="stat-card orange">
+                <div class="stat-label">Projets Actifs</div>
+                <div class="stat-value">42</div>
+                <div class="stat-change">↑ 15% ce mois</div>
+            </div>
+        </div>
+
+        <!-- Glassmorphism Card -->
+        <div class="glass-card">
+            <h2 class="card-title">📊 Tableau de Bord Premium</h2>
+            
+            <button class="btn-premium btn-primary">
+                <span>✨</span>
+                Voir Plus de Détails
+            </button>
+            
+            <div style="margin-top: 24px;">
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Nom</th>
+                                <th>Département</th>
+                                <th>Statut</th>
+                                <th>Performance</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Jean Kouassi</td>
+                                <td>IT & Digital</td>
+                                <td><span class="badge badge-success">Actif</span></td>
+                                <td>92%</td>
+                            </tr>
+                            <tr>
+                                <td>Marie Touré</td>
+                                <td>Ressources Humaines</td>
+                                <td><span class="badge badge-success">Actif</span></td>
+                                <td>88%</td>
+                            </tr>
+                            <tr>
+                                <td>Kassoum Diarra</td>
+                                <td>Finance</td>
+                                <td><span class="badge badge-warning">En congé</span></td>
+                                <td>95%</td>
+                            </tr>
+                            <tr>
+                                <td>Aya Koné</td>
+                                <td>Marketing</td>
+                                <td><span class="badge badge-success">Actif</span></td>
+                                <td>90%</td>
+                            </tr>
+                            <tr>
+                                <td>Ibrahim Sanogo</td>
+                                <td>Opérations</td>
+                                <td><span class="badge badge-info">Formation</span></td>
+                                <td>87%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Feature Highlights -->
+        <div class="glass-card">
+            <h2 class="card-title">✨ Nouveautés du Design</h2>
+            <ul style="list-style: none; line-height: 2;">
+                <li>🎨 <strong>Glassmorphism</strong> - Cartes semi-transparentes avec effet de flou</li>
+                <li>🌈 <strong>Gradients Modernes</strong> - Dégradés vibrants et harmonieux</li>
+                <li>💫 <strong>Animations Fluides</strong> - Transitions douces sur hover</li>
+                <li>🎯 <strong>Ombres Élégantes</strong> - Profondeur visuelle premium</li>
+                <li>🔤 <strong>Typographie Améliorée</strong> - Poppins pour les titres, Inter pour le corps</li>
+                <li>🌊 <strong>Effets Néon</strong> - Glow effects sur les éléments interactifs</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

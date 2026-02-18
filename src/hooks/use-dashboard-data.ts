@@ -14,97 +14,140 @@ import { subscribeToDepartments } from "@/services/department-service";
 import { parseISO, differenceInYears, isAfter } from 'date-fns';
 
 export function useDashboardData(user: User | null) {
-  const [globalStats, setGlobalStats] = useState({
-      employees: [] as Employe[],
-      allChiefs: [] as Chief[],
-      departments: [] as Department[],
-      activeEmployees: 0,
-      cnpsEmployees: 0,
-      missionsInProgress: 0,
-      chiefs: 0,
-  });
-  const [personalStats, setPersonalStats] = useState({
-      leaveBalance: null as number | null,
-      latestEvaluation: null as Evaluation | null,
-      upcomingMissions: 0,
-  });
-  const [summary, setSummary] = useState<string | null>(null);
-  const [organizationLogos, setOrganizationLogos] = useState<OrganizationSettings | null>(null);
-  const [seniorityAnniversaries, setSeniorityAnniversaries] = useState<Employe[]>([]);
-  const [upcomingRetirements, setUpcomingRetirements] = useState<(Employe & { calculatedRetirementDate: Date })[]>([]);
-  
-  const [loading, setLoading] = useState(true);
-  const [loadingSummary, setLoadingSummary] = useState(true);
+    const [globalStats, setGlobalStats] = useState({
+        employees: [] as Employe[],
+        allChiefs: [] as Chief[],
+        departments: [] as Department[],
+        activeEmployees: 0,
+        cnpsEmployees: 0,
+        missionsInProgress: 0,
+        chiefs: 0,
+    });
+    const [personalStats, setPersonalStats] = useState({
+        leaveBalance: null as number | null,
+        latestEvaluation: null as Evaluation | null,
+        upcomingMissions: 0,
+    });
+    const [summary, setSummary] = useState<string | null>(null);
+    const [organizationLogos, setOrganizationLogos] = useState<OrganizationSettings | null>(null);
+    const [seniorityAnniversaries, setSeniorityAnniversaries] = useState<Employe[]>([]);
+    const [upcomingRetirements, setUpcomingRetirements] = useState<(Employe & { calculatedRetirementDate: Date })[]>([]);
 
-  const [selectedAnniversaryMonth, setSelectedAnniversaryMonth] = useState<string>((new Date().getMonth()).toString());
-  const [selectedAnniversaryYear, setSelectedAnniversaryYear] = useState<string>(new Date().getFullYear().toString());
-  const [selectedRetirementYear, setSelectedRetirementYear] = useState<string>(new Date().getFullYear().toString());
+    const [loading, setLoading] = useState(true);
+    const [loadingSummary, setLoadingSummary] = useState(true);
 
-  useEffect(() => {
-    setLoading(true);
-    setLoadingSummary(true);
+    const [selectedAnniversaryMonth, setSelectedAnniversaryMonth] = useState<string>((new Date().getMonth()).toString());
+    const [selectedAnniversaryYear, setSelectedAnniversaryYear] = useState<string>(new Date().getFullYear().toString());
+    const [selectedRetirementYear, setSelectedRetirementYear] = useState<string>(new Date().getFullYear().toString());
 
-    const unsubscribers: (() => void)[] = [];
+    useEffect(() => {
+        setLoading(true);
+        setLoadingSummary(true);
 
-    // --- Global Data ---
-    unsubscribers.push(subscribeToEmployees(employees => {
-        setGlobalStats(prev => ({
-            ...prev,
-            employees,
-            activeEmployees: employees.filter(e => e.status === 'Actif').length,
-            cnpsEmployees: employees.filter(e => e.CNPS === true && e.status === 'Actif').length
-        }));
-    }, console.error));
-    
-    unsubscribers.push(subscribeToChiefs(chiefs => {
-        setGlobalStats(prev => ({ ...prev, allChiefs: chiefs, chiefs: chiefs.length }));
-    }, console.error));
+        const unsubscribers: (() => void)[] = [];
+        let isMounted = true;
 
-    unsubscribers.push(subscribeToMissions(missions => {
-        setGlobalStats(prev => ({ ...prev, missionsInProgress: missions.filter(m => m.status === 'En cours').length }));
-    }, console.error));
-    
-    unsubscribers.push(subscribeToDepartments(departments => {
-        setGlobalStats(prev => ({ ...prev, departments }));
-    }, console.error));
-    
-    getOrganizationSettings().then(setOrganizationLogos);
-    getDashboardSummary().then(setSummary).catch(console.error).finally(() => setLoadingSummary(false));
+        // Stagger listener initialization to prevent Firestore SDK overload
+        // Initialize listeners sequentially with delays
+        const initializeListeners = async () => {
+            if (!isMounted) return;
 
-    // --- Personal Data ---
-    if (user) {
-        unsubscribers.push(subscribeToLeaves(allLeaves => {
-            const userLeaves = allLeaves.filter(l => l.employee === user.name);
-            calculateLeaveBalance(userLeaves).then(balance => setPersonalStats(prev => ({ ...prev, leaveBalance: balance })));
-        }, console.error));
+            // --- Global Data (initialized with delays) ---
+            unsubscribers.push(subscribeToEmployees(employees => {
+                if (!isMounted) return;
+                setGlobalStats(prev => ({
+                    ...prev,
+                    employees,
+                    activeEmployees: employees.filter(e => e.status === 'Actif').length,
+                    cnpsEmployees: employees.filter(e => e.CNPS === true && e.status === 'Actif').length
+                }));
+            }, console.error));
 
-        unsubscribers.push(subscribeToEvaluations(allEvals => {
-            const userEvals = allEvals.filter(e => e.employeeId === user.id);
-            const latestEval = userEvals.sort((a,b) => new Date(b.evaluationDate).getTime() - new Date(a.evaluationDate).getTime())[0] || null;
-            setPersonalStats(prev => ({ ...prev, latestEvaluation: latestEval }));
-        }, console.error));
-        
-        unsubscribers.push(subscribeToMissions(allMissions => {
-            const today = new Date();
-            const upcoming = allMissions.filter(m => 
-                m.participants.some(p => p.employeeName === user.name) &&
-                isAfter(parseISO(m.endDate), today) &&
-                (m.status === 'Planifiée' || m.status === 'En cours')
-            ).length;
-            setPersonalStats(prev => ({ ...prev, upcomingMissions: upcoming }));
-        }, console.error));
-    }
+            await new Promise(resolve => setTimeout(resolve, 50));
+            if (!isMounted) return;
 
-    const timer = setTimeout(() => setLoading(false), 2000); // Fallback to stop loading
-    
-    return () => {
-        unsubscribers.forEach(unsub => unsub());
-        clearTimeout(timer);
-    };
+            unsubscribers.push(subscribeToChiefs(chiefs => {
+                if (!isMounted) return;
+                setGlobalStats(prev => ({ ...prev, allChiefs: chiefs, chiefs: chiefs.length }));
+            }, console.error));
 
-  }, [user]);
-  
-  
+            await new Promise(resolve => setTimeout(resolve, 50));
+            if (!isMounted) return;
+
+            unsubscribers.push(subscribeToMissions(missions => {
+                if (!isMounted) return;
+                setGlobalStats(prev => ({ ...prev, missionsInProgress: missions.filter(m => m.status === 'En cours').length }));
+            }, console.error));
+
+            await new Promise(resolve => setTimeout(resolve, 50));
+            if (!isMounted) return;
+
+            unsubscribers.push(subscribeToDepartments(departments => {
+                if (!isMounted) return;
+                setGlobalStats(prev => ({ ...prev, departments }));
+            }, console.error));
+
+            // Non-realtime data fetching (no delay needed)
+            getOrganizationSettings().then(logos => {
+                if (isMounted) setOrganizationLogos(logos);
+            });
+            getDashboardSummary()
+                .then(summary => { if (isMounted) setSummary(summary); })
+                .catch(console.error)
+                .finally(() => { if (isMounted) setLoadingSummary(false); });
+
+            // --- Personal Data (only if user exists) ---
+            if (user) {
+                await new Promise(resolve => setTimeout(resolve, 50));
+                if (!isMounted) return;
+
+                unsubscribers.push(subscribeToLeaves(allLeaves => {
+                    if (!isMounted) return;
+                    const userLeaves = allLeaves.filter(l => l.employee === user.name);
+                    calculateLeaveBalance(userLeaves).then(balance => {
+                        if (isMounted) setPersonalStats(prev => ({ ...prev, leaveBalance: balance }));
+                    });
+                }, console.error));
+
+                await new Promise(resolve => setTimeout(resolve, 50));
+                if (!isMounted) return;
+
+                unsubscribers.push(subscribeToEvaluations(allEvals => {
+                    if (!isMounted) return;
+                    const userEvals = allEvals.filter(e => e.employeeId === user.id);
+                    const latestEval = userEvals.sort((a, b) => new Date(b.evaluationDate).getTime() - new Date(a.evaluationDate).getTime())[0] || null;
+                    setPersonalStats(prev => ({ ...prev, latestEvaluation: latestEval }));
+                }, console.error));
+
+                await new Promise(resolve => setTimeout(resolve, 50));
+                if (!isMounted) return;
+
+                unsubscribers.push(subscribeToMissions(allMissions => {
+                    if (!isMounted) return;
+                    const today = new Date();
+                    const upcoming = allMissions.filter(m =>
+                        m.participants.some(p => p.employeeName === user.name) &&
+                        isAfter(parseISO(m.endDate), today) &&
+                        (m.status === 'Planifiée' || m.status === 'En cours')
+                    ).length;
+                    setPersonalStats(prev => ({ ...prev, upcomingMissions: upcoming }));
+                }, console.error));
+            }
+        };
+
+        initializeListeners();
+
+        const timer = setTimeout(() => setLoading(false), 2000); // Fallback to stop loading
+
+        return () => {
+            isMounted = false;
+            unsubscribers.forEach(unsub => unsub());
+            clearTimeout(timer);
+        };
+
+    }, [user]);
+
+
     useEffect(() => {
         const anniversaryMonth = parseInt(selectedAnniversaryMonth);
         const anniversaryYear = parseInt(selectedAnniversaryYear);
@@ -121,38 +164,38 @@ export function useDashboardData(user: User | null) {
 
         const retirementYearNum = parseInt(selectedRetirementYear);
         const retirements = globalStats.employees
-          .map(emp => {
-              if (!emp.Date_Naissance) return null;
-              try {
-                  const birthDate = parseISO(emp.Date_Naissance);
-                  const retirementDate = new Date(birthDate.getFullYear() + 60, 11, 31);
-                  return { ...emp, calculatedRetirementDate: retirementDate };
-              } catch { return null; }
-          })
-          .filter((emp): emp is Employe & { calculatedRetirementDate: Date } => {
-              if (!emp || emp.status === 'Retraité' || emp.status === 'Décédé') return false;
-              return emp.calculatedRetirementDate.getFullYear() === retirementYearNum;
-          })
-          .sort((a,b) => a.calculatedRetirementDate.getTime() - b.calculatedRetirementDate.getTime());
+            .map(emp => {
+                if (!emp.Date_Naissance) return null;
+                try {
+                    const birthDate = parseISO(emp.Date_Naissance);
+                    const retirementDate = new Date(birthDate.getFullYear() + 60, 11, 31);
+                    return { ...emp, calculatedRetirementDate: retirementDate };
+                } catch { return null; }
+            })
+            .filter((emp): emp is Employe & { calculatedRetirementDate: Date } => {
+                if (!emp || emp.status === 'Retraité' || emp.status === 'Décédé') return false;
+                return emp.calculatedRetirementDate.getFullYear() === retirementYearNum;
+            })
+            .sort((a, b) => a.calculatedRetirementDate.getTime() - b.calculatedRetirementDate.getTime());
         setUpcomingRetirements(retirements);
 
     }, [globalStats.employees, selectedAnniversaryMonth, selectedAnniversaryYear, selectedRetirementYear]);
 
 
-  return { 
-    globalStats, 
-    personalStats, 
-    loading, 
-    summary, 
-    loadingSummary, 
-    organizationLogos,
-    seniorityAnniversaries,
-    upcomingRetirements,
-    selectedAnniversaryMonth,
-    setSelectedAnniversaryMonth,
-    selectedAnniversaryYear,
-    setSelectedAnniversaryYear,
-    selectedRetirementYear,
-    setSelectedRetirementYear
-  };
+    return {
+        globalStats,
+        personalStats,
+        loading,
+        summary,
+        loadingSummary,
+        organizationLogos,
+        seniorityAnniversaries,
+        upcomingRetirements,
+        selectedAnniversaryMonth,
+        setSelectedAnniversaryMonth,
+        selectedAnniversaryYear,
+        setSelectedAnniversaryYear,
+        selectedRetirementYear,
+        setSelectedRetirementYear
+    };
 }

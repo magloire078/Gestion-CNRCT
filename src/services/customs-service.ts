@@ -1,5 +1,5 @@
 
-import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, onSnapshot, Unsubscribe, query, orderBy, getDoc } from 'firebase/firestore';
+import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, onSnapshot, Unsubscribe, query, orderBy, getDoc } from '@/lib/firebase';
 import type { Custom } from '@/lib/data';
 import { db } from '@/lib/firebase';
 

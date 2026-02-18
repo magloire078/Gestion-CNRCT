@@ -3,6 +3,7 @@
 
 import { addMessageToTicket, updateTicket } from "@/services/helpdesk-service";
 import { getSuggestedReply, type SuggestReplyInput } from "@/ai/flows/suggest-reply-flow";
+export type { SuggestReplyInput };
 import type { TicketMessage, Ticket } from "@/lib/data";
 
 export type ConversationState = {
@@ -53,12 +54,12 @@ export async function updateTicketStatusAndAssignee(
 }
 
 export async function suggestReplyAction(input: SuggestReplyInput): Promise<{ suggestion?: string, error?: string }> {
-    try {
-        const suggestion = await getSuggestedReply(input);
-        return { suggestion };
-    } catch(error) {
-        console.error("AI Suggestion Error:", error);
-        const errorMessage = error instanceof Error ? error.message : "Une erreur est survenue lors de la communication avec l'IA.";
-        return { error: errorMessage };
-    }
+  try {
+    const suggestion = await getSuggestedReply(input);
+    return { suggestion };
+  } catch (error) {
+    console.error("AI Suggestion Error:", error);
+    const errorMessage = error instanceof Error ? error.message : "Une erreur est survenue lors de la communication avec l'IA.";
+    return { error: errorMessage };
+  }
 }

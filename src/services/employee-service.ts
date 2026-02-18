@@ -1,8 +1,13 @@
 
 
-import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, onSnapshot, Unsubscribe, query, orderBy, where, writeBatch, getDoc, setDoc, limit } from 'firebase/firestore';
+import {
+    collection, getDocs, addDoc, doc, updateDoc, deleteDoc, onSnapshot,
+    Unsubscribe, query, orderBy, where, writeBatch, getDoc, setDoc, limit,
+    type QuerySnapshot, type DocumentData, type QueryDocumentSnapshot
+} from '@/lib/firebase';
 import type { Employe, Chief, Department } from '@/lib/data';
 import { db, storage } from '@/lib/firebase';
+import { employeeSchema } from '@/lib/schemas/employee-schema';
 import { getOrganizationSettings } from './organization-service';
 import { getDepartments } from './department-service';
 import { getDirections } from './direction-service';
@@ -16,7 +21,7 @@ const employeesCollection = collection(db, 'employees');
 const chiefsCollection = collection(db, 'chiefs');
 
 // Department IDs for special groups
-const GROUPE_DIRECTOIRE_ID = 'DVeCoGfRfL3p43eQeYwz'; 
+const GROUPE_DIRECTOIRE_ID = 'DVeCoGfRfL3p43eQeYwz';
 
 export type EmployeeGroup = 'directoire' | 'regional' | 'personnel-siege' | 'chauffeur-directoire' | 'garde-republicaine' | 'gendarme' | 'all';
 
@@ -27,31 +32,31 @@ export type EmployeeGroup = 'directoire' | 'regional' | 'personnel-siege' | 'cha
  * @returns The group name as a string.
  */
 export function getEmployeeGroup(employee: Employe, departments: Department[]): EmployeeGroup {
-  const departmentName = departments.find(d => d.id === employee.departmentId)?.name;
+    const departmentName = departments.find(d => d.id === employee.departmentId)?.name;
 
-  if (departmentName === 'Garde Républicaine') {
-    return 'garde-republicaine';
-  }
-  if (departmentName === 'Gendarmerie') {
-    return 'gendarme';
-  }
-  if (employee.departmentId === GROUPE_DIRECTOIRE_ID || employee.matricule?.startsWith('D 0')) {
-    return 'directoire';
-  }
-  if (employee.poste === 'Membre Comité Régional') {
-    return 'regional';
-  }
-  if (employee.matricule?.startsWith('R 0')) {
-      return 'chauffeur-directoire';
-  }
-  
-  // All other employees, including regular chauffeurs, are considered personnel-siege if they are on CNPS
-  if (employee.CNPS === true) {
-      return 'personnel-siege';
-  }
-  
-  // Default fallback
-  return 'personnel-siege';
+    if (departmentName === 'Garde Républicaine') {
+        return 'garde-republicaine';
+    }
+    if (departmentName === 'Gendarmerie') {
+        return 'gendarme';
+    }
+    if (employee.departmentId === GROUPE_DIRECTOIRE_ID || employee.matricule?.startsWith('D 0')) {
+        return 'directoire';
+    }
+    if (employee.poste === 'Membre Comité Régional') {
+        return 'regional';
+    }
+    if (employee.matricule?.startsWith('R 0')) {
+        return 'chauffeur-directoire';
+    }
+
+    // All other employees, including regular chauffeurs, are considered personnel-siege if they are on CNPS
+    if (employee.CNPS === true) {
+        return 'personnel-siege';
+    }
+
+    // Default fallback
+    return 'personnel-siege';
 }
 
 
@@ -59,20 +64,20 @@ async function createOrUpdateChiefFromEmployee(employee: Employe) {
     if (employee.departmentId === 'DVeCoGfRfL3p43eQeYwz' || (employee.Region && employee.Village)) {
         const chiefsQuery = query(chiefsCollection, where('name', '==', employee.name));
         const snapshot = await getDocs(chiefsQuery);
-        
+
         const chiefData: Partial<Chief> = {
             name: `${employee.lastName || ''} ${employee.firstName || ''}`.trim(),
             firstName: employee.firstName,
             lastName: employee.lastName,
             title: employee.poste,
-            role: (employee.Region && employee.Village) ? 'Chef de Village' : 'Chef de Canton',
+            role: (employee.Region && employee.Village) ? 'Chef de Village' : 'Chef de canton',
             sexe: employee.sexe,
             region: employee.Region,
             department: employee.Departement,
             village: employee.Village,
             photoUrl: employee.photoUrl
         };
-        
+
         if (snapshot.empty) {
             const newChiefRef = doc(chiefsCollection);
             await setDoc(newChiefRef, chiefData);
@@ -91,15 +96,20 @@ export function subscribeToEmployees(
     onError: (error: Error) => void
 ): Unsubscribe {
     const q = query(employeesCollection, orderBy("lastName", "asc"), orderBy("firstName", "asc"));
-    const unsubscribe = onSnapshot(q, 
-        (snapshot) => {
-            const employees = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            } as Employe));
+    const unsubscribe = onSnapshot(q,
+        (snapshot: QuerySnapshot<DocumentData>) => {
+            const employees = snapshot.docs.map((doc: QueryDocumentSnapshot<DocumentData>) => {
+                const data = { id: doc.id, ...doc.data() };
+                const result = employeeSchema.safeParse(data);
+                if (!result.success) {
+                    console.warn(`[EmployeeService] validation error for ${doc.id}:`, result.error.errors);
+                    return data as Employe; // Fallback to raw cast to avoid breaking everything
+                }
+                return result.data as Employe;
+            });
             callback(employees);
         },
-        (error) => {
+        (error: Error) => {
             onError(new FirestorePermissionError("Impossible de charger les employés.", { query: "allEmployees" }));
         }
     );
@@ -107,12 +117,19 @@ export function subscribeToEmployees(
 }
 
 export async function getEmployees(): Promise<Employe[]> {
-  const q = query(employeesCollection, orderBy("lastName", "asc"), orderBy("firstName", "asc"));
-  const snapshot = await getDocs(q);
-  return snapshot.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data()
-  } as Employe));
+    const q = query(employeesCollection, orderBy("lastName", "asc"), orderBy("firstName", "asc"));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map((doc: QueryDocumentSnapshot<DocumentData>) => {
+        const data = { id: doc.id, ...doc.data() };
+        const result = employeeSchema.safeParse(data);
+        if (!result.success) {
+            // Log validation errors with details for debugging
+            console.warn(`[EmployeeService] validation error for ${doc.id}:`, result.error.errors);
+            // Return data anyway to avoid blocking the UI
+            return data as Employe;
+        }
+        return result.data as Employe;
+    });
 }
 
 export async function getEmployee(id: string): Promise<Employe | null> {
@@ -151,11 +168,11 @@ const processEmployeeData = (employeeData: Partial<Employe>): Partial<Employe> =
             console.error(`Could not calculate retirement date for employee with birthdate ${data.Date_Naissance}`, e);
         }
     }
-    
+
     // Ensure numeric fields are numbers
     const numericFields: (keyof Employe)[] = [
-        'baseSalary', 'primeAnciennete', 'indemniteTransportImposable', 'indemniteResponsabilite', 
-        'indemniteLogement', 'indemniteSujetion', 'indemniteCommunication', 'indemniteRepresentation', 
+        'baseSalary', 'primeAnciennete', 'indemniteTransportImposable', 'indemniteResponsabilite',
+        'indemniteLogement', 'indemniteSujetion', 'indemniteCommunication', 'indemniteRepresentation',
         'Salaire_Brut', 'transportNonImposable', 'Salaire_Net', 'enfants'
     ];
     numericFields.forEach(field => {
@@ -185,17 +202,17 @@ export async function addEmployee(employeeData: Omit<Employe, 'id'>, photoFile: 
             const snapshot = await uploadBytes(photoRef, photoFile);
             photoUrl = await getDownloadURL(snapshot.ref);
         }
-        
+
         const processedData = processEmployeeData({ ...employeeData, photoUrl });
 
         await setDoc(docRef, processedData);
-        
+
         const newEmployee = { id: docRef.id, ...processedData } as Employe;
         await createOrUpdateChiefFromEmployee(newEmployee);
-        
+
         return newEmployee;
-    } catch(error: any) {
-        if(error.code === 'permission-denied') {
+    } catch (error: any) {
+        if (error.code === 'permission-denied') {
             throw new FirestorePermissionError("Vous n'avez pas la permission d'ajouter un nouvel employé.", { operation: 'add', path: 'employees' });
         }
         throw error;
@@ -207,10 +224,10 @@ export async function batchAddEmployees(employees: Omit<Employe, 'id'>[]): Promi
     const batch = writeBatch(db);
     const matricules = employees.map(e => e.matricule).filter(Boolean);
     if (matricules.length === 0) return 0;
-    
+
     const existingMatriculesQuery = query(employeesCollection, where('matricule', 'in', matricules));
     const existingSnapshot = await getDocs(existingMatriculesQuery);
-    const existingMatricules = new Set(existingSnapshot.docs.map(d => d.data().matricule));
+    const existingMatricules = new Set(existingSnapshot.docs.map((d: QueryDocumentSnapshot<DocumentData>) => d.data().matricule));
 
     let addedCount = 0;
     const employeesToSyncToChiefs: Employe[] = [];
@@ -232,8 +249,8 @@ export async function batchAddEmployees(employees: Omit<Employe, 'id'>[]): Promi
             for (const emp of employeesToSyncToChiefs) {
                 await createOrUpdateChiefFromEmployee(emp);
             }
-        } catch(error: any) {
-             if(error.code === 'permission-denied') {
+        } catch (error: any) {
+            if (error.code === 'permission-denied') {
                 throw new FirestorePermissionError("Vous n'avez pas la permission d'importer des employés en masse.", { operation: 'batch-add', path: 'employees' });
             }
             throw error;
@@ -245,7 +262,7 @@ export async function batchAddEmployees(employees: Omit<Employe, 'id'>[]): Promi
 export async function updateEmployee(employeeId: string, employeeDataToUpdate: Partial<Employe>, photoFile: File | null = null): Promise<void> {
     try {
         const employeeDocRef = doc(db, 'employees', employeeId);
-        
+
         let updateData: Partial<Employe> = { ...employeeDataToUpdate };
 
         if (photoFile) {
@@ -253,21 +270,21 @@ export async function updateEmployee(employeeId: string, employeeDataToUpdate: P
             const snapshot = await uploadBytes(photoRef, photoFile);
             updateData.photoUrl = await getDownloadURL(snapshot.ref);
         }
-        
+
         updateData = processEmployeeData(updateData);
-        
+
         if ('id' in updateData) {
             delete (updateData as any).id;
         }
 
         await updateDoc(employeeDocRef, updateData);
-        
+
         const updatedEmployee = await getEmployee(employeeId);
         if (updatedEmployee) {
             await createOrUpdateChiefFromEmployee(updatedEmployee);
         }
-    } catch(error: any) {
-         if(error.code === 'permission-denied') {
+    } catch (error: any) {
+        if (error.code === 'permission-denied') {
             throw new FirestorePermissionError(`Vous n'avez pas la permission de modifier l'employé ${employeeDataToUpdate.name}.`, { operation: 'update', path: `employees/${employeeId}` });
         }
         throw error;
@@ -280,11 +297,11 @@ export async function searchEmployees(queryText: string): Promise<Employe[]> {
     }
     const lowerCaseQuery = queryText.toLowerCase();
     const allEmployees = await getEmployees();
-    
-    return allEmployees.filter(employee => 
-        (employee.name?.toLowerCase() || '').includes(lowerCaseQuery) || 
-        (employee.firstName?.toLowerCase() || '').includes(lowerCaseQuery) || 
-        (employee.lastName?.toLowerCase() || '').includes(lowerCaseQuery) || 
+
+    return allEmployees.filter(employee =>
+        (employee.name?.toLowerCase() || '').includes(lowerCaseQuery) ||
+        (employee.firstName?.toLowerCase() || '').includes(lowerCaseQuery) ||
+        (employee.lastName?.toLowerCase() || '').includes(lowerCaseQuery) ||
         (employee.matricule?.toLowerCase() || '').includes(lowerCaseQuery)
     );
 }
@@ -293,8 +310,8 @@ export async function deleteEmployee(employeeId: string): Promise<void> {
     try {
         const employeeDocRef = doc(db, 'employees', employeeId);
         await deleteDoc(employeeDocRef);
-    } catch(error: any) {
-         if(error.code === 'permission-denied') {
+    } catch (error: any) {
+        if (error.code === 'permission-denied') {
             throw new FirestorePermissionError(`Vous n'avez pas la permission de supprimer cet employé.`, { operation: 'delete', path: `employees/${employeeId}` });
         }
         throw error;
@@ -310,7 +327,7 @@ export async function getLatestMatricule(): Promise<string> {
     }
 
     const lastMatricule = snapshot.docs[0].data().matricule as string;
-    
+
     // Attempt to extract and increment the numeric part
     const numericPartMatch = lastMatricule.match(/\d+/);
     if (numericPartMatch) {
@@ -333,8 +350,8 @@ export async function getOrganizationalUnits() {
             getServices(),
         ]);
         return { departments, directions, services };
-    } catch(error: any) {
-        if(error.code === 'permission-denied') {
+    } catch (error: any) {
+        if (error.code === 'permission-denied') {
             throw new FirestorePermissionError("Vous n'avez pas la permission de charger la structure organisationnelle.", { operation: 'read-organization' });
         }
         throw error;

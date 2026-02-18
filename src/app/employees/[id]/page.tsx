@@ -36,11 +36,11 @@ import { useToast } from "@/hooks/use-toast";
 type Status = "Approuvé" | "En attente" | "Rejeté";
 
 const statusVariantMap: Record<Status, "default" | "secondary" | "destructive"> =
-  {
+{
     "Approuvé": "default",
     "En attente": "secondary",
     "Rejeté": "destructive",
-  };
+};
 
 
 export default function EmployeeDetailPage() {
@@ -58,7 +58,10 @@ export default function EmployeeDetailPage() {
 
     const [isDateDialogOpen, setIsDateDialogOpen] = useState(false);
     const [year, setYear] = useState<string>(new Date().getFullYear().toString());
+    const [endYear, setEndYear] = useState<string>(new Date().getFullYear().toString());
     const [month, setMonth] = useState<string>((new Date().getMonth() + 1).toString());
+    const [endMonth, setEndMonth] = useState<string>((new Date().getMonth() + 1).toString());
+    const [generationMode, setGenerationMode] = useState<'monthly' | 'period'>('monthly');
 
     const [isEventSheetOpen, setIsEventSheetOpen] = useState(false);
     const [editingEvent, setEditingEvent] = useState<EmployeeEvent | null>(null);
@@ -66,15 +69,15 @@ export default function EmployeeDetailPage() {
 
     useEffect(() => {
         if (typeof id !== 'string') return;
-        
+
         async function fetchData() {
             try {
                 let [employeeData, leavesData, assetsData, missionsData, historyData, departments, directions, services] = await Promise.all([
-                    getEmployee(id),
+                    getEmployee(id as string),
                     getLeaves(),
                     getAssets(),
                     getMissions(),
-                    getEmployeeHistory(id),
+                    getEmployeeHistory(id as string),
                     getDepartments(),
                     getDirections(),
                     getServices(),
@@ -83,7 +86,7 @@ export default function EmployeeDetailPage() {
                 if (employeeData && employeeData.Date_Naissance) {
                     employeeData.age = differenceInYears(new Date(), parseISO(employeeData.Date_Naissance));
                 }
-                
+
                 setOrgStructure({ departments, directions, services });
                 setEmployee(employeeData);
 
@@ -104,12 +107,12 @@ export default function EmployeeDetailPage() {
 
     const getAvatarBgClass = (sexe?: 'Homme' | 'Femme' | 'Autre') => {
         switch (sexe) {
-          case 'Homme': return 'bg-blue-200 dark:bg-blue-800';
-          case 'Femme': return 'bg-pink-200 dark:bg-pink-800';
-          default: return 'bg-muted';
+            case 'Homme': return 'bg-blue-200 dark:bg-blue-800';
+            case 'Femme': return 'bg-pink-200 dark:bg-pink-800';
+            default: return 'bg-muted';
         }
     };
-    
+
     const handleNavigateToPayslip = () => {
         if (!employee) return;
 
@@ -118,7 +121,15 @@ export default function EmployeeDetailPage() {
         const formattedDate = lastDay.toISOString().split('T')[0]; // YYYY-MM-DD
 
         setIsDateDialogOpen(false);
-        router.push(`/payroll/${employee.id}?payslipDate=${formattedDate}`);
+
+        let url = `/payroll/${employee.id}?payslipDate=${formattedDate}`;
+        if (generationMode === 'period') {
+            const endDate = new Date(parseInt(endYear), parseInt(endMonth) - 1, 1);
+            const lastDayEnd = lastDayOfMonth(endDate);
+            url += `&endDate=${lastDayEnd.toISOString().split('T')[0]}`;
+        }
+
+        router.push(url);
     };
 
     const handleOpenEventSheet = (eventToEdit: EmployeeEvent | null = null) => {
@@ -148,7 +159,7 @@ export default function EmployeeDetailPage() {
             setDeleteEventTarget(null);
         }
     };
-    
+
     const years = Array.from({ length: 10 }, (_, i) => (new Date().getFullYear() - i).toString());
     const months = [
         { value: "1", label: "Janvier" }, { value: "2", label: "Février" },
@@ -158,8 +169,8 @@ export default function EmployeeDetailPage() {
         { value: "9", label: "Septembre" }, { value: "10", label: "Octobre" },
         { value: "11", label: "Novembre" }, { value: "12", label: "Décembre" },
     ];
-    
-     const lastThreePayslips = Array.from({ length: 3 }).map((_, i) => {
+
+    const lastThreePayslips = Array.from({ length: 3 }).map((_, i) => {
         const date = subMonths(new Date(), i);
         const lastDay = lastDayOfMonth(date);
         return {
@@ -182,9 +193,9 @@ export default function EmployeeDetailPage() {
     const directionName = orgStructure.directions.find(d => d.id === employee.directionId)?.name;
     const serviceName = orgStructure.services.find(s => s.id === employee.serviceId)?.name;
 
-    
+
     let retirementDate = null;
-    if(employee.Date_Naissance && employee.status === 'Actif') {
+    if (employee.Date_Naissance && employee.status === 'Actif') {
         const birthDate = new Date(employee.Date_Naissance);
         retirementDate = new Date(birthDate.getFullYear() + 60, birthDate.getMonth(), birthDate.getDate()).toLocaleDateString('fr-FR');
     }
@@ -201,12 +212,12 @@ export default function EmployeeDetailPage() {
                     <h1 className="text-3xl font-bold tracking-tight">Fiche de l'Employé</h1>
                     <Button asChild className="ml-auto">
                         <Link href={`/employees/${id}/edit`}>
-                            <Pencil className="mr-2 h-4 w-4"/>
+                            <Pencil className="mr-2 h-4 w-4" />
                             Modifier
                         </Link>
                     </Button>
                 </div>
-                
+
                 <Tabs defaultValue="info">
                     <TabsList className="mb-4">
                         <TabsTrigger value="info">Informations Générales</TabsTrigger>
@@ -219,7 +230,7 @@ export default function EmployeeDetailPage() {
                             <Card className="lg:col-span-3">
                                 <CardHeader className="flex flex-col md:flex-row items-start md:items-center gap-6">
                                     <Avatar className="h-24 w-24 border">
-                                        <AvatarImage src={employee.photoUrl} alt={fullName} data-ai-hint="employee photo"/>
+                                        <AvatarImage src={employee.photoUrl} alt={fullName} data-ai-hint="employee photo" />
                                         <AvatarFallback className={`text-3xl ${getAvatarBgClass(employee.sexe)}`}>
                                             {employee.lastName?.charAt(0) || ''}{employee.firstName?.charAt(0) || ''}
                                         </AvatarFallback>
@@ -228,10 +239,10 @@ export default function EmployeeDetailPage() {
                                         <CardTitle className="text-3xl">{fullName}</CardTitle>
                                         <CardDescription className="text-lg text-muted-foreground">{employee.poste}</CardDescription>
                                         <div className="mt-2 flex gap-2 flex-wrap">
-                                        <Badge variant={employee.status === 'Actif' ? 'default' : 'destructive'}>{employee.status}</Badge>
-                                        {departmentName && <Badge variant="secondary">{departmentName}</Badge>}
-                                        {directionName && <Badge variant="outline">{directionName}</Badge>}
-                                        {serviceName && <Badge variant="outline" className="bg-accent/50">{serviceName}</Badge>}
+                                            <Badge variant={employee.status === 'Actif' ? 'default' : 'destructive'}>{employee.status}</Badge>
+                                            {departmentName && <Badge variant="secondary">{departmentName}</Badge>}
+                                            {directionName && <Badge variant="outline">{directionName}</Badge>}
+                                            {serviceName && <Badge variant="outline" className="bg-accent/50">{serviceName}</Badge>}
                                         </div>
                                     </div>
                                 </CardHeader>
@@ -239,7 +250,7 @@ export default function EmployeeDetailPage() {
                             <div className="lg:col-span-2 space-y-6">
                                 <Card>
                                     <CardHeader>
-                                        <CardTitle className="flex items-center gap-2 text-lg"><Briefcase className="h-5 w-5 text-primary"/> Informations Générales</CardTitle>
+                                        <CardTitle className="flex items-center gap-2 text-lg"><Briefcase className="h-5 w-5 text-primary" /> Informations Générales</CardTitle>
                                     </CardHeader>
                                     <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
                                         <InfoItem label="Poste" value={employee.poste} />
@@ -253,12 +264,13 @@ export default function EmployeeDetailPage() {
                                 </Card>
                                 <Card>
                                     <CardHeader>
-                                        <CardTitle className="flex items-center gap-2 text-lg"><User className="h-5 w-5 text-primary"/> Informations Personnelles</CardTitle>
+                                        <CardTitle className="flex items-center gap-2 text-lg"><User className="h-5 w-5 text-primary" /> Informations Personnelles</CardTitle>
                                     </CardHeader>
                                     <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
                                         <InfoItem label="Date de naissance" value={employee.Date_Naissance} icon={Calendar} />
                                         {employee.age !== undefined && <InfoItem label="Âge" value={`${employee.age} ans`} icon={Cake} />}
                                         <InfoItem label="Lieu de naissance" value={employee.Lieu_Naissance} icon={MapPin} />
+                                        <InfoItem label="Situation matrimoniale" value={employee.situationMatrimoniale} />
                                         {employee.enfants !== undefined && <InfoItem label="Enfants à charge" value={employee.enfants} icon={Users} />}
                                         <InfoItem label="Sexe" value={employee.sexe} icon={Binary} />
                                         <InfoItem label="Localisation" icon={Globe}>
@@ -268,14 +280,14 @@ export default function EmployeeDetailPage() {
                                                 <p className="text-muted-foreground text-sm font-normal">Non spécifiée</p>
                                             )}
                                         </InfoItem>
-                                        {retirementDate && <InfoItem label="Date de retraite estimée" value={retirementDate} icon={LogOut}/>}
+                                        {retirementDate && <InfoItem label="Date de retraite estimée" value={retirementDate} icon={LogOut} />}
                                     </CardContent>
                                 </Card>
                             </div>
                             <div className="lg:col-span-1 space-y-6">
                                 <Card>
-                                     <CardHeader>
-                                        <CardTitle className="flex items-center gap-2 text-lg"><BadgeCheck className="h-5 w-5 text-primary"/> Compétences</CardTitle>
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center gap-2 text-lg"><BadgeCheck className="h-5 w-5 text-primary" /> Compétences</CardTitle>
                                     </CardHeader>
                                     <CardContent>
                                         {employee.skills && employee.skills.length > 0 ? (
@@ -305,7 +317,7 @@ export default function EmployeeDetailPage() {
                                         {lastThreePayslips.map(item => (
                                             <Button key={item.dateParam} variant="outline" className="w-full justify-start" asChild>
                                                 <Link href={`/payroll/${id}?payslipDate=${item.dateParam}`}>
-                                                    <Receipt className="mr-2 h-4 w-4"/>
+                                                    <Receipt className="mr-2 h-4 w-4" />
                                                     Bulletin de {item.period}
                                                 </Link>
                                             </Button>
@@ -314,9 +326,19 @@ export default function EmployeeDetailPage() {
                                 </div>
                                 <div className="space-y-4">
                                     <h4 className="font-semibold">Générer un autre bulletin</h4>
-                                     <div className="flex items-center justify-between p-4 border rounded-lg">
+                                    <div className="flex items-center justify-between p-4 border rounded-lg">
                                         <p className="text-sm">Générer un bulletin pour une période personnalisée.</p>
                                         <Button onClick={() => setIsDateDialogOpen(true)} size="sm">Générer</Button>
+                                    </div>
+                                </div>
+                                <div className="space-y-4 md:col-span-2">
+                                    <h4 className="font-semibold flex items-center gap-2"><Landmark className="h-4 w-4" /> Coordonnées Bancaires</h4>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4 border rounded-lg bg-muted/30">
+                                        <InfoItem label="Banque" value={employee.banque} />
+                                        <InfoItem label="Code Banque" value={employee.CB} />
+                                        <InfoItem label="Code Guichet" value={employee.CG} />
+                                        <InfoItem label="Numéro de Compte" value={employee.numeroCompte} />
+                                        <InfoItem label="Clé RIB" value={employee.Cle_RIB} />
                                     </div>
                                 </div>
                             </CardContent>
@@ -381,7 +403,7 @@ export default function EmployeeDetailPage() {
                                     ) : <p className="text-sm text-muted-foreground">Aucune mission récente.</p>}
                                 </CardContent>
                             </Card>
-                            
+
                             <Card>
                                 <CardHeader>
                                     <CardTitle className="flex items-center gap-2"><Laptop className="h-5 w-5 text-primary" /> Actifs Assignés</CardTitle>
@@ -389,12 +411,12 @@ export default function EmployeeDetailPage() {
                                 <CardContent>
                                     {assets.length > 0 ? (
                                         <ul className="space-y-2">
-                                        {assets.map(asset => (
-                                            <li key={asset.tag} className="text-sm flex justify-between">
-                                                <span>{asset.modele}</span>
-                                                <span className="text-muted-foreground">({asset.tag})</span>
-                                            </li>
-                                        ))}
+                                            {assets.map(asset => (
+                                                <li key={asset.tag} className="text-sm flex justify-between">
+                                                    <span>{asset.modele}</span>
+                                                    <span className="text-muted-foreground">({asset.tag})</span>
+                                                </li>
+                                            ))}
                                         </ul>
                                     ) : <p className="text-sm text-muted-foreground">Aucun actif assigné.</p>}
                                 </CardContent>
@@ -404,9 +426,9 @@ export default function EmployeeDetailPage() {
                                     <CardTitle className="flex items-center gap-2"><FolderArchive className="h-5 w-5 text-primary" /> Documents Associés</CardTitle>
                                 </CardHeader>
                                 <CardContent>
-                                <p className="text-sm text-muted-foreground text-center py-4">
+                                    <p className="text-sm text-muted-foreground text-center py-4">
                                         La fonctionnalité de gestion des documents sera bientôt disponible ici.
-                                </p>
+                                    </p>
                                 </CardContent>
                             </Card>
                         </div>
@@ -425,7 +447,7 @@ export default function EmployeeDetailPage() {
                                 </div>
                             </CardHeader>
                             <CardContent>
-                                <EmployeeHistoryTimeline 
+                                <EmployeeHistoryTimeline
                                     events={history}
                                     onEdit={handleOpenEventSheet}
                                     onDelete={setDeleteEventTarget}
@@ -443,34 +465,85 @@ export default function EmployeeDetailPage() {
                                 Sélectionnez le mois et l'année pour générer le bulletin de paie de {fullName}.
                             </DialogDescription>
                         </DialogHeader>
-                        <div className="grid grid-cols-2 gap-4 py-4">
+                        <div className="space-y-4 py-4">
                             <div className="grid gap-2">
-                                <Label htmlFor="year">Année</Label>
-                                <Select value={year} onValueChange={setYear}>
-                                    <SelectTrigger id="year"><SelectValue /></SelectTrigger>
+                                <Label>Mode de génération</Label>
+                                <Select value={generationMode} onValueChange={(v: any) => setGenerationMode(v)}>
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
                                     <SelectContent>
-                                        {years.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
+                                        <SelectItem value="monthly">Bulletin Unique (Mensuel)</SelectItem>
+                                        <SelectItem value="period">Période Personnalisée</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="month">Mois</Label>
-                                <Select value={month} onValueChange={setMonth}>
-                                    <SelectTrigger id="month"><SelectValue /></SelectTrigger>
-                                    <SelectContent>
-                                        {months.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}
-                                    </SelectContent>
-                                </Select>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="grid gap-2">
+                                    <Label htmlFor="year">Année</Label>
+                                    <Select value={year} onValueChange={setYear}>
+                                        <SelectTrigger id="year"><SelectValue /></SelectTrigger>
+                                        <SelectContent>
+                                            {years.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="month">{generationMode === 'monthly' ? 'Mois' : 'Mois de début'}</Label>
+                                    <Select value={month} onValueChange={setMonth}>
+                                        <SelectTrigger id="month"><SelectValue /></SelectTrigger>
+                                        <SelectContent>
+                                            {months.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
                             </div>
+
+                            {generationMode === 'period' && (
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="endYear">Année de fin</Label>
+                                        <Select value={endYear} onValueChange={setEndYear}>
+                                            <SelectTrigger id="endYear"><SelectValue /></SelectTrigger>
+                                            <SelectContent>
+                                                {years.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="endMonth">Mois de fin</Label>
+                                        <Select value={endMonth} onValueChange={setEndMonth}>
+                                            <SelectTrigger id="endMonth"><SelectValue /></SelectTrigger>
+                                            <SelectContent>
+                                                {months.map(m => {
+                                                    const isBeforeStart = parseInt(endYear) < parseInt(year) || (parseInt(endYear) === parseInt(year) && parseInt(m.value) < parseInt(month));
+                                                    return (
+                                                        <SelectItem
+                                                            key={m.value}
+                                                            value={m.value}
+                                                            disabled={isBeforeStart}
+                                                        >
+                                                            {m.label}
+                                                        </SelectItem>
+                                                    );
+                                                })}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                         <DialogFooter>
                             <Button variant="outline" onClick={() => setIsDateDialogOpen(false)}>Annuler</Button>
-                            <Button onClick={handleNavigateToPayslip}>Générer le Bulletin</Button>
+                            <Button onClick={handleNavigateToPayslip}>
+                                {generationMode === 'monthly' ? 'Générer le Bulletin' : 'Générer les Bulletins'}
+                            </Button>
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>
             </div>
-            <AddHistoryEventSheet 
+            <AddHistoryEventSheet
                 isOpen={isEventSheetOpen}
                 onClose={() => setIsEventSheetOpen(false)}
                 employeeId={id as string}
@@ -493,8 +566,8 @@ function InfoItem({ label, value, icon: Icon, children }: { label: string; value
     return (
         <div className="flex flex-col">
             <Label className="text-sm text-muted-foreground flex items-center gap-2">
-                 {Icon && <Icon className="h-4 w-4" />}
-                 {label}
+                {Icon && <Icon className="h-4 w-4" />}
+                {label}
             </Label>
             {value && <p className="text-base font-medium mt-1">{value}</p>}
             {children && <div className="mt-1">{children}</div>}
@@ -504,15 +577,15 @@ function InfoItem({ label, value, icon: Icon, children }: { label: string; value
 
 function EmployeeDetailSkeleton() {
     return (
-         <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-6">
             <div className="flex items-center gap-4">
-                 <Skeleton className="h-10 w-10" />
-                 <Skeleton className="h-8 w-64" />
-                 <Skeleton className="h-10 w-24 ml-auto" />
+                <Skeleton className="h-10 w-10" />
+                <Skeleton className="h-8 w-64" />
+                <Skeleton className="h-10 w-24 ml-auto" />
             </div>
-             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-3">
-                     <Card>
+                    <Card>
                         <CardHeader className="flex flex-row items-center gap-6">
                             <Skeleton className="h-24 w-24 rounded-full" />
                             <div className="flex-1 space-y-2">
@@ -526,25 +599,25 @@ function EmployeeDetailSkeleton() {
                         </CardHeader>
                     </Card>
                 </div>
-                 <div className="lg:col-span-2 space-y-6">
-                     <Card>
+                <div className="lg:col-span-2 space-y-6">
+                    <Card>
                         <CardHeader><Skeleton className="h-6 w-48" /></CardHeader>
                         <CardContent><Skeleton className="h-24 w-full" /></CardContent>
                     </Card>
-                      <Card>
+                    <Card>
                         <CardHeader><Skeleton className="h-6 w-48" /></CardHeader>
                         <CardContent><Skeleton className="h-24 w-full" /></CardContent>
                     </Card>
-                 </div>
-                 <div className="lg:col-span-1 space-y-6">
-                      <Card>
+                </div>
+                <div className="lg:col-span-1 space-y-6">
+                    <Card>
                         <CardHeader><Skeleton className="h-6 w-3/4" /></CardHeader>
                         <CardContent className="space-y-4">
-                           <Skeleton className="h-16 w-full" />
+                            <Skeleton className="h-16 w-full" />
                         </CardContent>
                     </Card>
-                 </div>
-             </div>
+                </div>
+            </div>
         </div>
     )
 }

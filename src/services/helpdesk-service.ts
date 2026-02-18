@@ -1,7 +1,7 @@
 
 
 import { db } from '@/lib/firebase';
-import { collection, addDoc, onSnapshot, Unsubscribe, query, orderBy, doc, updateDoc, getDoc, where, getDocs, Timestamp } from 'firebase/firestore';
+import { collection, addDoc, onSnapshot, Unsubscribe, query, orderBy, doc, updateDoc, getDoc, where, getDocs, Timestamp } from '@/lib/firebase';
 import type { Ticket, TicketMessage, TicketStatus } from '@/lib/data';
 import { createNotification } from './notification-service';
 

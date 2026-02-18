@@ -1,28 +1,46 @@
+/* Premium Typography */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 200 20% 98%;
-    --foreground: 222.2 84% 4.9%;
+    /* Premium Background - subtle blue tint */
+    --background: 220 25% 97%;
+    --foreground: 222 47% 11%;
+
+    /* Premium Cards */
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 222 47% 11%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 225 73% 63%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 210 40% 9.8%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 33 92% 95%;
-    --accent-foreground: 33 92% 50%;
+    --popover-foreground: 222 47% 11%;
+
+    /* Primary: Vibrant Blue */
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary: Elegant Violet */
+    --secondary: 262 52% 47%;
+    --secondary-foreground: 0 0% 100%;
+
+    /* Muted: Softer grays */
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
+
+    /* Accent: Warm Orange */
+    --accent: 14 90% 53%;
+    --accent-foreground: 0 0% 100%;
+
+    /* Destructive */
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 225 73% 63%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Borders & Inputs */
+    --border: 220 20% 90%;
+    --input: 220 20% 90%;
+    --ring: 217 91% 60%;
     --radius: 0.5rem;
     --sidebar-background: 222.2 84% 4.9%;
     --sidebar-foreground: 210 40% 98%;
@@ -40,25 +58,41 @@
   }
 
   .dark {
+    /* Premium Dark Background */
     --background: 222 47% 11%;
     --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
+
+    /* Glassmorphism Cards */
+    --card: 222 47% 15%;
     --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
+    --card-elevated: 222 47% 18%;
+    --popover: 222 47% 15%;
     --popover-foreground: 210 40% 98%;
-    --primary: 225 73% 63%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
+
+    /* Primary: Neon Blue */
+    --primary: 217 91% 60%;
+    --primary-foreground: 222 47% 11%;
+
+    /* Secondary: Neon Violet */
+    --secondary: 262 83% 58%;
+    --secondary-foreground: 222 47% 11%;
+
+    /* Muted */
+    --muted: 217 32% 17%;
+    --muted-foreground: 215 20% 65%;
+
+    /* Accent: Neon Orange */
+    --accent: 14 90% 63%;
+    --accent-foreground: 222 47% 11%;
+
+    /* Destructive */
+    --destructive: 0 63% 31%;
     --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 225 73% 63%;
+
+    /* Borders & Inputs */
+    --border: 217 32% 25%;
+    --input: 217 32% 25%;
+    --ring: 217 91% 60%;
     --sidebar-background: 222.2 84% 4.9%;
     --sidebar-foreground: 210 40% 98%;
     --sidebar-primary: 209 68% 40%;
@@ -79,120 +113,309 @@
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }
 
-  /* Styling for tables headers */
+  /* Premium Table Styles */
   thead {
-    @apply bg-muted/70 text-secondary-foreground;
+    background: linear-gradient(180deg,
+        hsl(var(--muted)) 0%,
+        hsl(var(--muted) / 0.7) 100%);
+    border-bottom: 2px solid hsl(var(--primary) / 0.3);
   }
-  
-  /* Zebra-striping for tables */
+
+  .dark thead {
+    background: linear-gradient(180deg,
+        hsl(var(--card-elevated)) 0%,
+        hsl(var(--card)) 100%);
+  }
+
+  /* Animated table rows */
+  tbody tr {
+    @apply bg-muted/20;
+    border-left: 3px solid transparent;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
   tbody tr:nth-child(even) {
-    @apply bg-muted/50;
+    @apply bg-muted/40;
   }
+
   tbody tr:hover {
-      @apply bg-accent;
+    background: hsl(var(--primary) / 0.08) !important;
+    border-left-color: hsl(var(--primary));
+    transform: translateX(4px);
+    box-shadow: 0 2px 8px hsl(var(--primary) / 0.15);
   }
 
   /* Disable zebra-striping for specific tables */
   .no-zebra tbody tr:nth-child(even) {
     background-color: transparent;
   }
+
   .no-zebra tbody tr:hover {
-      background-color: transparent;
+    background-color: transparent;
+  }
+}
+
+/* Premium Utilities Layer */
+@layer utilities {
+
+  /* Glassmorphism Effects */
+  .glass-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   }
 
-
-  /* Ensure sticky table header cells have a background */
-  th.sticky {
-    @apply bg-muted/70;
-  }
-  
-  /* Ensure sticky table body cells have a background */
-  tbody td.sticky {
-    @apply bg-card;
-  }
-  tbody tr:nth-child(even) td.sticky {
-    @apply bg-muted/50;
-  }
-  tbody tr:hover td.sticky {
-    @apply bg-accent;
+  .dark .glass-card {
+    background: rgba(30, 41, 59, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
   }
 
+  /* Premium Gradients */
+  .gradient-primary {
+    background: linear-gradient(135deg,
+        hsl(217, 91%, 60%) 0%,
+        hsl(262, 83%, 58%) 100%);
+  }
 
+  .gradient-secondary {
+    background: linear-gradient(135deg,
+        hsl(262, 83%, 58%) 0%,
+        hsl(217, 91%, 60%) 100%);
+  }
+
+  .gradient-accent {
+    background: linear-gradient(135deg,
+        hsl(14, 90%, 53%) 0%,
+        hsl(33, 94%, 55%) 100%);
+  }
+
+  .gradient-mesh {
+    background:
+      radial-gradient(at 40% 20%, hsl(217, 91%, 60%) 0px, transparent 50%),
+      radial-gradient(at 80% 0%, hsl(262, 83%, 58%) 0px, transparent 50%),
+      radial-gradient(at 0% 50%, hsl(14, 90%, 53%) 0px, transparent 50%);
+  }
+
+  /* Premium Shadows */
+  .shadow-sm-premium {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  }
+
+  .shadow-md-premium {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  }
+
+  .shadow-lg-premium {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  }
+
+  .shadow-xl-premium {
+    box-shadow: 0 16px 64px rgba(0, 0, 0, 0.16);
+  }
+
+  /* Glow Effects for Dark Mode */
+  .dark .glow-primary {
+    box-shadow: 0 0 32px rgba(96, 165, 250, 0.5);
+  }
+
+  .dark .glow-secondary {
+    box-shadow: 0 0 32px rgba(167, 139, 250, 0.5);
+  }
+
+  .dark .glow-accent {
+    box-shadow: 0 0 32px rgba(251, 146, 60, 0.5);
+  }
+
+  /* Premium Button Hover */
+  .btn-premium {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .btn-premium:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px hsl(var(--primary) / 0.3);
+  }
+
+  .btn-premium:active {
+    transform: translateY(0);
+  }
+
+  /* Card Hover Animation */
+  .card-premium {
+    transition: all 0.3s ease;
+  }
+
+  .card-premium:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+  }
+
+  /* Loading Shimmer Animation */
+  @keyframes shimmer {
+    0% {
+      background-position: -1000px 0;
+    }
+
+    100% {
+      background-position: 1000px 0;
+    }
+  }
+
+  .loading-shimmer {
+    background: linear-gradient(90deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.2) 50%,
+        rgba(255, 255, 255, 0) 100%);
+    background-size: 1000px 100%;
+    animation: shimmer 2s infinite;
+  }
+
+  .dark .loading-shimmer {
+    background: linear-gradient(90deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.05) 50%,
+        rgba(255, 255, 255, 0) 100%);
+  }
+}
+
+@layer base {
   @media print {
+
+    /* Default to portrait for bulletins, reports, etc. */
     @page {
-        size: a4 portrait;
-        margin: 1.5cm;
+      size: A4 portrait;
+      margin: 1.5cm;
     }
-    body.print-landscape {
-      @page {
-        size: a4 landscape;
-        margin: 1cm;
-      }
+
+    /* Named page for landscape printing (IT assets inventory, etc.) */
+    @page landscape {
+      size: A4 landscape;
+      margin: 1cm;
     }
-    body.print-dymo-label {
-      @page {
-        size: 57mm 32mm;
-        margin: 1mm;
-      }
+
+    /* Named page for Dymo labels */
+    @page dymo-label {
+      size: 57mm 32mm;
+      margin: 1mm;
     }
-    .print-page-break {
-        page-break-after: always;
+
+
+    * {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
     }
-    .print-page-break:last-child {
-        page-break-after: auto;
+
+    body,
+    html {
+      background-color: #fff !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      margin: 0 !important;
+      padding: 0 !important;
     }
-    body {
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
-        counter-reset: page;
-    }
-    .print-hidden {
-        display: none !important;
-    }
-    body, html {
-      background-color: #fff !important; /* Ensure a white background for printing */
-      width: 100%;
-      height: 100%;
-    }
+
     body * {
-        visibility: hidden;
+      visibility: hidden;
     }
-    #print-section, #print-section * {
-        visibility: visible;
+
+    #print-section,
+    #print-section * {
+      visibility: visible !important;
     }
+
     #print-section {
-        position: absolute;
-        left: 0;
-        top: 0;
-        right: 0;
-        width: 100%;
-        height: auto;
-        margin: 0;
-        padding: 0;
-        border: none;
-        box-shadow: none;
+      position: static !important;
+      display: block !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      min-width: 100% !important;
+      padding: 0.5cm 1cm !important;
+      margin: 0 !important;
+      box-sizing: border-box !important;
+      border: none !important;
+      box-shadow: none !important;
     }
+
+    /* Apply landscape page when print-landscape class is on body */
+    body.print-landscape #print-section {
+      page: landscape;
+    }
+
+    /* Apply dymo-label page when print-dymo-label class is on body */
+    body.print-dymo-label #print-section {
+      page: dymo-label;
+      padding: 1mm !important;
+    }
+
+    /* Force all children to respect full width */
+    #print-section>* {
+      width: 100% !important;
+      max-width: 100% !important;
+    }
+
+    /* Force header to use full width */
+    #print-section header {
+      width: 100% !important;
+      max-width: 100% !important;
+      display: flex !important;
+    }
+
+    /* Force table to use full width */
+    #print-section table {
+      width: 100% !important;
+      max-width: 100% !important;
+      min-width: 100% !important;
+      table-layout: fixed !important;
+      font-size: 8pt !important;
+    }
+
+    #print-section table th,
+    #print-section table td {
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+      white-space: nowrap !important;
+    }
+
+    .print-hidden {
+      display: none !important;
+    }
+
+    .print-page-break {
+      page-break-after: always;
+    }
+
+    .print-page-break:last-child {
+      page-break-after: auto;
+    }
+
     #print-section pre {
       counter-reset: line;
     }
-    #print-section pre > span {
+
+    #print-section pre>span {
       counter-increment: line;
     }
-    #print-section pre > span::before {
+
+    #print-section pre>span::before {
       content: counter(line);
       display: inline-block;
-      width: 2.5em; /* Adjust width as needed */
+      width: 2.5em;
+      /* Adjust width as needed */
       padding-right: 0.5em;
       margin-right: 0.5em;
       text-align: right;
-      color: #999; /* Light grey color for line numbers */
+      color: #999;
+      /* Light grey color for line numbers */
       font-size: 0.8em;
       border-right: 1px solid #ddd;
     }
+
     .page-number::after {
       counter-increment: page;
       content: counter(page);

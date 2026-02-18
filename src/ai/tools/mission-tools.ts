@@ -25,22 +25,31 @@ export const getMissionInfo = ai.defineTool(
     console.log(`[getMissionInfo] Searching for missions with status: ${input.status || 'any'}`);
     try {
       let missions = await getMissions();
-      
+
       if (input.status) {
-        missions = missions.filter(mission => mission.status === input.status);
+        const statusMap: Record<string, Mission['status']> = {
+          "Planned": "Planifiée",
+          "In Progress": "En cours",
+          "Completed": "Terminée",
+          "Cancelled": "Annulée"
+        };
+        const targetStatus = statusMap[input.status];
+        if (targetStatus) {
+          missions = missions.filter(mission => mission.status === targetStatus);
+        }
       }
 
       if (missions.length === 0) {
         return `No missions found${input.status ? ` with status "${input.status}"` : ''}.`;
       }
-      
+
       // Return a summary of the found missions
       return JSON.stringify(missions.map(m => ({
-          title: m.title,
-          assignedTo: m.assignedTo,
-          startDate: m.startDate,
-          endDate: m.endDate,
-          status: m.status,
+        title: m.title,
+        assignedTo: m.participants?.map(p => p.employeeName).join(', ') || 'Unassigned',
+        startDate: m.startDate,
+        endDate: m.endDate,
+        status: m.status,
       })));
     } catch (error) {
       console.error('[getMissionInfo] Error searching for missions:', error);

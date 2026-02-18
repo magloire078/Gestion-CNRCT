@@ -14,9 +14,10 @@ export type ConversationState = {
 };
 
 export async function continueConversation(
-  history: Message[],
+  prevState: ConversationState,
   data: FormData
 ): Promise<ConversationState> {
+  const history = prevState.messages;
   const userInput = data.get("userInput") as string;
 
   if (!userInput) {

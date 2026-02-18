@@ -1,6 +1,6 @@
 
 
-import { collection, getDocs, addDoc, deleteDoc, doc, onSnapshot, Unsubscribe, query, orderBy, setDoc, updateDoc } from 'firebase/firestore';
+import { collection, getDocs, addDoc, deleteDoc, doc, onSnapshot, Unsubscribe, query, orderBy, setDoc, updateDoc } from '@/lib/firebase';
 import type { User, Role, Employe } from '@/lib/data';
 import { db } from '@/lib/firebase';
 import { getRoles } from './role-service';

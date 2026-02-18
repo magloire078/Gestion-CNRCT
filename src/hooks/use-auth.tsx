@@ -34,24 +34,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setLoading(false);
       }
     };
-    
+
     // Subscribe to auth state changes
     const unsubscribeAuth = onAuthStateChange((currentUser) => {
-        if(isMounted) {
-          setUser(currentUser);
-          authDone = true;
+      if (isMounted) {
+        setUser(currentUser);
+        authDone = true;
+
+        // Load organization settings only after we know the auth state
+        // This prevents permission errors when not authenticated
+        if (!settingsDone) {
+          getOrganizationSettings().then(orgSettings => {
+            if (isMounted) {
+              setSettings(orgSettings);
+              settingsDone = true;
+              checkDone();
+            }
+          });
+        } else {
           checkDone();
         }
+      }
     });
-
-    // Fetch organization settings once
-    getOrganizationSettings().then(orgSettings => {
-        if(isMounted) {
-            setSettings(orgSettings);
-            settingsDone = true;
-            checkDone();
-        }
-    }).catch(console.error);
 
     return () => {
       isMounted = false;
@@ -72,12 +76,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [user, loading, pathname, router]);
 
   const hasPermission = (permission: string) => {
-      if (loading || !user) return false;
-      // Admins and Super Admins have all permissions
-      if (user.role?.name === 'Administrateur' || user.role?.name === 'Super Administrateur') {
-        return true;
-      }
-      return user.permissions?.includes(permission) || false;
+    if (loading || !user) return false;
+    // Admins and Super Admins have all permissions
+    if (user.role?.name === 'Administrateur' || user.role?.name === 'Super Administrateur') {
+      return true;
+    }
+    return user.permissions?.includes(permission) || false;
   }
 
   const value = { user, loading, hasPermission, settings };

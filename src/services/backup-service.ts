@@ -2,7 +2,7 @@
 "use server";
 
 import { db } from '@/lib/firebase';
-import { getDocs, collection, collectionGroup } from 'firebase/firestore';
+import { getDocs, collection, collectionGroup } from '@/lib/firebase';
 
 const COLLECTIONS_TO_BACKUP = [
     'users', 'roles', 'settings', 'employees', 'chiefs', 'missions',
@@ -21,7 +21,7 @@ const escapeSql = (value: any): string => {
     if (value === null || value === undefined) return 'NULL';
     if (typeof value === 'boolean') return value ? 'TRUE' : 'FALSE';
     if (typeof value === 'number') return String(value);
-    
+
     // For strings, escape single quotes
     const str = String(value);
     return `'${str.replace(/'/g, "''")}'`;
@@ -35,8 +35,8 @@ const escapeSql = (value: any): string => {
  * @returns A formatted SQL INSERT statement string.
  */
 const toSqlInsert = (collectionName: string, docId: string, data: Record<string, any>): string => {
-    const dataWithId = { id: docId, ...data };
-    
+    const dataWithId: Record<string, any> = { id: docId, ...data };
+
     // Convert arrays and objects to JSON strings
     for (const key in dataWithId) {
         if (Array.isArray(dataWithId[key]) || (typeof dataWithId[key] === 'object' && dataWithId[key] !== null)) {
@@ -76,14 +76,14 @@ export async function generateSqlBackup(): Promise<string> {
             sqlString += `-- ERROR backing up collection ${collectionName}: ${error instanceof Error ? error.message : String(error)}\n\n`;
         }
     }
-    
+
     // Backup subcollections using collectionGroup
     const subcollections = ['history'];
     for (const subcollectionName of subcollections) {
-         try {
+        try {
             sqlString += `--\n-- Data for subcollection group: ${subcollectionName}\n--\n`;
             const snapshot = await getDocs(collectionGroup(db, subcollectionName));
-             if (snapshot.empty) {
+            if (snapshot.empty) {
                 sqlString += `-- No documents found in subcollection group ${subcollectionName}.\n\n`;
                 continue;
             }
@@ -93,7 +93,7 @@ export async function generateSqlBackup(): Promise<string> {
                 const parentCollection = pathParts[0];
                 const parentId = pathParts[1];
                 const subcollection = pathParts[2];
-                
+
                 const dataWithParent = {
                     ...doc.data(),
                     parentId: parentId, // Add parent ID for context

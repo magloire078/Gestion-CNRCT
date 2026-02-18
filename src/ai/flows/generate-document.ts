@@ -9,8 +9,8 @@
  * - GenerateDocumentOutput - The return type for the generateDocument function.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'zod';
+import { ai } from '@/ai/genkit';
+import { z } from 'zod';
 import { getPayslipDetails } from '@/services/payslip-details-service';
 import { numberToWords } from '@/lib/utils';
 import type { Employe } from '@/lib/data';
@@ -22,37 +22,37 @@ const GenerateDocumentInputSchema = z.object({
     .describe('The type of document to generate (e.g., contract, policy, Attestation de Virement).'),
   documentContent: z.string().describe('The content or context for the document, which may include employee details.'),
   employeeContext: z.object({
-      name: z.string().optional(),
-      matricule: z.string().optional(),
-      poste: z.string().optional(),
-      numeroCompte: z.string().optional(),
-      banque: z.string().optional(),
-      baseSalary: z.number().optional(),
-      decisionDetails: z.string().optional().describe("Details of the hiring decision, e.g., 'n°024/CNRCT/DIR/P. du 01 Août 2017'"),
-      netSalary: z.number().optional(),
-      netSalaryInWords: z.string().optional(),
-      currentDate: z.string().optional(),
-      signerName: z.string().optional().default('Ange-Marie Christophe Dja GAGNIE'),
-      signerTitle: z.string().optional().default('Préfet'),
-      dateEmbauche: z.string().optional(),
-      lieuNaissance: z.string().optional(),
-      
-      // Fields for Ordre de Mission
-      numeroMission: z.string().optional(),
-      villeRedaction: z.string().optional().default('Yamoussoukro'),
-      dateRedaction: z-string().optional(),
-      destination: z.string().optional(),
-      objetMission: z.string().optional(),
-      moyenTransport: z.string().optional(),
-      immatriculation: z.string().optional(),
-      dateDepart: z.string().optional(),
-      dateRetour: z.string().optional(),
-      imputationBudgetaire: z.string().optional().default('Chambre Nationale des Rois et Chefs Traditionnels'),
-      missionType: z.string().optional(),
-      totalIndemnites: z.number().optional(),
-      coutTransport: z.number().optional(),
-      coutHebergement: z.number().optional(),
-      totalFraisMission: z.number().optional(),
+    name: z.string().optional(),
+    matricule: z.string().optional(),
+    poste: z.string().optional(),
+    numeroCompte: z.string().optional(),
+    banque: z.string().optional(),
+    baseSalary: z.number().optional(),
+    decisionDetails: z.string().optional().describe("Details of the hiring decision, e.g., 'n°024/CNRCT/DIR/P. du 01 Août 2017'"),
+    netSalary: z.number().optional(),
+    netSalaryInWords: z.string().optional(),
+    currentDate: z.string().optional(),
+    signerName: z.string().optional().default('Ange-Marie Christophe Dja GAGNIE'),
+    signerTitle: z.string().optional().default('Préfet'),
+    dateEmbauche: z.string().optional(),
+    lieuNaissance: z.string().optional(),
+
+    // Fields for Ordre de Mission
+    numeroMission: z.string().optional(),
+    villeRedaction: z.string().optional().default('Yamoussoukro'),
+    dateRedaction: z.string().optional(),
+    destination: z.string().optional(),
+    objetMission: z.string().optional(),
+    moyenTransport: z.string().optional(),
+    immatriculation: z.string().optional(),
+    dateDepart: z.string().optional(),
+    dateRetour: z.string().optional(),
+    imputationBudgetaire: z.string().optional().default('Chambre Nationale des Rois et Chefs Traditionnels'),
+    missionType: z.string().optional(),
+    totalIndemnites: z.number().optional(),
+    coutTransport: z.number().optional(),
+    coutHebergement: z.number().optional(),
+    totalFraisMission: z.number().optional(),
 
 
   }).optional().describe("Contextual information about the employee for document generation."),
@@ -70,8 +70,8 @@ export async function generateDocument(input: GenerateDocumentInput): Promise<Ge
 
 const generateDocumentPrompt = ai.definePrompt({
   name: 'generateDocumentPrompt',
-  input: {schema: GenerateDocumentInputSchema},
-  output: {schema: GenerateDocumentOutputSchema},
+  input: { schema: GenerateDocumentInputSchema },
+  output: { schema: GenerateDocumentOutputSchema },
   prompt: `You are an AI assistant specialized in generating various types of official HR documents for an organization named "Chambre Nationale des Rois et Chefs Traditionnels (CNRCT)" in Côte d'Ivoire.
 
   Based on the provided document type and context, generate a complete and coherent document. Your response should contain ONLY the raw text of the document, without any additional formatting like Markdown headers or titles.
@@ -189,56 +189,63 @@ const generateDocumentFlow = ai.defineFlow(
     outputSchema: GenerateDocumentOutputSchema,
   },
   async (input) => {
-    
+
     // Set current date for all document types that need it
     if (input.documentType === 'Attestation de Virement' || input.documentType === 'Employment Contract' || input.documentType === 'Ordre de Mission') {
-      if(!input.employeeContext) input.employeeContext = {};
+      if (!input.employeeContext) {
+        input.employeeContext = {
+          signerName: 'Ange-Marie Christophe Dja GAGNIE',
+          signerTitle: 'Préfet',
+          villeRedaction: 'Yamoussoukro',
+          imputationBudgetaire: 'Chambre Nationale des Rois et Chefs Traditionnels'
+        };
+      }
       const today = new Date();
       const formattedDate = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }).format(today);
-      
-      if(input.documentType === 'Ordre de Mission') {
-          input.employeeContext.dateRedaction = formattedDate;
+
+      if (input.documentType === 'Ordre de Mission') {
+        input.employeeContext.dateRedaction = formattedDate;
       } else {
-          input.employeeContext.currentDate = formattedDate;
+        input.employeeContext.currentDate = formattedDate;
       }
     }
 
     if (input.documentType === 'Attestation de Virement' && input.employeeContext?.baseSalary) {
-        let netSalary = 0;
-        let netSalaryInWords = '';
+      let netSalary = 0;
+      let netSalaryInWords = '';
 
-        // Very basic mock employee for calculation if only salary is provided
-        const mockEmployee: Employe = {
-            id: 'temp',
-            name: input.employeeContext.name || '',
-            baseSalary: input.employeeContext.baseSalary || 0,
-            matricule: '',
-            departmentId: '',
-            poste: '',
-            status: 'Actif',
-            photoUrl: '',
-        };
+      // Very basic mock employee for calculation if only salary is provided
+      const mockEmployee: Employe = {
+        id: 'temp',
+        name: input.employeeContext.name || '',
+        baseSalary: input.employeeContext.baseSalary || 0,
+        matricule: '',
+        departmentId: '',
+        poste: '',
+        status: 'Actif',
+        photoUrl: '',
+      };
 
-        try {
-            // Use the current date for the payslip calculation
-            const payslipDate = new Date().toISOString().split('T')[0];
-            const details = await getPayslipDetails(mockEmployee, payslipDate);
-            netSalary = details.totals.netAPayer;
-            netSalaryInWords = details.totals.netAPayerInWords;
-        } catch (e) {
-            console.error("Could not calculate payslip details for attestation:", e);
-            // Fallback if calculation fails
-            netSalary = input.employeeContext.baseSalary || 0;
-            netSalaryInWords = numberToWords(netSalary);
-        }
+      try {
+        // Use the current date for the payslip calculation
+        const payslipDate = new Date().toISOString().split('T')[0];
+        const details = await getPayslipDetails(mockEmployee, payslipDate);
+        netSalary = details.totals.netAPayer;
+        netSalaryInWords = details.totals.netAPayerInWords;
+      } catch (e) {
+        console.error("Could not calculate payslip details for attestation:", e);
+        // Fallback if calculation fails
+        netSalary = input.employeeContext.baseSalary || 0;
+        netSalaryInWords = numberToWords(netSalary);
+      }
 
-        input.employeeContext.netSalary = Math.round(netSalary);
-        input.employeeContext.netSalaryInWords = netSalaryInWords;
+      input.employeeContext.netSalary = Math.round(netSalary);
+      input.employeeContext.netSalaryInWords = netSalaryInWords;
     }
-    
+
     const { output } = await generateDocumentPrompt(input);
     return output!;
   }
 );
 
-    
+

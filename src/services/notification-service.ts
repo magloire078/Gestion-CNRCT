@@ -1,7 +1,7 @@
 
 
 import { db } from '@/lib/firebase';
-import { collection, addDoc, onSnapshot, Unsubscribe, query, where, orderBy, writeBatch, doc, getDocs, updateDoc } from 'firebase/firestore';
+import { collection, addDoc, onSnapshot, Unsubscribe, query, where, orderBy, writeBatch, doc, getDocs, updateDoc } from '@/lib/firebase';
 import type { Notification, Employe } from '@/lib/data';
 import { getEmployees } from './employee-service';
 import { parseISO, differenceInMonths } from 'date-fns';

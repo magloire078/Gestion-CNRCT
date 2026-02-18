@@ -6,13 +6,13 @@ import { getStorage, FirebaseStorage } from "firebase/storage";
 import { getAnalytics } from "firebase/analytics";
 
 const firebaseConfig: FirebaseOptions = {
-  apiKey: "AIzaSyBuMgqk-I_mngDw4SYuNhOOLcF6JNchXhw",
-  authDomain: "gestion-cnrct.firebaseapp.com",
-  projectId: "gestion-cnrct",
-  storageBucket: "gestion-cnrct.appspot.com",
-  messagingSenderId: "126727792063",
-  appId: "1:126727792063:web:55513c7e21531a87286d0a",
-  measurementId: "G-TDXM581DZ5"
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
 };
 
 
@@ -43,7 +43,42 @@ if (typeof window !== 'undefined') {
 }
 
 
+
+
 export { app, db, auth, storage };
 
+// Exporter le wrapper onSnapshot qui attend l'authentification
+export { onSnapshot } from './firestore-wrapper';
+
+// Ré-exporter les autres fonctions Firestore dont les services ont besoin
+export {
+  collection,
+  collectionGroup,
+  doc,
+  getDoc,
+  getDocs,
+  setDoc,
+  updateDoc,
+  deleteDoc,
+  query,
+  where,
+  orderBy,
+  limit,
+  addDoc,
+  type DocumentData,
+  type QuerySnapshot,
+  type QueryDocumentSnapshot,
+  type DocumentReference,
+  type CollectionReference,
+  type Query,
+  type Unsubscribe,
+  type FirestoreError,
+  type DocumentSnapshot,
+  Timestamp,
+  serverTimestamp,
+  increment,
+  arrayUnion,
+  arrayRemove,
+} from 'firebase/firestore';
 
 

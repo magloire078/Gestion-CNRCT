@@ -1,5 +1,6 @@
 
-import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, onSnapshot, Unsubscribe, query, orderBy } from 'firebase/firestore';
+import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, onSnapshot, Unsubscribe, query, orderBy } from '@/lib/firebase';
+import type { QuerySnapshot, DocumentData, QueryDocumentSnapshot, FirestoreError } from '@/lib/firebase';
 import type { Direction } from '@/lib/data';
 import { db } from '@/lib/firebase';
 
@@ -10,15 +11,15 @@ export function subscribeToDirections(
     onError: (error: Error) => void
 ): Unsubscribe {
     const q = query(directionsCollection, orderBy("name", "asc"));
-    const unsubscribe = onSnapshot(q, 
-        (snapshot) => {
-            const directions = snapshot.docs.map(doc => ({
+    const unsubscribe = onSnapshot(q,
+        (snapshot: QuerySnapshot<DocumentData>) => {
+            const directions = snapshot.docs.map((doc: QueryDocumentSnapshot<DocumentData>) => ({
                 id: doc.id,
                 ...doc.data()
             } as Direction));
             callback(directions);
         },
-        (error) => {
+        (error: FirestoreError) => {
             console.error("Error subscribing to directions:", error);
             onError(error);
         }
@@ -27,12 +28,12 @@ export function subscribeToDirections(
 }
 
 export async function getDirections(): Promise<Direction[]> {
-  const q = query(directionsCollection, orderBy("name", "asc"));
-  const snapshot = await getDocs(q);
-  return snapshot.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data()
-  } as Direction));
+    const q = query(directionsCollection, orderBy("name", "asc"));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map((doc: QueryDocumentSnapshot<DocumentData>) => ({
+        id: doc.id,
+        ...doc.data()
+    } as Direction));
 }
 
 export async function addDirection(directionData: Omit<Direction, 'id'>): Promise<Direction> {
@@ -50,4 +51,3 @@ export async function deleteDirection(directionId: string): Promise<void> {
     await deleteDoc(directionDocRef);
 }
 
-    

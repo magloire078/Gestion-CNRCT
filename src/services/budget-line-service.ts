@@ -1,5 +1,5 @@
 import { db } from '@/lib/firebase';
-import { collection, addDoc, onSnapshot, Unsubscribe, query, orderBy, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { collection, addDoc, onSnapshot, Unsubscribe, query, orderBy, doc, updateDoc, deleteDoc } from '@/lib/firebase';
 import type { BudgetLine } from '@/lib/data';
 
 const budgetLinesCollection = collection(db, 'budgetLines');

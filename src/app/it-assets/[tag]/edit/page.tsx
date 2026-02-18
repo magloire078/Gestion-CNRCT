@@ -13,11 +13,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select";
 import { ArrowLeft, Loader2, Save } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -40,11 +40,11 @@ export default function AssetEditPage() {
 
     useEffect(() => {
         if (typeof tag !== 'string') return;
-        
+
         async function fetchAssetData() {
             try {
                 const [assetData, employeesData] = await Promise.all([
-                    getAsset(tag),
+                    getAsset(tag as string),
                     getEmployees()
                 ]);
 
@@ -53,7 +53,7 @@ export default function AssetEditPage() {
                     router.push('/it-assets');
                     return;
                 }
-                
+
                 setAsset(assetData);
                 setEmployees(employeesData.filter(e => e.status === 'Actif'));
 
@@ -75,22 +75,22 @@ export default function AssetEditPage() {
     const handleSelectChange = (name: string, value: string) => {
         const finalValue = value === 'none' ? '' : value;
         const newState = { ...(asset || {}), [name]: finalValue };
-        
+
         if (name === 'type' && value !== 'Ordinateur') {
             newState.typeOrdinateur = undefined;
         }
-        
+
         if (name === 'status' && value === 'En stock') {
             newState.assignedTo = 'En stock';
         }
-        
+
         setAsset(newState as Partial<Asset>);
     };
 
     const handleSave = async () => {
         if (!asset || typeof tag !== 'string') return;
         setIsSaving(true);
-        
+
         try {
             await updateAsset(tag, asset);
             toast({ title: "Succès", description: "Les informations de l'actif ont été mises à jour." });
@@ -115,27 +115,27 @@ export default function AssetEditPage() {
     if (!asset) {
         return <div className="text-center py-10">Actif non trouvé.</div>;
     }
-    
+
     const showPasswordField = asset.type === 'Équipement Réseau' || asset.typeOrdinateur === 'Serveur';
 
 
     return (
-         <div className="max-w-xl mx-auto flex flex-col gap-6">
+        <div className="max-w-xl mx-auto flex flex-col gap-6">
             <div className="flex items-center gap-4">
-                 <Button variant="outline" size="icon" onClick={() => router.back()}>
+                <Button variant="outline" size="icon" onClick={() => router.back()}>
                     <ArrowLeft className="h-4 w-4" />
                     <span className="sr-only">Retour</span>
-                 </Button>
-                 <div>
+                </Button>
+                <div>
                     <h1 className="text-2xl font-bold tracking-tight">Modifier l'Actif</h1>
                     <p className="text-muted-foreground">{asset.tag}</p>
-                 </div>
-                 <Button onClick={handleSave} disabled={isSaving} className="ml-auto">
-                    {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4" />}
+                </div>
+                <Button onClick={handleSave} disabled={isSaving} className="ml-auto">
+                    {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                     Enregistrer
                 </Button>
             </div>
-            
+
             <Card>
                 <CardHeader><CardTitle>Détails de l'Actif</CardTitle></CardHeader>
                 <CardContent className="space-y-4">
@@ -143,7 +143,7 @@ export default function AssetEditPage() {
                         <Label htmlFor="tag">N° d'Inventaire</Label>
                         <Input id="tag" name="tag" value={asset.tag || ''} disabled />
                     </div>
-                     <div className="space-y-2">
+                    <div className="space-y-2">
                         <Label htmlFor="type">Type d'Actif</Label>
                         <Select value={asset.type || ''} onValueChange={(v) => handleSelectChange('type', v)}>
                             <SelectTrigger><SelectValue /></SelectTrigger>
@@ -156,14 +156,14 @@ export default function AssetEditPage() {
                         <div className="space-y-2">
                             <Label htmlFor="typeOrdinateur">Type d'Ordinateur</Label>
                             <Select value={asset.typeOrdinateur || ''} onValueChange={(v) => handleSelectChange('typeOrdinateur', v)}>
-                            <SelectTrigger><SelectValue placeholder="Sélectionnez..." /></SelectTrigger>
-                            <SelectContent>
-                                {computerTypes.map(ct => <SelectItem key={ct} value={ct}>{ct}</SelectItem>)}
-                            </SelectContent>
+                                <SelectTrigger><SelectValue placeholder="Sélectionnez..." /></SelectTrigger>
+                                <SelectContent>
+                                    {computerTypes.map(ct => <SelectItem key={ct as string} value={ct as string}>{ct}</SelectItem>)}
+                                </SelectContent>
                             </Select>
                         </div>
                     )}
-                     <div className="space-y-2">
+                    <div className="space-y-2">
                         <Label htmlFor="fabricant">Fabricant</Label>
                         <Input id="fabricant" name="fabricant" value={asset.fabricant || ''} onChange={handleInputChange} />
                     </div>
@@ -187,14 +187,14 @@ export default function AssetEditPage() {
                     )}
                     <div className="space-y-2">
                         <Label htmlFor="status">Statut</Label>
-                         <Select value={asset.status || ''} onValueChange={(v) => handleSelectChange('status', v)}>
+                        <Select value={asset.status || ''} onValueChange={(v) => handleSelectChange('status', v)}>
                             <SelectTrigger><SelectValue /></SelectTrigger>
                             <SelectContent>
                                 {assetStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
                             </SelectContent>
                         </Select>
                     </div>
-                     <div className="space-y-2">
+                    <div className="space-y-2">
                         <Label htmlFor="assignedTo">Assigné à</Label>
                         <Select value={asset.assignedTo || 'none'} onValueChange={(v) => handleSelectChange('assignedTo', v)}>
                             <SelectTrigger><SelectValue placeholder="Sélectionnez..." /></SelectTrigger>

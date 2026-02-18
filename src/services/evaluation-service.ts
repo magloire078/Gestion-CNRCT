@@ -1,7 +1,8 @@
 
 
 import { db } from '@/lib/firebase';
-import { collection, getDocs, addDoc, onSnapshot, Unsubscribe, query, orderBy, doc, updateDoc, getDoc } from 'firebase/firestore';
+import { collection, getDocs, addDoc, onSnapshot, Unsubscribe, query, orderBy, doc, updateDoc, getDoc } from '@/lib/firebase';
+import { evaluationSchema } from '@/lib/schemas/evaluation-schema';
 import type { Evaluation, Goal } from '@/lib/data';
 import { createNotification } from './notification-service';
 
@@ -14,10 +15,15 @@ export function subscribeToEvaluations(
     const q = query(evaluationsCollection, orderBy("evaluationDate", "desc"));
     const unsubscribe = onSnapshot(q,
         (snapshot) => {
-            const evaluations = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            } as Evaluation));
+            const evaluations = snapshot.docs.map(doc => {
+                const data = { id: doc.id, ...doc.data() };
+                const result = evaluationSchema.safeParse(data);
+                if (!result.success) {
+                    console.error(`[EvaluationService] validation error for ${doc.id}:`, result.error.format());
+                    return data as Evaluation;
+                }
+                return result.data as Evaluation;
+            });
             callback(evaluations);
         },
         (error) => {
@@ -30,10 +36,15 @@ export function subscribeToEvaluations(
 
 export async function getEvaluations(): Promise<Evaluation[]> {
     const snapshot = await getDocs(query(evaluationsCollection, orderBy("evaluationDate", "desc")));
-    return snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-    } as Evaluation));
+    return snapshot.docs.map(doc => {
+        const data = { id: doc.id, ...doc.data() };
+        const result = evaluationSchema.safeParse(data);
+        if (!result.success) {
+            console.error(`[EvaluationService] validation error for ${doc.id}:`, result.error.format());
+            return data as Evaluation;
+        }
+        return result.data as Evaluation;
+    });
 }
 
 export async function getEvaluation(id: string): Promise<Evaluation | null> {
@@ -42,7 +53,7 @@ export async function getEvaluation(id: string): Promise<Evaluation | null> {
     const docSnap = await getDoc(evalDocRef);
     if (docSnap.exists()) {
         const data = docSnap.data();
-        return { 
+        return {
             id: docSnap.id,
             ...data,
             scores: data.scores || {}, // Ensure scores is always an object
@@ -68,7 +79,7 @@ export async function addEvaluation(evaluationDataToAdd: Omit<Evaluation, 'id'>)
 
 export async function updateEvaluation(evaluationId: string, dataToUpdate: Partial<Evaluation>): Promise<void> {
     const evalDocRef = doc(db, 'evaluations', evaluationId);
-    
+
     // Create a clean object with only the fields to update
     const updatePayload: Partial<Evaluation> = {};
     if (dataToUpdate.strengths !== undefined) updatePayload.strengths = dataToUpdate.strengths;
@@ -80,27 +91,27 @@ export async function updateEvaluation(evaluationId: string, dataToUpdate: Parti
     if (dataToUpdate.status !== undefined) updatePayload.status = dataToUpdate.status;
 
     await updateDoc(evalDocRef, updatePayload);
-    
+
     // Send notifications based on status change
     if (dataToUpdate.status) {
         const currentEval = await getEvaluation(evaluationId);
-        if(!currentEval) return;
+        if (!currentEval) return;
 
         if (dataToUpdate.status === 'Pending Employee Sign-off') {
-             await createNotification({
+            await createNotification({
                 userId: currentEval.employeeId,
                 title: 'Évaluation Prête',
                 description: `Votre évaluation de performance pour la période ${currentEval.reviewPeriod} est prête pour vos commentaires.`,
                 href: `/evaluations/${evaluationId}`
             });
         } else if (dataToUpdate.status === 'Completed') {
-             await createNotification({
+            await createNotification({
                 userId: currentEval.employeeId,
                 title: 'Évaluation Finalisée',
                 description: `Votre évaluation de performance pour la période ${currentEval.reviewPeriod} a été finalisée.`,
                 href: `/evaluations/${evaluationId}`
             });
-             await createNotification({
+            await createNotification({
                 userId: currentEval.managerId,
                 title: 'Évaluation Finalisée',
                 description: `L'évaluation de ${currentEval.employeeName} pour ${currentEval.reviewPeriod} a été finalisée.`,
@@ -110,4 +121,4 @@ export async function updateEvaluation(evaluationId: string, dataToUpdate: Parti
     }
 }
 
-    
+

@@ -1,6 +1,6 @@
 
 import { db, storage } from '@/lib/firebase';
-import { collection, addDoc, onSnapshot, Unsubscribe, query, orderBy } from 'firebase/firestore';
+import { collection, addDoc, onSnapshot, Unsubscribe, query, orderBy } from '@/lib/firebase';
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import type { Document } from '@/lib/data';
 

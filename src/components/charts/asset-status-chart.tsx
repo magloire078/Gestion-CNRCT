@@ -34,8 +34,8 @@ export function AssetStatusChart() {
         const assetData = await getAssets();
         const statusOrder = ['En utilisation', 'En stock', 'En réparation', 'Retiré'];
         const statusData = statusOrder.map(status => ({
-            status,
-            count: assetData.filter(asset => asset.status === status).length
+          status,
+          count: assetData.filter(asset => asset.status === status).length
         }));
 
         setChartData(statusData);
@@ -54,16 +54,16 @@ export function AssetStatusChart() {
 
   return (
     <ChartContainer config={chartConfig} className="h-[250px] w-full">
-      <BarChart 
-        accessibilityLayer 
+      <BarChart
+        accessibilityLayer
         data={chartData}
         margin={{
-            top: 20,
-            right: 20,
-            bottom: 20,
-            left: 20,
+          top: 20,
+          right: 20,
+          bottom: 20,
+          left: 20,
         }}
-        >
+      >
         <CartesianGrid vertical={false} />
         <XAxis
           dataKey="status"
@@ -78,9 +78,9 @@ export function AssetStatusChart() {
           content={<ChartTooltipContent hideLabel />}
         />
         <Bar dataKey="count" radius={4}>
-            {chartData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={chartConfig[entry.status as keyof typeof chartConfig]?.color} />
-            ))}
+          {chartData.map((entry, index) => (
+            <Cell key={`cell-${index}`} fill={(chartConfig[entry.status as keyof typeof chartConfig] as any)?.color} />
+          ))}
         </Bar>
       </BarChart>
     </ChartContainer>

@@ -54,22 +54,22 @@ export function AddAssetSheet({ isOpen, onClose, onAddAsset, initialTag }: AddAs
 
   useEffect(() => {
     if (initialTag) {
-        setTag(initialTag);
+      setTag(initialTag);
     }
   }, [initialTag]);
 
   useEffect(() => {
     if (isOpen) {
-        async function fetchEmployees() {
-            try {
-                const fetchedEmployees = await getEmployees();
-                setEmployees(fetchedEmployees);
-            } catch(err) {
-                console.error("Failed to fetch employees", err);
-                toast({ variant: "destructive", title: "Erreur", description: "Impossible de charger la liste des employés." });
-            }
+      async function fetchEmployees() {
+        try {
+          const fetchedEmployees = await getEmployees();
+          setEmployees(fetchedEmployees);
+        } catch (err) {
+          console.error("Failed to fetch employees", err);
+          toast({ variant: "destructive", title: "Erreur", description: "Impossible de charger la liste des employés." });
         }
-        fetchEmployees();
+      }
+      fetchEmployees();
     }
   }, [isOpen, toast]);
 
@@ -98,22 +98,22 @@ export function AddAssetSheet({ isOpen, onClose, onAddAsset, initialTag }: AddAs
       setError("Le N° d'inventaire, le type et le modèle sont obligatoires.");
       return;
     }
-    
+
     setIsSubmitting(true);
     setError("");
 
     try {
-      const dataToSave = { 
+      const dataToSave = {
         tag,
-        type, 
-        modele, 
+        type,
+        modele,
         fabricant,
         numeroDeSerie,
         ipAddress,
         password: showPasswordField ? password : undefined,
         typeOrdinateur: type === 'Ordinateur' ? typeOrdinateur : undefined,
-        assignedTo, 
-        status 
+        assignedTo,
+        status
       };
 
       // Ensure no undefined values are sent
@@ -123,10 +123,10 @@ export function AddAssetSheet({ isOpen, onClose, onAddAsset, initialTag }: AddAs
           delete dataToSave[dataKey];
         }
       });
-      
+
       await onAddAsset(dataToSave as Omit<Asset, 'tag'> & { tag: string });
       handleClose();
-    } catch(err) {
+    } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Échec de l'ajout de l'actif. Veuillez réessayer.";
       setError(errorMessage);
       toast({ variant: 'destructive', title: 'Erreur', description: errorMessage });
@@ -167,19 +167,19 @@ export function AddAssetSheet({ isOpen, onClose, onAddAsset, initialTag }: AddAs
             {type === "Ordinateur" && (
               <div className="space-y-2">
                 <Label htmlFor="typeOrdinateur">Type d'Ordinateur</Label>
-                <Select value={typeOrdinateur} onValueChange={(value: Asset['typeOrdinateur']) => setTypeOrdinateur(value)}>
+                <Select value={typeOrdinateur} onValueChange={(value) => setTypeOrdinateur(value as Asset['typeOrdinateur'])}>
                   <SelectTrigger>
                     <SelectValue placeholder="Sélectionnez un type d'ordinateur..." />
                   </SelectTrigger>
                   <SelectContent>
-                    {computerTypes.map(ct => <SelectItem key={ct} value={ct}>{ct}</SelectItem>)}
+                    {computerTypes.map(ct => <SelectItem key={ct as string} value={ct as string}>{ct}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
             )}
-             <div className="space-y-2">
+            <div className="space-y-2">
               <Label htmlFor="fabricant">Fabricant</Label>
-              <Input id="fabricant" value={fabricant} onChange={(e) => setFabricant(e.target.value)} placeholder="Ex: Dell, HP, Apple..."/>
+              <Input id="fabricant" value={fabricant} onChange={(e) => setFabricant(e.target.value)} placeholder="Ex: Dell, HP, Apple..." />
             </div>
             <div className="space-y-2">
               <Label htmlFor="modele">Modèle</Label>
@@ -189,30 +189,30 @@ export function AddAssetSheet({ isOpen, onClose, onAddAsset, initialTag }: AddAs
               <Label htmlFor="numeroDeSerie">N° de Série</Label>
               <Input id="numeroDeSerie" value={numeroDeSerie} onChange={(e) => setNumeroDeSerie(e.target.value)} />
             </div>
-             <div className="space-y-2">
-                <Label htmlFor="ipAddress">Adresse IP</Label>
-                <Input id="ipAddress" value={ipAddress} onChange={(e) => setIpAddress(e.target.value)} placeholder="Ex: 192.168.1.10" />
+            <div className="space-y-2">
+              <Label htmlFor="ipAddress">Adresse IP</Label>
+              <Input id="ipAddress" value={ipAddress} onChange={(e) => setIpAddress(e.target.value)} placeholder="Ex: 192.168.1.10" />
             </div>
             {showPasswordField && (
-                <div className="space-y-2">
-                    <Label htmlFor="password">Mot de Passe</Label>
-                    <Input id="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Mot de passe de l'équipement" />
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="password">Mot de Passe</Label>
+                <Input id="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Mot de passe de l'équipement" />
+              </div>
             )}
             <div className="space-y-2">
               <Label htmlFor="assignedTo">Assigné à</Label>
-              <Input id="assignedTo" value={assignedTo} onChange={(e) => setAssignedTo(e.target.value)} placeholder="Nom de l'employé ou du groupe"/>
+              <Input id="assignedTo" value={assignedTo} onChange={(e) => setAssignedTo(e.target.value)} placeholder="Nom de l'employé ou du groupe" />
             </div>
-             <div className="space-y-2">
+            <div className="space-y-2">
               <Label htmlFor="status">Statut</Label>
-               <Select value={status} onValueChange={(value: Asset['status']) => setStatus(value)}>
-                  <SelectTrigger>
-                      <SelectValue placeholder="Sélectionnez un statut" />
-                  </SelectTrigger>
-                  <SelectContent>
-                     {assetStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                  </SelectContent>
-               </Select>
+              <Select value={status} onValueChange={(value: Asset['status']) => setStatus(value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Sélectionnez un statut" />
+                </SelectTrigger>
+                <SelectContent>
+                  {assetStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                </SelectContent>
+              </Select>
             </div>
             {error && <p className="text-sm text-destructive text-center">{error}</p>}
           </div>

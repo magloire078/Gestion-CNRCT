@@ -1,6 +1,6 @@
 
 
-import { collection, getDocs, addDoc, query, where, orderBy, doc, updateDoc, deleteDoc, getDoc } from 'firebase/firestore';
+import { collection, getDocs, addDoc, query, where, orderBy, doc, updateDoc, deleteDoc, getDoc } from '@/lib/firebase';
 import type { EmployeeEvent, Employe } from '@/lib/data';
 import { db } from '@/lib/firebase';
 import { getEmployee } from './employee-service';
@@ -15,13 +15,13 @@ const salaryEventTypes: EmployeeEvent['eventType'][] = ['Promotion', 'Augmentati
  * @returns A promise that resolves to an array of employee events.
  */
 export async function getEmployeeHistory(employeeId: string): Promise<EmployeeEvent[]> {
-  const historyCollection = collection(db, `employees/${employeeId}/history`);
-  const q = query(historyCollection, orderBy("effectiveDate", "desc"));
-  const snapshot = await getDocs(q);
-  return snapshot.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data()
-  } as EmployeeEvent));
+    const historyCollection = collection(db, `employees/${employeeId}/history`);
+    const q = query(historyCollection, orderBy("effectiveDate", "desc"));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+    } as EmployeeEvent));
 }
 
 /**
@@ -39,13 +39,13 @@ export async function addEmployeeHistoryEvent(employeeId: string, eventData: Omi
     const isSalaryEvent = salaryEventTypes.includes(eventData.eventType as any);
 
     if (isSalaryEvent && employee) {
-        
+
         const history = await getEmployeeHistory(employee.id);
         const previousEvent = history
-            .filter(event => 
-                salaryEventTypes.includes(event.eventType as any) && 
+            .filter(event =>
+                salaryEventTypes.includes(event.eventType as any) &&
                 event.details &&
-                isValid(parseISO(event.effectiveDate)) && 
+                isValid(parseISO(event.effectiveDate)) &&
                 isBefore(parseISO(event.effectiveDate), parseISO(eventData.effectiveDate))
             )
             .sort((a, b) => parseISO(b.effectiveDate).getTime() - parseISO(a.effectiveDate).getTime())[0];
@@ -67,26 +67,26 @@ export async function addEmployeeHistoryEvent(employeeId: string, eventData: Omi
             cnpsEnabled: employee.CNPS,
         };
 
-        finalDetails = { 
-            ...finalDetails, 
+        finalDetails = {
+            ...finalDetails,
             ...previousValues,
         };
     }
-    
+
     const finalEventData = { ...eventData, details: finalDetails };
 
     const docRef = await addDoc(historyCollection, finalEventData);
-    
+
     // If the event is a salary event, also update the main employee document
     if (isSalaryEvent && eventData.details) {
         const employeeDocRef = doc(db, 'employees', employeeId);
         const salaryUpdates: Partial<Employe> = {};
         const fieldsToUpdate = [
-            'baseSalary', 'indemniteTransportImposable', 'indemniteSujetion', 
-            'indemniteCommunication', 'indemniteRepresentation', 'indemniteResponsabilite', 
+            'baseSalary', 'indemniteTransportImposable', 'indemniteSujetion',
+            'indemniteCommunication', 'indemniteRepresentation', 'indemniteResponsabilite',
             'indemniteLogement', 'transportNonImposable'
         ];
-        
+
         fieldsToUpdate.forEach(field => {
             if (eventData.details![field] !== undefined) {
                 (salaryUpdates as any)[field] = Number(eventData.details![field]);
@@ -97,8 +97,8 @@ export async function addEmployeeHistoryEvent(employeeId: string, eventData: Omi
         if (eventData.details.primeAnciennete !== undefined) {
             salaryUpdates.primeAnciennete = Number(eventData.details.primeAnciennete);
         }
-        
-         if (eventData.eventType === 'Promotion' && eventData.details.newPoste) {
+
+        if (eventData.eventType === 'Promotion' && eventData.details.newPoste) {
             salaryUpdates.poste = eventData.details.newPoste;
         }
 
@@ -108,7 +108,7 @@ export async function addEmployeeHistoryEvent(employeeId: string, eventData: Omi
     }
 
 
-    return { 
+    return {
         id: docRef.id,
         employeeId,
         ...finalEventData
@@ -125,12 +125,12 @@ export async function addEmployeeHistoryEvent(employeeId: string, eventData: Omi
  */
 export async function updateEmployeeHistoryEvent(employeeId: string, eventId: string, eventData: Partial<EmployeeEvent>): Promise<EmployeeEvent> {
     const eventDocRef = doc(db, `employees/${employeeId}/history`, eventId);
-    
+
     // Create a clean object to prevent sending undefined values to Firestore
     const cleanEventData = JSON.parse(JSON.stringify(eventData));
-    
+
     await updateDoc(eventDocRef, cleanEventData);
-    
+
     const isSalaryEvent = eventData.eventType ? salaryEventTypes.includes(eventData.eventType as any) : false;
 
     // If it's a salary event, re-apply changes to the main employee doc
@@ -138,8 +138,8 @@ export async function updateEmployeeHistoryEvent(employeeId: string, eventId: st
         const employeeDocRef = doc(db, 'employees', employeeId);
         const salaryUpdates: Partial<Employe> = {};
         const fieldsToUpdate = [
-            'baseSalary', 'indemniteTransportImposable', 'indemniteSujetion', 
-            'indemniteCommunication', 'indemniteRepresentation', 'indemniteResponsabilite', 
+            'baseSalary', 'indemniteTransportImposable', 'indemniteSujetion',
+            'indemniteCommunication', 'indemniteRepresentation', 'indemniteResponsabilite',
             'indemniteLogement', 'transportNonImposable'
         ];
         fieldsToUpdate.forEach(field => {
@@ -196,8 +196,8 @@ export async function deleteEmployeeHistoryEvent(employeeId: string, eventId: st
     if (latestSalaryEvent && latestSalaryEvent.details) {
         // Revert to the state defined in the new latest event
         const fieldsToUpdate = [
-            'baseSalary', 'indemniteTransportImposable', 'indemniteSujetion', 
-            'indemniteCommunication', 'indemniteRepresentation', 'indemniteResponsabilite', 
+            'baseSalary', 'indemniteTransportImposable', 'indemniteSujetion',
+            'indemniteCommunication', 'indemniteRepresentation', 'indemniteResponsabilite',
             'indemniteLogement', 'transportNonImposable', 'primeAnciennete'
         ];
         fieldsToUpdate.forEach(field => {
@@ -209,7 +209,7 @@ export async function deleteEmployeeHistoryEvent(employeeId: string, eventId: st
     } else {
         // No salary events left, revert to the "previous" state stored in the deleted event
         if (eventToDelete.details) {
-            const fieldsToRevert: Record<keyof Employe, string> = {
+            const fieldsToRevert: Partial<Record<keyof Employe, string>> = {
                 baseSalary: 'previous_baseSalary',
                 indemniteTransportImposable: 'previous_indemniteTransportImposable',
                 indemniteSujetion: 'previous_indemniteSujetion',
@@ -220,12 +220,13 @@ export async function deleteEmployeeHistoryEvent(employeeId: string, eventId: st
                 transportNonImposable: 'previous_transportNonImposable',
                 primeAnciennete: 'previous_primeAnciennete',
             };
-            
-            for (const [key, prevKey] of Object.entries(fieldsToRevert)) {
-                if (eventToDelete.details[prevKey] !== undefined) {
-                    (salaryUpdates as any)[key] = eventToDelete.details[prevKey];
+
+            (Object.keys(fieldsToRevert) as (keyof Employe)[]).forEach((key) => {
+                const prevKey = fieldsToRevert[key];
+                if (prevKey && eventToDelete.details![prevKey] !== undefined) {
+                    (salaryUpdates as any)[key] = eventToDelete.details![prevKey];
                 }
-            }
+            });
             console.log(`Reverting salary for ${employeeId} to state stored in deleted event.`);
         }
     }

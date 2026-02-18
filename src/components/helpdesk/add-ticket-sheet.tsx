@@ -61,7 +61,7 @@ export function AddTicketSheet({ isOpen, onClose, onAddTicket, currentUser }: Ad
       setError("Le titre et la description sont obligatoires.");
       return;
     }
-    
+
     setIsSubmitting(true);
     setError("");
 
@@ -73,6 +73,7 @@ export function AddTicketSheet({ isOpen, onClose, onAddTicket, currentUser }: Ad
         priority,
         createdBy: currentUser.id,
         createdByName: currentUser.name,
+        messages: []
       };
 
       await onAddTicket(newTicketData);
@@ -109,26 +110,26 @@ export function AddTicketSheet({ isOpen, onClose, onAddTicket, currentUser }: Ad
                 placeholder="Décrivez le problème en détail..."
               />
             </div>
-             <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                    <Label htmlFor="category">Catégorie</Label>
-                    <Select value={category} onValueChange={(value: TicketCategory) => setCategory(value)}>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                            {ticketCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
-                        </SelectContent>
-                    </Select>
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="priority">Priorité</Label>
-                     <Select value={priority} onValueChange={(value: TicketPriority) => setPriority(value)}>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                            {ticketPriorities.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
-                        </SelectContent>
-                    </Select>
-                </div>
-             </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="category">Catégorie</Label>
+                <Select value={category} onValueChange={(value: TicketCategory) => setCategory(value)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {ticketCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="priority">Priorité</Label>
+                <Select value={priority} onValueChange={(value: TicketPriority) => setPriority(value)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {ticketPriorities.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
             {error && (
               <p className="text-center text-sm text-destructive">
                 {error}

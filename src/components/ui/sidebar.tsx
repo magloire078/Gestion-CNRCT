@@ -5,7 +5,7 @@
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
-import { PanelLeft, Sitemap } from "lucide-react"
+import { PanelLeft } from "lucide-react"
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
@@ -181,7 +181,7 @@ const Sidebar = React.forwardRef<
     const [isClient, setIsClient] = React.useState(false);
 
     React.useEffect(() => {
-        setIsClient(true);
+      setIsClient(true);
     }, []);
 
 
@@ -221,11 +221,11 @@ const Sidebar = React.forwardRef<
     }
 
     if (!isClient) {
-        return null;
+      return null;
     }
 
     return (
-        <div
+      <div
         ref={ref}
         data-sidebar="sidebar"
         data-state={state}
@@ -233,24 +233,24 @@ const Sidebar = React.forwardRef<
         data-variant={variant}
         data-side={side}
         className={cn(
-            "relative hidden flex-col bg-sidebar text-sidebar-foreground group-data-[side=right]:order-2 group-data-[side=right]:border-l md:flex",
-            "group-data-[variant=floating]:absolute group-data-[variant=floating]:z-30 group-data-[variant=floating]:shadow-lg",
-            "[[data-variant=floating][data-side=left]_&]:left-0",
-            "[[data-variant=floating][data-side=right]_&]:right-0",
-            "group-data-[collapsible=icon]:w-[--sidebar-width-icon]",
-            "group-data-[collapsible=icon]:duration-300",
-            "group-data-[state=expanded]:w-[--sidebar-width]",
-            "group-data-[state=expanded]:duration-300",
-            "group-data-[variant=inset]:m-2 group-data-[variant=inset]:h-[calc(100svh-theme(spacing.4))] group-data-[variant=inset]:rounded-xl",
-            "[[data-side=left][data-variant=inset]_&]:-translate-x-[calc(100%+theme(spacing.2))]",
-            "[[data-side=right][data-variant=inset]_&]:translate-x-[calc(100%+theme(spacing.2))]",
-            "group-data-[state=expanded]:translate-x-0",
-            className
+          "relative hidden flex-col bg-sidebar text-sidebar-foreground group-data-[side=right]:order-2 group-data-[side=right]:border-l md:flex",
+          "group-data-[variant=floating]:absolute group-data-[variant=floating]:z-30 group-data-[variant=floating]:shadow-lg",
+          "[[data-variant=floating][data-side=left]_&]:left-0",
+          "[[data-variant=floating][data-side=right]_&]:right-0",
+          "group-data-[collapsible=icon]:w-[--sidebar-width-icon]",
+          "group-data-[collapsible=icon]:duration-300",
+          "group-data-[state=expanded]:w-[--sidebar-width]",
+          "group-data-[state=expanded]:duration-300",
+          "group-data-[variant=inset]:m-2 group-data-[variant=inset]:h-[calc(100svh-theme(spacing.4))] group-data-[variant=inset]:rounded-xl",
+          "[[data-side=left][data-variant=inset]_&]:-translate-x-[calc(100%+theme(spacing.2))]",
+          "[[data-side=right][data-variant=inset]_&]:translate-x-[calc(100%+theme(spacing.2))]",
+          "group-data-[state=expanded]:translate-x-0",
+          className
         )}
         {...props}
-        >
+      >
         {children}
-        </div>
+      </div>
     );
   }
 )
@@ -611,7 +611,7 @@ const SidebarMenuAction = React.forwardRef<
         "peer-data-[size=lg]/menu-button:top-2.5",
         "group-data-[collapsible=icon]:hidden",
         showOnHover &&
-          "group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 data-[state=open]:opacity-100 peer-data-[active=true]/menu-button:text-sidebar-accent-foreground md:opacity-0",
+        "group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 data-[state=open]:opacity-100 peer-data-[active=true]/menu-button:text-sidebar-accent-foreground md:opacity-0",
         className
       )}
       {...props}

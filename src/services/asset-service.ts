@@ -1,5 +1,5 @@
 
-import { collection, getDocs, addDoc, doc, setDoc, onSnapshot, Unsubscribe, query, orderBy, getDoc, updateDoc, deleteDoc, writeBatch, where } from 'firebase/firestore';
+import { collection, getDocs, addDoc, doc, setDoc, onSnapshot, Unsubscribe, query, orderBy, getDoc, updateDoc, deleteDoc, writeBatch, where } from '@/lib/firebase';
 import type { Asset } from '@/lib/data';
 import { db } from '@/lib/firebase';
 import { FirestorePermissionError } from '@/lib/errors';

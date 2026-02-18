@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Scanner } from "react-zxing";
+import { useZxing } from "react-zxing";
 import {
   Dialog,
   DialogContent,
@@ -75,6 +75,20 @@ export function BarcodeScanner({ isOpen, onClose, onScan }: BarcodeScannerProps)
     }
   };
 
+  const { ref } = useZxing({
+    onDecodeResult(result) {
+      handleScanSuccess(result);
+    },
+    onError(error) {
+      handleScanError(error);
+    },
+    constraints: {
+      video: {
+        facingMode: 'environment'
+      }
+    }
+  });
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
@@ -87,16 +101,8 @@ export function BarcodeScanner({ isOpen, onClose, onScan }: BarcodeScannerProps)
         <div className="relative aspect-video w-full overflow-hidden rounded-md border bg-muted">
           {isOpen && hasCameraPermission ? (
             <>
-              <Scanner
-                onResult={handleScanSuccess}
-                onError={handleScanError}
-                constraints={{
-                  video: {
-                    facingMode: 'environment'
-                  }
-                }}
-              />
-               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <video ref={ref as React.LegacyRef<HTMLVideoElement>} className="w-full h-full object-cover" />
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                 <div className="w-3/4 h-1/2 border-2 border-dashed border-primary rounded-lg" />
               </div>
             </>

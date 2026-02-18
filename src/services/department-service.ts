@@ -1,4 +1,5 @@
-import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, onSnapshot, Unsubscribe, query, orderBy } from 'firebase/firestore';
+import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, onSnapshot, Unsubscribe, query, orderBy } from '@/lib/firebase';
+import type { QuerySnapshot, DocumentData, QueryDocumentSnapshot, FirestoreError } from '@/lib/firebase';
 import type { Department } from '@/lib/data';
 import { db } from '@/lib/firebase';
 
@@ -9,15 +10,15 @@ export function subscribeToDepartments(
     onError: (error: Error) => void
 ): Unsubscribe {
     const q = query(departmentsCollection, orderBy("name", "asc"));
-    const unsubscribe = onSnapshot(q, 
-        (snapshot) => {
-            const departments = snapshot.docs.map(doc => ({
+    const unsubscribe = onSnapshot(q,
+        (snapshot: QuerySnapshot<DocumentData>) => {
+            const departments = snapshot.docs.map((doc: QueryDocumentSnapshot<DocumentData>) => ({
                 id: doc.id,
                 ...doc.data()
             } as Department));
             callback(departments);
         },
-        (error) => {
+        (error: FirestoreError) => {
             console.error("Error subscribing to departments:", error);
             onError(error);
         }
@@ -26,12 +27,12 @@ export function subscribeToDepartments(
 }
 
 export async function getDepartments(): Promise<Department[]> {
-  const q = query(departmentsCollection, orderBy("name", "asc"));
-  const snapshot = await getDocs(q);
-  return snapshot.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data()
-  } as Department));
+    const q = query(departmentsCollection, orderBy("name", "asc"));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map((doc: QueryDocumentSnapshot<DocumentData>) => ({
+        id: doc.id,
+        ...doc.data()
+    } as Department));
 }
 
 export async function addDepartment(departmentData: Omit<Department, 'id'>): Promise<Department> {

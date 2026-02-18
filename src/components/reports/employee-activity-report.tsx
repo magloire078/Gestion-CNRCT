@@ -25,6 +25,7 @@ import type { Employe, Leave, Mission } from "@/lib/data";
 import { Loader2 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { useFormat } from "@/hooks/use-format";
 
 interface ReportData {
   newHires: Employe[];
@@ -39,6 +40,7 @@ export function EmployeeActivityReport() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [reportData, setReportData] = useState<ReportData | null>(null);
+  const { formatDate } = useFormat();
 
   const generateReport = async () => {
     setLoading(true);
@@ -56,28 +58,28 @@ export function EmployeeActivityReport() {
       ]);
 
       const newHires = employees.filter(e => {
-          if (!e.dateEmbauche) return false;
-          const hireDate = new Date(e.dateEmbauche);
-          return hireDate.getFullYear() === selectedYear && hireDate.getMonth() === selectedMonth;
+        if (!e.dateEmbauche) return false;
+        const hireDate = new Date(e.dateEmbauche);
+        return hireDate.getFullYear() === selectedYear && hireDate.getMonth() === selectedMonth;
       });
-      
+
       const terminations = employees.filter(e => {
-          if (!e.Date_Depart) return false;
-          const termDate = new Date(e.Date_Depart);
-           return e.status === 'Licencié' && termDate.getFullYear() === selectedYear && termDate.getMonth() === selectedMonth;
+        if (!e.Date_Depart) return false;
+        const termDate = new Date(e.Date_Depart);
+        return e.status === 'Licencié' && termDate.getFullYear() === selectedYear && termDate.getMonth() === selectedMonth;
       });
 
       const approvedLeaves = leaves.filter(l => {
         const leaveDate = new Date(l.startDate);
         return l.status === "Approuvé" &&
-               leaveDate.getFullYear() === selectedYear &&
-               leaveDate.getMonth() === selectedMonth;
+          leaveDate.getFullYear() === selectedYear &&
+          leaveDate.getMonth() === selectedMonth;
       });
 
       const activeMissions = missions.filter(m => {
         const missionDate = new Date(m.startDate);
-         return missionDate.getFullYear() === selectedYear &&
-                missionDate.getMonth() === selectedMonth;
+        return missionDate.getFullYear() === selectedYear &&
+          missionDate.getMonth() === selectedMonth;
       });
 
       setReportData({
@@ -126,7 +128,7 @@ export function EmployeeActivityReport() {
           </div>
           <div className="grid gap-2 flex-1 w-full">
             <Label htmlFor="month">Mois</Label>
-             <Select value={month} onValueChange={setMonth}>
+            <Select value={month} onValueChange={setMonth}>
               <SelectTrigger id="month"><SelectValue /></SelectTrigger>
               <SelectContent>
                 {months.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}
@@ -138,12 +140,12 @@ export function EmployeeActivityReport() {
             Générer
           </Button>
         </div>
-        
+
         {error && (
-            <Alert variant="destructive">
-                <AlertTitle>Erreur</AlertTitle>
-                <AlertDescription>{error}</AlertDescription>
-            </Alert>
+          <Alert variant="destructive">
+            <AlertTitle>Erreur</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
         )}
 
         {reportData && (
@@ -152,44 +154,44 @@ export function EmployeeActivityReport() {
               Rapport pour {months.find(m => m.value === month)?.label} {year}
             </h3>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <ReportSection title="Congés Approuvés" data={reportData.approvedLeaves} renderItem={leave => (
-                    <div className="flex justify-between">
-                        <span>{leave.employee} ({leave.type})</span>
-                        <span className="text-muted-foreground">{leave.startDate} au {leave.endDate}</span>
-                    </div>
-                )} />
+              <ReportSection title="Congés Approuvés" data={reportData.approvedLeaves} renderItem={leave => (
+                <div className="flex justify-between">
+                  <span>{leave.employee} ({leave.type})</span>
+                  <span className="text-muted-foreground">{leave.startDate} au {leave.endDate}</span>
+                </div>
+              )} />
 
-                <ReportSection title="Missions du Mois" data={reportData.missions} renderItem={mission => (
-                     <div className="flex justify-between">
-                        <span>{mission.title}</span>
-                        <span className="text-muted-foreground">{mission.participants.map(p => p.employeeName).join(', ')}</span>
-                    </div>
-                )} />
-                
-                 <ReportSection title="Nouvelles Embauches" data={reportData.newHires} renderItem={emp => (
-                     <div className="flex items-center gap-3">
-                        <Avatar className="h-8 w-8">
-                            <AvatarImage src={emp.photoUrl} alt={emp.name} data-ai-hint="user avatar" />
-                            <AvatarFallback>{emp.name.charAt(0)}</AvatarFallback>
-                        </Avatar>
-                        <div>
-                            <p className="font-medium">{emp.name}</p>
-                            <p className="text-sm text-muted-foreground">{emp.poste}</p>
-                        </div>
-                    </div>
-                 )} />
-                 <ReportSection title="Départs" data={reportData.terminations} renderItem={emp => (
-                     <div className="flex items-center gap-3">
-                        <Avatar className="h-8 w-8">
-                            <AvatarImage src={emp.photoUrl} alt={emp.name} data-ai-hint="user avatar" />
-                            <AvatarFallback>{emp.name.charAt(0)}</AvatarFallback>
-                        </Avatar>
-                        <div>
-                            <p className="font-medium">{emp.name}</p>
-                            <p className="text-sm text-muted-foreground">{emp.department}</p>
-                        </div>
-                    </div>
-                 )} />
+              <ReportSection title="Missions du Mois" data={reportData.missions} renderItem={mission => (
+                <div className="flex justify-between">
+                  <span>{mission.title}</span>
+                  <span className="text-muted-foreground">{mission.participants.map(p => p.employeeName).join(', ')}</span>
+                </div>
+              )} />
+
+              <ReportSection title="Nouvelles Embauches" data={reportData.newHires} renderItem={emp => (
+                <div className="flex items-center gap-3">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={emp.photoUrl} alt={emp.name} data-ai-hint="user avatar" />
+                    <AvatarFallback>{emp.name.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="font-medium">{emp.name}</p>
+                    <p className="text-sm text-muted-foreground">{emp.poste}</p>
+                  </div>
+                </div>
+              )} />
+              <ReportSection title="Départs" data={reportData.terminations} renderItem={emp => (
+                <div className="flex items-center gap-3">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={emp.photoUrl} alt={emp.name} data-ai-hint="user avatar" />
+                    <AvatarFallback>{emp.name.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="font-medium">{emp.name}</p>
+                    <p className="text-sm text-muted-foreground">{emp.department}</p>
+                  </div>
+                </div>
+              )} />
             </div>
           </div>
         )}
@@ -200,32 +202,32 @@ export function EmployeeActivityReport() {
 
 
 interface ReportSectionProps<T> {
-    title: string;
-    data: T[];
-    renderItem: (item: T) => React.ReactNode;
+  title: string;
+  data: T[];
+  renderItem: (item: T) => React.ReactNode;
 }
 
 function ReportSection<T>({ title, data, renderItem }: ReportSectionProps<T>) {
-    return (
-        <Card>
-            <CardHeader className="pb-2">
-                <CardTitle className="text-base font-semibold">{title} ({data.length})</CardTitle>
-            </CardHeader>
-            <CardContent>
-                {data.length > 0 ? (
-                     <ul className="space-y-3">
-                        {data.map((item, index) => (
-                           <li key={index} className="text-sm border-b pb-2 last:border-none last:pb-0">
-                                {renderItem(item)}
-                           </li>
-                        ))}
-                    </ul>
-                ) : (
-                    <p className="text-sm text-muted-foreground text-center py-4">
-                        Aucune donnée pour cette période.
-                    </p>
-                )}
-            </CardContent>
-        </Card>
-    )
+  return (
+    <Card>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-base font-semibold">{title} ({data.length})</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {data.length > 0 ? (
+          <ul className="space-y-3">
+            {data.map((item, index) => (
+              <li key={index} className="text-sm border-b pb-2 last:border-none last:pb-0">
+                {renderItem(item)}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-sm text-muted-foreground text-center py-4">
+            Aucune donnée pour cette période.
+          </p>
+        )}
+      </CardContent>
+    </Card>
+  )
 }

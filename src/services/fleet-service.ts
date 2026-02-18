@@ -1,6 +1,6 @@
 
 
-import { collection, getDocs, addDoc, doc, setDoc, onSnapshot, Unsubscribe, query, orderBy, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { collection, getDocs, addDoc, doc, setDoc, onSnapshot, Unsubscribe, query, orderBy, getDoc, updateDoc, deleteDoc } from '@/lib/firebase';
 import type { Fleet } from '@/lib/data';
 import { db } from '@/lib/firebase';
 

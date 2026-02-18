@@ -16,11 +16,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, Loader2, Save, X, Check, Trash2, Euro, PlusCircle } from "lucide-react";
@@ -42,13 +42,13 @@ export default function MissionEditPage() {
     const [fleetVehicles, setFleetVehicles] = useState<Fleet[]>([]);
     const [loading, setLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
-    
+
     useEffect(() => {
         if (typeof id !== 'string') return;
         async function fetchMissionData() {
             try {
                 const [data, employees, vehicles] = await Promise.all([
-                    getMission(id),
+                    getMission(id as string),
                     getEmployees(),
                     getVehicles(),
                 ]);
@@ -69,39 +69,39 @@ export default function MissionEditPage() {
         const { name, value } = e.target;
         setMission(prev => prev ? { ...prev, [name]: value } : null);
     };
-    
+
     const handleSelectChange = (name: string, value: string) => {
         setMission(prev => prev ? { ...prev, [name]: value } : null);
     };
 
     const toggleParticipant = async (employeeName: string) => {
-       const isAssigned = mission?.participants?.some(p => p.employeeName === employeeName);
+        const isAssigned = mission?.participants?.some(p => p.employeeName === employeeName);
 
         if (isAssigned) {
-             setMission(prev => {
+            setMission(prev => {
                 if (!prev) return null;
                 return { ...prev, participants: (prev.participants || []).filter(p => p.employeeName !== employeeName) };
             });
         } else {
-             const nextOrderNumber = await getLatestMissionNumber(false);
-             const newParticipant: MissionParticipant = { 
-                employeeName, 
-                moyenTransport: undefined, 
+            const nextOrderNumber = await getLatestMissionNumber(false);
+            const newParticipant: MissionParticipant = {
+                employeeName,
+                moyenTransport: undefined,
                 immatriculation: '',
-                numeroOrdre: nextOrderNumber.toString().padStart(5,'0')
+                numeroOrdre: nextOrderNumber.toString().padStart(5, '0')
             };
-             setMission(prev => {
+            setMission(prev => {
                 if (!prev) return null;
                 return { ...prev, participants: [...(prev.participants || []), newParticipant] };
             });
         }
     };
-    
-    const handleParticipantChange = (employeeName: string, field: keyof Omit<MissionParticipant, 'employeeName' | 'numeroOrdre'>, value: string | number) => {
-         setMission(prev => {
+
+    const handleParticipantChange = (employeeName: string, field: keyof Omit<MissionParticipant, 'employeeName' | 'numeroOrdre'>, value: string | number | undefined) => {
+        setMission(prev => {
             if (!prev || !prev.participants) return prev;
-             const finalValue = value === 'none' ? '' : value;
-             const newParticipants = prev.participants.map(p => 
+            const finalValue = value === 'none' || value === undefined ? '' : value;
+            const newParticipants = prev.participants.map(p =>
                 p.employeeName === employeeName ? { ...p, [field]: finalValue } : p
             );
             return { ...prev, participants: newParticipants };
@@ -122,10 +122,10 @@ export default function MissionEditPage() {
             setIsSaving(false);
         }
     };
-    
+
     if (loading) {
         return (
-             <div className="max-w-2xl mx-auto flex flex-col gap-6">
+            <div className="max-w-2xl mx-auto flex flex-col gap-6">
                 <Skeleton className="h-10 w-48" />
                 <Card><CardContent className="p-6"><Skeleton className="h-96 w-full" /></CardContent></Card>
             </div>
@@ -137,22 +137,22 @@ export default function MissionEditPage() {
     }
 
     return (
-         <div className="max-w-2xl mx-auto flex flex-col gap-6">
+        <div className="max-w-2xl mx-auto flex flex-col gap-6">
             <div className="flex items-center gap-4">
-                 <Button variant="outline" size="icon" onClick={() => router.back()}>
+                <Button variant="outline" size="icon" onClick={() => router.back()}>
                     <ArrowLeft className="h-4 w-4" />
                     <span className="sr-only">Retour</span>
-                 </Button>
-                 <div>
+                </Button>
+                <div>
                     <h1 className="text-2xl font-bold tracking-tight">Modifier la Mission</h1>
                     <p className="text-muted-foreground">{mission.title}</p>
-                 </div>
-                 <Button onClick={handleSave} disabled={isSaving} className="ml-auto">
-                    {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4" />}
+                </div>
+                <Button onClick={handleSave} disabled={isSaving} className="ml-auto">
+                    {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                     Enregistrer
                 </Button>
             </div>
-            
+
             <Card>
                 <CardHeader><CardTitle>Détails de la Mission</CardTitle></CardHeader>
                 <CardContent className="space-y-4">
@@ -164,11 +164,11 @@ export default function MissionEditPage() {
                         <Label htmlFor="title">Titre</Label>
                         <Input id="title" name="title" value={mission.title || ''} onChange={handleInputChange} />
                     </div>
-                     <div className="space-y-2">
+                    <div className="space-y-2">
                         <Label htmlFor="description">Description / Objectifs</Label>
                         <Textarea id="description" name="description" value={mission.description || ''} onChange={handleInputChange} rows={4} />
                     </div>
-                     <div className="space-y-2">
+                    <div className="space-y-2">
                         <Label htmlFor="lieuMission">Lieu</Label>
                         <Input id="lieuMission" name="lieuMission" value={mission.lieuMission || ''} onChange={handleInputChange} />
                     </div>
@@ -184,7 +184,7 @@ export default function MissionEditPage() {
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="status">Statut</Label>
-                         <Select value={mission.status || ''} onValueChange={(v) => handleSelectChange('status', v)}>
+                        <Select value={mission.status || ''} onValueChange={(v) => handleSelectChange('status', v)}>
                             <SelectTrigger><SelectValue /></SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="Planifiée">Planifiée</SelectItem>
@@ -199,27 +199,27 @@ export default function MissionEditPage() {
                         <Label>Participants & Véhicules</Label>
                         <Popover>
                             <PopoverTrigger asChild>
-                            <Button variant="outline" className="w-full justify-start font-normal">
-                               <PlusCircle className="mr-2 h-4 w-4" /> Ajouter / Retirer des participants...
-                            </Button>
+                                <Button variant="outline" className="w-full justify-start font-normal">
+                                    <PlusCircle className="mr-2 h-4 w-4" /> Ajouter / Retirer des participants...
+                                </Button>
                             </PopoverTrigger>
                             <PopoverContent className="w-[300px] p-0">
-                            <Command>
-                                <CommandInput placeholder="Rechercher un employé..."/>
-                                <CommandList>
-                                <CommandEmpty>Aucun employé trouvé.</CommandEmpty>
-                                <CommandGroup>
-                                    {allEmployees.map(emp => (
-                                    <CommandItem key={emp.id} onSelect={() => toggleParticipant(emp.name)}>
-                                        <div className={cn("mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary", mission.participants?.some(p => p.employeeName === emp.name) ? "bg-primary text-primary-foreground" : "opacity-50 [&_svg]:invisible")}>
-                                          <Check className="h-4 w-4" />
-                                        </div>
-                                        <span>{emp.name}</span>
-                                    </CommandItem>
-                                    ))}
-                                </CommandGroup>
-                                </CommandList>
-                            </Command>
+                                <Command>
+                                    <CommandInput placeholder="Rechercher un employé..." />
+                                    <CommandList>
+                                        <CommandEmpty>Aucun employé trouvé.</CommandEmpty>
+                                        <CommandGroup>
+                                            {allEmployees.map(emp => (
+                                                <CommandItem key={emp.id} onSelect={() => toggleParticipant(emp.name)}>
+                                                    <div className={cn("mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary", mission.participants?.some(p => p.employeeName === emp.name) ? "bg-primary text-primary-foreground" : "opacity-50 [&_svg]:invisible")}>
+                                                        <Check className="h-4 w-4" />
+                                                    </div>
+                                                    <span>{emp.name}</span>
+                                                </CommandItem>
+                                            ))}
+                                        </CommandGroup>
+                                    </CommandList>
+                                </Command>
                             </PopoverContent>
                         </Popover>
 
@@ -229,13 +229,13 @@ export default function MissionEditPage() {
                                     <div className="flex justify-between items-center">
                                         <p className="font-medium">{p.employeeName}</p>
                                         <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => toggleParticipant(p.employeeName)}>
-                                            <Trash2 className="h-4 w-4 text-destructive"/>
+                                            <Trash2 className="h-4 w-4 text-destructive" />
                                         </Button>
                                     </div>
                                     <div className="grid grid-cols-2 gap-2">
                                         <div className="space-y-1">
                                             <Label htmlFor={`transport-${p.employeeName}`} className="text-xs">Moyen de Transport</Label>
-                                            <Select value={p.moyenTransport} onValueChange={(value: MissionParticipant['moyenTransport']) => handleParticipantChange(p.employeeName, 'moyenTransport', value!)}>
+                                            <Select value={p.moyenTransport} onValueChange={(value) => handleParticipantChange(p.employeeName, 'moyenTransport', value as MissionParticipant['moyenTransport'])}>
                                                 <SelectTrigger id={`transport-${p.employeeName}`}>
                                                     <SelectValue placeholder="Sélectionnez..." />
                                                 </SelectTrigger>
@@ -260,14 +260,14 @@ export default function MissionEditPage() {
                                             </Select>
                                         </div>
                                     </div>
-                                     <div className="space-y-4 pt-3 border-t">
+                                    <div className="space-y-4 pt-3 border-t">
                                         <h4 className="text-sm font-medium">Détails Financiers</h4>
                                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                                              <div className="space-y-1">
+                                            <div className="space-y-1">
                                                 <Label htmlFor={`indemnite-${p.employeeName}`} className="text-xs">Indemnités</Label>
                                                 <Input id={`indemnite-${p.employeeName}`} type="number" placeholder="0" value={p.totalIndemnites || ''} onChange={e => handleParticipantChange(p.employeeName, 'totalIndemnites', Math.round(e.target.valueAsNumber) || 0)} />
                                             </div>
-                                             <div className="space-y-1">
+                                            <div className="space-y-1">
                                                 <Label htmlFor={`transport-cost-${p.employeeName}`} className="text-xs">Coût Transport</Label>
                                                 <Input id={`transport-cost-${p.employeeName}`} type="number" placeholder="0" value={p.coutTransport || ''} onChange={e => handleParticipantChange(p.employeeName, 'coutTransport', Math.round(e.target.valueAsNumber) || 0)} />
                                             </div>
@@ -287,4 +287,4 @@ export default function MissionEditPage() {
     );
 }
 
-    
+

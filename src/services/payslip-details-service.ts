@@ -26,7 +26,7 @@ const salaryEventTypes: EmployeeEvent['eventType'][] = ['Augmentation au Mérite
  */
 export function calculateSeniority(hireDateStr: string | undefined, payslipDateStr: string): { text: string, years: number } {
     if (!hireDateStr || !payslipDateStr) return { text: 'N/A', years: 0 };
-    
+
     const hireDate = parseISO(hireDateStr);
     const payslipDate = parseISO(payslipDateStr);
 
@@ -34,7 +34,7 @@ export function calculateSeniority(hireDateStr: string | undefined, payslipDateS
 
     const years = differenceInYears(payslipDate, hireDate);
     const dateAfterYears = addYears(hireDate, years);
-    
+
     const months = differenceInMonths(payslipDate, dateAfterYears);
     const dateAfterMonths = addMonths(dateAfterYears, months);
 
@@ -53,26 +53,34 @@ export function calculateSeniority(hireDateStr: string | undefined, payslipDateS
  * @param payslipDate - La date de fin de période du bulletin (ex: "2024-12-31").
  * @returns Un objet PayslipDetails complet.
  */
-export async function getPayslipDetails(employee: Employe, payslipDate: string): Promise<PayslipDetails> {
-    
+export async function getPayslipDetails(
+    employee: Employe,
+    payslipDate: string,
+    providedData?: {
+        departments?: Department[],
+        directions?: Direction[],
+        services?: Service[]
+    }
+): Promise<PayslipDetails> {
+
     const [history, departments, directions, services] = await Promise.all([
         getEmployeeHistory(employee.id),
-        getDepartments(),
-        getDirections(),
-        getServices()
+        providedData?.departments || getDepartments(),
+        providedData?.directions || getDirections(),
+        providedData?.services || getServices()
     ]);
     const payslipDateObj = parseISO(payslipDate);
 
     // Find the most recent salary event that is effective on or before the payslip date.
     const relevantEvent = history
-        .filter(event => 
+        .filter(event =>
             salaryEventTypes.includes(event.eventType as any) &&
             event.details &&
             isValid(parseISO(event.effectiveDate)) &&
             (isBefore(parseISO(event.effectiveDate), payslipDateObj) || isEqual(parseISO(event.effectiveDate), payslipDateObj))
         )
         .sort((a, b) => parseISO(b.effectiveDate).getTime() - parseISO(a.effectiveDate).getTime())[0];
-    
+
     const getSalaryStructure = () => {
         // If a relevant past event is found, use its salary structure.
         if (relevantEvent?.details) {
@@ -91,8 +99,8 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
         // If no relevant event is found for the period, check for the *earliest* event to get the "previous" state
         const firstEverEvent = history
             .filter(event => salaryEventTypes.includes(event.eventType as any) && event.details)
-            .sort((a,b) => parseISO(a.effectiveDate).getTime() - parseISO(b.effectiveDate).getTime())[0];
-            
+            .sort((a, b) => parseISO(a.effectiveDate).getTime() - parseISO(b.effectiveDate).getTime())[0];
+
         if (firstEverEvent && firstEverEvent.details) {
             // We are in a period before the first raise, so use the "previous" values from that first raise event
             return {
@@ -106,7 +114,7 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
                 transportNonImposable: Number(firstEverEvent.details.previous_transportNonImposable || employee.transportNonImposable || 0),
             }
         }
-        
+
         // If no salary events exist at all, use the employee's base data.
         return {
             baseSalary: employee.baseSalary || 0,
@@ -119,10 +127,10 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
             transportNonImposable: employee.transportNonImposable || 0,
         };
     };
-    
+
     let salaryStructure = getSalaryStructure();
-    
-     // Check if payslipDate is before hireDate
+
+    // Check if payslipDate is before hireDate
     if (employee.dateEmbauche && isValid(parseISO(employee.dateEmbauche))) {
         if (isBefore(payslipDateObj, parseISO(employee.dateEmbauche))) {
             // If before hire date, set all salary fields to 0
@@ -141,9 +149,9 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
 
 
     const { baseSalary, ...indemnityFields } = salaryStructure;
-    
+
     const seniorityInfo = calculateSeniority(employee.dateEmbauche || '', payslipDate);
-    
+
     let primeAnciennete = 0;
     if (seniorityInfo.years >= 2) {
         const bonusRate = Math.min(25, seniorityInfo.years);
@@ -162,19 +170,19 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
     ];
 
     const brutImposable = earnings.reduce((sum, item) => sum + item.amount, 0);
-    
+
     const cnps = employee.CNPS ? (brutImposable * 0.063) : 0;
     const its = 0;
     const igr = 0;
     const cn = 0;
-    
+
     const deductions: PayslipDeduction[] = [
         { label: 'ITS', amount: Math.round(its) },
         { label: 'CN', amount: Math.round(cn) },
         { label: 'IGR', amount: Math.round(igr) },
         { label: 'CNPS', amount: Math.round(cnps) },
     ];
-    
+
     const totalDeductions = deductions.reduce((sum, item) => sum + item.amount, 0);
 
     const netAPayer = brutImposable + (indemnityFields.transportNonImposable || 0) - totalDeductions;
@@ -188,12 +196,12 @@ export async function getPayslipDetails(employee: Employe, payslipDate: string):
         { label: 'ACCIDENT DE TRAVAIL', base: Math.min(brutImposable, 70000), rate: '2,0%', amount: employee.CNPS ? Math.round(Math.min(brutImposable, 70000) * 0.02) : 0 },
         { label: 'REGIME DE RETRAITE', base: Math.round(brutImposable), rate: '7,7%', amount: employee.CNPS ? Math.round(brutImposable * 0.077) : 0 },
     ];
-    
+
     const organizationLogos = await getOrganizationSettings();
     const paymentDateObject = isValid(payslipDateObj) ? lastDayOfMonth(payslipDateObj) : new Date();
     const numeroCompteComplet = [employee.CB, employee.CG, employee.numeroCompte, employee.Cle_RIB].filter(Boolean).join(' ');
 
-    const formattedDateEmbauche = employee.dateEmbauche && isValid(parseISO(employee.dateEmbauche)) 
+    const formattedDateEmbauche = employee.dateEmbauche && isValid(parseISO(employee.dateEmbauche))
         ? format(parseISO(employee.dateEmbauche), 'dd MMMM yyyy', { locale: fr })
         : 'N/A';
 

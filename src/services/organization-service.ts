@@ -1,5 +1,5 @@
 
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc } from '@/lib/firebase';
 import { getStorage, ref, getDownloadURL, uploadBytesResumable, type UploadTask } from "firebase/storage";
 import { db, storage } from '@/lib/firebase';
 import type { OrganizationSettings } from '@/lib/data';
@@ -23,15 +23,22 @@ export async function getOrganizationSettings(): Promise<OrganizationSettings> {
             };
         }
     } catch (e) {
-        console.error("Could not get organization settings from Firestore, returning default.", e);
+        // Silently handle permission errors - this is expected when not authenticated
+        // The default settings will be returned and created if needed
     }
+
     // Return default settings if doc doesn't exist or on error
-     await setDoc(settingsDocRef, {
-        organizationName: 'Gestion CNRCT',
-        mainLogoUrl: defaultMainLogoUrl,
-        secondaryLogoUrl: defaultSecondaryLogoUrl,
-        faviconUrl: ''
-    }, { merge: true });
+    // Try to create the default settings document (will fail silently if no permissions)
+    try {
+        await setDoc(settingsDocRef, {
+            organizationName: 'Gestion CNRCT',
+            mainLogoUrl: defaultMainLogoUrl,
+            secondaryLogoUrl: defaultSecondaryLogoUrl,
+            faviconUrl: ''
+        }, { merge: true });
+    } catch (e) {
+        // Silently ignore - user may not have write permissions yet
+    }
 
     return {
         organizationName: 'Gestion CNRCT',
@@ -52,7 +59,7 @@ export async function uploadOrganizationFile(
 ): Promise<string> {
     const fileName = `${fileType}_${new Date().getTime()}_${file.name}`;
     const fileRef = ref(storage, `organization/${fileName}`);
-    
+
     const uploadTask = uploadBytesResumable(fileRef, file);
 
     return new Promise((resolve, reject) => {

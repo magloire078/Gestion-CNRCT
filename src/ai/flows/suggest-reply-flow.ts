@@ -24,7 +24,7 @@ const SuggestReplyInputSchema = z.object({
 });
 export type SuggestReplyInput = z.infer<typeof SuggestReplyInputSchema>;
 
-export type SuggestReplyOutput = z.string();
+export type SuggestReplyOutput = string;
 
 
 export async function getSuggestedReply(

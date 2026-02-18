@@ -1,0 +1,28 @@
+  useEffect(() => {
+      if (isPrinting) {
+          // Create and inject a style element for landscape printing
+          const style = document.createElement('style');
+          style.id = 'print-landscape-style';
+          style.innerHTML = `@media print { @page { size: A4 landscape; margin: 1cm; } }`;
+          document.head.appendChild(style);
+          
+          document.body.classList.add('print-landscape');
+          setTimeout(() => {
+              window.print();
+              setIsPrinting(false);
+              document.body.classList.remove('print-landscape');
+              // Remove the injected style after printing
+              const styleElement = document.getElementById('print-landscape-style');
+              if (styleElement) {
+                  styleElement.remove();
+              }
+          }, 500);
+      }
+      if (isPrintingLabels) {
+          document.body.classList.remove('print-landscape'); // Ensure portrait mode for labels
+          setTimeout(() => {
+              window.print();
+              setIsPrintingLabels(false);
+          }, 500);
+      }
+  }, [isPrinting, isPrintingLabels]);

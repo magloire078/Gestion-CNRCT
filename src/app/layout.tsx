@@ -1,7 +1,8 @@
 
-import type {Metadata} from 'next';
+import type { Metadata } from 'next';
 import './globals.css';
-import {Toaster} from '@/components/ui/toaster';
+import '@/lib/suppress-firestore-errors'; // Filtre global pour supprimer les erreurs Firestore attendues
+import { Toaster } from '@/components/ui/toaster';
 import { SiteLayout } from '@/components/site-layout';
 import { ThemeProvider } from "@/components/theme-provider"
 import { BASE_URL } from '@/lib/constants';
@@ -38,16 +39,16 @@ export default async function RootLayout({
         <meta name="theme-color" content="#2C3E50" />
       </head>
       <body className="font-body antialiased">
-         <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <SiteLayout>
-                {children}
-            </SiteLayout>
-            <Toaster />
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <SiteLayout>
+            {children}
+          </SiteLayout>
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>

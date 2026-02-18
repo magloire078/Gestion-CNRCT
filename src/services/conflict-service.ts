@@ -1,6 +1,6 @@
 
 
-import { collection, getDocs, addDoc, onSnapshot, Unsubscribe, query, orderBy, doc, updateDoc, getDoc } from 'firebase/firestore';
+import { collection, getDocs, addDoc, onSnapshot, Unsubscribe, query, orderBy, doc, updateDoc, getDoc } from '@/lib/firebase';
 import type { Conflict } from '@/lib/data';
 import { db } from '@/lib/firebase';
 

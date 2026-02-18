@@ -27,7 +27,7 @@ export default function ChiefDetailPage() {
     const [parentChief, setParentChief] = useState<Chief | null>(null);
     const [allCustoms, setAllCustoms] = useState<Custom[]>([]);
     const [loading, setLoading] = useState(true);
-    
+
     const formatDate = (dateString?: string) => {
         if (!dateString) return 'N/A';
         try {
@@ -39,20 +39,20 @@ export default function ChiefDetailPage() {
 
     useEffect(() => {
         if (typeof id !== 'string') return;
-        
+
         let isMounted = true;
 
         const unsubCustoms = subscribeToCustoms(
             (customs) => {
-                if(isMounted) setAllCustoms(customs);
+                if (isMounted) setAllCustoms(customs);
             },
             console.error
         );
 
         async function fetchData() {
             try {
-                const chiefData = await getChief(id);
-                 if (!isMounted) return;
+                const chiefData = await getChief(id as string);
+                if (!isMounted) return;
 
                 setChief(chiefData);
 
@@ -67,16 +67,16 @@ export default function ChiefDetailPage() {
             }
         }
         fetchData();
-        
+
         return () => {
             isMounted = false;
             unsubCustoms();
         }
     }, [id]);
-    
+
     const fullName = chief ? `${chief.lastName || ''} ${chief.firstName || ''}`.trim() : "Chargement...";
-    
-    const customLink = chief?.ethnicGroup 
+
+    const customLink = chief?.ethnicGroup
         ? allCustoms.find(c => c.ethnicGroup.toLowerCase() === chief.ethnicGroup?.toLowerCase())
         : null;
 
@@ -92,22 +92,22 @@ export default function ChiefDetailPage() {
     return (
         <div className="flex flex-col gap-6">
             <div className="flex items-center gap-4">
-                 <Button variant="outline" size="icon" onClick={() => router.back()}>
+                <Button variant="outline" size="icon" onClick={() => router.back()}>
                     <ArrowLeft className="h-4 w-4" />
                     <span className="sr-only">Retour</span>
-                 </Button>
-                 <h1 className="text-3xl font-bold tracking-tight">Profil du Chef</h1>
-                 <Button asChild className="ml-auto">
+                </Button>
+                <h1 className="text-3xl font-bold tracking-tight">Profil du Chef</h1>
+                <Button asChild className="ml-auto">
                     <Link href={`/chiefs/${id}/edit`}>
-                        <Pencil className="mr-2 h-4 w-4"/>
+                        <Pencil className="mr-2 h-4 w-4" />
                         Modifier
                     </Link>
                 </Button>
             </div>
-            
+
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-1">
-                     <Card>
+                    <Card>
                         <CardContent className="pt-6 flex flex-col items-center text-center">
                             <Avatar className="h-32 w-32 border-4 border-primary/20 mb-4">
                                 <AvatarImage src={chief.photoUrl} alt={fullName} data-ai-hint="chief portrait" />
@@ -119,7 +119,7 @@ export default function ChiefDetailPage() {
                         </CardContent>
                     </Card>
                     <Card className="mt-6">
-                        <CardHeader><CardTitle className="flex items-center gap-2 text-xl"><Phone className="h-5 w-5 text-primary"/> Contact</CardTitle></CardHeader>
+                        <CardHeader><CardTitle className="flex items-center gap-2 text-xl"><Phone className="h-5 w-5 text-primary" /> Contact</CardTitle></CardHeader>
                         <CardContent className="space-y-4">
                             <InfoItem label="Téléphone" value={chief.contact} />
                             <InfoItem label="Email" value={chief.email} />
@@ -128,27 +128,27 @@ export default function ChiefDetailPage() {
                     </Card>
                 </div>
                 <div className="lg:col-span-2 space-y-6">
-                     <Card>
-                         <CardHeader><CardTitle className="flex items-center gap-2 text-xl"><MapPin className="h-5 w-5 text-primary"/> Localisation</CardTitle></CardHeader>
+                    <Card>
+                        <CardHeader><CardTitle className="flex items-center gap-2 text-xl"><MapPin className="h-5 w-5 text-primary" /> Localisation</CardTitle></CardHeader>
                         <CardContent className="grid grid-cols-2 gap-4">
                             <InfoItem label="Région" value={chief.region} icon={Shield} />
                             <InfoItem label="Département" value={chief.department} icon={Building} />
                             <InfoItem label="Sous-préfecture" value={chief.subPrefecture} />
                             <InfoItem label="Village / Commune" value={chief.village} />
-                            {(chief.latitude && chief.longitude) && 
+                            {(chief.latitude && chief.longitude) &&
                                 <InfoItem label="Coordonnées" value={`${chief.latitude}, ${chief.longitude}`} />
                             }
                         </CardContent>
                     </Card>
                     <Card>
-                        <CardHeader><CardTitle className="flex items-center gap-2 text-xl"><User className="h-5 w-5 text-primary"/> Informations Personnelles</CardTitle></CardHeader>
+                        <CardHeader><CardTitle className="flex items-center gap-2 text-xl"><User className="h-5 w-5 text-primary" /> Informations Personnelles</CardTitle></CardHeader>
                         <CardContent className="grid grid-cols-2 gap-4">
                             <InfoItem label="Date de naissance" value={formatDate(chief.dateOfBirth)} icon={Calendar} />
                             <InfoItem label="Sexe" value={chief.sexe} />
                             {parentChief && (
                                 <InfoItem label="Autorité Supérieure" value={`${parentChief.lastName || ''} ${parentChief.firstName || ''}`} icon={Users} />
                             )}
-                             <InfoItem label="Groupe ethnique">
+                            <InfoItem label="Groupe ethnique">
                                 {customLink ? (
                                     <Link href={`/us-et-coutumes/${customLink.id}`} className="font-medium text-primary hover:underline">
                                         {chief.ethnicGroup}
@@ -156,23 +156,23 @@ export default function ChiefDetailPage() {
                                 ) : (
                                     <p className="font-medium">{chief.ethnicGroup}</p>
                                 )}
-                             </InfoItem>
-                             <InfoItem label="Langues" value={chief.languages?.join(', ')} icon={Languages} />
+                            </InfoItem>
+                            <InfoItem label="Langues" value={chief.languages?.join(', ')} icon={Languages} />
                         </CardContent>
                     </Card>
-                     <Card>
-                        <CardHeader><CardTitle className="flex items-center gap-2 text-xl"><Landmark className="h-5 w-5 text-primary"/> Chefferie & Statut Légal</CardTitle></CardHeader>
+                    <Card>
+                        <CardHeader><CardTitle className="flex items-center gap-2 text-xl"><Landmark className="h-5 w-5 text-primary" /> Chefferie & Statut Légal</CardTitle></CardHeader>
                         <CardContent className="grid grid-cols-2 gap-4">
-                             <InfoItem label="Date de désignation" value={formatDate(chief.designationDate)} icon={Milestone} />
-                             <InfoItem label="Mode de désignation" value={chief.designationMode} />
-                             <InfoItem label="N° d'enregistrement CNRCT" value={chief.cnrctRegistrationNumber} />
-                             <InfoItem label="Début de régence" value={formatDate(chief.regencyStartDate)} icon={Calendar} />
-                             <InfoItem label="Fin de régence / Décès" value={formatDate(chief.regencyEndDate)} icon={Calendar} />
+                            <InfoItem label="Date de désignation" value={formatDate(chief.designationDate)} icon={Milestone} />
+                            <InfoItem label="Mode de désignation" value={chief.designationMode} />
+                            <InfoItem label="N° d'enregistrement CNRCT" value={chief.cnrctRegistrationNumber} />
+                            <InfoItem label="Début de régence" value={formatDate(chief.regencyStartDate)} icon={Calendar} />
+                            <InfoItem label="Fin de régence / Décès" value={formatDate(chief.regencyEndDate)} icon={Calendar} />
                         </CardContent>
                     </Card>
                     {(chief.bio || chief.officialDocuments) && (
-                         <Card>
-                            <CardHeader><CardTitle className="flex items-center gap-2 text-xl"><Crown className="h-5 w-5 text-primary"/> Biographie & Documents</CardTitle></CardHeader>
+                        <Card>
+                            <CardHeader><CardTitle className="flex items-center gap-2 text-xl"><Crown className="h-5 w-5 text-primary" /> Biographie & Documents</CardTitle></CardHeader>
                             <CardContent className="space-y-4">
                                 {chief.bio && <InfoItem label="Biographie / Us et coutumes"><p className="text-sm text-muted-foreground whitespace-pre-wrap mt-1">{chief.bio}</p></InfoItem>}
                                 {chief.officialDocuments && <InfoItem label="Documents officiels"><p className="text-sm text-muted-foreground whitespace-pre-wrap mt-1">{chief.officialDocuments}</p></InfoItem>}
@@ -190,8 +190,8 @@ function InfoItem({ label, value, icon: Icon, children }: { label: string; value
     return (
         <div className="flex flex-col">
             <Label className="text-sm text-muted-foreground flex items-center gap-2">
-                 {Icon && <Icon className="h-4 w-4" />}
-                 {label}
+                {Icon && <Icon className="h-4 w-4" />}
+                {label}
             </Label>
             {value && <p className="text-base font-medium mt-1">{value}</p>}
             {children && <div className="mt-1">{children}</div>}
@@ -203,23 +203,23 @@ function ChiefDetailSkeleton() {
     return (
         <div className="flex flex-col gap-6">
             <div className="flex items-center gap-4">
-                 <Skeleton className="h-10 w-10" />
-                 <Skeleton className="h-8 w-64" />
-                 <Skeleton className="h-10 w-24 ml-auto" />
+                <Skeleton className="h-10 w-10" />
+                <Skeleton className="h-8 w-64" />
+                <Skeleton className="h-10 w-24 ml-auto" />
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-1">
-                     <Card><CardContent className="pt-6"><Skeleton className="h-48 w-full" /></CardContent></Card>
+                    <Card><CardContent className="pt-6"><Skeleton className="h-48 w-full" /></CardContent></Card>
                 </div>
                 <div className="lg:col-span-2 space-y-6">
-                     <Card>
+                    <Card>
                         <CardHeader><Skeleton className="h-6 w-1/2" /></CardHeader>
                         <CardContent className="grid grid-cols-2 gap-4">
                             <Skeleton className="h-10 w-full" /><Skeleton className="h-10 w-full" />
                             <Skeleton className="h-10 w-full" /><Skeleton className="h-10 w-full" />
                         </CardContent>
                     </Card>
-                     <Card>
+                    <Card>
                         <CardHeader><Skeleton className="h-6 w-1/2" /></CardHeader>
                         <CardContent className="grid grid-cols-2 gap-4">
                             <Skeleton className="h-10 w-full" /><Skeleton className="h-10 w-full" />

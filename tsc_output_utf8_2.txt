@@ -1,0 +1,55 @@
+﻿src/ai/flows/generate-document.ts(43,7): error TS2322: Type 'number' is not assignable to type 'ZodTypeAny'.
+src/ai/flows/generate-document.ts(43,22): error TS2362: The left-hand side of an arithmetic operation must be of type 'any', 'number', 'bigint' or an enum type.
+src/ai/flows/generate-document.ts(43,24): error TS2693: 'string' only refers to a type, but is being used as a value here.
+src/ai/tools/mission-tools.ts(30,47): error TS2367: This comparison appears to be unintentional because the types '"Planifi├®e" | "En cours" | "Termin├®e" | "Annul├®e"' and '"Completed" | "Planned" | "In Progress" | "Cancelled" | undefined' have no overlap.
+src/ai/tools/mission-tools.ts(40,25): error TS2339: Property 'assignedTo' does not exist on type 'Mission'.
+src/app/chiefs/[id]/edit/page.tsx(52,72): error TS2345: Argument of type 'ParamValue' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/app/chiefs/[id]/edit/page.tsx(114,35): error TS2345: Argument of type '{ name: string; languages: string; id?: string | undefined; lastName?: string | undefined; firstName?: string | undefined; title?: string | undefined; role?: ChiefRole | undefined; designationDate?: string | undefined; ... 21 more ...; regencyEndDate?: string | undefined; }' is not assignable to parameter of type 'Partial<Omit<Chief, "id">>'.
+  Types of property 'languages' are incompatible.
+    Type 'string' is not assignable to type 'string[]'.
+src/app/chiefs/[id]/page.tsx(54,50): error TS2345: Argument of type 'ParamValue' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/app/chiefs/page.tsx(179,51): error TS2345: Argument of type 'string | number | string[] | null | undefined' is not assignable to parameter of type 'string | number | null | undefined'.
+  Type 'string[]' is not assignable to type 'string | number | null | undefined'.
+src/app/helpdesk/[id]/page.tsx(15,94): error TS2459: Module '"./actions"' declares 'SuggestReplyInput' locally, but it is not exported.
+src/app/leave/page.tsx(113,35): error TS2345: Argument of type 'Status' is not assignable to parameter of type '"Approuv├®" | "Rejet├®"'.
+  Type '"En attente"' is not assignable to type '"Approuv├®" | "Rejet├®"'.
+src/app/missions/[id]/edit/page.tsx(51,32): error TS2345: Argument of type 'ParamValue' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/app/missions/[id]/edit/page.tsx(238,78): error TS2322: Type '(value: MissionParticipant["moyenTransport"]) => void' is not assignable to type '(value: string) => void'.
+  Types of parameters 'value' and 'value' are incompatible.
+    Type 'string' is not assignable to type '"V├®hicule personnel" | "V├®hicule CNRCT" | undefined'.
+src/app/reports/disa/page.tsx(54,42): error TS2345: Argument of type 'number' is not assignable to parameter of type 'Month'.
+src/app/reports/nominative/page.tsx(121,66): error TS2345: Argument of type 'number' is not assignable to parameter of type 'Month'.
+src/app/reports/nominative/page.tsx(125,68): error TS2345: Argument of type 'number' is not assignable to parameter of type 'Month'.
+src/app/reports/nominative/page.tsx(128,64): error TS2345: Argument of type 'number' is not assignable to parameter of type 'Month'.
+src/app/us-et-coutumes/[id]/edit/page.tsx(72,46): error TS2345: Argument of type 'ParamValue' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/components/admin/import-data-card.tsx(103,17): error TS2353: Object literal may only specify known properties, and 'Image_Region' does not exist in type 'Omit<Employe, "id">'.
+src/components/charts/asset-status-chart.tsx(82,106): error TS2339: Property 'color' does not exist on type '{ label: string; } | { color: string; } | { color: string; } | { color: string; } | { color: string; }'.
+  Property 'color' does not exist on type '{ label: string; }'.
+src/components/chiefs/add-chief-sheet.tsx(224,81): error TS2322: Type '(value: Chief["sexe"]) => void' is not assignable to type '(value: string) => void'.
+  Types of parameters 'value' and 'value' are incompatible.
+    Type 'string' is not assignable to type '"Homme" | "Femme" | "Autre" | undefined'.
+src/components/conflicts/edit-conflict-sheet.tsx(70,21): error TS2345: Argument of type '(prev: Partial<Conflict>) => { id?: string | undefined; village?: string | undefined; type?: "Autre" | "Foncier" | "Succession" | "Intercommunautaire" | "Politique" | undefined; ... 5 more ...; mediatorName?: string | undefined; } | null' is not assignable to parameter of type 'SetStateAction<Partial<Conflict>>'.
+  Type '(prev: Partial<Conflict>) => { id?: string | undefined; village?: string | undefined; type?: "Autre" | "Foncier" | "Succession" | "Intercommunautaire" | "Politique" | undefined; ... 5 more ...; mediatorName?: string | undefined; } | null' is not assignable to type '(prevState: Partial<Conflict>) => Partial<Conflict>'.
+    Type '{ id?: string | undefined; village?: string | undefined; type?: "Autre" | "Foncier" | "Succession" | "Intercommunautaire" | "Politique" | undefined; description?: string | undefined; ... 4 more ...; mediatorName?: string | undefined; } | null' is not assignable to type 'Partial<Conflict>'.
+      Type 'null' is not assignable to type 'Partial<Conflict>'.
+src/components/conflicts/edit-conflict-sheet.tsx(75,21): error TS2345: Argument of type '(prev: Partial<Conflict>) => { id?: string | undefined; village?: string | undefined; type?: "Autre" | "Foncier" | "Succession" | "Intercommunautaire" | "Politique" | undefined; ... 5 more ...; mediatorName?: string | undefined; } | null' is not assignable to parameter of type 'SetStateAction<Partial<Conflict>>'.
+  Type '(prev: Partial<Conflict>) => { id?: string | undefined; village?: string | undefined; type?: "Autre" | "Foncier" | "Succession" | "Intercommunautaire" | "Politique" | undefined; ... 5 more ...; mediatorName?: string | undefined; } | null' is not assignable to type '(prevState: Partial<Conflict>) => Partial<Conflict>'.
+    Type '{ id?: string | undefined; village?: string | undefined; type?: "Autre" | "Foncier" | "Succession" | "Intercommunautaire" | "Politique" | undefined; description?: string | undefined; ... 4 more ...; mediatorName?: string | undefined; } | null' is not assignable to type 'Partial<Conflict>'.
+      Type 'null' is not assignable to type 'Partial<Conflict>'.
+src/components/employees/add-employee-sheet.tsx(295,81): error TS2322: Type '(value: Employe["sexe"]) => void' is not assignable to type '(value: string) => void'.
+  Types of parameters 'value' and 'value' are incompatible.
+    Type 'string' is not assignable to type '"Homme" | "Femme" | "Autre" | undefined'.
+src/components/employees/import-employees-data-card.tsx(102,17): error TS2353: Object literal may only specify known properties, and 'Image_Region' does not exist in type 'Omit<Employe, "id">'.
+src/components/helpdesk/add-ticket-sheet.tsx(69,13): error TS2741: Property 'messages' is missing in type '{ title: string; description: string; category: TicketCategory; priority: TicketPriority; createdBy: string; createdByName: string; }' but required in type 'Omit<Ticket, "id" | "status" | "createdAt" | "updatedAt">'.
+src/components/it-assets/barcode-scanner.tsx(104,22): error TS2322: Type 'RefObject<HTMLVideoElement | null>' is not assignable to type 'LegacyRef<HTMLVideoElement> | undefined'.
+  Type 'RefObject<HTMLVideoElement | null>' is not assignable to type 'RefObject<HTMLVideoElement>'.
+    Type 'HTMLVideoElement | null' is not assignable to type 'HTMLVideoElement'.
+      Type 'null' is not assignable to type 'HTMLVideoElement'.
+src/components/payroll/edit-payroll-sheet.tsx(99,28): error TS18048: 'sum' is possibly 'undefined'.
+src/components/payroll/edit-payroll-sheet.tsx(101,53): error TS18048: 'otherIndemnities' is possibly 'undefined'.
+src/components/payroll/edit-payroll-sheet.tsx(143,28): error TS18048: 'sum' is possibly 'undefined'.
+src/components/payroll/edit-payroll-sheet.tsx(153,66): error TS18048: 'otherIndemnities' is possibly 'undefined'.

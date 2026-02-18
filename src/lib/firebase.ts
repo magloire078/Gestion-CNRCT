@@ -79,6 +79,8 @@ export {
   increment,
   arrayUnion,
   arrayRemove,
+  writeBatch,
+  runTransaction,
 } from 'firebase/firestore';
 
 

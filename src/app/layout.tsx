@@ -38,7 +38,8 @@ export default async function RootLayout({
         />
         <meta name="theme-color" content="#2C3E50" />
       </head>
-      <body className="font-body antialiased">
+      <body className="font-body antialiased relative min-h-screen">
+        <div className="fixed inset-0 z-[-1] gradient-mesh pointer-events-none" aria-hidden="true" />
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

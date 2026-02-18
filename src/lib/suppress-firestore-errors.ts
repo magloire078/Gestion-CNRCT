@@ -16,7 +16,7 @@ if (typeof window !== 'undefined') {
     // Intercepter console.error
     const originalError = console.error;
     console.error = function (...args: any[]) {
-        const isInitialLoad = Date.now() - appStartTime < 10000;
+        const isInitialLoad = Date.now() - appStartTime < 30000;
         const errorMessage = args.join(' ');
 
         if (isInitialLoad && isPermissionError(errorMessage)) {
@@ -28,7 +28,7 @@ if (typeof window !== 'undefined') {
 
     // Intercepter les erreurs non gérées
     window.addEventListener('error', function (event) {
-        const isInitialLoad = Date.now() - appStartTime < 10000;
+        const isInitialLoad = Date.now() - appStartTime < 30000;
         const errorMessage = event.message || event.error?.message || '';
 
         if (isInitialLoad && isPermissionError(errorMessage)) {
@@ -40,7 +40,7 @@ if (typeof window !== 'undefined') {
 
     // Intercepter les rejets de promesses non gérés
     window.addEventListener('unhandledrejection', function (event) {
-        const isInitialLoad = Date.now() - appStartTime < 10000;
+        const isInitialLoad = Date.now() - appStartTime < 30000;
         const errorMessage = event.reason?.message || String(event.reason) || '';
 
         if (isInitialLoad && isPermissionError(errorMessage)) {

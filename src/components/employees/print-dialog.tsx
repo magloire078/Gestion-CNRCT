@@ -13,7 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import type { ColumnKeys } from "@/app/employees/page";
+import type { ColumnKeys } from "@/lib/constants/employee";
 
 interface PrintDialogProps {
   isOpen: boolean;
@@ -25,28 +25,28 @@ interface PrintDialogProps {
 export function PrintDialog({ isOpen, onClose, onPrint, allColumns }: PrintDialogProps) {
   const [selectedColumns, setSelectedColumns] = useState<Record<ColumnKeys, boolean>>(
     () => Object.keys(allColumns).reduce((acc, key) => {
-        acc[key as ColumnKeys] = true;
-        return acc;
+      acc[key as ColumnKeys] = true;
+      return acc;
     }, {} as Record<ColumnKeys, boolean>)
   );
 
   const handleCheckboxChange = (key: ColumnKeys) => {
     setSelectedColumns(prev => ({ ...prev, [key]: !prev[key] }));
   };
-  
+
   const handleSelectAll = (checked: boolean) => {
-     setSelectedColumns(
-        Object.keys(allColumns).reduce((acc, key) => {
-            acc[key as ColumnKeys] = checked;
-            return acc;
-        }, {} as Record<ColumnKeys, boolean>)
-     )
+    setSelectedColumns(
+      Object.keys(allColumns).reduce((acc, key) => {
+        acc[key as ColumnKeys] = checked;
+        return acc;
+      }, {} as Record<ColumnKeys, boolean>)
+    )
   }
 
   const handlePrintClick = () => {
     const selected = (Object.keys(selectedColumns) as ColumnKeys[]).filter(key => selectedColumns[key]);
-    if(selected.length > 0) {
-        onPrint(selected);
+    if (selected.length > 0) {
+      onPrint(selected);
     }
   };
 
@@ -63,19 +63,19 @@ export function PrintDialog({ isOpen, onClose, onPrint, allColumns }: PrintDialo
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-4">
-             <div className="flex items-center space-x-2">
-                <Checkbox
-                    id="select-all"
-                    checked={areAllSelected}
-                    onCheckedChange={(checked) => handleSelectAll(Boolean(checked))}
-                    aria-label="Tout sélectionner"
-                />
-                <Label htmlFor="select-all" className="font-bold">
-                    Tout sélectionner / Désélectionner
-                </Label>
-            </div>
-            <hr />
-            <div className="grid grid-cols-2 gap-4">
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="select-all"
+              checked={areAllSelected}
+              onCheckedChange={(checked) => handleSelectAll(Boolean(checked))}
+              aria-label="Tout sélectionner"
+            />
+            <Label htmlFor="select-all" className="font-bold">
+              Tout sélectionner / Désélectionner
+            </Label>
+          </div>
+          <hr />
+          <div className="grid grid-cols-2 gap-4">
             {(Object.keys(allColumns) as ColumnKeys[]).map(key => (
               <div key={key} className="flex items-center space-x-2">
                 <Checkbox

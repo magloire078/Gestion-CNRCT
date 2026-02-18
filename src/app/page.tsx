@@ -43,7 +43,7 @@ interface StatCardProps {
 
 const StatCard = ({ title, value, icon: Icon, description, href, loading }: StatCardProps) => {
     const cardContent = (
-        <Card className="hover:shadow-lg transition-shadow">
+        <Card variant="premium" className="transition-all duration-300">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">{title}</CardTitle>
                 <Icon className="h-5 w-5 text-muted-foreground" />
@@ -97,7 +97,7 @@ const LatestRecruitsCard = ({ employees, loading, departments }: { employees: Em
 
 
     return (
-        <Card className="lg:col-span-1 xl:col-span-1">
+        <Card variant="premium" className="lg:col-span-1 xl:col-span-1">
             <CardHeader>
                 <CardTitle>Derniers Arrivants par Catégorie</CardTitle>
                 <CardDescription>Aperçu des nouveaux employés et de leurs matricules.</CardDescription>
@@ -238,7 +238,7 @@ export default function DashboardPage() {
                             </TabsList>
                         </div>
                         <TabsContent value="overview" className="space-y-4">
-                            <Card>
+                            <Card variant="glass" className="border-primary/20 bg-primary/5">
                                 <CardHeader className="flex flex-row items-center gap-4">
                                     <Bot className="h-8 w-8 text-primary" />
                                     <div>
@@ -274,12 +274,12 @@ export default function DashboardPage() {
                             )}
 
                             {!isManagerView && (
-                                <Card>
+                                <Card variant="premium">
                                     <CardHeader>
                                         <CardTitle>Actions Rapides</CardTitle>
                                     </CardHeader>
                                     <CardContent className="flex flex-wrap gap-4">
-                                        <Button onClick={() => setIsSheetOpen(true)}>
+                                        <Button variant="premium" onClick={() => setIsSheetOpen(true)}>
                                             <FilePlus2 className="mr-2 h-4 w-4" /> Nouvelle Demande de Congé
                                         </Button>
                                         {user?.id && (
@@ -303,7 +303,7 @@ export default function DashboardPage() {
                             {isManagerView && (
                                 <>
                                     <div className="grid gap-6 lg:grid-cols-2">
-                                        <Card>
+                                        <Card variant="premium">
                                             <CardHeader>
                                                 <CardTitle>Répartition des Employés</CardTitle>
                                                 <CardDescription>Distribution des employés par département.</CardDescription>
@@ -316,7 +316,7 @@ export default function DashboardPage() {
                                     </div>
 
                                     <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
-                                        <Card>
+                                        <Card variant="premium">
                                             <CardHeader>
                                                 <div className="flex justify-between items-start">
                                                     <div>
@@ -349,7 +349,7 @@ export default function DashboardPage() {
                                                 )}
                                             </CardContent>
                                         </Card>
-                                        <Card className="lg:col-span-2 xl:col-span-1">
+                                        <Card variant="premium" className="lg:col-span-2 xl:col-span-1">
                                             <CardHeader>
                                                 <div className="flex justify-between items-start">
                                                     <div><CardTitle>Départs à la Retraite</CardTitle><CardDescription>Employés partant pour l'année choisie.</CardDescription></div>

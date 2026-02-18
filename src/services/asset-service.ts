@@ -1,5 +1,8 @@
 
-import { collection, getDocs, addDoc, doc, setDoc, onSnapshot, Unsubscribe, query, orderBy, getDoc, updateDoc, deleteDoc, writeBatch, where } from '@/lib/firebase';
+import {
+    collection, getDocs, addDoc, doc, setDoc, onSnapshot, Unsubscribe, query, orderBy, getDoc, updateDoc, deleteDoc, writeBatch, where,
+    type QueryDocumentSnapshot, type DocumentData
+} from '@/lib/firebase';
 import type { Asset } from '@/lib/data';
 import { db } from '@/lib/firebase';
 import { FirestorePermissionError } from '@/lib/errors';
@@ -11,9 +14,9 @@ export function subscribeToAssets(
     onError: (error: Error) => void
 ): Unsubscribe {
     const q = query(assetsCollection, orderBy("modele", "asc"));
-    const unsubscribe = onSnapshot(q, 
+    const unsubscribe = onSnapshot(q,
         (snapshot) => {
-            const assets = snapshot.docs.map(doc => ({
+            const assets = snapshot.docs.map((doc: QueryDocumentSnapshot<DocumentData>) => ({
                 tag: doc.id,
                 ...doc.data()
             } as Asset));
@@ -32,18 +35,18 @@ export function subscribeToAssets(
 }
 
 export async function getAssets(): Promise<Asset[]> {
-  try {
-    const snapshot = await getDocs(query(assetsCollection, orderBy("modele", "asc")));
-    return snapshot.docs.map(doc => ({
-      tag: doc.id,
-      ...doc.data()
-    } as Asset));
-  } catch(error: any) {
-    if (error.code === 'permission-denied') {
-        throw new FirestorePermissionError("Vous n'avez pas la permission de consulter les actifs.", { operation: 'read-all', path: 'assets' });
+    try {
+        const snapshot = await getDocs(query(assetsCollection, orderBy("modele", "asc")));
+        return snapshot.docs.map((doc: QueryDocumentSnapshot<DocumentData>) => ({
+            tag: doc.id,
+            ...doc.data()
+        } as Asset));
+    } catch (error: any) {
+        if (error.code === 'permission-denied') {
+            throw new FirestorePermissionError("Vous n'avez pas la permission de consulter les actifs.", { operation: 'read-all', path: 'assets' });
+        }
+        throw error;
     }
-    throw error;
-  }
 }
 
 export async function getAsset(tag: string): Promise<Asset | null> {
@@ -55,7 +58,7 @@ export async function getAsset(tag: string): Promise<Asset | null> {
             return { tag: docSnap.id, ...docSnap.data() } as Asset;
         }
         return null;
-    } catch(error: any) {
+    } catch (error: any) {
         if (error.code === 'permission-denied') {
             throw new FirestorePermissionError(`Vous n'avez pas la permission de consulter l'actif ${tag}.`, { operation: 'read', path: `assets/${tag}` });
         }
@@ -68,7 +71,7 @@ export async function addAsset(assetDataToAdd: Omit<Asset, 'tag'> & { tag: strin
     const assetRef = doc(db, 'assets', tag);
 
     const docSnap = await getDoc(assetRef);
-    if(docSnap.exists()) {
+    if (docSnap.exists()) {
         throw new Error(`Un actif avec le N° d'inventaire ${tag} existe déjà.`);
     }
 
@@ -111,7 +114,7 @@ export async function batchAddAssets(assets: (Omit<Asset, 'tag'> & { tag: string
     for (const asset of assets) {
         if (asset.tag && !existingTags.has(asset.tag)) {
             const { tag, ...dataToSave } = asset;
-            
+
             // Remove undefined fields before sending to Firestore
             Object.keys(dataToSave).forEach(key => {
                 const dataKey = key as keyof typeof dataToSave;
@@ -130,7 +133,7 @@ export async function batchAddAssets(assets: (Omit<Asset, 'tag'> & { tag: string
         try {
             await batch.commit();
         } catch (error: any) {
-             if (error.code === 'permission-denied') {
+            if (error.code === 'permission-denied') {
                 throw new FirestorePermissionError("Vous n'avez pas la permission d'importer des actifs en masse.", { operation: 'batch-add', path: 'assets' });
             }
             throw error;

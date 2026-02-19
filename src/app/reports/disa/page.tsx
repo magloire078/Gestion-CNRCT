@@ -137,6 +137,7 @@ export default function DisaReportPage() {
                                             <TableHead className="sticky left-10 z-10 w-24 px-2 bg-card">Matricule</TableHead>
                                             <TableHead className="sticky left-32 z-10 min-w-[150px] px-2 bg-card">Nom et Prénoms</TableHead>
                                             {monthLabels.map((m, i) => <TableHead key={`header-month-${i}`} className="text-right px-2">{m}</TableHead>)}
+                                            <TableHead className="text-right font-bold px-2 bg-blue-50/50 dark:bg-blue-900/10 text-blue-700 dark:text-blue-300">Gratification</TableHead>
                                             <TableHead className="text-right font-bold px-2">Total Brut</TableHead>
                                             <TableHead className="text-right font-bold px-2">Total CNPS</TableHead>
                                         </TableRow>
@@ -150,6 +151,7 @@ export default function DisaReportPage() {
                                                 {row.monthlySalaries.map((salary, i) => (
                                                     <TableCell key={`${row.matricule}-month-${i}`} className="text-right font-mono text-xs px-2">{formatCurrency(salary)}</TableCell>
                                                 ))}
+                                                <TableCell className="text-right font-mono font-bold px-2 bg-blue-50/50 dark:bg-blue-900/10 text-blue-700 dark:text-blue-300">{formatCurrency(row.gratification)}</TableCell>
                                                 <TableCell className="text-right font-mono font-bold px-2">{formatCurrency(row.totalBrut)}</TableCell>
                                                 <TableCell className="text-right font-mono font-bold px-2">{formatCurrency(row.totalCNPS)}</TableCell>
                                             </TableRow>
@@ -160,6 +162,7 @@ export default function DisaReportPage() {
                                                 {state.grandTotal.monthly.map((total, index) => (
                                                     <TableCell key={`total-month-${index}`} className="text-right font-mono text-xs px-2">{formatCurrency(total)}</TableCell>
                                                 ))}
+                                                <TableCell className="text-right font-mono px-2 bg-blue-100/50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-200">{formatCurrency(state.grandTotal.gratification)}</TableCell>
                                                 <TableCell className="text-right font-mono px-2">{formatCurrency(state.grandTotal.brut)}</TableCell>
                                                 <TableCell className="text-right font-mono px-2">{formatCurrency(state.grandTotal.cnps)}</TableCell>
                                             </TableRow>
@@ -207,6 +210,7 @@ export default function DisaReportPage() {
                                 <th className="border border-black p-1">Mat.</th>
                                 <th className="border border-black p-1">Nom et Prénoms</th>
                                 {monthLabels.map((m, i) => <th key={`header-print-month-${i}`} className="border border-black p-1">{m}</th>)}
+                                <th className="border border-black p-1">Gratif.</th>
                                 <th className="border border-black p-1">Total Brut</th>
                                 <th className="border border-black p-1">Total CNPS</th>
                             </tr>
@@ -220,6 +224,7 @@ export default function DisaReportPage() {
                                     {row.monthlySalaries.map((salary, i) => (
                                         <td key={`print-cell-${row.matricule}-month-${i}`} className="border border-black p-1 text-right">{formatCurrency(salary)}</td>
                                     ))}
+                                    <td className="border border-black p-1 text-right font-bold">{formatCurrency(row.gratification)}</td>
                                     <td className="border border-black p-1 text-right font-bold">{formatCurrency(row.totalBrut)}</td>
                                     <td className="border border-black p-1 text-right font-bold">{formatCurrency(row.totalCNPS)}</td>
                                 </tr>
@@ -229,6 +234,7 @@ export default function DisaReportPage() {
                                 {state.grandTotal.monthly.map((total, index) => (
                                     <td key={`print-total-month-${index}`} className="border border-black p-1 text-right">{formatCurrency(total)}</td>
                                 ))}
+                                <td className="border border-black p-1 text-right">{formatCurrency(state.grandTotal.gratification)}</td>
                                 <td className="border border-black p-1 text-right">{formatCurrency(state.grandTotal.brut)}</td>
                                 <td className="border border-black p-1 text-right">{formatCurrency(state.grandTotal.cnps)}</td>
                             </tr>

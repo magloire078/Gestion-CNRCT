@@ -12,11 +12,12 @@ export interface DisaRow {
   monthlySalaries: number[];
   totalBrut: number;
   totalCNPS: number;
+  gratification: number;
 }
 
 export interface DisaReportState {
   reportData: DisaRow[] | null;
-  grandTotal: { brut: number; cnps: number; monthly: number[] } | null;
+  grandTotal: { brut: number; cnps: number; gratification: number; monthly: number[] } | null;
   organizationLogos: OrganizationSettings | null;
   year: string | null;
   error: string | null;
@@ -100,7 +101,7 @@ export async function generateDisaReport(yearStr: string): Promise<DisaReportSta
     });
 
     if (employeesForYear.length === 0) {
-      return { reportData: [], grandTotal: { brut: 0, cnps: 0, monthly: Array(12).fill(0) }, organizationLogos, year: yearStr, error: null };
+      return { reportData: [], grandTotal: { brut: 0, cnps: 0, gratification: 0, monthly: Array(12).fill(0) }, organizationLogos, year: yearStr, error: null };
     }
 
     const employeeHistories = new Map<string, EmployeeEvent[]>();
@@ -115,6 +116,20 @@ export async function generateDisaReport(yearStr: string): Promise<DisaReportSta
       const employeeHistory = employeeHistories.get(employee.id) || [];
       const hireDate = employee.dateEmbauche ? parseISO(employee.dateEmbauche) : null;
       const departureDate = employee.Date_Depart ? parseISO(employee.Date_Depart) : null;
+
+      // Gratification Calculation: 75% of December's base salary or last active month
+      const dateForGratification = lastDayOfMonth(new Date(reportYear, 11)); // December 31st
+      const salaryStructureDec = getSalaryStructureForDate(employee, employeeHistory, dateForGratification);
+      const baseSalaryDec = Number(salaryStructureDec.baseSalary || 0);
+
+      let gratification = 0;
+      const isPresentInDecember = !departureDate || !isBefore(departureDate, dateForGratification);
+
+      if (isPresentInDecember) {
+        gratification = Math.round(baseSalaryDec * 0.75);
+      } else {
+        gratification = 0;
+      }
 
       for (let month = 0; month < 12; month++) {
         const dateForPayslip = lastDayOfMonth(new Date(reportYear, month));
@@ -141,13 +156,19 @@ export async function generateDisaReport(yearStr: string): Promise<DisaReportSta
         monthlySalaries.push(Math.round(brutImposable));
       }
 
-      const totalBrut = monthlySalaries.reduce((sum, current) => sum + current, 0);
+      const totalMonthlyBrut = monthlySalaries.reduce((sum, current) => sum + current, 0);
+      const totalBrut = totalMonthlyBrut + gratification;
+
+      if (employee.CNPS === true) {
+        totalCNPS += gratification * 0.063;
+      }
 
       reportRows.push({
         matricule: employee.matricule || 'N/A',
         name: `${(employee.lastName || '').toUpperCase()} ${employee.firstName || ''}`.trim(),
         cnpsStatus: employee.CNPS || false,
         monthlySalaries,
+        gratification,
         totalBrut: Math.round(totalBrut),
         totalCNPS: Math.round(totalCNPS),
       });
@@ -156,17 +177,19 @@ export async function generateDisaReport(yearStr: string): Promise<DisaReportSta
     const grandTotal = reportRows.reduce((acc, row) => {
       acc.brut += row.totalBrut;
       acc.cnps += row.totalCNPS;
+      acc.gratification += row.gratification;
       row.monthlySalaries.forEach((salary, index) => {
         acc.monthly[index] = (acc.monthly[index] || 0) + salary;
       });
       return acc;
-    }, { brut: 0, cnps: 0, monthly: Array(12).fill(0) });
+    }, { brut: 0, cnps: 0, gratification: 0, monthly: Array(12).fill(0) });
 
     return {
       reportData: reportRows.sort((a, b) => a.name.localeCompare(b.name)),
       grandTotal: {
         brut: Math.round(grandTotal.brut),
         cnps: Math.round(grandTotal.cnps),
+        gratification: Math.round(grandTotal.gratification),
         monthly: grandTotal.monthly.map(m => Math.round(m))
       },
       organizationLogos,

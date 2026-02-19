@@ -94,7 +94,7 @@ export async function addAsset(assetDataToAdd: Omit<Asset, 'tag'> & { tag: strin
     }
 }
 
-export async function batchAddAssets(assets: (Omit<Asset, 'tag'> & { tag: string })[]): Promise<number> {
+export async function batchAddAssets(assets: (Omit<Asset, 'tag'> & { tag: string })[], merge: boolean = false): Promise<number> {
     const batch = writeBatch(db);
     let processedCount = 0;
 
@@ -102,17 +102,26 @@ export async function batchAddAssets(assets: (Omit<Asset, 'tag'> & { tag: string
     const existingTags = new Set<string>();
 
     // Firestore 'in' query is limited to 30 elements
-    for (let i = 0; i < tags.length; i += 30) {
-        const chunk = tags.slice(i, i + 30);
-        if (chunk.length > 0) {
-            const q = query(assetsCollection, where('__name__', 'in', chunk));
-            const snapshot = await getDocs(q);
-            snapshot.docs.forEach(doc => existingTags.add(doc.id));
+    // Only check for existing tags if we are NOT merging (to skip them)
+    // If merging, we don't strictly need to know if they exist, unless we want to separate add vs update counts
+    // But keeping it check is fine for optimization if we wanted to only update changed, but here we just upsert all if merge=true
+    if (!merge) {
+        for (let i = 0; i < tags.length; i += 30) {
+            const chunk = tags.slice(i, i + 30);
+            if (chunk.length > 0) {
+                const q = query(assetsCollection, where('__name__', 'in', chunk));
+                const snapshot = await getDocs(q);
+                snapshot.docs.forEach(doc => existingTags.add(doc.id));
+            }
         }
     }
 
     for (const asset of assets) {
-        if (asset.tag && !existingTags.has(asset.tag)) {
+        if (!asset.tag) continue;
+
+        const shouldProcess = merge || !existingTags.has(asset.tag);
+
+        if (shouldProcess) {
             const { tag, ...dataToSave } = asset;
 
             // Remove undefined fields before sending to Firestore
@@ -124,7 +133,11 @@ export async function batchAddAssets(assets: (Omit<Asset, 'tag'> & { tag: string
             });
 
             const newDocRef = doc(assetsCollection, tag);
-            batch.set(newDocRef, dataToSave);
+            if (merge) {
+                batch.set(newDocRef, dataToSave, { merge: true });
+            } else {
+                batch.set(newDocRef, dataToSave);
+            }
             processedCount++;
         }
     }

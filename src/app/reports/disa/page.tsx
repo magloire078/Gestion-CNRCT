@@ -1,8 +1,7 @@
 
 "use client";
 
-import { useState, useEffect, useActionState } from "react";
-import { useFormStatus } from "react-dom";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
     Card,
@@ -22,9 +21,7 @@ import { Label } from "@/components/ui/label";
 import { Loader2, FileText, Printer } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { fr } from 'date-fns/locale';
-import type { OrganizationSettings } from "@/lib/data";
-import { generateDisaReportAction, type DisaReportState } from "./actions";
+import { generateDisaReport, type DisaReportState } from "./actions";
 import { Month } from "@/types/common";
 
 const initialState: DisaReportState = {
@@ -35,20 +32,11 @@ const initialState: DisaReportState = {
     error: null,
 };
 
-function SubmitButton() {
-    const { pending } = useFormStatus();
-    return (
-        <Button type="submit" disabled={pending} className="w-full sm:w-auto">
-            {pending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileText className="mr-2 h-4 w-4" />}
-            Générer le rapport
-        </Button>
-    )
-}
-
 export default function DisaReportPage() {
-    const [state, formAction] = useActionState(generateDisaReportAction, initialState);
+    const [state, setState] = useState<DisaReportState>(initialState);
     const [year, setYear] = useState<string>(new Date().getFullYear().toString());
     const [isPrinting, setIsPrinting] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     const years = Array.from({ length: 10 }, (_, i) => (new Date().getFullYear() - i).toString());
     const monthLabels: Month[] = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
@@ -57,6 +45,19 @@ export default function DisaReportPage() {
 
     const handlePrint = () => {
         setIsPrinting(true);
+    };
+
+    const handleGenerate = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setLoading(true);
+        try {
+            const result = await generateDisaReport(year);
+            setState(result);
+        } catch (error) {
+            setState(prev => ({ ...prev, error: "Une erreur inattendue est survenue." }));
+        } finally {
+            setLoading(false);
+        }
     };
 
     useEffect(() => {
@@ -87,7 +88,7 @@ export default function DisaReportPage() {
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <form action={formAction}>
+                        <form onSubmit={handleGenerate}>
                             <div className="flex flex-col sm:flex-row gap-4 items-end mb-6 p-4 border rounded-lg max-w-md">
                                 <div className="grid gap-2 flex-1 w-full">
                                     <Label htmlFor="year">Année de la déclaration</Label>
@@ -98,7 +99,10 @@ export default function DisaReportPage() {
                                         </SelectContent>
                                     </Select>
                                 </div>
-                                <SubmitButton />
+                                <Button type="submit" disabled={loading} className="w-full sm:w-auto">
+                                    {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileText className="mr-2 h-4 w-4" />}
+                                    Générer le rapport
+                                </Button>
                             </div>
                         </form>
                         {state.error && (
@@ -167,7 +171,7 @@ export default function DisaReportPage() {
                     </Card>
                 )}
 
-                {!state.reportData && !useFormStatus().pending && (
+                {!state.reportData && !loading && (
                     <Card className="flex items-center justify-center min-h-[300px]">
                         <div className="text-center text-muted-foreground">
                             <FileText className="mx-auto h-12 w-12" />

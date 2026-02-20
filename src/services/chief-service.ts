@@ -136,7 +136,7 @@ export function subscribeToChiefs(
     const q = query(chiefsCollection, orderBy("lastName", "asc"));
     const unsubscribe = onSnapshot(q,
         (snapshot) => {
-            const chiefs = snapshot.docs.map(doc => ({
+            const chiefs = snapshot.docs.map((doc: any) => ({
                 id: doc.id,
                 ...doc.data()
             } as Chief));
@@ -153,7 +153,7 @@ export function subscribeToChiefs(
 export async function getChiefs(): Promise<Chief[]> {
     await initializeDefaultChiefs(); 
     const snapshot = await getDocs(query(chiefsCollection, orderBy("lastName", "asc")));
-    const chiefs = snapshot.docs.map(doc => ({
+    const chiefs = snapshot.docs.map((doc: any) => ({
         id: doc.id,
         ...doc.data()
     } as Chief));

@@ -20,7 +20,7 @@ export function subscribeToUsers(
 
     const processUsers = (userDocs: any[]) => {
         const rolesMap = new Map(roles.map(r => [r.id, r]));
-        const users = userDocs.map(doc => {
+        const users = userDocs.map((doc: any) => {
             const userData = doc.data() as Omit<User, 'id'>;
             const role = rolesMap.get(userData.roleId) || null;
             return {
@@ -34,7 +34,7 @@ export function subscribeToUsers(
     };
 
     rolesUnsub = onSnapshot(query(collection(db, 'roles')), (rolesSnapshot) => {
-        roles = rolesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Role));
+        roles = rolesSnapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() } as Role));
         
         // After fetching roles, set up the user subscription
         if (!usersUnsub) {
@@ -66,7 +66,7 @@ export async function getUsers(): Promise<User[]> {
     const roles = await getRoles();
     const rolesMap = new Map(roles.map(r => [r.id, r]));
     
-    return snapshot.docs.map(doc => {
+    return snapshot.docs.map((doc: any) => {
         const userData = doc.data() as Omit<User, 'id'>;
         const role = rolesMap.get(userData.roleId) || null;
         return {

@@ -15,7 +15,7 @@ export function subscribeToEvaluations(
     const q = query(evaluationsCollection, orderBy("evaluationDate", "desc"));
     const unsubscribe = onSnapshot(q,
         (snapshot) => {
-            const evaluations = snapshot.docs.map(doc => {
+            const evaluations = snapshot.docs.map((doc: any) => {
                 const data = { id: doc.id, ...doc.data() };
                 const result = evaluationSchema.safeParse(data);
                 if (!result.success) {
@@ -36,7 +36,7 @@ export function subscribeToEvaluations(
 
 export async function getEvaluations(): Promise<Evaluation[]> {
     const snapshot = await getDocs(query(evaluationsCollection, orderBy("evaluationDate", "desc")));
-    return snapshot.docs.map(doc => {
+    return snapshot.docs.map((doc: any) => {
         const data = { id: doc.id, ...doc.data() };
         const result = evaluationSchema.safeParse(data);
         if (!result.success) {

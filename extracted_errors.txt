@@ -1,0 +1,13 @@
+﻿src/lib/firebase-admin.ts(2,24): error TS2307: Cannot find module 'firebase-admin' or its corresponding type declarations.
+src/services/chief-service.ts(139,46): error TS7006: Parameter 'doc' implicitly has an 'any' type.
+src/services/conflict-service.ts(16,49): error TS7006: Parameter 'doc' implicitly has an 'any' type.
+src/services/customs-service.ts(15,47): error TS7006: Parameter 'doc' implicitly has an 'any' type.
+src/services/evaluation-service.ts(18,51): error TS7006: Parameter 'doc' implicitly has an 'any' type.
+src/services/fleet-service.ts(16,48): error TS7006: Parameter 'doc' implicitly has an 'any' type.
+src/services/helpdesk-service.ts(18,47): error TS7006: Parameter 'doc' implicitly has an 'any' type.
+src/services/helpdesk-service.ts(51,48): error TS7006: Parameter 'doc' implicitly has an 'any' type.
+src/services/leave-service.ts(55,46): error TS7006: Parameter 'doc' implicitly has an 'any' type.
+src/services/mission-service.ts(45,48): error TS7006: Parameter 'doc' implicitly has an 'any' type.
+src/services/repository-service.ts(51,49): error TS7006: Parameter 'doc' implicitly has an 'any' type.
+src/services/supply-service.ts(17,48): error TS7006: Parameter 'doc' implicitly has an 'any' type.
+src/services/user-service.ts(37,40): error TS7006: Parameter 'doc' implicitly has an 'any' type.

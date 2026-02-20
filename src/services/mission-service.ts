@@ -42,7 +42,7 @@ export function subscribeToMissions(
     const q = query(missionsCollection, orderBy("startDate", "desc"));
     const unsubscribe = onSnapshot(q,
         (snapshot) => {
-            const missions = snapshot.docs.map(doc => {
+            const missions = snapshot.docs.map((doc: any) => {
                 const data = { id: doc.id, ...doc.data() };
                 const result = missionSchema.safeParse(data);
                 if (!result.success) {
@@ -63,7 +63,7 @@ export function subscribeToMissions(
 
 export async function getMissions(): Promise<Mission[]> {
     const snapshot = await getDocs(query(missionsCollection, orderBy("startDate", "desc")));
-    return snapshot.docs.map(doc => {
+    return snapshot.docs.map((doc: any) => {
         const data = { id: doc.id, ...doc.data() };
         const result = missionSchema.safeParse(data);
         if (!result.success) {

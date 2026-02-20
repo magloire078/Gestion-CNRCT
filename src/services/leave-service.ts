@@ -52,7 +52,7 @@ export function subscribeToLeaves(
     const q = query(leavesCollection, orderBy("startDate", "desc"));
     const unsubscribe = onSnapshot(q,
         (snapshot) => {
-            const leaves = snapshot.docs.map(doc => {
+            const leaves = snapshot.docs.map((doc: any) => {
                 const data = { id: doc.id, ...doc.data() };
                 const result = leaveSchema.safeParse(data);
                 if (!result.success) {
@@ -75,7 +75,7 @@ export async function getLeaves(): Promise<Leave[]> {
     try {
         const q = query(leavesCollection, orderBy("startDate", "desc"));
         const snapshot = await getDocs(q);
-        return snapshot.docs.map(doc => {
+        return snapshot.docs.map((doc: any) => {
             const data = { id: doc.id, ...doc.data() };
             const result = leaveSchema.safeParse(data);
             if (!result.success) {

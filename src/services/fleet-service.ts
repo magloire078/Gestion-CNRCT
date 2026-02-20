@@ -13,7 +13,7 @@ export function subscribeToVehicles(
     const q = query(fleetCollection, orderBy("makeModel", "asc"));
     const unsubscribe = onSnapshot(q, 
         (snapshot) => {
-            const vehicles = snapshot.docs.map(doc => ({
+            const vehicles = snapshot.docs.map((doc: any) => ({
                 plate: doc.id,
                 ...doc.data()
             } as Fleet));
@@ -29,7 +29,7 @@ export function subscribeToVehicles(
 
 export async function getVehicles(): Promise<Fleet[]> {
   const snapshot = await getDocs(query(fleetCollection, orderBy("makeModel", "asc")));
-  return snapshot.docs.map(doc => ({
+  return snapshot.docs.map((doc: any) => ({
     plate: doc.id,
     ...doc.data()
   } as Fleet));

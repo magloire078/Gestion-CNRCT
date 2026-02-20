@@ -126,7 +126,11 @@ export async function generateDisaReport(yearStr: string): Promise<DisaReportSta
       const isPresentInDecember = !departureDate || !isBefore(departureDate, dateForGratification);
 
       if (isPresentInDecember) {
-        gratification = Math.round(baseSalaryDec * 0.75);
+        // Calculate December Brut Salary
+        const primeAncienneteDec = calculatePrimeAnciennete(baseSalaryDec, hireDate, dateForGratification);
+        const brutImposableDec = calculateBrutSalary(baseSalaryDec, primeAncienneteDec, salaryStructureDec);
+
+        gratification = brutImposableDec;
       } else {
         gratification = 0;
       }

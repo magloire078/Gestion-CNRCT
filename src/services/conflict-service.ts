@@ -13,7 +13,7 @@ export function subscribeToConflicts(
     const q = query(conflictsCollection, orderBy("reportedDate", "desc"));
     const unsubscribe = onSnapshot(q,
         (snapshot) => {
-            const conflicts = snapshot.docs.map(doc => ({
+            const conflicts = snapshot.docs.map((doc: any) => ({
                 id: doc.id,
                 ...doc.data()
             } as Conflict));
@@ -29,7 +29,7 @@ export function subscribeToConflicts(
 
 export async function getConflicts(): Promise<Conflict[]> {
     const snapshot = await getDocs(query(conflictsCollection, orderBy("reportedDate", "desc")));
-    return snapshot.docs.map(doc => ({
+    return snapshot.docs.map((doc: any) => ({
         id: doc.id,
         ...doc.data()
     } as Conflict));

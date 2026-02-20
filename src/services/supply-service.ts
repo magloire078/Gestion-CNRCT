@@ -14,7 +14,7 @@ export function subscribeToSupplies(
     const q = query(suppliesCollection, orderBy("name", "asc"));
     const unsubscribe = onSnapshot(q,
         (snapshot) => {
-            const supplies = snapshot.docs.map(doc => ({
+            const supplies = snapshot.docs.map((doc: any) => ({
                 id: doc.id,
                 ...doc.data()
             } as Supply));
@@ -30,7 +30,7 @@ export function subscribeToSupplies(
 
 export async function getSupplies(): Promise<Supply[]> {
     const snapshot = await getDocs(query(suppliesCollection, orderBy("name", "asc")));
-    return snapshot.docs.map(doc => ({
+    return snapshot.docs.map((doc: any) => ({
         id: doc.id,
         ...doc.data()
     } as Supply));

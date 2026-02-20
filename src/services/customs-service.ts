@@ -12,7 +12,7 @@ export function subscribeToCustoms(
     const q = query(customsCollection, orderBy("ethnicGroup", "asc"));
     const unsubscribe = onSnapshot(q, 
         (snapshot) => {
-            const customs = snapshot.docs.map(doc => ({
+            const customs = snapshot.docs.map((doc: any) => ({
                 id: doc.id,
                 ...doc.data()
             } as Custom));

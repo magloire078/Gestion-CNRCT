@@ -15,7 +15,7 @@ export function subscribeToTickets(
     const q = query(ticketsCollection, orderBy("createdAt", "desc"));
     const unsubscribe = onSnapshot(q,
         (snapshot) => {
-            const tickets = snapshot.docs.map(doc => ({
+            const tickets = snapshot.docs.map((doc: any) => ({
                 id: doc.id,
                 ...doc.data()
             } as Ticket));
@@ -48,7 +48,7 @@ export function subscribeToTicketMessages(
     const q = query(messagesCollection, orderBy("createdAt", "asc"));
     const unsubscribe = onSnapshot(q,
         (snapshot) => {
-            const messages = snapshot.docs.map(doc => ({
+            const messages = snapshot.docs.map((doc: any) => ({
                 id: doc.id,
                 ...doc.data()
             } as TicketMessage));

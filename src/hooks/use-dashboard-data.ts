@@ -91,6 +91,7 @@ export function useDashboardData(user: User | null) {
             getOrganizationSettings().then(logos => {
                 if (isMounted) setOrganizationLogos(logos);
             });
+
             getDashboardSummary()
                 .then(summary => { if (isMounted) setSummary(summary); })
                 .catch(console.error)

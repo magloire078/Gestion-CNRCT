@@ -48,7 +48,7 @@ export function subscribeToDocuments(
     
     const unsubscribe = onSnapshot(q, 
         (snapshot) => {
-            const documents = snapshot.docs.map(doc => ({
+            const documents = snapshot.docs.map((doc: any) => ({
                 id: doc.id,
                 ...doc.data()
             } as Document));

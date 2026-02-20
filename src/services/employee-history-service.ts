@@ -18,7 +18,7 @@ export async function getEmployeeHistory(employeeId: string): Promise<EmployeeEv
     const historyCollection = collection(db, `employees/${employeeId}/history`);
     const q = query(historyCollection, orderBy("effectiveDate", "desc"));
     const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => ({
+    return snapshot.docs.map((doc: any) => ({
         id: doc.id,
         ...doc.data()
     } as EmployeeEvent));

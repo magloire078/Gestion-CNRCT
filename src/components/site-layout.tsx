@@ -41,6 +41,7 @@ import {
   LifeBuoy,
   Menu,
   Rocket,
+  ShieldCheck,
 } from "lucide-react";
 
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
@@ -71,90 +72,92 @@ import { NotificationBell } from "./common/notification-bell";
 import { cn } from "@/lib/utils";
 
 const allMenuItems = [
-  { href: "/", label: "Tableau de Bord", icon: LayoutDashboard, permission: "page:dashboard:view" },
-  { 
+  { href: "/intranet", label: "Accueil", icon: LayoutDashboard },
+  { href: "/dashboard", label: "Tableau de Bord RH", icon: ShieldCheck, permission: "page:dashboard:view" },
+  {
     isCollapsible: true,
-    label: "Personnel", 
+    label: "Personnel",
     icon: Users,
     permission: "group:personnel:view",
     subItems: [
-        { href: "/employees?filter=personnel-siege", label: "Personnel Siège", icon: Users, permission: "page:employees:view" },
-        { href: "/employees?filter=chauffeur-directoire", label: "Chauffeur Directoire", icon: Car, permission: "page:employees:view" },
-        { href: "/payroll", label: "Paie", icon: Landmark, permission: "page:payroll:view" },
-        { href: "/leave", label: "Congés", icon: CalendarOff, permission: "page:leave:view" },
-        { href: "/evaluations", label: "Évaluations", icon: ClipboardCheck, permission: "page:evaluations:view" },
-        { href: "/indemnities", label: "Indemnités", icon: Scale, permission: "page:indemnities:view" },
-        { href: "/employees?filter=directoire", label: "Membres du Directoire", icon: Building, permission: "page:employees:view" },
-        { href: "/employees?filter=regional", label: "Comités Régionaux", icon: Globe, permission: "page:employees:view" },
-        { href: "/organization-chart", label: "Organigramme", icon: Network, permission: "page:organization-chart:view" },
+      { href: "/employees?filter=personnel-siege", label: "Personnel Siège", icon: Users, permission: "page:employees:view" },
+      { href: "/employees?filter=chauffeur-directoire", label: "Chauffeur Directoire", icon: Car, permission: "page:employees:view" },
+      { href: "/payroll", label: "Paie", icon: Landmark, permission: "page:payroll:view" },
+      { href: "/leave", label: "Congés", icon: CalendarOff, permission: "page:leave:view" },
+      { href: "/evaluations", label: "Évaluations", icon: ClipboardCheck, permission: "page:evaluations:view" },
+      { href: "/indemnities", label: "Indemnités", icon: Scale, permission: "page:indemnities:view" },
+      { href: "/employees?filter=directoire", label: "Membres du Directoire", icon: Building, permission: "page:employees:view" },
+      { href: "/employees?filter=regional", label: "Comités Régionaux", icon: Globe, permission: "page:employees:view" },
+      { href: "/organization-chart", label: "Organigramme", icon: Network, permission: "page:organization-chart:view" },
     ]
   },
-  { 
+  {
     isCollapsible: true,
-    label: "Organisation", 
+    label: "Organisation",
     icon: Building,
     permission: "group:organization:view",
     subItems: [
-        { href: "/conflicts", label: "Gestion des Conflits", icon: Scale, permission: "page:conflicts:view" },
-        { href: "/mapping", label: "Cartographie", icon: MapIcon, permission: "page:mapping:view" },
+      { href: "/conflicts", label: "Gestion des Conflits", icon: Scale, permission: "page:conflicts:view" },
+      { href: "/mapping", label: "Cartographie", icon: MapIcon, permission: "page:mapping:view" },
     ]
   },
-   { 
+  {
     isCollapsible: true,
-    label: "Répertoires", 
+    label: "Répertoires",
     icon: Archive,
     permission: "group:repertoires:view",
     subItems: [
-        { href: "/chiefs", label: "Rois & Chefs", icon: Crown, permission: "page:chiefs:view" },
-        { href: "/us-et-coutumes", label: "Us & Coutumes", icon: BookText, permission: "page:us-et-coutumes:view" },
+      { href: "/chiefs", label: "Rois & Chefs", icon: Crown, permission: "page:chiefs:view" },
+      { href: "/us-et-coutumes", label: "Us & Coutumes", icon: BookText, permission: "page:us-et-coutumes:view" },
     ]
   },
-   { 
+  {
     isCollapsible: true,
-    label: "Opérations", 
+    label: "Opérations",
     icon: Briefcase,
     permission: "group:operations:view",
     subItems: [
-        { href: "/missions", label: "Missions", icon: Briefcase, permission: "page:missions:view" },
-        { href: "/budget", label: "Budget", icon: Wallet, permission: "page:budget:view" },
-        { href: "/fleet", label: "Flotte de Véhicules", icon: Car, permission: "page:fleet:view" },
-        { href: "/supplies", label: "Fournitures", icon: Package, permission: "page:supplies:view" },
-        { href: "/repository", label: "Référentiel", icon: Archive, permission: "page:repository:view" },
+      { href: "/missions", label: "Missions", icon: Briefcase, permission: "page:missions:view" },
+      { href: "/budget", label: "Budget", icon: Wallet, permission: "page:budget:view" },
+      { href: "/fleet", label: "Flotte de Véhicules", icon: Car, permission: "page:fleet:view" },
+      { href: "/supplies", label: "Fournitures", icon: Package, permission: "page:supplies:view" },
+      { href: "/repository", label: "Référentiel", icon: Archive, permission: "page:repository:view" },
     ]
   },
-   { 
+  {
     isCollapsible: true,
-    label: "Rapports", 
+    label: "Rapports",
     icon: FileText,
     permission: "group:reports:view", // New group permission
     subItems: [
-        { href: "/reports/disa", label: "DISA", icon: FileText, permission: "page:reports:disa:view" },
-        { href: "/reports/nominative", label: "Tableau Nominatif", icon: FileText, permission: "page:reports:nominative:view" },
-        { href: "/leave/report", label: "Rapport Congés", icon: FileClock, permission: "page:leave:view" },
-        { href: "/missions/report", label: "Rapport Missions", icon: FileClock, permission: "page:missions:view" },
-        { href: "/conflicts/report", label: "Rapport Conflits", icon: FileClock, permission: "page:conflicts:view" },
+      { href: "/reports/disa", label: "DISA", icon: FileText, permission: "page:reports:disa:view" },
+      { href: "/reports/nominative", label: "Tableau Nominatif", icon: FileText, permission: "page:reports:nominative:view" },
+      { href: "/leave/report", label: "Rapport Congés", icon: FileClock, permission: "page:leave:view" },
+      { href: "/missions/report", label: "Rapport Missions", icon: FileClock, permission: "page:missions:view" },
+      { href: "/conflicts/report", label: "Rapport Conflits", icon: FileClock, permission: "page:conflicts:view" },
     ]
   },
-   { 
+  {
     isCollapsible: true,
-    label: "Administration", 
+    label: "Administration",
     icon: Shield,
     permission: "group:admin:view",
     subItems: [
-        { href: "/employees?filter=garde-republicaine", label: "Garde Républicaine", icon: ShieldHalf, permission: "page:employees:view" },
-        { href: "/employees?filter=gendarme", label: "Gendarmes", icon: ShieldHalf, permission: "page:employees:view" },
-        { href: "/it-assets", label: "Actifs TI", icon: Laptop, permission: "page:it-assets:view" },
-        { href: "/documents", label: "Documents", icon: FileText, permission: "page:documents:view" },
-        { href: "/assistant", label: "Assistant IA", icon: MessageSquare, permission: "page:assistant:view" },
-        { href: "/helpdesk", label: "Helpdesk", icon: LifeBuoy, permission: "page:helpdesk:view" },
-        { href: "/backup", label: "Sauvegarde & Restauration", icon: DatabaseBackup, permission: "page:backup:view" },
-        { href: "/admin", label: "Paramètres Admin", icon: Shield, permission: "page:admin:view" },
+      { href: "/admin/news", label: "Actualités", icon: MessageSquare, permission: "page:admin:view" },
+      { href: "/employees?filter=garde-republicaine", label: "Garde Républicaine", icon: ShieldHalf, permission: "page:employees:view" },
+      { href: "/employees?filter=gendarme", label: "Gendarmes", icon: ShieldHalf, permission: "page:employees:view" },
+      { href: "/it-assets", label: "Actifs TI", icon: Laptop, permission: "page:it-assets:view" },
+      { href: "/documents", label: "Documents", icon: FileText, permission: "page:documents:view" },
+      { href: "/assistant", label: "Assistant IA", icon: MessageSquare, permission: "page:assistant:view" },
+      { href: "/helpdesk", label: "Helpdesk", icon: LifeBuoy, permission: "page:helpdesk:view" },
+      { href: "/backup", label: "Sauvegarde & Restauration", icon: DatabaseBackup, permission: "page:backup:view" },
+      { href: "/admin", label: "Paramètres Admin", icon: Shield, permission: "page:admin:view" },
     ]
   },
 ];
 
 function ProtectedPage({ children }: { children: React.ReactNode }) {
-    return <>{children}</>;
+  return <>{children}</>;
 }
 
 function MobileBottomNav() {
@@ -162,7 +165,7 @@ function MobileBottomNav() {
   const pathname = usePathname();
 
   const navItems = [
-    { href: "/", label: "Tableau de Bord", icon: LayoutDashboard },
+    { href: "/intranet", label: "Accueil", icon: LayoutDashboard },
     { href: "/employees", label: "Personnel", icon: Users },
     { href: "/missions", label: "Missions", icon: Briefcase },
     { href: "/organization-chart", label: "Organisation", icon: Building },
@@ -205,27 +208,27 @@ function AppLayout({ children }: { children: React.ReactNode }) {
 
   React.useEffect(() => {
     if (settings) {
-       // Set dynamic title and favicon
-        if (settings.organizationName) {
-            document.title = settings.organizationName;
+      // Set dynamic title and favicon
+      if (settings.organizationName) {
+        document.title = settings.organizationName;
+      }
+      if (settings.faviconUrl) {
+        let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
+        if (!link) {
+          link = document.createElement('link');
+          link.rel = 'icon';
+          document.getElementsByTagName('head')[0].appendChild(link);
         }
-        if (settings.faviconUrl) {
-            let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
-            if (!link) {
-                link = document.createElement('link');
-                link.rel = 'icon';
-                document.getElementsByTagName('head')[0].appendChild(link);
-            }
-            link.href = settings.faviconUrl;
-        }
+        link.href = settings.faviconUrl;
+      }
     }
   }, [settings]);
-  
+
   const handleLogout = async () => {
     await signOut();
     router.push("/login");
   };
-  
+
   const currentPath = pathname;
 
 
@@ -233,14 +236,14 @@ function AppLayout({ children }: { children: React.ReactNode }) {
     if (!hasPermission) return [];
 
     return allMenuItems.filter(item => {
-        if (item.isCollapsible) {
-            // Show group if user has permission to view at least one sub-item
-            return item.subItems?.some(sub => hasPermission(sub.permission));
-        }
-        return hasPermission(item.permission);
+      if (item.isCollapsible) {
+        // Show group if user has permission to view at least one sub-item
+        return item.subItems?.some(sub => !sub.permission || hasPermission(sub.permission));
+      }
+      return !item.permission || hasPermission(item.permission);
     });
   }, [hasPermission]);
-  
+
   const isSubItemActive = (subItems: any[] | undefined) => {
     if (!subItems) return false;
     // Check if the current path starts with the href of any sub-item
@@ -249,73 +252,73 @@ function AppLayout({ children }: { children: React.ReactNode }) {
 
   if (loading) {
     return (
-        <div className="flex h-screen items-center justify-center">
-            <Loader2 className="h-12 w-12 animate-spin text-primary" />
-        </div>
+      <div className="flex h-screen items-center justify-center">
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+      </div>
     );
   }
-  
+
   if (!user) {
     return (
-        <div className="flex h-screen w-full">
-            <main className="flex-1 p-4 sm:p-6 sm:pt-0">
-                <div className="mx-auto w-full max-w-7xl">
-                    <ProtectedPage>
-                        {children}
-                    </ProtectedPage>
-                </div>
-            </main>
-        </div>
+      <div className="flex h-screen w-full">
+        <main className="flex-1 p-4 sm:p-6 sm:pt-0">
+          <div className="mx-auto w-full max-w-7xl">
+            <ProtectedPage>
+              {children}
+            </ProtectedPage>
+          </div>
+        </main>
+      </div>
     );
   }
 
   return (
     <SidebarProvider>
-        <Sidebar>
-          <SidebarHeader>
-            <div className="flex items-center gap-3">
-              <Avatar className="h-12 w-12 rounded-md">
-                <AvatarImage src={settings?.mainLogoUrl} alt={settings?.organizationName} />
-                <AvatarFallback><Building2 className="size-6" /></AvatarFallback>
-              </Avatar>
-              <span className="text-lg font-semibold">
-                {settings?.organizationName}
-              </span>
-            </div>
-          </SidebarHeader>
-          <SidebarContent className="p-2">
-            <SidebarMenu>
-              {menuItems.map((item, index) => (
-                item.isCollapsible ? (
-                   <Collapsible key={index} asChild defaultOpen={isSubItemActive(item.subItems)}>
-                     <SidebarMenuItem>
-                        <CollapsibleTrigger asChild>
-                            <SidebarMenuButton
-                            isActive={isSubItemActive(item.subItems)}
-                            className="w-full justify-start hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                            >
-                            <item.icon className="mr-2 h-4 w-4" />
-                            {item.label}
-                            <ChevronDown className="ml-auto h-4 w-4 transition-transform [&[data-state=open]]:rotate-180" />
-                            </SidebarMenuButton>
-                        </CollapsibleTrigger>
-                        <CollapsibleContent asChild>
-                            <SidebarMenuSub>
-                            {item.subItems?.filter(sub => hasPermission(sub.permission)).map(subItem => (
-                                <SidebarMenuSubItem key={subItem.href}>
-                                <SidebarMenuSubButton asChild isActive={currentPath === subItem.href}>
-                                    <Link href={subItem.href!}>
-                                        <subItem.icon className="mr-2 h-4 w-4" />
-                                        <span>{subItem.label}</span>
-                                    </Link>
-                                </SidebarMenuSubButton>
-                                </SidebarMenuSubItem>
-                            ))}
-                            </SidebarMenuSub>
-                        </CollapsibleContent>
-                     </SidebarMenuItem>
-                   </Collapsible>
-                ) : (
+      <Sidebar>
+        <SidebarHeader>
+          <div className="flex items-center gap-3">
+            <Avatar className="h-12 w-12 rounded-md">
+              <AvatarImage src={settings?.mainLogoUrl} alt={settings?.organizationName} />
+              <AvatarFallback><Building2 className="size-6" /></AvatarFallback>
+            </Avatar>
+            <span className="text-lg font-semibold">
+              {settings?.organizationName}
+            </span>
+          </div>
+        </SidebarHeader>
+        <SidebarContent className="p-2">
+          <SidebarMenu>
+            {menuItems.map((item, index) => (
+              item.isCollapsible ? (
+                <Collapsible key={index} asChild defaultOpen={isSubItemActive(item.subItems)}>
+                  <SidebarMenuItem>
+                    <CollapsibleTrigger asChild>
+                      <SidebarMenuButton
+                        isActive={isSubItemActive(item.subItems)}
+                        className="w-full justify-start hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                      >
+                        <item.icon className="mr-2 h-4 w-4" />
+                        {item.label}
+                        <ChevronDown className="ml-auto h-4 w-4 transition-transform [&[data-state=open]]:rotate-180" />
+                      </SidebarMenuButton>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent asChild>
+                      <SidebarMenuSub>
+                        {item.subItems?.filter(sub => hasPermission(sub.permission)).map(subItem => (
+                          <SidebarMenuSubItem key={subItem.href}>
+                            <SidebarMenuSubButton asChild isActive={currentPath === subItem.href}>
+                              <Link href={subItem.href!}>
+                                <subItem.icon className="mr-2 h-4 w-4" />
+                                <span>{subItem.label}</span>
+                              </Link>
+                            </SidebarMenuSubButton>
+                          </SidebarMenuSubItem>
+                        ))}
+                      </SidebarMenuSub>
+                    </CollapsibleContent>
+                  </SidebarMenuItem>
+                </Collapsible>
+              ) : (
                 <SidebarMenuItem key={item.href}>
                   <SidebarMenuButton
                     asChild
@@ -329,71 +332,71 @@ function AppLayout({ children }: { children: React.ReactNode }) {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               )))}
-            </SidebarMenu>
-          </SidebarContent>
-          <SidebarFooter className="p-2 border-t border-sidebar-border">
-             <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="w-full justify-start items-center gap-3 p-2 h-auto hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
-                        <Avatar className="size-8">
-                            <AvatarImage src={user.photoUrl} alt={user.name} data-ai-hint="user avatar" />
-                            <AvatarFallback>{user.name.charAt(0).toUpperCase()}</AvatarFallback>
-                        </Avatar>
-                        <div className="flex flex-col items-start text-left overflow-hidden">
-                           <span className="text-sm font-medium text-sidebar-foreground truncate">{user.name}</span>
-                           <span className="text-xs text-sidebar-foreground/70 truncate">{user.email}</span>
-                        </div>
-                        <MoreHorizontal className="ml-auto h-5 w-5 text-sidebar-foreground/70" />
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56 mb-2" align="end" side="top">
-                    <DropdownMenuLabel>{user.role?.name || 'Utilisateur'}</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild>
-                        <Link href="/profile">
-                            <UserSquareIcon className="mr-2 h-4 w-4" />
-                            <span>Profil</span>
-                        </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                        <Link href="/settings">
-                            <Settings className="mr-2 h-4 w-4" />
-                            <span>Paramètres</span>
-                        </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={handleLogout}>
-                        <LogOut className="mr-2 h-4 w-4" />
-                        <span>Déconnexion</span>
-                    </DropdownMenuItem>
-                </DropdownMenuContent>
-            </DropdownMenu>
-          </SidebarFooter>
-        </Sidebar>
-        <SidebarInset>
-            <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
-                {/* Header content can go here, like a search bar or breadcrumbs */}
-                <div className="ml-auto flex items-center gap-2">
-                    <NotificationBell />
+          </SidebarMenu>
+        </SidebarContent>
+        <SidebarFooter className="p-2 border-t border-sidebar-border">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="w-full justify-start items-center gap-3 p-2 h-auto hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
+                <Avatar className="size-8">
+                  <AvatarImage src={user.photoUrl} alt={user.name} data-ai-hint="user avatar" />
+                  <AvatarFallback>{user.name.charAt(0).toUpperCase()}</AvatarFallback>
+                </Avatar>
+                <div className="flex flex-col items-start text-left overflow-hidden">
+                  <span className="text-sm font-medium text-sidebar-foreground truncate">{user.name}</span>
+                  <span className="text-xs text-sidebar-foreground/70 truncate">{user.email}</span>
                 </div>
-            </header>
-            <main className="flex-1 p-4 sm:p-6 sm:pt-0 mb-16 md:mb-0">
-                <div className="mx-auto w-full max-w-7xl">
-                    <ProtectedPage>
-                        {children}
-                    </ProtectedPage>
-                </div>
-            </main>
-             <MobileBottomNav />
-        </SidebarInset>
+                <MoreHorizontal className="ml-auto h-5 w-5 text-sidebar-foreground/70" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56 mb-2" align="end" side="top">
+              <DropdownMenuLabel>{user.role?.name || 'Utilisateur'}</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link href="/profile">
+                  <UserSquareIcon className="mr-2 h-4 w-4" />
+                  <span>Profil</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/settings">
+                  <Settings className="mr-2 h-4 w-4" />
+                  <span>Paramètres</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleLogout}>
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Déconnexion</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </SidebarFooter>
+      </Sidebar>
+      <SidebarInset>
+        <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
+          {/* Header content can go here, like a search bar or breadcrumbs */}
+          <div className="ml-auto flex items-center gap-2">
+            <NotificationBell />
+          </div>
+        </header>
+        <main className="flex-1 p-4 sm:p-6 sm:pt-0 mb-16 md:mb-0">
+          <div className="mx-auto w-full max-w-7xl">
+            <ProtectedPage>
+              {children}
+            </ProtectedPage>
+          </div>
+        </main>
+        <MobileBottomNav />
+      </SidebarInset>
     </SidebarProvider>
   );
 }
 
 export function SiteLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  
-  const isPublicPage = ['/login', '/signup', '/forgot-password'].includes(pathname);
+
+  const isPublicPage = ['/login', '/signup', '/forgot-password', '/'].includes(pathname);
 
   return (
     <AuthProvider>

@@ -126,9 +126,25 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
     
+    
     match /customs/{customId} {
       allow read: if request.auth != null;
       allow write: if isAdmin();
+    }
+    
+    match /news/{newsId} {
+      // Les utilisateurs authentifiés peuvent lire
+      allow read: if request.auth != null;
+      
+      // La création et la suppression sont réservées aux admins
+      allow create, delete: if isAdmin();
+      
+      // La modification est pour les admins. 
+      // Les utilisateurs normaux peuvent juste incrémenter le compteur de vues.
+      allow update: if isAdmin() || (
+        request.auth != null && 
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['viewCount'])
+      );
     }
   }
 }

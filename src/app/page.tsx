@@ -1,451 +1,112 @@
-"use client";
-
-import { useState, useEffect, useMemo, useRef } from 'react';
-import Link from 'next/link';
-import { useAuth } from '@/hooks/use-auth';
-import { useDashboardData } from '@/hooks/use-dashboard-data';
-import { useFormat } from '@/hooks/use-format';
-import {
-    Card,
-    CardHeader,
-    CardTitle,
-    CardContent,
-    CardDescription,
-    CardFooter
-} from '@/components/ui/card';
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, FileWarning, Laptop, Car, Download, ShieldCheck, User as UserIcon, Building, Cake, Printer, Crown, LogOut as LogOutIcon, Globe, Bot, Loader2 as LoaderIcon, Briefcase, CalendarOff, PlusCircle, Eye, Receipt, FilePlus2, Rocket } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { EmployeeDistributionChart } from '@/components/charts/employee-distribution-chart';
-import { AssetStatusChart } from '@/components/charts/asset-status-chart';
-import { EmployeeActivityReport } from '@/components/reports/employee-activity-report';
-import type { Employe, Leave, Asset, Fleet, OrganizationSettings, Chief, Department, Mission, Evaluation } from '@/lib/data';
-import { Skeleton } from '@/components/ui/skeleton';
-import { differenceInYears, parseISO, format, addMonths, isAfter, lastDayOfMonth } from 'date-fns';
-import { fr } from 'date-fns/locale';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { PrintLayout } from '@/components/reports/print-layout';
-import { Badge } from '@/components/ui/badge';
-import { AddLeaveRequestSheet } from "@/components/leave/add-leave-request-sheet";
-import { addLeave } from "@/services/leave-service";
-import { useToast } from "@/hooks/use-toast";
-import { getEmployeeGroup, type EmployeeGroup } from '@/services/employee-service';
+import { Badge } from "@/components/ui/badge";
+import { ArrowRight, ShieldCheck, Scale, MapPin, Search } from "lucide-react";
+import Image from "next/image";
 
-interface StatCardProps {
-    title: string;
-    value: number | string | React.ReactNode;
-    icon: React.ElementType;
-    description?: string;
-    href?: string;
-    loading: boolean;
-}
-
-const StatCard = ({ title, value, icon: Icon, description, href, loading }: StatCardProps) => {
-    const cardContent = (
-        <Card variant="premium" className="transition-all duration-300">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">{title}</CardTitle>
-                <Icon className="h-5 w-5 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-                {loading ? <Skeleton className="h-10 w-16 mt-1" /> : <div className="text-4xl font-bold">{value}</div>}
-                {description && <p className="text-xs text-muted-foreground">{description}</p>}
-            </CardContent>
-        </Card>
-    );
-
-    if (href) {
-        return <Link href={href}>{cardContent}</Link>;
-    }
-    return cardContent;
-};
-
-
-const categoryLabels: Record<EmployeeGroup, string> = {
-    'personnel-siege': "Personnel Siège",
-    'chauffeur-directoire': "Chauffeurs Directoire",
-    'garde-republicaine': "Garde Républicaine",
-    'gendarme': "Gendarmes",
-    'directoire': "Membres du Directoire",
-    'regional': "Comités Régionaux",
-    'all': 'Tous'
-};
-
-const LatestRecruitsCard = ({ employees, loading, departments }: { employees: Employe[], loading: boolean, departments: Department[] }) => {
-
-    const { formatDate } = useFormat();
-
-    const recruitsByCategory = employees
-        .filter(e => e.dateEmbauche)
-        .reduce((acc, emp) => {
-            const group = getEmployeeGroup(emp, departments);
-            if (!acc[group]) {
-                acc[group] = [];
-            }
-            acc[group].push(emp);
-            return acc;
-        }, {} as Record<EmployeeGroup, Employe[]>);
-
-    Object.values(recruitsByCategory).forEach(group => {
-        group.sort((a, b) => new Date(b.dateEmbauche!).getTime() - new Date(a.dateEmbauche!).getTime());
-    });
-
-    const categoriesWithRecruits = Object.entries(recruitsByCategory)
-        .filter(([_, recruits]) => recruits.length > 0)
-        .sort(([groupA], [groupB]) => (categoryLabels[groupA as EmployeeGroup] || groupA).localeCompare(categoryLabels[groupB as EmployeeGroup] || groupB));
-
-
+export default function LandingPage() {
     return (
-        <Card variant="premium" className="lg:col-span-1 xl:col-span-1">
-            <CardHeader>
-                <CardTitle>Derniers Arrivants par Catégorie</CardTitle>
-                <CardDescription>Aperçu des nouveaux employés et de leurs matricules.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                {loading ? <Skeleton className="h-48 w-full" /> : (
-                    categoriesWithRecruits.length > 0 ? (
-                        <Tabs defaultValue={categoriesWithRecruits[0][0]}>
-                            <TabsList className="grid w-full grid-cols-2 h-auto flex-wrap">
-                                {categoriesWithRecruits.map(([group, _]) => (
-                                    <TabsTrigger key={group} value={group} className="text-xs">{categoryLabels[group as EmployeeGroup] || group}</TabsTrigger>
-                                ))}
-                            </TabsList>
-                            {categoriesWithRecruits.map(([group, recruits]) => (
-                                <TabsContent key={group} value={group}>
-                                    <div className="space-y-3 pt-4">
-                                        {recruits.slice(0, 3).map(emp => (
-                                            <div key={emp.id} className="flex items-center gap-3">
-                                                <Avatar className="h-9 w-9"><AvatarImage src={emp.photoUrl} alt={emp.name} data-ai-hint="employee photo" /><AvatarFallback>{emp.lastName?.charAt(0)}</AvatarFallback></Avatar>
-                                                <div className="text-xs flex-1">
-                                                    <p className="font-medium text-sm">{`${emp.lastName || ''} ${emp.firstName || ''}`.trim()}</p>
-                                                    <p className="text-muted-foreground">{emp.poste}</p>
-                                                    <p className="text-muted-foreground">Embauché le : {formatDate(emp.dateEmbauche)}</p>
-                                                </div>
-                                                <Badge variant="secondary" className="font-mono">{emp.matricule}</Badge>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </TabsContent>
-                            ))}
-                        </Tabs>
-                    ) : (
-                        <p className="text-sm text-muted-foreground italic text-center py-10">Aucun nouvel employé récemment.</p>
-                    )
-                )}
-            </CardContent>
-        </Card>
-    );
-};
-
-
-
-export default function DashboardPage() {
-    const { user, hasPermission } = useAuth();
-    const { toast } = useToast();
-    const {
-        globalStats,
-        personalStats,
-        loading,
-        summary,
-        loadingSummary,
-        organizationLogos,
-        seniorityAnniversaries,
-        upcomingRetirements,
-        selectedAnniversaryMonth,
-        setSelectedAnniversaryMonth,
-        selectedAnniversaryYear,
-        setSelectedAnniversaryYear,
-        selectedRetirementYear,
-        setSelectedRetirementYear,
-    } = useDashboardData(user);
-    const { formatDate } = useFormat();
-
-    const [isPrintingAnniversaries, setIsPrintingAnniversaries] = useState(false);
-    const [isPrintingRetirements, setIsPrintingRetirements] = useState(false);
-    const [isSheetOpen, setIsSheetOpen] = useState(false);
-
-    const anniversaryYears = Array.from({ length: 10 }, (_, i) => (new Date().getFullYear() - i).toString());
-    const retirementYears = Array.from({ length: 15 }, (_, i) => (new Date().getFullYear() - 5 + i).toString()).reverse();
-
-    const monthsForSelect = [
-        { value: "0", label: "Janvier" }, { value: "1", label: "Février" }, { value: "2", label: "Mars" },
-        { value: "3", label: "Avril" }, { value: "4", label: "Mai" }, { value: "5", label: "Juin" },
-        { value: "6", label: "Juillet" }, { value: "7", label: "Août" }, { value: "8", label: "Septembre" },
-        { value: "9", label: "Octobre" }, { value: "10", label: "Novembre" }, { value: "11", label: "Décembre" },
-    ];
-    const selectedAnniversaryPeriodText = `${monthsForSelect[parseInt(selectedAnniversaryMonth)].label} ${selectedAnniversaryYear}`;
-
-    useEffect(() => {
-        if (isPrintingAnniversaries || isPrintingRetirements) {
-            document.body.classList.add('print-landscape');
-            setTimeout(() => {
-                window.print();
-                document.body.classList.remove('print-landscape');
-                setIsPrintingAnniversaries(false);
-                setIsPrintingRetirements(false);
-            }, 500);
-        }
-    }, [isPrintingAnniversaries, isPrintingRetirements]);
-
-
-    const handlePrintAnniversaries = () => setIsPrintingAnniversaries(true);
-    const handlePrintRetirements = () => setIsPrintingRetirements(true);
-
-    const handleAddLeaveRequest = async (newLeaveRequest: Omit<Leave, 'id' | 'status'>) => {
-        try {
-            const newRequest = await addLeave(newLeaveRequest);
-            setIsSheetOpen(false);
-            toast({
-                title: "Demande de congé envoyée",
-                description: `Votre demande de ${newRequest.type} a été soumise.`,
-            });
-        } catch (err) {
-            console.error("Failed to add leave request:", err);
-            throw err;
-        }
-    };
-
-    const getGenderBreakdown = (list: (Employe | Chief)[]) => {
-        if (!list) return '';
-        const men = list.filter(p => p.sexe === 'Homme').length;
-        const women = list.filter(p => p.sexe === 'Femme').length;
-        return `${men} Hommes / ${women} Femmes`;
-    };
-
-    const isManagerView = hasPermission('page:admin:view');
-    const lastPayslip = useMemo(() => {
-        const date = new Date();
-        const lastDay = lastDayOfMonth(date);
-        return {
-            period: format(date, "MMMM yyyy", { locale: fr }),
-            dateParam: lastDay.toISOString().split('T')[0],
-        };
-    }, []);
-
-    return (
-        <>
-            <div className={(isPrintingAnniversaries || isPrintingRetirements) ? 'print-hidden' : ''}>
-                <div className="flex flex-col gap-6">
-                    <h1 className="text-3xl font-bold tracking-tight">Tableau de Bord</h1>
-
-                    <Tabs defaultValue="overview">
-                        <div className="flex items-center">
-                            <TabsList>
-                                <TabsTrigger value="overview">Aperçu</TabsTrigger>
-                                {isManagerView && <TabsTrigger value="analytics">Analyses</TabsTrigger>}
-                                {isManagerView && <TabsTrigger value="reports">Rapports</TabsTrigger>}
-                            </TabsList>
+        <div className="flex flex-col min-h-screen bg-background text-foreground">
+            {/* Header / Navbar */}
+            <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+                <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className="hidden sm:flex relative w-10 h-10">
+                            <Image src="/images/coat-of-arms.svg" alt="Armoiries de la République du Bénin" layout="fill" objectFit="contain" />
                         </div>
-                        <TabsContent value="overview" className="space-y-4">
-                            <Card variant="glass" className="border-primary/20 bg-primary/5">
-                                <CardHeader className="flex flex-row items-center gap-4">
-                                    <Bot className="h-8 w-8 text-primary" />
-                                    <div>
-                                        <CardTitle>Aperçu de l'Assistant</CardTitle>
-                                        <CardDescription>Un résumé rapide de la situation actuelle.</CardDescription>
-                                    </div>
-                                </CardHeader>
-                                <CardContent>
-                                    {loadingSummary ? (
-                                        <div className="flex items-center gap-2 text-muted-foreground">
-                                            <LoaderIcon className="h-4 w-4 animate-spin" />
-                                            <span>Génération du résumé en cours...</span>
-                                        </div>
-                                    ) : (
-                                        <p className="text-muted-foreground">{summary}</p>
-                                    )}
-                                </CardContent>
-                            </Card>
-
-                            {isManagerView ? (
-                                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-                                    <StatCard title="Employés Actifs" value={globalStats.activeEmployees} icon={Users} href="/employees" loading={loading} description={getGenderBreakdown(globalStats.employees)} />
-                                    <StatCard title="Déclarés à la CNPS" value={globalStats.cnpsEmployees} icon={ShieldCheck} href="/employees?cnps=true" loading={loading} description={getGenderBreakdown(globalStats.employees.filter(e => e.CNPS))} />
-                                    <StatCard title="Rois & Chefs" value={globalStats.chiefs} icon={Crown} href="/chiefs" loading={loading} description={getGenderBreakdown(globalStats.allChiefs)} />
-                                    <StatCard title="Missions en Cours" value={globalStats.missionsInProgress} icon={Briefcase} href="/missions" loading={loading} />
-                                </div>
-                            ) : (
-                                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                                    <StatCard title="Solde de Congés" value={personalStats.leaveBalance !== null ? `${personalStats.leaveBalance} jours` : <Skeleton className="h-8 w-16" />} icon={CalendarOff} loading={loading} />
-                                    <StatCard title="Dernière Évaluation" value={personalStats.latestEvaluation ? personalStats.latestEvaluation.reviewPeriod : "N/A"} icon={Eye} description={personalStats.latestEvaluation ? `Statut: ${personalStats.latestEvaluation.status}` : ''} href={personalStats.latestEvaluation ? `/evaluations/${personalStats.latestEvaluation.id}` : undefined} loading={loading} />
-                                    <StatCard title="Missions à Venir" value={personalStats.upcomingMissions} icon={Rocket} loading={loading} />
-                                </div>
-                            )}
-
-                            {!isManagerView && (
-                                <Card variant="premium">
-                                    <CardHeader>
-                                        <CardTitle>Actions Rapides</CardTitle>
-                                    </CardHeader>
-                                    <CardContent className="flex flex-wrap gap-4">
-                                        <Button variant="premium" onClick={() => setIsSheetOpen(true)}>
-                                            <FilePlus2 className="mr-2 h-4 w-4" /> Nouvelle Demande de Congé
-                                        </Button>
-                                        {user?.id && (
-                                            <Button variant="outline" asChild>
-                                                <Link href={`/payroll/${user.id}?payslipDate=${lastPayslip.dateParam}`}>
-                                                    <Receipt className="mr-2 h-4 w-4" /> Voir mon Dernier Bulletin
-                                                </Link>
-                                            </Button>
-                                        )}
-                                        {personalStats.latestEvaluation && (
-                                            <Button variant="outline" asChild>
-                                                <Link href={`/evaluations/${personalStats.latestEvaluation.id}`}>
-                                                    <Eye className="mr-2 h-4 w-4" /> Consulter ma Dernière Évaluation
-                                                </Link>
-                                            </Button>
-                                        )}
-                                    </CardContent>
-                                </Card>
-                            )}
-
-                            {isManagerView && (
-                                <>
-                                    <div className="grid gap-6 lg:grid-cols-2">
-                                        <Card variant="premium">
-                                            <CardHeader>
-                                                <CardTitle>Répartition des Employés</CardTitle>
-                                                <CardDescription>Distribution des employés par département.</CardDescription>
-                                            </CardHeader>
-                                            <CardContent>
-                                                <EmployeeDistributionChart />
-                                            </CardContent>
-                                        </Card>
-                                        <LatestRecruitsCard employees={globalStats.employees} loading={loading} departments={globalStats.departments} />
-                                    </div>
-
-                                    <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
-                                        <Card variant="premium">
-                                            <CardHeader>
-                                                <div className="flex justify-between items-start">
-                                                    <div>
-                                                        <CardTitle>Anniversaires d'Ancienneté</CardTitle>
-                                                        <CardDescription>Employés fêtant une date d'embauche.</CardDescription>
-                                                    </div>
-                                                    <div className="flex items-center gap-2">
-                                                        <div className="w-28"><Select value={selectedAnniversaryMonth} onValueChange={setSelectedAnniversaryMonth}><SelectTrigger id="anniversary-month" aria-label="Mois" className="h-8"><SelectValue /></SelectTrigger><SelectContent>{monthsForSelect.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent></Select></div>
-                                                        <div className="w-24"><Select value={selectedAnniversaryYear} onValueChange={setSelectedAnniversaryYear}><SelectTrigger id="anniversary-year" aria-label="Année" className="h-8"><SelectValue /></SelectTrigger><SelectContent>{anniversaryYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent></Select></div>
-                                                        <Button variant="outline" size="icon" className="h-8 w-8" onClick={handlePrintAnniversaries} disabled={seniorityAnniversaries.length === 0}><Printer className="h-4 w-4" /><span className="sr-only">Imprimer</span></Button>
-                                                    </div>
-                                                </div>
-                                            </CardHeader>
-                                            <CardContent>
-                                                {loading ? <Skeleton className="h-24 w-full" /> : (
-                                                    <div className="space-y-4">
-                                                        {seniorityAnniversaries.length > 0 ? seniorityAnniversaries.map(emp => {
-                                                            const years = differenceInYears(new Date(parseInt(selectedAnniversaryYear), parseInt(selectedAnniversaryMonth)), parseISO(emp.dateEmbauche!));
-                                                            return (
-                                                                <div key={emp.id} className="flex items-center justify-between">
-                                                                    <div className="flex items-center gap-3">
-                                                                        <Avatar><AvatarImage src={emp.photoUrl} alt={emp.name} data-ai-hint="user avatar" /><AvatarFallback><Cake className="h-4 w-4" /></AvatarFallback></Avatar>
-                                                                        <div><p className="font-medium">{`${emp.lastName || ''} ${emp.firstName || ''}`.trim()}</p><p className="text-sm text-muted-foreground">{emp.poste}</p></div>
-                                                                    </div>
-                                                                    <Badge>{years} an{years > 1 ? 's' : ''}</Badge>
-                                                                </div>
-                                                            )
-                                                        }) : <p className="text-sm text-muted-foreground text-center py-8">Aucun anniversaire pour cette période.</p>}
-                                                    </div>
-                                                )}
-                                            </CardContent>
-                                        </Card>
-                                        <Card variant="premium" className="lg:col-span-2 xl:col-span-1">
-                                            <CardHeader>
-                                                <div className="flex justify-between items-start">
-                                                    <div><CardTitle>Départs à la Retraite</CardTitle><CardDescription>Employés partant pour l'année choisie.</CardDescription></div>
-                                                    <div className="flex items-center gap-2">
-                                                        <div className="w-28"><Select value={selectedRetirementYear} onValueChange={setSelectedRetirementYear}><SelectTrigger id="retirement-year" className="h-8"><SelectValue /></SelectTrigger><SelectContent>{retirementYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent></Select></div>
-                                                        <Button variant="outline" size="icon" className="h-8 w-8" onClick={handlePrintRetirements} disabled={upcomingRetirements.length === 0}><Printer className="h-4 w-4" /><span className="sr-only">Imprimer</span></Button>
-                                                    </div>
-                                                </div>
-                                            </CardHeader>
-                                            <CardContent>
-                                                {loading ? <Skeleton className="h-24 w-full" /> : (
-                                                    <div className="space-y-4">
-                                                        {upcomingRetirements.length > 0 ? upcomingRetirements.map(emp => (
-                                                            <div key={emp.id} className="flex items-center justify-between">
-                                                                <div className="flex items-center gap-3">
-                                                                    <Avatar><AvatarImage src={emp.photoUrl} alt={emp.name} data-ai-hint="user avatar" /><AvatarFallback>{emp.lastName?.charAt(0) || 'E'}</AvatarFallback></Avatar>
-                                                                    <div><p className="font-medium">{`${emp.lastName || ''} ${emp.firstName || ''}`.trim()}</p><p className="text-sm text-muted-foreground">{emp.poste}</p></div>
-                                                                </div>
-                                                                <Badge variant="secondary">{emp.calculatedRetirementDate && formatDate(emp.calculatedRetirementDate)}</Badge>
-                                                            </div>
-                                                        )) : <p className="text-sm text-muted-foreground text-center py-8">Aucun départ prévu pour {selectedRetirementYear}.</p>}
-                                                    </div>
-                                                )}
-                                            </CardContent>
-                                        </Card>
-                                    </div>
-                                </>
-                            )}
-                        </TabsContent>
-                        <TabsContent value="analytics" className="space-y-4">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>Analyses</CardTitle>
-                                    <CardDescription>
-                                        Cette section contiendra des analyses détaillées et des visualisations de données.
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    <AssetStatusChart />
-                                </CardContent>
-                            </Card>
-                        </TabsContent>
-                        <TabsContent value="reports" className="space-y-4">
-                            <EmployeeActivityReport />
-                        </TabsContent>
-                    </Tabs>
+                        <span className="font-bold text-lg tracking-tight">CNRCT</span>
+                    </div>
+                    <nav className="flex items-center gap-4">
+                        <Link href="/login">
+                            <Button variant="default" className="gap-2">
+                                Connexion Intranet <ArrowRight className="h-4 w-4" />
+                            </Button>
+                        </Link>
+                    </nav>
                 </div>
-            </div>
+            </header>
 
-            <AddLeaveRequestSheet
-                isOpen={isSheetOpen}
-                onClose={() => setIsSheetOpen(false)}
-                onAddLeaveRequest={handleAddLeaveRequest}
-            />
+            <main className="flex-1">
+                {/* Hero Section */}
+                <section className="relative py-20 md:py-32 overflow-hidden bg-muted/30">
+                    <div className="absolute inset-0 bg-grid-slate-900/[0.04] bg-[bottom_1px_center] dark:bg-grid-slate-400/[0.05] dark:bg-bottom" />
+                    <div className="container mx-auto px-4 relative">
+                        <div className="max-w-3xl mx-auto text-center space-y-8">
+                            <Badge variant="outline" className="px-4 py-1.5 rounded-full border-primary/20 bg-primary/5 text-primary text-sm font-medium mb-4">
+                                République du Bénin
+                            </Badge>
+                            <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight">
+                                Commission Nationale de Règlement des Conflits Terriers
+                            </h1>
+                            <p className="text-xl text-muted-foreground leading-relaxed">
+                                Institution de l'État dédiée à la médiation, la résolution pacifique et la gestion transparente des litiges fonciers sur l'ensemble du territoire national.
+                            </p>
+                            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+                                <Link href="/login">
+                                    <Button size="lg" className="h-12 px-8 text-base">
+                                        Accès Collaborateurs
+                                    </Button>
+                                </Link>
+                                <Button size="lg" variant="outline" className="h-12 px-8 text-base bg-background">
+                                    En savoir plus
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
 
-            {isPrintingAnniversaries && organizationLogos && (
-                <PrintLayout
-                    logos={organizationLogos}
-                    title="LISTE DES EMPLOYÉS ATTEIGNANT UN ANNIVERSAIRE D'ANCIENNETÉ"
-                    subtitle={`Période de ${selectedAnniversaryPeriodText}`}
-                    columns={[
-                        { header: 'N°', key: 'index' },
-                        { header: 'Nom & Prénoms', key: 'name' },
-                        { header: 'Poste', key: 'poste' },
-                        { header: 'Date d\'embauche', key: 'dateEmbauche' },
-                        { header: 'Ancienneté', key: 'seniority', align: 'center' },
-                    ]}
-                    data={seniorityAnniversaries.map((emp, index) => ({
-                        index: index + 1,
-                        name: `${emp.lastName || ''} ${emp.firstName || ''}`.trim(),
-                        poste: emp.poste,
-                        dateEmbauche: formatDate(emp.dateEmbauche),
-                        seniority: `${differenceInYears(new Date(parseInt(selectedAnniversaryYear), parseInt(selectedAnniversaryMonth)), parseISO(emp.dateEmbauche!))} ans`,
-                    }))}
-                />
-            )}
-            {isPrintingRetirements && organizationLogos && (
-                <PrintLayout
-                    logos={organizationLogos}
-                    title={`LISTE DES EMPLOYÉS PARTANT À LA RETRAITE EN ${selectedRetirementYear}`}
-                    columns={[
-                        { header: 'N°', key: 'index' },
-                        { header: 'Nom & Prénoms', key: 'name' },
-                        { header: 'Poste', key: 'poste' },
-                        { header: 'Date de Naissance', key: 'dateOfBirth' },
-                        { header: 'Date de Départ', key: 'retirementDate', align: 'center' },
-                    ]}
-                    data={upcomingRetirements.map((emp, index) => ({
-                        index: index + 1,
-                        name: `${emp.lastName || ''} ${emp.firstName || ''}`.trim(),
-                        poste: emp.poste,
-                        dateOfBirth: formatDate(emp.Date_Naissance),
-                        retirementDate: formatDate(emp.calculatedRetirementDate),
-                    }))}
-                />
-            )}
-        </>
+                {/* Missions Section */}
+                <section className="py-20 bg-background">
+                    <div className="container mx-auto px-4">
+                        <div className="text-center mb-16">
+                            <h2 className="text-3xl font-bold mb-4">Nos Missions</h2>
+                            <p className="text-muted-foreground max-w-2xl mx-auto">
+                                Le CNRCT œuvre pour garantir la paix sociale à travers une gestion équitable et efficace du patrimoine foncier.
+                            </p>
+                        </div>
+                        <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+                            <div className="bg-muted/50 rounded-2xl p-8 border border-border/50 transition-all hover:shadow-md">
+                                <div className="h-12 w-12 bg-primary/10 rounded-xl flex items-center justify-center mb-6">
+                                    <Scale className="h-6 w-6 text-primary" />
+                                </div>
+                                <h3 className="text-xl font-bold mb-3">Médiation & Résolution</h3>
+                                <p className="text-muted-foreground">
+                                    Intervention neutre pour résoudre les litiges fonciers, ruraux et urbains, en favorisant les accords amiables.
+                                </p>
+                            </div>
+                            <div className="bg-muted/50 rounded-2xl p-8 border border-border/50 transition-all hover:shadow-md">
+                                <div className="h-12 w-12 bg-primary/10 rounded-xl flex items-center justify-center mb-6">
+                                    <ShieldCheck className="h-6 w-6 text-primary" />
+                                </div>
+                                <h3 className="text-xl font-bold mb-3">Sécurisation Foncière</h3>
+                                <p className="text-muted-foreground">
+                                    Accompagnement dans les démarches de formalisation et garantie des droits de propriété.
+                                </p>
+                            </div>
+                            <div className="bg-muted/50 rounded-2xl p-8 border border-border/50 transition-all hover:shadow-md">
+                                <div className="h-12 w-12 bg-primary/10 rounded-xl flex items-center justify-center mb-6">
+                                    <MapPin className="h-6 w-6 text-primary" />
+                                </div>
+                                <h3 className="text-xl font-bold mb-3">Cartographie & Expertise</h3>
+                                <p className="text-muted-foreground">
+                                    Relevés topographiques, expertises du domaine terrestre et maintien d'un référentiel géographique précis.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </main>
+
+            {/* Footer */}
+            <footer className="border-t bg-muted/40 py-12">
+                <div className="container mx-auto px-4 text-center text-muted-foreground">
+                    <p className="font-semibold text-foreground mb-2">Commission Nationale de Règlement des Conflits Terriers</p>
+                    <p className="text-sm mb-6">Préserver la terre, garantir la paix.</p>
+                    <div className="text-xs">
+                        &copy; {new Date().getFullYear()} CNRCT - République du Bénin. Tous droits réservés.
+                    </div>
+                </div>
+            </footer>
+        </div>
     );
 }

@@ -66,12 +66,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (loading) return;
 
-    const isPublicPage = pathname === '/login' || pathname === '/signup' || pathname === '/forgot-password';
+    const isPublicPage = pathname === '/login' || pathname === '/signup' || pathname === '/forgot-password' || pathname === '/';
 
     if (!user && !isPublicPage) {
       router.push('/login');
-    } else if (user && isPublicPage) {
-      router.push('/');
+    } else if (user && isPublicPage && pathname !== '/') {
+      router.push('/intranet');
     }
   }, [user, loading, pathname, router]);
 

@@ -1,0 +1,487 @@
+
+> nextn@0.1.0 dev
+> next dev -p 9002
+
+   ▲ Next.js 15.3.8
+   - Local:        http://localhost:9002
+   - Network:      http://10.0.0.112:9002
+   - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Ready in 8.5s
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 88.4s (2499 modules)
+ ⨯ [TypeError: localStorage.getItem is not a function] {
+  digest: '304682023'
+}
+[TypeError: localStorage.getItem is not a function]
+ ⨯ [TypeError: localStorage.getItem is not a function]
+(node:2456) Warning: `--localstorage-file` was provided without a valid path
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ Compiled in 10.9s (1125 modules)
+ ○ Compiling / ...
+ ✓ Compiled /_error in 84.6s (4932 modules)
+TypeError: localStorage.getItem is not a function
+    at new Promise (<anonymous>)
+TypeError: localStorage.getItem is not a function
+    at new Promise (<anonymous>)
+ ⨯ TypeError: localStorage.getItem is not a function
+    at new Promise (<anonymous>)
+TypeError: localStorage.getItem is not a function
+    at new Promise (<anonymous>)
+TypeError: localStorage.getItem is not a function
+    at new Promise (<anonymous>)
+ ⨯ unhandledRejection: TypeError: localStorage.getItem is not a function
+    at new Promise (<anonymous>)
+ ⨯ unhandledRejection:  TypeError: localStorage.getItem is not a function
+    at new Promise (<anonymous>)
+ GET / 200 in 11005ms
+ GET /_next/static/webpack/b42560e6e01563c8.webpack.hot-update.json 500 in 191131ms
+ GET /_next/static/webpack/b42560e6e01563c8.webpack.hot-update.json 500 in 3546ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ GET / 200 in 3791ms
+ ○ Compiling /favicon.ico ...
+ ✓ Compiled /favicon.ico in 1034ms (2695 modules)
+ GET /favicon.ico 200 in 1547ms
+ ⨯ Error: A "use server" file can only export async functions, found object.
+Read more: https://nextjs.org/docs/messages/invalid-use-server-value
+    at ensureServerEntryExports (..\..\..\..\..\src\build\webpack\loaders\next-flight-loader\action-validate.ts:8:12)
+    at eval (webpack-internal:///(action-browser)/./src/ai/genkit.ts:29:91)
+   6 |     const action = actions[i]
+   7 |     if (typeof action !== 'function') {
+>  8 |       throw new Error(
+     |            ^
+   9 |         `A "use server" file can only export async functions, found ${typeof action}.\nRead more: https://nextjs.org/docs/messages/invalid-use-server-value`
+  10 |       )
+  11 |     } {
+  digest: '3639846873'
+}
+ POST / 500 in 28368ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 4.1s (4948 modules)
+ GET /photos/.jpg 404 in 5172ms
+ ○ Compiling /employees ...
+ ✓ Compiled /employees in 110.8s (4994 modules)
+ GET /employees?filter=personnel-siege 200 in 7042ms
+ GET /employees?filter=personnel-siege 200 in 116940ms
+ GET /employees?filter=personnel-siege 200 in 636ms
+ ○ Compiling /manifest.webmanifest ...
+ ✓ Compiled /employees/[id] in 59.8s (5223 modules)
+ GET /photos/V%200019.jpg 404 in 57638ms
+ GET /photos/A%200024.jpg 404 in 57690ms
+ GET /employees?filter=directoire 200 in 17622ms
+[2026-02-20T10:08:51.877Z]  @firebase/firestore: Firestore (11.9.0): Could not reach Cloud Firestore backend. Backend didn't respond within 10 seconds.
+This typically indicates that your device does not have a healthy Internet connection at the moment. The client will operate in offline mode until it is able to successfully connect to the backend.
+ ⨯ Error: Cannot find module './vendor-chunks/@swc.js'
+Require stack:
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\webpack-runtime.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\app\employees\[id]\page.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\server\require.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\server\load-components.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\build\utils.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\server\dev\static-paths-worker.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\compiled\jest-worker\processChild.js
+    at __webpack_require__.f.require (C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\webpack-runtime.js:277:28) {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/employees/eTtXrH9ZLClGf049sGKk'
+}
+[2026-02-20T10:08:53.424Z]  @firebase/firestore: Firestore (11.9.0): GrpcConnection RPC 'Listen' stream 0x6683fe19 error. Code: 14 Message: 14 UNAVAILABLE: No connection established. Last error: read ECONNRESET (2026-02-20T10:08:53.015Z)
+[2026-02-20T10:08:53.840Z]  @firebase/firestore: Firestore (11.9.0): GrpcConnection RPC 'Write' stream 0x6683fe1a error. Code: 14 Message: 14 UNAVAILABLE: No connection established. Last error: read ECONNRESET (2026-02-20T10:08:53.015Z)
+[2026-02-20T10:08:53.844Z]  @firebase/firestore: Firestore (11.9.0): GrpcConnection RPC 'Write' stream 0x6683fe1b error. Code: 14 Message: 14 UNAVAILABLE: No connection established. Last error: read ECONNRESET (2026-02-20T10:08:53.015Z)
+ ⨯ [Error: ENOENT: no such file or directory, open 'C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\pages\_document.js'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\HP EliteBook\\Documents\\GitHub\\Gestion-CNRCT\\.next\\server\\pages\\_document.js'
+}
+ GET /employees/eTtXrH9ZLClGf049sGKk 500 in 73118ms
+[2026-02-20T10:08:55.091Z]  @firebase/firestore: Firestore (11.9.0): GrpcConnection RPC 'Write' stream 0x6683fe1c error. Code: 14 Message: 14 UNAVAILABLE: No connection established. Last error: read ECONNRESET (2026-02-20T10:08:53.015Z)
+[2026-02-20T10:08:58.329Z]  @firebase/firestore: Firestore (11.9.0): GrpcConnection RPC 'Write' stream 0x6683fe1d error. Code: 7 Message: 7 PERMISSION_DENIED: Missing or insufficient permissions.
+ GET /manifest.webmanifest 200 in 101066ms
+ GET /manifest.webmanifest 200 in 1980ms
+ GET /employees 200 in 203ms
+ GET /manifest.webmanifest 200 in 1090ms
+ GET /employees/eTtXrH9ZLClGf049sGKk 200 in 10317ms
+ GET /manifest.webmanifest 200 in 878ms
+ ○ Compiling /payroll/[id] ...
+ ✓ Compiled /payroll/[id] in 26.8s (5258 modules)
+ ⨯ Error: Cannot find module './vendor-chunks/@swc.js'
+Require stack:
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\webpack-runtime.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\app\payroll\[id]\page.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\server\require.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\server\load-components.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\build\utils.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\server\dev\static-paths-worker.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\compiled\jest-worker\processChild.js
+    at __webpack_require__.f.require (C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\webpack-runtime.js:277:28) {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/payroll/eTtXrH9ZLClGf049sGKk'
+}
+ ⨯ Error: Cannot find module './vendor-chunks/@swc.js'
+Require stack:
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\webpack-runtime.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\app\payroll\[id]\page.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\server\require.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\server\load-components.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\build\utils.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\server\dev\static-paths-worker.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\compiled\jest-worker\processChild.js
+    at __webpack_require__.f.require (C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\webpack-runtime.js:277:28) {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/payroll/eTtXrH9ZLClGf049sGKk'
+}
+ ⨯ Error: Cannot find module './vendor-chunks/@swc.js'
+Require stack:
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\webpack-runtime.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\app\payroll\[id]\page.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\server\require.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\server\load-components.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\build\utils.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\server\dev\static-paths-worker.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\compiled\jest-worker\processChild.js
+    at __webpack_require__.f.require (C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\webpack-runtime.js:277:28) {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/payroll/eTtXrH9ZLClGf049sGKk'
+}
+ ⨯ Error: Cannot find module './8548.js'
+Require stack:
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\webpack-runtime.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\app\payroll\[id]\page.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\server\require.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\server\load-components.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\build\utils.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\build\swc\options.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\build\swc\index.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\build\next-config-ts\transpile-config.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\server\config.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\server\next.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\server\lib\start-server.js
+    at __webpack_require__.f.require (C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\webpack-runtime.js:277:28)
+    at <unknown> (C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\webpack-runtime.js:185:40)
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\webpack-runtime.js:184:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\webpack-runtime.js:236:22)
+    at <unknown> (C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\pages\_document.js:1:392)
+    at Object.<anonymous> (C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\pages\_document.js:1:435) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+ ⨯ Error: Cannot find module './8548.js'
+Require stack:
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\webpack-runtime.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\app\payroll\[id]\page.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\server\require.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\server\load-components.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\build\utils.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\build\swc\options.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\build\swc\index.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\build\next-config-ts\transpile-config.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\server\config.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\server\next.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\server\lib\start-server.js
+    at __webpack_require__.f.require (C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\webpack-runtime.js:277:28)
+    at <unknown> (C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\webpack-runtime.js:185:40)
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\webpack-runtime.js:184:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\webpack-runtime.js:236:22)
+    at <unknown> (C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\pages\_document.js:1:392)
+    at Object.<anonymous> (C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\pages\_document.js:1:435) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+ ⨯ Error: Cannot find module './8548.js'
+Require stack:
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\webpack-runtime.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\app\payroll\[id]\page.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\server\require.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\server\load-components.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\build\utils.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\build\swc\options.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\build\swc\index.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\build\next-config-ts\transpile-config.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\server\config.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\server\next.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\server\lib\start-server.js
+    at __webpack_require__.f.require (C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\webpack-runtime.js:277:28)
+    at <unknown> (C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\webpack-runtime.js:185:40)
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\webpack-runtime.js:184:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\webpack-runtime.js:236:22)
+    at <unknown> (C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\pages\_document.js:1:392)
+    at Object.<anonymous> (C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\pages\_document.js:1:435) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+ GET /payroll/eTtXrH9ZLClGf049sGKk?payslipDate=2026-01-31 500 in 47274ms
+ GET /payroll/eTtXrH9ZLClGf049sGKk?payslipDate=2026-01-31 500 in 13330ms
+ GET /payroll/eTtXrH9ZLClGf049sGKk?payslipDate=2026-01-31 500 in 13328ms
+ ⨯ Error: Cannot find module './4447.js'
+Require stack:
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\webpack-runtime.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\app\payroll\[id]\page.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\server\require.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\server\load-components.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\build\utils.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\build\swc\options.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\build\swc\index.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\build\next-config-ts\transpile-config.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\server\config.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\server\next.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\server\lib\start-server.js
+    at __webpack_require__.f.require (C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\webpack-runtime.js:277:28)
+    at <unknown> (C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\webpack-runtime.js:185:40)
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\webpack-runtime.js:184:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\webpack-runtime.js:236:22)
+    at <unknown> (C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\app\employees\[id]\page.js:1:55183)
+    at Object.<anonymous> (C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\app\employees\[id]\page.js:1:55255) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/employees/eTtXrH9ZLClGf049sGKk'
+}
+ ⨯ Error: Cannot find module './8548.js'
+Require stack:
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\webpack-runtime.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\app\payroll\[id]\page.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\server\require.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\server\load-components.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\build\utils.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\build\swc\options.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\build\swc\index.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\build\next-config-ts\transpile-config.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\server\config.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\server\next.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\server\lib\start-server.js
+    at __webpack_require__.f.require (C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\webpack-runtime.js:277:28)
+    at <unknown> (C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\webpack-runtime.js:185:40)
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\webpack-runtime.js:184:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\webpack-runtime.js:236:22)
+    at <unknown> (C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\pages\_document.js:1:392)
+    at Object.<anonymous> (C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\pages\_document.js:1:435) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+ GET /employees/eTtXrH9ZLClGf049sGKk 500 in 1304ms
+ GET /payroll/eTtXrH9ZLClGf049sGKk?payslipDate=2026-01-31 200 in 3406ms
+ GET /payroll/eTtXrH9ZLClGf049sGKk?payslipDate=2026-01-31 200 in 1119ms
+ ○ Compiling /_not-found ...
+ ⨯ Error: Cannot find module './vendor-chunks/@swc.js'
+Require stack:
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\webpack-runtime.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\app\payroll\[id]\page.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\server\require.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\server\load-components.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\build\utils.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\server\dev\static-paths-worker.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\compiled\jest-worker\processChild.js
+    at __webpack_require__.f.require (C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\webpack-runtime.js:277:28) {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/payroll/eTtXrH9ZLClGf049sGKk'
+}
+ ⨯ Error: Cannot find module './vendor-chunks/@swc.js'
+Require stack:
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\webpack-runtime.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\app\payroll\[id]\page.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\server\require.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\server\load-components.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\build\utils.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\server\dev\static-paths-worker.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\compiled\jest-worker\processChild.js
+    at __webpack_require__.f.require (C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\webpack-runtime.js:277:28) {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/payroll/eTtXrH9ZLClGf049sGKk'
+}
+ ✓ Compiled /_not-found in 20.1s (5106 modules)
+ ⨯ Error: Cannot find module './8548.js'
+Require stack:
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\webpack-runtime.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\pages\_document.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\server\require.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\server\load-components.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\build\utils.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\build\swc\options.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\build\swc\index.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\build\next-config-ts\transpile-config.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\server\config.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\server\next.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\server\lib\start-server.js
+    at __webpack_require__.f.require (C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\webpack-runtime.js:272:28)
+    at <unknown> (C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\webpack-runtime.js:180:40)
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\webpack-runtime.js:179:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\webpack-runtime.js:231:22)
+    at <unknown> (C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\pages\_document.js:1:392)
+    at Object.<anonymous> (C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\pages\_document.js:1:435) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+ ⨯ Error: Cannot find module './8548.js'
+Require stack:
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\webpack-runtime.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\pages\_document.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\server\require.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\server\load-components.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\build\utils.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\build\swc\options.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\build\swc\index.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\build\next-config-ts\transpile-config.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\server\config.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\server\next.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\server\lib\start-server.js
+    at __webpack_require__.f.require (C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\webpack-runtime.js:272:28)
+    at <unknown> (C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\webpack-runtime.js:180:40)
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\webpack-runtime.js:179:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\webpack-runtime.js:231:22)
+    at <unknown> (C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\pages\_document.js:1:392)
+    at Object.<anonymous> (C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\pages\_document.js:1:435) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+ ✓ Compiled in 8.7s (5106 modules)
+ GET /_next/static/chunks/fallback/webpack.js 404 in 36470ms
+ GET /_next/static/chunks/fallback/main.js 404 in 36420ms
+ GET /_next/static/chunks/fallback/pages/_error.js 404 in 36408ms
+ GET /_next/static/chunks/fallback/react-refresh.js 404 in 36421ms
+ GET /_next/static/chunks/fallback/pages/_app.js 404 in 36419ms
+ GET /employees/eTtXrH9ZLClGf049sGKk 200 in 16103ms
+ GET /_next/static/css/app/layout.css?v=1771582548518 404 in 349ms
+ GET /_next/static/chunks/main-app.js?v=1771582548518 404 in 555ms
+ GET /_next/static/chunks/app-pages-internals.js 404 in 280ms
+ ⨯ Failed to generate static paths for /employees/[id]:
+Error: Cannot find module './vendor-chunks/@swc.js'
+Require stack:
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\webpack-runtime.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\app\employees\[id]\page.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\server\require.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\server\load-components.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\build\utils.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\server\dev\static-paths-worker.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\compiled\jest-worker\processChild.js
+    at __webpack_require__.f.require (C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\webpack-runtime.js:272:28) {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+ ⨯ Failed to generate static paths for /employees/[id]:
+Error: Cannot find module './vendor-chunks/@swc.js'
+Require stack:
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\webpack-runtime.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\app\employees\[id]\page.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\server\require.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\server\load-components.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\build\utils.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\server\dev\static-paths-worker.js
+- C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\node_modules\next\dist\compiled\jest-worker\processChild.js
+    at __webpack_require__.f.require (C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\webpack-runtime.js:272:28) {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+[Error: ENOENT: no such file or directory, stat 'C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\cache\webpack\server-development\3.pack.gz'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'stat',
+  path: 'C:\\Users\\HP EliteBook\\Documents\\GitHub\\Gestion-CNRCT\\.next\\cache\\webpack\\server-development\\3.pack.gz'
+}
+ ⨯ unhandledRejection: [Error: ENOENT: no such file or directory, stat 'C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\cache\webpack\server-development\3.pack.gz'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'stat',
+  path: 'C:\\Users\\HP EliteBook\\Documents\\GitHub\\Gestion-CNRCT\\.next\\cache\\webpack\\server-development\\3.pack.gz'
+}
+ ⨯ unhandledRejection:  [Error: ENOENT: no such file or directory, stat 'C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\cache\webpack\server-development\3.pack.gz'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'stat',
+  path: 'C:\\Users\\HP EliteBook\\Documents\\GitHub\\Gestion-CNRCT\\.next\\cache\\webpack\\server-development\\3.pack.gz'
+}
+[Error: ENOENT: no such file or directory, stat 'C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\cache\webpack\server-development\5.pack.gz'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'stat',
+  path: 'C:\\Users\\HP EliteBook\\Documents\\GitHub\\Gestion-CNRCT\\.next\\cache\\webpack\\server-development\\5.pack.gz'
+}
+ ⨯ unhandledRejection: [Error: ENOENT: no such file or directory, stat 'C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\cache\webpack\server-development\5.pack.gz'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'stat',
+  path: 'C:\\Users\\HP EliteBook\\Documents\\GitHub\\Gestion-CNRCT\\.next\\cache\\webpack\\server-development\\5.pack.gz'
+}
+ ⨯ unhandledRejection:  [Error: ENOENT: no such file or directory, stat 'C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\cache\webpack\server-development\5.pack.gz'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'stat',
+  path: 'C:\\Users\\HP EliteBook\\Documents\\GitHub\\Gestion-CNRCT\\.next\\cache\\webpack\\server-development\\5.pack.gz'
+}
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, stat 'C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\cache\webpack\server-development\3.pack.gz'
+ ⨯ [Error: ENOENT: no such file or directory, open 'C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\app-paths-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\HP EliteBook\\Documents\\GitHub\\Gestion-CNRCT\\.next\\server\\app-paths-manifest.json',
+  page: '/employees/eTtXrH9ZLClGf049sGKk'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\pages-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\HP EliteBook\\Documents\\GitHub\\Gestion-CNRCT\\.next\\server\\pages-manifest.json'
+}
+ GET /employees/eTtXrH9ZLClGf049sGKk 500 in 505ms
+ ⨯ [Error: ENOENT: no such file or directory, open 'C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\app-paths-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\HP EliteBook\\Documents\\GitHub\\Gestion-CNRCT\\.next\\server\\app-paths-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\app-paths-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\HP EliteBook\\Documents\\GitHub\\Gestion-CNRCT\\.next\\server\\app-paths-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\app-paths-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\HP EliteBook\\Documents\\GitHub\\Gestion-CNRCT\\.next\\server\\app-paths-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\app-paths-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\HP EliteBook\\Documents\\GitHub\\Gestion-CNRCT\\.next\\server\\app-paths-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'C:\Users\HP EliteBook\Documents\GitHub\Gestion-CNRCT\.next\server\app-paths-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\HP EliteBook\\Documents\\GitHub\\Gestion-CNRCT\\.next\\server\\app-paths-manifest.json'
+}
+ GET /_next/static/chunks/fallback/webpack.js 500 in 695ms
+ GET /_next/static/chunks/fallback/main.js 500 in 694ms
+ GET /_next/static/chunks/fallback/react-refresh.js 500 in 689ms
+ GET /_next/static/chunks/fallback/pages/_app.js 500 in 682ms
+ GET /_next/static/chunks/fallback/pages/_error.js 500 in 680ms

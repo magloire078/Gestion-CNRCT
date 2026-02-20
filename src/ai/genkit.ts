@@ -1,4 +1,4 @@
-'use server';
+// Genkit instance
 
 import { genkit } from 'genkit';
 import { googleAI } from '@genkit-ai/google-genai';

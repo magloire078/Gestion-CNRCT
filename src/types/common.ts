@@ -110,3 +110,19 @@ export type Evaluation = {
 };
 
 export type Month = 'Janvier' | 'Février' | 'Mars' | 'Avril' | 'Mai' | 'Juin' | 'Juillet' | 'Août' | 'Septembre' | 'Octobre' | 'Novembre' | 'Décembre';
+
+export interface NewsItem {
+    id: string;
+    title: string;
+    content: string; // Rich text / Markdown or HTML
+    summary: string;
+    imageUrl?: string;
+    authorId: string;
+    authorName: string;
+    createdAt: string; // ISO String
+    updatedAt: string;
+    published: boolean;
+    category: 'Général' | 'Événement' | 'RH' | 'Directoire';
+    tags?: string[];
+    viewCount: number;
+}

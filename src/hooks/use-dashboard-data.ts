@@ -12,6 +12,8 @@ import { getOrganizationSettings } from "@/services/organization-service";
 import { subscribeToChiefs } from "@/services/chief-service";
 import { subscribeToDepartments } from "@/services/department-service";
 import { parseISO, differenceInYears, isAfter } from 'date-fns';
+let cachedSummary: string | null = null;
+let isSummaryFetching = false;
 
 export function useDashboardData(user: User | null) {
     const [globalStats, setGlobalStats] = useState({
@@ -52,6 +54,17 @@ export function useDashboardData(user: User | null) {
         const initializeListeners = async () => {
             if (!isMounted) return;
 
+            // Non-realtime data fetching (always safe, no auth required)
+            getOrganizationSettings().then(logos => {
+                if (isMounted) setOrganizationLogos(logos);
+            });
+
+            // All Firestore listeners require authentication — only start them when user is available
+            if (!user) {
+                setLoadingSummary(false);
+                return;
+            }
+
             // --- Global Data (initialized with delays) ---
             unsubscribers.push(subscribeToEmployees(employees => {
                 if (!isMounted) return;
@@ -87,17 +100,28 @@ export function useDashboardData(user: User | null) {
                 setGlobalStats(prev => ({ ...prev, departments }));
             }, console.error));
 
-            // Non-realtime data fetching (no delay needed)
-            getOrganizationSettings().then(logos => {
-                if (isMounted) setOrganizationLogos(logos);
-            });
+            if (cachedSummary) {
+                if (isMounted) {
+                    setSummary(cachedSummary);
+                    setLoadingSummary(false);
+                }
+            } else if (!isSummaryFetching) {
+                isSummaryFetching = true;
+                getDashboardSummary()
+                    .then(summary => {
+                        cachedSummary = summary;
+                        if (isMounted) setSummary(summary);
+                    })
+                    .catch(console.error)
+                    .finally(() => {
+                        isSummaryFetching = false;
+                        if (isMounted) setLoadingSummary(false);
+                    });
+            } else {
+                if (isMounted) setLoadingSummary(false);
+            }
 
-            getDashboardSummary()
-                .then(summary => { if (isMounted) setSummary(summary); })
-                .catch(console.error)
-                .finally(() => { if (isMounted) setLoadingSummary(false); });
-
-            // --- Personal Data (only if user exists) ---
+            // --- Personal Data ---
             if (user) {
                 await new Promise(resolve => setTimeout(resolve, 50));
                 if (!isMounted) return;

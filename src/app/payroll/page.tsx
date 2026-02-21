@@ -98,63 +98,75 @@ export default function PayrollPage() {
 
 
   useEffect(() => {
+    let isMounted = true;
+    let unsubscribe: (() => void) | undefined;
+
     setLoading(true);
 
-    // Fetch metadata once
-    Promise.all([
-      getDepartments(),
-      getDirections(),
-      getServices()
-    ]).then(([deps, dirs, servs]) => {
-      setDepartments(deps);
-      setDirections(dirs);
-      setServices(servs);
-    }).catch(console.error);
+    const initData = async () => {
+      try {
+        // Fetch metadata ONCE
+        const [deps, dirs, servs] = await Promise.all([
+          getDepartments(),
+          getDirections(),
+          getServices()
+        ]);
 
-    const unsubscribe = subscribeToEmployees(
-      async (fetchedEmployees) => {
-        const payrollEmployees = fetchedEmployees.filter(e => e.status === 'Actif' || e.status === 'En congé');
+        if (!isMounted) return;
 
-        if (canViewSalaries) {
-          const today = new Date();
-          const lastDayOfCurrentMonth = lastDayOfMonth(today).toISOString().split('T')[0];
+        setDepartments(deps);
+        setDirections(dirs);
+        setServices(servs);
 
-          // Re-fetch metadata if not yet available, but ideally they are already fetched
-          const [deps, dirs, servs] = await Promise.all([
-            getDepartments(),
-            getDirections(),
-            getServices()
-          ]);
+        unsubscribe = subscribeToEmployees(
+          async (fetchedEmployees) => {
+            if (!isMounted) return;
+            const payrollEmployees = fetchedEmployees.filter(e => e.status === 'Actif' || e.status === 'En congé');
 
-          const employeesWithSalary = await Promise.all(
-            payrollEmployees.map(async (emp) => {
-              try {
-                const details = await getPayslipDetails(emp, lastDayOfCurrentMonth, {
-                  departments: deps,
-                  directions: dirs,
-                  services: servs
-                });
-                return { ...emp, netSalary: details.totals.netAPayer, grossSalary: details.totals.brutImposable };
-              } catch {
-                return { ...emp, netSalary: 0, grossSalary: 0 };
-              }
-            })
-          );
-          setEmployees(employeesWithSalary);
-        } else {
-          setEmployees(payrollEmployees);
-        }
+            if (canViewSalaries) {
+              const today = new Date();
+              const lastDayOfCurrentMonth = lastDayOfMonth(today).toISOString().split('T')[0];
 
-        setError(null);
-        setLoading(false);
-      },
-      (err) => {
-        setError("Impossible de charger les données des employés. Veuillez vérifier votre connexion et les permissions Firestore.");
-        console.error(err);
-        setLoading(false);
+              const employeesWithSalary = await Promise.all(
+                payrollEmployees.map(async (emp) => {
+                  try {
+                    const details = await getPayslipDetails(emp, lastDayOfCurrentMonth, {
+                      departments: deps, // reusing the fetched array
+                      directions: dirs,
+                      services: servs
+                    });
+                    return { ...emp, netSalary: details.totals.netAPayer, grossSalary: details.totals.brutImposable };
+                  } catch {
+                    return { ...emp, netSalary: 0, grossSalary: 0 };
+                  }
+                })
+              );
+              setEmployees(employeesWithSalary);
+            } else {
+              setEmployees(payrollEmployees);
+            }
+
+            setError(null);
+            setLoading(false);
+          },
+          (err) => {
+            setError("Impossible de charger les données des employés. Veuillez vérifier votre connexion et les permissions Firestore.");
+            console.error(err);
+            setLoading(false);
+          }
+        );
+      } catch (err) {
+        console.error("Failed to fetch initial payroll metadata", err);
+        if (isMounted) setLoading(false);
       }
-    );
-    return () => unsubscribe();
+    };
+
+    initData();
+
+    return () => {
+      isMounted = false;
+      if (unsubscribe) unsubscribe();
+    };
   }, [canViewSalaries]);
 
   useEffect(() => {

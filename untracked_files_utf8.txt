@@ -1,0 +1,8 @@
+﻿build-log.txt
+src/app/admin/news/page.tsx
+src/components/news/news-card.tsx
+src/components/news/news-feed.tsx
+src/services/news-service.ts
+ts-out.txt
+untracked_files.txt
+untracked_files_utf8.txt

@@ -60,7 +60,7 @@ export default function EmployeesPage() {
   const [isPrinting, setIsPrinting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
-  const { hasPermission } = useAuth();
+  const { user, loading: authLoading, hasPermission } = useAuth();
   const [deleteTarget, setDeleteTarget] = useState<Employe | null>(null);
 
 
@@ -110,6 +110,8 @@ export default function EmployeesPage() {
 
 
   useEffect(() => {
+    if (!user || authLoading) return;
+
     const unsubEmployees = subscribeToEmployees((fetchedEmployees) => {
       setEmployees(fetchedEmployees);
       setLoading(false);
@@ -136,7 +138,7 @@ export default function EmployeesPage() {
 
     // Cleanup subscription on component unmount
     return () => unsubEmployees();
-  }, []);
+  }, [user, authLoading]);
 
   useEffect(() => {
     if (isPrinting) {

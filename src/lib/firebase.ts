@@ -1,5 +1,5 @@
 
-import { initializeApp, getApps, getApp, type FirebaseOptions } from "firebase/app";
+import { initializeApp, getApps, getApp, type FirebaseOptions, type FirebaseApp } from "firebase/app";
 import { getFirestore, Firestore } from "firebase/firestore";
 import { getAuth, Auth } from "firebase/auth";
 import { getStorage, FirebaseStorage } from "firebase/storage";
@@ -17,7 +17,35 @@ const firebaseConfig: FirebaseOptions = {
 
 
 // Initialize Firebase
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+const isConfigValid = !!firebaseConfig.apiKey && firebaseConfig.apiKey !== 'undefined';
+
+// Provide a dummy config during build if real config is missing
+// This prevents crashes in services that call doc(db, ...) at module level
+const finalConfig = isConfigValid ? firebaseConfig : {
+  apiKey: "dummy-api-key",
+  authDomain: "dummy.firebaseapp.com",
+  projectId: "gestion-cnrct-dummy", // Must be a valid format
+  storageBucket: "dummy.appspot.com",
+  messagingSenderId: "000000000",
+  appId: "1:000000000:web:000000000"
+};
+
+const app = getApps().length === 0 ? initializeApp(finalConfig) : getApp();
+const db = getFirestore(app);
+const auth = getAuth(app);
+const storage = getStorage(app);
+
+if (isConfigValid && typeof window !== 'undefined') {
+  try {
+    getAnalytics(app);
+  } catch (error) {
+    console.log("Could not initialize Analytics", error);
+  }
+}
+
+if (!isConfigValid) {
+  console.warn("Firebase configuration is missing. Using dummy config for build purposes.");
+}
 
 if (typeof window === 'undefined') {
   // Polyfill for localStorage on the server to avoid error: localStorage.getItem is not a function
@@ -30,20 +58,6 @@ if (typeof window === 'undefined') {
     key: (index: number) => null,
   };
 }
-
-const db = getFirestore(app);
-const auth = getAuth(app);
-const storage = getStorage(app);
-if (typeof window !== 'undefined') {
-  try {
-    getAnalytics(app);
-  } catch (error) {
-    console.log("Could not initialize Analytics", error);
-  }
-}
-
-
-
 
 export { app, db, auth, storage };
 

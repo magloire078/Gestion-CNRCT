@@ -126,3 +126,4 @@ export interface NewsItem {
     tags?: string[];
     viewCount: number;
 }
+

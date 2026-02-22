@@ -89,7 +89,23 @@ export function useDashboardData(user: User | null) {
 
             unsubscribers.push(subscribeToMissions(missions => {
                 if (!isMounted) return;
-                setGlobalStats(prev => ({ ...prev, missionsInProgress: missions.filter(m => m.status === 'En cours').length }));
+
+                // Update Global Stats
+                setGlobalStats(prev => ({
+                    ...prev,
+                    missionsInProgress: missions.filter(m => m.status === 'En cours').length
+                }));
+
+                // Update Personal Stats if user is available
+                if (user) {
+                    const today = new Date();
+                    const upcoming = missions.filter(m =>
+                        m.participants.some(p => p.employeeName === user.name) &&
+                        isAfter(parseISO(m.endDate), today) &&
+                        (m.status === 'Planifiée' || m.status === 'En cours')
+                    ).length;
+                    setPersonalStats(prev => ({ ...prev, upcomingMissions: upcoming }));
+                }
             }, console.error));
 
             await new Promise(resolve => setTimeout(resolve, 50));
@@ -144,19 +160,6 @@ export function useDashboardData(user: User | null) {
                     setPersonalStats(prev => ({ ...prev, latestEvaluation: latestEval }));
                 }, console.error));
 
-                await new Promise(resolve => setTimeout(resolve, 50));
-                if (!isMounted) return;
-
-                unsubscribers.push(subscribeToMissions(allMissions => {
-                    if (!isMounted) return;
-                    const today = new Date();
-                    const upcoming = allMissions.filter(m =>
-                        m.participants.some(p => p.employeeName === user.name) &&
-                        isAfter(parseISO(m.endDate), today) &&
-                        (m.status === 'Planifiée' || m.status === 'En cours')
-                    ).length;
-                    setPersonalStats(prev => ({ ...prev, upcomingMissions: upcoming }));
-                }, console.error));
             }
         };
 

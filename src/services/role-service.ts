@@ -79,9 +79,16 @@ export async function initializeDefaultRoles() {
     if (snapshot.empty) {
         console.log("No roles found, initializing default roles...");
         const batch = writeBatch(db);
-        defaultRoles.forEach(role => {
-            const roleNameId = role.name.toLowerCase().replace(/[^a-z0-9]/g, '-');
-            const roleRef = doc(db, 'roles', roleNameId);
+        const roleIds = [
+            'dirigeant-president',
+            'cadre-superieur-directeur',
+            'cadre-intermediaire-chef-service',
+            'employe-operationnel',
+            'stagiaire-apprenti'
+        ];
+
+        defaultRoles.forEach((role, index) => {
+            const roleRef = doc(db, 'roles', roleIds[index]);
             batch.set(roleRef, { name: role.name, permissions: role.permissions });
         });
         await batch.commit();

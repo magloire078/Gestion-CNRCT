@@ -32,8 +32,8 @@ export default function LoginPage() {
 
   useEffect(() => {
     getOrganizationSettings().then(settings => {
-        setOrgName(settings.organizationName || "Gestion App");
-        setLogoUrl(settings.mainLogoUrl);
+      setOrgName(settings.organizationName || "Gestion App");
+      setLogoUrl(settings.mainLogoUrl);
     })
   }, []);
 
@@ -52,12 +52,12 @@ export default function LoginPage() {
       // Capture any error and display its message
       const errorMessage = err instanceof Error ? err.message : "Une erreur inattendue est survenue. Veuillez réessayer.";
       if (errorMessage.includes("auth/invalid-credential") || errorMessage.includes("auth/wrong-password") || errorMessage.includes("auth/user-not-found")) {
-          setError("Email ou mot de passe incorrect.");
+        setError("Email ou mot de passe incorrect.");
       } else if (errorMessage.includes("profile-creation-failed")) {
-          setError("Votre compte existe mais le profil n'a pas pu être chargé. Veuillez contacter un administrateur.");
+        setError("Votre compte existe mais le profil n'a pas pu être chargé. Veuillez contacter un administrateur.");
       }
       else {
-          setError("Une erreur de connexion est survenue. Veuillez réessayer.");
+        setError("Une erreur de connexion est survenue. Veuillez réessayer.");
       }
       console.error("Login Error:", err);
     } finally {
@@ -66,27 +66,37 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-sm">
-        <CardHeader>
-          <div className="flex flex-col items-center justify-center gap-2 mb-4">
-             {logoUrl ? (
-                  <Image src={logoUrl} alt={orgName} width={80} height={80} className="object-contain" />
+    <div className="flex min-h-screen items-center justify-center bg-[#fafaf8] relative overflow-hidden p-4">
+      {/* Background elements */}
+      <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/natural-paper.png')] opacity-10 pointer-events-none" />
+      <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-[#006039]/5 rounded-full blur-[120px]" />
+      <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-[#D4AF37]/5 rounded-full blur-[120px]" />
+
+      <Card className="w-full max-w-md border-primary/5 bg-white/80 backdrop-blur-xl shadow-2xl shadow-[#1a1a1a]/5 rounded-[2rem] overflow-hidden animate-in fade-in zoom-in duration-700">
+        <CardHeader className="pt-10 pb-6 px-8">
+          <div className="flex flex-col items-center justify-center gap-4 mb-4 group">
+            <div className="relative w-24 h-24 transition-transform duration-500 group-hover:scale-105">
+              {logoUrl ? (
+                <Image src={logoUrl} alt={orgName} layout="fill" objectFit="contain" priority />
               ) : (
-                  <Building2 className="h-10 w-10 text-primary" />
+                <Building2 className="h-16 w-16 text-[#006039]" />
               )}
-              <h1 className="text-2xl font-semibold tracking-tight text-center">{orgName}</h1>
+            </div>
+            <div className="text-center">
+              <h1 className="text-sm font-bold tracking-[0.3em] uppercase text-[#006039]/60 mb-1">{orgName}</h1>
+              <p className="text-[10px] tracking-[0.2em] font-medium text-muted-foreground/60 uppercase">Haute Institution de l'État</p>
+            </div>
           </div>
-          <CardTitle className="text-2xl text-center">Connexion</CardTitle>
-          <CardDescription className="text-center">
-            Entrez votre email ci-dessous pour vous connecter à votre compte
+          <CardTitle className="text-3xl font-black text-center text-[#1a1a1a]">Connexion</CardTitle>
+          <CardDescription className="text-center text-base mt-2">
+            Identifiez-vous pour accéder à l'intranet institutionnel.
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleLogin}>
-            <div className="grid gap-4">
+        <CardContent className="px-8 pb-10">
+          <form onSubmit={handleLogin} className="space-y-6">
+            <div className="grid gap-5">
               <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email" className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">Email Professionnel</Label>
                 <Input
                   id="email"
                   type="email"
@@ -95,19 +105,20 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={loading}
+                  className="h-12 px-4 rounded-xl border-primary/10 bg-white/50 focus:ring-[#006039] transition-all"
                 />
               </div>
               <div className="grid gap-2">
                 <div className="flex items-center">
-                  <Label htmlFor="password">Mot de passe</Label>
+                  <Label htmlFor="password" className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">Mot de passe</Label>
                   <Link
                     href="/forgot-password"
-                    className="ml-auto inline-block text-sm underline"
+                    className="ml-auto inline-block text-xs font-semibold text-[#006039] hover:underline"
                   >
-                    Mot de passe oublié ?
+                    Oublié ?
                   </Link>
                 </div>
-                 <div className="relative">
+                <div className="relative">
                   <Input
                     id="password"
                     type={showPassword ? "text" : "password"}
@@ -115,37 +126,37 @@ export default function LoginPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     disabled={loading}
+                    className="h-12 px-4 rounded-xl border-primary/10 bg-white/50 focus:ring-[#006039] transition-all"
                   />
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2 text-muted-foreground"
+                    className="absolute right-2 top-1/2 h-8 w-8 -translate-y-1/2 text-muted-foreground hover:bg-[#006039]/5 rounded-lg"
                     onClick={togglePasswordVisibility}
                     disabled={loading}
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    <span className="sr-only">{showPassword ? 'Cacher' : 'Afficher'} le mot de passe</span>
                   </Button>
                 </div>
               </div>
               {error && (
-                <Alert variant="destructive">
+                <Alert variant="destructive" className="rounded-xl bg-destructive/5 border-destructive/10 animate-shake">
                   <AlertCircle className="h-4 w-4" />
-                  <AlertTitle>Erreur de connexion</AlertTitle>
-                  <AlertDescription>{error}</AlertDescription>
+                  <AlertTitle className="text-sm font-bold">Accès refusé</AlertTitle>
+                  <AlertDescription className="text-xs">{error}</AlertDescription>
                 </Alert>
               )}
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              <Button type="submit" className="w-full h-14 text-base font-bold bg-[#006039] hover:bg-[#004d2e] rounded-xl shadow-lg shadow-[#006039]/20 transition-all hover:-translate-y-0.5" disabled={loading}>
+                {loading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
                 Se connecter
               </Button>
             </div>
           </form>
-          <div className="mt-4 text-center text-sm">
-            Vous n'avez pas de compte ?{" "}
-            <Link href="/signup" className="underline">
-              S'inscrire
+          <div className="mt-8 text-center text-sm text-muted-foreground">
+            Première connexion ?{" "}
+            <Link href="/signup" className="font-bold text-[#006039] hover:underline">
+              Demander un accès
             </Link>
           </div>
         </CardContent>

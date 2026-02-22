@@ -8,7 +8,7 @@ const SETTINGS_DOC_ID = 'app_settings'; // Use a consistent ID
 const settingsDocRef = doc(db, 'settings', SETTINGS_DOC_ID);
 
 const defaultMainLogoUrl = "https://cnrct.ci/wp-content/uploads/2018/03/logo_chambre.png";
-const defaultSecondaryLogoUrl = "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/Coat_of_arms_of_C%C3%B4te_d%27Ivoire_%281997-2001_variant%29.svg/512px-Coat_of_arms_of_C%C3%B4te_d%27Ivoire_%281997-2001_variant%29.svg.png";
+const defaultSecondaryLogoUrl = defaultMainLogoUrl;
 
 export async function getOrganizationSettings(): Promise<OrganizationSettings> {
     try {
@@ -16,7 +16,7 @@ export async function getOrganizationSettings(): Promise<OrganizationSettings> {
         if (docSnap.exists()) {
             const data = docSnap.data();
             return {
-                organizationName: data.organizationName || 'Gestion CNRCT',
+                organizationName: data.organizationName || 'La Chambre des Rois et des Chefs Traditionnels de Côte d’Ivoire',
                 mainLogoUrl: data.mainLogoUrl || defaultMainLogoUrl,
                 secondaryLogoUrl: data.secondaryLogoUrl || defaultSecondaryLogoUrl,
                 faviconUrl: data.faviconUrl || '',
@@ -31,7 +31,7 @@ export async function getOrganizationSettings(): Promise<OrganizationSettings> {
     // Try to create the default settings document (will fail silently if no permissions)
     try {
         await setDoc(settingsDocRef, {
-            organizationName: 'Gestion CNRCT',
+            organizationName: 'La Chambre des Rois et des Chefs Traditionnels de Côte d’Ivoire',
             mainLogoUrl: defaultMainLogoUrl,
             secondaryLogoUrl: defaultSecondaryLogoUrl,
             faviconUrl: ''
@@ -41,7 +41,7 @@ export async function getOrganizationSettings(): Promise<OrganizationSettings> {
     }
 
     return {
-        organizationName: 'Gestion CNRCT',
+        organizationName: 'La Chambre des Rois et des Chefs Traditionnels de Côte d’Ivoire',
         mainLogoUrl: defaultMainLogoUrl,
         secondaryLogoUrl: defaultSecondaryLogoUrl,
         faviconUrl: ''

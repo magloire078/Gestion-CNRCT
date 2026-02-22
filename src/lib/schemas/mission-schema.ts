@@ -23,3 +23,4 @@ export const missionSchema = z.object({
 });
 
 export type MissionInput = z.infer<typeof missionSchema>;
+

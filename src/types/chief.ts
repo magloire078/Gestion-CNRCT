@@ -21,7 +21,7 @@ export type Chief = {
     contact: string;
     email?: string;
     address?: string;
-    cnrctRegistrationNumber?: string;
+    CNRCTRegistrationNumber?: string;
     officialDocuments?: string;
     bio: string;
     photoUrl: string;
@@ -58,3 +58,4 @@ export type Custom = {
     preservationInitiatives: string;
     intergenerationalTransmission: string;
 };
+

@@ -357,3 +357,41 @@ export async function getOrganizationalUnits() {
         throw error;
     }
 }
+
+export async function getDirectoireMembers(): Promise<Employe[]> {
+    try {
+        const q = query(employeesCollection, where('status', '==', 'Actif'));
+        const snapshot = await getDocs(q);
+        const allEmployees = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Employe));
+
+        // Directoire department ID identified in Firestore
+        const DIRECTOIRE_DEPT_ID = '9ywKFDgVMS86rZLPYhpm';
+
+        // Includes: members of Directoire department, employees with D 0xxx matricule, and Secretary General
+        const directoireMembers = allEmployees.filter(emp =>
+            emp.departmentId === DIRECTOIRE_DEPT_ID ||
+            emp.matricule?.startsWith('D 0') ||
+            emp.poste?.toLowerCase().includes('secrétaire général')
+        );
+
+        // Sorting priority based on official hierarchy
+        const getRank = (poste: string = '') => {
+            const p = poste.toLowerCase();
+            if (p.includes('president') && !p.includes('vice')) return 1;
+            if (p.includes('1er vice-president') || p.includes('premier vice-president')) return 2;
+            if (p.includes('2eme vice-president') || p.includes('deuxième vice-president') || p.includes('2emevice-president')) return 3;
+            if (p.includes('3eme vice-president') || p.includes('troisième vice-president')) return 4;
+            if (p.includes('4eme vice-president') || p.includes('quatrième vice-president')) return 5;
+            if (p.includes('5eme vice-president') || p.includes('cinquième vice-president')) return 6;
+            if (p.includes('secrétaire général')) return 7;
+            if (p.includes('membre du bureau')) return 8;
+            if (p.includes('membre du directoire')) return 9;
+            return 99;
+        };
+
+        return directoireMembers.sort((a, b) => getRank(a.poste) - getRank(b.poste));
+    } catch (error) {
+        console.error('[employee-service] Error fetching directoire members:', error);
+        return [];
+    }
+}

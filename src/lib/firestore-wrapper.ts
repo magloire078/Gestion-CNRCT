@@ -75,6 +75,7 @@ export function onSnapshot<AppModelType = DocumentData, DbModelType extends Docu
 ): Unsubscribe {
     let unsubscribe: Unsubscribe | null = null;
     let isUnsubscribed = false;
+    let isInternallyCleaningUp = false;
 
     // Initialiser le listener d'auth au premier appel si nécessaire
     ensureAuthListener();
@@ -83,31 +84,54 @@ export function onSnapshot<AppModelType = DocumentData, DbModelType extends Docu
     if (authReady) {
         authReady.then(() => {
             if (!isUnsubscribed) {
-                // Cast to any pour éviter les conflits de type - le runtime Firebase gère correctement les deux types
-                if (onError !== undefined) {
-                    unsubscribe = firestoreOnSnapshot(
-                        reference as any,
-                        onNext as any,
-                        onError as any,
-                        onCompletion as any
-                    );
-                } else {
-                    unsubscribe = firestoreOnSnapshot(
-                        reference as any,
-                        onNext as any
-                    );
+                try {
+                    // Cast to any pour éviter les conflits de type - le runtime Firebase gère correctement les deux types
+                    if (onError !== undefined) {
+                        unsubscribe = firestoreOnSnapshot(
+                            reference as any,
+                            onNext as any,
+                            (error) => {
+                                if (!isUnsubscribed) onError(error);
+                            },
+                            onCompletion as any
+                        );
+                    } else {
+                        unsubscribe = firestoreOnSnapshot(
+                            reference as any,
+                            onNext as any
+                        );
+                    }
+
+                    // Si on a été désabonné entre temps, appeler immédiatement l'unsubscribe
+                    if (isUnsubscribed && unsubscribe) {
+                        const subToClean = unsubscribe;
+                        unsubscribe = null;
+                        subToClean();
+                    }
+                } catch (error) {
+                    console.error('[firestore-wrapper] Error during firestoreOnSnapshot:', error);
+                    if (onError) onError(error as any);
                 }
             }
         }).catch((error) => {
             console.error('[onSnapshot] Error waiting for auth:', error);
+            if (onError) onError(error as any);
         });
     }
 
     // Retourner une fonction d'unsubscribe qui fonctionne même si le listener n'est pas encore activé
     return () => {
+        if (isUnsubscribed) return;
         isUnsubscribed = true;
+
         if (unsubscribe) {
-            unsubscribe();
+            const currentUnsubscribe = unsubscribe;
+            unsubscribe = null; // Prevent double-unsubscribe
+            try {
+                currentUnsubscribe();
+            } catch (error) {
+                console.warn('[firestore-wrapper] Error during unsubscribe:', error);
+            }
         }
     };
 }

@@ -37,6 +37,11 @@
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
 
+    /* CNRCT Official Colors */
+    --cnrct-green: 156 100% 19%;
+    --cnrct-gold: 46 65% 52%;
+    --cnrct-ivory: 60 100% 97%;
+
     /* Borders & Inputs */
     --border: 220 20% 90%;
     --input: 220 20% 90%;

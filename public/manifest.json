@@ -4,9 +4,9 @@
   "display": "standalone",
   "scope": "/",
   "start_url": "/",
-  "name": "Gestion CNRCT",
-  "short_name": "Gestion CNRCT",
-  "description": "Application de gestion des ressources humaines et matérielles pour la CNRCT.",
+  "name": "La Chambre des Rois et des Chefs Traditionnels de Côte d’Ivoire",
+  "short_name": "CNRCT",
+  "description": "Application de gestion des ressources humaines et matérielles de la Chambre des Rois.",
   "icons": [
     {
       "src": "/icons/icon-192x192.png",

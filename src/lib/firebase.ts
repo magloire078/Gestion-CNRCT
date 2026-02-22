@@ -1,4 +1,16 @@
 
+if (typeof window === 'undefined') {
+  // Polyfill for localStorage on the server to avoid error: localStorage.getItem is not a function
+  (global as any).localStorage = {
+    getItem: (key: string) => null,
+    setItem: (key: string, value: string) => { },
+    removeItem: (key: string) => { },
+    clear: () => { },
+    length: 0,
+    key: (index: number) => null,
+  };
+}
+
 import { initializeApp, getApps, getApp, type FirebaseOptions, type FirebaseApp } from "firebase/app";
 import { getFirestore, Firestore } from "firebase/firestore";
 import { getAuth, Auth } from "firebase/auth";
@@ -45,18 +57,6 @@ if (isConfigValid && typeof window !== 'undefined') {
 
 if (!isConfigValid) {
   console.warn("Firebase configuration is missing. Using dummy config for build purposes.");
-}
-
-if (typeof window === 'undefined') {
-  // Polyfill for localStorage on the server to avoid error: localStorage.getItem is not a function
-  (global as any).localStorage = {
-    getItem: (key: string) => null,
-    setItem: (key: string, value: string) => { },
-    removeItem: (key: string) => { },
-    clear: () => { },
-    length: 0,
-    key: (index: number) => null,
-  };
 }
 
 export { app, db, auth, storage };

@@ -7,20 +7,31 @@ import { SiteLayout } from '@/components/site-layout';
 import { ThemeProvider } from "@/components/theme-provider"
 import { BASE_URL } from '@/lib/constants';
 
-export const metadata: Metadata = {
-  metadataBase: new URL(BASE_URL),
-  title: 'Gestion RH&M CNRCT',
-  description: 'Application de gestion des ressources humaines et matérielles.',
-  manifest: "/manifest.webmanifest",
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "default",
-    title: "Gestion CNRCT",
-  },
-  formatDetection: {
-    telephone: false,
-  },
-};
+import { getOrganizationSettings } from '@/services/organization-service';
+
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getOrganizationSettings();
+
+  return {
+    metadataBase: new URL(BASE_URL),
+    title: 'La Chambre des Rois et des Chefs Traditionnels (CNRCT)',
+    description: 'Application de gestion des ressources humaines et matérielles de la Chambre des Rois.',
+    manifest: "/manifest.webmanifest",
+    icons: {
+      icon: settings.mainLogoUrl,
+      shortcut: settings.mainLogoUrl,
+      apple: settings.mainLogoUrl,
+    },
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: "default",
+      title: "Chambre des Rois CI",
+    },
+    formatDetection: {
+      telephone: false,
+    },
+  };
+}
 
 export default async function RootLayout({
   children,
@@ -38,7 +49,7 @@ export default async function RootLayout({
         />
         <meta name="theme-color" content="#2C3E50" />
       </head>
-      <body className="font-body antialiased relative min-h-screen">
+      <body className="font-body antialiased relative min-h-screen" suppressHydrationWarning={true}>
         <div className="fixed inset-0 z-[-1] gradient-mesh pointer-events-none" aria-hidden="true" />
         <ThemeProvider
           attribute="class"
@@ -55,3 +66,4 @@ export default async function RootLayout({
     </html>
   );
 }
+

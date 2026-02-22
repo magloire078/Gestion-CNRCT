@@ -29,8 +29,8 @@ export default function ForgotPasswordPage() {
 
   useEffect(() => {
     getOrganizationSettings().then(settings => {
-        setOrgName(settings.organizationName || "Gestion App");
-        setLogoUrl(settings.mainLogoUrl);
+      setOrgName(settings.organizationName || "Gestion App");
+      setLogoUrl(settings.mainLogoUrl);
     })
   }, []);
 
@@ -51,27 +51,37 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-sm">
-        <CardHeader>
-           <div className="flex flex-col items-center justify-center gap-2 mb-4">
-             {logoUrl ? (
-                  <Image src={logoUrl} alt={orgName} width={80} height={80} className="object-contain" />
+    <div className="flex min-h-screen items-center justify-center bg-[#fafaf8] relative overflow-hidden p-4">
+      {/* Background elements */}
+      <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/natural-paper.png')] opacity-10 pointer-events-none" />
+      <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-[#006039]/5 rounded-full blur-[120px]" />
+      <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-[#D4AF37]/5 rounded-full blur-[120px]" />
+
+      <Card className="w-full max-w-md border-primary/5 bg-white/80 backdrop-blur-xl shadow-2xl shadow-[#1a1a1a]/5 rounded-[2rem] overflow-hidden animate-in fade-in zoom-in duration-700">
+        <CardHeader className="pt-10 pb-6 px-8">
+          <div className="flex flex-col items-center justify-center gap-4 mb-4 group">
+            <div className="relative w-24 h-24 transition-transform duration-500 group-hover:scale-105">
+              {logoUrl ? (
+                <Image src={logoUrl} alt={orgName} layout="fill" objectFit="contain" priority />
               ) : (
-                  <Building2 className="h-10 w-10 text-primary" />
+                <Building2 className="h-16 w-16 text-[#006039]" />
               )}
-              <h1 className="text-2xl font-semibold tracking-tight text-center">{orgName}</h1>
+            </div>
+            <div className="text-center">
+              <h1 className="text-sm font-bold tracking-[0.3em] uppercase text-[#006039]/60 mb-1">{orgName}</h1>
+              <p className="text-[10px] tracking-[0.2em] font-medium text-muted-foreground/60 uppercase">Haute Institution de l'État</p>
+            </div>
           </div>
-          <CardTitle className="text-2xl text-center">Mot de passe oublié</CardTitle>
-          <CardDescription className="text-center">
-            Entrez votre email pour recevoir un lien de réinitialisation.
+          <CardTitle className="text-3xl font-black text-center text-[#1a1a1a]">Mot de passe oublié</CardTitle>
+          <CardDescription className="text-center text-base mt-2">
+            Entrez votre email institutionnel pour recevoir un lien de réinitialisation sécurisé.
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleResetRequest}>
-            <div className="grid gap-4">
+        <CardContent className="px-8 pb-10">
+          <form onSubmit={handleResetRequest} className="space-y-6">
+            <div className="grid gap-5">
               <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email" className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">Email Professionnel</Label>
                 <Input
                   id="email"
                   type="email"
@@ -80,34 +90,35 @@ export default function ForgotPasswordPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={loading}
+                  className="h-12 px-4 rounded-xl border-primary/10 bg-white/50 focus:ring-[#006039] transition-all"
                 />
               </div>
-              
+
               {error && (
-                <Alert variant="destructive">
+                <Alert variant="destructive" className="rounded-xl bg-destructive/5 border-destructive/10">
                   <AlertCircle className="h-4 w-4" />
-                  <AlertTitle>Erreur</AlertTitle>
-                  <AlertDescription>{error}</AlertDescription>
+                  <AlertTitle className="text-sm font-bold">Erreur</AlertTitle>
+                  <AlertDescription className="text-xs">{error}</AlertDescription>
                 </Alert>
               )}
 
               {success && (
-                 <Alert variant="default" className="border-green-500 text-green-700 dark:border-green-600 dark:text-green-400 [&>svg]:text-green-500">
+                <Alert variant="default" className="rounded-xl border-[#006039]/20 bg-[#006039]/5 text-[#006039] [&>svg]:text-[#006039]">
                   <CheckCircle className="h-4 w-4" />
-                  <AlertTitle>Succès</AlertTitle>
-                  <AlertDescription>{success}</AlertDescription>
+                  <AlertTitle className="text-sm font-bold">Lien envoyé</AlertTitle>
+                  <AlertDescription className="text-xs">{success}</AlertDescription>
                 </Alert>
               )}
 
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              <Button type="submit" className="w-full h-14 text-base font-bold bg-[#006039] hover:bg-[#004d2e] rounded-xl shadow-lg shadow-[#006039]/20 transition-all hover:-translate-y-0.5" disabled={loading}>
+                {loading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
                 Envoyer le lien
               </Button>
             </div>
           </form>
-          <div className="mt-4 text-center text-sm">
+          <div className="mt-8 text-center text-sm text-muted-foreground">
             Vous vous souvenez de votre mot de passe ?{" "}
-            <Link href="/login" className="underline">
+            <Link href="/login" className="font-bold text-[#006039] hover:underline">
               Se connecter
             </Link>
           </div>

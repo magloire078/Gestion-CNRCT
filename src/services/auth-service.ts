@@ -54,7 +54,7 @@ async function createUserProfile(user: FirebaseUser, name: string): Promise<User
     await initializeDefaultRoles();
 
     // Assign 'Employé Opérationnel' role by default for new signups
-    const assignedRoleId = 'employ-oprationnel'; // Corrected ID from defaultRoles
+    const assignedRoleId = 'employe-operationnel';
 
     const userProfile: Omit<User, 'id' | 'role' | 'permissions'> = {
         name,

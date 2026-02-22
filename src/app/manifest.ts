@@ -9,9 +9,9 @@ export default async function manifest(): Promise<MetadataRoute.Manifest> {
   const mainLogo = settings.mainLogoUrl || '/icon-192x192.png'; // Fallback icon
 
   return {
-    name: settings.organizationName || 'Gestion CNRCT',
-    short_name: 'Gestion CNRCT',
-    description: 'Application de gestion des ressources humaines et matérielles.',
+    name: settings.organizationName || 'La Chambre des Rois et des Chefs Traditionnels de Côte d’Ivoire',
+    short_name: 'CNRCT',
+    description: 'Application de gestion des ressources humaines et matérielles de la Chambre des Rois.',
     start_url: '/',
     display: 'standalone',
     background_color: '#ffffff',
@@ -30,3 +30,4 @@ export default async function manifest(): Promise<MetadataRoute.Manifest> {
     ],
   };
 }
+

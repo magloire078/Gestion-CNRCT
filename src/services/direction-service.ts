@@ -3,6 +3,7 @@ import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, onSnapshot, Uns
 import type { QuerySnapshot, DocumentData, QueryDocumentSnapshot, FirestoreError } from '@/lib/firebase';
 import type { Direction } from '@/lib/data';
 import { db } from '@/lib/firebase';
+import { FirestorePermissionError } from '@/lib/errors';
 
 const directionsCollection = collection(db, 'directions');
 
@@ -28,12 +29,19 @@ export function subscribeToDirections(
 }
 
 export async function getDirections(): Promise<Direction[]> {
-    const q = query(directionsCollection, orderBy("name", "asc"));
-    const snapshot = await getDocs(q);
-    return snapshot.docs.map((doc: QueryDocumentSnapshot<DocumentData>) => ({
-        id: doc.id,
-        ...doc.data()
-    } as Direction));
+    try {
+        const q = query(directionsCollection, orderBy("name", "asc"));
+        const snapshot = await getDocs(q);
+        return snapshot.docs.map((doc: QueryDocumentSnapshot<DocumentData>) => ({
+            id: doc.id,
+            ...doc.data()
+        } as Direction));
+    } catch (error: any) {
+        if (error.code === 'permission-denied') {
+            throw new FirestorePermissionError("Vous n'avez pas la permission de consulter les directions.", { operation: 'read-all', path: 'directions' });
+        }
+        throw error;
+    }
 }
 
 export async function addDirection(directionData: Omit<Direction, 'id'>): Promise<Direction> {

@@ -4,6 +4,7 @@ import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, onSnapshot, Uns
 import type { QuerySnapshot, DocumentData, QueryDocumentSnapshot, FirestoreError } from '@/lib/firebase';
 import type { Service } from '@/lib/data';
 import { db } from '@/lib/firebase';
+import { FirestorePermissionError } from '@/lib/errors';
 
 const servicesCollection = collection(db, 'services');
 
@@ -29,12 +30,19 @@ export function subscribeToServices(
 }
 
 export async function getServices(): Promise<Service[]> {
-    const q = query(servicesCollection, orderBy("name", "asc"));
-    const snapshot = await getDocs(q);
-    return snapshot.docs.map((doc: QueryDocumentSnapshot<DocumentData>) => ({
-        id: doc.id,
-        ...doc.data()
-    } as Service));
+    try {
+        const q = query(servicesCollection, orderBy("name", "asc"));
+        const snapshot = await getDocs(q);
+        return snapshot.docs.map((doc: QueryDocumentSnapshot<DocumentData>) => ({
+            id: doc.id,
+            ...doc.data()
+        } as Service));
+    } catch (error: any) {
+        if (error.code === 'permission-denied') {
+            throw new FirestorePermissionError("Vous n'avez pas la permission de consulter les services.", { operation: 'read-all', path: 'services' });
+        }
+        throw error;
+    }
 }
 
 export async function addService(serviceData: Omit<Service, 'id'>): Promise<Service> {

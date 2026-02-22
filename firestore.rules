@@ -11,7 +11,8 @@ service cloud.firestore {
                'super-admin', 
                'administrateur',
                'dirigeant-president',
-               'cadre-superieur-directeur'
+               'cadre-superieur-directeur',
+               'LHcHyfBzile3r0vyFOFb'
              ];
     }
     

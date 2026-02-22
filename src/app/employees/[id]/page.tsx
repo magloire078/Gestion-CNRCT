@@ -72,15 +72,24 @@ export default function EmployeeDetailPage() {
 
         async function fetchData() {
             try {
-                let [employeeData, leavesData, assetsData, missionsData, historyData, departments, directions, services] = await Promise.all([
-                    getEmployee(id as string),
-                    getLeaves(),
-                    getAssets(),
-                    getMissions(),
-                    getEmployeeHistory(id as string),
-                    getDepartments(),
-                    getDirections(),
-                    getServices(),
+                const [
+                    employeeData,
+                    leavesData,
+                    assetsData,
+                    missionsData,
+                    historyData,
+                    departments,
+                    directions,
+                    services
+                ] = await Promise.all([
+                    getEmployee(id as string).catch(err => { console.error("Failed to fetch employee", err); return null; }),
+                    getLeaves().catch(err => { console.error("Failed to fetch leaves", err); return []; }),
+                    getAssets().catch(err => { console.error("Failed to fetch assets", err); return []; }),
+                    getMissions().catch(err => { console.error("Failed to fetch missions", err); return []; }),
+                    getEmployeeHistory(id as string).catch(err => { console.error("Failed to fetch history", err); return []; }),
+                    getDepartments().catch(err => { console.error("Failed to fetch departments", err); return []; }),
+                    getDirections().catch(err => { console.error("Failed to fetch directions", err); return []; }),
+                    getServices().catch(err => { console.error("Failed to fetch services", err); return []; }),
                 ]);
 
                 if (employeeData && employeeData.Date_Naissance) {

@@ -15,6 +15,7 @@ import { getServices } from './service-service';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { FirestorePermissionError } from '@/lib/errors';
 import { parseISO, addYears, format, isValid } from 'date-fns';
+import { divisions } from '@/lib/ivory-coast-divisions';
 
 
 const employeesCollection = collection(db, 'employees');
@@ -24,6 +25,12 @@ const chiefsCollection = collection(db, 'chiefs');
 const GROUPE_DIRECTOIRE_ID = 'DVeCoGfRfL3p43eQeYwz';
 
 export type EmployeeGroup = 'directoire' | 'regional' | 'personnel-siege' | 'chauffeur-directoire' | 'garde-republicaine' | 'gendarme' | 'all';
+
+export type RegionalCommittee = {
+    region: string;
+    president: Employe | null;
+    members: Employe[];
+};
 
 /**
  * Determines the group an employee belongs to based on their properties.
@@ -392,6 +399,39 @@ export async function getDirectoireMembers(): Promise<Employe[]> {
         return directoireMembers.sort((a, b) => getRank(a.poste) - getRank(b.poste));
     } catch (error) {
         console.error('[employee-service] Error fetching directoire members:', error);
+        return [];
+    }
+}
+
+export async function getRegionalCommittees(): Promise<RegionalCommittee[]> {
+    try {
+        const q = query(employeesCollection, where('status', '==', 'Actif'));
+        const snapshot = await getDocs(q);
+        const allEmployees = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Employe));
+
+        const regions = Object.keys(divisions);
+        const regionalCommittees: RegionalCommittee[] = regions.map(region => {
+            const members = allEmployees.filter(emp => 
+                emp.Region === region && 
+                (emp.poste?.toLowerCase().includes('comité régional') || emp.poste?.toLowerCase().includes('membre du bureau'))
+            );
+
+            // Find the president of the regional committee
+            const president = members.find(m => 
+                m.poste?.toLowerCase().includes('président') || 
+                m.poste?.toLowerCase().includes('president')
+            ) || null;
+
+            return {
+                region,
+                president,
+                members: members.sort((a, b) => (president?.id === a.id ? -1 : (president?.id === b.id ? 1 : 0)))
+            };
+        });
+
+        return regionalCommittees;
+    } catch (error) {
+        console.error('[employee-service] Error fetching regional committees:', error);
         return [];
     }
 }

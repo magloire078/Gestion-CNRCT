@@ -250,7 +250,8 @@ const Sidebar = React.forwardRef<
         )}
         {...props}
       >
-        {children}
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-secondary/5 pointer-events-none" />
+        <div className="relative flex flex-col h-full">{children}</div>
       </div>
     );
   }
@@ -560,9 +561,18 @@ const SidebarMenuButton = React.forwardRef<
         data-sidebar="menu-button"
         data-size={size}
         data-active={isActive}
-        className={cn(sidebarMenuButtonVariants({ variant, size }), className)}
+        className={cn(sidebarMenuButtonVariants({ variant, size }), "relative group/menu-button-inner", className)}
         {...props}
-      />
+      >
+        {asChild ? (
+          props.children
+        ) : (
+          <>
+            {props.children}
+            {isActive && <div className="sidebar-active-indicator opacity-100" />}
+          </>
+        )}
+      </Comp>
     )
 
     if (!tooltip) {

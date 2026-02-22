@@ -297,9 +297,11 @@ function AppLayout({ children }: { children: React.ReactNode }) {
                         isActive={isSubItemActive(item.subItems)}
                         className="w-full justify-start hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                       >
-                        <item.icon className="mr-2 h-4 w-4" />
-                        {item.label}
-                        <ChevronDown className="ml-auto h-4 w-4 transition-transform [&[data-state=open]]:rotate-180" />
+                        <div className="flex items-center w-full">
+                          <item.icon className="mr-2 h-4 w-4" />
+                          {item.label}
+                          <ChevronDown className="ml-auto h-4 w-4 transition-transform [&[data-state=open]]:rotate-180" />
+                        </div>
                       </SidebarMenuButton>
                     </CollapsibleTrigger>
                     <CollapsibleContent asChild>
@@ -307,7 +309,8 @@ function AppLayout({ children }: { children: React.ReactNode }) {
                         {item.subItems?.filter(sub => hasPermission(sub.permission)).map(subItem => (
                           <SidebarMenuSubItem key={subItem.href}>
                             <SidebarMenuSubButton asChild isActive={currentPath === subItem.href}>
-                              <Link href={subItem.href!}>
+                              <Link href={subItem.href!} className="relative flex items-center w-full">
+                                {currentPath === subItem.href && <div className="sidebar-active-indicator opacity-100" />}
                                 <subItem.icon className="mr-2 h-4 w-4" />
                                 <span>{subItem.label}</span>
                               </Link>
@@ -325,7 +328,8 @@ function AppLayout({ children }: { children: React.ReactNode }) {
                     isActive={currentPath === item.href}
                     className="w-full justify-start hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                   >
-                    <Link href={item.href!}>
+                    <Link href={item.href!} className="relative flex items-center w-full">
+                      {currentPath === item.href && <div className="sidebar-active-indicator opacity-100" />}
                       <item.icon className="mr-2 h-4 w-4" />
                       {item.label}
                     </Link>

@@ -5,6 +5,7 @@ import type { Mission } from '@/lib/data';
 import { db } from '@/lib/firebase';
 import { missionSchema } from '@/lib/schemas/mission-schema';
 import { createNotification } from './notification-service';
+import { FirestorePermissionError } from '@/lib/errors';
 
 const missionsCollection = collection(db, 'missions');
 const usersCollection = collection(db, 'users');
@@ -62,16 +63,23 @@ export function subscribeToMissions(
 }
 
 export async function getMissions(): Promise<Mission[]> {
-    const snapshot = await getDocs(query(missionsCollection, orderBy("startDate", "desc")));
-    return snapshot.docs.map((doc: any) => {
-        const data = { id: doc.id, ...doc.data() };
-        const result = missionSchema.safeParse(data);
-        if (!result.success) {
-            console.error(`[MissionService] validation error for ${doc.id}:`, result.error.format());
-            return data as Mission;
+    try {
+        const snapshot = await getDocs(query(missionsCollection, orderBy("startDate", "desc")));
+        return snapshot.docs.map((doc: any) => {
+            const data = { id: doc.id, ...doc.data() };
+            const result = missionSchema.safeParse(data);
+            if (!result.success) {
+                console.error(`[MissionService] validation error for ${doc.id}:`, result.error.format());
+                return data as Mission;
+            }
+            return result.data as Mission;
+        });
+    } catch (error: any) {
+        if (error.code === 'permission-denied') {
+            throw new FirestorePermissionError("Vous n'avez pas la permission de consulter les missions.", { operation: 'read-all', path: 'missions' });
         }
-        return result.data as Mission;
-    });
+        throw error;
+    }
 }
 
 export async function getMission(id: string): Promise<Mission | null> {

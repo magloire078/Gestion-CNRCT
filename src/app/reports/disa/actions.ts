@@ -13,6 +13,8 @@ export interface DisaRow {
   totalBrut: number;
   totalCNPS: number;
   gratification: number;
+  sexe: string;
+  dateNaissance: string;
 }
 
 export interface DisaReportState {
@@ -175,6 +177,8 @@ export async function generateDisaReport(yearStr: string): Promise<DisaReportSta
         gratification,
         totalBrut: Math.round(totalBrut),
         totalCNPS: Math.round(totalCNPS),
+        sexe: employee.sexe || '-',
+        dateNaissance: employee.Date_Naissance || '-',
       });
     }
 

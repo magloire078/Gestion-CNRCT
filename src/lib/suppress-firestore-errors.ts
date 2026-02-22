@@ -10,7 +10,8 @@ if (typeof window !== 'undefined') {
     const isPermissionError = (msg: string) => {
         return msg.includes('Missing or insufficient permissions') ||
             msg.includes('permission-denied') ||
-            msg.includes('FirebaseError');
+            msg.includes('FirebaseError') ||
+            msg.includes('Could not reach Cloud Firestore backend');
     };
 
     // Intercepter console.error

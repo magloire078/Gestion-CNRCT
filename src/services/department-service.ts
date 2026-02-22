@@ -2,6 +2,7 @@ import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, onSnapshot, Uns
 import type { QuerySnapshot, DocumentData, QueryDocumentSnapshot, FirestoreError } from '@/lib/firebase';
 import type { Department } from '@/lib/data';
 import { db } from '@/lib/firebase';
+import { FirestorePermissionError } from '@/lib/errors';
 
 const departmentsCollection = collection(db, 'departments');
 
@@ -27,12 +28,19 @@ export function subscribeToDepartments(
 }
 
 export async function getDepartments(): Promise<Department[]> {
-    const q = query(departmentsCollection, orderBy("name", "asc"));
-    const snapshot = await getDocs(q);
-    return snapshot.docs.map((doc: QueryDocumentSnapshot<DocumentData>) => ({
-        id: doc.id,
-        ...doc.data()
-    } as Department));
+    try {
+        const q = query(departmentsCollection, orderBy("name", "asc"));
+        const snapshot = await getDocs(q);
+        return snapshot.docs.map((doc: QueryDocumentSnapshot<DocumentData>) => ({
+            id: doc.id,
+            ...doc.data()
+        } as Department));
+    } catch (error: any) {
+        if (error.code === 'permission-denied') {
+            throw new FirestorePermissionError("Vous n'avez pas la permission de consulter les départements.", { operation: 'read-all', path: 'departments' });
+        }
+        throw error;
+    }
 }
 
 export async function addDepartment(departmentData: Omit<Department, 'id'>): Promise<Department> {

@@ -135,7 +135,9 @@ export default function DisaReportPage() {
                                         <TableRow>
                                             <TableHead className="sticky left-0 z-10 w-10 px-2 bg-card">N°</TableHead>
                                             <TableHead className="sticky left-10 z-10 w-24 px-2 bg-card">Matricule</TableHead>
+                                            <TableHead className="px-2">Sexe</TableHead>
                                             <TableHead className="sticky left-32 z-10 min-w-[150px] px-2 bg-card">Nom et Prénoms</TableHead>
+                                            <TableHead className="px-2">Date Naiss.</TableHead>
                                             {monthLabels.map((m, i) => <TableHead key={`header-month-${i}`} className="text-right px-2">{m}</TableHead>)}
                                             <TableHead className="text-right font-bold px-2 bg-blue-50/50 dark:bg-blue-900/10 text-blue-700 dark:text-blue-300">Gratification</TableHead>
                                             <TableHead className="text-right font-bold px-2">Total Brut</TableHead>
@@ -147,7 +149,9 @@ export default function DisaReportPage() {
                                             <TableRow key={row.matricule}>
                                                 <TableCell className="sticky left-0 px-2 bg-card">{index + 1}</TableCell>
                                                 <TableCell className="sticky left-10 px-2 bg-card">{row.matricule}</TableCell>
+                                                <TableCell className="px-2">{row.sexe}</TableCell>
                                                 <TableCell className="font-medium whitespace-nowrap sticky left-32 px-2 bg-card">{row.name}</TableCell>
+                                                <TableCell className="px-2">{row.dateNaissance}</TableCell>
                                                 {row.monthlySalaries.map((salary, i) => (
                                                     <TableCell key={`${row.matricule}-month-${i}`} className="text-right font-mono text-xs px-2">{formatCurrency(salary)}</TableCell>
                                                 ))}
@@ -158,7 +162,7 @@ export default function DisaReportPage() {
                                         ))}
                                         {state.grandTotal && (
                                             <TableRow className="font-bold bg-muted hover:bg-muted">
-                                                <TableCell colSpan={3} className="text-right sticky left-0 px-2 bg-muted">TOTAUX</TableCell>
+                                                <TableCell colSpan={5} className="text-right sticky left-0 px-2 bg-muted">TOTAUX</TableCell>
                                                 {state.grandTotal.monthly.map((total, index) => (
                                                     <TableCell key={`total-month-${index}`} className="text-right font-mono text-xs px-2">{formatCurrency(total)}</TableCell>
                                                 ))}
@@ -185,74 +189,78 @@ export default function DisaReportPage() {
             </div>
 
             {isPrinting && state.reportData && state.organizationLogos && state.grandTotal && (
-                <div id="print-section" className="bg-white text-black p-2 font-sans">
-                    <header className="flex justify-between items-start mb-8">
-                        <div className="w-1/4 text-center flex flex-col justify-center items-center h-24">
-                            <p className="font-bold text-base">Chambre Nationale des Rois et Chefs Traditionnels</p>
-                            {state.organizationLogos.mainLogoUrl && <img src={state.organizationLogos.mainLogoUrl} alt="Logo Principal" className="max-h-20 max-w-full h-auto w-auto mt-1" />}
+                <div id="print-section" className="bg-white text-black p-1 font-sans">
+                    <header className="flex justify-between items-start mb-2">
+                        <div className="w-1/4 text-center flex flex-col justify-center items-center h-16">
+                            <p className="font-bold text-sm leading-tight text-blue-900">Chambre Nationale des Rois et Chefs Traditionnels</p>
+                            {state.organizationLogos.mainLogoUrl && <img src={state.organizationLogos.mainLogoUrl} alt="Logo Principal" className="max-h-12 max-w-full h-auto w-auto mt-1" />}
                         </div>
                         <div className="w-2/4 text-center pt-2">
                             {/* Empty space as requested */}
                         </div>
-                        <div className="w-1/4 text-center flex flex-col justify-center items-center h-24">
-                            <p className="font-bold text-base">République de Côte d'Ivoire</p>
-                            {state.organizationLogos.secondaryLogoUrl && <img src={state.organizationLogos.secondaryLogoUrl} alt="Logo Secondaire" className="max-h-16 max-w-full h-auto w-auto my-1" />}
-                            <p className="text-sm">Union - Discipline - Travail</p>
+                        <div className="w-1/4 text-center flex flex-col justify-center items-center h-16">
+                            <p className="font-bold text-sm leading-tight">République de Côte d'Ivoire</p>
+                            {state.organizationLogos.secondaryLogoUrl && <img src={state.organizationLogos.secondaryLogoUrl} alt="Logo Secondaire" className="max-h-10 max-w-full h-auto w-auto my-0.5" />}
+                            <p className="border-t border-black px-2 text-[8px] mt-0.5">Union - Discipline - Travail</p>
                         </div>
                     </header>
-                    <div className="text-center my-4">
-                        <h1 className="text-xl font-bold underline">DÉCLARATION INDIVIDUELLE DES SALAIRES ET APPOINTEMENTS (DISA) - ANNEE {state.year}</h1>
+                    <div className="text-center my-1">
+                        <h1 className="text-base font-bold underline">DÉCLARATION INDIVIDUELLE DES SALAIRES ET APPOINTEMENTS (DISA) - ANNEE {state.year}</h1>
                     </div>
-                    <table className="w-auto text-[5px] border-collapse border border-gray-400">
+                    <table className="w-auto text-[5px] border-collapse border border-gray-600 ml-1">
                         <thead className="bg-gray-100">
                             <tr>
-                                <th className="border border-gray-400 p-[1px] w-[15px] font-medium text-center">N°</th>
-                                <th className="border border-gray-400 p-[1px] w-[35px] font-medium text-center">Mat.</th>
-                                <th className="border border-gray-400 p-[1px] w-[100px] text-left pl-1 font-medium">Nom et Prénoms</th>
+                                <th className="border border-gray-600 p-[1px] w-[15px] font-medium text-center">N°</th>
+                                <th className="border border-gray-600 p-[1px] w-[35px] font-medium text-center">Mat.</th>
+                                <th className="border border-gray-600 p-[1px] w-[15px] font-medium text-center">S</th>
+                                <th className="border border-gray-600 p-[1px] w-[100px] text-left pl-1 font-medium">Nom et Prénoms</th>
+                                <th className="border border-gray-600 p-[1px] w-[45px] font-medium text-center">Date Naiss.</th>
                                 {monthLabels.map((m, i) => (
-                                    <th key={`header-print-month-${i}`} className="border border-gray-400 p-[1px] w-[32px] font-medium text-center">
+                                    <th key={`header-print-month-${i}`} className="border border-gray-600 p-[1px] w-[32px] font-medium text-center">
                                         {m.substring(0, 3)}.
                                     </th>
                                 ))}
-                                <th className="border border-gray-400 p-[1px] w-[35px] font-medium text-center">Gratif.</th>
-                                <th className="border border-gray-400 p-[1px] w-[40px] font-medium text-center">Tot Brut</th>
-                                <th className="border border-gray-400 p-[1px] w-[40px] font-medium text-center">Tot CNPS</th>
+                                <th className="border border-gray-600 p-[1px] w-[35px] font-medium text-center">Gratif.</th>
+                                <th className="border border-gray-600 p-[1px] w-[40px] font-medium text-center">Tot Brut</th>
+                                <th className="border border-gray-600 p-[1px] w-[40px] font-medium text-center">Tot CNPS</th>
                             </tr>
                         </thead>
                         <tbody>
                             {state.reportData.map((row, index) => (
                                 <tr key={`print-row-${row.matricule}`}>
-                                    <td className="border border-gray-400 p-[1px] text-center">{index + 1}</td>
-                                    <td className="border border-gray-400 p-[1px] text-center">{row.matricule}</td>
-                                    <td className="border border-gray-400 p-[1px] whitespace-nowrap pl-1">{row.name}</td>
+                                    <td className="border border-gray-600 p-[1px] text-center">{index + 1}</td>
+                                    <td className="border border-gray-600 p-[1px] text-center">{row.matricule}</td>
+                                    <td className="border border-gray-600 p-[1px] text-center">{row.sexe?.charAt(0) || '-'}</td>
+                                    <td className="border border-gray-600 p-[1px] whitespace-nowrap pl-1">{row.name}</td>
+                                    <td className="border border-gray-600 p-[1px] text-center">{row.dateNaissance}</td>
                                     {row.monthlySalaries.map((salary, i) => (
-                                        <td key={`print-cell-${row.matricule}-month-${i}`} className="border border-gray-400 p-[1px] text-right pr-1 tracking-tighter">
+                                        <td key={`print-cell-${row.matricule}-month-${i}`} className="border border-gray-600 p-[1px] text-right pr-1 tracking-tighter">
                                             {salary === 0 ? '-' : Math.round(salary).toLocaleString('fr-FR')}
                                         </td>
                                     ))}
-                                    <td className="border border-gray-400 p-[1px] text-right pr-1 font-medium">{formatCurrency(row.gratification)}</td>
-                                    <td className="border border-gray-400 p-[1px] text-right pr-1 font-medium">{formatCurrency(row.totalBrut)}</td>
-                                    <td className="border border-gray-400 p-[1px] text-right pr-1 font-medium">{formatCurrency(row.totalCNPS)}</td>
+                                    <td className="border border-gray-600 p-[1px] text-right pr-1 font-medium">{formatCurrency(row.gratification)}</td>
+                                    <td className="border border-gray-600 p-[1px] text-right pr-1 font-medium">{formatCurrency(row.totalBrut)}</td>
+                                    <td className="border border-gray-600 p-[1px] text-right pr-1 font-medium">{formatCurrency(row.totalCNPS)}</td>
                                 </tr>
                             ))}
                             <tr className="font-bold bg-gray-50">
-                                <td colSpan={3} className="border border-gray-400 p-[1px] text-right pr-2">TOTAL</td>
+                                <td colSpan={5} className="border border-gray-600 p-[1px] text-right pr-2">TOTAL</td>
                                 {state.grandTotal.monthly.map((total, index) => (
-                                    <td key={`print-total-month-${index}`} className="border border-gray-400 p-[1px] text-right pr-1 text-[5px]">
+                                    <td key={`print-total-month-${index}`} className="border border-gray-600 p-[1px] text-right pr-1 text-[5px]">
                                         {formatCurrency(total)}
                                     </td>
                                 ))}
-                                <td className="border border-gray-400 p-[1px] text-right pr-1 text-[5px]">{formatCurrency(state.grandTotal.gratification)}</td>
-                                <td className="border border-gray-400 p-[1px] text-right pr-1 text-[5px]">{formatCurrency(state.grandTotal.brut)}</td>
-                                <td className="border border-gray-400 p-[1px] text-right pr-1 text-[5px]">{formatCurrency(state.grandTotal.cnps)}</td>
+                                <td className="border border-gray-600 p-[1px] text-right pr-1 text-[5px]">{formatCurrency(state.grandTotal.gratification)}</td>
+                                <td className="border border-gray-600 p-[1px] text-right pr-1 text-[5px]">{formatCurrency(state.grandTotal.brut)}</td>
+                                <td className="border border-gray-600 p-[1px] text-right pr-1 text-[5px]">{formatCurrency(state.grandTotal.cnps)}</td>
                             </tr>
                         </tbody>
                     </table>
-                    <footer className="mt-8 text-xs">
+                    <footer className="mt-4 text-[8px]">
                         <div className="flex justify-between items-end">
                             <div></div>
-                            <div className="text-center leading-tight">
-                                <p className="font-bold">Chambre Nationale de Rois et Chefs Traditionnels (CNRCT)</p>
+                            <div className="text-center leading-tight opacity-70">
+                                <p className="font-bold uppercase">Chambre Nationale de Rois et Chefs Traditionnels (CNRCT)</p>
                                 <p>Yamoussoukro, Riviera - BP 201 Yamoussoukro | Tél : (225) 30 64 06 60 | Fax : (+255) 30 64 06 63</p>
                                 <p>www.cnrct.ci - Email : info@cnrct.ci</p>
                             </div>

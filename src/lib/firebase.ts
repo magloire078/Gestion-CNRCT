@@ -57,7 +57,15 @@ if (isConfigValid && typeof window !== 'undefined') {
 
 if (!isConfigValid) {
   if (typeof window !== 'undefined') {
+    const missingVars = [];
+    if (!process.env.NEXT_PUBLIC_FIREBASE_API_KEY) missingVars.push('NEXT_PUBLIC_FIREBASE_API_KEY');
+    if (!process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN) missingVars.push('NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN');
+    if (!process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID) missingVars.push('NEXT_PUBLIC_FIREBASE_PROJECT_ID');
+
     console.error("CRITICAL: Firebase configuration is missing! Check Vercel environment variables.");
+    if (missingVars.length > 0) {
+      console.error("Missing variables:", missingVars.join(", "));
+    }
   } else {
     console.warn("Firebase configuration is missing. Using dummy config for build purposes.");
   }

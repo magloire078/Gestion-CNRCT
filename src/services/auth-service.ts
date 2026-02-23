@@ -95,14 +95,37 @@ export async function signIn(email: string, password: string): Promise<User> {
 
     let userProfile = await getUserProfile(user.uid);
 
-    // Just-in-time profile creation if it doesn't exist
+    // Just-in-time profile creation if profile doesn't exist
     if (!userProfile) {
-        console.warn(`User profile not found for uid: ${user.uid}. Creating one now.`);
-        try {
-            userProfile = await createUserProfile(user, user.displayName || user.email!);
-        } catch (profileError) {
-            console.error("Just-in-time profile creation failed:", profileError);
-            throw new Error("profile-creation-failed");
+        // Before creating, verify the document truly doesn't exist.
+        // getUserProfile() can return null both when the doc is missing AND
+        // when it fails silently due to permission errors (e.g. on roles collection).
+        const userDocRef = doc(db, 'users', user.uid);
+        const userDocSnap = await getDoc(userDocRef);
+
+        if (!userDocSnap.exists()) {
+            // Truly new user — create profile
+            console.warn(`User profile not found for uid: ${user.uid}. Creating one now.`);
+            try {
+                userProfile = await createUserProfile(user, user.displayName || user.email!);
+            } catch (profileError) {
+                console.error("Just-in-time profile creation failed:", profileError);
+                throw new Error("profile-creation-failed");
+            }
+        } else {
+            // Profile doc exists but role/permissions couldn't be loaded.
+            // Build a minimal profile from raw document data.
+            console.warn(`Profile doc exists for ${user.uid} but role couldn't be resolved. Using minimal profile.`);
+            const rawData = userDocSnap.data();
+            userProfile = {
+                id: user.uid,
+                name: rawData.name || user.displayName || user.email!,
+                email: rawData.email || user.email!,
+                roleId: rawData.roleId || '',
+                photoUrl: rawData.photoUrl || user.photoURL || '',
+                role: null,
+                permissions: [],
+            };
         }
     }
 

@@ -8,10 +8,13 @@
 if (typeof window !== 'undefined') {
     const appStartTime = Date.now();
     const isPermissionError = (msg: string) => {
-        return msg.includes('Missing or insufficient permissions') ||
-            msg.includes('permission-denied') ||
-            msg.includes('FirebaseError') ||
-            msg.includes('Could not reach Cloud Firestore backend');
+        const lowerMsg = msg.toLowerCase();
+        return lowerMsg.includes('missing or insufficient permissions') ||
+            lowerMsg.includes('permission-denied') ||
+            lowerMsg.includes('permission_denied') ||
+            lowerMsg.includes('firebaseerror') ||
+            lowerMsg.includes('firestore') ||
+            lowerMsg.includes('could not reach cloud firestore backend');
     };
 
     // Intercepter console.error
@@ -33,6 +36,7 @@ if (typeof window !== 'undefined') {
         const errorMessage = event.message || event.error?.message || '';
 
         if (isInitialLoad && isPermissionError(errorMessage)) {
+            console.log(`[firestore-wrapper] Suppressed unhandled error during initial load: ${errorMessage}`);
             event.preventDefault();
             event.stopImmediatePropagation();
             return false;

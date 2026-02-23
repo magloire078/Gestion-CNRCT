@@ -107,6 +107,9 @@ export function onSnapshot<AppModelType = DocumentData, DbModelType extends Docu
                         const subToClean = unsubscribe;
                         unsubscribe = null;
                         subToClean();
+                    } else {
+                        const path = (reference as any).path || (reference as any)._query?.path?.segments?.join('/');
+                        console.log(`[firestore-wrapper] Listener activated for: ${path || 'unknown path'}`);
                     }
                 } catch (error) {
                     console.error('[firestore-wrapper] Error during firestoreOnSnapshot:', error);

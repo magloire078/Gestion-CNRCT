@@ -135,9 +135,7 @@ export default function DisaReportPage() {
                                         <TableRow>
                                             <TableHead className="sticky left-0 z-10 w-10 px-2 bg-card">N°</TableHead>
                                             <TableHead className="sticky left-10 z-10 w-24 px-2 bg-card">Matricule</TableHead>
-                                            <TableHead className="px-2">Sexe</TableHead>
-                                            <TableHead className="sticky left-32 z-10 min-w-[150px] px-2 bg-card">Nom et Prénoms</TableHead>
-                                            <TableHead className="px-2">Date Naiss.</TableHead>
+                                            <TableHead className="sticky left-[136px] z-10 min-w-[150px] px-2 bg-card">Nom et Prénoms</TableHead>
                                             {monthLabels.map((m, i) => <TableHead key={`header-month-${i}`} className="text-right px-2">{m}</TableHead>)}
                                             <TableHead className="text-right font-bold px-2 bg-blue-50/50 dark:bg-blue-900/10 text-blue-700 dark:text-blue-300">Gratification</TableHead>
                                             <TableHead className="text-right font-bold px-2">Total Brut</TableHead>
@@ -149,9 +147,7 @@ export default function DisaReportPage() {
                                             <TableRow key={row.matricule}>
                                                 <TableCell className="sticky left-0 px-2 bg-card">{index + 1}</TableCell>
                                                 <TableCell className="sticky left-10 px-2 bg-card">{row.matricule}</TableCell>
-                                                <TableCell className="px-2">{row.sexe}</TableCell>
-                                                <TableCell className="font-medium whitespace-nowrap sticky left-32 px-2 bg-card">{row.name}</TableCell>
-                                                <TableCell className="px-2">{row.dateNaissance}</TableCell>
+                                                <TableCell className="font-medium whitespace-nowrap sticky left-[136px] px-2 bg-card">{row.name}</TableCell>
                                                 {row.monthlySalaries.map((salary, i) => (
                                                     <TableCell key={`${row.matricule}-month-${i}`} className="text-right font-mono text-xs px-2">{formatCurrency(salary)}</TableCell>
                                                 ))}
@@ -162,7 +158,7 @@ export default function DisaReportPage() {
                                         ))}
                                         {state.grandTotal && (
                                             <TableRow className="font-bold bg-muted hover:bg-muted">
-                                                <TableCell colSpan={5} className="text-right sticky left-0 px-2 bg-muted">TOTAUX</TableCell>
+                                                <TableCell colSpan={3} className="text-right sticky left-0 px-2 bg-muted">TOTAUX</TableCell>
                                                 {state.grandTotal.monthly.map((total, index) => (
                                                     <TableCell key={`total-month-${index}`} className="text-right font-mono text-xs px-2">{formatCurrency(total)}</TableCell>
                                                 ))}
@@ -212,9 +208,7 @@ export default function DisaReportPage() {
                             <tr>
                                 <th className="border border-gray-600 p-[1px] w-[15px] font-medium text-center">N°</th>
                                 <th className="border border-gray-600 p-[1px] w-[35px] font-medium text-center">Mat.</th>
-                                <th className="border border-gray-600 p-[1px] w-[15px] font-medium text-center">S</th>
                                 <th className="border border-gray-600 p-[1px] w-[100px] text-left pl-1 font-medium">Nom et Prénoms</th>
-                                <th className="border border-gray-600 p-[1px] w-[45px] font-medium text-center">Date Naiss.</th>
                                 {monthLabels.map((m, i) => (
                                     <th key={`header-print-month-${i}`} className="border border-gray-600 p-[1px] w-[32px] font-medium text-center">
                                         {m.substring(0, 3)}.
@@ -230,9 +224,7 @@ export default function DisaReportPage() {
                                 <tr key={`print-row-${row.matricule}`}>
                                     <td className="border border-gray-600 p-[1px] text-center">{index + 1}</td>
                                     <td className="border border-gray-600 p-[1px] text-center">{row.matricule}</td>
-                                    <td className="border border-gray-600 p-[1px] text-center">{row.sexe?.charAt(0) || '-'}</td>
                                     <td className="border border-gray-600 p-[1px] whitespace-nowrap pl-1">{row.name}</td>
-                                    <td className="border border-gray-600 p-[1px] text-center">{row.dateNaissance}</td>
                                     {row.monthlySalaries.map((salary, i) => (
                                         <td key={`print-cell-${row.matricule}-month-${i}`} className="border border-gray-600 p-[1px] text-right pr-1 tracking-tighter">
                                             {salary === 0 ? '-' : Math.round(salary).toLocaleString('fr-FR')}
@@ -244,7 +236,7 @@ export default function DisaReportPage() {
                                 </tr>
                             ))}
                             <tr className="font-bold bg-gray-50">
-                                <td colSpan={5} className="border border-gray-600 p-[1px] text-right pr-2">TOTAL</td>
+                                <td colSpan={3} className="border border-gray-600 p-[1px] text-right pr-2">TOTAL</td>
                                 {state.grandTotal.monthly.map((total, index) => (
                                     <td key={`print-total-month-${index}`} className="border border-gray-600 p-[1px] text-right pr-1 text-[5px]">
                                         {formatCurrency(total)}

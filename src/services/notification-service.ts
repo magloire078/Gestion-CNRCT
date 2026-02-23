@@ -63,18 +63,35 @@ export function subscribeToNotifications(
     };
 
     const unsubUser = onSnapshot(qUser, (snapshot) => {
+        if (snapshot.empty && notificationMap.size === 0) {
+            callback([]);
+            return;
+        }
         snapshot.docs.forEach((doc: QueryDocumentSnapshot<DocumentData>) => {
             notificationMap.set(doc.id, { id: doc.id, ...doc.data() } as Notification);
         });
         updateCombinedAndSort();
-    }, onError);
+    }, (error) => {
+        console.error(`[NotificationService] Error subscripting to user notifications for ${userId}:`, error);
+        onError(error);
+    });
 
     const unsubAll = onSnapshot(qAll, (snapshot) => {
+        if (snapshot.empty && notificationMap.size === 0) {
+            // Only trigger if map is empty to avoid clearing user notifications
+            if (notificationMap.size === 0) callback([]);
+            return;
+        }
         snapshot.docs.forEach((doc: QueryDocumentSnapshot<DocumentData>) => {
             notificationMap.set(doc.id, { id: doc.id, ...doc.data() } as Notification);
         });
         updateCombinedAndSort();
-    }, onError);
+    }, (error) => {
+        console.error(`[NotificationService] Error subscripting to global notifications:`, error);
+        // Don't necessarily break the whole subscription if global alerts fail
+        // but still notify the UI via onError
+        onError(error);
+    });
 
     return () => {
         unsubUser();

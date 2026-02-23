@@ -104,7 +104,7 @@ service cloud.firestore {
     }
 
     match /notifications/{notifId} {
-        allow read, update: if request.auth.uid == resource.data.userId;
+        allow read, update: if request.auth != null && (request.auth.uid == resource.data.userId || resource.data.userId == 'all');
         allow create, delete: if request.auth != null; // Allow any authenticated user to create notifications for now
     }
     

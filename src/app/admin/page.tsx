@@ -3,6 +3,7 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
+import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -27,7 +28,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Input } from "@/components/ui/input";
-import { PlusCircle, Trash2, Pencil, ChevronRight, Link2, Search, Users, Shield, Building, Layers, Settings, AlertTriangle } from "lucide-react";
+import { PlusCircle, Trash2, Pencil, ChevronRight, Link2, Search, Users, Shield, Building, Layers, Settings, AlertTriangle, ShieldCheck } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { useAdminData } from "@/hooks/use-admin-data";
@@ -53,6 +54,8 @@ import { Badge } from "@/components/ui/badge";
 import { LinkUserEmployeeDialog } from "@/components/admin/link-user-employee-dialog";
 import { PaginationControls } from "@/components/common/pagination-controls";
 import { cn } from "@/lib/utils";
+import { PermissionLock } from "@/components/admin/permission-lock";
+import { PermissionMatrix } from "@/components/admin/permission-matrix";
 
 // --- Empty State Component ---
 function EmptyState({ icon: Icon, message }: { icon: React.ElementType; message: string }) {
@@ -100,6 +103,7 @@ export default function AdminPage() {
     error
   } = useAdminData();
 
+  const { user } = useAuth();
   const { toast } = useToast();
 
   const [isAddUserSheetOpen, setIsAddUserSheetOpen] = useState(false);
@@ -689,6 +693,28 @@ export default function AdminPage() {
               </Card>
             </div>
           </div>
+
+          {/* ─── Permissions CRUD ─── */}
+          {(user?.roleId === 'LHcHyfBzile3r0vyFOFb' || user?.roleId === 'super-admin') && (
+            <Card className="border-primary/20">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <ShieldCheck className="h-5 w-5 text-primary" />
+                  Gestion des Permissions CRUD
+                </CardTitle>
+                <CardDescription>
+                  Contrôlez précisément les droits de Lecture, Création, Modification et Suppression
+                  pour chaque rôle sur toutes les ressources de l&apos;application.
+                  Cette section est protégée et requiert votre mot de passe.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <PermissionLock userEmail={user?.email ?? ''}>
+                  <PermissionMatrix />
+                </PermissionLock>
+              </CardContent>
+            </Card>
+          )}
 
           <AddUserSheet isOpen={isAddUserSheetOpen} onClose={() => setIsAddUserSheetOpen(false)} onAddUser={handleAddUser} roles={roles || []} />
           <AddRoleSheet isOpen={isAddRoleSheetOpen} onClose={() => setIsAddRoleSheetOpen(false)} onAddRole={handleAddRole} roles={roles || []} />

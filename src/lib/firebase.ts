@@ -57,14 +57,25 @@ if (isConfigValid && typeof window !== 'undefined') {
 
 if (!isConfigValid) {
   if (typeof window !== 'undefined') {
-    const missingVars = [];
-    if (!process.env.NEXT_PUBLIC_FIREBASE_API_KEY) missingVars.push('NEXT_PUBLIC_FIREBASE_API_KEY');
-    if (!process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN) missingVars.push('NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN');
-    if (!process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID) missingVars.push('NEXT_PUBLIC_FIREBASE_PROJECT_ID');
+    const missingVars: string[] = [];
+    const checkVar = (name: string, value: any) => {
+      if (!value || value === 'undefined') missingVars.push(name);
+    };
+
+    checkVar('NEXT_PUBLIC_FIREBASE_API_KEY', process.env.NEXT_PUBLIC_FIREBASE_API_KEY);
+    checkVar('NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN', process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN);
+    checkVar('NEXT_PUBLIC_FIREBASE_PROJECT_ID', process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID);
+    checkVar('NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET', process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET);
+    checkVar('NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID', process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID);
+    checkVar('NEXT_PUBLIC_FIREBASE_APP_ID', process.env.NEXT_PUBLIC_FIREBASE_APP_ID);
 
     console.error("CRITICAL: Firebase configuration is missing! Check Vercel environment variables.");
     if (missingVars.length > 0) {
-      console.error("Missing variables:", missingVars.join(", "));
+      console.error("The following variables are missing or set to 'undefined' on Vercel:", missingVars.join(", "));
+      console.log("Current values (keys are masked):", {
+        apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY ? 'Present' : 'Missing',
+        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'Missing'
+      });
     }
   } else {
     console.warn("Firebase configuration is missing. Using dummy config for build purposes.");

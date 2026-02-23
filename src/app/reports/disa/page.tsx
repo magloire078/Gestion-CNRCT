@@ -157,7 +157,7 @@ export default function DisaReportPage() {
                                             {monthLabels.map((m, i) => <TableHead key={`header-month-${i}`} className="text-right px-2">{m}</TableHead>)}
                                             <TableHead className="text-right font-bold px-2 bg-blue-50/50 dark:bg-blue-900/10 text-blue-700 dark:text-blue-300">Gratification</TableHead>
                                             <TableHead className="text-right font-bold px-2">Total Brut</TableHead>
-                                            <TableHead className="text-right font-bold px-2">Total CNPS</TableHead>
+                                            <TableHead className="text-right font-bold px-2">CNPS</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -234,7 +234,7 @@ export default function DisaReportPage() {
                                 ))}
                                 <th className="border border-gray-600 p-[0.5px] w-[35px] font-medium text-center">Gratif.</th>
                                 <th className="border border-gray-600 p-[0.5px] w-[40px] font-medium text-center">Tot Brut</th>
-                                <th className="border border-gray-600 p-[0.5px] w-[40px] font-medium text-center">Tot CNPS</th>
+                                <th className="border border-gray-600 p-[0.5px] w-[40px] font-medium text-center">CNPS</th>
                             </tr>
                         </thead>
                         <tbody>

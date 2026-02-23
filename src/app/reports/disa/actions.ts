@@ -93,6 +93,9 @@ export async function generateDisaReport(yearStr: string): Promise<DisaReportSta
     ]);
 
     const employeesForYear = allEmployees.filter(e => {
+      // Filtrage par statut CNPS actif
+      if (e.CNPS !== true) return false;
+
       if (!e.dateEmbauche || !isValid(parseISO(e.dateEmbauche))) return false;
       const hireYear = getYear(parseISO(e.dateEmbauche));
       if (e.Date_Depart && isValid(parseISO(e.Date_Depart))) {

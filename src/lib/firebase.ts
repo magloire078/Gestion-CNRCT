@@ -52,28 +52,15 @@ if (isConfigValid && typeof window !== 'undefined') {
   try {
     getAnalytics(app);
   } catch (error) {
-    console.log("Could not initialize Analytics", error);
+    // Analytics initialization failed, but we don't need to log it for now.
   }
 }
 
-const CONFIG_VERSION = "v2.1";
-
 if (!isConfigValid) {
   if (typeof window !== 'undefined') {
-    console.error(`[Firebase ${CONFIG_VERSION}] CRITICAL: Configuration is missing!`);
-
-    // Explicitly listing missing ones for the user to see in their console
-    const debugInfo = {
-      apiKey: !!process.env.NEXT_PUBLIC_FIREBASE_API_KEY ? "Set" : "Missing",
-      authDomain: !!process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN ? "Set" : "Missing",
-      projectId: !!process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ? "Set" : "Missing",
-      appId: !!process.env.NEXT_PUBLIC_FIREBASE_APP_ID ? "Set" : "Missing",
-    };
-
-    console.table(debugInfo);
-    console.error("Check Vercel Settings > Environment Variables. Names MUST start with NEXT_PUBLIC_");
+    console.error("CRITICAL: Firebase configuration is missing! Check Vercel environment variables.");
   } else {
-    console.warn(`[Firebase ${CONFIG_VERSION}] Missing config. Using dummy for build.`);
+    console.warn("Firebase configuration is missing. Using dummy config for build purposes.");
   }
 }
 

@@ -27,9 +27,10 @@ const firebaseConfig: FirebaseOptions = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
 };
 
+const isConfigValid = !!firebaseConfig.apiKey && firebaseConfig.apiKey !== 'undefined';
+
 
 // Initialize Firebase
-const isConfigValid = !!firebaseConfig.apiKey && firebaseConfig.apiKey !== 'undefined';
 
 // Provide a dummy config during build if real config is missing
 // This prevents crashes in services that call doc(db, ...) at module level
@@ -55,30 +56,24 @@ if (isConfigValid && typeof window !== 'undefined') {
   }
 }
 
+const CONFIG_VERSION = "v2.1";
+
 if (!isConfigValid) {
   if (typeof window !== 'undefined') {
-    const missingVars: string[] = [];
-    const checkVar = (name: string, value: any) => {
-      if (!value || value === 'undefined') missingVars.push(name);
+    console.error(`[Firebase ${CONFIG_VERSION}] CRITICAL: Configuration is missing!`);
+
+    // Explicitly listing missing ones for the user to see in their console
+    const debugInfo = {
+      apiKey: !!process.env.NEXT_PUBLIC_FIREBASE_API_KEY ? "Set" : "Missing",
+      authDomain: !!process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN ? "Set" : "Missing",
+      projectId: !!process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ? "Set" : "Missing",
+      appId: !!process.env.NEXT_PUBLIC_FIREBASE_APP_ID ? "Set" : "Missing",
     };
 
-    checkVar('NEXT_PUBLIC_FIREBASE_API_KEY', process.env.NEXT_PUBLIC_FIREBASE_API_KEY);
-    checkVar('NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN', process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN);
-    checkVar('NEXT_PUBLIC_FIREBASE_PROJECT_ID', process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID);
-    checkVar('NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET', process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET);
-    checkVar('NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID', process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID);
-    checkVar('NEXT_PUBLIC_FIREBASE_APP_ID', process.env.NEXT_PUBLIC_FIREBASE_APP_ID);
-
-    console.error("CRITICAL: Firebase configuration is missing! Check Vercel environment variables.");
-    if (missingVars.length > 0) {
-      console.error("The following variables are missing or set to 'undefined' on Vercel:", missingVars.join(", "));
-      console.log("Current values (keys are masked):", {
-        apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY ? 'Present' : 'Missing',
-        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'Missing'
-      });
-    }
+    console.table(debugInfo);
+    console.error("Check Vercel Settings > Environment Variables. Names MUST start with NEXT_PUBLIC_");
   } else {
-    console.warn("Firebase configuration is missing. Using dummy config for build purposes.");
+    console.warn(`[Firebase ${CONFIG_VERSION}] Missing config. Using dummy for build.`);
   }
 }
 

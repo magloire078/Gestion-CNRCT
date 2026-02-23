@@ -63,7 +63,25 @@ export default function DisaReportPage() {
     useEffect(() => {
         if (isPrinting) {
             const style = document.createElement('style');
-            style.innerHTML = `@media print { @page { size: landscape; margin: 3mm 3mm 15mm 6mm; } }`;
+            style.innerHTML = `
+                @media print { 
+                    @page { 
+                        size: landscape; 
+                        margin: 10mm 5mm 15mm 10mm; 
+                    }
+                    body {
+                        margin: 0;
+                        padding: 0;
+                    }
+                    #print-section {
+                        width: 100%;
+                    }
+                    thead { display: table-header-group; }
+                    tfoot { display: table-footer-group; }
+                    tr { page-break-inside: avoid; }
+                    .print-hidden { display: none !important; }
+                }
+            `;
             document.head.appendChild(style);
 
             setTimeout(() => {

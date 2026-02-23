@@ -130,7 +130,7 @@ export function EditSupplySheet({
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="category-edit" className="text-right">Catégorie</Label>
               <Select value={category} onValueChange={(value: Supply['category']) => setCategory(value)}>
-                <SelectTrigger className="col-span-3">
+                <SelectTrigger id="category-edit" className="col-span-3">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -147,7 +147,7 @@ export function EditSupplySheet({
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="linkedAssetTag-edit" className="text-right">Imprimante</Label>
                   <Select value={linkedAssetTag || 'none'} onValueChange={setLinkedAssetTag}>
-                    <SelectTrigger className="col-span-3">
+                    <SelectTrigger id="linkedAssetTag-edit" className="col-span-3">
                       <SelectValue placeholder="Lier à une imprimante..." />
                     </SelectTrigger>
                     <SelectContent>

@@ -167,7 +167,7 @@ export function EditNewsSheet({ isOpen, onClose, newsItem }: EditNewsSheetProps)
                             value={formData.category}
                             onValueChange={(v) => handleSelectChange('category', v)}
                         >
-                            <SelectTrigger>
+                            <SelectTrigger id="category">
                                 <SelectValue placeholder="Sélectionnez une catégorie" />
                             </SelectTrigger>
                             <SelectContent>

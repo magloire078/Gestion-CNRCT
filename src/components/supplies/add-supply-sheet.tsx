@@ -128,7 +128,7 @@ export function AddSupplySheet({
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="category" className="text-right">Catégorie</Label>
               <Select value={category} onValueChange={(value: Supply['category']) => setCategory(value)}>
-                <SelectTrigger className="col-span-3">
+                <SelectTrigger id="category" className="col-span-3">
                   <SelectValue placeholder="Sélectionnez une catégorie" />
                 </SelectTrigger>
                 <SelectContent>
@@ -145,7 +145,7 @@ export function AddSupplySheet({
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="linkedAssetTag" className="text-right">Imprimante</Label>
                   <Select value={linkedAssetTag || 'none'} onValueChange={setLinkedAssetTag}>
-                    <SelectTrigger className="col-span-3">
+                    <SelectTrigger id="linkedAssetTag" className="col-span-3">
                       <SelectValue placeholder="Lier à une imprimante..." />
                     </SelectTrigger>
                     <SelectContent>

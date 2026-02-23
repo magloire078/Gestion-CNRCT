@@ -54,7 +54,7 @@ export function AddMissionSheet({
   const [startDate, setStartDate] = useState<Date>();
   const [endDate, setEndDate] = useState<Date>();
   const [status, setStatus] = useState<Mission['status']>('Planifiée');
-  
+
   const [loadingInitial, setLoadingInitial] = useState(true);
 
   const [error, setError] = useState("");
@@ -99,26 +99,26 @@ export function AddMissionSheet({
       setError("Le titre et les dates sont obligatoires.");
       return;
     }
-    
+
     setIsSubmitting(true);
     setError("");
 
     try {
-        await onAddMission({ 
-            numeroMission,
-            title, 
-            description, 
-            participants: [],
-            startDate: format(startDate, "yyyy-MM-dd"),
-            endDate: format(endDate, "yyyy-MM-dd"),
-            status,
-            lieuMission,
-        });
-        handleClose();
+      await onAddMission({
+        numeroMission,
+        title,
+        description,
+        participants: [],
+        startDate: format(startDate, "yyyy-MM-dd"),
+        endDate: format(endDate, "yyyy-MM-dd"),
+        status,
+        lieuMission,
+      });
+      handleClose();
     } catch (err) {
-        setError(err instanceof Error ? err.message : "Échec de l'ajout de la mission.");
+      setError(err instanceof Error ? err.message : "Échec de l'ajout de la mission.");
     } finally {
-        setIsSubmitting(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -132,84 +132,84 @@ export function AddMissionSheet({
               Remplissez les détails pour planifier une nouvelle mission. Les participants seront ajoutés à l'étape suivante.
             </SheetDescription>
           </SheetHeader>
-          
+
           <div className="py-4 h-[calc(100vh-150px)]">
-             <ScrollArea className="h-full w-full pr-6">
-                {loadingInitial ? (
+            <ScrollArea className="h-full w-full pr-6">
+              {loadingInitial ? (
                 <div className="flex items-center justify-center h-full">
-                    <Loader2 className="h-8 w-8 animate-spin" />
+                  <Loader2 className="h-8 w-8 animate-spin" />
                 </div>
-                ) : (
+              ) : (
                 <div className="space-y-4">
-                    <div className="space-y-2">
+                  <div className="space-y-2">
                     <Label htmlFor="numeroMission">N° Dossier Mission</Label>
                     <Input id="numeroMission" value={numeroMission} className="bg-muted" readOnly />
-                    </div>
-                    <div className="space-y-2">
+                  </div>
+                  <div className="space-y-2">
                     <Label htmlFor="title">Titre</Label>
                     <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} />
-                    </div>
-                    <div className="space-y-2">
+                  </div>
+                  <div className="space-y-2">
                     <Label htmlFor="description">Description</Label>
-                    <Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} rows={3}/>
-                    </div>
-                    <div className="space-y-2">
+                    <Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} rows={3} />
+                  </div>
+                  <div className="space-y-2">
                     <Label htmlFor="lieuMission">Lieu</Label>
-                    <Input id="lieuMission" value={lieuMission} onChange={(e) => setLieuMission(e.target.value)} placeholder="Ville ou lieu de la mission"/>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="startDate">Date de début</Label>
-                            <Popover>
-                            <PopoverTrigger asChild>
-                                <Button variant={"outline"} className={cn("w-full justify-start text-left font-normal", !startDate && "text-muted-foreground")}>
-                                <CalendarIcon className="mr-2 h-4 w-4" />
-                                {startDate ? format(startDate, "PPP") : <span>Choisissez une date</span>}
-                                </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0">
-                                <Calendar mode="single" selected={startDate} onSelect={setStartDate} initialFocus/>
-                            </PopoverContent>
-                            </Popover>
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="endDate">Date de fin</Label>
-                            <Popover>
-                            <PopoverTrigger asChild>
-                                <Button variant={"outline"} className={cn("w-full justify-start text-left font-normal", !endDate && "text-muted-foreground")}>
-                                <CalendarIcon className="mr-2 h-4 w-4" />
-                                {endDate ? format(endDate, "PPP") : <span>Choisissez une date</span>}
-                                </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0">
-                                <Calendar mode="single" selected={endDate} onSelect={setEndDate} initialFocus/>
-                            </PopoverContent>
-                            </Popover>
-                        </div>
+                    <Input id="lieuMission" value={lieuMission} onChange={(e) => setLieuMission(e.target.value)} placeholder="Ville ou lieu de la mission" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="startDate">Date de début</Label>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button id="startDate" variant={"outline"} className={cn("w-full justify-start text-left font-normal", !startDate && "text-muted-foreground")}>
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {startDate ? format(startDate, "PPP") : <span>Choisissez une date</span>}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0">
+                          <Calendar mode="single" selected={startDate} onSelect={setStartDate} initialFocus />
+                        </PopoverContent>
+                      </Popover>
                     </div>
                     <div className="space-y-2">
+                      <Label htmlFor="endDate">Date de fin</Label>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button id="endDate" variant={"outline"} className={cn("w-full justify-start text-left font-normal", !endDate && "text-muted-foreground")}>
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {endDate ? format(endDate, "PPP") : <span>Choisissez une date</span>}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0">
+                          <Calendar mode="single" selected={endDate} onSelect={setEndDate} initialFocus />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
                     <Label htmlFor="status">Statut</Label>
                     <Select value={status} onValueChange={(value: Mission['status']) => setStatus(value)}>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Sélectionnez un statut" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="Planifiée">Planifiée</SelectItem>
-                            <SelectItem value="En cours">En cours</SelectItem>
-                            <SelectItem value="Terminée">Terminée</SelectItem>
-                            <SelectItem value="Annulée">Annulée</SelectItem>
-                        </SelectContent>
+                      <SelectTrigger id="status">
+                        <SelectValue placeholder="Sélectionnez un statut" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Planifiée">Planifiée</SelectItem>
+                        <SelectItem value="En cours">En cours</SelectItem>
+                        <SelectItem value="Terminée">Terminée</SelectItem>
+                        <SelectItem value="Annulée">Annulée</SelectItem>
+                      </SelectContent>
                     </Select>
-                    </div>
+                  </div>
 
-                    {error && (
+                  {error && (
                     <p className="text-center text-sm text-destructive">{error}</p>
-                    )}
+                  )}
                 </div>
-                )}
-             </ScrollArea>
+              )}
+            </ScrollArea>
           </div>
-          
+
           <SheetFooter>
             <SheetClose asChild>
               <Button type="button" variant="outline" onClick={handleClose}>Annuler</Button>

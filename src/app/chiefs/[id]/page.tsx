@@ -165,7 +165,7 @@ export default function ChiefDetailPage() {
                         <CardContent className="grid grid-cols-2 gap-4">
                             <InfoItem label="Date de désignation" value={formatDate(chief.designationDate)} icon={Milestone} />
                             <InfoItem label="Mode de désignation" value={chief.designationMode} />
-                            <InfoItem label="N° d'enregistrement CNRCT" value={chief.cnrctRegistrationNumber} />
+                            <InfoItem label="N° d'enregistrement CNRCT" value={chief.CNRCTRegistrationNumber} />
                             <InfoItem label="Début de régence" value={formatDate(chief.regencyStartDate)} icon={Calendar} />
                             <InfoItem label="Fin de régence / Décès" value={formatDate(chief.regencyEndDate)} icon={Calendar} />
                         </CardContent>

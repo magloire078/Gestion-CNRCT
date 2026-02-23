@@ -221,7 +221,7 @@ export default function ChiefEditPage() {
                             <AccordionTrigger>Informations Légales & Additionnelles</AccordionTrigger>
                             <AccordionContent>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
-                                    <div className="space-y-2"><Label htmlFor="cnrctRegistrationNumber">N° d'enregistrement CNRCT</Label><Input id="cnrctRegistrationNumber" name="cnrctRegistrationNumber" value={chief.cnrctRegistrationNumber || ''} onChange={handleInputChange} /></div>
+                                    <div className="space-y-2"><Label htmlFor="CNRCTRegistrationNumber">N° d'enregistrement CNRCT</Label><Input id="CNRCTRegistrationNumber" name="CNRCTRegistrationNumber" value={chief.CNRCTRegistrationNumber || ''} onChange={handleInputChange} /></div>
                                     <div className="space-y-2"><Label htmlFor="regencyStartDate">Début de régence</Label><Input id="regencyStartDate" name="regencyStartDate" type="date" value={chief.regencyStartDate || ''} onChange={handleInputChange} /></div>
                                     <div className="space-y-2"><Label htmlFor="regencyEndDate">Fin de régence / Décès</Label><Input id="regencyEndDate" name="regencyEndDate" type="date" value={chief.regencyEndDate || ''} onChange={handleInputChange} /></div>
                                     <div className="space-y-2 md:col-span-2"><Label htmlFor="officialDocuments">Documents officiels</Label><Textarea id="officialDocuments" name="officialDocuments" value={chief.officialDocuments || ''} onChange={handleInputChange} rows={3} placeholder="Listez les décrets, arrêtés, etc." /></div>

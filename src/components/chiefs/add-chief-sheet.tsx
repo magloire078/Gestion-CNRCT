@@ -51,7 +51,7 @@ export function AddChiefSheet({ isOpen, onClose, onAddChief }: AddChiefDialogPro
   const [designationMode, setDesignationMode] = useState<DesignationMode | "">("");
   const [ethnicGroup, setEthnicGroup] = useState("");
   const [languages, setLanguages] = useState("");
-  const [cnrctRegistrationNumber, setCnrctRegistrationNumber] = useState("");
+  const [CNRCTRegistrationNumber, setCNRCTRegistrationNumber] = useState("");
   const [officialDocuments, setOfficialDocuments] = useState("");
   const [email, setEmail] = useState("");
   const [address, setAddress] = useState("");
@@ -114,7 +114,7 @@ export function AddChiefSheet({ isOpen, onClose, onAddChief }: AddChiefDialogPro
     setParentChiefId(null); setDateOfBirth("");
     setRegencyStartDate(""); setRegencyEndDate(""); setError("");
     setDesignationDate(""); setDesignationMode(""); setEthnicGroup(""); setLanguages("");
-    setCnrctRegistrationNumber(""); setOfficialDocuments(""); setEmail(""); setAddress("");
+    setCNRCTRegistrationNumber(""); setOfficialDocuments(""); setEmail(""); setAddress("");
     if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
@@ -168,7 +168,7 @@ export function AddChiefSheet({ isOpen, onClose, onAddChief }: AddChiefDialogPro
         contact,
         email: email || undefined,
         address: address || undefined,
-        cnrctRegistrationNumber: cnrctRegistrationNumber || undefined,
+        CNRCTRegistrationNumber: CNRCTRegistrationNumber || undefined,
         officialDocuments: officialDocuments || undefined,
         bio,
         photoUrl: '', // This will be set by the service after upload
@@ -270,7 +270,7 @@ export function AddChiefSheet({ isOpen, onClose, onAddChief }: AddChiefDialogPro
                 <AccordionTrigger>Informations Légales</AccordionTrigger>
                 <AccordionContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
-                    <div><Label htmlFor="cnrctRegistrationNumber">N° d'enregistrement CNRCT</Label><Input id="cnrctRegistrationNumber" value={cnrctRegistrationNumber} onChange={e => setCnrctRegistrationNumber(e.target.value)} /></div>
+                    <div><Label htmlFor="CNRCTRegistrationNumber">N° d'enregistrement CNRCT</Label><Input id="CNRCTRegistrationNumber" value={CNRCTRegistrationNumber} onChange={e => setCNRCTRegistrationNumber(e.target.value)} /></div>
                     <div className="col-span-2"><Label htmlFor="officialDocuments">Documents officiels</Label><Textarea id="officialDocuments" value={officialDocuments} onChange={(e) => setOfficialDocuments(e.target.value)} rows={2} placeholder="Listez les décrets, arrêtés..." /></div>
                     <div><Label htmlFor="regencyStartDate">Début de Régence</Label><Input id="regencyStartDate" type="date" value={regencyStartDate} onChange={(e) => setRegencyStartDate(e.target.value)} /></div>
                     <div><Label htmlFor="regencyEndDate">Fin de Régence / Décès</Label><Input id="regencyEndDate" type="date" value={regencyEndDate} onChange={(e) => setRegencyEndDate(e.target.value)} /></div>

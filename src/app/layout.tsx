@@ -10,32 +10,43 @@ import { BASE_URL } from '@/lib/constants';
 import { getOrganizationSettings } from '@/services/organization-service';
 
 export async function generateMetadata(): Promise<Metadata> {
-  const settings = await getOrganizationSettings();
+  try {
+    const settings = await getOrganizationSettings();
 
-  return {
-    metadataBase: new URL(BASE_URL),
-    title: 'La Chambre des Rois et des Chefs Traditionnels (CNRCT)',
-    description: 'Application de gestion des ressources humaines et matérielles de la Chambre des Rois.',
-    manifest: "/manifest.webmanifest",
-    icons: {
-      icon: [
-        { url: settings.faviconUrl || '/favicon.ico' },
-        { url: settings.mainLogoUrl, sizes: '32x32', type: 'image/png' },
-      ],
-      shortcut: settings.faviconUrl || '/favicon.ico',
-      apple: [
-        { url: settings.mainLogoUrl },
-      ],
-    },
-    appleWebApp: {
-      capable: true,
-      statusBarStyle: "default",
-      title: "Chambre des Rois CI",
-    },
-    formatDetection: {
-      telephone: false,
-    },
-  };
+    return {
+      metadataBase: new URL(BASE_URL),
+      title: 'La Chambre des Rois et des Chefs Traditionnels (CNRCT)',
+      description: 'Application de gestion des ressources humaines et matérielles de la Chambre des Rois.',
+      manifest: "/manifest.webmanifest",
+      icons: {
+        icon: [
+          { url: settings.faviconUrl || '/favicon.ico' },
+          { url: settings.mainLogoUrl, sizes: '32x32', type: 'image/png' },
+        ],
+        shortcut: settings.faviconUrl || '/favicon.ico',
+        apple: [
+          { url: settings.mainLogoUrl },
+        ],
+      },
+      appleWebApp: {
+        capable: true,
+        statusBarStyle: "default",
+        title: "Chambre des Rois CI",
+      },
+      formatDetection: {
+        telephone: false,
+      },
+    };
+  } catch (error) {
+    console.error("Error generating metadata:", error);
+    return {
+      metadataBase: new URL(BASE_URL),
+      title: 'La Chambre des Rois et des Chefs Traditionnels (CNRCT)',
+      icons: {
+        icon: '/favicon.ico',
+      }
+    };
+  }
 }
 
 export default async function RootLayout({

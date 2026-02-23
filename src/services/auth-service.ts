@@ -86,6 +86,10 @@ export async function signUp(userData: { name: string, email: string }, password
 }
 
 export async function signIn(email: string, password: string): Promise<User> {
+    const { isConfigValid } = await import('@/lib/firebase');
+    if (!isConfigValid) {
+        throw new Error("Firebase configuration is missing");
+    }
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const { user } = userCredential;
 

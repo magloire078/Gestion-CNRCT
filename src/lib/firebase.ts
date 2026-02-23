@@ -56,10 +56,14 @@ if (isConfigValid && typeof window !== 'undefined') {
 }
 
 if (!isConfigValid) {
-  console.warn("Firebase configuration is missing. Using dummy config for build purposes.");
+  if (typeof window !== 'undefined') {
+    console.error("CRITICAL: Firebase configuration is missing! Check Vercel environment variables.");
+  } else {
+    console.warn("Firebase configuration is missing. Using dummy config for build purposes.");
+  }
 }
 
-export { app, db, auth, storage };
+export { app, db, auth, storage, isConfigValid };
 
 // Exporter le wrapper onSnapshot qui attend l'authentification
 export { onSnapshot } from './firestore-wrapper';

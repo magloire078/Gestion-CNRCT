@@ -51,15 +51,24 @@ export default function LoginPage() {
     } catch (err) {
       // Capture any error and display its message
       const errorMessage = err instanceof Error ? err.message : "Une erreur inattendue est survenue. Veuillez réessayer.";
-      if (errorMessage.includes("auth/invalid-credential") || errorMessage.includes("auth/wrong-password") || errorMessage.includes("auth/user-not-found")) {
+      const errorCode = (err as any).code;
+
+      if (errorMessage.includes("auth/invalid-credential") ||
+        errorMessage.includes("auth/wrong-password") ||
+        errorMessage.includes("auth/user-not-found") ||
+        errorCode === 'auth/invalid-credential') {
         setError("Email ou mot de passe incorrect.");
+      } else if (errorCode === 'auth/unauthorized-domain') {
+        setError("Ce domaine n'est pas autorisé dans la configuration Firebase (Authorized Domains).");
       } else if (errorMessage.includes("profile-creation-failed")) {
         setError("Votre compte existe mais le profil n'a pas pu être chargé. Veuillez contacter un administrateur.");
+      } else if (errorMessage.includes("Firebase configuration is missing")) {
+        setError("La configuration Firebase est manquante dans les variables d'environnement Vercel.");
       }
       else {
-        setError("Une erreur de connexion est survenue. Veuillez réessayer.");
+        setError("Une erreur de connexion est survenue. Vérifiez votre connexion et les paramètres du projet.");
       }
-      console.error("Login Error:", err);
+      console.error("Login Error details:", { message: errorMessage, code: errorCode, fullError: err });
     } finally {
       setLoading(false);
     }

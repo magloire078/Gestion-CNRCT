@@ -19,11 +19,6 @@ export default async function manifest(): Promise<MetadataRoute.Manifest> {
       theme_color: '#2C3E50',
       icons: [
         {
-          src: '/favicon.ico',
-          sizes: 'any',
-          type: 'image/x-icon',
-        },
-        {
           src: mainLogo,
           sizes: '192x192',
           type: 'image/png',
@@ -44,9 +39,9 @@ export default async function manifest(): Promise<MetadataRoute.Manifest> {
       display: 'standalone',
       icons: [
         {
-          src: '/favicon.ico',
-          sizes: 'any',
-          type: 'image/x-icon',
+          src: '/icon-192x192.png',
+          sizes: '192x192',
+          type: 'image/png',
         },
       ],
     };

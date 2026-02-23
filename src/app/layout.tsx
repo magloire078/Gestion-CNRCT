@@ -18,9 +18,14 @@ export async function generateMetadata(): Promise<Metadata> {
     description: 'Application de gestion des ressources humaines et matérielles de la Chambre des Rois.',
     manifest: "/manifest.webmanifest",
     icons: {
-      icon: settings.mainLogoUrl,
-      shortcut: settings.mainLogoUrl,
-      apple: settings.mainLogoUrl,
+      icon: [
+        { url: settings.faviconUrl || '/favicon.ico' },
+        { url: settings.mainLogoUrl, sizes: '32x32', type: 'image/png' },
+      ],
+      shortcut: settings.faviconUrl || '/favicon.ico',
+      apple: [
+        { url: settings.mainLogoUrl },
+      ],
     },
     appleWebApp: {
       capable: true,

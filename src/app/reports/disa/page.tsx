@@ -133,38 +133,38 @@ export default function DisaReportPage() {
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
-                                            <TableHead className="sticky left-0 z-10 w-10 px-1 bg-card text-[10px]">N°</TableHead>
-                                            <TableHead className="sticky left-10 z-10 w-24 px-1 bg-card text-[10px]">Matricule</TableHead>
-                                            <TableHead className="sticky left-[136px] z-10 min-w-[150px] px-1 bg-card text-[10px]">Nom et Prénoms</TableHead>
-                                            {monthLabels.map((m, i) => <TableHead key={`header-month-${i}`} className="text-right px-1 text-[10px]">{m}</TableHead>)}
-                                            <TableHead className="text-right font-bold px-1 bg-blue-50/50 dark:bg-blue-900/10 text-blue-700 dark:text-blue-300 text-[10px]">Gratification</TableHead>
-                                            <TableHead className="text-right font-bold px-1 text-[10px]">Total Brut</TableHead>
-                                            <TableHead className="text-right font-bold px-1 text-[10px]">Total CNPS</TableHead>
+                                            <TableHead className="sticky left-0 z-10 w-10 px-2 bg-card">N°</TableHead>
+                                            <TableHead className="sticky left-10 z-10 w-24 px-2 bg-card">Matricule</TableHead>
+                                            <TableHead className="sticky left-[136px] z-10 min-w-[150px] px-2 bg-card">Nom et Prénoms</TableHead>
+                                            {monthLabels.map((m, i) => <TableHead key={`header-month-${i}`} className="text-right px-2">{m}</TableHead>)}
+                                            <TableHead className="text-right font-bold px-2 bg-blue-50/50 dark:bg-blue-900/10 text-blue-700 dark:text-blue-300">Gratification</TableHead>
+                                            <TableHead className="text-right font-bold px-2">Total Brut</TableHead>
+                                            <TableHead className="text-right font-bold px-2">Total CNPS</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
                                         {state.reportData.map((row, index) => (
                                             <TableRow key={row.matricule} className="hover:bg-muted/50 transition-colors">
-                                                <TableCell className="sticky left-0 px-1 bg-card text-[10px]">{index + 1}</TableCell>
-                                                <TableCell className="sticky left-10 px-1 bg-card text-[10px]">{row.matricule}</TableCell>
-                                                <TableCell className="font-medium whitespace-nowrap sticky left-[136px] px-1 bg-card text-[10px]">{row.name}</TableCell>
+                                                <TableCell className="sticky left-0 px-2 bg-card">{index + 1}</TableCell>
+                                                <TableCell className="sticky left-10 px-2 bg-card">{row.matricule}</TableCell>
+                                                <TableCell className="font-medium whitespace-nowrap sticky left-[136px] px-2 bg-card">{row.name}</TableCell>
                                                 {row.monthlySalaries.map((salary, i) => (
-                                                    <TableCell key={`${row.matricule}-month-${i}`} className="text-right font-mono text-[10px] px-1">{formatCurrency(salary)}</TableCell>
+                                                    <TableCell key={`${row.matricule}-month-${i}`} className="text-right font-mono text-xs px-2">{formatCurrency(salary)}</TableCell>
                                                 ))}
-                                                <TableCell className="text-right font-mono font-bold px-1 bg-blue-50/50 dark:bg-blue-900/10 text-blue-700 dark:text-blue-300 text-[10px]">{formatCurrency(row.gratification)}</TableCell>
-                                                <TableCell className="text-right font-mono font-bold px-1 text-[10px]">{formatCurrency(row.totalBrut)}</TableCell>
-                                                <TableCell className="text-right font-mono font-bold px-1 text-[10px]">{formatCurrency(row.totalCNPS)}</TableCell>
+                                                <TableCell className="text-right font-mono font-bold px-2 bg-blue-50/50 dark:bg-blue-900/10 text-blue-700 dark:text-blue-300">{formatCurrency(row.gratification)}</TableCell>
+                                                <TableCell className="text-right font-mono font-bold px-2">{formatCurrency(row.totalBrut)}</TableCell>
+                                                <TableCell className="text-right font-mono font-bold px-2">{formatCurrency(row.totalCNPS)}</TableCell>
                                             </TableRow>
                                         ))}
                                         {state.grandTotal && (
                                             <TableRow className="font-bold bg-muted hover:bg-muted">
-                                                <TableCell colSpan={3} className="text-right sticky left-0 px-1 bg-muted text-[10px]">TOTAUX</TableCell>
+                                                <TableCell colSpan={3} className="text-right sticky left-0 px-2 bg-muted">TOTAUX</TableCell>
                                                 {state.grandTotal.monthly.map((total, index) => (
-                                                    <TableCell key={`total-month-${index}`} className="text-right font-mono text-[10px] px-1">{formatCurrency(total)}</TableCell>
+                                                    <TableCell key={`total-month-${index}`} className="text-right font-mono text-xs px-2">{formatCurrency(total)}</TableCell>
                                                 ))}
-                                                <TableCell className="text-right font-mono px-1 bg-blue-100/50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-200 text-[10px]">{formatCurrency(state.grandTotal.gratification)}</TableCell>
-                                                <TableCell className="text-right font-mono px-1 text-[10px]">{formatCurrency(state.grandTotal.brut)}</TableCell>
-                                                <TableCell className="text-right font-mono px-1 text-[10px]">{formatCurrency(state.grandTotal.cnps)}</TableCell>
+                                                <TableCell className="text-right font-mono px-2 bg-blue-100/50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-200">{formatCurrency(state.grandTotal.gratification)}</TableCell>
+                                                <TableCell className="text-right font-mono px-2">{formatCurrency(state.grandTotal.brut)}</TableCell>
+                                                <TableCell className="text-right font-mono px-2">{formatCurrency(state.grandTotal.cnps)}</TableCell>
                                             </TableRow>
                                         )}
                                     </TableBody>
@@ -203,14 +203,14 @@ export default function DisaReportPage() {
                     <div className="text-center my-1">
                         <h1 className="text-base font-bold underline">DÉCLARATION INDIVIDUELLE DES SALAIRES ET APPOINTEMENTS (DISA) - ANNEE {state.year}</h1>
                     </div>
-                    <table className="w-auto text-[4.5px] border-collapse border border-gray-600 ml-1">
+                    <table className="w-auto text-[4px] border-collapse border border-gray-600 ml-1">
                         <thead className="bg-gray-100">
                             <tr>
-                                <th className="border border-gray-600 p-[0.5px] w-[12px] font-medium text-center">N°</th>
-                                <th className="border border-gray-600 p-[0.5px] w-[30px] font-medium text-center">Mat.</th>
-                                <th className="border border-gray-600 p-[0.5px] w-[100px] text-left pl-1 font-medium">Nom et Prénoms</th>
+                                <th className="border border-gray-600 p-[0.3px] w-[12px] font-medium text-center">N°</th>
+                                <th className="border border-gray-600 p-[0.3px] w-[30px] font-medium text-center">Mat.</th>
+                                <th className="border border-gray-600 p-[0.3px] w-[100px] text-left pl-1 font-medium">Nom et Prénoms</th>
                                 {monthLabels.map((m, i) => (
-                                    <th key={`header-print-month-${i}`} className="border border-gray-600 p-[0.5px] w-[30px] font-medium text-center">
+                                    <th key={`header-print-month-${i}`} className="border border-gray-600 p-[0.3px] w-[30px] font-medium text-center">
                                         {m.substring(0, 3)}.
                                     </th>
                                 ))}
@@ -222,29 +222,29 @@ export default function DisaReportPage() {
                         <tbody>
                             {state.reportData.map((row, index) => (
                                 <tr key={`print-row-${row.matricule}`}>
-                                    <td className="border border-gray-600 p-[0.5px] text-center">{index + 1}</td>
-                                    <td className="border border-gray-600 p-[0.5px] text-center">{row.matricule}</td>
-                                    <td className="border border-gray-600 p-[0.5px] whitespace-nowrap pl-1">{row.name}</td>
+                                    <td className="border border-gray-600 p-[0.3px] text-center">{index + 1}</td>
+                                    <td className="border border-gray-600 p-[0.3px] text-center">{row.matricule}</td>
+                                    <td className="border border-gray-600 p-[0.3px] whitespace-nowrap pl-1">{row.name}</td>
                                     {row.monthlySalaries.map((salary, i) => (
-                                        <td key={`print-cell-${row.matricule}-month-${i}`} className="border border-gray-600 p-[0.5px] text-right pr-1 tracking-tighter">
+                                        <td key={`print-cell-${row.matricule}-month-${i}`} className="border border-gray-600 p-[0.3px] text-right pr-1 tracking-tighter">
                                             {salary === 0 ? '-' : Math.round(salary).toLocaleString('fr-FR')}
                                         </td>
                                     ))}
-                                    <td className="border border-gray-600 p-[0.5px] text-right pr-1 font-medium">{formatCurrency(row.gratification)}</td>
-                                    <td className="border border-gray-600 p-[0.5px] text-right pr-1 font-medium">{formatCurrency(row.totalBrut)}</td>
-                                    <td className="border border-gray-600 p-[0.5px] text-right pr-1 font-medium">{formatCurrency(row.totalCNPS)}</td>
+                                    <td className="border border-gray-600 p-[0.3px] text-right pr-1 font-medium">{formatCurrency(row.gratification)}</td>
+                                    <td className="border border-gray-600 p-[0.3px] text-right pr-1 font-medium">{formatCurrency(row.totalBrut)}</td>
+                                    <td className="border border-gray-600 p-[0.3px] text-right pr-1 font-medium">{formatCurrency(row.totalCNPS)}</td>
                                 </tr>
                             ))}
                             <tr className="font-bold bg-gray-50">
-                                <td colSpan={3} className="border border-gray-600 p-[0.5px] text-right pr-2">TOTAL</td>
+                                <td colSpan={3} className="border border-gray-600 p-[0.3px] text-right pr-2">TOTAL</td>
                                 {state.grandTotal.monthly.map((total, index) => (
-                                    <td key={`print-total-month-${index}`} className="border border-gray-600 p-[0.5px] text-right pr-1 text-[4.2px]">
+                                    <td key={`print-total-month-${index}`} className="border border-gray-600 p-[0.3px] text-right pr-1 text-[3.8px]">
                                         {formatCurrency(total)}
                                     </td>
                                 ))}
-                                <td className="border border-gray-600 p-[0.5px] text-right pr-1 text-[4.2px]">{formatCurrency(state.grandTotal.gratification)}</td>
-                                <td className="border border-gray-600 p-[0.5px] text-right pr-1 text-[4.2px]">{formatCurrency(state.grandTotal.brut)}</td>
-                                <td className="border border-gray-600 p-[0.5px] text-right pr-1 text-[4.2px]">{formatCurrency(state.grandTotal.cnps)}</td>
+                                <td className="border border-gray-600 p-[0.3px] text-right pr-1 text-[3.8px]">{formatCurrency(state.grandTotal.gratification)}</td>
+                                <td className="border border-gray-600 p-[0.3px] text-right pr-1 text-[3.8px]">{formatCurrency(state.grandTotal.brut)}</td>
+                                <td className="border border-gray-600 p-[0.3px] text-right pr-1 text-[3.8px]">{formatCurrency(state.grandTotal.cnps)}</td>
                             </tr>
                         </tbody>
                     </table>

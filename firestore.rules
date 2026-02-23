@@ -16,6 +16,13 @@ service cloud.firestore {
              ];
     }
     
+    // Helper function for HR Managers who can update (but not create/delete) employees
+    function isHRManager() {
+      return request.auth != null &&
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roleId == 'manager-rh';
+    }
+    
     // Default deny all
     match /{document=**} {
       allow read, write: if false;
@@ -32,12 +39,13 @@ service cloud.firestore {
     // But restrict writes to admins
     match /employees/{employeeId} {
     	allow read: if request.auth != null;
-      allow write: if isAdmin();
+      allow create, delete: if isAdmin();
+      allow update: if isAdmin() || isHRManager();
       
       // Allow read/write to history subcollection
       match /history/{eventId} {
       	allow read: if request.auth != null;
-        allow write: if isAdmin();
+        allow write: if isAdmin() || isHRManager();
       }
     }
 

@@ -67,7 +67,7 @@ export default function DisaReportPage() {
                 @media print { 
                     @page { 
                         size: landscape; 
-                        margin: 10mm 5mm 15mm 10mm; 
+                        margin: 10mm 10mm 10mm 10mm; 
                     }
                     body {
                         margin: 0;

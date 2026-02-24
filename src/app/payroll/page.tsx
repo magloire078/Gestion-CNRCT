@@ -451,7 +451,7 @@ export default function PayrollPage() {
                           <TableCell className="font-medium">{`${employee.lastName || ''} ${employee.firstName || ''}`.trim()}</TableCell>
                           <TableCell>{employee.poste}</TableCell>
                           <TableCell>{employee.dateEmbauche ? format(parseISO(employee.dateEmbauche), 'dd/MM/yyyy') : 'N/A'}</TableCell>
-                          {canViewSalaries && <TableCell className="text-right font-mono">{formatCurrency(employee.netSalary)}</TableCell>}
+                          {canViewSalaries && <TableCell className="text-right font-mono whitespace-nowrap">{formatCurrency(employee.netSalary)}</TableCell>}
                           <TableCell className="text-right">
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>

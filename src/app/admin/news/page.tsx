@@ -189,7 +189,7 @@ export default function AdminNewsPage() {
 
             <EditNewsSheet
                 isOpen={isEditSheetOpen}
-                onClose={() => setIsEditSheetOpen(false)}
+                onCloseAction={() => setIsEditSheetOpen(false)}
                 newsItem={selectedNews}
             />
         </div>

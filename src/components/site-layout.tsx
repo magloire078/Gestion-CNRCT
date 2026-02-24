@@ -209,9 +209,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
   React.useEffect(() => {
     if (settings) {
       // Set dynamic title and favicon
-      if (settings.organizationName) {
-        document.title = settings.organizationName;
-      }
+      document.title = 'Intranet CNRCT';
       if (settings.faviconUrl) {
         let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
         if (!link) {
@@ -281,8 +279,8 @@ function AppLayout({ children }: { children: React.ReactNode }) {
               <AvatarImage src={settings?.mainLogoUrl} alt={settings?.organizationName} />
               <AvatarFallback><Building2 className="size-6" /></AvatarFallback>
             </Avatar>
-            <span className="text-lg font-semibold">
-              {settings?.organizationName}
+            <span className="text-lg font-semibold tracking-tight">
+              Gestion CNRCT
             </span>
           </div>
         </SidebarHeader>

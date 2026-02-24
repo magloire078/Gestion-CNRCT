@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useEffect } from "react";
 import {
     Sheet,
@@ -26,13 +28,13 @@ import { Loader2 } from "lucide-react";
 
 interface EditNewsSheetProps {
     isOpen: boolean;
-    onClose: () => void;
+    onCloseAction: () => void;
     newsItem?: NewsItem | null;
 }
 
 const CATEGORIES = ['Général', 'Événement', 'RH', 'Directoire'] as const;
 
-export function EditNewsSheet({ isOpen, onClose, newsItem }: EditNewsSheetProps) {
+export function EditNewsSheet({ isOpen, onCloseAction, newsItem }: EditNewsSheetProps) {
     const { user } = useAuth();
     const { toast } = useToast();
     const isEditing = !!newsItem;
@@ -123,7 +125,7 @@ export function EditNewsSheet({ isOpen, onClose, newsItem }: EditNewsSheetProps)
                 });
                 toast({ title: "Actualité créée avec succès" });
             }
-            onClose();
+            onCloseAction();
         } catch (error) {
             console.error("Error saving news:", error);
             toast({
@@ -137,7 +139,7 @@ export function EditNewsSheet({ isOpen, onClose, newsItem }: EditNewsSheetProps)
     };
 
     return (
-        <Sheet open={isOpen} onOpenChange={onClose}>
+        <Sheet open={isOpen} onOpenChange={onCloseAction}>
             <SheetContent className="sm:max-w-xl overflow-y-auto">
                 <SheetHeader className="mb-6">
                     <SheetTitle>{isEditing ? "Modifier l'actualité" : "Créer une actualité"}</SheetTitle>
@@ -229,7 +231,7 @@ export function EditNewsSheet({ isOpen, onClose, newsItem }: EditNewsSheetProps)
                     </div>
 
                     <div className="flex justify-end gap-2 pt-4 border-t">
-                        <Button type="button" variant="outline" onClick={onClose} disabled={isLoading}>
+                        <Button type="button" variant="outline" onClick={onCloseAction} disabled={isLoading}>
                             Annuler
                         </Button>
                         <Button type="submit" disabled={isLoading}>

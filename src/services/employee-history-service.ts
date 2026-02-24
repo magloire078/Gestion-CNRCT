@@ -205,7 +205,7 @@ export async function deleteEmployeeHistoryEvent(employeeId: string, eventId: st
                 (salaryUpdates as any)[field] = Number(latestSalaryEvent.details![field]);
             }
         });
-        console.log(`Reverting salary for ${employeeId} to state from event ${latestSalaryEvent.id}.`);
+
     } else {
         // No salary events left, revert to the "previous" state stored in the deleted event
         if (eventToDelete.details) {
@@ -227,7 +227,7 @@ export async function deleteEmployeeHistoryEvent(employeeId: string, eventId: st
                     (salaryUpdates as any)[key] = eventToDelete.details![prevKey];
                 }
             });
-            console.log(`Reverting salary for ${employeeId} to state stored in deleted event.`);
+
         }
     }
 

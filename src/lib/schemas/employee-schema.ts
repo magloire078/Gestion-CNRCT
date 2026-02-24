@@ -45,6 +45,18 @@ export const employeeSchema = z.object({
     nextPayDate: z.string().optional(),
     Salaire_Brut: z.number().optional(),
     Salaire_Net: z.number().optional(),
+    indemniteTransportImposable: z.number().optional(),
+    indemniteResponsabilite: z.number().optional(),
+    indemniteLogement: z.number().optional(),
+    indemniteSujetion: z.number().optional(),
+    indemniteCommunication: z.number().optional(),
+    indemniteRepresentation: z.number().optional(),
+    primeAnciennete: z.number().optional(),
+    transportNonImposable: z.number().optional(),
+    parts: z.number().optional(),
+    categorie: z.string().optional(),
+    cnpsEmploye: z.string().optional(),
+    cnpsEmployeur: z.string().optional(),
 
     // Bank Info
     banque: z.string().optional(),

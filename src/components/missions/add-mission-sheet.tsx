@@ -38,14 +38,14 @@ import { ScrollArea } from "../ui/scroll-area";
 
 interface AddMissionSheetProps {
   isOpen: boolean;
-  onClose: () => void;
-  onAddMission: (mission: Omit<Mission, "id">) => Promise<void>;
+  onCloseAction: () => void;
+  onAddMissionAction: (mission: Omit<Mission, "id">) => Promise<void>;
 }
 
 export function AddMissionSheet({
   isOpen,
-  onClose,
-  onAddMission,
+  onCloseAction,
+  onAddMissionAction,
 }: AddMissionSheetProps) {
   const [numeroMission, setNumeroMission] = useState("");
   const [title, setTitle] = useState("");
@@ -90,7 +90,7 @@ export function AddMissionSheet({
 
   const handleClose = () => {
     resetForm();
-    onClose();
+    onCloseAction();
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -104,7 +104,7 @@ export function AddMissionSheet({
     setError("");
 
     try {
-      await onAddMission({
+      await onAddMissionAction({
         numeroMission,
         title,
         description,

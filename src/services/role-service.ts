@@ -77,7 +77,7 @@ const defaultRoles: Omit<Role, 'id'>[] = [
 export async function initializeDefaultRoles() {
     const snapshot = await getDocs(rolesCollection);
     if (snapshot.empty) {
-        console.log("No roles found, initializing default roles...");
+
         const batch = writeBatch(db);
         const roleIds = [
             'dirigeant-president',
@@ -92,7 +92,7 @@ export async function initializeDefaultRoles() {
             batch.set(roleRef, { name: role.name, permissions: role.permissions });
         });
         await batch.commit();
-        console.log("Default roles initialized.");
+
     }
 }
 

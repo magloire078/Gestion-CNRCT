@@ -32,6 +32,7 @@ import { PlusCircle, Trash2, Pencil, ChevronRight, Link2, Search, Users, Shield,
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { useAdminData } from "@/hooks/use-admin-data";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import type { User, Role, Department, Direction, Service } from "@/lib/data";
 import { deleteUser, updateUser } from "@/services/user-service";
@@ -240,481 +241,503 @@ export default function AdminPage() {
 
           {error && <p className="text-destructive text-center py-4">{error}</p>}
 
-          {/* Top Cards */}
-          <div className="grid gap-6 md:grid-cols-2">
-            <ImportDataCard />
-            <Card>
-              <CardHeader>
-                <CardTitle>Paramètres Généraux</CardTitle>
-                <CardDescription>Gérez les paramètres globaux de l'application.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-1 -mx-4 -mb-4 px-4 pb-4">
-                <Link href="/settings/organization" className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 transition-colors group">
-                  <div className="flex items-center gap-3">
-                    <div className="p-1.5 rounded-md bg-primary/5 group-hover:bg-primary/10 transition-colors">
-                      <Building className="h-4 w-4 text-primary" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-sm">Organisation</p>
-                      <p className="text-xs text-muted-foreground">Logos et informations de l'entreprise.</p>
-                    </div>
-                  </div>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                </Link>
-                <Link href="/settings" className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 transition-colors group">
-                  <div className="flex items-center gap-3">
-                    <div className="p-1.5 rounded-md bg-primary/5 group-hover:bg-primary/10 transition-colors">
-                      <Settings className="h-4 w-4 text-primary" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-sm">Paramètres système</p>
-                      <p className="text-xs text-muted-foreground">Notifications, abonnement et configuration.</p>
-                    </div>
-                  </div>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                </Link>
-              </CardContent>
-            </Card>
-          </div>
 
-          {/* Users & Roles */}
-          <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
-            {/* Users Table */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Gestion des Utilisateurs</CardTitle>
-                <CardDescription>Ajoutez, modifiez ou supprimez les utilisateurs de l'application.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between mb-4 gap-2">
-                  <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Rechercher par nom ou email..."
-                      value={userSearch}
-                      onChange={(e) => { setUserSearch(e.target.value); setUserCurrentPage(1); }}
-                      className="pl-9 h-9"
-                    />
-                  </div>
-                  <Button onClick={() => setIsAddUserSheetOpen(true)} size="sm">
-                    <PlusCircle className="mr-2 h-4 w-4" />Ajouter
-                  </Button>
+          {/* ─── Accès Sécurisé aux Paramètres ─── */}
+          <PermissionLock userEmail={user?.email ?? ''}>
+            <Tabs defaultValue="overview" className="w-full space-y-6">
+              <TabsList className="bg-muted/50 p-1 border border-border/50 backdrop-blur-sm">
+                <TabsTrigger value="overview" className="gap-2 px-4 shadow-none">
+                  <Layers className="h-4 w-4" /> Vue d&apos;ensemble
+                </TabsTrigger>
+                <TabsTrigger value="users" className="gap-2 px-4 shadow-none">
+                  <Users className="h-4 w-4" /> Utilisateurs
+                </TabsTrigger>
+                <TabsTrigger value="security" className="gap-2 px-4 shadow-none">
+                  <ShieldCheck className="h-4 w-4" /> Sécurité
+                </TabsTrigger>
+                <TabsTrigger value="org" className="gap-2 px-4 shadow-none">
+                  <Building className="h-4 w-4" /> Organisation
+                </TabsTrigger>
+              </TabsList>
+
+              {/* SECTION: VUE D'ENSEMBLE */}
+              <TabsContent value="overview" className="space-y-6 outline-none">
+                <div className="grid gap-6 md:grid-cols-2">
+                  <ImportDataCard />
+                  <Card className="border-border/50 shadow-sm transition-all hover:shadow-md">
+                    <CardHeader>
+                      <CardTitle className="text-xl">Paramètres Généraux</CardTitle>
+                      <CardDescription>Gérez les paramètres globaux de l&apos;application.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-1 -mx-4 -mb-4 px-4 pb-4">
+                      <Link href="/settings/organization" className="flex items-center justify-between p-3 rounded-xl hover:bg-muted/50 transition-all group">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-lg bg-primary/5 group-hover:bg-primary/10 transition-colors">
+                            <Building className="h-4 w-4 text-primary" />
+                          </div>
+                          <div>
+                            <p className="font-semibold text-sm">Organisation</p>
+                            <p className="text-xs text-muted-foreground">Logos et informations de l&apos;entreprise.</p>
+                          </div>
+                        </div>
+                        <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
+                      </Link>
+                      <Link href="/settings" className="flex items-center justify-between p-3 rounded-xl hover:bg-muted/50 transition-all group">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-lg bg-primary/5 group-hover:bg-primary/10 transition-colors">
+                            <Settings className="h-4 w-4 text-primary" />
+                          </div>
+                          <div>
+                            <p className="font-semibold text-sm">Paramètres système</p>
+                            <p className="text-xs text-muted-foreground">Notifications, abonnement et configuration.</p>
+                          </div>
+                        </div>
+                        <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
+                      </Link>
+                    </CardContent>
+                  </Card>
                 </div>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>N°</TableHead>
-                      <TableHead>Nom</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Rôle</TableHead>
-                      <TableHead>Permissions</TableHead>
-                      <TableHead><span className="sr-only">Actions</span></TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {loading ? (
-                      Array.from({ length: 3 }).map((_, i) => (
-                        <TableRow key={i}>
-                          <TableCell><Skeleton className="h-4 w-4" /></TableCell>
-                          <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                          <TableCell><Skeleton className="h-4 w-40" /></TableCell>
-                          <TableCell><Skeleton className="h-4 w-20" /></TableCell>
-                          <TableCell><Skeleton className="h-4 w-12" /></TableCell>
-                          <TableCell><div className="flex justify-end gap-2"><Skeleton className="h-8 w-8" /><Skeleton className="h-8 w-8" /></div></TableCell>
-                        </TableRow>
-                      ))
-                    ) : paginatedUsers.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={6}>
-                          {userSearch
-                            ? <EmptyState icon={Search} message={`Aucun utilisateur trouvé pour "${userSearch}"`} />
-                            : <EmptyState icon={Users} message="Aucun utilisateur. Ajoutez le premier." />}
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      paginatedUsers.map((user, index) => (
-                        <TableRow key={user.id}>
-                          <TableCell>{(userCurrentPage - 1) * userItemsPerPage + index + 1}</TableCell>
-                          <TableCell className="font-medium">
-                            {user.name}
-                            {user.employeeId && (
-                              <p className="text-xs text-muted-foreground">
-                                Lié : {allEmployees.find(e => e.id === user.employeeId)?.name || 'N/A'}
-                              </p>
-                            )}
-                          </TableCell>
-                          <TableCell className="text-sm">{user.email}</TableCell>
-                          <TableCell>
-                            <Badge
-                              variant={!user.role ? "destructive" : "secondary"}
-                              className={cn(!user.role && "gap-1")}
-                            >
-                              {!user.role && <AlertTriangle className="h-3 w-3" />}
-                              {user.role?.name || 'Non assigné'}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <PermissionsBadge permissions={user.permissions} roleName={user.role?.name} />
-                          </TableCell>
-                          <TableCell className="text-right whitespace-nowrap">
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" onClick={() => { setLinkingUser(user); setIsLinkUserDialogOpen(true); }}>
-                                  <Link2 className="h-4 w-4" /><span className="sr-only">Lier à un employé</span>
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>Lier à un employé</TooltipContent>
-                            </Tooltip>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" onClick={() => { setEditingUser(user); setIsEditUserDialogOpen(true); }}>
-                                  <Pencil className="h-4 w-4" /><span className="sr-only">Modifier le rôle</span>
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>Modifier le rôle</TooltipContent>
-                            </Tooltip>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" onClick={() => setDeleteTarget({ id: user.id, type: 'user', name: user.name })}>
-                                  <Trash2 className="h-4 w-4" /><span className="sr-only">Supprimer</span>
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>Supprimer l'utilisateur</TooltipContent>
-                            </Tooltip>
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
-              </CardContent>
-              {!loading && filteredUsers.length > userItemsPerPage && (
-                <CardFooter>
-                  <PaginationControls
-                    currentPage={userCurrentPage}
-                    totalPages={totalUserPages}
-                    onPageChange={setUserCurrentPage}
-                    itemsPerPage={userItemsPerPage}
-                    onItemsPerPageChange={setUserItemsPerPage}
-                    totalItems={filteredUsers.length}
-                  />
-                </CardFooter>
-              )}
-            </Card>
+              </TabsContent>
 
-            {/* Roles Table */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Gestion des Rôles</CardTitle>
-                <CardDescription>Définissez les rôles et leurs permissions.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex justify-end mb-4">
-                  <Button onClick={() => setIsAddRoleSheetOpen(true)} size="sm">
-                    <PlusCircle className="mr-2 h-4 w-4" />Ajouter un rôle
-                  </Button>
-                </div>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>N°</TableHead>
-                      <TableHead>Rôle</TableHead>
-                      <TableHead>Permissions</TableHead>
-                      <TableHead className="text-right w-[100px]">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {loading ? (
-                      Array.from({ length: 2 }).map((_, i) => (
-                        <TableRow key={i}>
-                          <TableCell><Skeleton className="h-4 w-4" /></TableCell>
-                          <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                          <TableCell><Skeleton className="h-4 w-64" /></TableCell>
-                          <TableCell><Skeleton className="h-8 w-8" /></TableCell>
-                        </TableRow>
-                      ))
-                    ) : !roles || roles.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={4}>
-                          <EmptyState icon={Shield} message="Aucun rôle défini. Créez le premier rôle." />
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      roles.map((role, index) => (
-                        <TableRow key={role.id}>
-                          <TableCell>{index + 1}</TableCell>
-                          <TableCell className="font-medium">{role.name}</TableCell>
-                          <TableCell>
-                            <PermissionsBadge permissions={role.permissions} />
-                          </TableCell>
-                          <TableCell className="text-right whitespace-nowrap">
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" onClick={() => { setEditingRole(role); setIsEditRoleSheetOpen(true); }}>
-                                  <Pencil className="h-4 w-4" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>Modifier les permissions</TooltipContent>
-                            </Tooltip>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" onClick={() => setDeleteTarget({ id: role.id, type: 'role', name: role.name })}>
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>Supprimer le rôle</TooltipContent>
-                            </Tooltip>
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Org Structure */}
-          <div>
-            <h2 className="text-2xl font-bold tracking-tight mb-4">Structure Organisationnelle</h2>
-            <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-3">
-
-              {/* Departments */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Départements</CardTitle>
-                  <CardDescription>Niveau le plus élevé de l'organisation.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex justify-end mb-4">
-                    <Button size="sm" onClick={() => { setEditingDepartment(null); setIsDepartmentDialogOpen(true); }}>
-                      <PlusCircle className="mr-2 h-4 w-4" />Ajouter
-                    </Button>
-                  </div>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>N°</TableHead>
-                        <TableHead>Nom</TableHead>
-                        <TableHead className="w-[100px] text-right">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {loading ? (
-                        Array.from({ length: 3 }).map((_, i) => (
-                          <TableRow key={i}>
-                            <TableCell><Skeleton className="h-4 w-4" /></TableCell>
-                            <TableCell><Skeleton className="h-4 w-full" /></TableCell>
-                            <TableCell><div className="flex justify-end gap-2"><Skeleton className="h-8 w-8" /><Skeleton className="h-8 w-8" /></div></TableCell>
-                          </TableRow>
-                        ))
-                      ) : !departments || departments.length === 0 ? (
+              {/* SECTION: UTILISATEURS */}
+              <TabsContent value="users" className="outline-none">
+                <Card className="border-border/50 shadow-sm transition-all hover:shadow-md overflow-hidden">
+                  <CardHeader className="bg-muted/30 border-b border-border/10">
+                    <CardTitle className="text-xl">Gestion des Utilisateurs</CardTitle>
+                    <CardDescription>Ajoutez, modifiez ou supprimez les utilisateurs de l&apos;application.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="pt-6">
+                    <div className="flex items-center justify-between mb-6 gap-2">
+                      <div className="relative flex-1">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          placeholder="Rechercher par nom ou email..."
+                          value={userSearch}
+                          onChange={(e) => { setUserSearch(e.target.value); setUserCurrentPage(1); }}
+                          className="pl-9 h-9"
+                        />
+                      </div>
+                      <Button onClick={() => setIsAddUserSheetOpen(true)} size="sm">
+                        <PlusCircle className="mr-2 h-4 w-4" />Ajouter
+                      </Button>
+                    </div>
+                    <Table>
+                      <TableHeader>
                         <TableRow>
-                          <TableCell colSpan={3}>
-                            <EmptyState icon={Building} message="Aucun département. Créez-en un." />
-                          </TableCell>
+                          <TableHead>N°</TableHead>
+                          <TableHead>Nom</TableHead>
+                          <TableHead>Email</TableHead>
+                          <TableHead>Rôle</TableHead>
+                          <TableHead>Permissions</TableHead>
+                          <TableHead><span className="sr-only">Actions</span></TableHead>
                         </TableRow>
-                      ) : (
-                        departments.map((dept, index) => (
-                          <TableRow key={dept.id}>
-                            <TableCell>{index + 1}</TableCell>
-                            <TableCell className="font-medium">{dept.name}</TableCell>
-                            <TableCell className="text-right whitespace-nowrap">
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Button variant="ghost" size="icon" onClick={() => { setEditingDepartment(dept); setIsDepartmentDialogOpen(true); }}>
-                                    <Pencil className="h-4 w-4" />
-                                  </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>Modifier</TooltipContent>
-                              </Tooltip>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Button variant="ghost" size="icon" onClick={() => setDeleteTarget({ id: dept.id, type: 'department', name: dept.name })}>
-                                    <Trash2 className="h-4 w-4" />
-                                  </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>Supprimer</TooltipContent>
-                              </Tooltip>
+                      </TableHeader>
+                      <TableBody>
+                        {loading ? (
+                          Array.from({ length: 3 }).map((_, i) => (
+                            <TableRow key={i}>
+                              <TableCell><Skeleton className="h-4 w-4" /></TableCell>
+                              <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                              <TableCell><Skeleton className="h-4 w-40" /></TableCell>
+                              <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                              <TableCell><Skeleton className="h-4 w-12" /></TableCell>
+                              <TableCell><div className="flex justify-end gap-2"><Skeleton className="h-8 w-8" /><Skeleton className="h-8 w-8" /></div></TableCell>
+                            </TableRow>
+                          ))
+                        ) : paginatedUsers.length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={6}>
+                              {userSearch
+                                ? <EmptyState icon={Search} message={`Aucun utilisateur trouvé pour "${userSearch}"`} />
+                                : <EmptyState icon={Users} message="Aucun utilisateur. Ajoutez le premier." />}
                             </TableCell>
                           </TableRow>
-                        ))
-                      )}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
-
-              {/* Directions */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Directions</CardTitle>
-                  <CardDescription>Sous-divisions des départements.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex justify-end mb-4">
-                    <Button size="sm" onClick={() => { setEditingDirection(null); setIsDirectionDialogOpen(true); }} disabled={!departments || departments.length === 0}>
-                      <PlusCircle className="mr-2 h-4 w-4" />Ajouter
-                    </Button>
-                  </div>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>N°</TableHead>
-                        <TableHead>Nom</TableHead>
-                        <TableHead>Département</TableHead>
-                        <TableHead className="w-[100px] text-right">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {loading ? (
-                        Array.from({ length: 3 }).map((_, i) => (
-                          <TableRow key={i}>
-                            <TableCell><Skeleton className="h-4 w-4" /></TableCell>
-                            <TableCell><Skeleton className="h-4 w-full" /></TableCell>
-                            <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                            <TableCell><div className="flex justify-end gap-2"><Skeleton className="h-8 w-8" /><Skeleton className="h-8 w-8" /></div></TableCell>
-                          </TableRow>
-                        ))
-                      ) : !directions || directions.length === 0 ? (
-                        <TableRow>
-                          <TableCell colSpan={4}>
-                            <EmptyState icon={Layers} message="Aucune direction. Ajoutez des départements d'abord." />
-                          </TableCell>
-                        </TableRow>
-                      ) : (
-                        directions.map((dir, index) => (
-                          <TableRow key={dir.id}>
-                            <TableCell>{index + 1}</TableCell>
-                            <TableCell className="font-medium">{dir.name}</TableCell>
-                            <TableCell className="text-sm text-muted-foreground">{departments?.find(d => d.id === dir.departmentId)?.name}</TableCell>
-                            <TableCell className="text-right whitespace-nowrap">
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Button variant="ghost" size="icon" onClick={() => { setEditingDirection(dir); setIsDirectionDialogOpen(true); }}>
-                                    <Pencil className="h-4 w-4" />
-                                  </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>Modifier</TooltipContent>
-                              </Tooltip>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Button variant="ghost" size="icon" onClick={() => setDeleteTarget({ id: dir.id, type: 'direction', name: dir.name })}>
-                                    <Trash2 className="h-4 w-4" />
-                                  </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>Supprimer</TooltipContent>
-                              </Tooltip>
-                            </TableCell>
-                          </TableRow>
-                        ))
-                      )}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
-
-              {/* Services */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Services</CardTitle>
-                  <CardDescription>Unités opérationnelles.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex justify-end mb-4">
-                    <Button size="sm" onClick={() => { setEditingService(null); setIsServiceDialogOpen(true); }} disabled={(!directions || directions.length === 0) && (!departments || departments.length === 0)}>
-                      <PlusCircle className="mr-2 h-4 w-4" />Ajouter
-                    </Button>
-                  </div>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>N°</TableHead>
-                        <TableHead>Nom</TableHead>
-                        <TableHead>Dépend de</TableHead>
-                        <TableHead className="w-[100px] text-right">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {loading ? (
-                        Array.from({ length: 3 }).map((_, i) => (
-                          <TableRow key={i}>
-                            <TableCell><Skeleton className="h-4 w-4" /></TableCell>
-                            <TableCell><Skeleton className="h-4 w-full" /></TableCell>
-                            <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                            <TableCell><div className="flex justify-end gap-2"><Skeleton className="h-8 w-8" /><Skeleton className="h-8 w-8" /></div></TableCell>
-                          </TableRow>
-                        ))
-                      ) : !services || services.length === 0 ? (
-                        <TableRow>
-                          <TableCell colSpan={4}>
-                            <EmptyState icon={Layers} message="Aucun service. Créez-en un ci-dessus." />
-                          </TableCell>
-                        </TableRow>
-                      ) : (
-                        services.map((svc, index) => {
-                          const parent = svc.directionId
-                            ? directions?.find(d => d.id === svc.directionId)
-                            : departments?.find(d => d.id === svc.departmentId);
-                          const parentName = parent?.name || 'N/A';
-                          const parentType = svc.directionId ? 'Direction' : 'Département';
-                          return (
-                            <TableRow key={svc.id}>
-                              <TableCell>{index + 1}</TableCell>
-                              <TableCell className="font-medium">{svc.name}</TableCell>
-                              <TableCell className="text-sm text-muted-foreground">
-                                {parentName} <span className="text-xs opacity-70">({parentType})</span>
+                        ) : (
+                          paginatedUsers.map((user, index) => (
+                            <TableRow key={user.id}>
+                              <TableCell>{(userCurrentPage - 1) * userItemsPerPage + index + 1}</TableCell>
+                              <TableCell className="font-medium">
+                                {user.name}
+                                {user.employeeId && (
+                                  <p className="text-xs text-muted-foreground">
+                                    Lié : {allEmployees.find(e => e.id === user.employeeId)?.name || 'N/A'}
+                                  </p>
+                                )}
+                              </TableCell>
+                              <TableCell className="text-sm">{user.email}</TableCell>
+                              <TableCell>
+                                <Badge
+                                  variant={!user.role ? "destructive" : "secondary"}
+                                  className={cn(!user.role && "gap-1")}
+                                >
+                                  {!user.role && <AlertTriangle className="h-3 w-3" />}
+                                  {user.role?.name || 'Non assigné'}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>
+                                <PermissionsBadge permissions={user.permissions} roleName={user.role?.name} />
                               </TableCell>
                               <TableCell className="text-right whitespace-nowrap">
                                 <Tooltip>
                                   <TooltipTrigger asChild>
-                                    <Button variant="ghost" size="icon" onClick={() => { setEditingService(svc); setIsServiceDialogOpen(true); }}>
-                                      <Pencil className="h-4 w-4" />
+                                    <Button variant="ghost" size="icon" onClick={() => { setLinkingUser(user); setIsLinkUserDialogOpen(true); }}>
+                                      <Link2 className="h-4 w-4" /><span className="sr-only">Lier à un employé</span>
                                     </Button>
                                   </TooltipTrigger>
-                                  <TooltipContent>Modifier</TooltipContent>
+                                  <TooltipContent>Lier à un employé</TooltipContent>
                                 </Tooltip>
                                 <Tooltip>
                                   <TooltipTrigger asChild>
-                                    <Button variant="ghost" size="icon" onClick={() => setDeleteTarget({ id: svc.id, type: 'service', name: svc.name })}>
-                                      <Trash2 className="h-4 w-4" />
+                                    <Button variant="ghost" size="icon" onClick={() => { setEditingUser(user); setIsEditUserDialogOpen(true); }}>
+                                      <Pencil className="h-4 w-4" /><span className="sr-only">Modifier le rôle</span>
                                     </Button>
                                   </TooltipTrigger>
-                                  <TooltipContent>Supprimer</TooltipContent>
+                                  <TooltipContent>Modifier le rôle</TooltipContent>
+                                </Tooltip>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button variant="ghost" size="icon" onClick={() => setDeleteTarget({ id: user.id, type: 'user', name: user.name })}>
+                                      <Trash2 className="h-4 w-4" /><span className="sr-only">Supprimer</span>
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>Supprimer l'utilisateur</TooltipContent>
                                 </Tooltip>
                               </TableCell>
                             </TableRow>
-                          );
-                        })
-                      )}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
+                          ))
+                        )}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                  {!loading && filteredUsers.length > userItemsPerPage && (
+                    <CardFooter>
+                      <PaginationControls
+                        currentPage={userCurrentPage}
+                        totalPages={totalUserPages}
+                        onPageChange={setUserCurrentPage}
+                        itemsPerPage={userItemsPerPage}
+                        onItemsPerPageChange={setUserItemsPerPage}
+                        totalItems={filteredUsers.length}
+                      />
+                    </CardFooter>
+                  )}
+                </Card>
+              </TabsContent>
 
-          {/* ─── Permissions CRUD ─── */}
-          {(user?.roleId === 'LHcHyfBzile3r0vyFOFb' || user?.roleId === 'super-admin') && (
-            <Card className="border-primary/20">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <ShieldCheck className="h-5 w-5 text-primary" />
-                  Gestion des Permissions CRUD
-                </CardTitle>
-                <CardDescription>
-                  Contrôlez précisément les droits de Lecture, Création, Modification et Suppression
-                  pour chaque rôle sur toutes les ressources de l&apos;application.
-                  Cette section est protégée et requiert votre mot de passe.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <PermissionLock userEmail={user?.email ?? ''}>
-                  <PermissionMatrix />
-                </PermissionLock>
-              </CardContent>
-            </Card>
-          )}
+              {/* SECTION: SÉCURITÉ */}
+              <TabsContent value="security" className="space-y-6 outline-none">
+                <div className="grid gap-6">
+                  {/* Roles Table */}
+                  <Card className="border-border/50 shadow-sm transition-all hover:shadow-md overflow-hidden">
+                    <CardHeader className="bg-muted/30 border-b border-border/10">
+                      <CardTitle className="text-xl">Gestion des Rôles</CardTitle>
+                      <CardDescription>Définissez les rôles et leurs permissions.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="pt-6">
+                      <div className="flex justify-end mb-6">
+                        <Button onClick={() => setIsAddRoleSheetOpen(true)} size="sm">
+                          <PlusCircle className="mr-2 h-4 w-4" />Ajouter un rôle
+                        </Button>
+                      </div>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>N°</TableHead>
+                            <TableHead>Rôle</TableHead>
+                            <TableHead>Permissions</TableHead>
+                            <TableHead className="text-right w-[100px]">Actions</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {loading ? (
+                            Array.from({ length: 2 }).map((_, i) => (
+                              <TableRow key={i}>
+                                <TableCell><Skeleton className="h-4 w-4" /></TableCell>
+                                <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                                <TableCell><Skeleton className="h-4 w-64" /></TableCell>
+                                <TableCell><Skeleton className="h-8 w-8" /></TableCell>
+                              </TableRow>
+                            ))
+                          ) : !roles || roles.length === 0 ? (
+                            <TableRow>
+                              <TableCell colSpan={4}>
+                                <EmptyState icon={Shield} message="Aucun rôle défini. Créez le premier rôle." />
+                              </TableCell>
+                            </TableRow>
+                          ) : (
+                            roles.map((role, index) => (
+                              <TableRow key={role.id}>
+                                <TableCell>{index + 1}</TableCell>
+                                <TableCell className="font-medium">{role.name}</TableCell>
+                                <TableCell>
+                                  <PermissionsBadge permissions={role.permissions} />
+                                </TableCell>
+                                <TableCell className="text-right whitespace-nowrap">
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button variant="ghost" size="icon" onClick={() => { setEditingRole(role); setIsEditRoleSheetOpen(true); }}>
+                                        <Pencil className="h-4 w-4" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>Modifier les permissions</TooltipContent>
+                                  </Tooltip>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button variant="ghost" size="icon" onClick={() => setDeleteTarget({ id: role.id, type: 'role', name: role.name })}>
+                                        <Trash2 className="h-4 w-4" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>Supprimer le rôle</TooltipContent>
+                                  </Tooltip>
+                                </TableCell>
+                              </TableRow>
+                            ))
+                          )}
+                        </TableBody>
+                      </Table>
+                    </CardContent>
+                  </Card>
+
+                  {/* Permissions CRUD */}
+                  {(user?.roleId === 'LHcHyfBzile3r0vyFOFb' || user?.roleId === 'super-admin') && (
+                    <Card className="border-primary/20 shadow-sm transition-all hover:shadow-md overflow-hidden">
+                      <CardHeader className="bg-primary/5 border-b border-primary/10">
+                        <CardTitle className="flex items-center gap-2 text-xl">
+                          <ShieldCheck className="h-5 w-5 text-primary" />
+                          Matrice des Permissions CRUD
+                        </CardTitle>
+                        <CardDescription>
+                          Contrôlez précisément les droits de Lecture, Création, Modification et Suppression par ressource.
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="pt-6">
+                        <PermissionMatrix />
+                      </CardContent>
+                    </Card>
+                  )}
+                </div>
+              </TabsContent>
+
+              {/* SECTION: ORGANISATION */}
+              <TabsContent value="org" className="space-y-6 outline-none">
+                <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-3">
+
+                  {/* Departments */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Départements</CardTitle>
+                      <CardDescription>Niveau le plus élevé de l'organisation.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex justify-end mb-4">
+                        <Button size="sm" onClick={() => { setEditingDepartment(null); setIsDepartmentDialogOpen(true); }}>
+                          <PlusCircle className="mr-2 h-4 w-4" />Ajouter
+                        </Button>
+                      </div>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>N°</TableHead>
+                            <TableHead>Nom</TableHead>
+                            <TableHead className="w-[100px] text-right">Actions</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {loading ? (
+                            Array.from({ length: 3 }).map((_, i) => (
+                              <TableRow key={i}>
+                                <TableCell><Skeleton className="h-4 w-4" /></TableCell>
+                                <TableCell><Skeleton className="h-4 w-full" /></TableCell>
+                                <TableCell><div className="flex justify-end gap-2"><Skeleton className="h-8 w-8" /><Skeleton className="h-8 w-8" /></div></TableCell>
+                              </TableRow>
+                            ))
+                          ) : !departments || departments.length === 0 ? (
+                            <TableRow>
+                              <TableCell colSpan={3}>
+                                <EmptyState icon={Building} message="Aucun département. Créez-en un." />
+                              </TableCell>
+                            </TableRow>
+                          ) : (
+                            departments.map((dept, index) => (
+                              <TableRow key={dept.id}>
+                                <TableCell>{index + 1}</TableCell>
+                                <TableCell className="font-medium">{dept.name}</TableCell>
+                                <TableCell className="text-right whitespace-nowrap">
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button variant="ghost" size="icon" onClick={() => { setEditingDepartment(dept); setIsDepartmentDialogOpen(true); }}>
+                                        <Pencil className="h-4 w-4" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>Modifier</TooltipContent>
+                                  </Tooltip>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button variant="ghost" size="icon" onClick={() => setDeleteTarget({ id: dept.id, type: 'department', name: dept.name })}>
+                                        <Trash2 className="h-4 w-4" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>Supprimer</TooltipContent>
+                                  </Tooltip>
+                                </TableCell>
+                              </TableRow>
+                            ))
+                          )}
+                        </TableBody>
+                      </Table>
+                    </CardContent>
+                  </Card>
+
+                  {/* Directions */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Directions</CardTitle>
+                      <CardDescription>Sous-divisions des départements.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex justify-end mb-4">
+                        <Button size="sm" onClick={() => { setEditingDirection(null); setIsDirectionDialogOpen(true); }} disabled={!departments || departments.length === 0}>
+                          <PlusCircle className="mr-2 h-4 w-4" />Ajouter
+                        </Button>
+                      </div>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>N°</TableHead>
+                            <TableHead>Nom</TableHead>
+                            <TableHead>Département</TableHead>
+                            <TableHead className="w-[100px] text-right">Actions</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {loading ? (
+                            Array.from({ length: 3 }).map((_, i) => (
+                              <TableRow key={i}>
+                                <TableCell><Skeleton className="h-4 w-4" /></TableCell>
+                                <TableCell><Skeleton className="h-4 w-full" /></TableCell>
+                                <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                                <TableCell><div className="flex justify-end gap-2"><Skeleton className="h-8 w-8" /><Skeleton className="h-8 w-8" /></div></TableCell>
+                              </TableRow>
+                            ))
+                          ) : !directions || directions.length === 0 ? (
+                            <TableRow>
+                              <TableCell colSpan={4}>
+                                <EmptyState icon={Layers} message="Aucune direction. Ajoutez des départements d'abord." />
+                              </TableCell>
+                            </TableRow>
+                          ) : (
+                            directions.map((dir, index) => (
+                              <TableRow key={dir.id}>
+                                <TableCell>{index + 1}</TableCell>
+                                <TableCell className="font-medium">{dir.name}</TableCell>
+                                <TableCell className="text-sm text-muted-foreground">{departments?.find(d => d.id === dir.departmentId)?.name}</TableCell>
+                                <TableCell className="text-right whitespace-nowrap">
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button variant="ghost" size="icon" onClick={() => { setEditingDirection(dir); setIsDirectionDialogOpen(true); }}>
+                                        <Pencil className="h-4 w-4" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>Modifier</TooltipContent>
+                                  </Tooltip>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button variant="ghost" size="icon" onClick={() => setDeleteTarget({ id: dir.id, type: 'direction', name: dir.name })}>
+                                        <Trash2 className="h-4 w-4" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>Supprimer</TooltipContent>
+                                  </Tooltip>
+                                </TableCell>
+                              </TableRow>
+                            ))
+                          )}
+                        </TableBody>
+                      </Table>
+                    </CardContent>
+                  </Card>
+
+                  {/* Services */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Services</CardTitle>
+                      <CardDescription>Unités opérationnelles.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex justify-end mb-4">
+                        <Button size="sm" onClick={() => { setEditingService(null); setIsServiceDialogOpen(true); }} disabled={(!directions || directions.length === 0) && (!departments || departments.length === 0)}>
+                          <PlusCircle className="mr-2 h-4 w-4" />Ajouter
+                        </Button>
+                      </div>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>N°</TableHead>
+                            <TableHead>Nom</TableHead>
+                            <TableHead>Dépend de</TableHead>
+                            <TableHead className="w-[100px] text-right">Actions</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {loading ? (
+                            Array.from({ length: 3 }).map((_, i) => (
+                              <TableRow key={i}>
+                                <TableCell><Skeleton className="h-4 w-4" /></TableCell>
+                                <TableCell><Skeleton className="h-4 w-full" /></TableCell>
+                                <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                                <TableCell><div className="flex justify-end gap-2"><Skeleton className="h-8 w-8" /><Skeleton className="h-8 w-8" /></div></TableCell>
+                              </TableRow>
+                            ))
+                          ) : !services || services.length === 0 ? (
+                            <TableRow>
+                              <TableCell colSpan={4}>
+                                <EmptyState icon={Layers} message="Aucun service. Créez-en un ci-dessus." />
+                              </TableCell>
+                            </TableRow>
+                          ) : (
+                            services.map((svc, index) => {
+                              const parent = svc.directionId
+                                ? directions?.find(d => d.id === svc.directionId)
+                                : departments?.find(d => d.id === svc.departmentId);
+                              const parentName = parent?.name || 'N/A';
+                              const parentType = svc.directionId ? 'Direction' : 'Département';
+                              return (
+                                <TableRow key={svc.id}>
+                                  <TableCell>{index + 1}</TableCell>
+                                  <TableCell className="font-medium">{svc.name}</TableCell>
+                                  <TableCell className="text-sm text-muted-foreground">
+                                    {parentName} <span className="text-xs opacity-70">({parentType})</span>
+                                  </TableCell>
+                                  <TableCell className="text-right whitespace-nowrap">
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <Button variant="ghost" size="icon" onClick={() => { setEditingService(svc); setIsServiceDialogOpen(true); }}>
+                                          <Pencil className="h-4 w-4" />
+                                        </Button>
+                                      </TooltipTrigger>
+                                      <TooltipContent>Modifier</TooltipContent>
+                                    </Tooltip>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <Button variant="ghost" size="icon" onClick={() => setDeleteTarget({ id: svc.id, type: 'service', name: svc.name })}>
+                                          <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                      </TooltipTrigger>
+                                      <TooltipContent>Supprimer</TooltipContent>
+                                    </Tooltip>
+                                  </TableCell>
+                                </TableRow>
+                              );
+                            })
+                          )}
+                        </TableBody>
+                      </Table>
+                    </CardContent>
+                  </Card>
+                </div>
+              </TabsContent>
+            </Tabs>
+          </PermissionLock>
 
           <AddUserSheet isOpen={isAddUserSheetOpen} onClose={() => setIsAddUserSheetOpen(false)} onAddUser={handleAddUser} roles={roles || []} />
           <AddRoleSheet isOpen={isAddRoleSheetOpen} onClose={() => setIsAddRoleSheetOpen(false)} onAddRole={handleAddRole} roles={roles || []} />
@@ -734,6 +757,6 @@ export default function AdminPage() {
           description={`Êtes-vous sûr de vouloir supprimer "${deleteTarget?.name}" ? Cette action est irréversible.`}
         />
       </>
-    </TooltipProvider>
+    </TooltipProvider >
   );
 }

@@ -38,25 +38,16 @@ const chartConfig = {
 } satisfies ChartConfig
 
 const RADIAN = Math.PI / 180;
-const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, name }: any) => {
+const renderCenterLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: any) => {
+  if (percent < 0.05) return null; // Hide labels for slices smaller than 5%
   const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
   const x = cx + radius * Math.cos(-midAngle * RADIAN);
   const y = cy + radius * Math.sin(-midAngle * RADIAN);
-  const textRadius = outerRadius + 10;
-  const x2 = cx + textRadius * Math.cos(-midAngle * RADIAN);
-  const y2 = cy + textRadius * Math.sin(-midAngle * RADIAN);
-  const ex = x2;
-  const ey = y2;
-  const textAnchor = x2 > cx ? 'start' : 'end';
-
 
   return (
-    <g>
-      <path d={`M${x},${y}L${x2},${y2}L${ex},${ey}`} stroke="hsl(var(--muted-foreground))" fill="none" strokeWidth={0.5} />
-      <text x={ex + (x2 > cx ? 1 : -1) * 4} y={ey} textAnchor={textAnchor} fill="hsl(var(--muted-foreground))" fontSize="10px" dominantBaseline="central">
-        {`${name} (${(percent * 100).toFixed(0)}%)`}
-      </text>
-    </g>
+    <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central" fontSize="11px" fontWeight="600">
+      {`${(percent * 100).toFixed(0)}%`}
+    </text>
   );
 };
 
@@ -162,7 +153,7 @@ export function EmployeeDistributionChart() {
       </div>
       <ChartContainer
         config={chartConfig}
-        className="mx-auto aspect-square h-[300px]"
+        className="mx-auto aspect-square h-[350px]"
       >
         <PieChart>
           <ChartTooltip
@@ -173,24 +164,21 @@ export function EmployeeDistributionChart() {
             data={chartData}
             dataKey="value"
             nameKey="name"
-            innerRadius={50}
-            outerRadius={80}
+            innerRadius={55}
+            outerRadius={90}
             labelLine={false}
-            label={renderCustomizedLabel}
+            label={renderCenterLabel}
+            strokeWidth={2}
+            stroke="hsl(var(--background))"
           >
             {chartData.map((entry, index) => (
               <Cell key={`cell-${entry.name}`} fill={`hsl(var(--chart-${(index % 5) + 1}))`} />
             ))}
           </Pie>
-          <text
-            x="50%"
-            y="50%"
-            textAnchor="middle"
-            dominantBaseline="middle"
-            className="fill-foreground text-3xl font-bold"
-          >
-            {totalEmployees.toLocaleString()}
-          </text>
+          <ChartLegend
+            content={<ChartLegendContent nameKey="name" />}
+            className="-translate-y-2 flex-wrap gap-2 [&>*]:basis-1/4 [&>*]:justify-center text-xs"
+          />
         </PieChart>
       </ChartContainer>
     </div>

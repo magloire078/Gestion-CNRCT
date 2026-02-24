@@ -88,11 +88,11 @@ async function createOrUpdateChiefFromEmployee(employee: Employe) {
         if (snapshot.empty) {
             const newChiefRef = doc(chiefsCollection);
             await setDoc(newChiefRef, chiefData);
-            console.log(`Created new chief entry for employee: ${employee.name}`);
+
         } else {
             const chiefDocRef = snapshot.docs[0].ref;
             await updateDoc(chiefDocRef, chiefData);
-            console.log(`Updated chief entry for employee: ${employee.name}`);
+
         }
     }
 }
@@ -201,7 +201,7 @@ const processEmployeeData = (employeeData: Partial<Employe>): Partial<Employe> =
 
 export async function addEmployee(employeeData: Omit<Employe, 'id'>, photoFile: File | null): Promise<Employe> {
     try {
-        let photoUrl = 'https://placehold.co/100x100.png';
+        let photoUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(employeeData.name || 'E')}&background=006039&color=fff&size=100`;
         const docRef = doc(collection(db, "employees"));
 
         if (photoFile) {
@@ -411,14 +411,14 @@ export async function getRegionalCommittees(): Promise<RegionalCommittee[]> {
 
         const regions = Object.keys(divisions);
         const regionalCommittees: RegionalCommittee[] = regions.map(region => {
-            const members = allEmployees.filter(emp => 
-                emp.Region === region && 
+            const members = allEmployees.filter(emp =>
+                emp.Region === region &&
                 (emp.poste?.toLowerCase().includes('comité régional') || emp.poste?.toLowerCase().includes('membre du bureau'))
             );
 
             // Find the president of the regional committee
-            const president = members.find(m => 
-                m.poste?.toLowerCase().includes('président') || 
+            const president = members.find(m =>
+                m.poste?.toLowerCase().includes('président') ||
                 m.poste?.toLowerCase().includes('president')
             ) || null;
 

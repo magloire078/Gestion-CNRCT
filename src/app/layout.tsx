@@ -15,8 +15,8 @@ export async function generateMetadata(): Promise<Metadata> {
 
     return {
       metadataBase: new URL(BASE_URL),
-      title: 'La Chambre des Rois et des Chefs Traditionnels (CNRCT)',
-      description: 'Application de gestion des ressources humaines et matérielles de la Chambre des Rois.',
+      title: 'Intranet CNRCT',
+      description: 'Application de gestion des ressources humaines et matérielles de la CNRCT.',
       manifest: "/manifest.webmanifest",
       icons: {
         icon: [
@@ -31,7 +31,7 @@ export async function generateMetadata(): Promise<Metadata> {
       appleWebApp: {
         capable: true,
         statusBarStyle: "default",
-        title: "Chambre des Rois CI",
+        title: "Intranet CNRCT",
       },
       formatDetection: {
         telephone: false,
@@ -41,7 +41,7 @@ export async function generateMetadata(): Promise<Metadata> {
     console.error("Error generating metadata:", error);
     return {
       metadataBase: new URL(BASE_URL),
-      title: 'La Chambre des Rois et des Chefs Traditionnels (CNRCT)',
+      title: 'Intranet CNRCT',
       icons: {
         icon: '/favicon.ico',
       }

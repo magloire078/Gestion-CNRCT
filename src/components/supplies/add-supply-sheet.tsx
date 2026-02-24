@@ -28,14 +28,14 @@ import { useToast } from "@/hooks/use-toast";
 
 interface AddSupplySheetProps {
   isOpen: boolean;
-  onClose: () => void;
-  onAddSupply: (supply: Omit<Supply, "id">) => Promise<void>;
+  onCloseAction: () => void;
+  onAddSupplyAction: (supply: Omit<Supply, "id">) => Promise<void>;
 }
 
 export function AddSupplySheet({
   isOpen,
-  onClose,
-  onAddSupply,
+  onCloseAction,
+  onAddSupplyAction,
 }: AddSupplySheetProps) {
   const [name, setName] = useState("");
   const [category, setCategory] = useState<Supply['category'] | "">("");
@@ -78,7 +78,7 @@ export function AddSupplySheet({
 
   const handleClose = () => {
     resetForm();
-    onClose();
+    onCloseAction();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -93,7 +93,7 @@ export function AddSupplySheet({
 
     try {
       const lastRestockDate = new Date().toISOString().split('T')[0];
-      await onAddSupply({
+      await onAddSupplyAction({
         name,
         category,
         quantity,

@@ -117,7 +117,7 @@ export async function markNotificationsAsRead(notificationIds: string[]): Promis
  * This function is designed to be called periodically (e.g., daily by a cron job or on app load).
  */
 export async function checkAndNotifyForUpcomingRetirements() {
-    console.log("Checking for upcoming retirements...");
+
     const employees = await getEmployees();
     const today = new Date();
 
@@ -139,7 +139,7 @@ export async function checkAndNotifyForUpcomingRetirements() {
             const monthsUntilRetirement = differenceInMonths(retirementDate, today);
 
             if (monthsUntilRetirement <= 6 && monthsUntilRetirement >= 0) {
-                console.log(`Employee ${employee.name} is retiring soon. Sending notification.`);
+
 
                 // Create the notification data
                 const notificationData = {
@@ -165,7 +165,7 @@ export async function checkAndNotifyForUpcomingRetirements() {
 
     try {
         await batch.commit();
-        console.log("Retirement notification check complete.");
+
     } catch (error) {
         console.error("Failed to commit retirement notifications batch:", error);
     }

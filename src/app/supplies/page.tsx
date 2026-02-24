@@ -325,8 +325,8 @@ export default function SuppliesPage() {
         </Card>
         <AddSupplySheet
           isOpen={isAddSheetOpen}
-          onClose={() => setIsAddSheetOpen(false)}
-          onAddSupply={handleAddSupply}
+          onCloseAction={() => setIsAddSheetOpen(false)}
+          onAddSupplyAction={handleAddSupply}
         />
         {selectedSupply && (
           <EditSupplySheet

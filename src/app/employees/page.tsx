@@ -602,11 +602,33 @@ export default function EmployeesPage() {
           logos={organizationLogos}
           title={`LISTE DU PERSONNEL - ${pageTitle.toUpperCase()}`}
           subtitle={`Effectif: ${filteredEmployees.length} | Date: ${printDate}`}
-          columns={columnsToPrint.map(key => ({
-            header: allColumns[key],
-            key,
-            align: 'left',
-          }))}
+          columns={columnsToPrint.map(key => {
+            const widthMap: Record<string, string> = {
+              index: 'w-[3%]',
+              matricule: 'w-[7%]',
+              name: 'w-[18%]',
+              poste: 'w-[14%]',
+              department: 'w-[12%]',
+              sexe: 'w-[4%]',
+              Date_Naissance: 'w-[8%]',
+              Lieu_Naissance: 'w-[10%]',
+              email: 'w-[12%]',
+              status: 'w-[6%]',
+              CNPS: 'w-[4%]',
+              Date_Depart: 'w-[7%]',
+            };
+
+            const isTextColumn = ['name', 'poste', 'department', 'Lieu_Naissance', 'email'].includes(key);
+
+            return {
+              header: allColumns[key],
+              key,
+              align: ['index', 'matricule', 'sexe', 'Date_Naissance', 'Date_Depart', 'CNPS', 'status'].includes(key) ? 'center' : 'left',
+              className: `${widthMap[key] || ''} ${isTextColumn ? 'whitespace-normal' : 'whitespace-nowrap'} overflow-hidden`,
+            };
+          })}
+
+
           data={filteredEmployees.map((employee, index) => {
             const row: Record<string, any> = {
               index: index + 1,
@@ -617,6 +639,17 @@ export default function EmployeesPage() {
               if (key === 'name') return;
               if (key === 'department') {
                 row[key] = getEmployeeOrgUnit(employee);
+              } else if (key === 'sexe') {
+                const s = (employee[key] || '').toLowerCase();
+                row[key] = s.startsWith('m') ? 'H' : (s.startsWith('f') ? 'F' : employee[key]);
+              } else if (key === 'Date_Naissance' || key === 'Date_Depart') {
+                const val = employee[key as keyof Employe];
+                if (val && typeof val === 'string') {
+                  const d = parseISO(val);
+                  row[key] = !isNaN(d.getTime()) ? format(d, 'dd/MM/yyyy') : val;
+                } else {
+                  row[key] = '';
+                }
               } else if (key === 'CNPS') {
                 row[key] = employee.CNPS ? 'Oui' : 'Non';
               } else {

@@ -3,23 +3,35 @@ import { doc, getDoc, setDoc } from '@/lib/firebase';
 import { getStorage, ref, getDownloadURL, uploadBytesResumable, type UploadTask } from "firebase/storage";
 import { db, storage } from '@/lib/firebase';
 import type { OrganizationSettings } from '@/lib/data';
+import { resizeImage } from '@/lib/image-optimization';
 
 const SETTINGS_DOC_ID = 'app_settings'; // Use a consistent ID
 const settingsDocRef = doc(db, 'settings', SETTINGS_DOC_ID);
 
 const defaultMainLogoUrl = "https://cnrct.ci/wp-content/uploads/2018/03/logo_chambre.png";
-const defaultSecondaryLogoUrl = defaultMainLogoUrl;
+const defaultSecondaryLogoUrl = "https://upload.wikimedia.org/wikipedia/commons/4/4a/Coat_of_arms_of_C%C3%B4te_d%27Ivoire_%281997-2001_variant%29.svg";
 
 export async function getOrganizationSettings(): Promise<OrganizationSettings> {
     try {
         const docSnap = await getDoc(settingsDocRef);
         if (docSnap.exists()) {
             const data = docSnap.data();
+            let mainLogoUrl = data.mainLogoUrl || defaultMainLogoUrl;
+            let secondaryLogoUrl = data.secondaryLogoUrl || defaultSecondaryLogoUrl;
+
+            // Proactive replacement of problematic Pinterest URLs
+            if (secondaryLogoUrl.includes('i.pinimg.com')) {
+                secondaryLogoUrl = defaultSecondaryLogoUrl;
+            }
+            if (mainLogoUrl.includes('i.pinimg.com')) {
+                mainLogoUrl = defaultMainLogoUrl;
+            }
+
             return {
                 organizationName: data.organizationName || 'La Chambre des Rois et des Chefs Traditionnels de Côte d’Ivoire',
-                mainLogoUrl: data.mainLogoUrl || defaultMainLogoUrl,
-                secondaryLogoUrl: data.secondaryLogoUrl || defaultSecondaryLogoUrl,
-                faviconUrl: data.faviconUrl || '',
+                mainLogoUrl,
+                secondaryLogoUrl,
+                faviconUrl: data.faviconUrl || mainLogoUrl || '',
             };
         }
     } catch (e) {
@@ -34,7 +46,7 @@ export async function getOrganizationSettings(): Promise<OrganizationSettings> {
             organizationName: 'La Chambre des Rois et des Chefs Traditionnels de Côte d’Ivoire',
             mainLogoUrl: defaultMainLogoUrl,
             secondaryLogoUrl: defaultSecondaryLogoUrl,
-            faviconUrl: ''
+            faviconUrl: defaultMainLogoUrl // Use main logo as default favicon
         }, { merge: true });
     } catch (e) {
         // Silently ignore - user may not have write permissions yet
@@ -44,7 +56,7 @@ export async function getOrganizationSettings(): Promise<OrganizationSettings> {
         organizationName: 'La Chambre des Rois et des Chefs Traditionnels de Côte d’Ivoire',
         mainLogoUrl: defaultMainLogoUrl,
         secondaryLogoUrl: defaultSecondaryLogoUrl,
-        faviconUrl: ''
+        faviconUrl: defaultMainLogoUrl // Use main logo as default favicon
     };
 }
 
@@ -60,7 +72,10 @@ export async function uploadOrganizationFile(
     const fileName = `${fileType}_${new Date().getTime()}_${file.name}`;
     const fileRef = ref(storage, `organization/${fileName}`);
 
-    const uploadTask = uploadBytesResumable(fileRef, file);
+    // Optimize image before upload
+    const imageBlob = await resizeImage(file, 1024);
+
+    const uploadTask = uploadBytesResumable(fileRef, imageBlob);
 
     return new Promise((resolve, reject) => {
         uploadTask.on(

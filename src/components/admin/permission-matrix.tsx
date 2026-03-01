@@ -20,7 +20,7 @@ import {
     AlertTriangle, Package, Monitor, Car, Newspaper,
     FolderOpen, PieChart, ClipboardList, LifeBuoy, Crown,
     Map, Bot, Settings, ShieldCheck, ScrollText, Loader2, Save,
-    RefreshCw,
+    RefreshCw, Fuel,
 } from 'lucide-react';
 import {
     Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -33,7 +33,7 @@ const ICON_MAP: Record<string, React.ElementType> = {
     LayoutDashboard, Users, Wallet, CalendarOff, MapPin,
     AlertTriangle, Package, Monitor, Car, Newspaper,
     FolderOpen, PieChart, ClipboardList, LifeBuoy, Crown,
-    Map, Bot, Settings, ShieldCheck, ScrollText,
+    Map, Bot, Settings, ShieldCheck, ScrollText, Fuel,
 };
 
 const ACTION_LABELS: Record<CrudAction, { label: string; short: string; color: string }> = {

@@ -5,11 +5,12 @@ export const allColumns = {
     poste: "POSTE",
     department: "SERVICE",
     sexe: "Sexe",
-    Date_Naissance: "Date de Naissance",
+    Date_Naissance: "Date Nais.",
     Lieu_Naissance: "Lieu de Naissance",
     email: "CONTACT",
     status: "Statut",
     CNPS: "CNPS",
+    Date_Depart: "Date Dep.",
 } as const;
 
 export type ColumnKeys = keyof typeof allColumns;

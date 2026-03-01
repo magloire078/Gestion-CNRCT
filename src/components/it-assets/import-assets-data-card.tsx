@@ -65,26 +65,40 @@ export function ImportAssetsDataCard() {
         const keys = Object.keys(row);
         const getValue = (targetKey: string) => {
           const key = keys.find(k => normalizeHeader(k) === targetKey);
-          return key ? row[key] : undefined;
+          const val = key ? row[key] : undefined;
+          return (val === null || val === undefined) ? undefined : String(val);
         };
 
-        const assetData = {
-          tag: String(getValue('tag')),
-          type: String(getValue('type') || 'Autre'),
-          fabricant: String(getValue('fabricant') || ''),
-          modele: String(getValue('modele')),
-          numeroDeSerie: String(getValue('numerodeserie') || ''),
-          status: String(getValue('status') || 'En stock'),
-          assignedTo: String(getValue('assignedto') || 'En stock'),
-        } as Omit<Asset, 'type'> & { type: string, tag: string };
+        const assetData: any = {
+          tag: getValue('tag'),
+        };
+
+        const type = getValue('type');
+        if (type) assetData.type = type;
+
+        const fabricant = getValue('fabricant');
+        if (fabricant) assetData.fabricant = fabricant;
+
+        const modele = getValue('modele');
+        if (modele) assetData.modele = modele;
+
+        const numeroDeSerie = getValue('numerodeserie');
+        if (numeroDeSerie) assetData.numeroDeSerie = numeroDeSerie;
+
+        const status = getValue('status');
+        if (status) assetData.status = status;
+
+        const assignedTo = getValue('assignedto');
+        if (assignedTo) assetData.assignedTo = assignedTo;
 
         const typeOrdinateur = getValue('typeordinateur');
         if (assetData.type === 'Ordinateur' && typeOrdinateur) {
-          assetData.typeOrdinateur = String(typeOrdinateur) as Asset['typeOrdinateur'];
+          assetData.typeOrdinateur = typeOrdinateur;
         }
 
         return assetData as Omit<Asset, 'tag'> & { tag: string };
       });
+
 
     if (assetsToImport.length === 0) {
       setError("Aucun actif valide trouvé dans le fichier.");

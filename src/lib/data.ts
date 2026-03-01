@@ -5,3 +5,4 @@ export * from "../types/asset";
 export * from "../types/chief";
 export * from "../types/common";
 export * from "../types/helpdesk";
+export * from "../types/fuel";

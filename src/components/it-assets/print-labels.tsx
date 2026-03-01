@@ -1,5 +1,5 @@
-"use client";
-
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import QRCode from "react-qr-code";
 import type { Asset, OrganizationSettings } from "@/lib/data";
 
@@ -9,7 +9,16 @@ interface PrintLabelsProps {
 }
 
 export function PrintLabels({ assets, settings }: PrintLabelsProps) {
-  return (
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
+
+  if (!mounted) return null;
+
+  return createPortal(
     <div id="print-section" className="bg-white text-black p-4 font-arial print:p-0">
       <div className="grid grid-cols-3 gap-4">
         {assets.map((asset) => (
@@ -23,6 +32,7 @@ export function PrintLabels({ assets, settings }: PrintLabelsProps) {
           </div>
         ))}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

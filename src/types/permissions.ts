@@ -48,6 +48,7 @@ export const RESOURCES_CONFIG: ResourceConfig[] = [
     { id: 'assistant', label: 'Assistant IA', icon: 'Bot', availableActions: ['read'] },
     { id: 'settings', label: 'Paramètres', icon: 'Settings', availableActions: ['read', 'update'] },
     { id: 'admin', label: 'Administration', icon: 'ShieldCheck', availableActions: ['read', 'update'] },
+    { id: 'fuel', label: 'Gestion de carburant', icon: 'Fuel', availableActions: ['read', 'create', 'update', 'delete'] },
     { id: 'audit-log', label: 'Journal d\'Audit', icon: 'ScrollText', availableActions: ['read'] },
 ];
 
@@ -80,6 +81,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, ResourcePermissions> = {
         evaluations: ALL_CRUD, tickets: ALL_CRUD, chiefs: ALL_CRUD,
         mapping: ALL_READ, assistant: ALL_READ, settings: READ_UPDATE,
         admin: READ_UPDATE, 'audit-log': ALL_READ,
+        fuel: ALL_CRUD,
     }),
     'manager-rh': buildDefault({
         dashboard: ALL_READ, employees: READ_UPDATE, payroll: ALL_READ,
@@ -121,6 +123,14 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, ResourcePermissions> = {
         supplies: ALL_CRUD, tickets: ALL_CRUD, repository: READ_CREATE,
         assistant: ALL_READ,
     }),
+    'gestionnaire-stock': buildDefault({
+        dashboard: ALL_READ, supplies: ALL_CRUD, repository: READ_CREATE,
+        tickets: ALL_READ, assistant: ALL_READ,
+    }),
+    'gestionnaire-carburant': buildDefault({
+        dashboard: ALL_READ, fuel: ALL_CRUD, repository: READ_CREATE,
+        tickets: ALL_READ, assistant: ALL_READ,
+    }),
 };
 
 export const ENTERPRISE_ROLES: RoleConfig[] = [
@@ -131,6 +141,8 @@ export const ENTERPRISE_ROLES: RoleConfig[] = [
     { id: 'comptables', label: 'Comptable', isSystem: false, defaultPermissions: DEFAULT_ROLE_PERMISSIONS['comptables'] },
     { id: 'chef-de-service', label: 'Chef de Service', isSystem: false, defaultPermissions: DEFAULT_ROLE_PERMISSIONS['chef-de-service'] },
     { id: 'responsable-it', label: 'Responsable IT', isSystem: false, defaultPermissions: DEFAULT_ROLE_PERMISSIONS['responsable-it'] },
+    { id: 'gestionnaire-stock', label: 'Gestionnaire de Stock et fournitures', isSystem: false, defaultPermissions: DEFAULT_ROLE_PERMISSIONS['gestionnaire-stock'] },
+    { id: 'gestionnaire-carburant', label: 'Gestionnaire de carburant', isSystem: false, defaultPermissions: DEFAULT_ROLE_PERMISSIONS['gestionnaire-carburant'] },
     { id: 'auditeur', label: 'Auditeur / CAC', isSystem: false, defaultPermissions: DEFAULT_ROLE_PERMISSIONS['auditeur'] },
     { id: 'employe', label: 'Employé Opérationnel', isSystem: false, defaultPermissions: DEFAULT_ROLE_PERMISSIONS['employe'] },
     { id: 'stagiaire', label: 'Stagiaire / Apprenti', isSystem: false, defaultPermissions: DEFAULT_ROLE_PERMISSIONS['stagiaire'] },

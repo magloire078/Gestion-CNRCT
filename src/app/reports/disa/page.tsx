@@ -72,6 +72,8 @@ export default function DisaReportPage() {
                     body {
                         margin: 0;
                         padding: 0;
+                        -webkit-print-color-adjust: exact;
+                        print-color-adjust: exact;
                     }
                     #print-section {
                         width: 100%;
@@ -218,13 +220,13 @@ export default function DisaReportPage() {
                             <p className="border-t border-black px-2 text-[8px] mt-0.5">Union - Discipline - Travail</p>
                         </div>
                     </header>
-                    <div className="text-center my-1">
+                    <div className="text-center mt-4 mb-2">
                         <h1 className="text-base font-bold underline">DÉCLARATION INDIVIDUELLE DES SALAIRES ET APPOINTEMENTS (DISA) - ANNEE {state.year}</h1>
                     </div>
                     <table className="w-auto text-[4px] border-collapse border border-gray-600 ml-1">
-                        <thead className="bg-gray-100">
+                        <thead className="bg-slate-200 text-slate-900 border-b-2 border-slate-700">
                             <tr>
-                                <th className="border border-gray-600 p-[0.3px] w-[12px] font-medium text-center">N°</th>
+                                <th className="border border-gray-600 p-[0.3px] w-[20px] font-medium text-center">N°</th>
                                 <th className="border border-gray-600 p-[0.3px] w-[30px] font-medium text-center">Mat.</th>
                                 <th className="border border-gray-600 p-[0.3px] w-[100px] text-left pl-1 font-medium">Nom et Prénoms</th>
                                 {monthLabels.map((m, i) => (
@@ -234,12 +236,12 @@ export default function DisaReportPage() {
                                 ))}
                                 <th className="border border-gray-600 p-[0.5px] w-[35px] font-medium text-center">Gratif.</th>
                                 <th className="border border-gray-600 p-[0.5px] w-[40px] font-medium text-center">Tot Brut</th>
-                                <th className="border border-gray-600 p-[0.5px] w-[40px] font-medium text-center">CNPS</th>
+                                <th className="border border-gray-600 p-[0.5px] w-[25px] font-medium text-center">CNPS</th>
                             </tr>
                         </thead>
                         <tbody>
                             {state.reportData.map((row, index) => (
-                                <tr key={`print-row-${row.matricule}`}>
+                                <tr key={`print-row-${row.matricule}`} className="even:bg-slate-50 odd:bg-white text-slate-800">
                                     <td className="border border-gray-600 p-[0.3px] text-center">{index + 1}</td>
                                     <td className="border border-gray-600 p-[0.3px] text-center">{row.matricule}</td>
                                     <td className="border border-gray-600 p-[0.3px] whitespace-nowrap pl-1">{row.name}</td>
@@ -253,16 +255,16 @@ export default function DisaReportPage() {
                                     <td className="border border-gray-600 p-[0.3px] text-right pr-1 font-medium">{formatCurrency(row.totalCNPS)}</td>
                                 </tr>
                             ))}
-                            <tr className="font-bold bg-gray-50">
-                                <td colSpan={3} className="border border-gray-600 p-[0.3px] text-right pr-2">TOTAL</td>
+                            <tr className="font-bold bg-slate-100 text-slate-900 border-t-2 border-slate-700">
+                                <td colSpan={3} className="border border-gray-600 p-[0.3px] text-right pr-2 text-[4.5px]">TOTAL</td>
                                 {state.grandTotal.monthly.map((total, index) => (
-                                    <td key={`print-total-month-${index}`} className="border border-gray-600 p-[0.3px] text-right pr-1 text-[3.8px]">
+                                    <td key={`print-total-month-${index}`} className="border border-gray-600 p-[0.3px] text-right pr-1 text-[4.5px]">
                                         {formatCurrency(total)}
                                     </td>
                                 ))}
-                                <td className="border border-gray-600 p-[0.3px] text-right pr-1 text-[3.8px]">{formatCurrency(state.grandTotal.gratification)}</td>
-                                <td className="border border-gray-600 p-[0.3px] text-right pr-1 text-[3.8px]">{formatCurrency(state.grandTotal.brut)}</td>
-                                <td className="border border-gray-600 p-[0.3px] text-right pr-1 text-[3.8px]">{formatCurrency(state.grandTotal.cnps)}</td>
+                                <td className="border border-gray-600 p-[0.3px] text-right pr-1 text-[4.5px]">{formatCurrency(state.grandTotal.gratification)}</td>
+                                <td className="border border-gray-600 p-[0.3px] text-right pr-1 text-[4.5px]">{formatCurrency(state.grandTotal.brut)}</td>
+                                <td className="border border-gray-600 p-[0.3px] text-right pr-1 text-[4.5px]">{formatCurrency(state.grandTotal.cnps)}</td>
                             </tr>
                         </tbody>
                     </table>

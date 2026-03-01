@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Building2, Eye, EyeOff, Loader2, AlertCircle } from "lucide-react";
+import { Eye, EyeOff, Loader2, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { signIn } from "@/services/auth-service";
 import { getOrganizationSettings } from "@/services/organization-service";
@@ -27,8 +27,8 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [orgName, setOrgName] = useState("Gestion App");
-  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [orgName, setOrgName] = useState("La Chambre des Rois et des Chefs Traditionnels");
+  const [logoUrl, setLogoUrl] = useState<string>("https://cnrct.ci/wp-content/uploads/2018/03/logo_chambre.png");
 
   useEffect(() => {
     getOrganizationSettings().then(settings => {
@@ -84,12 +84,15 @@ export default function LoginPage() {
       <Card className="w-full max-w-md border-primary/5 bg-white/80 backdrop-blur-xl shadow-2xl shadow-[#1a1a1a]/5 rounded-[2rem] overflow-hidden animate-in fade-in zoom-in duration-700">
         <CardHeader className="pt-10 pb-6 px-8">
           <div className="flex flex-col items-center justify-center gap-4 mb-4 group">
-            <div className="relative w-24 h-24 transition-transform duration-500 group-hover:scale-105">
-              {logoUrl ? (
-                <Image src={logoUrl} alt={orgName} layout="fill" objectFit="contain" priority />
-              ) : (
-                <Building2 className="h-16 w-16 text-[#006039]" />
-              )}
+            <div className="relative w-24 h-24 transition-all duration-700 ease-in-out group-hover:scale-105">
+              <Image
+                src={logoUrl}
+                alt={orgName}
+                fill
+                className="object-contain transition-opacity duration-500"
+                sizes="96px"
+                priority
+              />
             </div>
             <div className="text-center">
               <h1 className="text-sm font-bold tracking-[0.3em] uppercase text-[#006039]/60 mb-1">{orgName}</h1>

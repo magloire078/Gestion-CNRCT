@@ -12,7 +12,7 @@ if (typeof window === 'undefined') {
 }
 
 import { initializeApp, getApps, getApp, type FirebaseOptions, type FirebaseApp } from "firebase/app";
-import { getFirestore, Firestore } from "firebase/firestore";
+import { initializeFirestore, Firestore } from "firebase/firestore";
 import { getAuth, Auth } from "firebase/auth";
 import { getStorage, FirebaseStorage } from "firebase/storage";
 import { getAnalytics } from "firebase/analytics";
@@ -44,7 +44,9 @@ const finalConfig = isConfigValid ? firebaseConfig : {
 };
 
 const app = getApps().length === 0 ? initializeApp(finalConfig) : getApp();
-const db = getFirestore(app);
+const db = initializeFirestore(app, {
+  experimentalForceLongPolling: true,
+});
 const auth = getAuth(app);
 const storage = getStorage(app);
 

@@ -42,6 +42,7 @@ import {
   Menu,
   Rocket,
   ShieldCheck,
+  Fuel, // Added Fuel icon
 } from "lucide-react";
 
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
@@ -120,6 +121,7 @@ const allMenuItems = [
       { href: "/missions", label: "Missions", icon: Briefcase, permission: "page:missions:view" },
       { href: "/budget", label: "Budget", icon: Wallet, permission: "page:budget:view" },
       { href: "/fleet", label: "Flotte de Véhicules", icon: Car, permission: "page:fleet:view" },
+      { href: "/fleet/fuel", label: "Cartes de carburant", icon: Fuel, permission: "page:fuel:view" },
       { href: "/supplies", label: "Fournitures", icon: Package, permission: "page:supplies:view" },
       { href: "/repository", label: "Référentiel", icon: Archive, permission: "page:repository:view" },
     ]

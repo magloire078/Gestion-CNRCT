@@ -49,10 +49,10 @@ export function MissionCostReport({ mission, participants, duration, totalCost }
                 <p><span className="font-bold inline-block w-32">Lieu :</span> {mission.lieuMission}</p>
                 <p><span className="font-bold inline-block w-32">Période :</span> du {format(parseISO(mission.startDate), 'dd/MM/yyyy')} au {format(parseISO(mission.endDate), 'dd/MM/yyyy')} ({duration} jours)</p>
             </section>
-            
+
             <section>
-                 <table className="w-full text-sm border-collapse border border-black">
-                    <thead className="bg-gray-200 text-center">
+                <table className="w-full text-sm border-collapse border border-black">
+                    <thead className="bg-slate-200 text-slate-900 border-b-2 border-slate-700 text-center">
                         <tr>
                             <th className="border border-black p-1">N°</th>
                             <th className="border border-black p-1">NOM & PRENOMS</th>
@@ -68,7 +68,7 @@ export function MissionCostReport({ mission, participants, duration, totalCost }
                         {participants.map((p, index) => {
                             const totalParticipant = Math.round(p.totalIndemnites || 0) + Math.round(p.coutTransport || 0) + Math.round(p.coutHebergement || 0);
                             return (
-                                <tr key={p.id}>
+                                <tr key={p.id} className="even:bg-slate-50 odd:bg-white text-slate-800">
                                     <td className="border border-black p-1 text-center">{index + 1}</td>
                                     <td className="border border-black p-1">{`${p.lastName || ''} ${p.firstName || ''}`.trim()}</td>
                                     <td className="border border-black p-1">{p.poste}</td>
@@ -80,23 +80,23 @@ export function MissionCostReport({ mission, participants, duration, totalCost }
                                 </tr>
                             )
                         })}
-                        <tr className="font-bold bg-gray-100">
-                           <td colSpan={6} className="text-right p-2 border-black border">TOTAL GÉNÉRAL</td>
-                           <td className="text-right p-2 border-black border">{formatCurrency(totalCost)}</td>
-                           <td className="border-black border"></td>
+                        <tr className="font-bold bg-slate-100 text-slate-900 border-t-2 border-slate-700">
+                            <td colSpan={6} className="text-right p-2 border-black border">TOTAL GÉNÉRAL</td>
+                            <td className="text-right p-2 border-black border">{formatCurrency(totalCost)}</td>
+                            <td className="border-black border"></td>
                         </tr>
                     </tbody>
                 </table>
             </section>
-            
+
             <footer className="mt-12 flex justify-between text-center text-sm">
                 <div>
                     <p className="font-bold">Le Chef de Mission</p>
                 </div>
-                 <div>
+                <div>
                     <p className="font-bold">Le Service Financier</p>
                 </div>
-                 <div>
+                <div>
                     <p className="font-bold">La Direction</p>
                 </div>
             </footer>

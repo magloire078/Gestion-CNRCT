@@ -10,10 +10,10 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        body: ['Inter', 'sans-serif'],
+        body: ['var(--font-inter)', 'sans-serif'],
         arial: ['Arial', 'sans-serif'],
-        poppins: ['Poppins', 'sans-serif'],
-        inter: ['Inter', 'sans-serif'],
+        poppins: ['var(--font-poppins)', 'sans-serif'],
+        inter: ['var(--font-inter)', 'sans-serif'],
       },
       colors: {
         background: 'hsl(var(--background))',

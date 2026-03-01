@@ -4,12 +4,12 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
+    Card,
+    CardContent,
+    CardDescription,
+    CardFooter,
+    CardHeader,
+    CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -32,7 +32,7 @@ interface FileState {
 
 export default function OrganizationSettingsPage() {
     const { toast } = useToast();
-    
+
     const [name, setName] = useState("");
     const [initialName, setInitialName] = useState("");
     const [isSavingName, setIsSavingName] = useState(false);
@@ -42,7 +42,7 @@ export default function OrganizationSettingsPage() {
         secondaryLogo: { file: null, preview: "" },
         favicon: { file: null, preview: "" },
     });
-    
+
     const [loading, setLoading] = useState(true);
     const [uploadingFileType, setUploadingFileType] = useState<FileType | null>(null);
     const [uploadProgress, setUploadProgress] = useState(0);
@@ -52,6 +52,7 @@ export default function OrganizationSettingsPage() {
             setLoading(true);
             try {
                 const loadedSettings = await getOrganizationSettings();
+                console.log("Loaded Settings:", loadedSettings);
                 setName(loadedSettings.organizationName);
                 setInitialName(loadedSettings.organizationName);
                 setFiles({
@@ -59,6 +60,7 @@ export default function OrganizationSettingsPage() {
                     secondaryLogo: { file: null, preview: loadedSettings.secondaryLogoUrl },
                     favicon: { file: null, preview: loadedSettings.faviconUrl },
                 });
+                console.log("Secondary Logo Preview State Set To:", loadedSettings.secondaryLogoUrl);
             } catch (error) {
                 console.error("Failed to load organization settings:", error);
                 toast({
@@ -76,7 +78,7 @@ export default function OrganizationSettingsPage() {
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, fileType: FileType) => {
         const file = e.target.files?.[0];
         if (file) {
-            if (file.size > 4 * 1024 * 1024) { 
+            if (file.size > 4 * 1024 * 1024) {
                 toast({
                     variant: "destructive",
                     title: "Fichier trop volumineux",
@@ -102,12 +104,12 @@ export default function OrganizationSettingsPage() {
             setInitialName(name);
             toast({ title: "Nom de l'organisation mis à jour" });
         } catch (error) {
-           toast({ variant: "destructive", title: "Erreur", description: "Impossible de sauvegarder le nom." });
+            toast({ variant: "destructive", title: "Erreur", description: "Impossible de sauvegarder le nom." });
         } finally {
-          setIsSavingName(false);
+            setIsSavingName(false);
         }
     };
-  
+
     const handleSaveFile = async (fileType: FileType) => {
         const fileState = files[fileType];
         if (!fileState.file) return;
@@ -117,11 +119,11 @@ export default function OrganizationSettingsPage() {
 
         try {
             const onProgress = (percentage: number) => {
-                 setUploadProgress(percentage);
+                setUploadProgress(percentage);
             };
 
             const newUrl = await uploadOrganizationFile(fileType, fileState.file, onProgress);
-            
+
             setFiles(prev => ({
                 ...prev,
                 [fileType]: { file: null, preview: newUrl || prev[fileType].preview }
@@ -131,16 +133,16 @@ export default function OrganizationSettingsPage() {
                 title: "Sauvegarde réussie",
                 description: `Le fichier a été mis à jour.`,
             });
-            
+
             if (fileType === 'favicon' || fileType === 'mainLogo') {
-                 toast({ description: "Rechargement de la page pour appliquer les changements..."});
-                 setTimeout(() => window.location.reload(), 2000);
+                toast({ description: "Rechargement de la page pour appliquer les changements..." });
+                setTimeout(() => window.location.reload(), 2000);
             }
 
         } catch (error: any) {
-             const errorMessage = error.message || "Une erreur inconnue est survenue lors du téléversement.";
-             console.error(`Upload error for ${fileType}:`, error);
-             toast({
+            const errorMessage = error.message || "Une erreur inconnue est survenue lors du téléversement.";
+            console.error(`Upload error for ${fileType}:`, error);
+            toast({
                 variant: "destructive",
                 title: "Erreur de sauvegarde",
                 description: errorMessage,
@@ -150,21 +152,21 @@ export default function OrganizationSettingsPage() {
             setUploadProgress(0);
         }
     };
-    
+
     if (loading) {
         return (
-             <div className="flex flex-col gap-6 max-w-2xl mx-auto">
+            <div className="flex flex-col gap-6 max-w-2xl mx-auto">
                 <Skeleton className="h-8 w-1/3" />
                 <Card><CardHeader><Skeleton className="h-6 w-1/2" /></CardHeader><CardContent><Skeleton className="h-20 w-full" /></CardContent></Card>
                 <Card><CardHeader><Skeleton className="h-6 w-1/2" /></CardHeader><CardContent><Skeleton className="h-48 w-full" /></CardContent></Card>
-             </div>
+            </div>
         )
     }
 
     return (
         <div className="flex flex-col gap-6 max-w-2xl mx-auto">
             <h1 className="text-3xl font-bold tracking-tight">Paramètres de l'Organisation</h1>
-            
+
             <Card>
                 <CardHeader>
                     <CardTitle>Nom de l'Organisation</CardTitle>
@@ -190,38 +192,38 @@ export default function OrganizationSettingsPage() {
                     <CardDescription>Personnalisez les logos et le favicon de l'application.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                   <LogoUploader
-                     title="Logo Principal"
-                     description="Utilisé dans la barre latérale et sur les documents."
-                     icon={Building2}
-                     fileState={files.mainLogo}
-                     onFileChange={(e) => handleFileChange(e, 'mainLogo')}
-                     onSave={() => handleSaveFile('mainLogo')}
-                     isSaving={uploadingFileType === 'mainLogo'}
-                     progress={uploadingFileType === 'mainLogo' ? uploadProgress : 0}
-                   />
-                   <Separator />
-                   <LogoUploader
-                     title="Logo Secondaire"
-                     description="Utilisé sur la partie droite des documents."
-                     icon={Globe}
-                     fileState={files.secondaryLogo}
-                     onFileChange={(e) => handleFileChange(e, 'secondaryLogo')}
-                     onSave={() => handleSaveFile('secondaryLogo')}
-                     isSaving={uploadingFileType === 'secondaryLogo'}
-                     progress={uploadingFileType === 'secondaryLogo' ? uploadProgress : 0}
-                   />
-                   <Separator />
-                   <LogoUploader
-                     title="Favicon"
-                     description="Icône affichée dans l'onglet du navigateur (.ico, .png)."
-                     icon={Heart}
-                     fileState={files.favicon}
-                     onFileChange={(e) => handleFileChange(e, 'favicon')}
-                     onSave={() => handleSaveFile('favicon')}
-                     isSaving={uploadingFileType === 'favicon'}
-                     progress={uploadingFileType === 'favicon' ? uploadProgress : 0}
-                   />
+                    <LogoUploader
+                        title="Logo Principal"
+                        description="Utilisé dans la barre latérale et sur les documents."
+                        icon={Building2}
+                        fileState={files.mainLogo}
+                        onFileChange={(e) => handleFileChange(e, 'mainLogo')}
+                        onSave={() => handleSaveFile('mainLogo')}
+                        isSaving={uploadingFileType === 'mainLogo'}
+                        progress={uploadingFileType === 'mainLogo' ? uploadProgress : 0}
+                    />
+                    <Separator />
+                    <LogoUploader
+                        title="Logo Secondaire"
+                        description="Utilisé sur la partie droite des documents."
+                        icon={Globe}
+                        fileState={files.secondaryLogo}
+                        onFileChange={(e) => handleFileChange(e, 'secondaryLogo')}
+                        onSave={() => handleSaveFile('secondaryLogo')}
+                        isSaving={uploadingFileType === 'secondaryLogo'}
+                        progress={uploadingFileType === 'secondaryLogo' ? uploadProgress : 0}
+                    />
+                    <Separator />
+                    <LogoUploader
+                        title="Favicon"
+                        description="Icône affichée dans l'onglet du navigateur (.ico, .png)."
+                        icon={Heart}
+                        fileState={files.favicon}
+                        onFileChange={(e) => handleFileChange(e, 'favicon')}
+                        onSave={() => handleSaveFile('favicon')}
+                        isSaving={uploadingFileType === 'favicon'}
+                        progress={uploadingFileType === 'favicon' ? uploadProgress : 0}
+                    />
                 </CardContent>
             </Card>
         </div>
@@ -230,14 +232,14 @@ export default function OrganizationSettingsPage() {
 
 
 interface LogoUploaderProps {
-  title: string;
-  description: string;
-  icon: React.ElementType;
-  fileState: FileState;
-  onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onSave: () => void;
-  isSaving: boolean;
-  progress: number;
+    title: string;
+    description: string;
+    icon: React.ElementType;
+    fileState: FileState;
+    onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    onSave: () => void;
+    isSaving: boolean;
+    progress: number;
 }
 
 function LogoUploader({ title, description, icon: Icon, fileState, onFileChange, onSave, isSaving, progress }: LogoUploaderProps) {
@@ -245,10 +247,23 @@ function LogoUploader({ title, description, icon: Icon, fileState, onFileChange,
     return (
         <div className="space-y-4">
             <div className="flex items-start gap-6">
-                <Avatar className="h-20 w-20 rounded-md">
-                    <AvatarImage src={fileState.preview} alt={title} />
-                    <AvatarFallback><Icon className="h-8 w-8 text-muted-foreground" /></AvatarFallback>
-                </Avatar>
+                <div className="h-20 w-20 rounded-md border overflow-hidden flex items-center justify-center bg-muted shrink-0">
+                    {fileState.preview ? (
+                        <img
+                            src={fileState.preview}
+                            alt={title}
+                            className="max-h-full max-w-full object-contain"
+                            onError={(e) => {
+                                // If preview fails, show the fallback icon
+                                (e.target as HTMLImageElement).style.display = 'none';
+                                (e.target as HTMLImageElement).parentElement?.querySelector('.fallback-icon')?.classList.remove('hidden');
+                            }}
+                        />
+                    ) : null}
+                    <div className={`fallback-icon ${fileState.preview ? 'hidden' : ''}`}>
+                        <Icon className="h-8 w-8 text-muted-foreground" />
+                    </div>
+                </div>
                 <div className="flex-1">
                     <Label className="text-base font-medium">{title}</Label>
                     <p className="text-sm text-muted-foreground">{description}</p>
@@ -258,10 +273,10 @@ function LogoUploader({ title, description, icon: Icon, fileState, onFileChange,
                     <Upload className="mr-2 h-4 w-4" />
                     Changer
                 </Button>
-                <Input ref={inputRef} type="file" className="hidden" accept="image/*" onChange={onFileChange} disabled={isSaving}/>
+                <Input ref={inputRef} type="file" className="hidden" accept="image/*" onChange={onFileChange} disabled={isSaving} />
             </div>
             {isSaving && (
-                 <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2">
                     <Progress value={progress} className="w-[60%]" />
                     <span className="text-sm text-muted-foreground">{Math.round(progress)}%</span>
                 </div>

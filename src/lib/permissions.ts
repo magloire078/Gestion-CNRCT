@@ -24,6 +24,7 @@ export const allPermissions = {
   "Accès Sauvegarde & Restauration": "page:backup:view",
   "Accès aux Us & Coutumes": "page:us-et-coutumes:view",
   "Accès au Helpdesk": "page:helpdesk:view",
+  "Gestion du carburant": "page:fuel:view",
 
   // Group permissions
   "Voir le groupe Personnel": "group:personnel:view",

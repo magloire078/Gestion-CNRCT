@@ -65,7 +65,7 @@ export default function LandingPage() {
                 <div className="container mx-auto px-4 h-24 flex items-center justify-between">
                     <div className="flex items-center gap-4 group cursor-pointer">
                         <div className="hidden sm:flex relative w-16 h-16 transition-transform duration-500 group-hover:rotate-6">
-                            <Image src="https://cnrct.ci/wp-content/uploads/2018/03/logo_chambre.png" alt="Logo CNRCT" layout="fill" objectFit="contain" priority />
+                            <Image src="https://cnrct.ci/wp-content/uploads/2018/03/logo_chambre.png" alt="Logo CNRCT" fill className="object-contain" sizes="64px" priority />
                         </div>
                         <div className="flex flex-col">
                             <span className="font-bold text-xl tracking-tight text-[#006039]">CNRCT</span>
@@ -225,7 +225,7 @@ export default function LandingPage() {
                                             <div className="relative flex flex-col items-center bg-white p-10 rounded-3xl border-2 border-[#D4AF37]/30 shadow-2xl transition-all hover:-translate-y-2">
                                                 <div className="w-40 h-40 rounded-full bg-gradient-to-br from-[#006039]/10 to-[#D4AF37]/10 flex items-center justify-center mb-6 overflow-hidden border-4 border-white shadow-inner relative">
                                                     {president.photoUrl && president.photoUrl !== 'https://placehold.co/100x100.png' ? (
-                                                        <Image src={president.photoUrl} alt={president.name || ''} layout="fill" objectFit="cover" />
+                                                        <Image src={president.photoUrl} alt={president.name || ''} fill className="object-cover" sizes="160px" />
                                                     ) : (
                                                         <>
                                                             <div className="w-full h-full bg-[url('https://www.transparenttextures.com/patterns/natural-paper.png')] opacity-20" />
@@ -251,7 +251,7 @@ export default function LandingPage() {
                                                 <div className="relative flex flex-col items-center bg-white/70 backdrop-blur-sm p-8 rounded-2xl border border-primary/5 shadow-md transition-all hover:shadow-xl hover:-translate-y-1">
                                                     <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center mb-4 border-2 border-white shadow-sm overflow-hidden relative">
                                                         {vp.photoUrl && vp.photoUrl !== 'https://placehold.co/100x100.png' ? (
-                                                            <Image src={vp.photoUrl} alt={vp.name || ''} layout="fill" objectFit="cover" />
+                                                            <Image src={vp.photoUrl} alt={vp.name || ''} fill className="object-cover" sizes="96px" />
                                                         ) : (
                                                             <>
                                                                 <div className="w-full h-full bg-[url('https://www.transparenttextures.com/patterns/natural-paper.png')] opacity-10" />
@@ -276,7 +276,7 @@ export default function LandingPage() {
                                             <div className="relative flex flex-col items-center bg-[#006039]/5 backdrop-blur-sm p-6 rounded-2xl border border-[#006039]/10 transition-all hover:bg-[#006039]/10">
                                                 <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center mb-4 border border-primary/10 shadow-sm overflow-hidden relative">
                                                     {secretaryGeneral.photoUrl && secretaryGeneral.photoUrl !== 'https://placehold.co/100x100.png' ? (
-                                                        <Image src={secretaryGeneral.photoUrl} alt={secretaryGeneral.name || ''} layout="fill" objectFit="cover" />
+                                                        <Image src={secretaryGeneral.photoUrl} alt={secretaryGeneral.name || ''} fill className="object-cover" sizes="64px" />
                                                     ) : (
                                                         <span className="text-xl font-bold text-[#006039]">{getInitials(secretaryGeneral.name || 'SG')}</span>
                                                     )}
@@ -293,7 +293,7 @@ export default function LandingPage() {
                                             <div className="relative flex flex-col items-center bg-white/40 backdrop-blur-sm p-6 rounded-2xl border border-primary/5 transition-all hover:bg-white/80">
                                                 <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mb-4 border border-white shadow-sm overflow-hidden relative">
                                                     {member.photoUrl && member.photoUrl !== 'https://placehold.co/100x100.png' ? (
-                                                        <Image src={member.photoUrl} alt={member.name || ''} layout="fill" objectFit="cover" />
+                                                        <Image src={member.photoUrl} alt={member.name || ''} fill className="object-cover" sizes="64px" />
                                                     ) : (
                                                         <span className="text-xl font-serif text-muted-foreground/30 italic">{getInitials(member.name || 'MB')}</span>
                                                     )}
@@ -511,7 +511,7 @@ export default function LandingPage() {
                 <div className="container mx-auto px-4">
                     <div className="flex flex-col items-center text-center">
                         <div className="w-16 h-16 relative mb-6 grayscale opacity-50 contrast-125">
-                            <Image src="https://cnrct.ci/wp-content/uploads/2018/03/logo_chambre.png" alt="CNRCT" layout="fill" objectFit="contain" />
+                            <Image src="https://cnrct.ci/wp-content/uploads/2018/03/logo_chambre.png" alt="CNRCT" fill className="object-contain" sizes="64px" />
                         </div>
                         <p className="font-serif italic text-xl text-white mb-2">Chambre Nationale des Rois et Chefs Traditionnels</p>
                         <p className="text-sm tracking-[0.3em] uppercase mb-10 opacity-60">République de Côte d'Ivoire</p>

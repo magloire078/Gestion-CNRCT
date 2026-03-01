@@ -11,6 +11,8 @@ export type Asset = {
     status: 'En utilisation' | 'En stock' | 'En réparation' | 'Retiré';
 }
 
+export type AssetColumnKeys = keyof Asset;
+
 export type Fleet = {
     plate: string; // Firestore document ID
     makeModel: string;

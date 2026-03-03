@@ -21,7 +21,11 @@ export function PrintAssetsList({
 
     useEffect(() => {
         setMounted(true);
-        return () => setMounted(false);
+        document.body.classList.add('print-landscape');
+        return () => {
+            setMounted(false);
+            document.body.classList.remove('print-landscape');
+        };
     }, []);
 
     if (!mounted) return null;

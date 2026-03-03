@@ -1,6 +1,5 @@
-
-"use client";
-
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import type { OrganizationSettings } from "@/lib/data";
 
 interface PrintLayoutProps {
@@ -11,9 +10,22 @@ interface PrintLayoutProps {
     data: Record<string, any>[];
 }
 
-
 export function PrintLayout({ logos, title, subtitle, columns, data }: PrintLayoutProps) {
-    return (
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+        // Add landscape class for inventory lists
+        document.body.classList.add('print-landscape');
+        return () => {
+            setMounted(false);
+            document.body.classList.remove('print-landscape');
+        };
+    }, []);
+
+    if (!mounted) return null;
+
+    return createPortal(
         <div id="print-section" className="bg-white text-black p-8 w-full print:shadow-none print:border-none print:p-0">
             <header className="flex justify-between items-start mb-8 h-[100px]">
                 <div className="w-1/4 text-center flex flex-col justify-center items-center h-full">
@@ -33,9 +45,8 @@ export function PrintLayout({ logos, title, subtitle, columns, data }: PrintLayo
                 {subtitle && <h2 className="text-md font-bold mt-4 uppercase">{subtitle}</h2>}
             </div>
 
-            <table className="w-full table-fixed text-xs border-collapse border border-black">
-
-                <thead className="bg-slate-200 text-slate-900 border-b-2 border-slate-700">
+            <table className="w-full table-fixed text-[9px] border-collapse border border-black">
+                <thead className="bg-slate-200 text-slate-900">
                     <tr>
                         {columns.map(col => (
                             <th key={col.key} className={`border border-black p-1 font-bold ${col.className !== undefined ? col.className : 'whitespace-nowrap'} text-${col.align === 'center' ? 'center' : 'left'}`}>
@@ -67,6 +78,7 @@ export function PrintLayout({ logos, title, subtitle, columns, data }: PrintLayo
                     <div><p className="page-number"></p></div>
                 </div>
             </footer>
-        </div>
+        </div>,
+        document.body
     );
 }

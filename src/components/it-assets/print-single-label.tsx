@@ -40,7 +40,7 @@ export function PrintSingleLabel({ asset, settings, isPreview = false }: PrintSi
         <div className="text-center leading-[1.1] mx-0.1 flex-grow overflow-hidden flex flex-col justify-center">
           <p className="font-bold whitespace-nowrap" style={{ fontSize: '5.5pt' }}>Chambre Nationale des Rois</p>
           <p className="font-bold whitespace-nowrap" style={{ fontSize: '5.5pt' }}>et Chefs Traditionnels</p>
-          <p className="mt-0.5 font-medium" style={{ fontSize: '5pt' }}>Tel : 27 30 64 06 60</p>
+          <p className="mt-0.5 font-medium" style={{ fontSize: '4.5pt' }}>Tel : 27 30 64 06 60</p>
         </div>
         <div className="flex-shrink-0">
           {settings.secondaryLogoUrl ? (

@@ -1,7 +1,7 @@
 
 import { doc, getDoc, setDoc } from '@/lib/firebase';
-import { getStorage, ref, getDownloadURL, uploadBytesResumable, type UploadTask } from "firebase/storage";
-import { db, storage } from '@/lib/firebase';
+import { db } from '@/lib/firebase';
+import { uploadToCloudinary } from '@/lib/cloudinary';
 import type { OrganizationSettings } from '@/lib/data';
 import { resizeImage } from '@/lib/image-optimization';
 
@@ -69,36 +69,21 @@ export async function uploadOrganizationFile(
     file: File,
     onProgress: (percentage: number) => void
 ): Promise<string> {
-    const fileName = `${fileType}_${new Date().getTime()}_${file.name}`;
-    const fileRef = ref(storage, `organization/${fileName}`);
-
+    onProgress(10);
     // Optimize image before upload
     const imageBlob = await resizeImage(file, 1024);
+    const optimizedFile = new File([imageBlob], file.name, { type: file.type || 'image/png' });
+    onProgress(50);
 
-    const uploadTask = uploadBytesResumable(fileRef, imageBlob);
-
-    return new Promise((resolve, reject) => {
-        uploadTask.on(
-            'state_changed',
-            (snapshot) => {
-                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                onProgress(progress);
-            },
-            (error) => {
-                console.error("Upload failed:", error);
-                reject(error);
-            },
-            async () => {
-                try {
-                    const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-                    const fieldToUpdate = `${fileType}Url`;
-                    await setDoc(settingsDocRef, { [fieldToUpdate]: downloadURL }, { merge: true });
-                    resolve(downloadURL);
-                } catch (error) {
-                    console.error("Firestore update failed:", error);
-                    reject(error);
-                }
-            }
-        );
-    });
+    try {
+        const downloadURL = await uploadToCloudinary(optimizedFile);
+        onProgress(90);
+        const fieldToUpdate = `${fileType}Url`;
+        await setDoc(settingsDocRef, { [fieldToUpdate]: downloadURL }, { merge: true });
+        onProgress(100);
+        return downloadURL;
+    } catch (error) {
+        console.error("Upload failed:", error);
+        throw error;
+    }
 }

@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { createPortal } from "react-dom";
 import { Eye, MoreHorizontal, Pencil, Search, Printer, Loader2, Landmark, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -686,15 +687,18 @@ export default function PayrollPage() {
         </Dialog>
       </div>
 
-      {isProcessingBulk && bulkPayslips.length > 0 && (
-        <div id="print-section" className="bg-white text-black print:shadow-none print:border-none print:p-0">
-          {bulkPayslips.map((payslip, index) => (
-            <div key={index} className={`payslip-wrapper ${index > 0 ? 'print:break-before-page' : ''}`}>
-              <PayslipTemplate payslipDetails={payslip} />
-            </div>
-          ))}
-        </div>
-      )}
+      {isProcessingBulk && bulkPayslips.length > 0 && (() => {
+        const content = (
+          <div id="print-section" className="bg-white text-black print:shadow-none print:border-none print:p-0">
+            {bulkPayslips.map((payslip, index) => (
+              <div key={index} className={`payslip-wrapper ${index > 0 ? 'print:break-before-page' : ''}`}>
+                <PayslipTemplate payslipDetails={payslip} />
+              </div>
+            ))}
+          </div>
+        );
+        return typeof document !== 'undefined' ? createPortal(content, document.body) : content;
+      })()}
     </>
   );
 }

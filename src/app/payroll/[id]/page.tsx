@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -97,6 +98,16 @@ export default function PayslipPage() {
         return <div className="text-center text-destructive p-8">{error || "Bulletin(s) de paie non trouvé(s)."}</div>;
     }
 
+    const printSection = (
+        <div id="print-section" className={!isPrinting ? 'max-w-4xl mx-auto shadow-lg my-8 space-y-8 bg-white' : 'bg-white text-black print:shadow-none print:border-none print:p-0'}>
+            {payslips.map((details, index) => (
+                <div key={index} className={index > 0 ? 'print:break-before-page pt-8 print:pt-0' : ''}>
+                    <PayslipTemplate payslipDetails={details} />
+                </div>
+            ))}
+        </div>
+    );
+
     return (
         <>
             <div className={`max-w-4xl mx-auto p-4 sm:p-8 ${isPrinting ? 'print-hidden' : ''}`}>
@@ -105,19 +116,13 @@ export default function PayslipPage() {
                         <ArrowLeft className="mr-2 h-4 w-4" />
                         Retour
                     </Button>
-                    <Button onClick={handlePrint}>
+                    <Button onClick={handlePrint} disabled={isPrinting}>
                         <Printer className="mr-2 h-4 w-4" />
                         Imprimer / Enregistrer en PDF
                     </Button>
                 </div>
             </div>
-            <div id="print-section" className={!isPrinting ? 'max-w-4xl mx-auto shadow-lg my-8 space-y-8 bg-white' : ''}>
-                {payslips.map((details, index) => (
-                    <div key={index} className={index > 0 ? 'print:break-before-page pt-8 print:pt-0' : ''}>
-                        <PayslipTemplate payslipDetails={details} />
-                    </div>
-                ))}
-            </div>
+            {isPrinting && typeof document !== 'undefined' ? createPortal(printSection, document.body) : printSection}
         </>
     );
 }

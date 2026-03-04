@@ -27,7 +27,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [orgName, setOrgName] = useState("La Chambre des Rois et des Chefs Traditionnels");
+  const [orgName, setOrgName] = useState("Chambre Nationale des Rois et Chefs Traditionnels");
   const [logoUrl, setLogoUrl] = useState<string>("https://cnrct.ci/wp-content/uploads/2018/03/logo_chambre.png");
 
   useEffect(() => {

@@ -1,7 +1,7 @@
 
 import { db, storage } from '@/lib/firebase';
 import { collection, addDoc, onSnapshot, Unsubscribe, query, orderBy } from '@/lib/firebase';
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { uploadToCloudinary } from '@/lib/cloudinary';
 import type { Document } from '@/lib/data';
 
 const documentsCollection = collection(db, 'repository');
@@ -13,11 +13,8 @@ const documentsCollection = collection(db, 'repository');
  * @returns A promise that resolves with the new Document object.
  */
 export async function uploadDocument(file: File, uploaderId: string): Promise<Document> {
-    const storageRef = ref(storage, `repository/${new Date().getTime()}_${file.name}`);
-    
-    // Upload file to storage
-    const snapshot = await uploadBytes(storageRef, file);
-    const downloadURL = await getDownloadURL(snapshot.ref);
+    // Upload file to Cloudinary
+    const downloadURL = await uploadToCloudinary(file);
 
     // Create document metadata in Firestore
     const docData: Omit<Document, 'id'> = {
@@ -45,8 +42,8 @@ export function subscribeToDocuments(
     onError: (error: Error) => void
 ): Unsubscribe {
     const q = query(documentsCollection, orderBy("uploadDate", "desc"));
-    
-    const unsubscribe = onSnapshot(q, 
+
+    const unsubscribe = onSnapshot(q,
         (snapshot) => {
             const documents = snapshot.docs.map((doc: any) => ({
                 id: doc.id,

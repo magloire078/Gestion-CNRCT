@@ -93,7 +93,7 @@ export default function LandingPage() {
                                 Haute Institution de l'État
                             </div>
                             <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-[#1a1a1a] leading-[1.1]">
-                                La <span className="text-[#006039]">Chambre des Rois</span> et des Chefs Traditionnels
+                                La <span className="text-[#006039]">Chambre Nationale des Rois</span> et Chefs Traditionnels
                             </h1>
                             <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed max-w-3xl mx-auto font-light">
                                 Gardienne des <span className="text-[#D4AF37] font-medium">valeurs ancestrales</span> et pilier de la <span className="text-[#006039] font-medium">paix sociale</span> en Côte d'Ivoire.
@@ -224,7 +224,7 @@ export default function LandingPage() {
                                             <div className="absolute inset-x-[-20px] top-[-20px] bottom-[-20px] bg-gradient-to-br from-[#006039]/10 to-[#D4AF37]/10 opacity-0 group-hover:opacity-100 transition-opacity rounded-[3rem] blur-xl" />
                                             <div className="relative flex flex-col items-center bg-white p-10 rounded-3xl border-2 border-[#D4AF37]/30 shadow-2xl transition-all hover:-translate-y-2">
                                                 <div className="w-40 h-40 rounded-full bg-gradient-to-br from-[#006039]/10 to-[#D4AF37]/10 flex items-center justify-center mb-6 overflow-hidden border-4 border-white shadow-inner relative">
-                                                    {president.photoUrl && president.photoUrl !== 'https://placehold.co/100x100.png' ? (
+                                                    {president.photoUrl && !president.photoUrl.includes('ui-avatars.com') && !president.photoUrl.includes('placehold.co') ? (
                                                         <Image src={president.photoUrl} alt={president.name || ''} fill className="object-cover" sizes="160px" />
                                                     ) : (
                                                         <>
@@ -250,7 +250,7 @@ export default function LandingPage() {
                                                 <div className="absolute inset-x-[-10px] top-[-10px] bottom-[-10px] bg-gradient-to-br from-[#006039]/5 to-[#D4AF37]/5 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl blur-lg" />
                                                 <div className="relative flex flex-col items-center bg-white/70 backdrop-blur-sm p-8 rounded-2xl border border-primary/5 shadow-md transition-all hover:shadow-xl hover:-translate-y-1">
                                                     <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center mb-4 border-2 border-white shadow-sm overflow-hidden relative">
-                                                        {vp.photoUrl && vp.photoUrl !== 'https://placehold.co/100x100.png' ? (
+                                                        {vp.photoUrl && !vp.photoUrl.includes('ui-avatars.com') && !vp.photoUrl.includes('placehold.co') ? (
                                                             <Image src={vp.photoUrl} alt={vp.name || ''} fill className="object-cover" sizes="96px" />
                                                         ) : (
                                                             <>
@@ -275,7 +275,7 @@ export default function LandingPage() {
                                         <div className="group relative">
                                             <div className="relative flex flex-col items-center bg-[#006039]/5 backdrop-blur-sm p-6 rounded-2xl border border-[#006039]/10 transition-all hover:bg-[#006039]/10">
                                                 <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center mb-4 border border-primary/10 shadow-sm overflow-hidden relative">
-                                                    {secretaryGeneral.photoUrl && secretaryGeneral.photoUrl !== 'https://placehold.co/100x100.png' ? (
+                                                    {secretaryGeneral.photoUrl && !secretaryGeneral.photoUrl.includes('ui-avatars.com') && !secretaryGeneral.photoUrl.includes('placehold.co') ? (
                                                         <Image src={secretaryGeneral.photoUrl} alt={secretaryGeneral.name || ''} fill className="object-cover" sizes="64px" />
                                                     ) : (
                                                         <span className="text-xl font-bold text-[#006039]">{getInitials(secretaryGeneral.name || 'SG')}</span>
@@ -292,7 +292,7 @@ export default function LandingPage() {
                                         <div key={index} className="group relative">
                                             <div className="relative flex flex-col items-center bg-white/40 backdrop-blur-sm p-6 rounded-2xl border border-primary/5 transition-all hover:bg-white/80">
                                                 <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mb-4 border border-white shadow-sm overflow-hidden relative">
-                                                    {member.photoUrl && member.photoUrl !== 'https://placehold.co/100x100.png' ? (
+                                                    {member.photoUrl && !member.photoUrl.includes('ui-avatars.com') && !member.photoUrl.includes('placehold.co') ? (
                                                         <Image src={member.photoUrl} alt={member.name || ''} fill className="object-cover" sizes="64px" />
                                                     ) : (
                                                         <span className="text-xl font-serif text-muted-foreground/30 italic">{getInitials(member.name || 'MB')}</span>

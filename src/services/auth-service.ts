@@ -15,7 +15,7 @@ import {
     reauthenticateWithCredential,
     type User as FirebaseUser
 } from 'firebase/auth';
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { uploadToCloudinary } from '@/lib/cloudinary';
 import { doc, setDoc, getDoc, updateDoc } from '@/lib/firebase';
 import type { User, Role } from '@/lib/data';
 import { getRoles, initializeDefaultRoles } from './role-service';
@@ -166,10 +166,7 @@ export async function updateUserProfile(userId: string, data: { name?: string, p
     }
 
     if (data.photoFile) {
-        const storage = getStorage();
-        const photoRef = ref(storage, `user_photos/${userId}/${data.photoFile.name}`);
-        const snapshot = await uploadBytes(photoRef, data.photoFile);
-        newPhotoURL = await getDownloadURL(snapshot.ref);
+        newPhotoURL = await uploadToCloudinary(data.photoFile);
         updateData.photoUrl = newPhotoURL;
     }
 

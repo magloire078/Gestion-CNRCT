@@ -1,7 +1,7 @@
 
 
 import { collection, getDocs, addDoc, onSnapshot, Unsubscribe, query, orderBy, deleteDoc, doc, updateDoc, getDoc, writeBatch, where, setDoc, limit } from '@/lib/firebase';
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { uploadToCloudinary } from '@/lib/cloudinary';
 import type { Chief, ChiefRole } from '@/lib/data';
 import { db, storage } from '@/lib/firebase';
 import { FirestorePermissionError } from '@/lib/errors';
@@ -179,9 +179,7 @@ export async function addChief(chiefData: Omit<Chief, "id">, photoFile: File | n
     const docRef = doc(collection(db, "chiefs"));
 
     if (photoFile) {
-        const photoRef = ref(storage, `chief_photos/${docRef.id}/${photoFile.name}`);
-        const snapshot = await uploadBytes(photoRef, photoFile);
-        photoUrl = await getDownloadURL(snapshot.ref);
+        photoUrl = await uploadToCloudinary(photoFile);
     }
 
     const finalChiefData = { ...chiefData, photoUrl };
@@ -241,10 +239,7 @@ export async function updateChief(id: string, chiefData: Partial<Omit<Chief, 'id
     const updateData: { [key: string]: any } = { ...chiefData };
 
     if (photoFile) {
-        const photoRef = ref(storage, `chief_photos/${id}/${photoFile.name}`);
-        const snapshot = await uploadBytes(photoRef, photoFile);
-        const photoUrl = await getDownloadURL(snapshot.ref);
-        updateData.photoUrl = photoUrl;
+        updateData.photoUrl = await uploadToCloudinary(photoFile);
     }
 
     // Ensure numeric values are stored as numbers

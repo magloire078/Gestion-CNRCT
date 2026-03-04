@@ -12,7 +12,7 @@ import { getOrganizationSettings } from './organization-service';
 import { getDepartments } from './department-service';
 import { getDirections } from './direction-service';
 import { getServices } from './service-service';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { uploadToCloudinary } from '@/lib/cloudinary';
 import { FirestorePermissionError } from '@/lib/errors';
 import { parseISO, addYears, format, isValid } from 'date-fns';
 import { divisions } from '@/lib/ivory-coast-divisions';
@@ -205,9 +205,7 @@ export async function addEmployee(employeeData: Omit<Employe, 'id'>, photoFile: 
         const docRef = doc(collection(db, "employees"));
 
         if (photoFile) {
-            const photoRef = ref(storage, `employee_photos/${docRef.id}/${photoFile.name}`);
-            const snapshot = await uploadBytes(photoRef, photoFile);
-            photoUrl = await getDownloadURL(snapshot.ref);
+            photoUrl = await uploadToCloudinary(photoFile);
         }
 
         const processedData = processEmployeeData({ ...employeeData, photoUrl });
@@ -273,9 +271,7 @@ export async function updateEmployee(employeeId: string, employeeDataToUpdate: P
         let updateData: Partial<Employe> = { ...employeeDataToUpdate };
 
         if (photoFile) {
-            const photoRef = ref(storage, `employee_photos/${employeeId}/${photoFile.name}`);
-            const snapshot = await uploadBytes(photoRef, photoFile);
-            updateData.photoUrl = await getDownloadURL(snapshot.ref);
+            updateData.photoUrl = await uploadToCloudinary(photoFile);
         }
 
         updateData = processEmployeeData(updateData);

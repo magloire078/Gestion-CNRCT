@@ -47,21 +47,31 @@ async function getUserProfile(userId: string): Promise<User | null> {
     }
 }
 
-async function createUserProfile(user: FirebaseUser, name: string): Promise<User> {
+async function createUserProfile(user: FirebaseUser, name: string, preProvisionedData: any = null): Promise<User> {
     const userDocRef = doc(db, 'users', user.uid);
 
     // Ensure default roles are present before assigning one
-    await initializeDefaultRoles();
+    try {
+        await initializeDefaultRoles();
+    } catch (e) {
+        console.warn("Could not initialize default roles during profile creation:", e);
+    }
 
-    // Assign 'Employé Opérationnel' role by default for new signups
-    const assignedRoleId = 'employe-operationnel';
+    // Assign 'Employé Opérationnel' role by default for new signups, unless pre-provisioned
+    const assignedRoleId = preProvisionedData?.roleId || 'employe-operationnel';
 
-    const userProfile: Omit<User, 'id' | 'role' | 'permissions'> = {
-        name,
+    const userProfile: any = {
+        name: preProvisionedData?.name || name,
         email: user.email!,
         roleId: assignedRoleId,
-        photoUrl: user.photoURL || '',
+        photoUrl: preProvisionedData?.photoUrl || user.photoURL || '',
     };
+
+    // Copy any explicit relations from pre-provisioned data
+    if (preProvisionedData?.employeeId) {
+        userProfile.employeeId = preProvisionedData.employeeId;
+    }
+
     await setDoc(userDocRef, userProfile);
 
     // Now fetch the full profile with role
@@ -75,7 +85,38 @@ export async function signUp(userData: { name: string, email: string }, password
     await updateProfile(user, { displayName: userData.name });
 
     try {
-        const userProfile = await createUserProfile(user, userData.name);
+        // Check for pre-provisioned profile by email
+        const { collection, getDocs, query, where } = await import('@/lib/firebase');
+        const q = query(collection(db, 'users'), where('email', '==', userData.email));
+        const querySnapshot = await getDocs(q);
+        let preProvisionedData = null;
+        let oldDocId = null;
+
+        if (!querySnapshot.empty) {
+            const oldDoc = querySnapshot.docs.find(d => d.id !== user.uid);
+            if (oldDoc) {
+                preProvisionedData = oldDoc.data();
+                oldDocId = oldDoc.id;
+            }
+        }
+
+        const userProfile = await createUserProfile(user, userData.name, preProvisionedData);
+
+        // Try to delete old pre-provisioned doc if it exists
+        if (oldDocId) {
+            try {
+                const { deleteDoc, updateDoc } = await import('@/lib/firebase');
+                if (preProvisionedData?.employeeId) {
+                    await updateDoc(doc(db, 'employees', preProvisionedData.employeeId), {
+                        userId: user.uid
+                    });
+                }
+                await deleteDoc(doc(db, 'users', oldDocId));
+            } catch (e) {
+                console.warn("Could not delete old pre-provisioned doc (requires admin rights) or update employee:", e);
+            }
+        }
+
         return userProfile;
     } catch (profileError) {
         // If profile creation fails, we should ideally handle this,
@@ -107,7 +148,37 @@ export async function signIn(email: string, password: string): Promise<User> {
             // Truly new user — create profile
             console.warn(`User profile not found for uid: ${user.uid}. Creating one now.`);
             try {
-                userProfile = await createUserProfile(user, user.displayName || user.email!);
+                // Check if admin pre-provisioned this user
+                const { collection, getDocs, query, where, deleteDoc } = await import('@/lib/firebase');
+                const q = query(collection(db, 'users'), where('email', '==', user.email));
+                const querySnapshot = await getDocs(q);
+
+                let preProvisionedData = null;
+                let oldDocId = null;
+                if (!querySnapshot.empty) {
+                    const oldDoc = querySnapshot.docs.find(d => d.id !== user.uid);
+                    if (oldDoc) {
+                        preProvisionedData = oldDoc.data();
+                        oldDocId = oldDoc.id;
+                        console.warn(`Found pre-provisioned profile for ${user.email} (doc: ${oldDocId}), migrating to ${user.uid}`);
+                    }
+                }
+
+                userProfile = await createUserProfile(user, user.displayName || user.email!, preProvisionedData);
+
+                if (oldDocId) {
+                    try {
+                        const { deleteDoc, updateDoc } = await import('@/lib/firebase');
+                        if (preProvisionedData?.employeeId) {
+                            await updateDoc(doc(db, 'employees', preProvisionedData.employeeId), {
+                                userId: user.uid
+                            });
+                        }
+                        await deleteDoc(doc(db, 'users', oldDocId));
+                    } catch (e) {
+                        console.warn("Could not delete old pre-provisioned doc or update employee:", e);
+                    }
+                }
             } catch (profileError) {
                 console.error("Just-in-time profile creation failed:", profileError);
                 throw new Error("profile-creation-failed");

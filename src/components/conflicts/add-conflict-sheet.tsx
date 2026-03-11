@@ -8,14 +8,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-  SheetClose,
-} from "@/components/ui/sheet";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogClose,
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -150,167 +150,195 @@ export function AddConflictSheet({
   };
 
   return (
-    <Sheet open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <SheetContent className="sm:max-w-lg">
+    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
+      <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
         <form onSubmit={handleSubmit}>
-          <SheetHeader>
-            <SheetTitle>Signaler un nouveau conflit</SheetTitle>
-            <SheetDescription>
+          <DialogHeader>
+            <DialogTitle>Signaler un nouveau conflit</DialogTitle>
+            <DialogDescription>
               Remplissez les détails ci-dessous pour enregistrer un nouveau conflit.
-            </SheetDescription>
-          </SheetHeader>
-          <div className="grid gap-4 py-4">
-             <div className="space-y-2">
-              <Label htmlFor="village">Village / Localité</Label>
-               <Popover open={isVillageComboboxOpen} onOpenChange={setIsVillageComboboxOpen}>
-                    <PopoverTrigger asChild>
-                        <Button
-                            variant="outline"
-                            role="combobox"
-                            aria-expanded={isVillageComboboxOpen}
-                            className="w-full justify-between font-normal"
-                            disabled={loadingInitialData}
-                        >
-                            {village || "Sélectionnez ou entrez un village..."}
-                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                        </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                        <Command>
-                            <CommandInput 
-                                placeholder="Rechercher un village..."
-                                value={village}
-                                onValueChange={setVillage}
-                            />
-                            <CommandList>
-                                <CommandEmpty>Aucun village trouvé. Vous pouvez entrer une nouvelle valeur.</CommandEmpty>
-                                <CommandGroup>
-                                    {allChiefs.filter(c => c.village).map((chief) => (
-                                        <CommandItem
-                                            key={chief.id}
-                                            value={chief.village}
-                                            onSelect={() => handleSelectChief(chief)}
-                                        >
-                                            <Check
-                                                className={cn(
-                                                    "mr-2 h-4 w-4",
-                                                    village === chief.village ? "opacity-100" : "opacity-0"
-                                                )}
-                                            />
-                                            {chief.village} <span className="text-xs text-muted-foreground ml-2">({chief.region})</span>
-                                        </CommandItem>
-                                    ))}
-                                </CommandGroup>
-                            </CommandList>
-                        </Command>
-                    </PopoverContent>
-                </Popover>
-            </div>
-             <div className="space-y-2">
-              <Label htmlFor="conflictType">Type de Conflit</Label>
-               <Select value={conflictType} onValueChange={(value: ConflictType) => setConflictType(value)}>
-                  <SelectTrigger>
-                      <SelectValue placeholder="Sélectionnez un type..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                      {conflictTypes.map(type => <SelectItem key={type} value={type}>{type}</SelectItem>)}
-                  </SelectContent>
-               </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                rows={5}
-                placeholder="Décrivez la nature du conflit..."
-              />
-            </div>
-            <div className="space-y-2">
-                <Label htmlFor="mediatorName">Médiateur / Gestionnaire</Label>
-                <Select value={mediatorName} onValueChange={setMediatorName}>
-                    <SelectTrigger><SelectValue placeholder="Assigner un responsable..." /></SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="none">Non assigné</SelectItem>
-                        {allEmployees.map(emp => (
-                            <SelectItem key={emp.id} value={emp.name}>{emp.name}</SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-            </div>
-             <div className="space-y-2">
-              <Label htmlFor="status">Statut Initial</Label>
-               <Select value={status} onValueChange={(value: Conflict['status']) => setStatus(value)}>
-                  <SelectTrigger>
-                      <SelectValue placeholder="Sélectionnez un statut" />
-                  </SelectTrigger>
-                  <SelectContent>
-                      {conflictStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                  </SelectContent>
-               </Select>
-            </div>
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-6">
+            {/* Colonne Gauche */}
             <div className="space-y-4">
+               <div className="space-y-2">
+                <Label htmlFor="village">Village / Localité</Label>
+                 <Popover open={isVillageComboboxOpen} onOpenChange={setIsVillageComboboxOpen}>
+                      <PopoverTrigger asChild>
+                          <Button
+                              variant="outline"
+                              role="combobox"
+                              aria-expanded={isVillageComboboxOpen}
+                              className="w-full justify-between font-normal"
+                              disabled={loadingInitialData}
+                          >
+                              {village || "Sélectionnez ou entrez un village..."}
+                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                          <Command>
+                              <CommandInput 
+                                  placeholder="Rechercher un village..."
+                                  value={village}
+                                  onValueChange={setVillage}
+                              />
+                              <CommandList>
+                                  <CommandEmpty>Aucun village trouvé. Vous pouvez entrer une nouvelle valeur.</CommandEmpty>
+                                  <CommandGroup>
+                                      {allChiefs.filter(c => c.village).map((chief) => (
+                                          <CommandItem
+                                              key={chief.id}
+                                              value={chief.village}
+                                              onSelect={() => handleSelectChief(chief)}
+                                          >
+                                              <Check
+                                                  className={cn(
+                                                      "mr-2 h-4 w-4",
+                                                      village === chief.village ? "opacity-100" : "opacity-0"
+                                                  )}
+                                              />
+                                              {chief.village} <span className="text-xs text-muted-foreground ml-2">({chief.region})</span>
+                                          </CommandItem>
+                                      ))}
+                                  </CommandGroup>
+                              </CommandList>
+                          </Command>
+                      </PopoverContent>
+                  </Popover>
+              </div>
+
+               <div className="space-y-2">
+                <Label htmlFor="conflictType">Type de Conflit</Label>
+                 <Select value={conflictType} onValueChange={(value: ConflictType) => setConflictType(value)}>
+                    <SelectTrigger>
+                        <SelectValue placeholder="Sélectionnez un type..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {conflictTypes.map(type => <SelectItem key={type} value={type}>{type}</SelectItem>)}
+                    </SelectContent>
+                 </Select>
+              </div>
+
+              <div className="space-y-2">
+                  <Label htmlFor="status">Statut Initial</Label>
+                   <Select value={status} onValueChange={(value: Conflict['status']) => setStatus(value)}>
+                      <SelectTrigger>
+                          <SelectValue placeholder="Sélectionnez un statut" />
+                      </SelectTrigger>
+                      <SelectContent>
+                          {conflictStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                      </SelectContent>
+                   </Select>
+              </div>
+            </div>
+
+            {/* Colonne Droite */}
+            <div className="space-y-4">
+              <div className="space-y-2">
+                  <Label htmlFor="mediatorName">Médiateur / Responsable assigné</Label>
+                  <Select value={mediatorName} onValueChange={setMediatorName}>
+                      <SelectTrigger><SelectValue placeholder="Assigner un responsable..." /></SelectTrigger>
+                      <SelectContent>
+                          <SelectItem value="none">Non assigné</SelectItem>
+                          {allEmployees.map(emp => (
+                              <SelectItem key={emp.id} value={emp.name}>{emp.name}</SelectItem>
+                          ))}
+                      </SelectContent>
+                  </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="description">Description des faits</Label>
+                <Textarea
+                  id="description"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  rows={4}
+                  placeholder="Décrivez la nature du conflit..."
+                  className="resize-none"
+                />
+              </div>
+            </div>
+
+            {/* Section Localisation - Pleine largeur */}
+            <div className="md:col-span-2 pt-4 border-t border-primary/5 space-y-4">
                 <div className="flex items-center justify-between">
-                    <Label>Localisation Géographique</Label>
-                    <div className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Précision requise pour analyse IA</div>
+                    <div className="space-y-1">
+                      <Label className="text-base font-bold">Localisation Géographique</Label>
+                      <div className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Indispensable pour la cartographie et l'analyse IA</div>
+                    </div>
                 </div>
                 
-                <LocationPicker 
-                    onLocationSelectAction={(lat, lng) => {
-                        setLatitude(lat.toString());
-                        setLongitude(lng.toString());
-                    }}
-                    initialLat={latitude ? parseFloat(latitude) : undefined}
-                    initialLng={longitude ? parseFloat(longitude) : undefined}
-                    className="border p-2 rounded-xl bg-slate-50/50"
-                />
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+                  <div className="lg:col-span-2">
+                    <LocationPicker 
+                        onLocationSelectAction={(lat, lng) => {
+                            setLatitude(lat.toString());
+                            setLongitude(lng.toString());
+                        }}
+                        initialLat={latitude ? parseFloat(latitude) : undefined}
+                        initialLng={longitude ? parseFloat(longitude) : undefined}
+                        className="border shadow-sm rounded-2xl bg-slate-50/50"
+                    />
+                  </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="latitude">Latitude</Label>
-                        <Input 
-                            id="latitude" 
-                            type="number" 
-                            step="any" 
-                            value={latitude} 
-                            onChange={e => setLatitude(e.target.value)} 
-                            placeholder="0.000000"
-                            className="bg-white"
-                        />
+                  <div className="space-y-4">
+                    <div className="p-4 rounded-2xl bg-primary/5 border border-primary/10 space-y-4">
+                      <div className="space-y-2">
+                          <Label htmlFor="latitude" className="text-xs font-bold uppercase text-muted-foreground">Latitude</Label>
+                          <Input 
+                              id="latitude" 
+                              type="number" 
+                              step="any" 
+                              value={latitude} 
+                              onChange={e => setLatitude(e.target.value)} 
+                              placeholder="0.000000"
+                              className="bg-white border-primary/10 focus-visible:ring-primary/20"
+                          />
+                      </div>
+                       <div className="space-y-2">
+                          <Label htmlFor="longitude" className="text-xs font-bold uppercase text-muted-foreground">Longitude</Label>
+                          <Input 
+                              id="longitude" 
+                              type="number" 
+                              step="any" 
+                              value={longitude} 
+                              onChange={e => setLongitude(e.target.value)} 
+                              placeholder="0.000000"
+                              className="bg-white border-primary/10 focus-visible:ring-primary/20"
+                          />
+                      </div>
                     </div>
-                     <div className="space-y-2">
-                        <Label htmlFor="longitude">Longitude</Label>
-                        <Input 
-                            id="longitude" 
-                            type="number" 
-                            step="any" 
-                            value={longitude} 
-                            onChange={e => setLongitude(e.target.value)} 
-                            placeholder="0.000000"
-                            className="bg-white"
-                        />
-                    </div>
+                    
+                    <p className="text-[10px] text-muted-foreground italic leading-relaxed">
+                      Cliquez sur la carte ou utilisez le bouton "Ma position" pour remplir automatiquement ces coordonnées.
+                    </p>
+                  </div>
                 </div>
             </div>
+
             {error && (
-              <p className="col-span-4 text-center text-sm text-destructive">
+              <div className="md:col-span-2 p-3 rounded-lg bg-destructive/5 border border-destructive/10 text-center text-sm text-destructive font-medium">
                 {error}
-              </p>
+              </div>
             )}
           </div>
-          <SheetFooter>
-            <SheetClose asChild>
-              <Button type="button" variant="outline" onClick={handleClose}>
+
+          <DialogFooter className="gap-2 pt-2 border-t border-primary/5">
+            <DialogClose asChild>
+              <Button type="button" variant="ghost" onClick={handleClose}>
                 Annuler
               </Button>
-            </SheetClose>
-            <Button type="submit" disabled={isSubmitting || loadingInitialData}>
-              {isSubmitting ? "Enregistrement..." : "Enregistrer"}
+            </DialogClose>
+            <Button type="submit" className="min-w-[150px]" disabled={isSubmitting || loadingInitialData}>
+              {isSubmitting ? "Enregistrement..." : "Enregistrer le signalement"}
             </Button>
-          </SheetFooter>
+          </DialogFooter>
         </form>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 }

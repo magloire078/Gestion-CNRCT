@@ -42,6 +42,7 @@ import {
 } from "@/components/ui/command";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { LocationPicker } from "@/components/common/location-picker";
 
 interface AddConflictDialogProps {
   isOpen: boolean;
@@ -249,14 +250,47 @@ export function AddConflictSheet({
                   </SelectContent>
                </Select>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-                <div>
-                    <Label htmlFor="latitude">Latitude</Label>
-                    <Input id="latitude" type="number" step="any" value={latitude} onChange={e => setLatitude(e.target.value)} placeholder="Auto-rempli ou manuel"/>
+            <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                    <Label>Localisation Géographique</Label>
+                    <div className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Précision requise pour analyse IA</div>
                 </div>
-                 <div>
-                    <Label htmlFor="longitude">Longitude</Label>
-                    <Input id="longitude" type="number" step="any" value={longitude} onChange={e => setLongitude(e.target.value)} placeholder="Auto-rempli ou manuel"/>
+                
+                <LocationPicker 
+                    onLocationSelectAction={(lat, lng) => {
+                        setLatitude(lat.toString());
+                        setLongitude(lng.toString());
+                    }}
+                    initialLat={latitude ? parseFloat(latitude) : undefined}
+                    initialLng={longitude ? parseFloat(longitude) : undefined}
+                    className="border p-2 rounded-xl bg-slate-50/50"
+                />
+
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="latitude">Latitude</Label>
+                        <Input 
+                            id="latitude" 
+                            type="number" 
+                            step="any" 
+                            value={latitude} 
+                            onChange={e => setLatitude(e.target.value)} 
+                            placeholder="0.000000"
+                            className="bg-white"
+                        />
+                    </div>
+                     <div className="space-y-2">
+                        <Label htmlFor="longitude">Longitude</Label>
+                        <Input 
+                            id="longitude" 
+                            type="number" 
+                            step="any" 
+                            value={longitude} 
+                            onChange={e => setLongitude(e.target.value)} 
+                            placeholder="0.000000"
+                            className="bg-white"
+                        />
+                    </div>
                 </div>
             </div>
             {error && (

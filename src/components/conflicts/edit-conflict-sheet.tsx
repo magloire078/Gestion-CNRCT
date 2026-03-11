@@ -28,6 +28,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import { LocationPicker } from "@/components/common/location-picker";
 
 interface EditConflictSheetProps {
     isOpen: boolean;
@@ -145,6 +146,51 @@ export function EditConflictSheet({ isOpen, onCloseAction, onUpdateConflictActio
                                             {employees.map(e => <SelectItem key={e.id} value={e.name}>{e.name}</SelectItem>)}
                                         </SelectContent>
                                     </Select>
+                                </div>
+                                
+                                <div className="space-y-4 pt-4 border-t mt-4">
+                                    <div className="flex items-center justify-between">
+                                        <Label className="font-bold">Localisation Géographique</Label>
+                                        <div className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Précision requise pour analyse IA</div>
+                                    </div>
+                                    
+                                    <LocationPicker 
+                                        onLocationSelectAction={(lat, lng) => {
+                                            setFormData(prev => ({ ...prev, latitude: lat, longitude: lng }));
+                                        }}
+                                        initialLat={formData.latitude}
+                                        initialLng={formData.longitude}
+                                        className="border p-2 rounded-xl bg-slate-50/50"
+                                    />
+
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="latitude">Latitude</Label>
+                                            <Input 
+                                                id="latitude" 
+                                                type="number" 
+                                                step="any" 
+                                                value={formData.latitude || ''} 
+                                                onChange={handleInputChange}
+                                                name="latitude"
+                                                placeholder="0.000000"
+                                                className="bg-white"
+                                            />
+                                        </div>
+                                         <div className="space-y-2">
+                                            <Label htmlFor="longitude">Longitude</Label>
+                                            <Input 
+                                                id="longitude" 
+                                                type="number" 
+                                                step="any" 
+                                                value={formData.longitude || ''} 
+                                                onChange={handleInputChange}
+                                                name="longitude"
+                                                placeholder="0.000000"
+                                                className="bg-white"
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
                             </>
                         )}

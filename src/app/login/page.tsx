@@ -47,7 +47,7 @@ export default function LoginPage() {
     setError(null);
     try {
       await signIn(email, password);
-      router.push("/");
+      router.push("/intranet");
     } catch (err) {
       // Capture any error and display its message
       const errorMessage = err instanceof Error ? err.message : "Une erreur inattendue est survenue. Veuillez réessayer.";

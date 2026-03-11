@@ -70,7 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     if (!user && !isPublicPage) {
       router.push('/login');
-    } else if (user && isPublicPage && pathname !== '/') {
+    } else if (user && isPublicPage) {
       router.push('/intranet');
     }
   }, [user, loading, pathname, router]);

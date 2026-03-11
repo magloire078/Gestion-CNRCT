@@ -81,6 +81,10 @@ export type Employe = {
     Droit?: number;
     bActif?: boolean;
 
+    // Chief & Village Link
+    chiefId?: string; // Firestore doc ID in the 'chiefs' collection for this chief
+    subPrefecture?: string; // Sub-prefecture for chiefs/regional committee members
+
     // Calculated fields for UI display
     calculatedRetirementDate?: Date;
     age?: number;

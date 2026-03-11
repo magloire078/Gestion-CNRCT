@@ -547,8 +547,8 @@ export default function ItAssetsPage() {
       </div>
       <ConfirmationDialog
         isOpen={!!deleteTarget}
-        onClose={() => setDeleteTarget(null)}
-        onConfirm={handleDeleteAsset}
+        onCloseAction={() => setDeleteTarget(null)}
+        onConfirmAction={handleDeleteAsset}
         title={`Supprimer l'actif : ${deleteTarget?.tag}`}
         description={`Êtes-vous sûr de vouloir supprimer "${deleteTarget?.modele} (${deleteTarget?.tag})" ? Cette action est irréversible.`}
       />

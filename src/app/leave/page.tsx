@@ -36,6 +36,8 @@ import { LeaveCalendar } from "@/components/leave/leave-calendar";
 import { format, parseISO, eachDayOfInterval, getDay } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { PaginationControls } from "@/components/common/pagination-controls";
+import { useAuth } from "@/hooks/use-auth";
+import { useRouter } from "next/navigation";
 
 
 type Status = "Approuvé" | "En attente" | "Rejeté";
@@ -66,6 +68,8 @@ export default function LeavePage() {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const { user, hasPermission } = useAuth();
+  const router = useRouter();
 
   const formatDate = (dateString: string) => {
     try {
@@ -74,6 +78,18 @@ export default function LeavePage() {
       return dateString; // Fallback to original string
     }
   };
+
+  // Secondary permission check - allow access if user has permission OR has a linked employee ID
+  useEffect(() => {
+    if (!loading && !hasPermission('page:leave:view') && !user?.employeeId) {
+      router.replace('/intranet');
+      toast({
+        variant: "destructive",
+        title: "Accès refusé",
+        description: "Vous n'avez pas les permissions pour accéder à cette page."
+      });
+    }
+  }, [loading, hasPermission, user, router, toast]);
 
   const calculateWorkingDays = (startDate: string, endDate: string): number => {
     try {
@@ -159,12 +175,17 @@ export default function LeavePage() {
 
   const filteredLeaves = useMemo(() => {
     const filtered = leaves.map(leave => {
-      const employeeDetails = employees.find(e => e.name === leave.employee);
+      const employeeDetails = employees.find(e => e.id === leave.employeeId || e.name === leave.employee);
       return {
         ...leave,
         employeeDetails
       };
     }).filter(leaveWithDetails => {
+      // Data-level filtering: If not admin/HR, only show the user's own leaves
+      if (!hasPermission('page:leave:view') && user?.employeeId) {
+        if (leaveWithDetails.employeeId !== user.employeeId) return false;
+      }
+
       const { employee, employeeDetails } = leaveWithDetails;
       const searchTermLower = searchTerm.toLowerCase();
 
@@ -204,12 +225,14 @@ export default function LeavePage() {
           Gestion des Congés
         </h1>
         <div className="flex gap-2">
-          <Button variant="outline" asChild>
-            <Link href="/leave/report">
-              <FileText className="mr-2 h-4 w-4" />
-              Rapport des Congés
-            </Link>
-          </Button>
+          {hasPermission('page:leave:view') && (
+            <Button variant="outline" asChild>
+              <Link href="/leave/report">
+                <FileText className="mr-2 h-4 w-4" />
+                Rapport des Congés
+              </Link>
+            </Button>
+          )}
           <Button onClick={() => setIsAddSheetOpen(true)}>
             <PlusCircle className="mr-2 h-4 w-4" />
             Nouvelle demande
@@ -346,34 +369,39 @@ export default function LeavePage() {
                                   size="icon"
                                   className="h-8 w-8"
                                   onClick={() => openEditSheet(leave)}
+                                  disabled={leave.status !== "En attente"}
                                 >
                                   <Pencil className="h-4 w-4" />
                                   <span className="sr-only">Modifier</span>
                                 </Button>
-                                <Button
-                                  variant="outline"
-                                  size="icon"
-                                  className="h-8 w-8"
-                                  disabled={leave.status !== "En attente"}
-                                  onClick={() =>
-                                    handleLeaveStatusChange(leave.id, "Approuvé")
-                                  }
-                                >
-                                  <Check className="h-4 w-4" />
-                                  <span className="sr-only">Approuver</span>
-                                </Button>
-                                <Button
-                                  variant="outline"
-                                  size="icon"
-                                  className="h-8 w-8"
-                                  disabled={leave.status !== "En attente"}
-                                  onClick={() =>
-                                    handleLeaveStatusChange(leave.id, "Rejeté")
-                                  }
-                                >
-                                  <X className="h-4 w-4" />
-                                  <span className="sr-only">Rejeter</span>
-                                </Button>
+                                {hasPermission('page:leave:view') && (
+                                  <>
+                                    <Button
+                                      variant="outline"
+                                      size="icon"
+                                      className="h-8 w-8"
+                                      disabled={leave.status !== "En attente"}
+                                      onClick={() =>
+                                        handleLeaveStatusChange(leave.id, "Approuvé")
+                                      }
+                                    >
+                                      <Check className="h-4 w-4" />
+                                      <span className="sr-only">Approuver</span>
+                                    </Button>
+                                    <Button
+                                      variant="outline"
+                                      size="icon"
+                                      className="h-8 w-8"
+                                      disabled={leave.status !== "En attente"}
+                                      onClick={() =>
+                                        handleLeaveStatusChange(leave.id, "Rejeté")
+                                      }
+                                    >
+                                      <X className="h-4 w-4" />
+                                      <span className="sr-only">Rejeter</span>
+                                    </Button>
+                                  </>
+                                )}
                               </div>
                             </TableCell>
                           </TableRow>
@@ -493,13 +521,13 @@ export default function LeavePage() {
 
       <AddLeaveRequestSheet
         isOpen={isAddSheetOpen}
-        onClose={() => setIsAddSheetOpen(false)}
-        onAddLeaveRequest={handleAddLeaveRequest}
+        onCloseAction={() => setIsAddSheetOpen(false)}
+        onAddLeaveRequestAction={handleAddLeaveRequest}
       />
       <EditLeaveRequestSheet
         isOpen={isEditSheetOpen}
-        onClose={() => setIsEditSheetOpen(false)}
-        onUpdateLeave={handleUpdateLeaveRequest}
+        onCloseAction={() => setIsEditSheetOpen(false)}
+        onUpdateLeaveAction={handleUpdateLeaveRequest}
         leaveRequest={selectedLeave}
       />
     </div>

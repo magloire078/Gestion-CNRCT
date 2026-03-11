@@ -338,8 +338,8 @@ export default function SuppliesPage() {
         )}
         <ConfirmationDialog
           isOpen={!!deleteTarget}
-          onClose={() => setDeleteTarget(null)}
-          onConfirm={handleDeleteConfirm}
+          onCloseAction={() => setDeleteTarget(null)}
+          onConfirmAction={handleDeleteConfirm}
           title={`Supprimer "${deleteTarget?.name}"`}
           description="Êtes-vous sûr de vouloir supprimer cet article de l'inventaire ? Cette action est irréversible."
         />

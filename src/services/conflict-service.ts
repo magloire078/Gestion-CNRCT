@@ -1,6 +1,6 @@
 
 
-import { collection, getDocs, addDoc, onSnapshot, Unsubscribe, query, orderBy, doc, updateDoc, getDoc } from '@/lib/firebase';
+import { collection, getDocs, addDoc, onSnapshot, Unsubscribe, query, orderBy, doc, updateDoc, getDoc, deleteDoc } from '@/lib/firebase';
 import type { Conflict } from '@/lib/data';
 import { db } from '@/lib/firebase';
 
@@ -54,4 +54,9 @@ export async function addConflict(conflictDataToAdd: Omit<Conflict, 'id'>): Prom
 export async function updateConflict(id: string, dataToUpdate: Partial<Omit<Conflict, 'id'>>): Promise<void> {
     const conflictDocRef = doc(db, 'conflicts', id);
     await updateDoc(conflictDocRef, dataToUpdate);
+}
+
+export async function deleteConflict(id: string): Promise<void> {
+    const conflictDocRef = doc(db, 'conflicts', id);
+    await deleteDoc(conflictDocRef);
 }

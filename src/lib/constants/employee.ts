@@ -10,6 +10,7 @@ export const allColumns = {
     email: "CONTACT",
     status: "Statut",
     CNPS: "CNPS",
+    dateEmbauche: "Prise de Service",
     Date_Depart: "Date Dep.",
 } as const;
 

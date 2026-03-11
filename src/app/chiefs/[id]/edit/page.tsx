@@ -1,236 +1,320 @@
-
-
 "use client";
 
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { getChief, updateChief, getChiefs } from "@/services/chief-service";
-import type { Chief, ChiefRole, DesignationMode } from "@/lib/data";
-
-import { Skeleton } from "@/components/ui/skeleton";
+import { 
+    ChevronLeft, Save, Upload, 
+    MapPin, User, Shield, Info,
+    CheckCircle2, AlertCircle, Loader2
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ArrowLeft, Loader2, Save, Upload } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
+import { getChief, updateChief } from "@/services/chief-service";
+import type { Chief, ChiefRole, DesignationMode } from "@/lib/data";
 import { divisions } from "@/lib/ivory-coast-divisions";
-import {
-    Accordion,
-    AccordionContent,
-    AccordionItem,
-    AccordionTrigger,
-} from "@/components/ui/accordion";
 
-export default function ChiefEditPage() {
-    const params = useParams();
+export default function EditChiefPage() {
+    const { id } = useParams() as { id: string };
     const router = useRouter();
-    const { id } = params;
     const { toast } = useToast();
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const [chief, setChief] = useState<Partial<Chief> | null>(null);
-    const [allChiefs, setAllChiefs] = useState<Chief[]>([]);
     const [loading, setLoading] = useState(true);
-    const [isSaving, setIsSaving] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState("");
 
-    const [photoPreview, setPhotoPreview] = useState("");
+    // Form states
+    const [firstName, setFirstName] = useState("");
+    const [lastName, setLastName] = useState("");
+    const [title, setTitle] = useState("");
+    const [role, setRole] = useState<ChiefRole>("Chef de Village");
+    const [designationDate, setDesignationDate] = useState("");
+    const [designationMode, setDesignationMode] = useState<DesignationMode | "">("");
+    const [sexe, setSexe] = useState<Chief['sexe'] | "">("");
+    const [contact, setContact] = useState("");
+    const [email, setEmail] = useState("");
+    const [address, setAddress] = useState("");
+    const [ethnicGroup, setEthnicGroup] = useState("");
+    const [languages, setLanguages] = useState("");
+    const [CNRCTRegistrationNumber, setCNRCTRegistrationNumber] = useState("");
+    const [officialDocuments, setOfficialDocuments] = useState("");
+    const [bio, setBio] = useState("");
+    const [photoUrl, setPhotoUrl] = useState("");
     const [photoFile, setPhotoFile] = useState<File | null>(null);
-    const [languagesString, setLanguagesString] = useState("");
-    const photoInputRef = useRef<HTMLInputElement>(null);
+    const [photoPreview, setPhotoPreview] = useState("");
 
-    const departments = useMemo(() => chief?.region && divisions[chief.region] ? Object.keys(divisions[chief.region]) : [], [chief?.region]);
-    const subPrefectures = useMemo(() => chief?.region && chief?.department && divisions[chief.region]?.[chief.department] ? Object.keys(divisions[chief.region][chief.department]) : [], [chief?.region, chief?.department]);
-    const villages = useMemo(() => chief?.region && chief?.department && chief?.subPrefecture && divisions[chief.region]?.[chief.department]?.[chief.subPrefecture] ? divisions[chief.region][chief.department][chief.subPrefecture] : [], [chief?.region, chief?.department, chief?.subPrefecture]);
+    const [selectedRegion, setSelectedRegion] = useState("");
+    const [customRegion, setCustomRegion] = useState("");
+    const [selectedDepartment, setSelectedDepartment] = useState("");
+    const [customDepartment, setCustomDepartment] = useState("");
+    const [selectedSubPrefecture, setSelectedSubPrefecture] = useState("");
+    const [customSubPrefecture, setCustomSubPrefecture] = useState("");
+    const [selectedVillage, setSelectedVillage] = useState("");
+    const [customVillage, setCustomVillage] = useState("");
+    const [latitude, setLatitude] = useState<number | ''>('');
+    const [longitude, setLongitude] = useState<number | ''>('');
 
     useEffect(() => {
-        if (typeof id !== 'string') return;
-        async function fetchChiefData() {
+        async function fetchChief() {
             try {
-                const [data, chiefsList] = await Promise.all([getChief(id as string), getChiefs()]);
-                setChief(data);
-                setAllChiefs(chiefsList.filter(c => c.id !== id)); // Exclude self from parent list
-                if (data?.photoUrl) setPhotoPreview(data.photoUrl);
-                if (data?.languages) setLanguagesString(data.languages.join(', '));
-            } catch (error) {
-                console.error("Failed to fetch chief data", error);
-                toast({ variant: "destructive", title: "Erreur", description: "Impossible de charger les données du chef." });
+                const data = await getChief(id);
+                if (data) {
+                    setFirstName(data.firstName || "");
+                    setLastName(data.lastName || "");
+                    setTitle(data.title || "");
+                    setRole(data.role || "Chef de Village");
+                    setDesignationDate(data.designationDate || "");
+                    setDesignationMode(data.designationMode || "");
+                    setSexe(data.sexe || "");
+                    setContact(data.contact || "");
+                    setEmail(data.email || "");
+                    setAddress(data.address || "");
+                    setEthnicGroup(data.ethnicGroup || "");
+                    setLanguages(data.languages?.join(", ") || "");
+                    setCNRCTRegistrationNumber(data.CNRCTRegistrationNumber || "");
+                    setOfficialDocuments(data.officialDocuments || "");
+                    setBio(data.bio || "");
+                    setPhotoUrl(data.photoUrl || "");
+                    setPhotoPreview(data.photoUrl || "");
+                    
+                    // Division loading
+                    if (data.region && divisions[data.region]) {
+                        setSelectedRegion(data.region);
+                        if (data.department && divisions[data.region][data.department]) {
+                            setSelectedDepartment(data.department);
+                            if (data.subPrefecture && divisions[data.region][data.department][data.subPrefecture]) {
+                                setSelectedSubPrefecture(data.subPrefecture);
+                                if (data.village && divisions[data.region][data.department][data.subPrefecture].includes(data.village)) {
+                                    setSelectedVillage(data.village);
+                                } else {
+                                    setSelectedVillage("AUTRE");
+                                    setCustomVillage(data.village);
+                                }
+                            } else {
+                                setSelectedSubPrefecture("AUTRE");
+                                setCustomSubPrefecture(data.subPrefecture);
+                                setCustomVillage(data.village);
+                            }
+                        } else {
+                            setSelectedDepartment("AUTRE");
+                            setCustomDepartment(data.department);
+                        }
+                    } else {
+                        setSelectedRegion("AUTRE");
+                        setCustomRegion(data.region);
+                    }
+
+                    setLatitude(data.latitude ?? '');
+                    setLongitude(data.longitude ?? '');
+                }
+            } catch (err) {
+                console.error("Error loading chief for edit:", err);
+                setError("Impossible de charger les données.");
             } finally {
                 setLoading(false);
             }
         }
-        fetchChiefData();
-    }, [id, toast]);
+        fetchChief();
+    }, [id]);
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        const { name, value } = e.target;
-        setChief(prev => {
-            if (!prev) return null;
-            return { ...prev, [name]: value };
-        });
-    };
-
-    const handleNumberInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
-        setChief(prev => {
-            if (!prev) return null;
-            return { ...prev, [name]: value === '' ? undefined : parseFloat(value) };
-        });
-    };
-
-    const handleSelectChange = (name: string, value: string) => {
-        setChief(prev => {
-            if (!prev) return null;
-            const newState: Partial<Chief> = { ...prev, [name]: value };
-            if (name === 'region') { newState.department = ''; newState.subPrefecture = ''; newState.village = ''; }
-            if (name === 'department') { newState.subPrefecture = ''; newState.village = ''; }
-            if (name === 'subPrefecture') { newState.village = ''; }
-            return newState;
-        });
-    };
+    const departments = useMemo(() => selectedRegion && divisions[selectedRegion] ? Object.keys(divisions[selectedRegion]) : [], [selectedRegion]);
+    const subPrefectures = useMemo(() => selectedRegion && selectedDepartment && divisions[selectedRegion]?.[selectedDepartment] ? Object.keys(divisions[selectedRegion][selectedDepartment]) : [], [selectedRegion, selectedDepartment]);
+    const villages = useMemo(() => selectedRegion && selectedDepartment && selectedSubPrefecture && divisions[selectedRegion]?.[selectedDepartment]?.[selectedSubPrefecture] ? divisions[selectedRegion][selectedDepartment][selectedSubPrefecture] : [], [selectedRegion, selectedDepartment, selectedSubPrefecture]);
 
     const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
             setPhotoFile(file);
             const reader = new FileReader();
-            reader.onloadend = () => {
-                setPhotoPreview(reader.result as string);
-            };
+            reader.onloadend = () => setPhotoPreview(reader.result as string);
             reader.readAsDataURL(file);
         }
     };
 
-    const handleSave = async () => {
-        if (!chief || typeof id !== 'string') return;
-        setIsSaving(true);
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+        setError("");
 
-        const fullName = `${chief.lastName || ''} ${chief.firstName || ''}`.trim();
-        const dataToSave = { ...chief, name: fullName, languages: languagesString.split(',').map((s: string) => s.trim()).filter(Boolean) };
+        const finalRegion = selectedRegion === 'AUTRE' ? customRegion : selectedRegion;
+        const finalDepartment = selectedDepartment === 'AUTRE' ? customDepartment : selectedDepartment;
+        const finalSubPrefecture = selectedSubPrefecture === 'AUTRE' ? customSubPrefecture : selectedSubPrefecture;
+        const finalVillage = selectedVillage === 'AUTRE' ? customVillage : selectedVillage;
 
         try {
-            await updateChief(id as string, dataToSave, photoFile);
-            toast({ title: "Succès", description: "Les informations du chef ont été mises à jour." });
-            router.back();
-        } catch (error) {
-            console.error("Failed to save chief", error);
-            toast({ variant: "destructive", title: "Erreur", description: "Impossible d'enregistrer les modifications." });
+            const updateData: Partial<Chief> = {
+                name: `${lastName} ${firstName}`.trim(),
+                firstName,
+                lastName,
+                title,
+                role,
+                designationDate: designationDate || undefined,
+                designationMode: designationMode as DesignationMode,
+                sexe: sexe as Chief['sexe'],
+                region: finalRegion,
+                department: finalDepartment,
+                subPrefecture: finalSubPrefecture,
+                village: finalVillage,
+                ethnicGroup: ethnicGroup || undefined,
+                languages: languages ? languages.split(',').map(s => s.trim()) : undefined,
+                contact,
+                email: email || undefined,
+                address: address || undefined,
+                CNRCTRegistrationNumber: CNRCTRegistrationNumber || undefined,
+                officialDocuments: officialDocuments || undefined,
+                bio,
+            };
+
+            if (latitude !== '') updateData.latitude = Number(latitude);
+            if (longitude !== '') updateData.longitude = Number(longitude);
+
+            await updateChief(id, updateData, photoFile);
+            toast({ title: "Modifications enregistrées", description: "La fiche du chef a été mise à jour avec succès." });
+            router.push(`/chiefs/${id}`);
+        } catch (err: any) {
+            setError(err.message || "Erreur lors de l'enregistrement.");
+            toast({ variant: "destructive", title: "Erreur", description: "Impossible de sauvegarder les modifications." });
         } finally {
-            setIsSaving(false);
+            setIsSubmitting(false);
         }
     };
 
-    const fullName = chief ? `${chief.lastName || ''} ${chief.firstName || ''}`.trim() : "Chargement...";
-
     if (loading) {
         return (
-            <div className="max-w-4xl mx-auto flex flex-col gap-6">
-                <Skeleton className="h-10 w-48" />
-                <Card><CardContent className="p-6"><Skeleton className="h-96 w-full" /></CardContent></Card>
+            <div className="container mx-auto py-20 flex flex-col items-center justify-center gap-4">
+                <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
+                <p className="text-sm font-bold text-slate-500 uppercase tracking-widest animate-pulse">Chargement de la fiche...</p>
             </div>
         );
     }
 
-    if (!chief) {
-        return <div className="text-center py-10">Chef non trouvé.</div>;
-    }
-
     return (
-        <div className="max-w-4xl mx-auto flex flex-col gap-6">
-            <div className="flex items-center gap-4">
-                <Button variant="outline" size="icon" onClick={() => router.back()}>
-                    <ArrowLeft className="h-4 w-4" />
-                    <span className="sr-only">Retour</span>
+        <div className="container mx-auto py-8 pb-20 max-w-4xl space-y-6">
+            <div className="flex items-center justify-between">
+                <Button variant="ghost" size="sm" onClick={() => router.back()} className="hover:bg-slate-100">
+                    <ChevronLeft className="mr-2 h-4 w-4" />
+                    Annuler
                 </Button>
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight">Modifier le Profil du Chef</h1>
-                    <p className="text-muted-foreground">{fullName}</p>
-                </div>
-                <Button onClick={handleSave} disabled={isSaving} className="ml-auto">
-                    {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                    Enregistrer
-                </Button>
+                <h1 className="text-xl font-bold tracking-tight">Modifier la Fiche d'Autorité</h1>
             </div>
 
-            <Card>
-                <CardContent className="p-4">
-                    <Accordion type="multiple" defaultValue={['item-1', 'item-2', 'item-3', 'item-4', 'item-5']} className="w-full">
-                        <AccordionItem value="item-1">
-                            <AccordionTrigger>Identité</AccordionTrigger>
-                            <AccordionContent>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
-                                    <div className="space-y-2 col-span-2 flex items-center gap-4">
-                                        <Label>Photo</Label>
-                                        <Avatar className="h-20 w-20">
-                                            <AvatarImage src={photoPreview} alt={chief.name} data-ai-hint="chief portrait" />
-                                            <AvatarFallback>{chief.lastName?.charAt(0) || 'C'}</AvatarFallback>
-                                        </Avatar>
-                                        <Button type="button" variant="outline" onClick={() => photoInputRef.current?.click()}>
-                                            <Upload className="mr-2 h-4 w-4" /> Changer
-                                        </Button>
-                                        <Input ref={photoInputRef} type="file" className="hidden" accept="image/*" onChange={handlePhotoChange} />
+            <form onSubmit={handleSubmit}>
+                <Card className="border-none shadow-xl">
+                    <CardHeader className="border-b bg-slate-50/50">
+                        <div className="flex items-center gap-4">
+                            <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+                                <Avatar className="h-20 w-20 rounded-xl border-2 border-white shadow-md transition-all group-hover:opacity-80">
+                                    <AvatarImage src={photoPreview} className="object-cover" />
+                                    <AvatarFallback className="bg-blue-100 text-blue-600 font-bold">{lastName?.charAt(0)}</AvatarFallback>
+                                </Avatar>
+                                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <Upload className="h-6 w-6 text-white drop-shadow-md" />
+                                </div>
+                                <input ref={fileInputRef} type="file" className="hidden" accept="image/*" onChange={handlePhotoChange} />
+                            </div>
+                            <div>
+                                <CardTitle className="text-2xl font-black text-slate-800 tracking-tight">{title} {firstName} {lastName}</CardTitle>
+                                <CardDescription>Modification des données administratives et territoriales</CardDescription>
+                            </div>
+                        </div>
+                    </CardHeader>
+                    
+                    <CardContent className="pt-6">
+                        <Accordion type="multiple" defaultValue={['id', 'loc', 'cult', 'legal']} className="w-full">
+                            <AccordionItem value="id" className="border-slate-100">
+                                <AccordionTrigger className="hover:no-underline"><div className="flex items-center gap-2 font-bold text-slate-700 text-sm uppercase tracking-widest"><User className="h-4 w-4" /> Identité</div></AccordionTrigger>
+                                <AccordionContent className="pt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="space-y-2"><Label>Nom</Label><Input value={lastName} onChange={e => setLastName(e.target.value)} required /></div>
+                                    <div className="space-y-2"><Label>Prénom(s)</Label><Input value={firstName} onChange={e => setFirstName(e.target.value)} required /></div>
+                                    <div className="space-y-2"><Label>Titre Officiel</Label><Input value={title} onChange={e => setTitle(e.target.value)} required /></div>
+                                    <div className="space-y-2"><Label>Rôle Traditionnel</Label>
+                                        <Select value={role} onValueChange={(v) => setRole(v as ChiefRole)}>
+                                            <SelectTrigger><SelectValue /></SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="Roi">Roi</SelectItem>
+                                                <SelectItem value="Chef de province">Chef de province</SelectItem>
+                                                <SelectItem value="Chef de canton">Chef de canton</SelectItem>
+                                                <SelectItem value="Chef de tribu">Chef de tribu</SelectItem>
+                                                <SelectItem value="Chef de Village">Chef de Village</SelectItem>
+                                            </SelectContent>
+                                        </Select>
                                     </div>
-                                    <div className="space-y-2"><Label htmlFor="lastName">Nom</Label><Input id="lastName" name="lastName" value={chief.lastName || ''} onChange={handleInputChange} /></div>
-                                    <div className="space-y-2"><Label htmlFor="firstName">Prénom(s)</Label><Input id="firstName" name="firstName" value={chief.firstName || ''} onChange={handleInputChange} /></div>
-                                    <div className="space-y-2"><Label htmlFor="title">Titre</Label><Input id="title" name="title" value={chief.title || ''} onChange={handleInputChange} /></div>
-                                    <div className="space-y-2"><Label htmlFor="role">Rôle</Label><Select value={chief.role} onValueChange={(v: ChiefRole) => handleSelectChange('role', v)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Roi">Roi</SelectItem><SelectItem value="Chef de province">Chef de province</SelectItem><SelectItem value="Chef de canton">Chef de canton</SelectItem><SelectItem value="Chef de tribu">Chef de tribu</SelectItem><SelectItem value="Chef de Village">Chef de Village</SelectItem></SelectContent></Select></div>
-                                    <div className="space-y-2"><Label htmlFor="designationDate">Date de désignation</Label><Input id="designationDate" name="designationDate" type="date" value={chief.designationDate || ''} onChange={handleInputChange} /></div>
-                                    <div className="space-y-2"><Label htmlFor="designationMode">Mode de désignation</Label><Select value={chief.designationMode} onValueChange={(v: DesignationMode) => handleSelectChange('designationMode', v)}><SelectTrigger><SelectValue placeholder="Sélectionnez..." /></SelectTrigger><SelectContent><SelectItem value="Héritage">Héritage</SelectItem><SelectItem value="Élection">Élection</SelectItem><SelectItem value="Nomination coutumière">Nomination coutumière</SelectItem><SelectItem value="Autre">Autre</SelectItem></SelectContent></Select></div>
-                                    <div className="space-y-2"><Label htmlFor="parentChiefId">Autorité Supérieure</Label><Select value={chief.parentChiefId || 'none'} onValueChange={(v) => handleSelectChange('parentChiefId', v === 'none' ? '' : v)}><SelectTrigger><SelectValue placeholder="Aucun" /></SelectTrigger><SelectContent><SelectItem value="none">Aucun</SelectItem>{allChiefs.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent></Select></div>
-                                    <div className="space-y-2"><Label htmlFor="dateOfBirth">Date de naissance</Label><Input id="dateOfBirth" name="dateOfBirth" type="date" value={chief.dateOfBirth || ''} onChange={handleInputChange} /></div>
-                                    <div className="space-y-2"><Label htmlFor="sexe">Sexe</Label><Select value={chief.sexe || ''} onValueChange={(v) => handleSelectChange('sexe', v)}><SelectTrigger id="sexe"><SelectValue placeholder="Sélectionnez..." /></SelectTrigger><SelectContent><SelectItem value="Homme">Homme</SelectItem><SelectItem value="Femme">Femme</SelectItem><SelectItem value="Autre">Autre</SelectItem></SelectContent></Select></div>
-                                </div>
-                            </AccordionContent>
-                        </AccordionItem>
-                        <AccordionItem value="item-2">
-                            <AccordionTrigger>Localisation</AccordionTrigger>
-                            <AccordionContent>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
-                                    <div className="space-y-2"><Label htmlFor="region">Région</Label><Select value={chief.region} onValueChange={(v) => handleSelectChange('region', v)}><SelectTrigger><SelectValue placeholder="Sélectionnez..." /></SelectTrigger><SelectContent>{Object.keys(divisions).map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}</SelectContent></Select></div>
-                                    <div className="space-y-2"><Label htmlFor="department">Département</Label><Select value={chief.department} onValueChange={(v) => handleSelectChange('department', v)} disabled={!chief.region}><SelectTrigger><SelectValue placeholder="Sélectionnez..." /></SelectTrigger><SelectContent>{departments.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent></Select></div>
-                                    <div className="space-y-2"><Label htmlFor="subPrefecture">Sous-préfecture</Label><Select value={chief.subPrefecture} onValueChange={(v) => handleSelectChange('subPrefecture', v)} disabled={!chief.department}><SelectTrigger><SelectValue placeholder="Sélectionnez..." /></SelectTrigger><SelectContent>{subPrefectures.map(sp => <SelectItem key={sp} value={sp}>{sp}</SelectItem>)}</SelectContent></Select></div>
-                                    <div className="space-y-2"><Label htmlFor="village">Village / Commune</Label><Select value={chief.village} onValueChange={(v) => handleSelectChange('village', v)} disabled={!chief.subPrefecture}><SelectTrigger><SelectValue placeholder="Sélectionnez..." /></SelectTrigger><SelectContent>{villages.map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}</SelectContent></Select></div>
-                                    <div className="space-y-2"><Label htmlFor="latitude">Latitude</Label><Input id="latitude" name="latitude" type="number" step="any" value={chief.latitude ?? ''} onChange={handleNumberInputChange} /></div>
-                                    <div className="space-y-2"><Label htmlFor="longitude">Longitude</Label><Input id="longitude" name="longitude" type="number" step="any" value={chief.longitude ?? ''} onChange={handleNumberInputChange} /></div>
-                                </div>
-                            </AccordionContent>
-                        </AccordionItem>
-                        <AccordionItem value="item-3">
-                            <AccordionTrigger>Affiliation Culturelle</AccordionTrigger>
-                            <AccordionContent>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
-                                    <div className="space-y-2"><Label htmlFor="ethnicGroup">Groupe ethnique</Label><Input id="ethnicGroup" name="ethnicGroup" value={chief.ethnicGroup || ''} onChange={handleInputChange} /></div>
-                                    <div className="space-y-2"><Label htmlFor="languages">Langue(s) parlée(s)</Label><Input id="languages" value={languagesString} onChange={(e) => setLanguagesString(e.target.value)} placeholder="Séparées par une virgule" /></div>
-                                    <div className="space-y-2 md:col-span-2"><Label htmlFor="bio">Biographie / Us et coutumes</Label><Textarea id="bio" name="bio" value={chief.bio || ''} onChange={handleInputChange} rows={4} placeholder="Historique de la chefferie, rites, etc." /></div>
-                                </div>
-                            </AccordionContent>
-                        </AccordionItem>
-                        <AccordionItem value="item-4">
-                            <AccordionTrigger>Contact</AccordionTrigger>
-                            <AccordionContent>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
-                                    <div className="space-y-2"><Label htmlFor="contact">Numéro de téléphone</Label><Input id="contact" name="contact" value={chief.contact || ''} onChange={handleInputChange} /></div>
-                                    <div className="space-y-2"><Label htmlFor="email">Adresse email</Label><Input id="email" name="email" type="email" value={chief.email || ''} onChange={handleInputChange} /></div>
-                                    <div className="space-y-2 md:col-span-2"><Label htmlFor="address">Adresse postale</Label><Input id="address" name="address" value={chief.address || ''} onChange={handleInputChange} /></div>
-                                </div>
-                            </AccordionContent>
-                        </AccordionItem>
-                        <AccordionItem value="item-5">
-                            <AccordionTrigger>Informations Légales & Additionnelles</AccordionTrigger>
-                            <AccordionContent>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
-                                    <div className="space-y-2"><Label htmlFor="CNRCTRegistrationNumber">N° d'enregistrement CNRCT</Label><Input id="CNRCTRegistrationNumber" name="CNRCTRegistrationNumber" value={chief.CNRCTRegistrationNumber || ''} onChange={handleInputChange} /></div>
-                                    <div className="space-y-2"><Label htmlFor="regencyStartDate">Début de régence</Label><Input id="regencyStartDate" name="regencyStartDate" type="date" value={chief.regencyStartDate || ''} onChange={handleInputChange} /></div>
-                                    <div className="space-y-2"><Label htmlFor="regencyEndDate">Fin de régence / Décès</Label><Input id="regencyEndDate" name="regencyEndDate" type="date" value={chief.regencyEndDate || ''} onChange={handleInputChange} /></div>
-                                    <div className="space-y-2 md:col-span-2"><Label htmlFor="officialDocuments">Documents officiels</Label><Textarea id="officialDocuments" name="officialDocuments" value={chief.officialDocuments || ''} onChange={handleInputChange} rows={3} placeholder="Listez les décrets, arrêtés, etc." /></div>
-                                </div>
-                            </AccordionContent>
-                        </AccordionItem>
-                    </Accordion>
-                </CardContent>
-            </Card>
+                                    <div className="space-y-2"><Label>Sexe</Label>
+                                        <Select value={sexe} onValueChange={(v) => setSexe(v as Chief['sexe'])}>
+                                            <SelectTrigger><SelectValue/></SelectTrigger>
+                                            <SelectContent><SelectItem value="Homme">Homme</SelectItem><SelectItem value="Femme">Femme</SelectItem></SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="space-y-2"><Label>Contact Téléphone</Label><Input value={contact} onChange={e => setContact(e.target.value)} /></div>
+                                </AccordionContent>
+                            </AccordionItem>
+
+                            <AccordionItem value="loc" className="border-slate-100">
+                                <AccordionTrigger className="hover:no-underline"><div className="flex items-center gap-2 font-bold text-slate-700 text-sm uppercase tracking-widest"><MapPin className="h-4 w-4" /> Territoire</div></AccordionTrigger>
+                                <AccordionContent className="pt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="space-y-2"><Label>Région</Label>
+                                        <Select value={selectedRegion} onValueChange={v => { setSelectedRegion(v); setSelectedDepartment(''); setSelectedSubPrefecture(''); setSelectedVillage(''); }}>
+                                            <SelectTrigger><SelectValue /></SelectTrigger>
+                                            <SelectContent>{Object.keys(divisions).map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}<SelectItem value="AUTRE">Autre...</SelectItem></SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="space-y-2"><Label>Département</Label>
+                                        <Select value={selectedDepartment} onValueChange={v => { setSelectedDepartment(v); setSelectedSubPrefecture(''); setSelectedVillage(''); }} disabled={!selectedRegion || selectedRegion === 'AUTRE'}>
+                                            <SelectTrigger><SelectValue /></SelectTrigger>
+                                            <SelectContent>{departments.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}<SelectItem value="AUTRE">Autre...</SelectItem></SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="col-span-1 md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="space-y-2"><Label>Latitude</Label><Input type="number" step="any" value={latitude} onChange={e => setLatitude(e.target.value ? parseFloat(e.target.value) : '')} /></div>
+                                        <div className="space-y-2"><Label>Longitude</Label><Input type="number" step="any" value={longitude} onChange={e => setLongitude(e.target.value ? parseFloat(e.target.value) : '')} /></div>
+                                    </div>
+                                </AccordionContent>
+                            </AccordionItem>
+
+                            <AccordionItem value="cult" className="border-slate-100">
+                                <AccordionTrigger className="hover:no-underline"><div className="flex items-center gap-2 font-bold text-slate-700 text-sm uppercase tracking-widest"><Info className="h-4 w-4" /> Biographie & Culture</div></AccordionTrigger>
+                                <AccordionContent className="pt-4 space-y-4">
+                                    <div className="space-y-2"><Label>Biographie / Historique</Label><Textarea value={bio} onChange={e => setBio(e.target.value)} rows={6} className="bg-slate-50/30" /></div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2"><Label>Groupe Ethnique</Label><Input value={ethnicGroup} onChange={e => setEthnicGroup(e.target.value)} /></div>
+                                        <div className="space-y-2"><Label>Langues parlées</Label><Input value={languages} onChange={e => setLanguages(e.target.value)} /></div>
+                                    </div>
+                                </AccordionContent>
+                            </AccordionItem>
+
+                            <AccordionItem value="legal" className="border-none">
+                                <AccordionTrigger className="hover:no-underline"><div className="flex items-center gap-2 font-bold text-slate-700 text-sm uppercase tracking-widest"><Shield className="h-4 w-4" /> Administration</div></AccordionTrigger>
+                                <AccordionContent className="pt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="space-y-2"><Label>N° Enregistrement CNRCT</Label><Input value={CNRCTRegistrationNumber} onChange={e => setCNRCTRegistrationNumber(e.target.value)} /></div>
+                                    <div className="space-y-2"><Label>Mode de Désignation</Label>
+                                        <Select value={designationMode} onValueChange={(v) => setDesignationMode(v as DesignationMode)}>
+                                            <SelectTrigger><SelectValue /></SelectTrigger>
+                                            <SelectContent><SelectItem value="Héritage">Héritage</SelectItem><SelectItem value="Élection">Élection</SelectItem><SelectItem value="Nomination coutumière">Nomination coutumière</SelectItem><SelectItem value="Autre">Autre</SelectItem></SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="col-span-2 space-y-2"><Label>Documents Officiels (Arrêtés, Décrets)</Label><Textarea value={officialDocuments} onChange={e => setOfficialDocuments(e.target.value)} rows={2} /></div>
+                                </AccordionContent>
+                            </AccordionItem>
+                        </Accordion>
+                        {error && <div className="mt-6 p-4 bg-red-50 text-red-600 rounded-xl flex items-center gap-2 text-sm font-bold border border-red-100"><AlertCircle className="h-4 w-4" /> {error}</div>}
+                    </CardContent>
+                    
+                    <CardFooter className="flex justify-between border-t bg-slate-50/50 p-6 rounded-b-xl">
+                        <Button type="button" variant="outline" onClick={() => router.back()}>Abandonner</Button>
+                        <Button type="submit" disabled={isSubmitting} className="bg-blue-600 hover:bg-blue-700 px-8 font-bold">
+                            {isSubmitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Enregistrement...</> : <><Save className="mr-2 h-4 w-4" /> Sauvegarder les modifications</>}
+                        </Button>
+                    </CardFooter>
+                </Card>
+            </form>
         </div>
     );
 }

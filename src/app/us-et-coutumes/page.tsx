@@ -165,8 +165,8 @@ export default function UsEtCoutumesPage() {
       />
       <ConfirmationDialog
         isOpen={!!deleteTarget}
-        onClose={() => setDeleteTarget(null)}
-        onConfirm={handleDeleteCustom}
+        onCloseAction={() => setDeleteTarget(null)}
+        onConfirmAction={handleDeleteCustom}
         title={`Supprimer la fiche : ${deleteTarget?.ethnicGroup} ?`}
         description="Êtes-vous sûr de vouloir supprimer cette fiche ? Cette action est irréversible."
       />

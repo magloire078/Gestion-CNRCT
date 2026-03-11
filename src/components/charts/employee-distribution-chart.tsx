@@ -91,7 +91,7 @@ export function EmployeeDistributionChart() {
 
     if (filterType === "department") {
       const departmentMap = new Map(departments.map(d => [d.id, d.name]));
-      distribution = employees.reduce((acc, employee) => {
+      distribution = employees.filter(e => e.status === 'Actif').reduce((acc, employee) => {
         let name = "Autre";
         if (employee.departmentId && departmentMap.has(employee.departmentId)) {
           name = departmentMap.get(employee.departmentId)!;
@@ -106,7 +106,7 @@ export function EmployeeDistributionChart() {
       }, distribution);
     } else if (filterType === "direction") {
       const directionMap = new Map(directions.map(d => [d.id, d.name]));
-      distribution = employees.reduce((acc, employee) => {
+      distribution = employees.filter(e => e.status === 'Actif').reduce((acc, employee) => {
         let name = "Sans Direction";
         if (employee.directionId && directionMap.has(employee.directionId)) {
           name = directionMap.get(employee.directionId)!;
@@ -117,7 +117,7 @@ export function EmployeeDistributionChart() {
       }, distribution);
     } else if (filterType === "service") {
       const serviceMap = new Map(services.map(s => [s.id, s.name]));
-      distribution = employees.reduce((acc, employee) => {
+      distribution = employees.filter(e => e.status === 'Actif').reduce((acc, employee) => {
         let name = "Sans Service";
         if (employee.serviceId && serviceMap.has(employee.serviceId)) {
           name = serviceMap.get(employee.serviceId)!;

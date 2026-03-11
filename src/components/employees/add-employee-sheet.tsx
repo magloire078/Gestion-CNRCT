@@ -45,11 +45,11 @@ import { ScrollArea } from "../ui/scroll-area";
 
 interface AddEmployeeSheetProps {
   isOpen: boolean;
-  onClose: () => void;
-  onAddEmployee: (employeeData: Omit<Employe, "id">, photoFile: File | null) => Promise<void>;
+  onCloseAction: () => void;
+  onAddEmployeeAction: (employeeData: Omit<Employe, "id">, photoFile: File | null) => Promise<void>;
 }
 
-export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployeeSheetProps) {
+export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }: AddEmployeeSheetProps) {
   const [matricule, setMatricule] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -153,7 +153,7 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
 
   const handleClose = () => {
     resetForm();
-    onClose();
+    onCloseAction();
   }
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -236,7 +236,7 @@ export function AddEmployeeSheet({ isOpen, onClose, onAddEmployee }: AddEmployee
         Village: village,
         photoUrl: '', // This will be set by the service after upload
       };
-      await onAddEmployee(employeeData, photoFile);
+      await onAddEmployeeAction(employeeData, photoFile);
       handleClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Échec de l'ajout de l'employé. Veuillez réessayer.");

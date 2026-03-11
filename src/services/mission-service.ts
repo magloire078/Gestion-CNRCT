@@ -11,25 +11,23 @@ const missionsCollection = collection(db, 'missions');
 const usersCollection = collection(db, 'users');
 
 async function notifyParticipants(mission: Omit<Mission, 'id'> | Mission) {
-    if (!mission.participants || mission.participants.length === 0) return;
-
-    const employeeNames = mission.participants.map(p => p.employeeName);
+    const employeeIds = mission.participants.map(p => p.employeeId);
+    if (employeeIds.length === 0) return;
 
     // Firestore 'in' query supports up to 30 items. Chunk if necessary.
-    for (let i = 0; i < employeeNames.length; i += 30) {
-        const nameChunk = employeeNames.slice(i, i + 30);
-        if (nameChunk.length === 0) continue;
+    for (let i = 0; i < employeeIds.length; i += 30) {
+        const idChunk = employeeIds.slice(i, i + 30);
+        if (idChunk.length === 0) continue;
 
-        const usersQuery = query(usersCollection, where("name", "in", nameChunk));
+        const usersQuery = query(usersCollection, where("employeeId", "in", idChunk));
         const usersSnapshot = await getDocs(usersQuery);
 
         for (const userDoc of usersSnapshot.docs) {
-            const user = userDoc.data();
             await createNotification({
                 userId: userDoc.id,
                 title: 'Nouvelle Mission Assignée',
                 description: `Vous avez été assigné(e) à la mission : "${mission.title}"`,
-                href: `/missions/${(mission as Mission).id}`
+                href: `/missions` // Link to their mission list (filtered to them)
             });
         }
     }
@@ -106,8 +104,8 @@ export async function updateMission(id: string, dataToUpdate: Partial<Mission>):
 
     // Notify only new participants
     if (dataToUpdate.participants && originalMission) {
-        const originalParticipants = new Set(originalMission.participants.map(p => p.employeeName));
-        const newParticipants = dataToUpdate.participants.filter(p => !originalParticipants.has(p.employeeName));
+        const originalParticipantIds = new Set(originalMission.participants.map(p => p.employeeId));
+        const newParticipants = dataToUpdate.participants.filter(p => !originalParticipantIds.has(p.employeeId));
         if (newParticipants.length > 0) {
             const missionWithNewParticipants = { ...originalMission, id, participants: newParticipants };
             await notifyParticipants(missionWithNewParticipants);

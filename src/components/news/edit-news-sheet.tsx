@@ -48,6 +48,7 @@ export function EditNewsSheet({ isOpen, onCloseAction, newsItem }: EditNewsSheet
         category: "Général",
         published: false,
         tags: [],
+        eventDate: "",
     });
 
     useEffect(() => {
@@ -61,6 +62,7 @@ export function EditNewsSheet({ isOpen, onCloseAction, newsItem }: EditNewsSheet
                     category: newsItem.category,
                     published: newsItem.published,
                     tags: newsItem.tags || [],
+                    eventDate: (newsItem as any).eventDate || "",
                 });
             } else {
                 setFormData({
@@ -71,6 +73,7 @@ export function EditNewsSheet({ isOpen, onCloseAction, newsItem }: EditNewsSheet
                     category: "Général",
                     published: false,
                     tags: [],
+                    eventDate: "",
                 });
             }
         }
@@ -112,6 +115,7 @@ export function EditNewsSheet({ isOpen, onCloseAction, newsItem }: EditNewsSheet
                 category: formData.category as NewsItem['category'],
                 published: formData.published!,
                 tags: formData.tags,
+                eventDate: formData.category === 'Événement' ? formData.eventDate : undefined,
             };
 
             if (isEditing && newsItem) {
@@ -179,6 +183,20 @@ export function EditNewsSheet({ isOpen, onCloseAction, newsItem }: EditNewsSheet
                             </SelectContent>
                         </Select>
                     </div>
+
+                    {formData.category === 'Événement' && (
+                        <div className="space-y-2">
+                            <Label htmlFor="eventDate">Date de l'évènement <span className="text-destructive">*</span></Label>
+                            <Input
+                                id="eventDate"
+                                name="eventDate"
+                                type="date"
+                                value={formData.eventDate}
+                                onChange={handleChange}
+                                required
+                            />
+                        </div>
+                    )}
 
                     <div className="space-y-2">
                         <Label htmlFor="imageUrl">URL de l'image de couverture (optionnel)</Label>

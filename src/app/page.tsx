@@ -49,13 +49,40 @@ export default function LandingPage() {
         return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
     };
 
+    // Helper to clean region name
+    const cleanRegionName = (region: string = '') => {
+        return region
+            .replace(/^Région de la\s+/i, '')
+            .replace(/^Région du\s+/i, '')
+            .replace(/^Région d'\s+/i, '')
+            .replace(/^La Région de\s+/i, '')
+            .replace(/^Le District de\s+/i, '')
+            .replace(/^District Autonome de\s+/i, '')
+            .replace(/^District Autonome d'\s+/i, '')
+            .trim();
+    };
+
     const president = directoireMembers.find(m => m.poste?.toLowerCase().includes('president') && !m.poste?.toLowerCase().includes('vice'));
     const vicePresidents = directoireMembers.filter(m => m.poste?.toLowerCase().includes('vice-president'));
-    const secretaryGeneral = directoireMembers.find(m => m.poste?.toLowerCase().includes('secrétaire général'));
-    const otherMembers = directoireMembers.filter(m =>
+
+    // Membres du Bureau
+    const bureauMembers = directoireMembers.filter(m =>
+        (m.poste?.toLowerCase().includes('membre du bureau') || m.poste?.toLowerCase().includes('membre du directoire')) &&
         !m.poste?.toLowerCase().includes('president') &&
-        !m.poste?.toLowerCase().includes('vice-president') &&
-        !m.poste?.toLowerCase().includes('secrétaire général')
+        !m.poste?.toLowerCase().includes('vice-president')
+    );
+
+    // Cabinet et Secrétariat
+    const cabinetAndSecretariat = directoireMembers.filter(m =>
+        m.poste?.toLowerCase().includes('secrétaire général') ||
+        m.poste?.toLowerCase().includes('directrice de cabinet')
+    );
+
+    // Les autres Directions
+    const otherDirectors = directoireMembers.filter(m =>
+        (m.poste?.toLowerCase().includes('directeur') || m.poste?.toLowerCase().includes('directrice') || m.poste?.toLowerCase().includes('cabinet')) &&
+        !m.poste?.toLowerCase().includes('secrétaire général') &&
+        !m.poste?.toLowerCase().includes('directrice de cabinet')
     );
 
     return (
@@ -234,9 +261,9 @@ export default function LandingPage() {
                                                         </>
                                                     )}
                                                 </div>
-                                                <Badge variant="default" className="mb-3 bg-[#006039] text-[#D4AF37] font-bold text-sm px-4">Président</Badge>
-                                                <h4 className="font-bold text-2xl text-[#1a1a1a] text-center">{president.name}</h4>
-                                                {president.Region && <p className="text-sm text-muted-foreground mt-2">Région du {president.Region}</p>}
+                                                <p className="text-[10px] uppercase tracking-widest font-bold text-[#D4AF37] text-center leading-tight mb-2">Président</p>
+                                                <h4 className="font-bold text-2xl text-[#1a1a1a] text-center mb-1">{president.name}</h4>
+                                                {president.Region && <p className="text-xs font-medium text-[#006039]">{cleanRegionName(president.Region)}</p>}
                                             </div>
                                         </div>
                                     </div>
@@ -260,61 +287,110 @@ export default function LandingPage() {
                                                             </>
                                                         )}
                                                     </div>
-                                                    <Badge variant="outline" className="mb-2 border-[#D4AF37]/30 text-[#D4AF37] font-medium text-[10px] uppercase truncate max-w-full">{vp.poste}</Badge>
-                                                    <h4 className="font-semibold text-base text-[#1a1a1a] text-center leading-tight">{vp.name}</h4>
+                                                    <p className="text-[10px] uppercase tracking-widest font-bold text-[#D4AF37] text-center leading-tight mb-2">Vice-Président</p>
+                                                    <h4 className="font-semibold text-base text-[#1a1a1a] text-center leading-tight mb-1">{vp.name}</h4>
+                                                    {vp.Region && <p className="text-[10px] text-[#006039] font-bold uppercase tracking-tighter">{cleanRegionName(vp.Region)}</p>}
                                                 </div>
                                             </div>
                                         ))}
                                     </div>
                                 )}
 
-                                {/* Secretariat & Councilors Grid */}
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-700 delay-400">
-                                    {/* Secretary General */}
-                                    {secretaryGeneral && (
-                                        <div className="group relative">
-                                            <div className="relative flex flex-col items-center bg-[#006039]/5 backdrop-blur-sm p-6 rounded-2xl border border-[#006039]/10 transition-all hover:bg-[#006039]/10">
-                                                <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center mb-4 border border-primary/10 shadow-sm overflow-hidden relative">
-                                                    {secretaryGeneral.photoUrl && !secretaryGeneral.photoUrl.includes('ui-avatars.com') && !secretaryGeneral.photoUrl.includes('placehold.co') ? (
-                                                        <Image src={secretaryGeneral.photoUrl} alt={secretaryGeneral.name || ''} fill className="object-cover" sizes="64px" />
-                                                    ) : (
-                                                        <span className="text-xl font-bold text-[#006039]">{getInitials(secretaryGeneral.name || 'SG')}</span>
-                                                    )}
-                                                </div>
-                                                <p className="text-[10px] uppercase tracking-widest font-bold text-[#006039] mb-1">Secrétaire Général</p>
-                                                <h4 className="font-bold text-sm text-[#1a1a1a]">{secretaryGeneral.name}</h4>
-                                            </div>
+                                {bureauMembers.length > 0 && (
+                                    <>
+                                        <div className="flex items-center gap-4 mb-8 mt-16 max-w-6xl mx-auto">
+                                            <div className="h-px flex-1 bg-gradient-to-r from-transparent to-[#D4AF37]/20" />
+                                            <h3 className="text-xl font-black text-[#D4AF37] uppercase tracking-[0.2em]">Membres du Bureau</h3>
+                                            <div className="h-px flex-1 bg-gradient-to-l from-transparent to-[#D4AF37]/20" />
                                         </div>
-                                    )}
+                                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6 max-w-6xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-700 delay-300">
+                                            {bureauMembers.map((member, index) => (
+                                                <div key={index} className="group relative">
+                                                    <div className="relative flex flex-col items-center bg-white/40 backdrop-blur-sm p-6 rounded-2xl border border-primary/5 transition-all hover:bg-white/80 hover:shadow-lg">
+                                                        <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mb-4 border border-white shadow-sm overflow-hidden relative">
+                                                            {member.photoUrl && !member.photoUrl.includes('ui-avatars.com') && !member.photoUrl.includes('placehold.co') ? (
+                                                                <Image src={member.photoUrl} alt={member.name || ''} fill className="object-cover" sizes="64px" />
+                                                            ) : (
+                                                                <span className="text-xl font-serif text-muted-foreground/30 italic">{getInitials(member.name || 'MB')}</span>
+                                                            )}
+                                                        </div>
+                                                        <p className="text-[9px] uppercase tracking-widest font-bold text-[#D4AF37] text-center leading-tight mb-1">{member.poste || 'Membre du Bureau'}</p>
+                                                        <h4 className="font-bold text-xs text-[#1a1a1a] text-center">{member.name}</h4>
+                                                        {member.Region && <p className="text-[8px] text-[#006039] font-bold uppercase mt-1">{cleanRegionName(member.Region)}</p>}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </>
+                                )}
 
-                                    {/* Other Members */}
-                                    {otherMembers.map((member, index) => (
-                                        <div key={index} className="group relative">
-                                            <div className="relative flex flex-col items-center bg-white/40 backdrop-blur-sm p-6 rounded-2xl border border-primary/5 transition-all hover:bg-white/80">
-                                                <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mb-4 border border-white shadow-sm overflow-hidden relative">
-                                                    {member.photoUrl && !member.photoUrl.includes('ui-avatars.com') && !member.photoUrl.includes('placehold.co') ? (
-                                                        <Image src={member.photoUrl} alt={member.name || ''} fill className="object-cover" sizes="64px" />
-                                                    ) : (
-                                                        <span className="text-xl font-serif text-muted-foreground/30 italic">{getInitials(member.name || 'MB')}</span>
-                                                    )}
-                                                </div>
-                                                <p className="text-[10px] uppercase tracking-widest font-bold text-[#D4AF37] mb-1">{member.poste || 'Membre du Bureau'}</p>
-                                                <h4 className="font-medium text-sm text-[#1a1a1a]">{member.name}</h4>
-                                            </div>
+                                {cabinetAndSecretariat.length > 0 && (
+                                    <>
+                                        <div className="flex items-center gap-4 mb-8 mt-16 max-w-6xl mx-auto">
+                                            <div className="h-px flex-1 bg-gradient-to-r from-transparent to-[#006039]/20" />
+                                            <h3 className="text-xl font-black text-[#006039] uppercase tracking-[0.2em]">Cabinet et Secrétariat</h3>
+                                            <div className="h-px flex-1 bg-gradient-to-l from-transparent to-[#006039]/20" />
                                         </div>
-                                    ))}
-                                </div>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-700 delay-400">
+                                            {cabinetAndSecretariat.map((member, index) => (
+                                                <div key={index} className="group relative">
+                                                    <div className="relative flex flex-col items-center bg-[#006039]/5 backdrop-blur-sm p-8 rounded-2xl border border-[#006039]/10 transition-all hover:bg-[#006039]/10 hover:shadow-lg">
+                                                        <div className="w-20 h-20 rounded-full bg-white flex items-center justify-center mb-4 border border-primary/10 shadow-sm overflow-hidden relative">
+                                                            {member.photoUrl && !member.photoUrl.includes('ui-avatars.com') && !member.photoUrl.includes('placehold.co') ? (
+                                                                <Image src={member.photoUrl} alt={member.name || ''} fill className="object-cover" sizes="80px" />
+                                                            ) : (
+                                                                <span className="text-2xl font-bold text-[#006039]">{getInitials(member.name || 'CAB')}</span>
+                                                            )}
+                                                        </div>
+                                                        <p className="text-[10px] uppercase tracking-widest font-bold text-[#006039] text-center leading-tight mb-1">{member.poste}</p>
+                                                        <h4 className="font-bold text-lg text-[#1a1a1a] text-center">{member.name}</h4>
+                                                        {member.Region && <p className="text-[10px] text-[#006039] font-bold uppercase mt-1">{cleanRegionName(member.Region)}</p>}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </>
+                                )}
+
+                                {otherDirectors.length > 0 && (
+                                    <>
+                                        <div className="flex items-center gap-4 mb-8 mt-12 max-w-6xl mx-auto">
+                                            <div className="h-px flex-1 bg-muted/30" />
+                                            <h4 className="text-sm font-black text-muted-foreground uppercase tracking-[0.2em]">Les Directions</h4>
+                                            <div className="h-px flex-1 bg-muted/30" />
+                                        </div>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-700 delay-500">
+                                            {otherDirectors.map((member, index) => (
+                                                <div key={index} className="group relative">
+                                                    <div className="relative flex flex-col items-center bg-white/40 backdrop-blur-sm p-6 rounded-2xl border border-primary/5 transition-all hover:bg-white/80 hover:shadow-lg">
+                                                        <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mb-4 border border-white shadow-sm overflow-hidden relative">
+                                                            {member.photoUrl && !member.photoUrl.includes('ui-avatars.com') && !member.photoUrl.includes('placehold.co') ? (
+                                                                <Image src={member.photoUrl} alt={member.name || ''} fill className="object-cover" sizes="64px" />
+                                                            ) : (
+                                                                <span className="text-xl font-bold text-muted-foreground/30">{getInitials(member.name || 'DIR')}</span>
+                                                            )}
+                                                        </div>
+                                                        <p className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground text-center leading-tight mb-1">{member.poste}</p>
+                                                        <h4 className="font-bold text-sm text-[#1a1a1a] text-center">{member.name}</h4>
+                                                        {member.Region && <p className="text-[9px] text-[#006039] font-bold uppercase mt-1">{cleanRegionName(member.Region)}</p>}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </>
+                                )}
                             </>
                         )}
                     </div>
                 </section>
+
 
                 {/* Regional Committees Section */}
                 <section id="regional-committees" className="py-16 bg-white border-t border-primary/5 scroll-mt-24 overflow-hidden">
                     <div className="container mx-auto px-4">
                         <div className="text-center mb-10 max-w-3xl mx-auto">
                             <Badge variant="outline" className="mb-4 border-[#006039]/20 text-[#006039] uppercase tracking-[0.2em] px-4 py-1.5 text-[10px] font-bold">Réseau Territorial</Badge>
-                            <h2 className="text-4xl md:text-5xl font-black mb-6 text-[#1a1a1a]">Les 31 Comités Régionaux</h2>
+                            <h2 className="text-4xl md:text-5xl font-black mb-6 text-[#1a1a1a]">31 Comités Régionaux et 2 Districts (Abidjan et Yamoussoukro)</h2>
                             <p className="text-muted-foreground text-lg leading-relaxed font-light">
                                 La Chambre assure une présence continue sur l'ensemble du territoire national à travers ses relais régionaux, garantissant ainsi une <span className="text-[#006039] font-medium">médiation de proximité</span>.
                             </p>
@@ -357,8 +433,8 @@ export default function LandingPage() {
                                                             }`}
                                                     >
                                                         <div className="flex flex-col items-start">
-                                                            <span className={`font-bold text-sm ${isSelected ? 'text-white' : 'text-[#1a1a1a]'}`}>{committee.region}</span>
-                                                            <span className={`text-[10px] uppercase tracking-wider ${isSelected ? 'text-white/60' : 'text-muted-foreground'}`}>{committee.president ? 'Bureau Actif' : 'Coordination local'}</span>
+                                                            <span className={`font-bold text-sm ${isSelected ? 'text-white' : 'text-[#1a1a1a]'}`}>{cleanRegionName(committee.region)}</span>
+                                                            <span className={`text-[10px] uppercase tracking-wider ${isSelected ? 'text-white/60' : 'text-muted-foreground'}`}>{committee.president ? 'Bureau Actif' : 'Coordination locale'}</span>
                                                         </div>
                                                         <ArrowRight className={`h-4 w-4 ${isSelected ? 'opacity-100' : 'opacity-0'} transition-opacity`} />
                                                     </button>
@@ -389,7 +465,7 @@ export default function LandingPage() {
                                                     <div className="absolute inset-0 bg-gradient-to-r from-[#006039] via-[#006039]/90 to-transparent" />
                                                     <div className="relative z-10">
                                                         <Badge className="bg-[#D4AF37] text-white border-none mb-3 px-3 uppercase text-[9px] tracking-[0.2em] font-black">Region</Badge>
-                                                        <h3 className="text-4xl md:text-5xl font-black text-white tracking-tighter">{selected.region}</h3>
+                                                        <h3 className="text-4xl md:text-5xl font-black text-white tracking-tighter">{cleanRegionName(selected.region)}</h3>
                                                     </div>
                                                     <Users className="absolute right-[-20px] bottom-[-20px] w-64 h-64 text-white opacity-5 pointer-events-none group-hover/card:scale-110 transition-transform duration-1000" />
                                                 </div>
@@ -403,8 +479,12 @@ export default function LandingPage() {
                                                                 <div className="flex items-center gap-6">
                                                                     <div className="relative">
                                                                         <div className="absolute inset-[-4px] bg-gradient-to-br from-[#006039] to-[#D4AF37] rounded-full blur opacity-20" />
-                                                                        <Avatar className="h-24 w-24 border-[6px] border-white shadow-2xl relative z-10">
-                                                                            <AvatarImage src={selected.president?.photoUrl} className="object-cover" />
+                                                                        <Avatar className="h-[100px] w-[100px] border-[6px] border-white shadow-2xl relative z-10 transition-transform duration-500 group-hover/card:scale-110">
+                                                                            {selected.president?.photoUrl && !selected.president?.photoUrl.includes('ui-avatars.com') && !selected.president?.photoUrl.includes('placehold.co') ? (
+                                                                                <AvatarImage src={selected.president.photoUrl} className="object-cover" />
+                                                                            ) : (
+                                                                                <AvatarImage src={`https://ui-avatars.com/api/?name=${encodeURIComponent(selected.president?.name || selected.region[0])}&background=006039&color=D4AF37&size=100&bold=true`} className="object-cover" />
+                                                                            )}
                                                                             <AvatarFallback className="bg-muted text-[#006039] font-black text-2xl">
                                                                                 {getInitials(selected.president?.name || selected.region[0])}
                                                                             </AvatarFallback>
@@ -428,7 +508,7 @@ export default function LandingPage() {
                                                                     </div>
                                                                     <div>
                                                                         <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Territoire</p>
-                                                                        <p className="text-sm font-semibold">{selected.region}</p>
+                                                                        <p className="text-sm font-semibold">{cleanRegionName(selected.region)}</p>
                                                                     </div>
                                                                 </div>
                                                                 <div className="flex items-center gap-4 p-4 rounded-2xl bg-muted/30 border border-primary/5">
@@ -454,12 +534,24 @@ export default function LandingPage() {
                                                                 <div className="space-y-4">
                                                                     {selected.members.length > 0 ? selected.members.map((member, mIdx) => (
                                                                         <div key={mIdx} className="group/item flex items-center gap-4 p-3 rounded-xl hover:bg-white hover:shadow-md transition-all duration-300">
-                                                                            <div className="w-10 h-10 rounded-full bg-white border border-primary/5 flex items-center justify-center text-xs font-black text-[#006039] shadow-sm">
-                                                                                {getInitials(member.name || '')}
+                                                                            <div className="w-10 h-10 rounded-full bg-white border border-primary/5 flex items-center justify-center text-xs font-black text-[#006039] shadow-sm overflow-hidden relative">
+                                                                                {member.photoUrl && !member.photoUrl.includes('ui-avatars.com') ? (
+                                                                                    <Image src={member.photoUrl} alt={member.name} fill className="object-cover" sizes="40px" />
+                                                                                ) : (
+                                                                                    getInitials(member.name || '')
+                                                                                )}
                                                                             </div>
                                                                             <div className="flex-1 min-w-0">
                                                                                 <p className="text-sm font-bold truncate text-[#1a1a1a]">{member.name}</p>
-                                                                                <p className="text-[10px] text-muted-foreground truncate uppercase tracking-tighter">{member.poste}</p>
+                                                                                <div className="flex items-center gap-2">
+                                                                                    <p className="text-[10px] text-muted-foreground truncate uppercase tracking-tighter">{member.poste}</p>
+                                                                                    {member.Departement && (
+                                                                                        <>
+                                                                                            <span className="w-1 h-1 rounded-full bg-muted-foreground/30" />
+                                                                                            <p className="text-[10px] text-[#006039] font-bold truncate uppercase tracking-tighter">{member.Departement}</p>
+                                                                                        </>
+                                                                                    )}
+                                                                                </div>
                                                                             </div>
                                                                         </div>
                                                                     )) : (
@@ -526,7 +618,7 @@ export default function LandingPage() {
                     </div>
                 </div>
             </footer>
-        </div>
+        </div >
     );
 }
 

@@ -34,6 +34,7 @@ import Link from "next/link";
 import { format, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { PaginationControls } from "@/components/common/pagination-controls";
+import { useAuth } from "@/hooks/use-auth";
 
 type Status = "Planifiée" | "En cours" | "Terminée" | "Annulée";
 
@@ -52,6 +53,7 @@ export default function MissionsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
   const router = useRouter();
+  const { user, hasPermission } = useAuth();
   const [deleteTarget, setDeleteTarget] = useState<Mission | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -121,6 +123,12 @@ export default function MissionsPage() {
 
   const filteredMissions = useMemo(() => {
     const filtered = missions.filter(mission => {
+      // Data-level filtering: If not admin/HR, only show missions where user is a participant
+      if (!hasPermission('page:missions:view') && user?.employeeId) {
+        const isParticipant = (mission.participants || []).some(p => p.employeeId === user.employeeId);
+        if (!isParticipant) return false;
+      }
+
       const searchTermLower = searchTerm.toLowerCase();
       // Ensure participants array exists before trying to access it
       const participantsString = (mission.participants || []).map(p => p.employeeName).join(" ").toLowerCase();
@@ -141,6 +149,18 @@ export default function MissionsPage() {
 
   const totalPages = Math.ceil(filteredMissions.length / itemsPerPage);
 
+  // Secondary permission check - allow access if user has permission OR has a linked employee ID
+  useEffect(() => {
+    if (!loading && !hasPermission('page:missions:view') && !user?.employeeId) {
+      router.replace('/intranet');
+      toast({
+        variant: "destructive",
+        title: "Accès refusé",
+        description: "Vous n'avez pas les permissions pour accéder à cette page."
+      });
+    }
+  }, [loading, hasPermission, user, router, toast]);
+
   return (
     <>
       <div className="flex flex-col gap-6">
@@ -149,16 +169,20 @@ export default function MissionsPage() {
             Gestion des Missions
           </h1>
           <div className="flex items-center gap-2">
-            <Button variant="outline" asChild>
-              <Link href="/missions/report">
-                <FileText className="mr-2 h-4 w-4" />
-                Rapport des Missions
-              </Link>
-            </Button>
-            <Button onClick={() => setIsSheetOpen(true)} className="w-full sm:w-auto">
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Ajouter une mission
-            </Button>
+            {hasPermission('page:missions:view') && (
+              <>
+                <Button variant="outline" asChild>
+                  <Link href="/missions/report">
+                    <FileText className="mr-2 h-4 w-4" />
+                    Rapport des Missions
+                  </Link>
+                </Button>
+                <Button onClick={() => setIsSheetOpen(true)} className="w-full sm:w-auto">
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  Ajouter une mission
+                </Button>
+              </>
+            )}
           </div>
         </div>
         <Card>
@@ -235,12 +259,16 @@ export default function MissionsPage() {
                               <DropdownMenuItem onSelect={() => router.push(`/missions/${mission.id}`)}>
                                 <Eye className="mr-2 h-4 w-4" /> Voir les détails
                               </DropdownMenuItem>
-                              <DropdownMenuItem onSelect={() => router.push(`/missions/${mission.id}/edit`)}>
-                                <Pencil className="mr-2 h-4 w-4" /> Modifier
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onSelect={() => setDeleteTarget(mission)} className="text-destructive focus:text-destructive">
-                                <Trash2 className="mr-2 h-4 w-4" /> Supprimer
-                              </DropdownMenuItem>
+                              {hasPermission('page:missions:view') && (
+                                <>
+                                  <DropdownMenuItem onSelect={() => router.push(`/missions/${mission.id}/edit`)}>
+                                    <Pencil className="mr-2 h-4 w-4" /> Modifier
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onSelect={() => setDeleteTarget(mission)} className="text-destructive focus:text-destructive">
+                                    <Trash2 className="mr-2 h-4 w-4" /> Supprimer
+                                  </DropdownMenuItem>
+                                </>
+                              )}
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </TableCell>
@@ -301,8 +329,8 @@ export default function MissionsPage() {
       </div>
       <ConfirmationDialog
         isOpen={!!deleteTarget}
-        onClose={() => setDeleteTarget(null)}
-        onConfirm={handleDeleteConfirm}
+        onCloseAction={() => setDeleteTarget(null)}
+        onConfirmAction={handleDeleteConfirm}
         title={`Supprimer la mission : ${deleteTarget?.title}`}
         description="Êtes-vous sûr de vouloir supprimer cette mission ? Cette action est irréversible."
       />

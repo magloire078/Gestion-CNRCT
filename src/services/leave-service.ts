@@ -108,7 +108,7 @@ export async function addLeave(leaveDataToAdd: Omit<Leave, 'id' | 'status'>): Pr
             href: `/leave`, // Direct link to the leave management page
         });
 
-        return { id: docRef.id, ...newLeaveData };
+        return { id: docRef.id, ...newLeaveData } as Leave;
     } catch (error: any) {
         if (error.code === 'permission-denied') {
             throw new FirestorePermissionError("Vous n'avez pas la permission de soumettre une demande de congé.", { operation: 'add', path: 'leaves' });
@@ -148,8 +148,8 @@ export async function updateLeaveStatus(id: string, status: 'Approuvé' | 'Rejet
         await updateDoc(leaveDocRef, { status });
 
         // Find the employee's user ID to send them a notification
-        const employee = (await getDocs(query(collection(db, 'employees'), where("name", "==", leaveData.employee)))).docs[0];
-        const employeeUserId = await findUserIdByEmployeeId(employee?.id);
+        const employeeId = leaveData.employeeId;
+        const employeeUserId = employeeId ? await findUserIdByEmployeeId(employeeId) : null;
 
 
         if (employeeUserId) {
@@ -157,7 +157,7 @@ export async function updateLeaveStatus(id: string, status: 'Approuvé' | 'Rejet
                 userId: employeeUserId,
                 title: `Demande de congé ${status === 'Approuvé' ? 'approuvée' : 'rejetée'}`,
                 description: `Votre demande de ${leaveData.type} du ${leaveData.startDate} a été ${status === 'Approuvé' ? 'approuvée' : 'rejetée'}.`,
-                href: '/my-space' // Link to their personal space
+                href: '/leave' // Link to their leave page (filtered to them)
             });
         } else {
             console.warn(`Could not find user for employee ${leaveData.employee} to send notification.`);

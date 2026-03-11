@@ -1,6 +1,7 @@
 export type Leave = {
     id: string; // Firestore document ID
-    employee: string; // Employee name
+    employeeId?: string; // Linked employee ID
+    employee: string; // Employee name (denormalized)
     type: "Congé Annuel" | "Congé Maladie" | "Congé Personnel" | "Congé Maternité" | "Congé sans solde";
     startDate: string; // YYYY-MM-DD
     endDate: string; // YYYY-MM-DD
@@ -10,6 +11,7 @@ export type Leave = {
 };
 
 export type MissionParticipant = {
+    employeeId?: string;
     employeeName: string;
     moyenTransport?: 'Véhicule personnel' | 'Véhicule CNRCT';
     immatriculation?: string;
@@ -55,6 +57,8 @@ export type Conflict = {
     latitude?: number;
     longitude?: number;
     mediatorName?: string;
+    riskScore?: number;
+    aiCategory?: string;
 };
 
 export type OrganizationSettings = {
@@ -125,5 +129,6 @@ export interface NewsItem {
     category: 'Général' | 'Événement' | 'RH' | 'Directoire';
     tags?: string[];
     viewCount: number;
+    eventDate?: string; // Optionnel, pour les évènements spécifiques
 }
 

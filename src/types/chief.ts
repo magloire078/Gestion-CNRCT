@@ -33,6 +33,7 @@ export type Chief = {
     dateOfBirth?: string;
     regencyStartDate?: string;
     regencyEndDate?: string;
+    villageId?: string;
 };
 
 export type Custom = {

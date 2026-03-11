@@ -45,14 +45,14 @@ import { cn } from "@/lib/utils";
 
 interface AddConflictDialogProps {
   isOpen: boolean;
-  onClose: () => void;
-  onAddConflict: (conflict: Omit<Conflict, "id">) => Promise<void>;
+  onCloseAction: () => void;
+  onAddConflictAction: (conflict: Omit<Conflict, "id">) => Promise<void>;
 }
 
 export function AddConflictSheet({
   isOpen,
-  onClose,
-  onAddConflict,
+  onCloseAction,
+  onAddConflictAction,
 }: AddConflictDialogProps) {
   const [allChiefs, setAllChiefs] = useState<Chief[]>([]);
   const [allEmployees, setAllEmployees] = useState<Employe[]>([]);
@@ -103,7 +103,7 @@ export function AddConflictSheet({
 
   const handleClose = () => {
     resetForm();
-    onClose();
+    onCloseAction();
   }
 
   const handleSelectChief = (chief: Chief) => {
@@ -139,7 +139,7 @@ export function AddConflictSheet({
             conflictData.longitude = parseFloat(longitude);
         }
 
-        await onAddConflict(conflictData);
+        await onAddConflictAction(conflictData);
         handleClose();
     } catch (err) {
         setError(err instanceof Error ? err.message : "Échec de l'ajout du conflit.");

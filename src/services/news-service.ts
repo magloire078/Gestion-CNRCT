@@ -47,7 +47,11 @@ export function subscribeToPublishedNews(
             callback(news);
         },
         (error: any) => {
-            console.error("Firestore error in subscribeToPublishedNews:", error);
+            console.error("Firestore error in subscribeToPublishedNews:", error, {
+                code: error.code,
+                message: error.message,
+                stack: error.stack
+            });
             if (error.code === 'permission-denied') {
                 onError(new FirestorePermissionError("Accès refusé aux actualités.", { query: "publishedNews" }));
             } else {

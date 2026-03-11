@@ -108,9 +108,20 @@ export default function EmployeesPage() {
     setPersonnelTypeFilter(initialFilter || 'all');
   }, [initialFilter]);
 
+  // Secondary permission check
+  useEffect(() => {
+    if (!authLoading && !hasPermission('page:employees:view')) {
+      router.replace('/intranet');
+      toast({
+        variant: "destructive",
+        title: "Accès refusé",
+        description: "Vous n'avez pas les permissions pour accéder à cette page."
+      });
+    }
+  }, [authLoading, hasPermission, router, toast]);
 
   useEffect(() => {
-    if (!user || authLoading) return;
+    if (!user || authLoading || !hasPermission('page:employees:view')) return;
 
     const unsubEmployees = subscribeToEmployees((fetchedEmployees) => {
       setEmployees(fetchedEmployees);
@@ -578,8 +589,8 @@ export default function EmployeesPage() {
           </Card>
           <AddEmployeeSheet
             isOpen={isAddSheetOpen}
-            onClose={() => setIsAddSheetOpen(false)}
-            onAddEmployee={handleAddEmployee}
+            onCloseAction={() => setIsAddSheetOpen(false)}
+            onAddEmployeeAction={handleAddEmployee}
           />
           <PrintDialog
             isOpen={isPrintDialogOpen}
@@ -589,8 +600,8 @@ export default function EmployeesPage() {
           />
           <ConfirmationDialog
             isOpen={!!deleteTarget}
-            onClose={() => setDeleteTarget(null)}
-            onConfirm={() => deleteTarget && handleDeleteEmployee(deleteTarget.id)}
+            onCloseAction={() => setDeleteTarget(null)}
+            onConfirmAction={() => deleteTarget && handleDeleteEmployee(deleteTarget.id)}
             title={`Supprimer ${deleteTarget?.name} ?`}
             description="Êtes-vous sûr de vouloir supprimer cet employé ? Cette action est irréversible."
           />
@@ -615,6 +626,7 @@ export default function EmployeesPage() {
               email: 'w-[12%]',
               status: 'w-[6%]',
               CNPS: 'w-[4%]',
+              dateEmbauche: 'w-[10%]',
               Date_Depart: 'w-[7%]',
             };
 
@@ -623,7 +635,7 @@ export default function EmployeesPage() {
             return {
               header: allColumns[key],
               key,
-              align: ['index', 'matricule', 'sexe', 'Date_Naissance', 'Date_Depart', 'CNPS', 'status'].includes(key) ? 'center' : 'left',
+              align: ['index', 'matricule', 'sexe', 'Date_Naissance', 'dateEmbauche', 'Date_Depart', 'CNPS', 'status'].includes(key) ? 'center' : 'left',
               className: `${widthMap[key] || ''} ${isTextColumn ? 'whitespace-normal' : 'whitespace-nowrap'} overflow-hidden`,
             };
           })}

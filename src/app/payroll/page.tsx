@@ -68,7 +68,7 @@ export default function PayrollPage() {
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   const router = useRouter();
-  const { hasPermission } = useAuth();
+  const { user, hasPermission } = useAuth();
   const canViewSalaries = hasPermission('page:payroll:view');
 
   // State for search and filters
@@ -97,6 +97,18 @@ export default function PayrollPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
+  // Secondary permission check - allow access if user has permission OR has a linked employee ID
+  useEffect(() => {
+    if (!loading && !hasPermission('page:payroll:view') && !user?.employeeId) {
+      router.replace('/intranet');
+      toast({
+        variant: "destructive",
+        title: "Accès refusé",
+        description: "Vous n'avez pas les permissions pour accéder à cette page."
+      });
+    }
+  }, [loading, hasPermission, user, router, toast]);
+
 
   useEffect(() => {
     let isMounted = true;
@@ -122,7 +134,12 @@ export default function PayrollPage() {
         unsubscribe = subscribeToEmployees(
           async (fetchedEmployees) => {
             if (!isMounted) return;
-            const payrollEmployees = fetchedEmployees.filter(e => e.status === 'Actif' || e.status === 'En congé');
+            let payrollEmployees = fetchedEmployees.filter(e => e.status === 'Actif' || e.status === 'En congé');
+
+            // Data-level filtering: If not admin/HR, only show the user's own profile
+            if (!hasPermission('page:payroll:view') && user?.employeeId) {
+              payrollEmployees = payrollEmployees.filter(e => e.id === user.employeeId);
+            }
 
             if (canViewSalaries) {
               const today = new Date();

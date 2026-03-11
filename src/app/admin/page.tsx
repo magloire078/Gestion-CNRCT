@@ -45,6 +45,7 @@ import { updateEmployee } from "@/services/employee-service";
 import { AddUserSheet } from "@/components/admin/add-user-sheet";
 import { AddRoleSheet } from "@/components/admin/add-role-sheet";
 import { ImportDataCard } from "@/components/admin/import-data-card";
+import { ImportVillagesCard } from "@/components/admin/import-villages-card";
 import { ConfirmationDialog } from "@/components/common/confirmation-dialog";
 import { DepartmentDialog } from "@/components/admin/department-dialog";
 import { EditUserRoleDialog } from "@/components/admin/edit-user-role-dialog";
@@ -262,8 +263,9 @@ export default function AdminPage() {
 
               {/* SECTION: VUE D'ENSEMBLE */}
               <TabsContent value="overview" className="space-y-6 outline-none">
-                <div className="grid gap-6 md:grid-cols-2">
+                <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
                   <ImportDataCard />
+                  <ImportVillagesCard />
                   <Card className="border-border/50 shadow-sm transition-all hover:shadow-md">
                     <CardHeader>
                       <CardTitle className="text-xl">Paramètres Généraux</CardTitle>
@@ -751,8 +753,8 @@ export default function AdminPage() {
 
         <ConfirmationDialog
           isOpen={!!deleteTarget}
-          onClose={() => setDeleteTarget(null)}
-          onConfirm={handleConfirmDelete}
+          onCloseAction={() => setDeleteTarget(null)}
+          onConfirmAction={handleConfirmDelete}
           title={`Supprimer : ${deleteTarget?.name}`}
           description={`Êtes-vous sûr de vouloir supprimer "${deleteTarget?.name}" ? Cette action est irréversible.`}
         />

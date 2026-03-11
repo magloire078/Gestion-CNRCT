@@ -67,35 +67,71 @@ export function getEmployeeGroup(employee: Employe, departments: Department[]): 
 }
 
 
-async function createOrUpdateChiefFromEmployee(employee: Employe) {
-    if (employee.departmentId === 'DVeCoGfRfL3p43eQeYwz' || (employee.Region && employee.Village)) {
-        const chiefsQuery = query(chiefsCollection, where('name', '==', employee.name));
-        const snapshot = await getDocs(chiefsQuery);
+async function createOrUpdateChiefFromEmployee(employee: Employe): Promise<void> {
+    // Only sync if the employee is a chief/regional member (has Region and Village fields)
+    const isChief = employee.Region || employee.Village || employee.groupe_2 === 'Rois & Chefs';
+    if (!isChief) return;
 
-        const chiefData: Partial<Chief> = {
-            name: `${employee.lastName || ''} ${employee.firstName || ''}`.trim(),
-            firstName: employee.firstName,
-            lastName: employee.lastName,
-            title: employee.poste,
-            role: (employee.Region && employee.Village) ? 'Chef de Village' : 'Chef de canton',
-            sexe: employee.sexe,
-            region: employee.Region,
-            department: employee.Departement,
-            village: employee.Village,
-            photoUrl: employee.photoUrl
-        };
+    const chiefData: Partial<Chief> = {
+        name: `${employee.lastName || ''} ${employee.firstName || ''}`.trim() || employee.name,
+        firstName: employee.firstName,
+        lastName: employee.lastName,
+        title: employee.poste,
+        role: (employee.Region && employee.Village) ? 'Chef de Village' : 'Chef de canton',
+        sexe: employee.sexe,
+        region: employee.Region,
+        department: employee.Departement,
+        subPrefecture: employee.subPrefecture,
+        village: employee.Village,
+        contact: employee.mobile,
+        photoUrl: employee.photoUrl
+    };
 
-        if (snapshot.empty) {
-            const newChiefRef = doc(chiefsCollection);
-            await setDoc(newChiefRef, chiefData);
+    // Remove undefined fields to avoid overwriting existing data
+    Object.keys(chiefData).forEach(k => (chiefData as any)[k] === undefined && delete (chiefData as any)[k]);
 
-        } else {
-            const chiefDocRef = snapshot.docs[0].ref;
-            await updateDoc(chiefDocRef, chiefData);
+    // Step 1: If the employee already has a chiefId, update the existing document directly
+    if (employee.chiefId) {
+        try {
+            const existingChiefRef = doc(chiefsCollection, employee.chiefId);
+            const existingChiefSnap = await getDoc(existingChiefRef);
+            if (existingChiefSnap.exists()) {
+                await updateDoc(existingChiefRef, chiefData);
+                return; // Done — no duplication possible
+            }
+        } catch (e) {
+            console.warn(`[EmployeeService] Could not update chief by chiefId ${employee.chiefId}, falling through to name search.`, e);
+        }
+    }
 
+    // Step 2: Fallback — search by name to handle legacy records not yet linked by ID
+    const fullName = chiefData.name || '';
+    if (!fullName) return;
+
+    const chiefsQuery = query(chiefsCollection, where('name', '==', fullName));
+    const snapshot = await getDocs(chiefsQuery);
+
+    if (!snapshot.empty) {
+        // Found existing chief by name — update and store the id back on the employee
+        const chiefDocRef = snapshot.docs[0].ref;
+        await updateDoc(chiefDocRef, chiefData);
+
+        // Link the employee to this chief to prevent future fallback searches
+        if (!employee.chiefId && employee.id) {
+            await updateDoc(doc(db, 'employees', employee.id), { chiefId: snapshot.docs[0].id });
+        }
+    } else {
+        // No existing chief found — create one
+        const newChiefRef = doc(chiefsCollection);
+        await setDoc(newChiefRef, chiefData);
+
+        // Store chiefId back on the employee document to prevent future duplicates
+        if (employee.id) {
+            await updateDoc(doc(db, 'employees', employee.id), { chiefId: newChiefRef.id });
         }
     }
 }
+
 
 
 export function subscribeToEmployees(
@@ -407,21 +443,48 @@ export async function getRegionalCommittees(): Promise<RegionalCommittee[]> {
 
         const regions = Object.keys(divisions);
         const regionalCommittees: RegionalCommittee[] = regions.map(region => {
-            const members = allEmployees.filter(emp =>
+            // All employees in this region belonging to regional structures
+            const regionalStaff = allEmployees.filter(emp =>
                 emp.Region === region &&
-                (emp.poste?.toLowerCase().includes('comité régional') || emp.poste?.toLowerCase().includes('membre du bureau'))
+                (
+                    emp.poste?.toLowerCase().includes('comité régional') ||
+                    emp.poste?.toLowerCase().includes('membre du bureau') ||
+                    emp.poste?.toLowerCase().includes('chef') ||
+                    emp.poste?.toLowerCase().includes('roi')
+                )
             );
 
-            // Find the president of the regional committee
-            const president = members.find(m =>
+            // 1. Find the Bureau head (Membre du Bureau)
+            const bureauHead = regionalStaff.find(m =>
+                m.poste?.toLowerCase().includes('membre du bureau') ||
                 m.poste?.toLowerCase().includes('président') ||
                 m.poste?.toLowerCase().includes('president')
             ) || null;
 
+            // 2. Get departments for this region
+            const regionDepts = Object.keys(divisions[region] || {});
+
+            // 3. Collect 2 chefs per department
+            const membersByDept: Employe[] = [];
+
+            // Prepend bureauHead if they exist
+            if (bureauHead) {
+                membersByDept.push(bureauHead);
+            }
+
+            regionDepts.forEach(deptName => {
+                const deptStaff = regionalStaff.filter(emp =>
+                    emp.Departement === deptName &&
+                    emp.id !== bureauHead?.id
+                );
+                // Take up to 2 chefs per department
+                membersByDept.push(...deptStaff.slice(0, 2));
+            });
+
             return {
                 region,
-                president,
-                members: members.sort((a, b) => (president?.id === a.id ? -1 : (president?.id === b.id ? 1 : 0)))
+                president: bureauHead,
+                members: membersByDept
             };
         });
 

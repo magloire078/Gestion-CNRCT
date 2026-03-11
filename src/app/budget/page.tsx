@@ -293,8 +293,8 @@ export default function BudgetPage() {
 
       <ConfirmationDialog
         isOpen={!!deleteTarget}
-        onClose={() => setDeleteTarget(null)}
-        onConfirm={handleDeleteConfirm}
+        onCloseAction={() => setDeleteTarget(null)}
+        onConfirmAction={handleDeleteConfirm}
         title={`Supprimer la ligne "${deleteTarget?.name}" ?`}
         description="Cette action est irréversible et supprimera définitivement la ligne budgétaire."
       />

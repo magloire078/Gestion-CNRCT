@@ -324,8 +324,8 @@ export default function FleetPage() {
     </div>
     <ConfirmationDialog
         isOpen={!!deleteTarget}
-        onClose={() => setDeleteTarget(null)}
-        onConfirm={handleDeleteConfirm}
+        onCloseAction={() => setDeleteTarget(null)}
+        onConfirmAction={handleDeleteConfirm}
         title={`Supprimer le véhicule ${deleteTarget?.plate}`}
         description="Êtes-vous sûr de vouloir supprimer ce véhicule ? Cette action est irréversible."
     />

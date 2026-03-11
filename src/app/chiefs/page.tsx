@@ -108,10 +108,10 @@ export default function ChiefsPage() {
 
   const filteredChiefs = useMemo(() => {
     const filtered = chiefs.filter((chief) =>
-      chief.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (chief.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       (chief.region || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       (chief.village || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      chief.title.toLowerCase().includes(searchTerm.toLowerCase())
+      (chief.title || '').toLowerCase().includes(searchTerm.toLowerCase())
     );
     if (currentPage > Math.ceil(filtered.length / itemsPerPage)) {
       setCurrentPage(1);
@@ -346,13 +346,13 @@ export default function ChiefsPage() {
       </Card>
       <AddChiefSheet
         isOpen={isSheetOpen}
-        onClose={() => setIsSheetOpen(false)}
-        onAddChief={handleAddChief}
+        onCloseAction={() => setIsSheetOpen(false)}
+        onAddChiefAction={handleAddChief}
       />
       <ConfirmationDialog
         isOpen={!!deleteTarget}
-        onClose={() => setDeleteTarget(null)}
-        onConfirm={handleDeleteChief}
+        onCloseAction={() => setDeleteTarget(null)}
+        onConfirmAction={handleDeleteChief}
         title={`Supprimer ${deleteTarget?.name} ?`}
         description="Êtes-vous sûr de vouloir supprimer cette autorité du répertoire ? Cette action est irréversible."
       />

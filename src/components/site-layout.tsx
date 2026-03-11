@@ -26,6 +26,7 @@ import {
   Package,
   Crown,
   MapIcon,
+  MapPin,
   ClipboardCheck,
   Building,
   Globe,
@@ -42,7 +43,13 @@ import {
   Menu,
   Rocket,
   ShieldCheck,
-  Fuel, // Added Fuel icon
+  Fuel,
+  Utensils,
+  Drama,
+  Music,
+  Gamepad2,
+  HeartHandshake,
+  Users2,
 } from "lucide-react";
 
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
@@ -94,8 +101,8 @@ const allMenuItems = [
   },
   {
     isCollapsible: true,
-    label: "Organisation",
-    icon: Building,
+    label: "Conflits",
+    icon: Scale,
     permission: "group:organization:view",
     subItems: [
       { href: "/conflicts", label: "Gestion des Conflits", icon: Scale, permission: "page:conflicts:view" },
@@ -109,7 +116,14 @@ const allMenuItems = [
     permission: "group:repertoires:view",
     subItems: [
       { href: "/chiefs", label: "Rois & Chefs", icon: Crown, permission: "page:chiefs:view" },
+      { href: "/villages", label: "Villages", icon: MapPin, permission: "page:chiefs:view" },
       { href: "/us-et-coutumes", label: "Us & Coutumes", icon: BookText, permission: "page:us-et-coutumes:view" },
+      { href: "/heritage/ethnies", label: "Ethnies & Groupes", icon: Users2, permission: "page:chiefs:view" },
+      { href: "/heritage/culinaire", label: "Arts Culinaires", icon: Utensils, permission: "page:chiefs:view" },
+      { href: "/heritage/masques", label: "Masques & Statues", icon: Drama, permission: "page:chiefs:view" },
+      { href: "/heritage/danses", label: "Danses & Musiques", icon: Music, permission: "page:chiefs:view" },
+      { href: "/heritage/jeux", label: "Jeux Traditionnels", icon: Gamepad2, permission: "page:chiefs:view" },
+      { href: "/heritage/alliances", label: "Alliances Inter-ethnies", icon: HeartHandshake, permission: "page:chiefs:view" },
     ]
   },
   {
@@ -158,25 +172,87 @@ const allMenuItems = [
   },
 ];
 
+// Utility to find the required permission for a given path
+const getRequiredPermission = (path: string): string | undefined => {
+  // Normalize path by removing query params
+  const purePath = path.split('?')[0];
+
+  // Find top level item match
+  const topMatch = allMenuItems.find(item => item.href === purePath);
+  if (topMatch && !topMatch.isCollapsible) return topMatch.permission;
+
+  // Find sub item match
+  for (const item of allMenuItems) {
+    if (item.isCollapsible && item.subItems) {
+      const subMatch = item.subItems.find(sub => sub.href.split('?')[0] === purePath);
+      if (subMatch) return subMatch.permission;
+    }
+  }
+
+  return undefined;
+};
+
 function ProtectedPage({ children }: { children: React.ReactNode }) {
+  const { hasPermission, loading, user } = useAuth();
+  const pathname = usePathname();
+  const router = useRouter();
+
+  React.useEffect(() => {
+    if (loading) return;
+    if (!user) return; // AuthProvider handles redirect to login
+
+    const requiredPermission = getRequiredPermission(pathname);
+    const isPersonalPage = ['/payroll', '/leave', '/missions'].includes(pathname.split('?')[0]);
+    const canAccessPersonal = isPersonalPage && !!user.employeeId;
+
+    if (requiredPermission && !hasPermission(requiredPermission) && !canAccessPersonal) {
+      router.replace('/intranet');
+    }
+  }, [pathname, hasPermission, loading, user, router]);
+
+  const requiredPermission = getRequiredPermission(pathname);
+  const isPersonalPage = ['/payroll', '/leave', '/missions'].includes(pathname.split('?')[0]);
+  const canAccessPersonal = isPersonalPage && !!user?.employeeId;
+
+  if (requiredPermission && !hasPermission(requiredPermission) && !canAccessPersonal) {
+    return (
+      <div className="flex flex-col items-center justify-center p-12 text-center h-[50vh]">
+        <Lock className="w-12 h-12 text-muted-foreground mb-4" />
+        <h2 className="text-2xl font-bold">Accès Refusé</h2>
+        <p className="text-muted-foreground mt-2">Vous n'avez pas les permissions nécessaires pour accéder à cette page.</p>
+        <Button asChild className="mt-6">
+          <Link href="/intranet">Retour à l'accueil</Link>
+        </Button>
+      </div>
+    );
+  }
+
   return <>{children}</>;
 }
 
 function MobileBottomNav() {
   const { toggleSidebar } = useSidebar();
   const pathname = usePathname();
+  const { hasPermission } = useAuth();
 
   const navItems = [
     { href: "/intranet", label: "Accueil", icon: LayoutDashboard },
-    { href: "/employees", label: "Personnel", icon: Users },
-    { href: "/missions", label: "Missions", icon: Briefcase },
-    { href: "/organization-chart", label: "Organisation", icon: Building },
+    { href: "/employees", label: "Personnel", icon: Users, permission: "group:personnel:view" },
+    { href: "/missions", label: "Missions", icon: Briefcase, permission: "page:missions:view" },
+    { href: "/organization-chart", label: "Organisation", icon: Building, permission: "page:organization-chart:view" },
   ];
+
+  const visibleNavItems = navItems.filter(item => !item.permission || hasPermission(item.permission));
 
   return (
     <div className="fixed bottom-0 left-0 z-50 w-full h-16 bg-background border-t border-border md:hidden">
-      <div className="grid h-full max-w-lg grid-cols-5 mx-auto font-medium">
-        {navItems.map((item) => (
+      <div className={cn(
+        "grid h-full mx-auto font-medium",
+        visibleNavItems.length === 4 ? "grid-cols-5" :
+          visibleNavItems.length === 3 ? "grid-cols-4" :
+            visibleNavItems.length === 2 ? "grid-cols-3" : "grid-cols-2"
+      )}>
+        {visibleNavItems.map((item) => (
           <Link
             key={item.href}
             href={item.href}
@@ -235,14 +311,37 @@ function AppLayout({ children }: { children: React.ReactNode }) {
   const menuItems = React.useMemo(() => {
     if (!hasPermission) return [];
 
-    return allMenuItems.filter(item => {
+    const items = allMenuItems.filter(item => {
       if (item.isCollapsible) {
         // Show group if user has permission to view at least one sub-item
         return item.subItems?.some(sub => !sub.permission || hasPermission(sub.permission));
       }
       return !item.permission || hasPermission(item.permission);
     });
-  }, [hasPermission]);
+
+    // Add "Mon Espace" for linked employees as a convenient shortcut
+    if (user?.employeeId) {
+      const monEspaceItem = {
+        isCollapsible: true,
+        label: "Mon Espace",
+        icon: UserSquareIcon,
+        subItems: [
+          { href: "/payroll", label: "Ma Paie", icon: Landmark },
+          { href: "/leave", label: "Mes Congés", icon: CalendarOff },
+          { href: "/missions", label: "Mes Missions", icon: Briefcase },
+        ]
+      };
+
+      const personnelIndex = items.findIndex(item => item.label === "Personnel");
+      if (personnelIndex !== -1) {
+        items.splice(personnelIndex, 0, monEspaceItem as any);
+      } else {
+        items.unshift(monEspaceItem as any);
+      }
+    }
+
+    return items;
+  }, [hasPermission, user]);
 
   const isSubItemActive = (subItems: any[] | undefined) => {
     if (!subItems) return false;
@@ -306,7 +405,11 @@ function AppLayout({ children }: { children: React.ReactNode }) {
                     </CollapsibleTrigger>
                     <CollapsibleContent asChild>
                       <SidebarMenuSub>
-                        {item.subItems?.filter(sub => hasPermission(sub.permission)).map(subItem => (
+                        {item.subItems?.filter(sub =>
+                          !sub.permission ||
+                          hasPermission(sub.permission) ||
+                          (['/payroll', '/leave', '/missions'].includes(sub.href.split('?')[0]) && !!user?.employeeId)
+                        ).map(subItem => (
                           <SidebarMenuSubItem key={subItem.href}>
                             <SidebarMenuSubButton asChild isActive={currentPath === subItem.href}>
                               <Link href={subItem.href!} className="relative flex items-center w-full">

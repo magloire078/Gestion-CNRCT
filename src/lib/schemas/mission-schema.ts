@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 export const missionParticipantSchema = z.object({
+    employeeId: z.string().optional(),
     employeeName: z.string(),
     moyenTransport: z.enum(['Véhicule personnel', 'Véhicule CNRCT']).optional(),
     immatriculation: z.string().optional(),

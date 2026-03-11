@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { useDashboardData } from '@/hooks/use-dashboard-data';
 import { useFormat } from '@/hooks/use-format';
@@ -32,6 +33,7 @@ import { AddLeaveRequestSheet } from "@/components/leave/add-leave-request-sheet
 import { addLeave } from "@/services/leave-service";
 import { useToast } from "@/hooks/use-toast";
 import { getEmployeeGroup, type EmployeeGroup } from '@/services/employee-service';
+import { cn } from "@/lib/utils";
 
 interface StatCardProps {
     title: string;
@@ -40,14 +42,23 @@ interface StatCardProps {
     description?: string;
     href?: string;
     loading: boolean;
+    color?: 'primary' | 'success' | 'warning' | 'info';
+    animate?: boolean;
 }
 
-const StatCard = ({ title, value, icon: Icon, description, href, loading }: StatCardProps) => {
+const StatCard = ({ title, value, icon: Icon, description, href, loading, color = 'primary', animate = false }: StatCardProps) => {
     const cardContent = (
-        <Card variant="premium" className="transition-all duration-300">
+        <Card
+            variant="premium"
+            className={cn(
+                "transition-all duration-300",
+                `card-gradient-${color}`,
+                animate && "animated-band"
+            )}
+        >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">{title}</CardTitle>
-                <Icon className="h-5 w-5 text-muted-foreground" />
+                <Icon className={cn("h-5 w-5", `text-${color}-500`)} />
             </CardHeader>
             <CardContent>
                 {loading ? <Skeleton className="h-10 w-16 mt-1" /> : <div className="text-4xl font-bold">{value}</div>}
@@ -143,6 +154,7 @@ const LatestRecruitsCard = ({ employees, loading, departments }: { employees: Em
 
 export default function DashboardPage() {
     const { user, hasPermission } = useAuth();
+    const router = useRouter();
     const { toast } = useToast();
     const {
         globalStats,
@@ -197,11 +209,32 @@ export default function DashboardPage() {
 
     // Quick Actions
     const quickActions = [
-        { icon: CalendarOff, label: "Congés", onClick: () => setIsSheetOpen(true) },
-        { icon: Receipt, label: "Ma Paie", href: "/payroll" },
-        { icon: Briefcase, label: "Missions", href: "/missions" },
+        { icon: CalendarOff, label: "Congés", onClickAction: () => setIsSheetOpen(true) },
+        { icon: Receipt, label: "Ma Paie", href: "/payroll", permission: "page:payroll:view" },
+        { icon: Briefcase, label: "Missions", href: "/missions", permission: "page:missions:view" },
         { icon: Laptop, label: "Support TI", href: "/helpdesk" },
-    ];
+    ].filter(action => {
+        if (!action.permission) return true;
+        return hasPermission(action.permission);
+    });
+
+    const handleActionClick = (action: any) => {
+        // Restriction: check if user is linked to an employee
+        if (!user?.employeeId) {
+            toast({
+                variant: "destructive",
+                title: "Action impossible",
+                description: "Veuillez contacter les administrateurs pour lier votre compte à une fiche employé afin d'accéder à cette fonctionnalité.",
+            });
+            return;
+        }
+
+        if (action.onClickAction) {
+            action.onClickAction();
+        } else if (action.href) {
+            router.push(action.href);
+        }
+    };
 
     const handleAddLeaveRequest = async (newLeaveRequest: Omit<Leave, 'id' | 'status'>) => {
         try {
@@ -240,29 +273,42 @@ export default function DashboardPage() {
 
                 {/* Greeting & Quick Links */}
                 <div className="flex flex-col md:flex-row gap-6 items-start md:items-center justify-between bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-6 rounded-2xl border border-primary/10">
-                    <div>
-                        <h1 className="text-3xl font-bold tracking-tight text-primary">Bonjour, {user?.name.split(' ')[0]} 👋</h1>
+                    <div className="flex-1">
+                        <h1 className="text-3xl font-bold tracking-tight text-primary">Bonjour, {user?.name?.split(' ')[0] || 'Visiteur'} 👋</h1>
                         <p className="text-muted-foreground mt-1">Bienvenue sur l'intranet de la CNRCT. Voici les dernières informations.</p>
                     </div>
                     <div className="flex flex-wrap gap-3">
-                        {quickActions.map((action, i) => action.href ? (
-                            <Link key={i} href={action.href}>
-                                <Button variant="secondary" className="gap-2 bg-background/50 hover:bg-background">
-                                    <action.icon className="h-4 w-4" /> <span className="hidden sm:inline">{action.label}</span>
-                                </Button>
-                            </Link>
-                        ) : (
-                            <Button key={i} variant="secondary" className="gap-2 bg-background/50 hover:bg-background" onClick={action.onClick}>
-                                <action.icon className="h-4 w-4" /> <span className="hidden sm:inline">{action.label}</span>
+                        {quickActions.map((action, i) => (
+                            <Button
+                                key={i}
+                                variant="outline"
+                                className="gap-2 bg-card hover:bg-accent hover:text-accent-foreground shadow-sm border-primary/20 transition-all duration-300"
+                                onClick={() => handleActionClick(action)}
+                            >
+                                <action.icon className="h-4 w-4 text-primary" />
+                                <span className="hidden sm:inline">{action.label}</span>
                             </Button>
                         ))}
                     </div>
                 </div>
 
+                {/* Statistics Cards - Harmonized with HR Dashboard */}
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                    <StatCard loading={loading} title="Effectifs Actifs" value={globalStats.activeEmployees.toString()} icon={Users} description="Personnel en poste" href="/employees?status=Actif" color="primary" animate={true} />
+                    <StatCard loading={loading} title="Employés CNPS" value={globalStats.cnpsEmployees.toString()} icon={ShieldCheck} description="Déclarés & Actifs" href="/employees?cnps=true" color="success" animate={true} />
+                    <StatCard loading={loading} title="Membres Directoire" value={globalStats.employees.filter(e => getEmployeeGroup(e, globalStats.departments) === 'directoire' && e.status === 'Actif').length.toString()} icon={Crown} description="Instances Actives" href="/employees?filter=directoire&status=Actif" color="warning" animate={true} />
+                    <StatCard loading={loading} title="Services" value={globalStats.departments.length.toString()} icon={Building} description="Structure" href="/organization-chart" color="info" animate={true} />
+                </div>
+
                 <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
                     {/* Main Content Area (News) */}
-                    <div className="xl:col-span-2 space-y-6">
+                    <div className={cn("xl:col-span-2 space-y-6", !hasPermission('page:employees:view') && "xl:col-span-3")}>
                         <NewsFeed />
+                        {hasPermission('page:employees:view') && (
+                            <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
+                                <LatestRecruitsCard employees={globalStats.employees} loading={loading} departments={globalStats.departments} />
+                            </div>
+                        )}
                     </div>
 
                     {/* Right Sidebar (Shortcuts, AI, Reminders) */}
@@ -295,40 +341,42 @@ export default function DashboardPage() {
                             </CardContent>
                         </Card>
 
-                        {/* Birthdays Reminder */}
-                        <Card>
-                            <CardHeader className="pb-3 flex flex-row items-center justify-between">
-                                <div>
-                                    <CardTitle className="text-base flex items-center gap-2">
-                                        <Cake className="w-4 h-4 text-pink-500" />
-                                        Anniversaires du Mois
-                                    </CardTitle>
-                                </div>
-                                <Badge variant="secondary">{format(new Date(), 'MMMM', { locale: fr })}</Badge>
-                            </CardHeader>
-                            <CardContent>
-                                {loading ? (
-                                    <div className="space-y-3"><Skeleton className="h-10 w-full" /><Skeleton className="h-10 w-full" /></div>
-                                ) : (
-                                    <div className="space-y-3">
-                                        {seniorityAnniversaries.length > 0 ? seniorityAnniversaries.slice(0, 4).map(emp => (
-                                            <div key={emp.id} className="flex items-center gap-3 text-sm">
-                                                <Avatar className="h-8 w-8"><AvatarFallback className="bg-pink-100 text-pink-700">{emp.lastName?.charAt(0)}</AvatarFallback></Avatar>
-                                                <div>
-                                                    <p className="font-medium leading-none">{emp.firstName} {emp.lastName}</p>
-                                                    <p className="text-xs text-muted-foreground mt-1">{emp.poste}</p>
-                                                </div>
-                                            </div>
-                                        )) : (
-                                            <p className="text-sm text-muted-foreground italic text-center py-2">Aucun anniversaire ce mois-ci.</p>
-                                        )}
+                        {/* Birthdays Reminder - Only for HR/Admin */}
+                        {hasPermission('page:employees:view') && (
+                            <Card>
+                                <CardHeader className="pb-3 flex flex-row items-center justify-between">
+                                    <div>
+                                        <CardTitle className="text-base flex items-center gap-2">
+                                            <Cake className="w-4 h-4 text-pink-500" />
+                                            Anniversaires du Mois
+                                        </CardTitle>
                                     </div>
-                                )}
-                            </CardContent>
-                            <CardFooter className="pt-0">
-                                <Button variant="ghost" size="sm" className="w-full text-xs" onClick={() => document.getElementById('tab-anniversaries')?.click()}>Voir tout</Button>
-                            </CardFooter>
-                        </Card>
+                                    <Badge variant="secondary">{format(new Date(), 'MMMM', { locale: fr })}</Badge>
+                                </CardHeader>
+                                <CardContent>
+                                    {loading ? (
+                                        <div className="space-y-3"><Skeleton className="h-10 w-full" /><Skeleton className="h-10 w-full" /></div>
+                                    ) : (
+                                        <div className="space-y-3">
+                                            {seniorityAnniversaries.length > 0 ? seniorityAnniversaries.slice(0, 4).map(emp => (
+                                                <div key={emp.id} className="flex items-center gap-3 text-sm">
+                                                    <Avatar className="h-8 w-8"><AvatarFallback className="bg-pink-100 text-pink-700">{emp.lastName?.charAt(0)}</AvatarFallback></Avatar>
+                                                    <div>
+                                                        <p className="font-medium leading-none">{emp.firstName} {emp.lastName}</p>
+                                                        <p className="text-xs text-muted-foreground mt-1">{emp.poste}</p>
+                                                    </div>
+                                                </div>
+                                            )) : (
+                                                <p className="text-sm text-muted-foreground italic text-center py-2">Aucun anniversaire ce mois-ci.</p>
+                                            )}
+                                        </div>
+                                    )}
+                                </CardContent>
+                                <CardFooter className="pt-0">
+                                    <Button variant="ghost" size="sm" className="w-full text-xs" onClick={() => document.getElementById('tab-anniversaries')?.click()}>Voir tout</Button>
+                                </CardFooter>
+                            </Card>
+                        )}
                     </div>
                 </div>
 
@@ -336,8 +384,8 @@ export default function DashboardPage() {
 
             <AddLeaveRequestSheet
                 isOpen={isSheetOpen}
-                onClose={() => setIsSheetOpen(false)}
-                onAddLeaveRequest={handleAddLeaveRequest}
+                onCloseAction={() => setIsSheetOpen(false)}
+                onAddLeaveRequestAction={handleAddLeaveRequest}
             />
 
             {isPrintingAnniversaries && organizationLogos && (

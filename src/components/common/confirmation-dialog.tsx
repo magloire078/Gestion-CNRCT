@@ -14,27 +14,31 @@ import { Button } from "@/components/ui/button";
 
 interface ConfirmationDialogProps {
   isOpen: boolean;
-  onClose: () => void;
-  onConfirm: () => void;
+  onCloseAction: () => void;
+  onConfirmAction: () => void;
   title: string;
   description: string;
+  confirmText?: string;
+  variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
 }
 
 export function ConfirmationDialog({
   isOpen,
-  onClose,
-  onConfirm,
+  onCloseAction,
+  onConfirmAction,
   title,
   description,
+  confirmText = "Confirmer",
+  variant = "destructive",
 }: ConfirmationDialogProps) {
-  
+
   const handleConfirmClick = () => {
-    onConfirm();
-    onClose();
+    onConfirmAction();
+    onCloseAction();
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={onCloseAction}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
@@ -45,10 +49,10 @@ export function ConfirmationDialog({
             <Button variant="outline">Annuler</Button>
           </DialogClose>
           <Button
-            variant="destructive"
+            variant={variant}
             onClick={handleConfirmClick}
           >
-            Confirmer
+            {confirmText}
           </Button>
         </DialogFooter>
       </DialogContent>

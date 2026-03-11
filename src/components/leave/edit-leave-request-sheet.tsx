@@ -36,15 +36,15 @@ import { Textarea } from "../ui/textarea";
 
 interface EditLeaveRequestSheetProps {
   isOpen: boolean;
-  onClose: () => void;
-  onUpdateLeave: (id: string, leaveRequest: Partial<Omit<Leave, "id" | "status">>) => Promise<void>;
+  onCloseAction: () => void;
+  onUpdateLeaveAction: (id: string, leaveRequest: Partial<Omit<Leave, "id" | "status">>) => Promise<void>;
   leaveRequest: Leave | null;
 }
 
 export function EditLeaveRequestSheet({
   isOpen,
-  onClose,
-  onUpdateLeave,
+  onCloseAction,
+  onUpdateLeaveAction,
   leaveRequest,
 }: EditLeaveRequestSheetProps) {
   const [employee, setEmployee] = useState("");
@@ -58,12 +58,12 @@ export function EditLeaveRequestSheet({
 
   useEffect(() => {
     if (leaveRequest) {
-        setEmployee(leaveRequest.employee);
-        setLeaveType(leaveRequest.type);
-        setStartDate(parseISO(leaveRequest.startDate));
-        setEndDate(parseISO(leaveRequest.endDate));
-        setNumDecision(leaveRequest.num_decision || "");
-        setReason(leaveRequest.reason || "");
+      setEmployee(leaveRequest.employee);
+      setLeaveType(leaveRequest.type);
+      setStartDate(parseISO(leaveRequest.startDate));
+      setEndDate(parseISO(leaveRequest.endDate));
+      setNumDecision(leaveRequest.num_decision || "");
+      setReason(leaveRequest.reason || "");
     }
   }, [leaveRequest])
 
@@ -79,7 +79,7 @@ export function EditLeaveRequestSheet({
 
   const handleClose = () => {
     resetForm();
-    onClose();
+    onCloseAction();
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -98,12 +98,13 @@ export function EditLeaveRequestSheet({
       setError("La date de fin ne peut pas être antérieure à la date de début.");
       return;
     }
-    
+
     setIsSubmitting(true);
     setError("");
 
     try {
       const dataToUpdate: Partial<Omit<Leave, 'id' | 'status'>> = {
+        employeeId: leaveRequest.employeeId,
         employee,
         type: leaveType as Leave['type'],
         startDate: format(startDate, "yyyy-MM-dd"),
@@ -112,13 +113,13 @@ export function EditLeaveRequestSheet({
         reason: leaveType === "Congé Personnel" ? reason : "",
       };
 
-      await onUpdateLeave(leaveRequest.id, dataToUpdate);
+      await onUpdateLeaveAction(leaveRequest.id, dataToUpdate);
       handleClose();
-    } catch(err) {
-       setError("Échec de la mise à jour de la demande. Veuillez réessayer.");
-       console.error(err);
+    } catch (err) {
+      setError("Échec de la mise à jour de la demande. Veuillez réessayer.");
+      console.error(err);
     } finally {
-        setIsSubmitting(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -126,141 +127,141 @@ export function EditLeaveRequestSheet({
     <Sheet open={isOpen} onOpenChange={(open) => !open && handleClose()}>
       <SheetContent className="sm:max-w-lg">
         <form onSubmit={handleSubmit}>
-        <SheetHeader>
-          <SheetTitle>Modifier la demande de congé</SheetTitle>
-          <SheetDescription>
-            Ajustez les détails de la demande de congé.
-          </SheetDescription>
-        </SheetHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="employee" className="text-right">
-              Employé
-            </Label>
-            <Input id="employee" value={employee} className="col-span-3" disabled />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="leaveType" className="text-right">
-              Type
-            </Label>
-            <Select value={leaveType} onValueChange={(type) => {
-              setLeaveType(type);
-              if (type !== 'Congé Annuel') setNumDecision('');
-              if (type !== 'Congé Personnel') setReason('');
-            }}>
-              <SelectTrigger className="col-span-3">
-                <SelectValue placeholder="Sélectionnez un type..." />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Congé Annuel">Congé Annuel</SelectItem>
-                <SelectItem value="Congé Maladie">Congé Maladie</SelectItem>
-                <SelectItem value="Congé Personnel">Congé Personnel</SelectItem>
-                <SelectItem value="Congé Maternité">Congé Maternité</SelectItem>
-                <SelectItem value="Congé sans solde">Congé sans solde</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="startDate" className="text-right">
-              Date de début
-            </Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant={"outline"}
-                  className={cn(
-                    "col-span-3 justify-start text-left font-normal",
-                    !startDate && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {startDate ? format(startDate, "PPP", { locale: fr }) : <span>Choisissez une date</span>}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="single"
-                  selected={startDate}
-                  onSelect={setStartDate}
-                  initialFocus
-                  locale={fr}
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="endDate" className="text-right">
-              Date de fin
-            </Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant={"outline"}
-                  className={cn(
-                    "col-span-3 justify-start text-left font-normal",
-                    !endDate && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {endDate ? format(endDate, "PPP", { locale: fr }) : <span>Choisissez une date</span>}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="single"
-                  selected={endDate}
-                  onSelect={setEndDate}
-                  initialFocus
-                  locale={fr}
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-          {leaveType === 'Congé Annuel' && (
+          <SheetHeader>
+            <SheetTitle>Modifier la demande de congé</SheetTitle>
+            <SheetDescription>
+              Ajustez les détails de la demande de congé.
+            </SheetDescription>
+          </SheetHeader>
+          <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="numDecision" className="text-right">
-                N° Décision
+              <Label htmlFor="employee" className="text-right">
+                Employé
               </Label>
-              <Input
-                id="numDecision"
-                value={numDecision}
-                onChange={(e) => setNumDecision(e.target.value)}
-                className="col-span-3"
-                placeholder="Entrez le n° de décision"
-              />
+              <Input id="employee" value={employee} className="col-span-3" disabled />
             </div>
-          )}
-          {leaveType === 'Congé Personnel' && (
-            <div className="grid grid-cols-4 items-start gap-4">
-              <Label htmlFor="reason-edit" className="text-right pt-2">
-                Motif
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="leaveType" className="text-right">
+                Type
               </Label>
-              <Textarea
-                id="reason-edit"
-                value={reason}
-                onChange={(e) => setReason(e.target.value)}
-                className="col-span-3"
-                rows={3}
-                placeholder="Indiquez la raison du congé personnel..."
-              />
+              <Select value={leaveType} onValueChange={(type) => {
+                setLeaveType(type);
+                if (type !== 'Congé Annuel') setNumDecision('');
+                if (type !== 'Congé Personnel') setReason('');
+              }}>
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Sélectionnez un type..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Congé Annuel">Congé Annuel</SelectItem>
+                  <SelectItem value="Congé Maladie">Congé Maladie</SelectItem>
+                  <SelectItem value="Congé Personnel">Congé Personnel</SelectItem>
+                  <SelectItem value="Congé Maternité">Congé Maternité</SelectItem>
+                  <SelectItem value="Congé sans solde">Congé sans solde</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-          )}
-          {error && (
-            <p className="col-span-4 text-center text-sm text-destructive">
-              {error}
-            </p>
-          )}
-        </div>
-        <SheetFooter>
-          <SheetClose asChild>
-            <Button type="button" variant="outline" onClick={handleClose}>
-              Annuler
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="startDate" className="text-right">
+                Date de début
+              </Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    className={cn(
+                      "col-span-3 justify-start text-left font-normal",
+                      !startDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {startDate ? format(startDate, "PPP", { locale: fr }) : <span>Choisissez une date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={startDate}
+                    onSelect={setStartDate}
+                    initialFocus
+                    locale={fr}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="endDate" className="text-right">
+                Date de fin
+              </Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    className={cn(
+                      "col-span-3 justify-start text-left font-normal",
+                      !endDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {endDate ? format(endDate, "PPP", { locale: fr }) : <span>Choisissez une date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={endDate}
+                    onSelect={setEndDate}
+                    initialFocus
+                    locale={fr}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+            {leaveType === 'Congé Annuel' && (
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="numDecision" className="text-right">
+                  N° Décision
+                </Label>
+                <Input
+                  id="numDecision"
+                  value={numDecision}
+                  onChange={(e) => setNumDecision(e.target.value)}
+                  className="col-span-3"
+                  placeholder="Entrez le n° de décision"
+                />
+              </div>
+            )}
+            {leaveType === 'Congé Personnel' && (
+              <div className="grid grid-cols-4 items-start gap-4">
+                <Label htmlFor="reason-edit" className="text-right pt-2">
+                  Motif
+                </Label>
+                <Textarea
+                  id="reason-edit"
+                  value={reason}
+                  onChange={(e) => setReason(e.target.value)}
+                  className="col-span-3"
+                  rows={3}
+                  placeholder="Indiquez la raison du congé personnel..."
+                />
+              </div>
+            )}
+            {error && (
+              <p className="col-span-4 text-center text-sm text-destructive">
+                {error}
+              </p>
+            )}
+          </div>
+          <SheetFooter>
+            <SheetClose asChild>
+              <Button type="button" variant="outline" onClick={handleClose}>
+                Annuler
+              </Button>
+            </SheetClose>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Enregistrement..." : "Enregistrer les modifications"}
             </Button>
-          </SheetClose>
-          <Button type="submit" disabled={isSubmitting}>
-             {isSubmitting ? "Enregistrement..." : "Enregistrer les modifications"}
-          </Button>
-        </SheetFooter>
+          </SheetFooter>
         </form>
       </SheetContent>
     </Sheet>

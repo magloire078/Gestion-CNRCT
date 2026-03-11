@@ -1,0 +1,35 @@
+city,lat,lng,country,iso2,admin_name,capital,population,population_proper
+Abidjan,5.3167,-4.0333,Côte d’Ivoire,CI,Abidjan,primary,4980000,4980000
+Yopougon,5.3167,-4.0667,Côte d’Ivoire,CI,Abidjan,,1571065,1571065
+Cocody,5.3500,-3.9667,Côte d’Ivoire,CI,Abidjan,,692583,692583
+Bouaké,7.6833,-5.0167,Côte d’Ivoire,CI,Vallée du Bandama,admin,659233,659233
+Port-Bouët,5.2667,-3.9000,Côte d’Ivoire,CI,Abidjan,,618795,618795
+Daloa,6.8833,-6.4500,Côte d’Ivoire,CI,Sassandra-Marahoué,admin,421871,421871
+Koumassi,5.3000,-3.9500,Côte d’Ivoire,CI,Abidjan,,412282,412282
+San-Pédro,4.7500,-6.6333,Côte d’Ivoire,CI,Bas-Sassandra,admin,390654,390654
+Attiecoubé,5.3333,-4.0333,Côte d’Ivoire,CI,Abidjan,,313135,313135
+Korhogo,9.4167,-5.6167,Côte d’Ivoire,CI,Savanes,admin,286071,286071
+Gagnoa,6.1333,-5.9333,Côte d’Ivoire,CI,Gôh-Djiboua,admin,277044,277044
+Soubré,5.7833,-6.6000,Côte d’Ivoire,CI,Bas-Sassandra,minor,272773,272773
+Oumé,6.3833,-5.4167,Côte d’Ivoire,CI,Gôh-Djiboua,minor,260786,260786
+Man,7.4000,-7.5500,Côte d’Ivoire,CI,Montagnes,admin,241969,241969
+Duekoué,6.7333,-7.3500,Côte d’Ivoire,CI,Montagnes,minor,220953,220953
+Bingerville,5.3500,-3.9000,Côte d’Ivoire,CI,Abidjan,minor,204656,204656
+Divo,5.8333,-5.3667,Côte d’Ivoire,CI,Gôh-Djiboua,minor,179455,179455
+Abengourou,6.7333,-3.4833,Côte d’Ivoire,CI,Comoé,admin,164424,164424
+Ferkessédougou,9.5833,-5.2000,Côte d’Ivoire,CI,Savanes,minor,160267,160267
+Adzopé,6.1667,-3.9833,Côte d’Ivoire,CI,Lagunes,minor,156488,156488
+Bondoukou,8.0333,-2.8000,Côte d’Ivoire,CI,Zanzan,admin,141568,141568
+Dabou,5.3167,-4.3833,Côte d’Ivoire,CI,Lagunes,admin,138083,138083
+Sinfra,6.8500,-5.9167,Côte d’Ivoire,CI,Sassandra-Marahoué,minor,137210,137210
+Agboville,5.9333,-4.2167,Côte d’Ivoire,CI,Lagunes,minor,135082,135082
+Grand-Bassam,5.2000,-3.7333,Côte d’Ivoire,CI,Comoé,minor,124567,124567
+Daoukro,7.0500,-3.9667,Côte d’Ivoire,CI,Lacs,minor,101136,101136
+Aboisso,5.4667,-3.2000,Côte d’Ivoire,CI,Comoé,minor,100903,100903
+Odienné,9.5000,-7.5667,Côte d’Ivoire,CI,Denguélé,admin,86279,86279
+Dimbokro,6.6500,-4.7000,Côte d’Ivoire,CI,Lacs,admin,70198,70198
+Séguéla,7.9667,-6.6667,Côte d’Ivoire,CI,Woroba,admin,67240,67240
+Yamoussoukro,6.8161,-5.2742,Côte d’Ivoire,CI,Yamoussoukro,primary,37253,37253
+Bangolo,7.0123,-7.4864,Côte d’Ivoire,CI,Montagnes,admin,,
+Anyama,5.4946,-4.0518,Côte d’Ivoire,CI,Abidjan,minor,,
+Méagui,5.4048,-6.5584,Côte d’Ivoire,CI,Bas-Sassandra,minor,,

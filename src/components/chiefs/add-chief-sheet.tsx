@@ -38,11 +38,11 @@ import {
 
 interface AddChiefDialogProps {
   isOpen: boolean;
-  onClose: () => void;
-  onAddChief: (chief: Omit<Chief, "id">, photoFile: File | null) => Promise<void>;
+  onCloseAction: () => void;
+  onAddChiefAction: (chief: Omit<Chief, "id">, photoFile: File | null) => Promise<void>;
 }
 
-export function AddChiefSheet({ isOpen, onClose, onAddChief }: AddChiefDialogProps) {
+export function AddChiefSheet({ isOpen, onCloseAction, onAddChiefAction }: AddChiefDialogProps) {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [title, setTitle] = useState("");
@@ -120,7 +120,7 @@ export function AddChiefSheet({ isOpen, onClose, onAddChief }: AddChiefDialogPro
 
   const handleClose = () => {
     resetForm();
-    onClose();
+    onCloseAction();
   }
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -181,7 +181,7 @@ export function AddChiefSheet({ isOpen, onClose, onAddChief }: AddChiefDialogPro
       if (regencyStartDate) chiefData.regencyStartDate = regencyStartDate;
       if (regencyEndDate) chiefData.regencyEndDate = regencyEndDate;
 
-      await onAddChief(chiefData, photoFile);
+      await onAddChiefAction(chiefData, photoFile);
       handleClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Échec de l'ajout du chef.");

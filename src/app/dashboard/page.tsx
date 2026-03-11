@@ -32,6 +32,7 @@ import { AddLeaveRequestSheet } from "@/components/leave/add-leave-request-sheet
 import { addLeave } from "@/services/leave-service";
 import { useToast } from "@/hooks/use-toast";
 import { getEmployeeGroup, type EmployeeGroup } from '@/services/employee-service';
+import { cn } from "@/lib/utils";
 
 interface StatCardProps {
     title: string;
@@ -40,14 +41,23 @@ interface StatCardProps {
     description?: string;
     href?: string;
     loading: boolean;
+    color?: 'primary' | 'success' | 'warning' | 'info';
+    animate?: boolean;
 }
 
-const StatCard = ({ title, value, icon: Icon, description, href, loading }: StatCardProps) => {
+const StatCard = ({ title, value, icon: Icon, description, href, loading, color = 'primary', animate = false }: StatCardProps) => {
     const cardContent = (
-        <Card variant="premium" className="transition-all duration-300">
+        <Card
+            variant="premium"
+            className={cn(
+                "transition-all duration-300",
+                `card-gradient-${color}`,
+                animate && "animated-band"
+            )}
+        >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">{title}</CardTitle>
-                <Icon className="h-5 w-5 text-muted-foreground" />
+                <Icon className={cn("h-5 w-5", `text-${color}-500`)} />
             </CardHeader>
             <CardContent>
                 {loading ? <Skeleton className="h-10 w-16 mt-1" /> : <div className="text-4xl font-bold">{value}</div>}
@@ -249,14 +259,21 @@ export default function DashboardPage() {
                             <TabsList>
                                 <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
                                 <TabsTrigger value="demographics" disabled>Démographie</TabsTrigger>
-                                <TabsTrigger value="alerts" id="tab-anniversaries">Alertes & Événements</TabsTrigger>
+                                <TabsTrigger
+                                    value="alerts"
+                                    id="tab-anniversaries"
+                                    disabled={user?.role?.name === 'Employé'}
+                                    className={cn(user?.role?.name === 'Employé' && "opacity-50 cursor-not-allowed")}
+                                >
+                                    Alertes & Événements
+                                </TabsTrigger>
                             </TabsList>
                             <TabsContent value="overview" className="space-y-4">
                                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                                    <StatCard loading={loading} title="Total Employés" value={globalStats.employees.length.toString()} icon={Users} description="+2 ce mois" href="/employees" />
-                                    <StatCard loading={loading} title="Membres Directoire" value={globalStats.employees.filter(e => getEmployeeGroup(e, globalStats.departments) === 'directoire').length.toString()} icon={UserIcon} description="Actifs" href="/employees?filter=directoire" />
-                                    <StatCard loading={loading} title="Comités Régionaux" value={globalStats.employees.filter(e => getEmployeeGroup(e, globalStats.departments) === 'regional').length.toString()} icon={Globe} href="/employees?filter=regional" />
-                                    <StatCard loading={loading} title="Services" value={globalStats.departments.length.toString()} icon={Building} description="Actifs" href="/organization-chart" />
+                                    <StatCard loading={loading} title="Effectifs Actifs" value={globalStats.activeEmployees.toString()} icon={Users} description="Personnel en poste" href="/employees?status=Actif" color="primary" animate={true} />
+                                    <StatCard loading={loading} title="Employés CNPS" value={globalStats.cnpsEmployees.toString()} icon={ShieldCheck} description="Déclarés & Actifs" href="/employees?cnps=true" color="success" animate={true} />
+                                    <StatCard loading={loading} title="Membres Directoire" value={globalStats.employees.filter(e => getEmployeeGroup(e, globalStats.departments) === 'directoire' && e.status === 'Actif').length.toString()} icon={Crown} description="Instances Actives" href="/employees?filter=directoire&status=Actif" color="warning" animate={true} />
+                                    <StatCard loading={loading} title="Services" value={globalStats.departments.length.toString()} icon={Building} description="Structure" href="/organization-chart" color="info" animate={true} />
                                 </div>
                                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
                                     <Card className="lg:col-span-4">
@@ -357,8 +374,8 @@ export default function DashboardPage() {
 
             <AddLeaveRequestSheet
                 isOpen={isSheetOpen}
-                onClose={() => setIsSheetOpen(false)}
-                onAddLeaveRequest={handleAddLeaveRequest}
+                onCloseAction={() => setIsSheetOpen(false)}
+                onAddLeaveRequestAction={handleAddLeaveRequest}
             />
 
             {isPrintingAnniversaries && organizationLogos && (

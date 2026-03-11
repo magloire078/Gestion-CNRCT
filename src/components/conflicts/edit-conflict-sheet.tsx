@@ -31,12 +31,12 @@ import { Loader2 } from "lucide-react";
 
 interface EditConflictSheetProps {
     isOpen: boolean;
-    onClose: () => void;
-    onUpdateConflict: (id: string, data: Partial<Omit<Conflict, 'id'>>) => Promise<void>;
+    onCloseAction: () => void;
+    onUpdateConflictAction: (id: string, data: Partial<Omit<Conflict, 'id'>>) => Promise<void>;
     conflict: Conflict | null;
 }
 
-export function EditConflictSheet({ isOpen, onClose, onUpdateConflict, conflict }: EditConflictSheetProps) {
+export function EditConflictSheet({ isOpen, onCloseAction, onUpdateConflictAction, conflict }: EditConflictSheetProps) {
     const { toast } = useToast();
 
     const [formData, setFormData] = useState<Partial<Conflict>>({});
@@ -88,7 +88,7 @@ export function EditConflictSheet({ isOpen, onClose, onUpdateConflict, conflict 
         setError(null);
 
         try {
-            await onUpdateConflict(conflict.id, formData);
+            await onUpdateConflictAction(conflict.id, formData);
         } catch (error) {
             setError(error instanceof Error ? error.message : "Une erreur est survenue.");
             console.error("Failed to save conflict", error);
@@ -100,7 +100,7 @@ export function EditConflictSheet({ isOpen, onClose, onUpdateConflict, conflict 
     if (!conflict) return null;
 
     return (
-        <Sheet open={isOpen} onOpenChange={onClose}>
+        <Sheet open={isOpen} onOpenChange={onCloseAction}>
             <SheetContent className="sm:max-w-lg">
                 <form onSubmit={handleSave}>
                     <SheetHeader>

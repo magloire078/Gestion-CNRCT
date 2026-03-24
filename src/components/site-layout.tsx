@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import * as React from "react";
@@ -50,6 +49,7 @@ import {
   Gamepad2,
   HeartHandshake,
   Users2,
+  History,
 } from "lucide-react";
 
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
@@ -84,6 +84,27 @@ const allMenuItems = [
   { href: "/dashboard", label: "Tableau de Bord RH", icon: ShieldCheck, permission: "page:dashboard:view" },
   {
     isCollapsible: true,
+    label: "L'Institution",
+    icon: Landmark,
+    permission: "group:personnel:view",
+    subItems: [
+      { href: "/organization-chart", label: "Organigramme", icon: Network, permission: "page:organization-chart:view" },
+      { href: "/employees?filter=directoire", label: "Bureau du Directoire", icon: Building, permission: "page:employees:view" },
+      { href: "/employees?filter=regional", label: "Comités Régionaux", icon: Globe, permission: "page:employees:view" },
+    ]
+  },
+  {
+    isCollapsible: true,
+    label: "Cartographies",
+    icon: MapIcon,
+    permission: "group:personnel:view",
+    subItems: [
+      { href: "/employees?filter=directoire", label: "Membres du Directoire", icon: Building, permission: "page:employees:view" },
+      { href: "/employees?filter=all-geo", label: "Directoire & Régionale", icon: Globe, permission: "page:employees:view" },
+    ]
+  },
+  {
+    isCollapsible: true,
     label: "Personnel",
     icon: Users,
     permission: "group:personnel:view",
@@ -94,9 +115,6 @@ const allMenuItems = [
       { href: "/leave", label: "Congés", icon: CalendarOff, permission: "page:leave:view" },
       { href: "/evaluations", label: "Évaluations", icon: ClipboardCheck, permission: "page:evaluations:view" },
       { href: "/indemnities", label: "Indemnités", icon: Scale, permission: "page:indemnities:view" },
-      { href: "/employees?filter=directoire", label: "Membres du Directoire", icon: Building, permission: "page:employees:view" },
-      { href: "/employees?filter=regional", label: "Comités Régionaux", icon: Globe, permission: "page:employees:view" },
-      { href: "/organization-chart", label: "Organigramme", icon: Network, permission: "page:organization-chart:view" },
     ]
   },
   {
@@ -111,12 +129,21 @@ const allMenuItems = [
   },
   {
     isCollapsible: true,
-    label: "Répertoires",
-    icon: Archive,
+    label: "Localités & Autorités",
+    icon: Landmark,
     permission: "group:repertoires:view",
     subItems: [
       { href: "/chiefs", label: "Rois & Chefs", icon: Crown, permission: "page:chiefs:view" },
       { href: "/villages", label: "Villages", icon: MapPin, permission: "page:chiefs:view" },
+    ]
+  },
+  {
+    isCollapsible: true,
+    label: "Culture & Patrimoine",
+    icon: History,
+    permission: "group:repertoires:view",
+    subItems: [
+      { href: "/heritage", label: "Aperçu Global", icon: LayoutDashboard, permission: "page:chiefs:view" },
       { href: "/us-et-coutumes", label: "Us & Coutumes", icon: BookText, permission: "page:us-et-coutumes:view" },
       { href: "/heritage/ethnies", label: "Ethnies & Groupes", icon: Users2, permission: "page:chiefs:view" },
       { href: "/heritage/culinaire", label: "Arts Culinaires", icon: Utensils, permission: "page:chiefs:view" },
@@ -144,7 +171,7 @@ const allMenuItems = [
     isCollapsible: true,
     label: "Rapports",
     icon: FileText,
-    permission: "group:reports:view", // New group permission
+    permission: "group:reports:view",
     subItems: [
       { href: "/reports/disa", label: "DISA", icon: FileText, permission: "page:reports:disa:view" },
       { href: "/reports/nominative", label: "Tableau Nominatif", icon: FileText, permission: "page:reports:nominative:view" },
@@ -164,7 +191,6 @@ const allMenuItems = [
       { href: "/employees?filter=gendarme", label: "Gendarmes", icon: ShieldHalf, permission: "page:employees:view" },
       { href: "/it-assets", label: "Actifs TI", icon: Laptop, permission: "page:it-assets:view" },
       { href: "/documents", label: "Documents", icon: FileText, permission: "page:documents:view" },
-      { href: "/assistant", label: "Assistant IA", icon: MessageSquare, permission: "page:assistant:view" },
       { href: "/helpdesk", label: "Helpdesk", icon: LifeBuoy, permission: "page:helpdesk:view" },
       { href: "/backup", label: "Sauvegarde & Restauration", icon: DatabaseBackup, permission: "page:backup:view" },
       { href: "/admin", label: "Paramètres Admin", icon: Shield, permission: "page:admin:view" },
@@ -174,14 +200,11 @@ const allMenuItems = [
 
 // Utility to find the required permission for a given path
 const getRequiredPermission = (path: string): string | undefined => {
-  // Normalize path by removing query params
   const purePath = path.split('?')[0];
 
-  // Find top level item match
   const topMatch = allMenuItems.find(item => item.href === purePath);
   if (topMatch && !topMatch.isCollapsible) return topMatch.permission;
 
-  // Find sub item match
   for (const item of allMenuItems) {
     if (item.isCollapsible && item.subItems) {
       const subMatch = item.subItems.find(sub => sub.href.split('?')[0] === purePath);
@@ -199,7 +222,7 @@ function ProtectedPage({ children }: { children: React.ReactNode }) {
 
   React.useEffect(() => {
     if (loading) return;
-    if (!user) return; // AuthProvider handles redirect to login
+    if (!user) return; 
 
     const requiredPermission = getRequiredPermission(pathname);
     const isPersonalPage = ['/payroll', '/leave', '/missions'].includes(pathname.split('?')[0]);
@@ -245,7 +268,7 @@ function MobileBottomNav() {
   const visibleNavItems = navItems.filter(item => !item.permission || hasPermission(item.permission));
 
   return (
-    <div className="fixed bottom-0 left-0 z-50 w-full h-16 bg-background border-t border-border md:hidden">
+    <div className="fixed bottom-0 left-0 z-50 w-full h-16 bg-background border-t border-border md:hidden print:hidden">
       <div className={cn(
         "grid h-full mx-auto font-medium",
         visibleNavItems.length === 4 ? "grid-cols-5" :
@@ -278,7 +301,6 @@ function MobileBottomNav() {
   );
 }
 
-
 function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -286,7 +308,6 @@ function AppLayout({ children }: { children: React.ReactNode }) {
 
   React.useEffect(() => {
     if (settings) {
-      // Set dynamic title and favicon
       document.title = 'Intranet CNRCT';
       if (settings.faviconUrl) {
         let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
@@ -307,19 +328,16 @@ function AppLayout({ children }: { children: React.ReactNode }) {
 
   const currentPath = pathname;
 
-
   const menuItems = React.useMemo(() => {
     if (!hasPermission) return [];
 
     const items = allMenuItems.filter(item => {
       if (item.isCollapsible) {
-        // Show group if user has permission to view at least one sub-item
         return item.subItems?.some(sub => !sub.permission || hasPermission(sub.permission));
       }
       return !item.permission || hasPermission(item.permission);
     });
 
-    // Add "Mon Espace" for linked employees as a convenient shortcut
     if (user?.employeeId) {
       const monEspaceItem = {
         isCollapsible: true,
@@ -345,7 +363,6 @@ function AppLayout({ children }: { children: React.ReactNode }) {
 
   const isSubItemActive = (subItems: any[] | undefined) => {
     if (!subItems) return false;
-    // Check if the current path starts with the href of any sub-item
     return subItems.some(item => pathname.startsWith(item.href.split('?')[0]));
   };
 
@@ -373,7 +390,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <SidebarProvider>
-      <Sidebar>
+      <Sidebar className="print:hidden">
         <SidebarHeader>
           <div className="flex items-center gap-3">
             <Avatar className="h-12 w-12 rounded-md">
@@ -438,7 +455,8 @@ function AppLayout({ children }: { children: React.ReactNode }) {
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
-              )))}
+              )
+            ))}
           </SidebarMenu>
         </SidebarContent>
         <SidebarFooter className="p-2 border-t border-sidebar-border">
@@ -481,8 +499,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
         </SidebarFooter>
       </Sidebar>
       <SidebarInset>
-        <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
-          {/* Header content can go here, like a search bar or breadcrumbs */}
+        <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6 print:hidden">
           <div className="ml-auto flex items-center gap-2">
             <NotificationBell />
           </div>
@@ -503,7 +520,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
 export function SiteLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
-  const isPublicPage = ['/login', '/signup', '/forgot-password', '/'].includes(pathname);
+  const isPublicPage = ['/login', '/signup', '/forgot-password', '/', '/mgp/track'].includes(pathname);
 
   return (
     <AuthProvider>

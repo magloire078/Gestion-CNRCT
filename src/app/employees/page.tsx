@@ -5,6 +5,8 @@
 import { useState, useEffect, useMemo } from "react";
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from "next/link";
+import { format, parseISO } from "date-fns";
+import { fr } from "date-fns/locale";
 import { PlusCircle, Search, Download, Printer, Eye, Pencil, Trash2, MoreHorizontal, ShieldCheck, Globe, Building } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -35,8 +37,15 @@ import { ImportEmployeesDataCard } from "@/components/employees/import-employees
 import { useAuth } from "@/hooks/use-auth";
 import { ConfirmationDialog } from "@/components/common/confirmation-dialog";
 import { PrintLayout } from "@/components/reports/print-layout";
-import { format, parseISO } from "date-fns";
 
+
+import { divisions } from "@/lib/ivory-coast-divisions";
+import dynamic from 'next/dynamic';
+import { useTransition } from "react";
+const DirectoireMap = dynamic(() => import('@/components/employees/directoire-map').then(m => m.DirectoireMap), {
+  ssr: false,
+  loading: () => <Skeleton className="h-[400px] w-full rounded-xl" />,
+});
 
 type Status = 'Actif' | 'En congé' | 'Licencié' | 'Retraité' | 'Décédé';
 
@@ -49,7 +58,9 @@ const statusVariantMap: Record<Status, "default" | "secondary" | "destructive" |
 };
 
 import { allColumns, type ColumnKeys } from "@/lib/constants/employee";
+import { DebouncedInput } from "@/components/ui/debounced-input";
 
+// Simplified debounced input to keep typing local and fast
 
 export default function EmployeesPage() {
   const [employees, setEmployees] = useState<Employe[]>([]);
@@ -62,7 +73,7 @@ export default function EmployeesPage() {
   const { toast } = useToast();
   const { user, loading: authLoading, hasPermission } = useAuth();
   const [deleteTarget, setDeleteTarget] = useState<Employe | null>(null);
-
+  const [isPending, startTransition] = useTransition();
 
   const [departments, setDepartments] = useState<Department[]>([]);
   const [directions, setDirections] = useState<Direction[]>([]);
@@ -79,10 +90,18 @@ export default function EmployeesPage() {
   const [sexeFilter, setSexeFilter] = useState('all');
   const [personnelTypeFilter, setPersonnelTypeFilter] = useState(initialFilter || 'all');
 
+  const [regionFilter, setRegionFilter] = useState("all");
+  const [geoDepartementFilter, setGeoDepartementFilter] = useState("all");
+  const [subPrefectureFilter, setSubPrefectureFilter] = useState("all");
+  const [villageFilter, setVillageFilter] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+  const [debouncedVillageFilter, setDebouncedVillageFilter] = useState("");
+
   const [columnsToPrint, setColumnsToPrint] = useState<ColumnKeys[]>(Object.keys(allColumns) as ColumnKeys[]);
   const [organizationLogos, setOrganizationLogos] = useState<OrganizationSettings | null>(null);
 
   const [printDate, setPrintDate] = useState('');
+  const [showDirectoireMap, setShowDirectoireMap] = useState(false);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -91,17 +110,24 @@ export default function EmployeesPage() {
   const canImport = hasPermission('feature:employees:import');
   const canExport = hasPermission('feature:employees:export');
 
+  const isGeoTab = personnelTypeFilter === 'directoire' || personnelTypeFilter === 'regional' || personnelTypeFilter === 'all-geo';
+
   const pageTitle = useMemo(() => {
     switch (personnelTypeFilter) {
       case 'directoire': return 'Membres du Directoire';
       case 'personnel-siege': return 'Personnel Siège';
       case 'chauffeur-directoire': return 'Chauffeurs du Directoire';
       case 'regional': return 'Comités Régionaux';
+      case 'all-geo': return 'Directoire & Comités Régionaux';
       case 'garde-republicaine': return 'Garde Républicaine';
       case 'gendarme': return 'Gendarmes';
       default: return 'Effectif Global';
     }
   }, [personnelTypeFilter]);
+
+  useEffect(() => {
+    setPrintDate(format(new Date(), 'dd/MM/yyyy HH:mm'));
+  }, []);
 
   // Handle initial filter from URL
   useEffect(() => {
@@ -119,6 +145,15 @@ export default function EmployeesPage() {
       });
     }
   }, [authLoading, hasPermission, router, toast]);
+
+  useEffect(() => {
+    if (personnelTypeFilter === 'directoire' || personnelTypeFilter === 'all-geo') {
+      const timer = setTimeout(() => setShowDirectoireMap(true), 300);
+      return () => clearTimeout(timer);
+    }
+  }, [personnelTypeFilter]);
+
+// Handled by DebouncedInput components directly
 
   useEffect(() => {
     if (!user || authLoading || !hasPermission('page:employees:view')) return;
@@ -165,7 +200,7 @@ export default function EmployeesPage() {
         document.head.removeChild(style);
         document.title = originalTitle;
         setIsPrinting(false);
-      }, 500);
+      }, 1500);
     }
   }, [isPrinting, pageTitle]);
 
@@ -201,26 +236,39 @@ export default function EmployeesPage() {
     }
   };
 
+  const enrichedEmployees = useMemo(() => {
+    return employees.map(emp => ({
+      ...emp,
+      calculatedGroup: getEmployeeGroup(emp, departments)
+    }));
+  }, [employees, departments]);
+
   const filteredEmployees = useMemo(() => {
-    const filtered = employees.filter(employee => {
+    const filtered = enrichedEmployees.filter(employee => {
       const fullName = (employee.lastName || '').toLowerCase() + ' ' + (employee.firstName || '').toLowerCase();
-      const matchesSearchTerm = fullName.includes(searchTerm.toLowerCase()) || (employee.matricule || '').toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesSearchTerm = fullName.includes(debouncedSearchTerm.toLowerCase()) || (employee.matricule || '').toLowerCase().includes(debouncedSearchTerm.toLowerCase());
       const matchesDepartment = departmentFilter === 'all' || employee.departmentId === departmentFilter;
       const matchesStatus = statusFilter === 'all' || employee.status === statusFilter;
       const matchesCnps = cnpsFilter === 'all' || employee.CNPS === cnpsFilter;
       const matchesSexe = sexeFilter === 'all' || employee.sexe === sexeFilter;
 
-      const employeeGroup = getEmployeeGroup(employee, departments);
-      const matchesPersonnelType = personnelTypeFilter === 'all' || personnelTypeFilter === employeeGroup;
+      const matchesPersonnelType = personnelTypeFilter === 'all' || 
+                                   (personnelTypeFilter === 'all-geo' ? (employee.calculatedGroup === 'directoire' || employee.calculatedGroup === 'regional') : personnelTypeFilter === employee.calculatedGroup);
 
-      return matchesSearchTerm && matchesDepartment && matchesStatus && matchesCnps && matchesSexe && matchesPersonnelType;
+      const matchesRegion = !isGeoTab || regionFilter === 'all' || employee.Region === regionFilter;
+      const matchesGeoDept = !isGeoTab || geoDepartementFilter === 'all' || employee.Departement === geoDepartementFilter;
+      const matchesSubPref = !isGeoTab || subPrefectureFilter === 'all' || employee.subPrefecture === subPrefectureFilter || employee.Commune === subPrefectureFilter;
+      const matchesVillageFiltered = !isGeoTab || debouncedVillageFilter === "" || (employee.Village || "").toLowerCase().includes(debouncedVillageFilter.toLowerCase());
+
+      return matchesSearchTerm && matchesDepartment && matchesStatus && matchesCnps && matchesSexe && matchesPersonnelType &&
+             matchesRegion && matchesGeoDept && matchesSubPref && matchesVillageFiltered;
     });
     // Reset page to 1 if filters change and current page is out of bounds
     if (currentPage > Math.ceil(filtered.length / itemsPerPage)) {
       setCurrentPage(1);
     }
     return filtered;
-  }, [employees, searchTerm, departmentFilter, statusFilter, cnpsFilter, sexeFilter, personnelTypeFilter, currentPage, itemsPerPage, departments]);
+  }, [employees, debouncedSearchTerm, departmentFilter, statusFilter, cnpsFilter, sexeFilter, personnelTypeFilter, currentPage, itemsPerPage, departments, debouncedVillageFilter, isGeoTab, regionFilter, geoDepartementFilter, subPrefectureFilter]);
 
   const paginatedEmployees = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
@@ -320,6 +368,15 @@ export default function EmployeesPage() {
     setIsPrinting(true);
   };
 
+  const printSubtitle = useMemo(() => {
+    let subtitle = `Effectif: ${filteredEmployees.length} | Date: ${printDate}`;
+    if (regionFilter !== 'all') subtitle += ` | Région: ${regionFilter}`;
+    if (geoDepartementFilter !== 'all') subtitle += ` | Dept: ${geoDepartementFilter}`;
+    if (subPrefectureFilter !== 'all') subtitle += ` | S/P: ${subPrefectureFilter}`;
+    if (villageFilter) subtitle += ` | Village: ${villageFilter}`;
+    return subtitle;
+  }, [filteredEmployees.length, printDate, regionFilter, geoDepartementFilter, subPrefectureFilter, villageFilter]);
+
   const getAvatarBgClass = (sexe?: 'Homme' | 'Femme' | 'Autre') => {
     switch (sexe) {
       case 'Homme': return 'bg-blue-200 dark:bg-blue-800';
@@ -331,15 +388,32 @@ export default function EmployeesPage() {
   const showDepartmentFilter = personnelTypeFilter === 'all' || personnelTypeFilter === 'personnel-siege';
 
   const handleTabChange = (value: string) => {
-    setPersonnelTypeFilter(value);
-    setCurrentPage(1); // Reset to first page on tab change
-    const params = new URLSearchParams(searchParams.toString());
-    if (value === 'all') {
-      params.delete('filter');
-    } else {
-      params.set('filter', value);
-    }
-    router.push(`/employees?${params.toString()}`);
+    startTransition(() => {
+      setPersonnelTypeFilter(value);
+      setCurrentPage(1); // Reset to first page on tab change
+
+      // Defer the map rendering to improve INP on tab switch
+      if (value === 'directoire') {
+        setShowDirectoireMap(false);
+        setTimeout(() => setShowDirectoireMap(true), 300);
+      } else {
+        setShowDirectoireMap(false);
+      }
+
+      // Reset geo filters when switching tabs
+      setRegionFilter('all');
+      setGeoDepartementFilter('all');
+      setSubPrefectureFilter('all');
+      setVillageFilter('');
+
+      const params = new URLSearchParams(searchParams.toString());
+      if (value === 'all') {
+        params.delete('filter');
+      } else {
+        params.set('filter', value);
+      }
+      router.push(`/employees?${params.toString()}`);
+    });
   }
 
   const getEmployeeOrgUnit = (employee: Employe) => {
@@ -360,7 +434,7 @@ export default function EmployeesPage() {
           <div className="flex items-center justify-between">
             <h1 className="text-3xl font-bold tracking-tight">{pageTitle}</h1>
             <div className="flex gap-2">
-              <Button variant="outline" className="w-full sm:w-auto" onClick={() => setIsPrintDialogOpen(true)}>
+              <Button variant="outline" className="w-full sm:w-auto" onClick={() => setTimeout(() => setIsPrintDialogOpen(true), 50)}>
                 <Printer className="mr-2 h-4 w-4" />
                 Imprimer
               </Button>
@@ -373,13 +447,13 @@ export default function EmployeesPage() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={handleExportCsv}>Exporter en CSV</DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleExportJson}>Exporter en JSON</DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleExportSql}>Exporter en SQL</DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => setTimeout(handleExportCsv, 50)}>Exporter en CSV</DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => setTimeout(handleExportJson, 50)}>Exporter en JSON</DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => setTimeout(handleExportSql, 50)}>Exporter en SQL</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               )}
-              <Button onClick={() => setIsAddSheetOpen(true)} className="w-full sm:w-auto">
+              <Button onClick={() => setTimeout(() => setIsAddSheetOpen(true), 50)} className="w-full sm:w-auto">
                 <PlusCircle className="mr-2 h-4 w-4" />
                 Ajouter
               </Button>
@@ -404,6 +478,12 @@ export default function EmployeesPage() {
             </div>
           )}
 
+          {personnelTypeFilter === 'directoire' && showDirectoireMap && (
+            <div className="mb-6">
+              <DirectoireMap members={filteredEmployees} className="h-[500px]" />
+            </div>
+          )}
+
           <Card>
             <CardHeader>
               <CardTitle>Liste des employés</CardTitle>
@@ -412,18 +492,101 @@ export default function EmployeesPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
+              {isGeoTab && (
+                <div className="flex flex-col sm:flex-row gap-2 mb-4 flex-wrap w-full border-b pb-4">
+                  <Select
+                    value={regionFilter}
+                    onValueChange={(val) => startTransition(() => {
+                      setRegionFilter(val);
+                      setGeoDepartementFilter('all');
+                      setSubPrefectureFilter('all');
+                      setCurrentPage(1);
+                    })}
+                  >
+                    <SelectTrigger className="flex-1 min-w-[200px]">
+                      <SelectValue placeholder="Filtrer par Région" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Toutes les régions</SelectItem>
+                      {Object.keys(divisions).sort().map(reg => (
+                        <SelectItem key={reg} value={reg}>{reg}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  <Select
+                    value={geoDepartementFilter}
+                    onValueChange={(val) => startTransition(() => {
+                      setGeoDepartementFilter(val);
+                      setSubPrefectureFilter('all');
+                      setCurrentPage(1);
+                    })}
+                    disabled={regionFilter === 'all'}
+                  >
+                    <SelectTrigger className="flex-1 min-w-[200px]">
+                      <SelectValue placeholder="Filtrer par Département" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Tous les départements</SelectItem>
+                      {Object.keys(divisions[regionFilter] || {}).sort().map(dep => (
+                        <SelectItem key={dep} value={dep}>{dep}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  <Select
+                    value={subPrefectureFilter}
+                    onValueChange={(val) => startTransition(() => {
+                      setSubPrefectureFilter(val);
+                      setCurrentPage(1);
+                    })}
+                    disabled={geoDepartementFilter === 'all'}
+                  >
+                    <SelectTrigger className="flex-1 min-w-[200px]">
+                      <SelectValue placeholder="Filtrer par Sous-Préfecture" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Toutes les sous-préfectures</SelectItem>
+                      {Object.keys(divisions[regionFilter]?.[geoDepartementFilter] || {}).sort().map(sp => (
+                        <SelectItem key={sp} value={sp}>{sp}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  <div className="relative flex-1 min-w-[200px]">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                    <DebouncedInput
+                      placeholder="Rechercher par village..."
+                      className="pl-10"
+                      value={villageFilter}
+                      onChange={(val) => startTransition(() => {
+                        const sVal = String(val);
+                        setVillageFilter(sVal);
+                        setDebouncedVillageFilter(sVal);
+                      })}
+                    />
+                  </div>
+                </div>
+              )}
               <div className="flex flex-col sm:flex-row gap-2 mb-4 flex-wrap">
                 <div className="relative flex-1 min-w-[200px]">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                  <Input
+                  <DebouncedInput
                     placeholder="Rechercher par nom, matricule..."
                     className="pl-10"
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={(val) => startTransition(() => {
+                      const sVal = String(val);
+                      setSearchTerm(sVal);
+                      setDebouncedSearchTerm(sVal);
+                    })}
                   />
                 </div>
                 {showDepartmentFilter && (
-                  <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
+                  <Select value={departmentFilter} onValueChange={(val) => startTransition(() => {
+                    setDepartmentFilter(val);
+                    setCurrentPage(1);
+                  })}>
                     <SelectTrigger className="flex-1 min-w-[180px]">
                       <SelectValue placeholder="Filtrer par service" />
                     </SelectTrigger>
@@ -433,7 +596,10 @@ export default function EmployeesPage() {
                     </SelectContent>
                   </Select>
                 )}
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <Select value={statusFilter} onValueChange={(val) => startTransition(() => {
+                  setStatusFilter(val);
+                  setCurrentPage(1);
+                })}>
                   <SelectTrigger className="flex-1 min-w-[180px]">
                     <SelectValue placeholder="Filtrer par statut" />
                   </SelectTrigger>
@@ -446,7 +612,10 @@ export default function EmployeesPage() {
                     <SelectItem value="Décédé">Décédé</SelectItem>
                   </SelectContent>
                 </Select>
-                <Select value={String(cnpsFilter)} onValueChange={(val) => setCnpsFilter(val === 'all' ? 'all' : val === 'true')}>
+                <Select value={String(cnpsFilter)} onValueChange={(val) => startTransition(() => {
+                  setCnpsFilter(val === 'all' ? 'all' : val === 'true');
+                  setCurrentPage(1);
+                })}>
                   <SelectTrigger className="flex-1 min-w-[150px]">
                     <SelectValue placeholder="Filter par CNPS" />
                   </SelectTrigger>
@@ -456,7 +625,10 @@ export default function EmployeesPage() {
                     <SelectItem value="false">Non Déclaré</SelectItem>
                   </SelectContent>
                 </Select>
-                <Select value={sexeFilter} onValueChange={setSexeFilter}>
+                <Select value={sexeFilter} onValueChange={(val) => startTransition(() => {
+                  setSexeFilter(val);
+                  setCurrentPage(1);
+                })}>
                   <SelectTrigger className="flex-1 min-w-[150px]">
                     <SelectValue placeholder="Filter par Sexe" />
                   </SelectTrigger>
@@ -554,7 +726,12 @@ export default function EmployeesPage() {
                                     Modifier
                                   </Link>
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => setDeleteTarget(employee)} className="text-destructive focus:text-destructive">
+                                <DropdownMenuItem 
+                                  onSelect={() => {
+                                    setTimeout(() => setDeleteTarget(employee), 50);
+                                  }} 
+                                  className="text-destructive focus:text-destructive"
+                                >
                                   <Trash2 className="mr-2 h-4 w-4" />
                                   Supprimer
                                 </DropdownMenuItem>
@@ -612,7 +789,7 @@ export default function EmployeesPage() {
         <PrintLayout
           logos={organizationLogos}
           title={`LISTE DU PERSONNEL - ${pageTitle.toUpperCase()}`}
-          subtitle={`Effectif: ${filteredEmployees.length} | Date: ${printDate}`}
+          subtitle={printSubtitle}
           columns={columnsToPrint.map(key => {
             const widthMap: Record<string, string> = {
               index: 'w-[3%]',

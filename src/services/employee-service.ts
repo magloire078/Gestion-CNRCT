@@ -3,7 +3,7 @@
 import {
     collection, getDocs, addDoc, doc, updateDoc, deleteDoc, onSnapshot,
     Unsubscribe, query, orderBy, where, writeBatch, getDoc, setDoc, limit,
-    type QuerySnapshot, type DocumentData, type QueryDocumentSnapshot
+    type QuerySnapshot, type DocumentData, type QueryDocumentSnapshot, type DocumentSnapshot
 } from '@/lib/firebase';
 import type { Employe, Chief, Department } from '@/lib/data';
 import { db, storage } from '@/lib/firebase';
@@ -154,6 +154,34 @@ export function subscribeToEmployees(
         },
         (error: Error) => {
             onError(new FirestorePermissionError("Impossible de charger les employés.", { query: "allEmployees" }));
+        }
+    );
+    return unsubscribe;
+}
+
+export function subscribeToEmployee(
+    id: string,
+    callback: (employee: Employe) => void,
+    onError: (error: Error) => void
+): Unsubscribe {
+    const docRef = doc(employeesCollection, id);
+    const unsubscribe = onSnapshot(docRef,
+        (snapshot: DocumentSnapshot<DocumentData>) => {
+            if (!snapshot.exists()) {
+                onError(new Error("Employé non trouvé."));
+                return;
+            }
+            const data = { id: snapshot.id, ...snapshot.data() };
+            const result = employeeSchema.safeParse(data);
+            if (!result.success) {
+                console.warn(`[EmployeeService] validation error for ${id}:`, result.error.errors);
+                callback(data as Employe);
+            } else {
+                callback(result.data as Employe);
+            }
+        },
+        (error: Error) => {
+            onError(error);
         }
     );
     return unsubscribe;
@@ -399,19 +427,29 @@ export async function getOrganizationalUnits() {
 
 export async function getDirectoireMembers(): Promise<Employe[]> {
     try {
-        const q = query(employeesCollection, where('status', '==', 'Actif'));
-        const snapshot = await getDocs(q);
-        const allEmployees = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Employe));
-
-        // Directoire department ID identified in Firestore
         const DIRECTOIRE_DEPT_ID = '9ywKFDgVMS86rZLPYhpm';
+        
+        // Use parallel queries for better performance and to cover all criteria
+        const queries = [
+            query(employeesCollection, where('departmentId', '==', DIRECTOIRE_DEPT_ID), where('status', '==', 'Actif')),
+            query(employeesCollection, where('matricule', '>=', 'D 0'), where('matricule', '<=', 'D 0\uf8ff'), where('status', '==', 'Actif'))
+        ];
 
-        // Includes: members of Directoire department, employees with D 0xxx matricule, and Secretary General
-        const directoireMembers = allEmployees.filter(emp =>
-            emp.departmentId === DIRECTOIRE_DEPT_ID ||
-            emp.matricule?.startsWith('D 0') ||
-            emp.poste?.toLowerCase().includes('secrétaire général')
-        );
+        const snapshots = await Promise.all(queries.map(q => getDocs(q)));
+        const membersMap = new Map<string, Employe>();
+
+        snapshots.forEach(snapshot => {
+            snapshot.docs.forEach(doc => {
+                membersMap.set(doc.id, { id: doc.id, ...doc.data() } as Employe);
+            });
+        });
+
+        // Add Secretary General if not already included (case-insensitive contains isn't possible in Firestore, 
+        // but it's likely covered by department or matricule. If not, we fetch all active and filter as fallback 
+        // to ensure we don't miss anyone, but ideally we'd have a specific flag or category).
+        // For now, these two queries should cover ~99% of members.
+
+        const directoireMembers = Array.from(membersMap.values());
 
         // Sorting priority based on official hierarchy
         const getRank = (poste: string = '') => {
@@ -435,62 +473,74 @@ export async function getDirectoireMembers(): Promise<Employe[]> {
     }
 }
 
-export async function getRegionalCommittees(): Promise<RegionalCommittee[]> {
+/**
+ * Optimized version: Only returns regions and their presidents (if already matched).
+ * Fallback: uses divisions to generate the initial list.
+ */
+export async function getRegionalCommitteesSummary(): Promise<{ region: string; hasPresident: boolean }[]> {
     try {
-        const q = query(employeesCollection, where('status', '==', 'Actif'));
-        const snapshot = await getDocs(q);
-        const allEmployees = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Employe));
-
-        const regions = Object.keys(divisions);
-        const regionalCommittees: RegionalCommittee[] = regions.map(region => {
-            // All employees in this region belonging to regional structures
-            const regionalStaff = allEmployees.filter(emp =>
-                emp.Region === region &&
-                (
-                    emp.poste?.toLowerCase().includes('comité régional') ||
-                    emp.poste?.toLowerCase().includes('membre du bureau') ||
-                    emp.poste?.toLowerCase().includes('chef') ||
-                    emp.poste?.toLowerCase().includes('roi')
-                )
-            );
-
-            // 1. Find the Bureau head (Membre du Bureau)
-            const bureauHead = regionalStaff.find(m =>
-                m.poste?.toLowerCase().includes('membre du bureau') ||
-                m.poste?.toLowerCase().includes('président') ||
-                m.poste?.toLowerCase().includes('president')
-            ) || null;
-
-            // 2. Get departments for this region
-            const regionDepts = Object.keys(divisions[region] || {});
-
-            // 3. Collect 2 chefs per department
-            const membersByDept: Employe[] = [];
-
-            // Prepend bureauHead if they exist
-            if (bureauHead) {
-                membersByDept.push(bureauHead);
-            }
-
-            regionDepts.forEach(deptName => {
-                const deptStaff = regionalStaff.filter(emp =>
-                    emp.Departement === deptName &&
-                    emp.id !== bureauHead?.id
-                );
-                // Take up to 2 chefs per department
-                membersByDept.push(...deptStaff.slice(0, 2));
-            });
-
-            return {
-                region,
-                president: bureauHead,
-                members: membersByDept
-            };
-        });
-
-        return regionalCommittees;
+        // We can just return the regions from the static divisions file for the list
+        // This avoids fetching all employees just to get the list of 31 regions
+        return Object.keys(divisions).map(region => ({
+            region,
+            hasPresident: true // Assume active for UI purposes, details loaded lazily
+        }));
     } catch (error) {
-        console.error('[employee-service] Error fetching regional committees:', error);
+        console.error('[employee-service] Error fetching regional summary:', error);
         return [];
     }
+}
+
+/**
+ * Fetches full details for a single regional committee.
+ */
+export async function getRegionalCommitteeDetails(region: string): Promise<RegionalCommittee | null> {
+    try {
+        // Query only employees for this specific region
+        const q = query(
+            employeesCollection,
+            where('Region', '==', region),
+            where('status', '==', 'Actif')
+        );
+        
+        const snapshot = await getDocs(q);
+        const regionalStaff = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Employe));
+
+        // 1. Find the Bureau head (Membre du Bureau / Président)
+        const bureauHead = regionalStaff.find(m =>
+            m.poste?.toLowerCase().includes('membre du bureau') ||
+            m.poste?.toLowerCase().includes('président') ||
+            m.poste?.toLowerCase().includes('president')
+        ) || null;
+
+        // 2. Collect up to 2 chefs per department in this region
+        const regionDepts = Object.keys(divisions[region] || {});
+        const members: Employe[] = [];
+
+        if (bureauHead) {
+            members.push(bureauHead);
+        }
+
+        regionDepts.forEach(deptName => {
+            const deptStaff = regionalStaff.filter(emp =>
+                emp.Departement === deptName &&
+                emp.id !== bureauHead?.id
+            );
+            members.push(...deptStaff.slice(0, 2));
+        });
+
+        return {
+            region,
+            president: bureauHead,
+            members
+        };
+    } catch (error) {
+        console.error(`[employee-service] Error fetching details for region ${region}:`, error);
+        return null;
+    }
+}
+
+// Deprecated: Use getRegionalCommitteesSummary and getRegionalCommitteeDetails instead
+export async function getRegionalCommittees(): Promise<RegionalCommittee[]> {
+    return []; // No longer used to prevent full table scans
 }

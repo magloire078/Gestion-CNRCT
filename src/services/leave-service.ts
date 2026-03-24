@@ -92,6 +92,21 @@ export async function getLeaves(): Promise<Leave[]> {
     }
 }
 
+export async function getLeave(id: string): Promise<Leave | null> {
+    const docRef = doc(db, 'leaves', id);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+        const data = { id: docSnap.id, ...docSnap.data() };
+        const result = leaveSchema.safeParse(data);
+        if (!result.success) {
+            console.error(`[LeaveService] validation error for ${id}:`, result.error.format());
+            return data as unknown as Leave;
+        }
+        return result.data as unknown as Leave;
+    }
+    return null;
+}
+
 export async function addLeave(leaveDataToAdd: Omit<Leave, 'id' | 'status'>): Promise<Leave> {
     const newLeaveData = {
         ...leaveDataToAdd,

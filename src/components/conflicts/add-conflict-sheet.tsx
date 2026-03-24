@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/select";
 import type { Conflict, Chief, ConflictType, Employe } from "@/lib/data";
 import { conflictTypes, conflictStatuses } from "@/lib/data";
+import { IVORIAN_REGIONS } from "@/constants/regions";
 import { getChiefs } from "@/services/chief-service";
 import { getEmployees } from "@/services/employee-service";
 import {
@@ -40,21 +41,34 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LocationPicker } from "@/components/common/location-picker";
+import { Switch } from "@/components/ui/switch";
+import { Check, ChevronsUpDown, Info } from "lucide-react";
+import { 
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { useAuth } from "@/hooks/use-auth";
 
 interface AddConflictDialogProps {
   isOpen: boolean;
   onCloseAction: () => void;
   onAddConflictAction: (conflict: Omit<Conflict, "id">) => Promise<void>;
+  availableTypes?: readonly string[];
 }
 
 export function AddConflictSheet({
   isOpen,
   onCloseAction,
   onAddConflictAction,
+  availableTypes = conflictTypes,
 }: AddConflictDialogProps) {
+  const { hasPermission, user: currentUser } = useAuth();
+  const canAssignMediator = hasPermission('page:conflicts:view') || hasPermission('group:personnel:view');
+
   const [allChiefs, setAllChiefs] = useState<Chief[]>([]);
   const [allEmployees, setAllEmployees] = useState<Employe[]>([]);
   const [loadingInitialData, setLoadingInitialData] = useState(true);
@@ -63,11 +77,18 @@ export function AddConflictSheet({
 
   const [village, setVillage] = useState("");
   const [description, setDescription] = useState("");
-  const [conflictType, setConflictType] = useState<ConflictType>("Autre");
+  const [conflictType, setConflictType] = useState<string>("Autre");
   const [status, setStatus] = useState<Conflict['status']>('En cours');
   const [latitude, setLatitude] = useState<string>('');
   const [longitude, setLongitude] = useState<string>('');
+  const [reportedDate, setReportedDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [mediatorName, setMediatorName] = useState<string | undefined>(undefined);
+  const [district, setDistrict] = useState("");
+  const [region, setRegion] = useState("");
+  const [parties, setParties] = useState("");
+  const [impact, setImpact] = useState("");
+  const [incidentDate, setIncidentDate] = useState<string>(new Date().toISOString().split('T')[0]);
+  const [isAnonymous, setIsAnonymous] = useState(false);
 
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -77,12 +98,17 @@ export function AddConflictSheet({
       async function fetchInitialData() {
         try {
           setLoadingInitialData(true);
-          const [chiefs, employees] = await Promise.all([getChiefs(), getEmployees()]);
+          const chiefsPromise = getChiefs();
+          const employeesPromise = canAssignMediator ? getEmployees() : Promise.resolve([]);
+          
+          const [chiefs, employees] = await Promise.all([chiefsPromise, employeesPromise]);
           setAllChiefs(chiefs);
-          setAllEmployees(employees.filter(e => e.status === 'Actif'));
+          if (canAssignMediator) {
+            setAllEmployees(employees.filter(e => e.status === 'Actif'));
+          }
         } catch (error) {
           console.error("Failed to fetch initial data:", error);
-          setError("Impossible de charger les données nécessaires.");
+          setError("Impossible de charger certaines données de référence.");
         } finally {
           setLoadingInitialData(false);
         }
@@ -99,6 +125,13 @@ export function AddConflictSheet({
     setLatitude('');
     setLongitude('');
     setMediatorName(undefined);
+    setReportedDate(new Date().toISOString().split('T')[0]);
+    setDistrict("");
+    setRegion("");
+    setParties("");
+    setImpact("");
+    setIncidentDate(new Date().toISOString().split('T')[0]);
+    setIsAnonymous(false);
     setError("");
   }
 
@@ -111,6 +144,7 @@ export function AddConflictSheet({
     setVillage(chief.village);
     if(chief.latitude) setLatitude(chief.latitude.toString());
     if(chief.longitude) setLongitude(chief.longitude.toString());
+    setRegion(chief.region);
     setIsVillageComboboxOpen(false);
   }
 
@@ -123,16 +157,20 @@ export function AddConflictSheet({
     
     setIsSubmitting(true);
     setError("");
-
     try {
-        const reportedDate = new Date().toISOString().split('T')[0];
         const conflictData: Omit<Conflict, "id"> = { 
             village, 
-            type: conflictType,
+            type: conflictType as any,
             description, 
             status, 
             reportedDate,
             mediatorName: mediatorName === 'none' ? undefined : mediatorName,
+            district,
+            region,
+            parties,
+            impact,
+            incidentDate,
+            isAnonymous,
         };
 
         if (latitude && longitude) {
@@ -211,13 +249,13 @@ export function AddConflictSheet({
               </div>
 
                <div className="space-y-2">
-                <Label htmlFor="conflictType">Type de Conflit</Label>
-                 <Select value={conflictType} onValueChange={(value: ConflictType) => setConflictType(value)}>
+                <Label htmlFor="conflictType">Typologie du Conflit</Label>
+                 <Select value={conflictType} onValueChange={(value) => setConflictType(value)}>
                     <SelectTrigger>
-                        <SelectValue placeholder="Sélectionnez un type..." />
+                        <SelectValue placeholder="Sélectionnez une typologie..." />
                     </SelectTrigger>
                     <SelectContent>
-                        {conflictTypes.map(type => <SelectItem key={type} value={type}>{type}</SelectItem>)}
+                        {availableTypes.map(type => <SelectItem key={type} value={type}>{type}</SelectItem>)}
                     </SelectContent>
                  </Select>
               </div>
@@ -233,31 +271,122 @@ export function AddConflictSheet({
                       </SelectContent>
                    </Select>
               </div>
+
+               <div className="space-y-2">
+                  <Label htmlFor="reportedDate">Date du conflit</Label>
+                  <Input 
+                      id="reportedDate" 
+                      type="date" 
+                      value={reportedDate} 
+                      onChange={(e) => setReportedDate(e.target.value)} 
+                  />
+              </div>
+
+               <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="incidentDate">Date de l'incident</Label>
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p className="text-xs">La date réelle à laquelle les faits se sont produits.</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                  <Input 
+                      id="incidentDate" 
+                      type="date" 
+                      value={incidentDate} 
+                      onChange={(e) => setIncidentDate(e.target.value)} 
+                  />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="district">District</Label>
+                <Input 
+                  id="district" 
+                  value={district} 
+                  onChange={(e) => setDistrict(e.target.value)} 
+                  placeholder="Ex: District Autonome d'Abidjan"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="region">Région</Label>
+                <Select value={region} onValueChange={setRegion}>
+                  <SelectTrigger id="region">
+                    <SelectValue placeholder="Sélectionnez une région..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {IVORIAN_REGIONS.map(r => (
+                      <SelectItem key={r} value={r}>{r}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             {/* Colonne Droite */}
             <div className="space-y-4">
-              <div className="space-y-2">
-                  <Label htmlFor="mediatorName">Médiateur / Responsable assigné</Label>
-                  <Select value={mediatorName} onValueChange={setMediatorName}>
-                      <SelectTrigger><SelectValue placeholder="Assigner un responsable..." /></SelectTrigger>
-                      <SelectContent>
-                          <SelectItem value="none">Non assigné</SelectItem>
-                          {allEmployees.map(emp => (
-                              <SelectItem key={emp.id} value={emp.name}>{emp.name}</SelectItem>
-                          ))}
-                      </SelectContent>
-                  </Select>
+              {canAssignMediator && (
+                <div className="space-y-2">
+                    <Label htmlFor="mediatorName">Médiateur / Responsable assigné</Label>
+                    <Select value={mediatorName} onValueChange={setMediatorName}>
+                        <SelectTrigger><SelectValue placeholder="Assigner un responsable..." /></SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="none">Non assigné</SelectItem>
+                            {allEmployees.map(emp => (
+                                <SelectItem key={emp.id} value={emp.name}>{emp.name}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+              )}
+
+               <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label className="text-sm font-bold">Soumission Anonyme</Label>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-black">Standard MGP : Protection du plaignant</p>
+                  </div>
+                  <Switch 
+                    checked={isAnonymous} 
+                    onCheckedChange={setIsAnonymous} 
+                  />
+              </div>
+
+               <div className="space-y-2">
+                <Label htmlFor="parties">Parties impliquées</Label>
+                <Input 
+                  id="parties" 
+                  value={parties} 
+                  onChange={(e) => setParties(e.target.value)} 
+                  placeholder="Ex: Famille A vs Famille B"
+                />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description">Description des faits</Label>
+                <Label htmlFor="description">Résumé des faits</Label>
                 <Textarea
                   id="description"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  rows={4}
+                  rows={3}
                   placeholder="Décrivez la nature du conflit..."
+                  className="resize-none"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="impact">Impact / Suites du conflit</Label>
+                <Textarea
+                  id="impact"
+                  value={impact}
+                  onChange={(e) => setImpact(e.target.value)}
+                  rows={3}
+                  placeholder="Conséquences, blessés, dégâts matériels..."
                   className="resize-none"
                 />
               </div>

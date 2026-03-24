@@ -1,67 +1,81 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { getEmployee } from "@/services/employee-service";
 import type { Employe } from "@/lib/data";
 import { EditEmployeeForm } from "@/components/employees/edit-employee-form";
-import { Loader2, AlertCircle, ChevronLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
+import { useToast } from "@/hooks/use-toast";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { ChevronLeft, Loader2 } from "lucide-react";
+import Link from "next/link";
 
 export default function EditEmployeePage() {
-    const { id } = useParams() as { id: string };
+    const params = useParams();
     const router = useRouter();
-    const { hasPermission, loading: authLoading } = useAuth();
+    const { toast } = useToast();
+    const { hasPermission } = useAuth();
     
     const [employee, setEmployee] = useState<Employe | null>(null);
     const [loading, setLoading] = useState(true);
 
+    const employeeId = params.id as string;
+
     useEffect(() => {
-        if (authLoading) return;
-        
         if (!hasPermission('page:employees:edit')) {
-            router.replace(`/employees/${id}`);
+            toast({
+                variant: "destructive",
+                title: "Accès refusé",
+                description: "Vous n'avez pas les permissions nécessaires pour modifier un employé."
+            });
+            router.push("/employees");
             return;
         }
 
-        async function fetchEmployee() {
-            try {
-                const data = await getEmployee(id);
-                setEmployee(data);
-            } catch (err) {
-                console.error("Error fetching employee for edit:", err);
-            } finally {
-                setLoading(false);
-            }
-        }
-        fetchEmployee();
-    }, [id, hasPermission, authLoading, router]);
+        if (!employeeId) return;
 
-    if (loading || authLoading) {
+        getEmployee(employeeId)
+            .then(emp => {
+                if (emp) {
+                    setEmployee(emp);
+                } else {
+                    toast({
+                        variant: "destructive",
+                        title: "Erreur",
+                        description: "Employé non trouvé."
+                    });
+                    router.push("/employees");
+                }
+            })
+            .catch(console.error)
+            .finally(() => setLoading(false));
+    }, [employeeId, router, toast, hasPermission]);
+
+    if (loading) {
         return (
-            <div className="flex flex-col items-center justify-center py-40 gap-4">
-                <Loader2 className="h-12 w-12 animate-spin text-primary" />
-                <p className="text-muted-foreground animate-pulse font-medium">Initialisation du formulaire...</p>
+            <div className="max-w-5xl mx-auto space-y-8 animate-pulse">
+                <div className="h-10 w-48 bg-slate-100 rounded-lg" />
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div className="h-96 bg-slate-50 rounded-[2rem]" />
+                    <div className="md:col-span-2 h-[600px] bg-slate-50 rounded-[2rem]" />
+                </div>
             </div>
         );
     }
 
-    if (!employee) {
-        return (
-            <div className="container mx-auto py-20 text-center space-y-4">
-                <AlertCircle className="h-16 w-16 text-muted-foreground mx-auto" />
-                <h2 className="text-2xl font-bold">Employé non trouvé</h2>
-                <p className="text-muted-foreground">Impossible de charger les données pour la modification.</p>
-                <Button variant="outline" onClick={() => router.push("/employees")}>
-                    <ChevronLeft className="mr-2 h-4 w-4" /> Retour à la liste
-                </Button>
-            </div>
-        );
-    }
+    if (!employee) return null;
 
     return (
-        <div className="container mx-auto py-8">
+        <div className="space-y-6">
+            <Link 
+                href={`/employees/${employee.id}`} 
+                className="inline-flex items-center gap-2 text-sm font-black uppercase tracking-widest text-slate-400 hover:text-slate-900 transition-colors"
+            >
+                <ChevronLeft className="h-4 w-4" /> Retour à la fiche
+            </Link>
+            
             <EditEmployeeForm employee={employee} />
         </div>
     );

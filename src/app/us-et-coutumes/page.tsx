@@ -1,8 +1,11 @@
-
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { PlusCircle, Search, BookText, Edit, Trash2, Eye } from "lucide-react";
+import { 
+    PlusCircle, Search, BookText, Edit, Trash2, 
+    Eye, Quote, Globe, MapPin, History,
+    Users, Landmark, Scroll, ChevronRight
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -21,6 +24,8 @@ import { AddCustomSheet } from "@/components/customs/add-custom-sheet";
 import { ConfirmationDialog } from "@/components/common/confirmation-dialog";
 import Link from 'next/link';
 import { useRouter } from "next/navigation";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 export default function UsEtCoutumesPage() {
   const [customs, setCustoms] = useState<Custom[]>([]);
@@ -88,76 +93,128 @@ export default function UsEtCoutumesPage() {
   }, [customs, searchTerm]);
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">Us & Coutumes</h1>
-        <Button onClick={() => setIsSheetOpen(true)}>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Ajouter une Fiche
-        </Button>
+    <div className="flex flex-col gap-10 pb-20">
+      {/* Hero Header */}
+      <div className="relative h-[200px] rounded-[2rem] overflow-hidden bg-slate-900 flex flex-col justify-end p-8 md:p-12 mb-2 group">
+         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1523805081730-61444927f07a?auto=format&fit=crop&q=80')] opacity-20 bg-cover bg-center transition-transform duration-1000 group-hover:scale-105" />
+         <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/60 to-transparent" />
+         <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div className="space-y-2">
+                <Badge className="bg-amber-500/20 text-amber-400 border-none px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">Patrimoine Culturel</Badge>
+                <h1 className="text-4xl md:text-5xl font-black text-white tracking-tighter">Us & Coutumes</h1>
+                <p className="text-slate-400 text-sm max-w-xl font-medium italic">Répertoire encyclopédique des traditions et institutions traditionnelles de Côte d'Ivoire.</p>
+            </div>
+            <Button onClick={() => setIsSheetOpen(true)} className="bg-white text-slate-900 hover:bg-slate-100 rounded-2xl h-12 px-6 font-bold shadow-2xl">
+                <PlusCircle className="mr-2 h-5 w-5" />
+                Enregistrer une tradition
+            </Button>
+         </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Répertoire des Us et Coutumes</CardTitle>
-          <CardDescription>
-            Consultez et gérez les fiches descriptives des traditions de Côte d'Ivoire.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex gap-4 mb-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-              <Input
-                placeholder="Rechercher par groupe ethnique, région..."
-                className="pl-10"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
+      <div className="flex flex-col gap-8 px-2">
+          {/* Controls */}
+          <div className="flex flex-col md:flex-row items-center gap-4 justify-between">
+              <div className="relative group w-full md:w-[400px]">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
+                <Input
+                  placeholder="Rechercher une ethnie, une région, un rite..."
+                  className="pl-12 h-14 rounded-2xl border-none shadow-xl shadow-slate-200/50 bg-white focus:ring-slate-900 text-base"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                  <Badge variant="outline" className="h-10 px-4 rounded-xl border-slate-200 bg-white text-slate-500 font-bold">
+                      {filteredCustoms.length} Fiches répertoriées
+                  </Badge>
+              </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {/* Cards Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {loading ? (
-              Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-48 w-full" />)
+              Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="h-[400px] rounded-3xl bg-slate-100 animate-pulse" />
+              ))
             ) : filteredCustoms.length > 0 ? (
               filteredCustoms.map((custom) => (
-                <Card key={custom.id} className="flex flex-col hover:shadow-md transition-shadow">
-                    <CardHeader>
-                        <CardTitle className="flex items-center justify-between">
+                <Card 
+                    key={custom.id} 
+                    className="flex flex-col border-none shadow-xl shadow-slate-200/50 rounded-3xl overflow-hidden hover:shadow-2xl hover:shadow-slate-300/50 transition-all duration-500 group"
+                >
+                    <div className="h-24 bg-slate-50 flex items-end px-6 relative overflow-hidden">
+                        <div className="absolute top-4 right-6 opacity-5 transition-transform group-hover:scale-125">
+                            <Landmark className="h-24 w-24" />
+                        </div>
+                        <div className="flex items-center gap-3 mb-[-12px] z-10">
+                            <div className="h-14 w-14 rounded-2xl bg-slate-900 flex items-center justify-center shadow-lg group-hover:-translate-y-1 transition-transform">
+                                <Scroll className="h-7 w-7 text-white" />
+                            </div>
+                        </div>
+                    </div>
+                    <CardHeader className="pt-8 px-6">
+                        <CardTitle className="text-xl font-black text-slate-900 group-hover:text-slate-700 transition-colors">
                             {custom.ethnicGroup}
                         </CardTitle>
-                        <CardDescription>{custom.regions}</CardDescription>
+                        <CardDescription className="flex items-center gap-1.5 font-bold text-slate-400 uppercase text-[10px] tracking-widest pt-1">
+                            <MapPin className="h-3 w-3" /> {custom.regions}
+                        </CardDescription>
                     </CardHeader>
-                    <CardContent className="flex-grow">
-                        <p className="text-sm text-muted-foreground line-clamp-3 h-[60px]">{custom.historicalOrigin || "Aucune description."}</p>
+                    <CardContent className="flex-grow px-6">
+                        <div className="relative">
+                            <Quote className="absolute -top-1 -left-1 h-6 w-6 text-slate-50 opacity-50" />
+                            <p className="text-sm text-slate-500 leading-relaxed line-clamp-4 italic pl-4 border-l-2 border-slate-50 mt-2">
+                                {custom.historicalOrigin || "Le récit historique de ce peuple n'a pas encore été documenté dans cette fiche."}
+                            </p>
+                        </div>
+                        
+                        <div className="mt-6 grid grid-cols-2 gap-3">
+                            <div className="flex flex-col gap-1 p-3 rounded-2xl bg-slate-50/50 border border-slate-50">
+                                <Users className="h-3.5 w-3.5 text-slate-300" />
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Organisation</span>
+                                <span className="text-[11px] font-bold text-slate-700 truncate">Traditionnelle</span>
+                            </div>
+                            <div className="flex flex-col gap-1 p-3 rounded-2xl bg-slate-50/50 border border-slate-50">
+                                <History className="h-3.5 w-3.5 text-slate-300" />
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Origine</span>
+                                <span className="text-[11px] font-bold text-slate-700 truncate">Ancienne</span>
+                            </div>
+                        </div>
                     </CardContent>
-                    <CardFooter className="mt-auto pt-4 flex justify-end gap-2">
-                        <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); setDeleteTarget(custom); }}>
-                            <Trash2 className="mr-2 h-4 w-4 text-destructive"/> Supprimer
+                    <CardFooter className="p-6 pt-2 flex justify-between gap-2 border-t border-slate-50 bg-slate-50/30">
+                        <Button variant="ghost" size="sm" className="h-9 px-3 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-xl" onClick={(e) => { e.stopPropagation(); setDeleteTarget(custom); }}>
+                            <Trash2 className="mr-2 h-4 w-4"/>
                         </Button>
-                         <Button variant="outline" size="sm" asChild>
-                            <Link href={`/us-et-coutumes/${custom.id}/edit`}><Edit className="mr-2 h-4 w-4"/> Modifier</Link>
-                        </Button>
-                         <Button size="sm" asChild>
-                           <Link href={`/us-et-coutumes/${custom.id}`}><Eye className="mr-2 h-4 w-4"/> Voir</Link>
-                        </Button>
+                        <div className="flex gap-2">
+                             <Button variant="outline" size="sm" className="h-9 rounded-xl border-slate-200 font-bold" asChild>
+                                <Link href={`/us-et-coutumes/${custom.id}/edit`}><Edit className="mr-2 h-3.5 w-3.5"/> Éditer</Link>
+                            </Button>
+                             <Button size="sm" className="h-9 rounded-xl bg-slate-900 font-bold px-4 hover:shadow-lg transition-all" asChild>
+                               <Link href={`/us-et-coutumes/${custom.id}`}>Consulter <ChevronRight className="ml-1 h-3.5 w-3.5"/></Link>
+                            </Button>
+                        </div>
                     </CardFooter>
                 </Card>
               ))
             ) : (
-                 <div className="md:col-span-2 lg:col-span-3">
-                     <div className="flex flex-col items-center justify-center h-64 text-center border-2 border-dashed rounded-lg">
-                        <BookText className="h-12 w-12 text-muted-foreground" />
-                        <p className="mt-4 text-muted-foreground">
-                            Aucune fiche de coutume trouvée.
+                <div className="md:col-span-2 lg:col-span-3">
+                    <Card className="border-none shadow-none bg-slate-50/50 rounded-[3rem] p-20 flex flex-col items-center justify-center text-center">
+                        <div className="h-32 w-32 bg-white rounded-full flex items-center justify-center shadow-xl mb-8">
+                            <BookText className="h-16 w-16 text-slate-200" />
+                        </div>
+                        <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tighter">La bibliothèque est vide</h2>
+                        <p className="mt-2 text-slate-400 max-w-sm italic">
+                            Aucune fiche n'a été trouvée pour votre recherche. Soyez le premier à documenter ces coutumes millénaires !
                         </p>
-                    </div>
+                        <Button onClick={() => setIsSheetOpen(true)} className="mt-8 bg-slate-900 rounded-2xl h-12 px-8 font-bold">
+                            Commencer l'archivage
+                        </Button>
+                    </Card>
                 </div>
             )}
           </div>
-        </CardContent>
-      </Card>
+      </div>
+
       <AddCustomSheet 
         isOpen={isSheetOpen}
         onClose={() => setIsSheetOpen(false)}
@@ -167,8 +224,8 @@ export default function UsEtCoutumesPage() {
         isOpen={!!deleteTarget}
         onCloseAction={() => setDeleteTarget(null)}
         onConfirmAction={handleDeleteCustom}
-        title={`Supprimer la fiche : ${deleteTarget?.ethnicGroup} ?`}
-        description="Êtes-vous sûr de vouloir supprimer cette fiche ? Cette action est irréversible."
+        title={`Supprimer l'archive ?`}
+        description={`Confirmez-vous la suppression définitive des données sur les ${deleteTarget?.ethnicGroup} ? Cette action impactera la mémoire institutionnelle.`}
       />
     </div>
   );

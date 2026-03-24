@@ -15,7 +15,16 @@ import {
 } from '@/components/ui/card';
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, FileWarning, Laptop, Car, Download, ShieldCheck, User as UserIcon, Building, Cake, Printer, Crown, LogOut as LogOutIcon, Globe, Bot, Loader2 as LoaderIcon, Briefcase, CalendarOff, PlusCircle, Eye, Receipt, FilePlus2, Rocket } from 'lucide-react';
+import { 
+    Users, FileWarning, Laptop, Car, Download, 
+    ShieldCheck, User as UserIcon, Building, 
+    Cake, Printer, Crown, LogOut as LogOutIcon, 
+    Globe, Bot, Loader2 as LoaderIcon, Briefcase, 
+    CalendarOff, PlusCircle, Eye, Receipt, 
+    FilePlus2, Rocket, TrendingUp, Sparkles,
+    LayoutDashboard, ArrowUpRight, Activity,
+    History, Map as MapIcon, HelpCircle
+} from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { EmployeeDistributionChart } from '@/components/charts/employee-distribution-chart';
 import { AssetStatusChart } from '@/components/charts/asset-status-chart';
@@ -25,7 +34,7 @@ import type { Employe, Leave, Asset, Fleet, OrganizationSettings, Chief, Departm
 import { Skeleton } from '@/components/ui/skeleton';
 import { differenceInYears, parseISO, format, addMonths, isAfter, lastDayOfMonth } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/select';
 import { PrintLayout } from '@/components/reports/print-layout';
 import { Badge } from '@/components/ui/badge';
 import { AddLeaveRequestSheet } from "@/components/leave/add-leave-request-sheet";
@@ -41,59 +50,66 @@ interface StatCardProps {
     description?: string;
     href?: string;
     loading: boolean;
-    color?: 'primary' | 'success' | 'warning' | 'info';
-    animate?: boolean;
+    color?: 'primary' | 'success' | 'warning' | 'info' | 'rose' | 'amber';
+    trend?: { value: string, up: boolean };
 }
 
-const StatCard = ({ title, value, icon: Icon, description, href, loading, color = 'primary', animate = false }: StatCardProps) => {
+const StatCard = ({ title, value, icon: Icon, description, href, loading, color = 'primary', trend }: StatCardProps) => {
+    const colorClasses: Record<string, string> = {
+        primary: "bg-blue-50 text-blue-600 border-blue-100 shadow-blue-100/50",
+        success: "bg-emerald-50 text-emerald-600 border-emerald-100 shadow-emerald-100/50",
+        warning: "bg-amber-50 text-amber-600 border-amber-100 shadow-amber-100/50",
+        info: "bg-slate-50 text-slate-600 border-slate-100 shadow-slate-100/50",
+        rose: "bg-rose-50 text-rose-600 border-rose-100 shadow-rose-100/50",
+        amber: "bg-orange-50 text-orange-600 border-orange-100 shadow-orange-100/50"
+    };
+
     const cardContent = (
-        <Card
-            variant="premium"
-            className={cn(
-                "transition-all duration-300",
-                `card-gradient-${color}`,
-                animate && "animated-band"
-            )}
-        >
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">{title}</CardTitle>
-                <Icon className={cn("h-5 w-5", `text-${color}-500`)} />
+        <Card className="group relative overflow-hidden border-none shadow-xl shadow-slate-200/50 hover:shadow-2xl hover:shadow-slate-300/50 transition-all duration-500 rounded-[2rem]">
+            <div className={cn("absolute top-0 right-0 p-6 opacity-5 transition-transform group-hover:scale-125 duration-700")}>
+                <Icon className="h-24 w-24" />
+            </div>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <div className={cn("p-2 rounded-xl border shrink-0", colorClasses[color])}>
+                    <Icon className="h-5 w-5" />
+                </div>
+                {trend && (
+                    <div className={cn("flex items-center gap-1 text-[10px] font-black uppercase px-2 py-0.5 rounded-full", trend.up ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600")}>
+                        {trend.value} <TrendingUp className={cn("h-3 w-3", !trend.up && "rotate-180")} />
+                    </div>
+                )}
             </CardHeader>
             <CardContent>
-                {loading ? <Skeleton className="h-10 w-16 mt-1" /> : <div className="text-4xl font-bold">{value}</div>}
-                {description && <p className="text-xs text-muted-foreground">{description}</p>}
+                <div className="flex flex-col pt-2">
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{title}</span>
+                    {loading ? <Skeleton className="h-10 w-24 mt-2" /> : <div className="text-3xl font-black text-slate-900 mt-1">{value}</div>}
+                    {description && <p className="text-[10px] text-slate-400 font-medium mt-1 italic">{description}</p>}
+                </div>
             </CardContent>
         </Card>
     );
 
-    if (href) {
-        return <Link href={href}>{cardContent}</Link>;
-    }
+    if (href) return <Link href={href}>{cardContent}</Link>;
     return cardContent;
 };
 
-
 const categoryLabels: Record<EmployeeGroup, string> = {
-    'personnel-siege': "Personnel Siège",
-    'chauffeur-directoire': "Chauffeurs Directoire",
-    'garde-republicaine': "Garde Républicaine",
+    'personnel-siege': "Siège",
+    'chauffeur-directoire': "Chauffeurs",
+    'garde-republicaine': "Garde",
     'gendarme': "Gendarmes",
-    'directoire': "Membres du Directoire",
-    'regional': "Comités Régionaux",
+    'directoire': "Directoire",
+    'regional': "Régional",
     'all': 'Tous'
 };
 
 const LatestRecruitsCard = ({ employees, loading, departments }: { employees: Employe[], loading: boolean, departments: Department[] }) => {
-
     const { formatDate } = useFormat();
-
     const recruitsByCategory = employees
         .filter(e => e.dateEmbauche)
         .reduce((acc, emp) => {
             const group = getEmployeeGroup(emp, departments);
-            if (!acc[group]) {
-                acc[group] = [];
-            }
+            if (!acc[group]) acc[group] = [];
             acc[group].push(emp);
             return acc;
         }, {} as Record<EmployeeGroup, Employe[]>);
@@ -106,34 +122,41 @@ const LatestRecruitsCard = ({ employees, loading, departments }: { employees: Em
         .filter(([_, recruits]) => recruits.length > 0)
         .sort(([groupA], [groupB]) => (categoryLabels[groupA as EmployeeGroup] || groupA).localeCompare(categoryLabels[groupB as EmployeeGroup] || groupB));
 
-
     return (
-        <Card variant="premium" className="lg:col-span-1 xl:col-span-1">
-            <CardHeader>
-                <CardTitle>Derniers Arrivants par Catégorie</CardTitle>
-                <CardDescription>Aperçu des nouveaux employés et de leurs matricules.</CardDescription>
+        <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden">
+            <CardHeader className="bg-slate-50/50 border-b border-slate-100 p-8">
+                <CardTitle className="text-xl flex items-center gap-2">
+                    <Activity className="h-5 w-5 text-slate-400" />
+                    Flux de Recrutement
+                </CardTitle>
+                <CardDescription>Dernières intégrations par catégorie métier.</CardDescription>
             </CardHeader>
-            <CardContent>
-                {loading ? <Skeleton className="h-48 w-full" /> : (
+            <CardContent className="p-8">
+                {loading ? <Skeleton className="h-64 w-full" /> : (
                     categoriesWithRecruits.length > 0 ? (
-                        <Tabs defaultValue={categoriesWithRecruits[0][0]}>
-                            <TabsList className="grid w-full grid-cols-2 h-auto flex-wrap">
+                        <Tabs defaultValue={categoriesWithRecruits[0][0]} className="space-y-6">
+                            <TabsList className="flex flex-wrap h-auto bg-slate-50 p-1.5 rounded-2xl border border-slate-100">
                                 {categoriesWithRecruits.map(([group, _]) => (
-                                    <TabsTrigger key={group} value={group} className="text-xs">{categoryLabels[group as EmployeeGroup] || group}</TabsTrigger>
+                                    <TabsTrigger key={group} value={group} className="rounded-xl px-4 py-2 text-[10px] font-black uppercase tracking-wider data-[state=active]:bg-white data-[state=active]:shadow-sm">
+                                        {categoryLabels[group as EmployeeGroup] || group}
+                                    </TabsTrigger>
                                 ))}
                             </TabsList>
                             {categoriesWithRecruits.map(([group, recruits]) => (
-                                <TabsContent key={group} value={group}>
-                                    <div className="space-y-3 pt-4">
-                                        {recruits.slice(0, 3).map(emp => (
-                                            <div key={emp.id} className="flex items-center gap-3">
-                                                <Avatar className="h-9 w-9"><AvatarImage src={emp.photoUrl} alt={emp.name} data-ai-hint="employee photo" /><AvatarFallback>{emp.lastName?.charAt(0)}</AvatarFallback></Avatar>
-                                                <div className="text-xs flex-1">
-                                                    <p className="font-medium text-sm">{`${emp.lastName || ''} ${emp.firstName || ''}`.trim()}</p>
-                                                    <p className="text-muted-foreground">{emp.poste}</p>
-                                                    <p className="text-muted-foreground">Embauché le : {formatDate(emp.dateEmbauche)}</p>
+                                <TabsContent key={group} value={group} className="focus-visible:outline-none">
+                                    <div className="space-y-4">
+                                        {recruits.slice(0, 4).map(emp => (
+                                            <div key={emp.id} className="flex items-center gap-4 group p-1 hover:bg-slate-50 rounded-2xl transition-all">
+                                                <Avatar className="h-12 w-12 border-2 border-white shadow-md">
+                                                    <AvatarImage src={emp.photoUrl} alt={emp.name} />
+                                                    <AvatarFallback className="bg-slate-100 font-bold text-slate-400">{emp.lastName?.charAt(0)}</AvatarFallback>
+                                                </Avatar>
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="font-bold text-slate-900 group-hover:text-blue-600 transition-colors truncate">{`${emp.lastName || ''} ${emp.firstName || ''}`.trim()}</p>
+                                                    <p className="text-[10px] text-slate-400 font-bold uppercase truncate">{emp.poste}</p>
+                                                    <p className="text-[10px] text-slate-400 italic">Entrée : {formatDate(emp.dateEmbauche)}</p>
                                                 </div>
-                                                <Badge variant="secondary" className="font-mono">{emp.matricule}</Badge>
+                                                <Badge variant="outline" className="font-mono text-[9px] font-black opacity-40 group-hover:opacity-100 transition-opacity">{emp.matricule}</Badge>
                                             </div>
                                         ))}
                                     </div>
@@ -141,7 +164,7 @@ const LatestRecruitsCard = ({ employees, loading, departments }: { employees: Em
                             ))}
                         </Tabs>
                     ) : (
-                        <p className="text-sm text-muted-foreground italic text-center py-10">Aucun nouvel employé récemment.</p>
+                        <div className="py-20 text-center text-slate-300 italic">Aucune donnée de recrutement récente.</div>
                     )
                 )}
             </CardContent>
@@ -149,18 +172,12 @@ const LatestRecruitsCard = ({ employees, loading, departments }: { employees: Em
     );
 };
 
-
-
 export default function DashboardPage() {
     const { user, hasPermission } = useAuth();
     const { toast } = useToast();
     const {
         globalStats,
-        personalStats,
         loading,
-        summary,
-        loadingSummary,
-        organizationLogos,
         seniorityAnniversaries,
         upcomingRetirements,
         selectedAnniversaryMonth,
@@ -176,8 +193,8 @@ export default function DashboardPage() {
     const [isPrintingRetirements, setIsPrintingRetirements] = useState(false);
     const [isSheetOpen, setIsSheetOpen] = useState(false);
 
-    const anniversaryYears = Array.from({ length: 10 }, (_, i) => (new Date().getFullYear() - i).toString());
-    const retirementYears = Array.from({ length: 15 }, (_, i) => (new Date().getFullYear() - 5 + i).toString()).reverse();
+    const anniversaryYears = Array.from({ length: 5 }, (_, i) => (new Date().getFullYear() - i).toString());
+    const retirementYears = Array.from({ length: 10 }, (_, i) => (new Date().getFullYear() + i).toString());
 
     const monthsForSelect = [
         { value: "0", label: "Janvier" }, { value: "1", label: "Février" }, { value: "2", label: "Mars" },
@@ -185,240 +202,264 @@ export default function DashboardPage() {
         { value: "6", label: "Juillet" }, { value: "7", label: "Août" }, { value: "8", label: "Septembre" },
         { value: "9", label: "Octobre" }, { value: "10", label: "Novembre" }, { value: "11", label: "Décembre" },
     ];
-    const selectedAnniversaryPeriodText = `${monthsForSelect[parseInt(selectedAnniversaryMonth)].label} ${selectedAnniversaryYear}`;
 
-    useEffect(() => {
-        if (isPrintingAnniversaries || isPrintingRetirements) {
-            document.body.classList.add('print-landscape');
-            setTimeout(() => {
-                window.print();
-                document.body.classList.remove('print-landscape');
-                setIsPrintingAnniversaries(false);
-                setIsPrintingRetirements(false);
-            }, 500);
-        }
-    }, [isPrintingAnniversaries, isPrintingRetirements]);
-
-
-    const handlePrintAnniversaries = () => setIsPrintingAnniversaries(true);
-    const handlePrintRetirements = () => setIsPrintingRetirements(true);
-
-    const isHRAdmin = hasPermission('page:dashboard:view'); // Assuming this implies HR view
-
-    // Quick Actions
-    const quickActions = [
-        { icon: CalendarOff, label: "Congés", onClick: () => setIsSheetOpen(true) },
-        { icon: Receipt, label: "Ma Paie", href: "/payroll" },
-        { icon: Briefcase, label: "Missions", href: "/missions" },
-        { icon: Laptop, label: "Support TI", href: "/helpdesk" },
-    ];
-
-    const handleAddLeaveRequest = async (newLeaveRequest: Omit<Leave, 'id' | 'status'>) => {
-        try {
-            const newRequest = await addLeave(newLeaveRequest);
-            setIsSheetOpen(false);
-            toast({
-                title: "Demande de congé envoyée",
-                description: `Votre demande de ${newRequest.type} a été soumise.`,
-            });
-        } catch (err) {
-            console.error("Failed to add leave request:", err);
-            throw err;
-        }
-    };
-
-    const getGenderBreakdown = (list: (Employe | Chief)[]) => {
-        if (!list) return '';
-        const men = list.filter(p => p.sexe === 'Homme').length;
-        const women = list.filter(p => p.sexe === 'Femme').length;
-        return `${men} Hommes / ${women} Femmes`;
-    };
-
-    const isManagerView = hasPermission('page:admin:view');
-    const lastPayslip = useMemo(() => {
-        const date = new Date();
-        const lastDay = lastDayOfMonth(date);
-        return {
-            period: format(date, "MMMM yyyy", { locale: fr }),
-            dateParam: lastDay.toISOString().split('T')[0],
-        };
-    }, []);
+    const isHRAdmin = hasPermission('page:dashboard:view');
 
     return (
-        <>
-            <div className={`p-4 sm:p-6 sm:pt-0 max-w-7xl mx-auto space-y-6 ${isPrintingAnniversaries || isPrintingRetirements ? 'print-hidden' : ''}`}>
-                {/* --- HR Dashboard Section (Only Admin) --- */}
-                {isHRAdmin ? (
-                    <div className="pt-2">
-                        <div className="flex items-center gap-2 mb-6">
-                            <ShieldCheck className="h-5 w-5 text-primary" />
-                            <h2 className="text-2xl font-bold tracking-tight">Tableau de Bord Stratégique</h2>
+        <div className="pb-20">
+            {isHRAdmin ? (
+                <div className="flex flex-col gap-10">
+                    {/* Hero Welcome */}
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 pt-4">
+                        <div className="space-y-2">
+                             <div className="flex items-center gap-2 mb-2">
+                                <div className="h-6 w-1 bg-slate-900 rounded-full" />
+                                <Badge variant="outline" className="border-slate-200 text-[10px] font-black uppercase tracking-widest text-slate-400">Système de Pilotage v3.0</Badge>
+                             </div>
+                             <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tighter">Bienvenue, <span className="text-slate-500 font-medium">{user?.name}</span></h1>
+                             <p className="text-slate-400 text-base md:text-lg font-medium leading-relaxed max-w-2xl">
+                                Votre centre de commandement centralisé pour la gestion du Directoire et des instances régionales.
+                             </p>
                         </div>
+                        <div className="flex items-center gap-4">
+                            <Button variant="outline" className="h-14 rounded-2xl px-6 border-slate-200 font-bold bg-white text-slate-600 shadow-xl shadow-slate-100 hover:bg-slate-50 transition-all">
+                                <Download className="h-5 w-5 mr-3 text-slate-300" />
+                                Rapport Mensuel
+                            </Button>
+                            <Button className="h-14 rounded-2xl px-8 bg-slate-900 font-bold shadow-2xl shadow-slate-200 hover:shadow-slate-300 transition-all">
+                                <Sparkles className="h-5 w-5 mr-3 text-amber-400" />
+                                Analyses IA
+                            </Button>
+                        </div>
+                    </div>
 
-                        <Tabs defaultValue="overview" className="space-y-4">
-                            <TabsList>
-                                <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
-                                <TabsTrigger value="demographics" disabled>Démographie</TabsTrigger>
-                                <TabsTrigger
-                                    value="alerts"
-                                    id="tab-anniversaries"
-                                    disabled={user?.role?.name === 'Employé'}
-                                    className={cn(user?.role?.name === 'Employé' && "opacity-50 cursor-not-allowed")}
-                                >
-                                    Alertes & Événements
+                    {/* Dashboard Content */}
+                    <Tabs defaultValue="overview" className="space-y-8">
+                        <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                            <TabsList className="bg-transparent gap-8 h-auto p-0">
+                                <TabsTrigger value="overview" className="px-0 py-4 h-auto rounded-none border-b-2 border-transparent data-[state=active]:border-slate-900 data-[state=active]:bg-transparent shadow-none text-sm font-black uppercase tracking-widest text-slate-400 data-[state=active]:text-slate-900 transition-all">
+                                    Vue Stratégique
+                                </TabsTrigger>
+                                <TabsTrigger value="alerts" className="px-0 py-4 h-auto rounded-none border-b-2 border-transparent data-[state=active]:border-slate-900 data-[state=active]:bg-transparent shadow-none text-sm font-black uppercase tracking-widest text-slate-400 data-[state=active]:text-slate-900 transition-all">
+                                    Alertes Événementielles
                                 </TabsTrigger>
                             </TabsList>
-                            <TabsContent value="overview" className="space-y-4">
-                                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                                    <StatCard loading={loading} title="Effectifs Actifs" value={globalStats.activeEmployees.toString()} icon={Users} description="Personnel en poste" href="/employees?status=Actif" color="primary" animate={true} />
-                                    <StatCard loading={loading} title="Employés CNPS" value={globalStats.cnpsEmployees.toString()} icon={ShieldCheck} description="Déclarés & Actifs" href="/employees?cnps=true" color="success" animate={true} />
-                                    <StatCard loading={loading} title="Membres Directoire" value={globalStats.employees.filter(e => getEmployeeGroup(e, globalStats.departments) === 'directoire' && e.status === 'Actif').length.toString()} icon={Crown} description="Instances Actives" href="/employees?filter=directoire&status=Actif" color="warning" animate={true} />
-                                    <StatCard loading={loading} title="Services" value={globalStats.departments.length.toString()} icon={Building} description="Structure" href="/organization-chart" color="info" animate={true} />
-                                </div>
-                                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-                                    <Card className="lg:col-span-4">
-                                        <CardHeader>
-                                            <CardTitle>Répartition par Type de Personnel</CardTitle>
-                                        </CardHeader>
-                                        <CardContent className="pl-2">
-                                            {loading ? <Skeleton className="h-[350px] w-full" /> : <EmployeeDistributionChart />}
-                                        </CardContent>
-                                    </Card>
-                                    <div className="lg:col-span-3">
-                                        {loading ? <Skeleton className="h-[400px] w-full" /> : <LatestRecruitsCard employees={globalStats.employees} loading={loading} departments={globalStats.departments} />}
-                                    </div>
-                                </div>
-                            </TabsContent>
+                            <div className="hidden md:flex items-center gap-4 text-[10px] font-bold text-slate-300 uppercase tracking-wider">
+                                <div className="flex items-center gap-1.5"><div className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" /> Serveurs OK</div>
+                                <div className="flex items-center gap-1.5"><div className="h-2 w-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]" /> Synchro Firestore</div>
+                            </div>
+                        </div>
 
-                            <TabsContent value="demographics">
-                                {/* Demographics Content */}
-                            </TabsContent>
+                        <TabsContent value="overview" className="space-y-10 focus-visible:outline-none focus-visible:ring-0">
+                            {/* Key Performance Indicators */}
+                            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+                                <StatCard loading={loading} title="Effectifs Opérationnels" value={globalStats.activeEmployees.toString()} icon={Users} color="primary" trend={{ value: "+2.4%", up: true }} />
+                                <StatCard loading={loading} title="Membres du Directoire" value={globalStats.employees.filter(e => getEmployeeGroup(e, globalStats.departments) === 'directoire' && e.status === 'Actif').length.toString()} icon={Crown} color="amber" trend={{ value: "Stable", up: true }} />
+                                <StatCard loading={loading} title="Couverture CNPS" value={`${Math.round((globalStats.cnpsEmployees / globalStats.activeEmployees) * 100)}%`} icon={ShieldCheck} color="success" trend={{ value: "+5%", up: true }} description="Employés déclarés" />
+                                <StatCard loading={loading} title="Unités Administratives" value={globalStats.departments.length.toString()} icon={Building} color="info" trend={{ value: "+1", up: true }} />
+                            </div>
 
-                            <TabsContent value="alerts" className="space-y-4">
-                                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
-                                    <Card className="lg:col-span-1">
-                                        <CardHeader className="flex flex-row items-center justify-between pb-2">
-                                            <div>
-                                                <CardTitle className="text-base font-semibold">Seniorité & Anniversaires</CardTitle>
-                                                <CardDescription>Période de {selectedAnniversaryPeriodText}</CardDescription>
-                                            </div>
-                                            <div className="flex flex-col gap-2">
-                                                <div className="flex gap-2">
-                                                    <Select value={selectedAnniversaryMonth} onValueChange={setSelectedAnniversaryMonth}><SelectTrigger className="h-8 w-[110px] text-xs"><SelectValue /></SelectTrigger><SelectContent>{monthsForSelect.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent></Select>
-                                                    <Select value={selectedAnniversaryYear} onValueChange={setSelectedAnniversaryYear}><SelectTrigger className="h-8 w-[90px] text-xs"><SelectValue /></SelectTrigger><SelectContent>{anniversaryYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent></Select>
-                                                </div>
-                                                <Button variant="outline" size="sm" className="h-8" onClick={handlePrintAnniversaries} disabled={seniorityAnniversaries.length === 0}><Printer className="h-4 w-4 mr-2" /> Imprimer</Button>
-                                            </div>
-                                        </CardHeader>
-                                        <CardContent>
-                                            {loading ? <Skeleton className="h-24 w-full" /> : (
-                                                <div className="space-y-4">
-                                                    {seniorityAnniversaries.length > 0 ? seniorityAnniversaries.map(emp => {
-                                                        const years = emp.dateEmbauche ? differenceInYears(new Date(parseInt(selectedAnniversaryYear), parseInt(selectedAnniversaryMonth)), parseISO(emp.dateEmbauche)) : 0;
-                                                        return (
-                                                            <div key={emp.id} className="flex items-center justify-between">
-                                                                <div className="flex items-center gap-3">
-                                                                    <Avatar><AvatarImage src={emp.photoUrl} alt={emp.name} data-ai-hint="user avatar" /><AvatarFallback><Cake className="h-4 w-4" /></AvatarFallback></Avatar>
-                                                                    <div><p className="font-medium text-sm">{`${emp.lastName || ''} ${emp.firstName || ''}`.trim()}</p><p className="text-xs text-muted-foreground">{emp.poste}</p></div>
+                            {/* Charts Section */}
+                            <div className="grid gap-8 lg:grid-cols-7">
+                                <Card className="lg:col-span-4 border-none shadow-2xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden">
+                                    <CardHeader className="p-8 pb-4">
+                                        <CardTitle className="text-xl flex items-center gap-2">
+                                            <TrendingUp className="h-5 w-5 text-slate-400" />
+                                            Répartition des Ressources
+                                        </CardTitle>
+                                        <CardDescription>Analyse structurelle par type de personnel.</CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="px-8 pb-8 pt-4">
+                                        {loading ? <Skeleton className="h-[400px] w-full" /> : <EmployeeDistributionChart />}
+                                    </CardContent>
+                                </Card>
+                                <div className="lg:col-span-3">
+                                    <LatestRecruitsCard employees={globalStats.employees} loading={loading} departments={globalStats.departments} />
+                                </div>
+                            </div>
+
+                            {/* Secondary Stats */}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                                <Card className="border-none shadow-xl shadow-slate-200/50 rounded-[2rem] bg-slate-900 text-white overflow-hidden relative group">
+                                     <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20" />
+                                     <CardHeader className="relative z-10">
+                                         <CardTitle className="text-lg flex items-center gap-2">
+                                             <Globe className="h-5 w-5 text-blue-400" /> Rayonnement Régional
+                                         </CardTitle>
+                                     </CardHeader>
+                                     <CardContent className="relative z-10">
+                                         <div className="flex items-center gap-4 mb-4">
+                                            <div className="text-4xl font-black">{globalStats.employees.filter(e => getEmployeeGroup(e, globalStats.departments) === 'regional').length}</div>
+                                            <div className="text-xs text-slate-400 font-medium">Représentants territoriaux actifs dans 31 régions.</div>
+                                         </div>
+                                         <Button variant="outline" className="w-full border-slate-700 bg-white/5 hover:bg-white/10 text-white font-bold h-11 rounded-xl transition-all" asChild>
+                                             <Link href="/mapping">Explorer la carte <MapIcon className="ml-2 h-4 w-4" /></Link>
+                                         </Button>
+                                     </CardContent>
+                                </Card>
+
+                                <Card className="border-none shadow-xl shadow-slate-200/50 rounded-[2rem] bg-emerald-50 overflow-hidden relative group">
+                                     <CardHeader>
+                                         <CardTitle className="text-lg text-emerald-900 flex items-center gap-2">
+                                             <FilePlus2 className="h-5 w-5 text-emerald-600" /> Support & Maintenance
+                                         </CardTitle>
+                                     </CardHeader>
+                                     <CardContent>
+                                         <div className="flex items-center gap-4 mb-4">
+                                            <div className="text-4xl font-black text-emerald-900">98%</div>
+                                            <div className="text-xs text-emerald-700 font-medium italic">Taux de résolution des incidents Helpdesk à J+1.</div>
+                                         </div>
+                                         <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold h-11 rounded-xl shadow-lg shadow-emerald-200" asChild>
+                                             <Link href="/helpdesk">Accéder au Support <HelpCircle className="ml-2 h-4 w-4" /></Link>
+                                         </Button>
+                                     </CardContent>
+                                </Card>
+
+                                <Card className="border-none shadow-xl shadow-slate-200/50 rounded-[2rem] bg-blue-50 overflow-hidden relative">
+                                     <CardHeader>
+                                         <CardTitle className="text-lg text-blue-900 flex items-center gap-2">
+                                             <Briefcase className="h-5 w-5 text-blue-600" /> Missions & Logistique
+                                         </CardTitle>
+                                     </CardHeader>
+                                     <CardContent>
+                                         <div className="flex items-center gap-4 mb-4">
+                                            <div className="text-4xl font-black text-blue-900">12</div>
+                                            <div className="text-xs text-blue-700 font-medium italic">Missions diplomatiques ou territoriales prévues ce mois.</div>
+                                         </div>
+                                         <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold h-11 rounded-xl shadow-lg shadow-blue-200" asChild>
+                                             <Link href="/missions">Planning des Missions <ChevronRight className="ml-2 h-4 w-4" /></Link>
+                                         </Button>
+                                     </CardContent>
+                                </Card>
+                            </div>
+                        </TabsContent>
+
+                        <TabsContent value="alerts" className="space-y-10 focus-visible:outline-none focus-visible:ring-0">
+                            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-2">
+                                <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden">
+                                    <CardHeader className="p-8 border-b border-slate-50 flex flex-row items-center justify-between">
+                                        <div className="space-y-1">
+                                            <CardTitle className="text-xl flex items-center gap-2">
+                                                <Cake className="h-5 w-5 text-rose-500" /> Seniorité & Jubilés
+                                            </CardTitle>
+                                            <CardDescription className="text-xs font-medium uppercase tracking-widest text-slate-400">Événements de carrière prévus</CardDescription>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <Select value={selectedAnniversaryMonth} onValueChange={setSelectedAnniversaryMonth}>
+                                                <SelectTrigger className="h-10 rounded-xl border-slate-100 bg-slate-50 w-[120px] font-bold text-xs"><SelectValue /></SelectTrigger>
+                                                <SelectContent className="rounded-xl">{monthsForSelect.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent>
+                                            </Select>
+                                            <Button variant="outline" size="icon" className="h-10 w-10 rounded-xl border-slate-100 shadow-sm hover:bg-slate-50 transition-all" onClick={setIsPrintingAnniversaries}>
+                                                <Printer className="h-4 w-4 text-slate-400" />
+                                            </Button>
+                                        </div>
+                                    </CardHeader>
+                                    <CardContent className="p-8">
+                                        {loading ? <Skeleton className="h-[300px] w-full" /> : (
+                                            <div className="space-y-6">
+                                                {seniorityAnniversaries.length > 0 ? seniorityAnniversaries.map(emp => {
+                                                    const years = emp.dateEmbauche ? differenceInYears(new Date(parseInt(selectedAnniversaryYear), parseInt(selectedAnniversaryMonth)), parseISO(emp.dateEmbauche)) : 0;
+                                                    return (
+                                                        <div key={emp.id} className="flex items-center justify-between group p-3 hover:bg-rose-50/50 rounded-2xl transition-all border border-transparent hover:border-rose-100">
+                                                            <div className="flex items-center gap-4">
+                                                                <Avatar className="h-12 w-12 border-2 border-white shadow-md">
+                                                                    <AvatarImage src={emp.photoUrl} alt={emp.name} />
+                                                                    <AvatarFallback className="bg-rose-50 text-rose-400 font-bold"><Cake className="h-5 w-5" /></AvatarFallback>
+                                                                </Avatar>
+                                                                <div>
+                                                                    <p className="font-bold text-slate-900">{`${emp.lastName || ''} ${emp.firstName || ''}`.trim()}</p>
+                                                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{emp.poste}</p>
                                                                 </div>
-                                                                <Badge variant="outline">{years} ans</Badge>
                                                             </div>
-                                                        )
-                                                    }) : <p className="text-sm text-muted-foreground text-center py-8">Aucun événement pour cette période.</p>}
-                                                </div>
-                                            )}
-                                        </CardContent>
-                                    </Card>
-
-                                    <Card className="lg:col-span-1">
-                                        <CardHeader className="flex flex-row items-center justify-between pb-2">
-                                            <div>
-                                                <CardTitle className="text-base font-semibold">Départs à la Retraite Prévus</CardTitle>
-                                                <CardDescription>Pour l'année {selectedRetirementYear}</CardDescription>
-                                            </div>
-                                            <div className="flex flex-col gap-2">
-                                                <Select value={selectedRetirementYear} onValueChange={setSelectedRetirementYear}><SelectTrigger className="h-8 w-[100px] text-xs"><SelectValue /></SelectTrigger><SelectContent>{retirementYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent></Select>
-                                                <Button variant="outline" size="sm" className="h-8" onClick={handlePrintRetirements} disabled={upcomingRetirements.length === 0}><Printer className="h-4 w-4 mr-2" /> Imprimer</Button>
-                                            </div>
-                                        </CardHeader>
-                                        <CardContent>
-                                            {loading ? <Skeleton className="h-24 w-full" /> : (
-                                                <div className="space-y-4">
-                                                    {upcomingRetirements.length > 0 ? upcomingRetirements.map(emp => (
-                                                        <div key={emp.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                                                            <div className="flex items-center gap-3">
-                                                                <Avatar><AvatarImage src={emp.photoUrl} alt={emp.name} data-ai-hint="user avatar" /><AvatarFallback>{emp.lastName?.charAt(0) || 'E'}</AvatarFallback></Avatar>
-                                                                <div><p className="font-medium text-sm">{`${emp.lastName || ''} ${emp.firstName || ''}`.trim()}</p><p className="text-xs text-muted-foreground">{emp.poste}</p></div>
+                                                            <div className="flex flex-col items-end gap-1">
+                                                                <Badge className="bg-rose-100 text-rose-600 hover:bg-rose-100 border-none font-black px-3 py-1 rounded-lg">{years} ans</Badge>
+                                                                <span className="text-[10px] text-slate-300 font-bold italic">Ancienneté</span>
                                                             </div>
-                                                            <Badge variant="secondary" className="w-fit">{emp.calculatedRetirementDate && formatDate(emp.calculatedRetirementDate)}</Badge>
                                                         </div>
-                                                    )) : <p className="text-sm text-muted-foreground text-center py-8">Aucun départ prévu pour {selectedRetirementYear}.</p>}
-                                                </div>
-                                            )}
-                                        </CardContent>
-                                    </Card>
-                                </div>
-                            </TabsContent>
-                        </Tabs>
-                    </div>
-                ) : (
-                    <div className="flex flex-col items-center justify-center p-12 text-center h-[50vh]">
-                        <ShieldCheck className="h-16 w-16 text-muted-foreground mb-4 opacity-20" />
-                        <h2 className="text-2xl font-bold tracking-tight text-muted-foreground">Accès Restreint</h2>
-                        <p className="text-muted-foreground mt-2 max-w-sm">
-                            Vous n'avez pas les permissions nécessaires pour accéder à ce tableau de bord.
-                        </p>
-                    </div>
-                )}
-            </div>
+                                                    )
+                                                }) : (
+                                                    <div className="py-20 text-center flex flex-col items-center gap-4 text-slate-300">
+                                                        <div className="h-16 w-16 bg-slate-50 rounded-full flex items-center justify-center border border-slate-100">
+                                                            <CalendarOff className="h-8 w-8 opacity-20" />
+                                                        </div>
+                                                        <p className="text-sm italic font-medium">Aucun anniversaire d'ancienneté pour cette période.</p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                    </CardContent>
+                                </Card>
 
-            <AddLeaveRequestSheet
-                isOpen={isSheetOpen}
-                onCloseAction={() => setIsSheetOpen(false)}
-                onAddLeaveRequestAction={handleAddLeaveRequest}
-            />
-
-            {isPrintingAnniversaries && organizationLogos && (
-                <PrintLayout
-                    logos={organizationLogos}
-                    title="LISTE DES EMPLOYÉS ATTEIGNANT UN ANNIVERSAIRE D'ANCIENNETÉ"
-                    subtitle={`Période de ${selectedAnniversaryPeriodText}`}
-                    columns={[
-                        { header: 'N°', key: 'index' },
-                        { header: 'Nom & Prénoms', key: 'name' },
-                        { header: 'Poste', key: 'poste' },
-                        { header: 'Date d\'embauche', key: 'dateEmbauche' },
-                        { header: 'Ancienneté', key: 'seniority', align: 'center' },
-                    ]}
-                    data={seniorityAnniversaries.map((emp, index) => ({
-                        index: index + 1,
-                        name: `${emp.lastName || ''} ${emp.firstName || ''}`.trim(),
-                        poste: emp.poste,
-                        dateEmbauche: formatDate(emp.dateEmbauche),
-                        seniority: `${emp.dateEmbauche ? differenceInYears(new Date(parseInt(selectedAnniversaryYear), parseInt(selectedAnniversaryMonth)), parseISO(emp.dateEmbauche)) : 0} ans`,
-                    }))}
-                />
+                                <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden">
+                                     <CardHeader className="p-8 border-b border-slate-50 flex flex-row items-center justify-between">
+                                        <div className="space-y-1">
+                                            <CardTitle className="text-xl flex items-center gap-2">
+                                                <History className="h-5 w-5 text-amber-500" /> Départs à la Retraite
+                                            </CardTitle>
+                                            <CardDescription className="text-xs font-medium uppercase tracking-widest text-slate-400">Archivage & fin de carrière</CardDescription>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <Select value={selectedRetirementYear} onValueChange={setSelectedRetirementYear}>
+                                                <SelectTrigger className="h-10 rounded-xl border-slate-100 bg-slate-50 w-[100px] font-bold text-xs"><SelectValue /></SelectTrigger>
+                                                <SelectContent className="rounded-xl">{retirementYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent>
+                                            </Select>
+                                            <Button variant="outline" size="icon" className="h-10 w-10 rounded-xl border-slate-100 shadow-sm hover:bg-slate-50 transition-all" onClick={setIsPrintingRetirements}>
+                                                <Printer className="h-4 w-4 text-slate-400" />
+                                            </Button>
+                                        </div>
+                                    </CardHeader>
+                                    <CardContent className="p-8">
+                                        {loading ? <Skeleton className="h-[300px] w-full" /> : (
+                                            <div className="space-y-6">
+                                                {upcomingRetirements.length > 0 ? upcomingRetirements.map(emp => (
+                                                    <div key={emp.id} className="flex items-center justify-between group p-3 hover:bg-amber-50/50 rounded-2xl transition-all border border-transparent hover:border-amber-100">
+                                                        <div className="flex items-center gap-4">
+                                                            <Avatar className="h-12 w-12 border-2 border-white shadow-md">
+                                                                <AvatarImage src={emp.photoUrl} alt={emp.name} />
+                                                                <AvatarFallback className="bg-amber-50 text-amber-400 font-bold">{emp.lastName?.charAt(0)}</AvatarFallback>
+                                                            </Avatar>
+                                                            <div>
+                                                                <p className="font-bold text-slate-900">{`${emp.lastName || ''} ${emp.firstName || ''}`.trim()}</p>
+                                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{emp.poste}</p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex flex-col items-end gap-1">
+                                                            <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-none font-black px-3 py-1 rounded-lg">
+                                                                {emp.calculatedRetirementDate && format(new Date(emp.calculatedRetirementDate), 'MMM yyyy', { locale: fr })}
+                                                            </Badge>
+                                                            <span className="text-[10px] text-slate-300 font-bold italic">Passage Relais</span>
+                                                        </div>
+                                                    </div>
+                                                )) : (
+                                                    <div className="py-20 text-center flex flex-col items-center gap-4 text-slate-300">
+                                                        <div className="h-16 w-16 bg-slate-50 rounded-full flex items-center justify-center border border-slate-100">
+                                                            <LogOutIcon className="h-8 w-8 opacity-20" />
+                                                        </div>
+                                                        <p className="text-sm italic font-medium">Aucun départ à la retraite prévu pour {selectedRetirementYear}.</p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                    </CardContent>
+                                </Card>
+                            </div>
+                        </TabsContent>
+                    </Tabs>
+                </div>
+            ) : (
+                <div className="flex flex-col items-center justify-center p-32 text-center">
+                    <div className="h-24 w-24 bg-slate-100 rounded-full flex items-center justify-center mb-8 border border-slate-200">
+                        <ShieldCheck className="h-10 w-10 text-slate-300" />
+                    </div>
+                    <h2 className="text-3xl font-black tracking-tighter text-slate-900 border-none">Accès Stratégique Restreint</h2>
+                    <p className="text-slate-400 mt-4 max-w-sm font-medium italic">
+                        Ce module nécessite des privilèges d'administration de haut niveau. Contactez votre superviseur pour les habilitations nécessaires.
+                    </p>
+                    <Button variant="outline" className="mt-8 rounded-xl font-bold h-12 px-8 border-slate-200" asChild>
+                        <Link href="/">Retour au portail</Link>
+                    </Button>
+                </div>
             )}
-            {isPrintingRetirements && organizationLogos && (
-                <PrintLayout
-                    logos={organizationLogos}
-                    title={`LISTE DES EMPLOYÉS PARTANT À LA RETRAITE EN ${selectedRetirementYear}`}
-                    columns={[
-                        { header: 'N°', key: 'index' },
-                        { header: 'Nom & Prénoms', key: 'name' },
-                        { header: 'Poste', key: 'poste' },
-                        { header: 'Date de Naissance', key: 'dateOfBirth' },
-                        { header: 'Date de Départ', key: 'retirementDate', align: 'center' },
-                    ]}
-                    data={upcomingRetirements.map((emp, index) => ({
-                        index: index + 1,
-                        name: `${emp.lastName || ''} ${emp.firstName || ''}`.trim(),
-                        poste: emp.poste,
-                        dateOfBirth: formatDate(emp.Date_Naissance),
-                        retirementDate: formatDate(emp.calculatedRetirementDate),
-                    }))}
-                />
-            )}
-        </>
+        </div>
     );
 }

@@ -470,6 +470,8 @@ export async function getDirectoireMembers(): Promise<Employe[]> {
         // Use parallel queries for better performance and to cover all criteria
         const queries = [
             query(employeesCollection, where('departmentId', '==', DIRECTOIRE_DEPT_ID), where('status', '==', 'Actif')),
+            query(employeesCollection, where('matricule', '>=', 'DIR'), where('matricule', '<=', 'DIR\uf8ff'), where('status', '==', 'Actif')),
+            query(employeesCollection, where('matricule', '>=', 'PRE'), where('matricule', '<=', 'PRE\uf8ff'), where('status', '==', 'Actif')),
             query(employeesCollection, where('matricule', '>=', 'D 0'), where('matricule', '<=', 'D 0\uf8ff'), where('status', '==', 'Actif'))
         ];
 
@@ -580,5 +582,36 @@ export async function getRegionalCommitteeDetails(region: string): Promise<Regio
 
 // Deprecated: Use getRegionalCommitteesSummary and getRegionalCommitteeDetails instead
 export async function getRegionalCommittees(): Promise<RegionalCommittee[]> {
-    return []; // No longer used to prevent full table scans
+    try {
+        const regions = Object.keys(divisions);
+        const committees: RegionalCommittee[] = [];
+
+        // Fetch all active regional staff (who have a Region assigned)
+        // Note: we fetch broadly and filter locally to avoid complex composite indices for each region
+        const q = query(employeesCollection, where('status', '==', 'Actif'), where('Region', '>=', ''));
+        const snapshot = await getDocs(q);
+        const allRegionalStaff = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Employe));
+
+        regions.forEach(region => {
+            const regionalStaff = allRegionalStaff.filter(s => s.Region === region);
+            const president = regionalStaff.find(m =>
+                m.poste?.toLowerCase().includes('membre du bureau') ||
+                m.poste?.toLowerCase().includes('président') ||
+                m.poste?.toLowerCase().includes('president')
+            ) || null;
+
+            committees.push({
+                region,
+                president,
+                members: regionalStaff.filter(m => m.id !== president?.id).slice(0, 10)
+            });
+        });
+
+        // Filter out regions with zero members to keep the UI clean if necessary, 
+        // or keep them as "Installation en cours"
+        return committees;
+    } catch (error) {
+        console.error('[employee-service] Error fetching regional committees:', error);
+        return [];
+    }
 }

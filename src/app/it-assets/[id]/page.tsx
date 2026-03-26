@@ -9,7 +9,8 @@ import {
     Server, QrCode, Tag, 
     User, Calendar, Info,
     History, Settings, Shield,
-    Cpu, HardDrive, Network
+    Cpu, HardDrive, Network,
+    CheckCircle2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";

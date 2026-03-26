@@ -45,6 +45,7 @@ export const allPermissions = {
   "Importer les chefs": "feature:chiefs:import",
   "Exporter les chefs": "feature:chiefs:export",
   "Importer les actifs TI": "feature:it-assets:import",
+  "Importer les conflits": "import_conflicts",
 } as const;
 
 export type PermissionKey = keyof typeof allPermissions;

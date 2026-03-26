@@ -38,7 +38,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import type { Chief } from "@/lib/data";
+import type { Chief } from "@/types/chief";
 import { subscribeToChiefs, addChief, deleteChief } from "@/services/chief-service";
 import { AddChiefSheet } from "@/components/chiefs/add-chief-sheet";
 import { Badge } from "@/components/ui/badge";
@@ -181,7 +181,7 @@ export default function ChiefsPage() {
               </DropdownMenuContent>
             </DropdownMenu>
           )}
-          <Button onClick={() => setIsAddSheetOpen(true)} className="bg-slate-900 hover:bg-slate-800 rounded-xl h-12 px-6 font-bold shadow-xl shadow-slate-200">
+          <Button onClick={() => setIsSheetOpen(true)} className="bg-slate-900 hover:bg-slate-800 rounded-xl h-12 px-6 font-bold shadow-xl shadow-slate-200">
             <PlusCircle className="mr-2 h-5 w-5" />
             Ajouter un Chef
           </Button>

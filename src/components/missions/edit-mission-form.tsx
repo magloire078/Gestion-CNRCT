@@ -35,12 +35,13 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { Mission, MissionParticipant, Employe } from "@/lib/data";
 import { subscribeToEmployees } from "@/services/employee-service";
 import { cn } from "@/lib/utils";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 
 interface EditMissionFormProps {
     mission: Mission;
@@ -246,16 +247,13 @@ export function EditMissionForm({ mission, onUpdateMission }: EditMissionFormPro
                                 <CardTitle>Equipe de Mission</CardTitle>
                                 <CardDescription>Ajoutez les participants et gérez leurs rôles.</CardDescription>
                             </div>
-                            <Select onValueChange={handleAddParticipant}>
-                                <SelectTrigger className="w-64 bg-white">
-                                    <SelectValue placeholder="Ajouter un participant" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {employees.map(emp => (
-                                        <SelectItem key={emp.id} value={emp.id}>{emp.name}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                            <SearchableSelect
+                                items={employees.map(emp => ({ value: emp.id, label: emp.name }))}
+                                onValueChange={handleAddParticipant}
+                                placeholder="Ajouter un participant"
+                                searchPlaceholder="Rechercher un employé..."
+                                className="w-64 bg-white"
+                            />
                         </CardHeader>
                         <CardContent>
                             <Table>

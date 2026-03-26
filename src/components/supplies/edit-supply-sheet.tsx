@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,21 +25,24 @@ import type { Supply, Asset } from "@/lib/data";
 import { supplyCategories } from "@/lib/constants/supply";
 import { getAssets } from "@/services/asset-service";
 import { useToast } from "@/hooks/use-toast";
+import { X, Image as ImageIcon, AlertCircle } from "lucide-react";
+import { SYSCOHADA_SUPPLIES_CATALOG, type SyscohadaItem } from "@/services/syscohada-service";
 
 interface EditSupplySheetProps {
   isOpen: boolean;
-  onClose: () => void;
-  onUpdateSupply: (id: string, data: Partial<Omit<Supply, 'id'>>) => Promise<void>;
+  onCloseAction: () => void;
+  onUpdateSupplyAction: (id: string, data: Partial<Omit<Supply, 'id'>>, photoFile?: File | null) => Promise<void>;
   supply: Supply;
 }
 
 export function EditSupplySheet({
   isOpen,
-  onClose,
-  onUpdateSupply,
+  onCloseAction,
+  onUpdateSupplyAction,
   supply
 }: EditSupplySheetProps) {
   const [name, setName] = useState("");
+  const [code, setCode] = useState("");
   const [category, setCategory] = useState<Supply['category'] | "">("");
   const [inkType, setInkType] = useState("");
   const [quantity, setQuantity] = useState(0);
@@ -48,16 +51,60 @@ export function EditSupplySheet({
   const [printers, setPrinters] = useState<Asset[]>([]);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [suggestions, setSuggestions] = useState<SyscohadaItem[]>([]);
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (!code && category) {
+      if (category === 'Papeterie') setCode('602-');
+      else if (category === 'Cartouches d\'encre' || category === 'Matériel de nettoyage') setCode('606-');
+      else setCode('606-');
+    }
+  }, [category, code]);
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setPhotoFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPhotoPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleCodeChange = useCallback((val: string) => {
+    setCode(val);
+    if (val.length >= 2) {
+      const filtered = SYSCOHADA_SUPPLIES_CATALOG.filter(item => 
+        item.code.startsWith(val) || item.name.toLowerCase().includes(val.toLowerCase())
+      );
+      setSuggestions(filtered.slice(0, 5));
+    } else {
+      setSuggestions([]);
+    }
+  }, []);
+
+  const selectSuggestion = useCallback((item: SyscohadaItem) => {
+    setCode(item.code);
+    setName(item.name);
+    setCategory(item.category);
+    setSuggestions([]);
+  }, []);
 
   useEffect(() => {
     if (supply) {
       setName(supply.name);
+      setCode(supply.code || "");
       setCategory(supply.category);
       setInkType(supply.inkType || "");
       setQuantity(supply.quantity);
       setReorderLevel(supply.reorderLevel);
       setLinkedAssetTag(supply.linkedAssetTag || "");
+      setPhotoPreview(supply.photoUrl || null);
     }
   }, [supply]);
 
@@ -82,7 +129,7 @@ export function EditSupplySheet({
 
   const handleClose = () => {
     setError("");
-    onClose();
+    onCloseAction();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -96,14 +143,15 @@ export function EditSupplySheet({
     setError("");
 
     try {
-      await onUpdateSupply(supply.id, {
+      await onUpdateSupplyAction(supply.id, {
         name,
-        category,
+        code: code || undefined,
+        category: category as Supply['category'],
         quantity,
         reorderLevel,
         inkType: category === 'Cartouches d\'encre' ? inkType : undefined,
         linkedAssetTag: (category === 'Cartouches d\'encre' && linkedAssetTag !== 'none') ? linkedAssetTag : undefined,
-      });
+      }, photoFile);
       handleClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Échec de la mise à jour.");
@@ -123,9 +171,41 @@ export function EditSupplySheet({
             </SheetDescription>
           </SheetHeader>
           <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4 relative">
+              <Label htmlFor="code-edit" className="text-right text-[10px] sm:text-xs">Code SYSCOHADA</Label>
+              <div className="col-span-3">
+                <Input 
+                  id="code-edit" 
+                  value={code} 
+                  onChange={(e) => handleCodeChange(e.target.value)} 
+                  placeholder="Ex: 335101" 
+                  autoComplete="off"
+                />
+                {suggestions.length > 0 && (
+                  <div className="absolute z-50 mt-1 w-full bg-white border border-slate-200 rounded-lg shadow-xl max-h-48 overflow-auto">
+                    {suggestions.map((item) => (
+                      <button
+                        key={item.code}
+                        type="button"
+                        className="w-full text-left px-3 py-2 hover:bg-slate-50 flex flex-col gap-0.5 border-b border-slate-50 last:border-0"
+                        onClick={() => selectSuggestion(item)}
+                      >
+                        <span className="text-xs font-black text-slate-900">{item.code}</span>
+                        <span className="text-[10px] text-slate-500 font-medium">{item.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="name-edit" className="text-right">Nom</Label>
-              <Input id="name-edit" value={name} onChange={(e) => setName(e.target.value)} className="col-span-3" />
+              <Label htmlFor="name-edit" className="text-right text-xs">Nom de l'article</Label>
+              <Input 
+                id="name-edit" 
+                value={name} 
+                onChange={(e) => setName(e.target.value)} 
+                className="col-span-3" 
+              />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="category-edit" className="text-right">Catégorie</Label>
@@ -162,6 +242,47 @@ export function EditSupplySheet({
                 </div>
               </>
             )}
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="photo-edit" className="text-right text-xs text-slate-500 font-bold">Photo de l'article</Label>
+              <div className="col-span-3 flex flex-col gap-2">
+                <div className="flex items-center gap-4">
+                  {photoPreview ? (
+                    <div className="relative w-16 h-16 rounded-lg overflow-hidden border border-slate-200 shadow-sm transition-all hover:scale-105 group">
+                      <img src={photoPreview} alt="Preview" className="w-full h-full object-cover" />
+                      <button 
+                        type="button" 
+                        onClick={() => { setPhotoFile(null); setPhotoPreview(null); }}
+                        className="absolute top-0 right-0 bg-red-500 text-white rounded-bl-lg p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 shadow-sm"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="w-16 h-16 rounded-lg bg-slate-50 border-2 border-dashed border-slate-200 flex flex-col items-center justify-center transition-colors hover:bg-slate-100 hover:border-slate-300 pointer-events-none">
+                      <ImageIcon className="h-6 w-6 text-slate-300" />
+                      <span className="text-[8px] text-slate-400 mt-1 uppercase font-bold">Photo</span>
+                    </div>
+                  )}
+                  <div className="flex-1">
+                    <Input 
+                      id="photo-edit" 
+                      type="file" 
+                      accept="image/*" 
+                      onChange={handlePhotoChange}
+                      className="text-xs file:mr-4 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-[10px] file:font-bold file:bg-primary file:text-white hover:file:opacity-90 file:cursor-pointer transition-all border-slate-200"
+                    />
+                    <p className="text-[10px] text-slate-400 mt-1.5 italic flex items-center gap-1 leading-tight">
+                      JPG, PNG ou WEBP (Max 5Mo)
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-4 items-center gap-4 text-xs font-bold text-slate-500 mb-2 mt-2">
+               <div className="col-span-4 border-b border-slate-100 pb-1">Stock & Alertes</div>
+            </div>
+
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="quantity-edit" className="text-right">Quantité</Label>
               <Input id="quantity-edit" type="number" value={quantity} onChange={(e) => setQuantity(Number(e.target.value))} className="col-span-3" />

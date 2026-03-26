@@ -1,19 +1,28 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { subscribeToPublishedNews, incrementNewsView } from '@/services/news-service';
 import type { NewsItem } from '@/types/common';
+import type { Chief } from '@/lib/data';
 import { NewsCard } from './news-card';
+import { GISMap } from '@/components/common/gis-map-v3';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { PlusCircle, Pencil, Trash2, CalendarDays, ChevronLeft, ChevronRight, Newspaper, Calendar, Eye, User } from 'lucide-react';
+import { PlusCircle, Pencil, Trash2, CalendarDays, ChevronLeft, ChevronRight, Newspaper, Calendar, Eye, User, MapPin } from 'lucide-react';
 import { formatDistanceToNow, parseISO, format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { useAuth } from '@/hooks/use-auth';
 import { EditNewsSheet } from './edit-news-sheet';
 import { deleteNews } from '@/services/news-service';
+import type { Employe } from '@/lib/data';
+import dynamic from 'next/dynamic';
+
+const DirectoireMap = dynamic(() => import('@/components/employees/directoire-map').then(m => m.DirectoireMap), {
+    ssr: false,
+    loading: () => <Skeleton className="h-[400px] w-full rounded-2xl" />,
+});
 import { ConfirmationDialog } from '@/components/common/confirmation-dialog';
 import {
     Carousel,
@@ -25,7 +34,11 @@ import {
 import { subDays, addDays, isWithinInterval, getYear } from "date-fns";
 import { getHolidayNewsItems } from '@/lib/holidays';
 
-export function NewsFeed() {
+interface NewsFeedProps {
+    directoireMembers?: Employe[];
+}
+
+export function NewsFeed({ directoireMembers = [] }: NewsFeedProps) {
     const [news, setNews] = useState<NewsItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedNews, setSelectedNews] = useState<NewsItem | null>(null);
@@ -152,37 +165,17 @@ export function NewsFeed() {
                 </div>
             ) : (
                 <div className="space-y-8">
-                    {/* Events Carousel */}
-                    {eventNews.length > 0 && (
-                        <div className="relative group">
-                            <div className="flex items-center gap-2 mb-4">
-                                <CalendarDays className="h-4 w-4 text-primary" />
-                                <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Évènements Proches</h3>
-                            </div>
-                            <Carousel
-                                opts={{
-                                    align: "start",
-                                    loop: true,
-                                }}
-                                className="w-full"
-                            >
-                                <CarouselContent className="-ml-2 md:-ml-4">
-                                    {eventNews.map((item) => (
-                                        <CarouselItem key={item.id} className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/2">
-                                            <NewsCard
-                                                news={item}
-                                                onClick={handleNewsClick}
-                                                onEdit={canManageNews ? handleEditNews : undefined}
-                                                onDelete={canManageNews ? handleDeleteClick : undefined}
-                                            />
-                                        </CarouselItem>
-                                    ))}
-                                </CarouselContent>
-                                <CarouselPrevious className="hidden md:flex -left-12 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                <CarouselNext className="hidden md:flex -right-12 opacity-0 group-hover:opacity-100 transition-opacity" />
-                            </Carousel>
+                    {/* Chiefs Map (Replaces Events Carousel) */}
+                    <div className="relative group">
+                        <div className="flex items-center gap-2 mb-4">
+                            <MapPin className="h-4 w-4 text-primary" />
+                            <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Répartition Géographique du Directoire</h3>
                         </div>
-                    )}
+                        <DirectoireMap
+                            members={directoireMembers}
+                            className="h-[600px] !rounded-2xl"
+                        />
+                    </div>
 
                     {/* Regular News Grid */}
                     <div className="space-y-4">

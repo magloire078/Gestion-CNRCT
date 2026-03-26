@@ -11,7 +11,9 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 // Coordonnées centrales approximatives des régions de Côte d'Ivoire
 const REGION_COORDS: Record<string, [number, number]> = {
     "Abidjan": [5.3613, -3.9935],
+    "District Autonome d'Abidjan": [5.3613, -3.9935],
     "Agnéby-Tiassa": [5.9255, -4.2188],
+    "Agboville": [5.9255, -4.2188],
     "Bafing": [8.2833, -7.6833],
     "Bagoué": [9.521, -6.486],
     "Bélier": [6.82, -5.27],
@@ -42,7 +44,8 @@ const REGION_COORDS: Record<string, [number, number]> = {
     "Tchologo": [9.6, -5.2],
     "Tonkpi": [7.4125, -7.5539],
     "Worodougou": [7.961, -6.673],
-    "Yamoussoukro": [6.8276, -5.2893]
+    "Yamoussoukro": [6.8276, -5.2893],
+    "District Autonome de Yamoussoukro": [6.8276, -5.2893]
 };
 
 interface DirectoireMapProps {
@@ -103,6 +106,11 @@ export function DirectoireMapComponent({ members, className }: DirectoireMapProp
             center: [7.539989, -5.54708],
             zoom: 6,
             zoomControl: true,
+            zoomSnap: 0.1,
+            zoomDelta: 0.5,
+            wheelPxPerZoomLevel: 120,
+            minZoom: 5,
+            maxZoom: 18
         });
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -117,12 +125,15 @@ export function DirectoireMapComponent({ members, className }: DirectoireMapProp
         if (!mapReady || !L || !mapRef.current) return;
 
         const map = mapRef.current;
-        // Clean existing markers if any (though we only init once here)
+        // Clean existing markers
         map.eachLayer((layer: any) => {
             if (layer instanceof L.Marker) {
                 map.removeLayer(layer);
             }
         });
+
+        const bounds = L.latLngBounds([]);
+        let hasMarkers = false;
 
         members.forEach((member, index) => {
             const region = member.Region || member.department; // Fallback
@@ -139,6 +150,12 @@ export function DirectoireMapComponent({ members, className }: DirectoireMapProp
             const lat = coords[0] + latOffset;
             const lng = coords[1] + lngOffset;
 
+            bounds.extend([lat, lng]);
+            hasMarkers = true;
+
+            const isActive = member.status === 'Actif' || member.bActif === true;
+            const statusColorClass = isActive ? 'bg-emerald-500' : 'bg-red-500';
+
             const icon = L.divIcon({
                 className: 'custom-member-icon',
                 html: `
@@ -147,7 +164,7 @@ export function DirectoireMapComponent({ members, className }: DirectoireMapProp
                             <div class="w-12 h-12 rounded-full border-4 border-white shadow-2xl overflow-hidden bg-primary/10 ring-2 ring-primary/20">
                                 <img src="${member.photoUrl || member.Photo || '#'}" class="w-full h-full object-cover" onerror="this.src='https://api.dicebear.com/7.x/initials/svg?seed=${member.name}'" />
                             </div>
-                            <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-white rounded-full"></div>
+                            <div class="absolute -bottom-1 -right-1 w-4 h-4 ${statusColorClass} border-2 border-white rounded-full transition-colors duration-500"></div>
                         </div>
                         <div class="mt-1 bg-white/40 backdrop-blur-md px-1 md:px-1.5 py-0.5 rounded-full shadow-lg border border-white/20 whitespace-nowrap text-center scale-[0.6] sm:scale-75 origin-top transition-all group-hover:scale-100 min-w-[50px] md:min-w-[80px] print:scale-50 print:min-w-[50px]">
                             <p class="text-[6px] md:text-[7px] font-black text-[#006039] leading-tight uppercase tracking-tight">${member.name}</p>
@@ -168,11 +185,15 @@ export function DirectoireMapComponent({ members, className }: DirectoireMapProp
                 <div class="flex flex-col items-center gap-1.5">
                     <div class="relative w-14 h-14 rounded-full border-2 border-[#D4AF37]/50 overflow-hidden shadow-inner bg-white/20 backdrop-blur-sm">
                         <img src="${member.photoUrl || member.Photo || '#'}" class="w-full h-full object-cover" onerror="this.src='https://api.dicebear.com/7.x/initials/svg?seed=${member.name}'" />
+                        <div class="absolute bottom-0.5 right-0.5 w-3 h-3 ${statusColorClass} border border-white rounded-full"></div>
                     </div>
                     <div>
                         <h3 class="font-bold text-[11px] text-[#006039] leading-tight mb-0.5 uppercase">${member.name}</h3>
                         <p class="text-[8px] text-[#D4AF37] font-semibold uppercase tracking-wider mb-1">${member.poste}</p>
-                        <p class="text-[9px] font-bold text-gray-700/80 mb-2 flex items-center justify-center gap-1">📍 <span class="uppercase">${region}</span></p>
+                        <div class="flex items-center justify-center gap-2 mb-2">
+                           <span class="px-2 py-0.5 rounded-full text-[7px] font-bold uppercase ${isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}">${member.status || (member.bActif ? 'Actif' : 'Inactif')}</span>
+                           <p class="text-[9px] font-bold text-gray-700/80 flex items-center gap-1">📍 <span class="uppercase">${region}</span></p>
+                        </div>
                     </div>
                     <a href="/employees/${member.id}" class="inline-flex items-center justify-center px-4 py-1.5 bg-[#006039]/90 text-white text-[8px] font-black uppercase tracking-widest rounded-full shadow-md hover:bg-[#004d2e] transition-all transform hover:scale-105 active:scale-95">Profil Complet</a>
                 </div>
@@ -182,6 +203,14 @@ export function DirectoireMapComponent({ members, className }: DirectoireMapProp
                 maxWidth: 220
             });
         });
+
+        if (hasMarkers) {
+            map.fitBounds(bounds, {
+                padding: [50, 50],
+                maxZoom: 8, // Don't zoom in too much for a single member
+                animate: true
+            });
+        }
     }, [mapReady, L, members]);
 
     const handlePrint = useCallback(async () => {
@@ -226,7 +255,7 @@ export function DirectoireMapComponent({ members, className }: DirectoireMapProp
     }, [mapContainerRef]);
 
     if (!isClient) {
-        return <div className={cn("bg-muted rounded-2xl flex items-center justify-center", className)} style={{ minHeight: '700px' }}>
+        return <div className={cn("bg-muted rounded-2xl flex items-center justify-center", className)} style={{ minHeight: '1000px' }}>
             <Loader2 className="h-10 w-10 animate-spin text-muted-foreground" />
         </div>;
     }
@@ -235,7 +264,7 @@ export function DirectoireMapComponent({ members, className }: DirectoireMapProp
         <div 
             id="print-section"
             className={cn("relative rounded-2xl overflow-hidden shadow-2xl border-2 border-[#D4AF37]/20 bg-white", className)} 
-            style={{ minHeight: '700px' }}
+            style={{ minHeight: '1000px' }}
         >
             <div ref={mapContainerRef} className="absolute inset-0 z-0" />
             {!mapReady && (

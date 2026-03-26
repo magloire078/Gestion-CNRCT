@@ -62,9 +62,13 @@ export function subscribeToMissions(
 
 export async function getMissions(): Promise<Mission[]> {
     try {
-        const snapshot = await getDocs(query(missionsCollection, orderBy("startDate", "desc")));
+        const snapshot = await getDocs(missionsCollection);
         return snapshot.docs.map((doc: any) => {
-            const data = { id: doc.id, ...doc.data() };
+            const data = { 
+                id: doc.id, 
+                participants: [], // Default to empty array
+                ...doc.data() 
+            };
             const result = missionSchema.safeParse(data);
             if (!result.success) {
                 console.error(`[MissionService] validation error for ${doc.id}:`, result.error.format());

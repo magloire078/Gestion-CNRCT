@@ -100,6 +100,7 @@ const allMenuItems = [
     permission: "group:personnel:view",
     subItems: [
       { href: "/employees?filter=directoire", label: "Membres du Directoire", icon: Building, permission: "page:employees:view" },
+      { href: "/employees?filter=regional", label: "Comités Régionaux", icon: Globe, permission: "page:employees:view" },
       { href: "/employees?filter=all-geo", label: "Directoire & Régionale", icon: Globe, permission: "page:employees:view" },
     ]
   },

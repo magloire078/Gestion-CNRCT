@@ -17,12 +17,12 @@ import type { Department } from "@/lib/data";
 
 interface DepartmentDialogProps {
   isOpen: boolean;
-  onClose: () => void;
-  onConfirm: (name: string) => Promise<void>;
+  onCloseAction: () => void;
+  onConfirmAction: (name: string) => Promise<void>;
   department?: Department | null;
 }
 
-export function DepartmentDialog({ isOpen, onClose, onConfirm, department }: DepartmentDialogProps) {
+export function DepartmentDialog({ isOpen, onCloseAction, onConfirmAction, department }: DepartmentDialogProps) {
   const [name, setName] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -40,7 +40,7 @@ export function DepartmentDialog({ isOpen, onClose, onConfirm, department }: Dep
   const handleClose = () => {
     setName("");
     setError("");
-    onClose();
+    onCloseAction();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -53,7 +53,7 @@ export function DepartmentDialog({ isOpen, onClose, onConfirm, department }: Dep
     setIsSubmitting(true);
     setError("");
     try {
-      await onConfirm(name);
+      await onConfirmAction(name);
       handleClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Une erreur est survenue.");

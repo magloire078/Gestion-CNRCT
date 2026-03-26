@@ -26,13 +26,13 @@ import { getDirections } from "@/services/direction-service";
 import { getServices } from "@/services/service-service";
 import { updateEmployee } from "@/services/employee-service";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Upload, Sparkles, Loader2, Save, X, Trash2 } from "lucide-react";
+import { Upload, Loader2, Save, X, Trash2 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
-import { generateAvatar } from "@/ai/flows/generate-avatar-flow";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { IVORIAN_REGIONS } from "@/constants/regions";
 
 interface EditEmployeeFormProps {
   employee: Employe;
@@ -52,10 +52,6 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
   const [loadingMetadata, setLoadingMetadata] = useState(true);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [isAvatarDialogOpen, setIsAvatarDialogOpen] = useState(false);
-  const [avatarPrompt, setAvatarPrompt] = useState("");
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedAvatar, setGeneratedAvatar] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchMetadata() {
@@ -127,38 +123,6 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
     }
   };
 
-  const handleGenerateAvatar = async () => {
-    if (!avatarPrompt) return;
-    setIsGenerating(true);
-    setGeneratedAvatar(null);
-    try {
-      const imageUrl = await generateAvatar(avatarPrompt);
-      setGeneratedAvatar(imageUrl);
-    } catch (err) {
-      toast({
-        variant: "destructive",
-        title: "Erreur de génération",
-        description: "Impossible de générer l'avatar. Veuillez réessayer.",
-      });
-    } finally {
-      setIsGenerating(false);
-    }
-  };
-
-  const useGeneratedAvatar = async () => {
-    if (generatedAvatar) {
-      try {
-        const response = await fetch(generatedAvatar);
-        const blob = await response.blob();
-        const file = new File([blob], "ai_avatar.png", { type: blob.type });
-        setPhotoFile(file);
-        setPhotoPreview(generatedAvatar);
-        setIsAvatarDialogOpen(false);
-      } catch (error) {
-        console.error("Error converting AI avatar:", error);
-      }
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -237,8 +201,7 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                   <Button type="button" variant="outline" size="sm" className="flex-1" onClick={() => fileInputRef.current?.click()}>
                     <Upload className="mr-2 h-4 w-4" /> Photo
                   </Button>
-                  <Button type="button" variant="outline" size="sm" className="flex-1" onClick={() => setIsAvatarDialogOpen(true)}>
-                    <Sparkles className="mr-2 h-4 w-4" /> IA
+                  <Button type="button" variant="outline" size="sm" className="flex-1 invisible">
                   </Button>
                 </div>
                 <input ref={fileInputRef} type="file" className="hidden" accept="image/*" onChange={handlePhotoChange} />
@@ -320,7 +283,15 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                   <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="Region">Région</Label>
-                      <Input id="Region" value={formData.Region || ''} onChange={handleInputChange} />
+                      <Select 
+                        value={formData.Region || ''} 
+                        onValueChange={(v) => handleSelectChange('Region', v)}
+                      >
+                        <SelectTrigger id="Region"><SelectValue placeholder="Sélectionnez une région..." /></SelectTrigger>
+                        <SelectContent>
+                          {IVORIAN_REGIONS.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="Village">Village</Label>
@@ -416,6 +387,17 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                        <Label htmlFor="CNPS">Déclaré à la CNPS</Label>
                     </div>
                     <div className="space-y-2">
+                      <Label htmlFor="Date_Cessation_CNPS">Date de cessation CNPS</Label>
+                      <Input 
+                        id="Date_Cessation_CNPS" 
+                        type="date" 
+                        value={formData.Date_Cessation_CNPS || ''} 
+                        onChange={handleInputChange} 
+                        disabled={!formData.CNPS}
+                      />
+                      <p className="text-[10px] text-muted-foreground italic">Laissez vide si toujours actif.</p>
+                    </div>
+                    <div className="space-y-2">
                       <Label htmlFor="enfants">Nombre d'enfants</Label>
                       <Input id="enfants" type="number" value={formData.enfants || 0} onChange={(e) => setFormData(prev => ({ ...prev, enfants: parseInt(e.target.value) || 0 }))} />
                     </div>
@@ -436,50 +418,6 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
         </div>
       </form>
 
-      {/* Dialog Avatar IA */}
-       <Dialog open={isAvatarDialogOpen} onOpenChange={setIsAvatarDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Générer un avatar avec l'IA</DialogTitle>
-            <DialogDescription>Décrivez l'apparence physique ou le style de l'employé.</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="avatar-prompt">Description</Label>
-              <Input
-                id="avatar-prompt"
-                value={avatarPrompt}
-                onChange={(e) => setAvatarPrompt(e.target.value)}
-                placeholder="Ex: Homme 40 ans, lunettes, costume bleu, style photoréaliste"
-              />
-            </div>
-            {isGenerating && (
-              <div className="flex justify-center items-center h-24">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              </div>
-            )}
-            {generatedAvatar && (
-              <div className="flex flex-col items-center gap-4">
-                <Avatar className="h-24 w-24 border-2 border-primary">
-                  <AvatarImage src={generatedAvatar} alt="Avatar généré" />
-                  <AvatarFallback>IA</AvatarFallback>
-                </Avatar>
-              </div>
-            )}
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsAvatarDialogOpen(false)}>Annuler</Button>
-            {generatedAvatar ? (
-              <Button onClick={useGeneratedAvatar}>Appliquer</Button>
-            ) : (
-              <Button onClick={handleGenerateAvatar} disabled={isGenerating || !avatarPrompt}>
-                {isGenerating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Générer
-              </Button>
-            )}
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

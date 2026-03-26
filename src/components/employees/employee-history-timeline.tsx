@@ -1,6 +1,7 @@
 
 
 "use client";
+import React from "react";
 
 import { Briefcase, TrendingUp, UserCheck, UserX, Pencil, Trash2 } from "lucide-react";
 import type { EmployeeEvent, Employe } from "@/lib/data";
@@ -79,7 +80,7 @@ const calculateTotals = (details: Record<string, any>, prefix = '') => {
     return { brut: Math.round(brutImposable), net: Math.round(net), anciennete: yearsOfServiceText };
 }
 
-export function EmployeeHistoryTimeline({ events, onEdit, onDelete }: EmployeeHistoryTimelineProps) {
+export const EmployeeHistoryTimeline = React.memo(function EmployeeHistoryTimeline({ events, onEdit, onDelete }: EmployeeHistoryTimelineProps) {
   if (events.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-48 text-center border-2 border-dashed rounded-lg">
@@ -192,4 +193,4 @@ export function EmployeeHistoryTimeline({ events, onEdit, onDelete }: EmployeeHi
       </ul>
     </div>
   );
-}
+});

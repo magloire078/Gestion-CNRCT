@@ -8,7 +8,7 @@ export interface Division {
 }
 
 export const divisions: Division = {
-  "Agnéby-Tiassa": {
+  "Agboville": {
     "Agboville": {
       "Agboville": ["Agboville", "Ananguié", "Azaguié", "Céchi", "Grand-Morié", "Guessiguié", "Loviguié", "Oress-Krobou"],
       "Rubino": ["Rubino"]

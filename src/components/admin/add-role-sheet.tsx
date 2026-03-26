@@ -5,7 +5,6 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Sheet,
   SheetContent,
@@ -18,49 +17,36 @@ import {
 import type { Role } from "@/lib/data";
 import { addRole } from "@/services/role-service";
 import { useToast } from "@/hooks/use-toast";
-import { allPermissions, type PermissionValue } from "@/lib/permissions";
-import { ScrollArea } from "../ui/scroll-area";
 
 interface AddRoleSheetProps {
   isOpen: boolean;
-  onClose: () => void;
-  onAddRole: (role: Role) => void;
+  onCloseAction: () => void;
+  onAddRoleAction: (role: Role) => void;
   roles: Role[];
 }
 
-export function AddRoleSheet({ isOpen, onClose, onAddRole, roles }: AddRoleSheetProps) {
+export function AddRoleSheet({ isOpen, onCloseAction, onAddRoleAction, roles }: AddRoleSheetProps) {
   const [name, setName] = useState('');
-  const [selectedPermissions, setSelectedPermissions] = useState<PermissionValue[]>([]);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
   const resetForm = () => {
     setName("");
-    setSelectedPermissions([]);
     setError("");
   };
 
   const handleClose = () => {
     resetForm();
-    onClose();
+    onCloseAction();
   };
   
-  const handlePermissionChange = (permission: PermissionValue, checked: boolean) => {
-    setSelectedPermissions(prev => 
-      checked ? [...prev, permission] : prev.filter(p => p !== permission)
-    );
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name) {
       setError("Le nom du rôle est obligatoire.");
       return;
-    }
-    if (selectedPermissions.length === 0) {
-        setError("Veuillez sélectionner au moins une permission.");
-        return;
     }
 
     if (roles.some(role => role.name.toLowerCase() === name.toLowerCase())) {
@@ -71,8 +57,19 @@ export function AddRoleSheet({ isOpen, onClose, onAddRole, roles }: AddRoleSheet
     setIsSubmitting(true);
     setError("");
     try {
-      const newRole = await addRole({ name, permissions: selectedPermissions });
-      onAddRole(newRole);
+      // Initialize with basic read access to essential pages
+      const initialPermissions = {
+        dashboard: { read: true, create: false, update: false, delete: false },
+        'my-space': { read: true, create: false, update: false, delete: false },
+        intranet: { read: true, create: false, update: false, delete: false },
+      };
+
+      const newRole = await addRole({ 
+        name, 
+        permissions: [], 
+        resourcePermissions: initialPermissions as any 
+      });
+      onAddRoleAction(newRole);
       toast({ title: "Rôle ajouté", description: `Le rôle ${name} a été ajouté.` });
       handleClose();
     } catch (err) {
@@ -95,25 +92,11 @@ export function AddRoleSheet({ isOpen, onClose, onAddRole, roles }: AddRoleSheet
           <div className="py-4 space-y-4">
             <div>
               <Label htmlFor="name">Nom du Rôle</Label>
-              <Input id="name" value={name} onChange={(e) => setName(e.target.value)} className="mt-2" />
+              <Input id="name" value={name} placeholder="ex: Chargé de logistique" onChange={(e) => setName(e.target.value)} className="mt-2" />
+              <p className="text-xs text-muted-foreground mt-2 italic">
+                Note : Après la création, vous pourrez configurer les droits d&apos;accès détaillés (Lecture, Création, etc.) dans l&apos;onglet Sécurité de la page d&apos;administration.
+              </p>
             </div>
-            <div>
-              <Label>Permissions</Label>
-            </div>
-             <ScrollArea className="h-64 border rounded-md p-4">
-                <div className="space-y-4">
-                    {Object.entries(allPermissions).map(([label, value]) => (
-                        <div key={value} className="flex items-center space-x-2">
-                             <Checkbox 
-                                id={`add-${value}`}
-                                checked={selectedPermissions.includes(value)}
-                                onCheckedChange={(checked) => handlePermissionChange(value, !!checked)}
-                            />
-                            <Label htmlFor={`add-${value}`} className="font-normal">{label}</Label>
-                        </div>
-                    ))}
-                </div>
-            </ScrollArea>
             {error && <p className="text-sm text-destructive px-1 text-center">{error}</p>}
           </div>
           <SheetFooter>

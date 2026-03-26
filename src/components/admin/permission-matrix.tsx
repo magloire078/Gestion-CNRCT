@@ -20,7 +20,7 @@ import {
     AlertTriangle, Package, Monitor, Car, Newspaper,
     FolderOpen, PieChart, ClipboardList, LifeBuoy, Crown,
     Map, Bot, Settings, ShieldCheck, ScrollText, Loader2, Save,
-    RefreshCw, Fuel,
+    RefreshCw, Fuel, Calculator, Landmark, Scroll, MapPinned, Network, Globe
 } from 'lucide-react';
 import {
     Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -34,6 +34,7 @@ const ICON_MAP: Record<string, React.ElementType> = {
     AlertTriangle, Package, Monitor, Car, Newspaper,
     FolderOpen, PieChart, ClipboardList, LifeBuoy, Crown,
     Map, Bot, Settings, ShieldCheck, ScrollText, Fuel,
+    Calculator, Landmark, Scroll, MapPinned, Network, Globe,
 };
 
 const ACTION_LABELS: Record<CrudAction, { label: string; short: string; color: string }> = {
@@ -228,23 +229,38 @@ function RolePermissionsEditor({ roleId, isSystem }: RolePermissionsEditorProps)
     );
 }
 
-export function PermissionMatrix() {
+interface PermissionMatrixProps {
+    roles?: { id: string; label: string; isSystem?: boolean }[];
+}
+
+export function PermissionMatrix({ roles: customRoles }: PermissionMatrixProps) {
+    const rolesToDisplay = customRoles || ENTERPRISE_ROLES;
+
+    if (!rolesToDisplay || rolesToDisplay.length === 0) {
+        return (
+            <div className="flex flex-col items-center justify-center py-10 text-muted-foreground border rounded-lg bg-muted/10">
+                <ShieldCheck className="h-10 w-10 mb-2 opacity-20" />
+                <p>Aucun rle disponible pour la configuration.</p>
+            </div>
+        );
+    }
+
     return (
         <div className="space-y-4">
             <div className="space-y-1">
-                <h3 className="text-base font-semibold">Matrice des droits d&apos;accès</h3>
+                <h3 className="text-base font-semibold">Matrice des droits d&apos;accs</h3>
                 <p className="text-sm text-muted-foreground">
-                    Activez ou désactivez les permissions <span className="font-medium text-blue-500">Lecture</span>,{' '}
-                    <span className="font-medium text-green-500">Création</span>,{' '}
+                    Activez ou dativez les permissions <span className="font-medium text-blue-500">Lecture</span>,{' '}
+                    <span className="font-medium text-green-500">Cration</span>,{' '}
                     <span className="font-medium text-amber-500">Modification</span> et{' '}
-                    <span className="font-medium text-red-500">Suppression</span> par rôle et par ressource.
-                    Les modifications sont actives après enregistrement.
+                    <span className="font-medium text-red-500">Suppression</span> par rle et par ressource.
+                    Les modifications sont actives apr enregistrement.
                 </p>
             </div>
 
-            <Tabs defaultValue={ENTERPRISE_ROLES[0].id} className="w-full">
+            <Tabs defaultValue={rolesToDisplay[0].id} className="w-full">
                 <TabsList className="flex h-auto flex-wrap gap-1 bg-muted/50 p-1">
-                    {ENTERPRISE_ROLES.map(role => (
+                    {rolesToDisplay.map(role => (
                         <TabsTrigger
                             key={role.id}
                             value={role.id}
@@ -256,7 +272,7 @@ export function PermissionMatrix() {
                     ))}
                 </TabsList>
 
-                {ENTERPRISE_ROLES.map(role => (
+                {rolesToDisplay.map(role => (
                     <TabsContent key={role.id} value={role.id} className="mt-4">
                         <RolePermissionsEditor roleId={role.id} isSystem={role.isSystem ?? false} />
                     </TabsContent>

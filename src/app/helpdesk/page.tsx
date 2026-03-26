@@ -413,7 +413,6 @@ export default function HelpdeskPage() {
              </CardContent>
         </Card>
       </div>
-    </div>
     {user && (
          <AddTicketSheet
             isOpen={isAddSheetOpen}

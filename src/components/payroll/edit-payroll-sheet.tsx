@@ -93,10 +93,10 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
       primeAnciennete = baseSalary * (primeAncienneteRate / 100);
     }
 
-    const otherIndemnities = [
+    const otherIndemnities = ([
       formState.indemniteTransportImposable, formState.indemniteSujetion, formState.indemniteCommunication,
       formState.indemniteRepresentation, formState.indemniteResponsabilite, formState.indemniteLogement
-    ].reduce((sum: number, val) => sum + (val || 0), 0);
+    ] as (number | undefined)[]).reduce((sum: number, val) => sum + (val || 0), 0);
 
     const earnings = baseSalary + primeAnciennete + otherIndemnities;
 
@@ -137,10 +137,10 @@ export function EditPayrollSheet({ isOpen, onClose, onUpdatePayroll, employee }:
 
     setOriginalBaseSalary(formState.baseSalary || 0);
 
-    const otherIndemnities = [
+    const otherIndemnities = ([
       formState.indemniteTransportImposable, formState.indemniteSujetion, formState.indemniteCommunication,
       formState.indemniteRepresentation, formState.indemniteResponsabilite, formState.indemniteLogement
-    ].reduce((sum, val) => (sum ?? 0) + (val || 0), 0);
+    ] as (number | undefined)[]).reduce((sum: number, val) => sum + (val || 0), 0);
 
     const transportNonImposable = formState.transportNonImposable || 0;
     const cnpsRate = formState.CNPS ? 0.063 : 0;

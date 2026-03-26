@@ -23,13 +23,13 @@ import type { User, Role } from "@/lib/data";
 
 interface EditUserRoleDialogProps {
   isOpen: boolean;
-  onClose: () => void;
-  onConfirm: (userId: string, newRoleId: string) => Promise<void>;
+  onCloseAction: () => void;
+  onConfirmAction: (userId: string, newRoleId: string) => Promise<void>;
   user: User | null;
   roles: Role[];
 }
 
-export function EditUserRoleDialog({ isOpen, onClose, onConfirm, user, roles }: EditUserRoleDialogProps) {
+export function EditUserRoleDialog({ isOpen, onCloseAction, onConfirmAction, user, roles }: EditUserRoleDialogProps) {
   const [selectedRoleId, setSelectedRoleId] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -42,7 +42,7 @@ export function EditUserRoleDialog({ isOpen, onClose, onConfirm, user, roles }: 
 
   const handleClose = () => {
     setError("");
-    onClose();
+    onCloseAction();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -55,7 +55,7 @@ export function EditUserRoleDialog({ isOpen, onClose, onConfirm, user, roles }: 
     setIsSubmitting(true);
     setError("");
     try {
-      await onConfirm(user.id, selectedRoleId);
+      await onConfirmAction(user.id, selectedRoleId);
       handleClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Une erreur est survenue.");

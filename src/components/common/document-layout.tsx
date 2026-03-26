@@ -27,7 +27,7 @@ export function DocumentLayout({ children }: DocumentLayoutProps) {
         </div>
 
         <div className="w-1/4 text-center flex flex-col justify-center items-center h-full">
-          <p className="font-bold text-sm whitespace-nowrap">REPUBLIQUE DE CÔTE D'IVOIRE</p>
+          <p className="font-bold text-sm whitespace-nowrap">République de Côte d'Ivoire</p>
           {settings?.secondaryLogoUrl && (
             <img
               src={settings.secondaryLogoUrl}

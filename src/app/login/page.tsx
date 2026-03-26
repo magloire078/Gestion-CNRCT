@@ -68,7 +68,16 @@ export default function LoginPage() {
       else {
         setError("Une erreur de connexion est survenue. Vérifiez votre connexion et les paramètres du projet.");
       }
-      console.error("Login Error details:", { message: errorMessage, code: errorCode, fullError: err });
+      console.error("Login Error details:", { 
+        message: errorMessage, 
+        code: errorCode, 
+        fullError: err,
+        errorString: String(err),
+        errorProps: Object.getOwnPropertyNames(err).reduce((acc: any, key) => {
+          acc[key] = (err as any)[key];
+          return acc;
+        }, {})
+      });
     } finally {
       setLoading(false);
     }

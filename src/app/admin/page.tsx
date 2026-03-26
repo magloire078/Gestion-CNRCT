@@ -33,8 +33,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { useAdminData } from "@/hooks/use-admin-data";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-import type { User, Role, Department, Direction, Service } from "@/lib/data";
+import type { User, Role, Department, Direction, Service, Employe } from "@/lib/data";
 import { deleteUser, updateUser } from "@/services/user-service";
 import { deleteRole, updateRole } from "@/services/role-service";
 import { addDepartment, updateDepartment, deleteDepartment } from "@/services/department-service";
@@ -49,7 +50,6 @@ import { ImportVillagesCard } from "@/components/admin/import-villages-card";
 import { ConfirmationDialog } from "@/components/common/confirmation-dialog";
 import { DepartmentDialog } from "@/components/admin/department-dialog";
 import { EditUserRoleDialog } from "@/components/admin/edit-user-role-dialog";
-import { EditRoleSheet } from "@/components/admin/edit-role-sheet";
 import { DirectionDialog } from "@/components/admin/direction-dialog";
 import { ServiceDialog } from "@/components/admin/service-dialog";
 import { Badge } from "@/components/ui/badge";
@@ -69,29 +69,6 @@ function EmptyState({ icon: Icon, message }: { icon: React.ElementType; message:
   );
 }
 
-// --- Permissions Badge Cell ---
-function PermissionsBadge({ permissions, roleName }: { permissions: string[]; roleName?: string }) {
-  const isFullAccess = roleName === 'Administrateur' || roleName === 'Super Administrateur';
-  if (isFullAccess) return <Badge>Tous</Badge>;
-  if (!permissions || permissions.length === 0) return <span className="text-xs text-muted-foreground">Aucun</span>;
-
-  return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Badge variant="secondary" className="cursor-default">
-            {permissions.length} droit(s)
-          </Badge>
-        </TooltipTrigger>
-        <TooltipContent side="left" className="max-w-xs">
-          <ul className="space-y-0.5 text-xs list-disc pl-3">
-            {permissions.map((p) => <li key={p}>{p}</li>)}
-          </ul>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-  );
-}
 
 export default function AdminPage() {
   const {
@@ -110,7 +87,6 @@ export default function AdminPage() {
 
   const [isAddUserSheetOpen, setIsAddUserSheetOpen] = useState(false);
   const [isAddRoleSheetOpen, setIsAddRoleSheetOpen] = useState(false);
-  const [isEditRoleSheetOpen, setIsEditRoleSheetOpen] = useState(false);
   const [isDepartmentDialogOpen, setIsDepartmentDialogOpen] = useState(false);
   const [isDirectionDialogOpen, setIsDirectionDialogOpen] = useState(false);
   const [isServiceDialogOpen, setIsServiceDialogOpen] = useState(false);
@@ -148,6 +124,23 @@ export default function AdminPage() {
     return Math.max(1, Math.ceil(filteredUsers.length / userItemsPerPage));
   }, [filteredUsers, userItemsPerPage]);
 
+  const employeeMap = useMemo(() => {
+    const map = new Map<string, Employe>();
+    if (allEmployees) {
+      allEmployees.forEach(e => map.set(e.id, e));
+    }
+    return map;
+  }, [allEmployees]);
+
+  const mappedRolesForMatrix = useMemo(() => {
+    if (!roles) return [];
+    return roles.map(r => ({
+      id: r.id,
+      label: r.name,
+      isSystem: ['dirigeant-president', 'cadre-superieur-directeur', 'cadre-intermediaire-chef-service', 'employe-operationnel', 'stagiaire-apprenti', 'super-admin', 'administrateur'].includes(r.id)
+    }));
+  }, [roles]);
+
   const handleAddUser = () => {
     setIsAddUserSheetOpen(false);
     toast({ title: "Utilisateur ajouté", description: `Le nouvel utilisateur a été ajouté avec succès.` });
@@ -158,16 +151,6 @@ export default function AdminPage() {
     toast({ title: "Rôle ajouté", description: `Le rôle ${newRole.name} a été ajouté avec succès.` });
   };
 
-  const handleUpdateRole = async (roleId: string, updatedPermissions: string[]) => {
-    try {
-      await updateRole(roleId, { permissions: updatedPermissions });
-      setIsEditRoleSheetOpen(false);
-      toast({ title: "Rôle mis à jour", description: "Les permissions du rôle ont été modifiées." });
-    } catch (err) {
-      toast({ variant: "destructive", title: "Erreur", description: "Impossible de mettre à jour le rôle." });
-      throw err;
-    }
-  };
 
   const handleSaveDepartment = async (name: string) => {
     try {
@@ -238,7 +221,15 @@ export default function AdminPage() {
     <TooltipProvider>
       <>
         <div className="flex flex-col gap-6">
-          <h1 className="text-3xl font-bold tracking-tight">Administration</h1>
+          <div className="flex items-center gap-4">
+            <Avatar className="h-12 w-12 border-2 border-primary/10 shadow-lg">
+                <AvatarImage src={user?.photoUrl || undefined} alt={user?.name || ''} />
+                <AvatarFallback className="bg-slate-100 font-bold text-slate-400">
+                    {user?.name?.charAt(0)}
+                </AvatarFallback>
+            </Avatar>
+            <h1 className="text-3xl font-bold tracking-tight">Administration</h1>
+          </div>
 
           {error && <p className="text-destructive text-center py-4">{error}</p>}
 
@@ -330,7 +321,6 @@ export default function AdminPage() {
                           <TableHead>Nom</TableHead>
                           <TableHead>Email</TableHead>
                           <TableHead>Rôle</TableHead>
-                          <TableHead>Permissions</TableHead>
                           <TableHead><span className="sr-only">Actions</span></TableHead>
                         </TableRow>
                       </TableHeader>
@@ -362,7 +352,7 @@ export default function AdminPage() {
                                 {user.name}
                                 {user.employeeId && (
                                   <p className="text-xs text-muted-foreground">
-                                    Lié : {allEmployees.find(e => e.id === user.employeeId)?.name || 'N/A'}
+                                    Lié : {employeeMap.get(user.employeeId)?.name || 'N/A'}
                                   </p>
                                 )}
                               </TableCell>
@@ -375,9 +365,6 @@ export default function AdminPage() {
                                   {!user.role && <AlertTriangle className="h-3 w-3" />}
                                   {user.role?.name || 'Non assigné'}
                                 </Badge>
-                              </TableCell>
-                              <TableCell>
-                                <PermissionsBadge permissions={user.permissions} roleName={user.role?.name} />
                               </TableCell>
                               <TableCell className="text-right whitespace-nowrap">
                                 <Tooltip>
@@ -446,7 +433,6 @@ export default function AdminPage() {
                           <TableRow>
                             <TableHead>N°</TableHead>
                             <TableHead>Rôle</TableHead>
-                            <TableHead>Permissions</TableHead>
                             <TableHead className="text-right w-[100px]">Actions</TableHead>
                           </TableRow>
                         </TableHeader>
@@ -456,13 +442,12 @@ export default function AdminPage() {
                               <TableRow key={i}>
                                 <TableCell><Skeleton className="h-4 w-4" /></TableCell>
                                 <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                                <TableCell><Skeleton className="h-4 w-64" /></TableCell>
                                 <TableCell><Skeleton className="h-8 w-8" /></TableCell>
                               </TableRow>
                             ))
                           ) : !roles || roles.length === 0 ? (
                             <TableRow>
-                              <TableCell colSpan={4}>
+                              <TableCell colSpan={3}>
                                 <EmptyState icon={Shield} message="Aucun rôle défini. Créez le premier rôle." />
                               </TableCell>
                             </TableRow>
@@ -471,18 +456,7 @@ export default function AdminPage() {
                               <TableRow key={role.id}>
                                 <TableCell>{index + 1}</TableCell>
                                 <TableCell className="font-medium">{role.name}</TableCell>
-                                <TableCell>
-                                  <PermissionsBadge permissions={role.permissions} />
-                                </TableCell>
                                 <TableCell className="text-right whitespace-nowrap">
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <Button variant="ghost" size="icon" onClick={() => { setEditingRole(role); setIsEditRoleSheetOpen(true); }}>
-                                        <Pencil className="h-4 w-4" />
-                                      </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>Modifier les permissions</TooltipContent>
-                                  </Tooltip>
                                   <Tooltip>
                                     <TooltipTrigger asChild>
                                       <Button variant="ghost" size="icon" onClick={() => setDeleteTarget({ id: role.id, type: 'role', name: role.name })}>
@@ -513,7 +487,7 @@ export default function AdminPage() {
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="pt-6">
-                        <PermissionMatrix />
+                        <PermissionMatrix roles={mappedRolesForMatrix} />
                       </CardContent>
                     </Card>
                   )}
@@ -741,14 +715,13 @@ export default function AdminPage() {
             </Tabs>
           </PermissionLock>
 
-          <AddUserSheet isOpen={isAddUserSheetOpen} onClose={() => setIsAddUserSheetOpen(false)} onAddUser={handleAddUser} roles={roles || []} />
-          <AddRoleSheet isOpen={isAddRoleSheetOpen} onClose={() => setIsAddRoleSheetOpen(false)} onAddRole={handleAddRole} roles={roles || []} />
-          {editingRole && <EditRoleSheet isOpen={isEditRoleSheetOpen} onClose={() => setIsEditRoleSheetOpen(false)} onUpdateRole={handleUpdateRole} role={editingRole} />}
-          <DepartmentDialog isOpen={isDepartmentDialogOpen} onClose={() => setIsDepartmentDialogOpen(false)} onConfirm={handleSaveDepartment} department={editingDepartment} />
-          <DirectionDialog isOpen={isDirectionDialogOpen} onClose={() => setIsDirectionDialogOpen(false)} onConfirm={handleSaveDirection} direction={editingDirection} departments={departments || []} />
-          <ServiceDialog isOpen={isServiceDialogOpen} onClose={() => setIsServiceDialogOpen(false)} service={editingService} directions={directions || []} departments={departments || []} />
-          <EditUserRoleDialog isOpen={isEditUserDialogOpen} onClose={() => setIsEditUserDialogOpen(false)} onConfirm={handleUpdateUserRole} user={editingUser} roles={roles || []} />
-          <LinkUserEmployeeDialog isOpen={isLinkUserDialogOpen} onClose={() => setIsLinkUserDialogOpen(false)} onConfirm={handleLinkUserToEmployee} user={linkingUser} employees={allEmployees} />
+          <AddUserSheet isOpen={isAddUserSheetOpen} onCloseAction={() => setIsAddUserSheetOpen(false)} onAddUserAction={handleAddUser} roles={roles || []} />
+          <AddRoleSheet isOpen={isAddRoleSheetOpen} onCloseAction={() => setIsAddRoleSheetOpen(false)} onAddRoleAction={handleAddRole} roles={roles || []} />
+          <DepartmentDialog isOpen={isDepartmentDialogOpen} onCloseAction={() => setIsDepartmentDialogOpen(false)} onConfirmAction={handleSaveDepartment} department={editingDepartment} />
+          <DirectionDialog isOpen={isDirectionDialogOpen} onCloseAction={() => setIsDirectionDialogOpen(false)} onConfirmAction={handleSaveDirection} direction={editingDirection} departments={departments || []} />
+          <ServiceDialog isOpen={isServiceDialogOpen} onCloseAction={() => setIsServiceDialogOpen(false)} service={editingService} directions={directions || []} departments={departments || []} />
+          <EditUserRoleDialog isOpen={isEditUserDialogOpen} onCloseAction={() => setIsEditUserDialogOpen(false)} onConfirmAction={handleUpdateUserRole} user={editingUser} roles={roles || []} />
+          <LinkUserEmployeeDialog isOpen={isLinkUserDialogOpen} onCloseAction={() => setIsLinkUserDialogOpen(false)} onConfirmAction={handleLinkUserToEmployee} user={linkingUser} employees={allEmployees} />
         </div>
 
         <ConfirmationDialog

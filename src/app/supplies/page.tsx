@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useTransition, useDeferredValue, memo, useCallback } from "react";
 import { 
     PlusCircle, Search, Package, MoreHorizontal, 
     Pencil, Trash2, LayoutGrid, List,
@@ -17,6 +17,7 @@ import {
   CardTitle,
   CardFooter,
 } from "@/components/ui/card";
+import { DebouncedInput } from "@/components/ui/debounced-input";
 import {
   Table,
   TableBody,
@@ -32,9 +33,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import type { Supply } from "@/lib/data";
-import { AddSupplySheet } from "@/components/supplies/add-supply-sheet";
-import { EditSupplySheet } from "@/components/supplies/edit-supply-sheet";
 import { ConfirmationDialog } from "@/components/common/confirmation-dialog";
 import { Input } from "@/components/ui/input";
 import {
@@ -44,35 +42,148 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { subscribeToSupplies, addSupply, updateSupply, deleteSupply } from "@/services/supply-service";
+import { 
+    subscribeToSupplies, addSupply, updateSupply, deleteSupply,
+    subscribeToSupplyTransactions 
+} from "@/services/supply-service";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { Progress } from "@/components/ui/progress";
 import { PaginationControls } from "@/components/common/pagination-controls";
 import { cn } from "@/lib/utils";
+import { 
+    Tabs, 
+    TabsContent, 
+    TabsList, 
+    TabsTrigger 
+} from "@/components/ui/tabs";
+import type { Supply, SupplyTransaction } from "@/lib/data";
+import { SupplyTransactionList } from "@/components/supplies/supply-transaction-list";
+import { useAuth } from "@/hooks/use-auth";
 
 
 import { supplyCategories } from "@/lib/constants/supply";
+import { AddSupplySheet } from "@/components/supplies/add-supply-sheet";
+import { EditSupplySheet } from "@/components/supplies/edit-supply-sheet";
+import { DistributeSupplyDialog } from "@/components/supplies/distribute-supply-dialog";
+
+const getStockStatus = (quantity: number, reorderLevel: number) => {
+    if (quantity <= 0) return { text: "Rupture", color: "destructive", variant: "destructive" as any, value: 5, className: "bg-red-500", icon: AlertTriangle };
+    if (quantity <= reorderLevel) return { text: "Stock Bas", color: "warning", variant: "secondary" as any, value: (quantity / (reorderLevel * 2)) * 100, className: "bg-amber-500", icon: AlertTriangle };
+    const percentage = Math.min(100, (quantity / (reorderLevel * 2)) * 100);
+    return { text: "Optimal", color: "success", variant: "default" as any, value: percentage, className: "bg-emerald-500", icon: CheckCircle2 };
+};
+
+// Memoized Row component to optimize performance
+const SupplyRow = memo(({ 
+    supply, 
+    index, 
+    openDistributeDialog, 
+    openEditSheet, 
+    setDeleteTarget 
+}: {
+    supply: Supply;
+    index: number;
+    openDistributeDialog: (s: Supply) => void;
+    openEditSheet: (s: Supply) => void;
+    setDeleteTarget: (s: Supply) => void;
+}) => {
+    const status = getStockStatus(supply.quantity, supply.reorderLevel);
+    const Icon = status.icon;
+
+    return (
+        <TableRow key={supply.id} className="group hover:bg-slate-50/50 transition-colors border-slate-100">
+            <TableCell className="text-center text-slate-300 font-mono text-xs">
+                {index + 1}
+            </TableCell>
+            <TableCell className="font-mono text-xs font-bold text-slate-400">
+                {supply.code || '---'}
+            </TableCell>
+            <TableCell className="font-bold text-slate-700">
+                <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-md bg-slate-50 border border-slate-100 flex items-center justify-center overflow-hidden flex-shrink-0">
+                        {supply.photoUrl ? (
+                            <img src={supply.photoUrl} alt={supply.name} className="w-full h-full object-cover" />
+                        ) : (
+                            <Package className="h-4 w-4 text-slate-300" />
+                        )}
+                    </div>
+                    <span>{supply.name}</span>
+                </div>
+            </TableCell>
+            <TableCell>
+                <Badge variant="outline" className="rounded-md bg-white border-slate-200 text-slate-500 font-medium px-2 py-0">
+                    {supply.category}
+                </Badge>
+            </TableCell>
+            <TableCell className="text-center font-black text-slate-900">{supply.quantity}</TableCell>
+            <TableCell className="text-center text-slate-400 italic text-xs">{supply.reorderLevel}</TableCell>
+            <TableCell>
+                <div className="flex flex-col gap-1.5 min-w-[120px]">
+                    <div className="flex items-center justify-between text-[10px] font-bold">
+                        <span className={cn(
+                            status.color === 'destructive' ? "text-red-500" :
+                            status.color === 'warning' ? "text-amber-500" : "text-emerald-500"
+                        )}>
+                            {status.text}
+                        </span>
+                        <Icon className="h-3 w-3 opacity-40" />
+                    </div>
+                    <Progress 
+                        value={status.value} 
+                        className="h-2 rounded-full bg-slate-100 overflow-hidden" 
+                        indicatorClassName={cn("transition-all duration-700", status.className)} 
+                    />
+                </div>
+            </TableCell>
+            <TableCell className="text-right">
+                <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                        <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="rounded-xl shadow-xl border-slate-100">
+                    <DropdownMenuItem onClick={() => openDistributeDialog(supply)} className="cursor-pointer font-bold text-slate-900">
+                        <ShoppingCart className="mr-2 h-4 w-4" /> Donner à...
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => openEditSheet(supply)} className="cursor-pointer">
+                        <Pencil className="mr-2 h-4 w-4" /> Modifier
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setDeleteTarget(supply)} className="text-red-600 focus:text-red-600 cursor-pointer">
+                        <Trash2 className="mr-2 h-4 w-4" /> Supprimer
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+                </DropdownMenu>
+            </TableCell>
+        </TableRow>
+    );
+});
 
 export default function SuppliesPage() {
+  const [isPending, startTransition] = useTransition();
   const [supplies, setSupplies] = useState<Supply[]>([]);
+  const [transactions, setTransactions] = useState<SupplyTransaction[]>([]);
   const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
   const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
   const [selectedSupply, setSelectedSupply] = useState<Supply | null>(null);
+  const [isDistributeDialogOpen, setIsDistributeDialogOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Supply | null>(null);
+  const [activeTab, setActiveTab] = useState("inventory");
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
 
   useEffect(() => {
-    const unsubscribe = subscribeToSupplies(
+    const unsubscribeSupplies = subscribeToSupplies(
       (fetchedSupplies) => {
         setSupplies(fetchedSupplies);
         setLoading(false);
@@ -84,12 +195,25 @@ export default function SuppliesPage() {
         setLoading(false);
       }
     );
-    return () => unsubscribe();
+
+    const unsubscribeTransactions = subscribeToSupplyTransactions(
+      (fetchedTransactions) => {
+        setTransactions(fetchedTransactions);
+      },
+      (err) => {
+        console.error("Failed to load transactions", err);
+      }
+    );
+
+    return () => {
+        unsubscribeSupplies();
+        unsubscribeTransactions();
+    };
   }, []);
 
-  const handleAddSupply = async (newSupplyData: Omit<Supply, "id">) => {
+  const handleAddSupply = async (newSupplyData: Omit<Supply, "id">, photoFile?: File | null) => {
     try {
-      await addSupply(newSupplyData);
+      await addSupply(newSupplyData, user?.name || user?.email || 'Utilisateur inconnu', photoFile);
       setIsAddSheetOpen(false);
       toast({
         title: "Fourniture ajoutée",
@@ -101,9 +225,9 @@ export default function SuppliesPage() {
     }
   };
 
-  const handleUpdateSupply = async (id: string, dataToUpdate: Partial<Omit<Supply, "id">>) => {
+  const handleUpdateSupply = async (id: string, dataToUpdate: Partial<Omit<Supply, "id">>, photoFile?: File | null) => {
     try {
-      await updateSupply(id, dataToUpdate);
+      await updateSupply(id, dataToUpdate, user?.name || user?.email || 'Utilisateur inconnu', photoFile);
       setIsEditSheetOpen(false);
       toast({
         title: "Fourniture mise à jour",
@@ -134,25 +258,46 @@ export default function SuppliesPage() {
     }
   };
 
-  const openEditSheet = (supply: Supply) => {
-    setSelectedSupply(supply);
-    setIsEditSheetOpen(true);
-  }
+  const openEditSheet = useCallback((supply: Supply) => {
+    startTransition(() => {
+      setSelectedSupply(supply);
+      setIsEditSheetOpen(true);
+    });
+  }, []);
+
+  const openDistributeDialog = useCallback((supply: Supply) => {
+    startTransition(() => {
+      setSelectedSupply(supply);
+      setIsDistributeDialogOpen(true);
+    });
+  }, []);
+
+  const closeDistributeDialog = useCallback(() => setIsDistributeDialogOpen(false), []);
+  const closeEditSheet = useCallback(() => setIsEditSheetOpen(false), []);
+  const closeAddSheet = useCallback(() => setIsAddSheetOpen(false), []);
+  const handleSetDeleteTarget = useCallback((s: Supply | null) => setDeleteTarget(s), []);
+
+  const deferredSearchTerm = useDeferredValue(searchTerm);
 
   const filteredSupplies = useMemo(() => {
-    const filtered = supplies.filter(supply => {
-      const searchTermLower = searchTerm.toLowerCase();
-      const matchesSearch = supply.name.toLowerCase().includes(searchTermLower) || (supply.category?.toLowerCase().includes(searchTermLower));
+    return supplies.filter(supply => {
+      const searchTermLower = deferredSearchTerm.toLowerCase();
+      const matchesSearch = 
+        supply.name.toLowerCase().includes(searchTermLower) || 
+        supply.category?.toLowerCase().includes(searchTermLower) ||
+        (supply.code && supply.code.toLowerCase().includes(searchTermLower));
       const matchesCategory = categoryFilter === 'all' || supply.category === categoryFilter;
       return matchesSearch && matchesCategory;
     });
+  }, [supplies, deferredSearchTerm, categoryFilter]);
 
-    if (currentPage > Math.ceil(filtered.length / itemsPerPage)) {
+  // Adjust current page if filtering reduces total items
+  useEffect(() => {
+    const maxPage = Math.ceil(filteredSupplies.length / itemsPerPage);
+    if (maxPage > 0 && currentPage > maxPage) {
       setCurrentPage(1);
     }
-    return filtered;
-
-  }, [supplies, searchTerm, categoryFilter, currentPage, itemsPerPage]);
+  }, [filteredSupplies.length, itemsPerPage, currentPage]);
 
   const paginatedSupplies = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
@@ -168,12 +313,6 @@ export default function SuppliesPage() {
     return { totalItems, lowStock, outOfStock };
   }, [supplies]);
 
-  const getStockStatus = (quantity: number, reorderLevel: number) => {
-    if (quantity <= 0) return { text: "Rupture", color: "destructive", variant: "destructive" as any, value: 5, className: "bg-red-500", icon: AlertTriangle };
-    if (quantity <= reorderLevel) return { text: "Stock Bas", color: "warning", variant: "secondary" as any, value: (quantity / (reorderLevel * 2)) * 100, className: "bg-amber-500", icon: AlertTriangle };
-    const percentage = Math.min(100, (quantity / (reorderLevel * 2)) * 100);
-    return { text: "Optimal", color: "success", variant: "default" as any, value: percentage, className: "bg-emerald-500", icon: CheckCircle2 };
-  };
 
   return (
     <div className="flex flex-col gap-8 pb-20">
@@ -243,6 +382,19 @@ export default function SuppliesPage() {
       </div>
 
       {/* Global Card */}
+      <Tabs value={activeTab} onValueChange={(v) => startTransition(() => setActiveTab(v))} className="w-full">
+        <div className="flex items-center justify-between mb-4">
+            <TabsList className="bg-slate-100 p-1 rounded-xl h-11">
+                <TabsTrigger value="inventory" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm px-6 font-bold">
+                    Inventaire
+                </TabsTrigger>
+                <TabsTrigger value="history" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm px-6 font-bold">
+                    Historique des Mouvements
+                </TabsTrigger>
+            </TabsList>
+        </div>
+
+      <TabsContent value="inventory" className="mt-0">
       <Card className="border-none shadow-xl shadow-slate-200/50 overflow-hidden">
         <div className="h-1.5 bg-slate-900 w-full" />
         <CardHeader className="bg-slate-50/50">
@@ -254,15 +406,15 @@ export default function SuppliesPage() {
             <div className="flex flex-col sm:flex-row items-center gap-3">
                <div className="relative group w-full sm:w-auto">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
-                <Input
+                <DebouncedInput
                   placeholder="Filtrer..."
                   className="pl-9 h-10 w-full md:w-[250px] rounded-xl border-slate-200 focus:ring-slate-900"
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={(val) => startTransition(() => setSearchTerm(String(val)))}
                 />
               </div>
-              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                <SelectTrigger className="w-full sm:w-[200px] h-10 rounded-xl border-slate-200">
+              <Select value={categoryFilter} onValueChange={(v) => startTransition(() => setCategoryFilter(v))}>
+                <SelectTrigger className="w-full sm:w-[200px] h-10 rounded-xl border-slate-200 text-slate-900 font-bold">
                     <Filter className="mr-2 h-3.5 w-3.5 text-slate-400" />
                     <SelectValue placeholder="Catégorie" />
                 </SelectTrigger>
@@ -283,6 +435,7 @@ export default function SuppliesPage() {
                         <TableHeader className="bg-slate-50/80">
                         <TableRow className="border-slate-100 hover:bg-transparent">
                             <TableHead className="w-12 text-center text-[10px] font-bold uppercase tracking-widest text-slate-400">#</TableHead>
+                            <TableHead className="w-[100px] text-[10px] font-bold uppercase tracking-widest text-slate-400">Code</TableHead>
                             <TableHead className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Libellé Article</TableHead>
                             <TableHead className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Classification</TableHead>
                             <TableHead className="text-center text-[10px] font-bold uppercase tracking-widest text-slate-400">Stock</TableHead>
@@ -305,60 +458,16 @@ export default function SuppliesPage() {
                             </TableRow>
                             ))
                         ) : paginatedSupplies.length > 0 ? (
-                            paginatedSupplies.map((supply, index) => {
-                                const status = getStockStatus(supply.quantity, supply.reorderLevel);
-                                const Icon = status.icon;
-                                return (
-                                    <TableRow key={supply.id} className="group hover:bg-slate-50/50 transition-colors border-slate-100">
-                                        <TableCell className="text-center text-slate-300 font-mono text-xs">
-                                            {(currentPage - 1) * itemsPerPage + index + 1}
-                                        </TableCell>
-                                        <TableCell className="font-bold text-slate-700">{supply.name}</TableCell>
-                                        <TableCell>
-                                            <Badge variant="outline" className="rounded-md bg-white border-slate-200 text-slate-500 font-medium px-2 py-0">
-                                                {supply.category}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell className="text-center font-black text-slate-900">{supply.quantity}</TableCell>
-                                        <TableCell className="text-center text-slate-400 italic text-xs">{supply.reorderLevel}</TableCell>
-                                        <TableCell>
-                                            <div className="flex flex-col gap-1.5 min-w-[120px]">
-                                                <div className="flex items-center justify-between text-[10px] font-bold">
-                                                    <span className={cn(
-                                                        status.color === 'destructive' ? "text-red-500" :
-                                                        status.color === 'warning' ? "text-amber-500" : "text-emerald-500"
-                                                    )}>
-                                                        {status.text}
-                                                    </span>
-                                                    <Icon className="h-3 w-3 opacity-40" />
-                                                </div>
-                                                <Progress 
-                                                    value={status.value} 
-                                                    className="h-2 rounded-full bg-slate-100 overflow-hidden" 
-                                                    indicatorClassName={cn("transition-all duration-700", status.className)} 
-                                                />
-                                            </div>
-                                        </TableCell>
-                                        <TableCell className="text-right">
-                                            <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <MoreHorizontal className="h-4 w-4" />
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end" className="rounded-xl shadow-xl border-slate-100">
-                                                <DropdownMenuItem onClick={() => openEditSheet(supply)} className="cursor-pointer">
-                                                    <Pencil className="mr-2 h-4 w-4" /> Modifier
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem onClick={() => setDeleteTarget(supply)} className="text-red-600 focus:text-red-600 cursor-pointer">
-                                                    <Trash2 className="mr-2 h-4 w-4" /> Supprimer
-                                                </DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                            </DropdownMenu>
-                                        </TableCell>
-                                    </TableRow>
-                                )
-                            })
+                            paginatedSupplies.map((supply, index) => (
+                                <SupplyRow 
+                                    key={supply.id}
+                                    supply={supply}
+                                    index={(currentPage - 1) * itemsPerPage + index}
+                                    openDistributeDialog={openDistributeDialog}
+                                    openEditSheet={openEditSheet}
+                                    setDeleteTarget={handleSetDeleteTarget}
+                                />
+                            ))
                         ) : null}
                         </TableBody>
                     </Table>
@@ -379,6 +488,11 @@ export default function SuppliesPage() {
                                         <Badge variant="outline" className="bg-white border-slate-200 rounded-lg text-[10px] font-bold mb-2">
                                             {supply.category}
                                         </Badge>
+                                        {supply.code && (
+                                            <Badge variant="secondary" className="bg-slate-100 text-slate-600 border-none rounded-lg text-[10px] font-bold mb-2 ml-2">
+                                                {supply.code}
+                                            </Badge>
+                                        )}
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
                                                 <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg"><MoreHorizontal className="h-4 w-4" /></Button>
@@ -391,6 +505,21 @@ export default function SuppliesPage() {
                                     </div>
                                     <CardTitle className="text-lg font-black text-slate-800">{supply.name}</CardTitle>
                                 </CardHeader>
+                                <div className="px-6 pb-2">
+                                    <div className="w-full aspect-[4/3] rounded-xl bg-slate-100/50 border border-slate-200/50 overflow-hidden flex items-center justify-center relative group shadow-inner">
+                                        {supply.photoUrl ? (
+                                            <img src={supply.photoUrl} alt={supply.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                                        ) : (
+                                            <div className="flex flex-col items-center gap-2">
+                                                <Package className="h-10 w-10 text-slate-200" />
+                                                <span className="text-[10px] text-slate-300 font-bold uppercase tracking-wider">Aucune Photo</span>
+                                            </div>
+                                        )}
+                                        {supply.quantity <= supply.reorderLevel && (
+                                            <div className="absolute top-2 left-2 px-2 py-0.5 bg-red-500 text-white text-[8px] font-black uppercase rounded-full shadow-md z-10">Stock Bas</div>
+                                        )}
+                                    </div>
+                                </div>
                                 <CardContent className="pb-6">
                                     <div className="space-y-4">
                                         <div className="flex justify-between items-end">
@@ -412,6 +541,15 @@ export default function SuppliesPage() {
                                                 <span className="text-slate-400">{Math.round(status.value)}%</span>
                                             </div>
                                             <Progress value={status.value} className="h-1.5 rounded-full bg-white border border-slate-100" indicatorClassName={cn("transition-all duration-1000", status.className)} />
+                                        </div>
+                                        <div className="pt-2">
+                                            <Button 
+                                                onClick={() => openDistributeDialog(supply)} 
+                                                disabled={supply.quantity <= 0}
+                                                className="w-full bg-slate-900 rounded-xl h-9 text-xs font-bold"
+                                            >
+                                                <ShoppingCart className="mr-2 h-3.5 w-3.5" /> Donner à...
+                                            </Button>
                                         </div>
                                     </div>
                                 </CardContent>
@@ -452,17 +590,41 @@ export default function SuppliesPage() {
             </CardFooter>
           )}
       </Card>
+      </TabsContent>
 
-      <AddSupplySheet
-        isOpen={isAddSheetOpen}
-        onCloseAction={() => setIsAddSheetOpen(false)}
-        onAddSupplyAction={handleAddSupply}
-      />
-      {selectedSupply && (
+      <TabsContent value="history" className="mt-0">
+        <Card className="border-none shadow-xl shadow-slate-200/50 overflow-hidden">
+            <div className="h-1.5 bg-blue-600 w-full" />
+            <CardHeader className="bg-slate-50/50">
+                <CardTitle>Journal des Mouvements</CardTitle>
+                <CardDescription>Suivi détaillé des distributions et réapprovisionnements.</CardDescription>
+            </CardHeader>
+            <CardContent className="pt-6">
+                <SupplyTransactionList transactions={transactions} />
+            </CardContent>
+        </Card>
+      </TabsContent>
+      </Tabs>
+
+      {isAddSheetOpen && (
+        <AddSupplySheet
+          isOpen={isAddSheetOpen}
+          onCloseAction={closeAddSheet}
+          onAddSupplyAction={handleAddSupply}
+        />
+      )}
+      {isEditSheetOpen && selectedSupply && (
         <EditSupplySheet
           isOpen={isEditSheetOpen}
-          onClose={() => setIsEditSheetOpen(false)}
-          onUpdateSupply={handleUpdateSupply}
+          onCloseAction={closeEditSheet}
+          onUpdateSupplyAction={handleUpdateSupply}
+          supply={selectedSupply}
+        />
+      )}
+      {isDistributeDialogOpen && selectedSupply && (
+        <DistributeSupplyDialog
+          isOpen={isDistributeDialogOpen}
+          onCloseAction={closeDistributeDialog}
           supply={selectedSupply}
         />
       )}

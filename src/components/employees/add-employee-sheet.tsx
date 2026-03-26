@@ -37,10 +37,10 @@ import { getDirections } from "@/services/direction-service";
 import { getServices } from "@/services/service-service";
 import { getLatestMatricule } from "@/services/employee-service";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Upload, Sparkles, Loader2 } from "lucide-react";
+import { Upload, Loader2 } from "lucide-react";
 import { Textarea } from "../ui/textarea";
-import { generateAvatar } from "@/ai/flows/generate-avatar-flow";
 import { useToast } from "@/hooks/use-toast";
+import { IVORIAN_REGIONS } from "@/constants/regions";
 import { ScrollArea } from "../ui/scroll-area";
 
 interface AddEmployeeSheetProps {
@@ -73,15 +73,13 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
 
   const [region, setRegion] = useState("");
   const [village, setVillage] = useState("");
+  const [cnps, setCnps] = useState(true);
+  const [dateCessationCNPS, setDateCessationCNPS] = useState("");
 
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [isAvatarDialogOpen, setIsAvatarDialogOpen] = useState(false);
-  const [avatarPrompt, setAvatarPrompt] = useState("");
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedAvatar, setGeneratedAvatar] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -141,11 +139,11 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
     setPhotoFile(null);
     setPhotoPreview(`https://placehold.co/100x100.png`);
     setError("");
-    setAvatarPrompt("");
-    setGeneratedAvatar(null);
     setDateDepart("");
     setRegion("");
     setVillage("");
+    setCnps(true);
+    setDateCessationCNPS("");
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -168,44 +166,6 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
     }
   };
 
-  const handleGenerateAvatar = async () => {
-    if (!avatarPrompt) return;
-    setIsGenerating(true);
-    setGeneratedAvatar(null);
-    try {
-      const imageUrl = await generateAvatar(avatarPrompt);
-      setGeneratedAvatar(imageUrl);
-    } catch (err) {
-      toast({
-        variant: "destructive",
-        title: "Erreur de génération",
-        description: "Impossible de générer l'avatar. Veuillez réessayer.",
-      });
-      console.error(err);
-    } finally {
-      setIsGenerating(false);
-    }
-  }
-
-  const useGeneratedAvatar = async () => {
-    if (generatedAvatar) {
-      try {
-        const response = await fetch(generatedAvatar);
-        const blob = await response.blob();
-        const file = new File([blob], "ai_avatar.png", { type: blob.type });
-        setPhotoFile(file);
-        setPhotoPreview(generatedAvatar);
-        setIsAvatarDialogOpen(false);
-      } catch (error) {
-        toast({
-          variant: "destructive",
-          title: "Erreur d'utilisation",
-          description: "Impossible d'utiliser l'avatar généré. Veuillez réessayer.",
-        });
-        console.error("Error converting data URL to file:", error);
-      }
-    }
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -234,6 +194,8 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
         Date_Depart: dateDepart,
         Region: region,
         Village: village,
+        CNPS: cnps,
+        Date_Cessation_CNPS: cnps ? dateCessationCNPS : undefined,
         photoUrl: '', // This will be set by the service after upload
       };
       await onAddEmployeeAction(employeeData, photoFile);
@@ -271,7 +233,6 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
                         <Avatar className="h-16 w-16"><AvatarImage src={photoPreview} alt="Aperçu de la photo" data-ai-hint="employee photo" /><AvatarFallback>{lastName ? lastName.charAt(0) : 'E'}</AvatarFallback></Avatar>
                         <div className="flex flex-col gap-2">
                           <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}><Upload className="mr-2 h-4 w-4" />Télécharger</Button>
-                          <Button type="button" variant="outline" size="sm" onClick={() => setIsAvatarDialogOpen(true)}><Sparkles className="mr-2 h-4 w-4" />Générer avec IA</Button>
                         </div>
                         <Input ref={fileInputRef} type="file" className="hidden" accept="image/*" onChange={handlePhotoChange} />
                       </div>
@@ -287,13 +248,37 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
                     <div><Label htmlFor="directionId">Direction</Label><Select value={directionId} onValueChange={(value) => { setDirectionId(value); setServiceId(''); }} disabled={!departmentId || filteredDirections.length === 0}><SelectTrigger><SelectValue placeholder="Sélectionnez..." /></SelectTrigger><SelectContent>{filteredDirections.map(dir => (<SelectItem key={dir.id} value={dir.id}>{dir.name}</SelectItem>))}</SelectContent></Select></div>
                     <div><Label htmlFor="serviceId">Service</Label><Select value={serviceId} onValueChange={setServiceId} disabled={!departmentId || filteredServices.length === 0}><SelectTrigger><SelectValue placeholder="Sélectionnez..." /></SelectTrigger><SelectContent>{filteredServices.map(svc => (<SelectItem key={svc.id} value={svc.id}>{svc.name}</SelectItem>))}</SelectContent></Select></div>
 
-                    <div><Label htmlFor="region">Région</Label><Input id="region" value={region} onChange={(e) => setRegion(e.target.value)} /></div>
+                    <div><Label htmlFor="region">Région</Label><Select value={region} onValueChange={setRegion}><SelectTrigger><SelectValue placeholder="Sélectionnez une région..." /></SelectTrigger><SelectContent>{IVORIAN_REGIONS.map(r => (<SelectItem key={r} value={r}>{r}</SelectItem>))}</SelectContent></Select></div>
                     <div><Label htmlFor="village">Village</Label><Input id="village" value={village} onChange={(e) => setVillage(e.target.value)} /></div>
 
                     <div><Label htmlFor="status">Statut</Label><Select value={status} onValueChange={(value: Employe['status']) => setStatus(value)} required><SelectTrigger><SelectValue placeholder="Sélectionnez un statut" /></SelectTrigger><SelectContent><SelectItem value="Actif">Actif</SelectItem><SelectItem value="En congé">En congé</SelectItem><SelectItem value="Licencié">Licencié</SelectItem><SelectItem value="Retraité">Retraité</SelectItem><SelectItem value="Décédé">Décédé</SelectItem></SelectContent></Select></div>
                     <div><Label htmlFor="dateDepart">Date de Départ</Label><Input id="dateDepart" type="date" value={dateDepart} onChange={(e) => setDateDepart(e.target.value)} /></div>
                     <div><Label htmlFor="sexe">Sexe</Label><Select value={sexe} onValueChange={(value) => setSexe(value as Employe['sexe'])}><SelectTrigger><SelectValue placeholder="Sélectionnez un sexe" /></SelectTrigger><SelectContent><SelectItem value="Homme">Homme</SelectItem><SelectItem value="Femme">Femme</SelectItem><SelectItem value="Autre">Autre</SelectItem></SelectContent></Select></div>
                     <div><Label htmlFor="skills">Compétences</Label><Textarea id="skills" value={skills} onChange={(e) => setSkills(e.target.value)} rows={3} placeholder="Séparer les compétences par une virgule..." /></div>
+
+                    <div className="flex items-center gap-6 p-4 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                      <div className="flex items-center space-x-2">
+                        <input 
+                          type="checkbox" 
+                          id="cnps-add" 
+                          checked={cnps} 
+                          onChange={(e) => setCnps(e.target.checked)}
+                          className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                        />
+                        <Label htmlFor="cnps-add" className="font-bold text-xs uppercase tracking-tight">Cotise à la CNPS</Label>
+                      </div>
+                      <div className="flex-1 space-y-1">
+                        <Label htmlFor="dateCessationCNPS" className="text-[10px] font-bold uppercase text-slate-400 tracking-widest">Date Cessation</Label>
+                        <Input 
+                          id="dateCessationCNPS" 
+                          type="date" 
+                          className="h-8 text-xs"
+                          value={dateCessationCNPS} 
+                          onChange={(e) => setDateCessationCNPS(e.target.value)} 
+                          disabled={!cnps}
+                        />
+                      </div>
+                    </div>
 
                     {error && <p className="text-sm text-destructive text-center">{error}</p>}
                   </div>
@@ -308,52 +293,6 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
         </SheetContent>
       </Sheet>
 
-      <Dialog open={isAvatarDialogOpen} onOpenChange={setIsAvatarDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Générer un avatar avec l'IA</DialogTitle>
-            <DialogDescription>
-              Décrivez l'avatar que vous souhaitez créer. Soyez simple et clair.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="avatar-prompt">Description de l'avatar</Label>
-              <Input
-                id="avatar-prompt"
-                value={avatarPrompt}
-                onChange={(e) => setAvatarPrompt(e.target.value)}
-                placeholder="Ex: Homme d'affaires souriant"
-              />
-            </div>
-            {isGenerating && (
-              <div className="flex justify-center items-center h-24">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              </div>
-            )}
-            {generatedAvatar && (
-              <div className="flex flex-col items-center gap-4">
-                <p className="text-sm font-medium">Résultat :</p>
-                <Avatar className="h-24 w-24">
-                  <AvatarImage src={generatedAvatar} alt="Avatar généré" data-ai-hint="ai avatar" />
-                  <AvatarFallback>IA</AvatarFallback>
-                </Avatar>
-              </div>
-            )}
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsAvatarDialogOpen(false)}>Fermer</Button>
-            {generatedAvatar ? (
-              <Button onClick={useGeneratedAvatar}>Utiliser cet avatar</Button>
-            ) : (
-              <Button onClick={handleGenerateAvatar} disabled={isGenerating || !avatarPrompt}>
-                {isGenerating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Générer
-              </Button>
-            )}
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </>
   );
 }

@@ -32,13 +32,13 @@ import type { Direction, Department } from "@/lib/data";
 
 interface DirectionDialogProps {
   isOpen: boolean;
-  onClose: () => void;
-  onConfirm: (name: string, departmentId: string) => Promise<void>;
+  onCloseAction: () => void;
+  onConfirmAction: (name: string, departmentId: string) => Promise<void>;
   direction?: Direction | null;
   departments: Department[];
 }
 
-export function DirectionDialog({ isOpen, onClose, onConfirm, direction, departments }: DirectionDialogProps) {
+export function DirectionDialog({ isOpen, onCloseAction, onConfirmAction, direction, departments }: DirectionDialogProps) {
   const [name, setName] = useState("");
   const [departmentId, setDepartmentId] = useState("");
   const [error, setError] = useState("");
@@ -61,7 +61,7 @@ export function DirectionDialog({ isOpen, onClose, onConfirm, direction, departm
     setName("");
     setDepartmentId("");
     setError("");
-    onClose();
+    onCloseAction();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -74,7 +74,7 @@ export function DirectionDialog({ isOpen, onClose, onConfirm, direction, departm
     setIsSubmitting(true);
     setError("");
     try {
-      await onConfirm(name, departmentId);
+      await onConfirmAction(name, departmentId);
       handleClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Une erreur est survenue.");

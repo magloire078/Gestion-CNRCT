@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Upload, Loader2, AlertCircle, Download } from "lucide-react";
 import { batchAddChiefs } from "@/services/chief-service";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
-import type { Chief } from "@/lib/data";
+import type { Chief } from "@/types/chief";
 
 
 type ChiefCsvRow = { [key: string]: string | number | undefined | null };
@@ -87,6 +87,7 @@ export function ImportChiefsDataCard() {
                 dateOfBirth: row.dateofbirth ? String(row.dateofbirth) : undefined,
                 regencyStartDate: row.regencystartdate ? String(row.regencystartdate) : undefined,
                 regencyEndDate: row.regencyenddate ? String(row.regencyenddate) : undefined,
+                CNRCTRegistrationNumber: row.cnrctregistrationnumber ? String(row.cnrctregistrationnumber) : undefined,
               };
 
               return chiefData;

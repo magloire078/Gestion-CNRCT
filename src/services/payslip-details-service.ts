@@ -171,7 +171,12 @@ export async function getPayslipDetails(
 
     const brutImposable = earnings.reduce((sum, item) => sum + item.amount, 0);
 
-    const cnps = employee.CNPS ? (brutImposable * 0.063) : 0;
+    const isCNPSActive = employee.CNPS && (
+        !employee.Date_Cessation_CNPS || 
+        isBefore(payslipDateObj, parseISO(employee.Date_Cessation_CNPS))
+    );
+
+    const cnps = isCNPSActive ? (brutImposable * 0.063) : 0;
     const its = 0;
     const igr = 0;
     const cn = 0;
@@ -189,12 +194,12 @@ export async function getPayslipDetails(
     const netAPayerInWords = numberToWords(Math.floor(netAPayer)) + " FRANCS CFA";
 
     const employerContributions: PayslipEmployerContribution[] = [
-        { label: 'ITS PART PATRONALE', base: Math.round(brutImposable), rate: '1,2%', amount: employee.CNPS ? Math.round(brutImposable * 0.012) : 0 },
-        { label: 'TAXE D\'APPRENTISSAGE', base: Math.round(brutImposable), rate: '0,4%', amount: employee.CNPS ? Math.round(brutImposable * 0.004) : 0 },
-        { label: 'TAXE FPC', base: Math.round(brutImposable), rate: '0,6%', amount: employee.CNPS ? Math.round(brutImposable * 0.006) : 0 },
-        { label: 'PRESTATION FAMILIALE', base: Math.min(brutImposable, 70000), rate: '5,75%', amount: employee.CNPS ? Math.round(Math.min(brutImposable, 70000) * 0.0575) : 0 },
-        { label: 'ACCIDENT DE TRAVAIL', base: Math.min(brutImposable, 70000), rate: '2,0%', amount: employee.CNPS ? Math.round(Math.min(brutImposable, 70000) * 0.02) : 0 },
-        { label: 'REGIME DE RETRAITE', base: Math.round(brutImposable), rate: '7,7%', amount: employee.CNPS ? Math.round(brutImposable * 0.077) : 0 },
+        { label: 'ITS PART PATRONALE', base: Math.round(brutImposable), rate: '1,2%', amount: isCNPSActive ? Math.round(brutImposable * 0.012) : 0 },
+        { label: 'TAXE D\'APPRENTISSAGE', base: Math.round(brutImposable), rate: '0,4%', amount: isCNPSActive ? Math.round(brutImposable * 0.004) : 0 },
+        { label: 'TAXE FPC', base: Math.round(brutImposable), rate: '0,6%', amount: isCNPSActive ? Math.round(brutImposable * 0.006) : 0 },
+        { label: 'PRESTATION FAMILIALE', base: Math.min(brutImposable, 70000), rate: '5,75%', amount: isCNPSActive ? Math.round(Math.min(brutImposable, 70000) * 0.0575) : 0 },
+        { label: 'ACCIDENT DE TRAVAIL', base: Math.min(brutImposable, 70000), rate: '2,0%', amount: isCNPSActive ? Math.round(Math.min(brutImposable, 70000) * 0.02) : 0 },
+        { label: 'REGIME DE RETRAITE', base: Math.round(brutImposable), rate: '7,7%', amount: isCNPSActive ? Math.round(brutImposable * 0.077) : 0 },
     ];
 
     const organizationLogos = await getOrganizationSettings();

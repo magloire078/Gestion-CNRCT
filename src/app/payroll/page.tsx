@@ -38,7 +38,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import type { Employe, PayslipDetails, Department, Direction, Service, OrganizationSettings } from "@/lib/data";
-import { subscribeToEmployees, updateEmployee } from "@/services/employee-service";
+import { subscribeToEmployees, subscribeToEmployee, updateEmployee } from "@/services/employee-service";
 import { getPayslipDetails } from "@/services/payslip-details-service";
 import { getDirections } from "@/services/direction-service";
 import { getServices } from "@/services/service-service";
@@ -56,6 +56,38 @@ import { getDepartments } from "@/services/department-service";
 import { PayslipTemplate } from "@/components/payroll/payslip-template";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import { logPrintAction, getPrintStatsForPeriod } from "@/services/print-tracking-service";
+import { useTransition } from "react";
+
+// Simplified debounced input to keep typing local and fast
+function DebouncedInput({ 
+  value: initialValue, 
+  onChange, 
+  debounce = 300, 
+  ...props 
+}: { 
+  value: string; 
+  onChange: (value: string) => void; 
+  debounce?: number; 
+} & Omit<React.ComponentProps<typeof Input>, 'onChange'>) {
+  const [value, setValue] = useState(initialValue);
+
+  useEffect(() => {
+    setValue(initialValue);
+  }, [initialValue]);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      onChange(value);
+    }, debounce);
+
+    return () => clearTimeout(timeout);
+  }, [value, onChange, debounce]);
+
+  return (
+    <Input {...props} value={value} onChange={e => setValue(e.target.value)} />
+  );
+}
 
 
 type EmployeeWithDetails = Employe & { netSalary?: number; grossSalary?: number };
@@ -96,6 +128,18 @@ export default function PayrollPage() {
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [printStats, setPrintStats] = useState({ total: 0, print: 0, pdf: 0 });
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+  const [isPending, startTransition] = useTransition();
+
+  // Fetch print stats when period changes or after a new print
+  useEffect(() => {
+    const fetchStats = async () => {
+      const stats = await getPrintStatsForPeriod(`${month.padStart(2, '0')}-${year}`);
+      setPrintStats(stats);
+    };
+    fetchStats();
+  }, [month, year, isProcessingBulk]);
 
   // Secondary permission check - allow access if user has permission OR has a linked employee ID
   useEffect(() => {
@@ -131,48 +175,56 @@ export default function PayrollPage() {
         setDirections(dirs);
         setServices(servs);
 
-        unsubscribe = subscribeToEmployees(
-          async (fetchedEmployees) => {
-            if (!isMounted) return;
-            let payrollEmployees = fetchedEmployees.filter(e => e.status === 'Actif' || e.status === 'En congé');
+        const onEmployeesFetched = async (fetchedEmployees: Employe[]) => {
+          if (!isMounted) return;
+          let payrollEmployees = fetchedEmployees.filter(e => e.status === 'Actif' || e.status === 'En congé');
 
-            // Data-level filtering: If not admin/HR, only show the user's own profile
-            if (!hasPermission('page:payroll:view') && user?.employeeId) {
-              payrollEmployees = payrollEmployees.filter(e => e.id === user.employeeId);
-            }
-
-            if (canViewSalaries) {
-              const today = new Date();
-              const lastDayOfCurrentMonth = lastDayOfMonth(today).toISOString().split('T')[0];
-
-              const employeesWithSalary = await Promise.all(
-                payrollEmployees.map(async (emp) => {
-                  try {
-                    const details = await getPayslipDetails(emp, lastDayOfCurrentMonth, {
-                      departments: deps, // reusing the fetched array
-                      directions: dirs,
-                      services: servs
-                    });
-                    return { ...emp, netSalary: details.totals.netAPayer, grossSalary: details.totals.brutImposable };
-                  } catch {
-                    return { ...emp, netSalary: 0, grossSalary: 0 };
-                  }
-                })
-              );
-              setEmployees(employeesWithSalary);
-            } else {
-              setEmployees(payrollEmployees);
-            }
-
-            setError(null);
-            setLoading(false);
-          },
-          (err) => {
-            setError("Impossible de charger les données des employés. Veuillez vérifier votre connexion et les permissions Firestore.");
-            console.error(err);
-            setLoading(false);
+          // Data-level filtering: If not admin/HR, only show the user's own profile
+          if (!hasPermission('page:payroll:view') && user?.employeeId) {
+            payrollEmployees = payrollEmployees.filter(e => e.id === user.employeeId);
           }
-        );
+
+          if (canViewSalaries) {
+            const today = new Date();
+            const lastDayOfCurrentMonth = lastDayOfMonth(today).toISOString().split('T')[0];
+
+            const employeesWithSalary = await Promise.all(
+              payrollEmployees.map(async (emp) => {
+                try {
+                  const details = await getPayslipDetails(emp, lastDayOfCurrentMonth, {
+                    departments: deps, // reusing the fetched array
+                    directions: dirs,
+                    services: servs
+                  });
+                  return { ...emp, netSalary: details.totals.netAPayer, grossSalary: details.totals.brutImposable };
+                } catch {
+                  return { ...emp, netSalary: 0, grossSalary: 0 };
+                }
+              })
+            );
+            setEmployees(employeesWithSalary);
+          } else {
+            setEmployees(payrollEmployees);
+          }
+
+          setError(null);
+          setLoading(false);
+        };
+
+        const onFetchError = (err: Error) => {
+          setError("Impossible de charger les données des employés. Veuillez vérifier votre connexion et les permissions Firestore.");
+          console.error(err);
+          setLoading(false);
+        };
+
+        if (hasPermission('page:payroll:view')) {
+          unsubscribe = subscribeToEmployees(onEmployeesFetched, onFetchError);
+        } else if (user?.employeeId) {
+          unsubscribe = subscribeToEmployee(user.employeeId, (emp) => onEmployeesFetched([emp]), onFetchError);
+        } else {
+          setEmployees([]);
+          setLoading(false);
+        }
       } catch (err) {
         console.error("Failed to fetch initial payroll metadata", err);
         if (isMounted) setLoading(false);
@@ -230,12 +282,12 @@ export default function PayrollPage() {
 
   const openEditSheet = (employee: Employe) => {
     setSelectedEmployee(employee);
-    setIsEditSheetOpen(true);
+    setTimeout(() => setIsEditSheetOpen(true), 50);
   };
 
   const openDateDialog = (employee: Employe) => {
     setSelectedEmployee(employee);
-    setIsDateDialogOpen(true);
+    setTimeout(() => setIsDateDialogOpen(true), 50);
   };
 
   const handleNavigateToPayslip = () => {
@@ -246,15 +298,17 @@ export default function PayrollPage() {
     const formattedDate = lastDay.toISOString().split('T')[0]; // YYYY-MM-DD
 
     setIsDateDialogOpen(false);
-
-    let url = `/payroll/${selectedEmployee.id}?payslipDate=${formattedDate}`;
-    if (generationMode === 'period') {
-      const endDate = new Date(parseInt(endYear), parseInt(endMonth) - 1, 1);
-      const lastDayEnd = lastDayOfMonth(endDate);
-      url += `&endDate=${lastDayEnd.toISOString().split('T')[0]}`;
-    }
-
-    router.push(url);
+    
+    // Tiny delay to let the dialog close animation finish and the button release its state
+    setTimeout(() => {
+      let url = `/payroll/${selectedEmployee.id}?payslipDate=${formattedDate}`;
+      if (generationMode === 'period') {
+        const endDate = new Date(parseInt(endYear), parseInt(endMonth) - 1, 1);
+        const lastDayEnd = lastDayOfMonth(endDate);
+        url += `&endDate=${lastDayEnd.toISOString().split('T')[0]}`;
+      }
+      router.push(url);
+    }, 100);
   };
 
   const handleUpdatePayroll = async (employeeId: string, updatedPayrollData: Partial<Employe>) => {
@@ -280,7 +334,7 @@ export default function PayrollPage() {
   const filteredEmployees = useMemo(() => {
     const filtered = employees.filter(employee => {
       const fullName = (employee.firstName && employee.lastName) ? `${employee.lastName} ${employee.firstName}`.toLowerCase() : (employee.name || '').toLowerCase();
-      const matchesSearchTerm = fullName.includes(searchTerm.toLowerCase()) || (employee.matricule || '').toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesSearchTerm = fullName.includes(debouncedSearchTerm.toLowerCase()) || (employee.matricule || '').toLowerCase().includes(debouncedSearchTerm.toLowerCase());
       const matchesDepartment = departmentFilter === 'all' || employee.departmentId === departmentFilter;
       const matchesStatus = statusFilter === 'all' || employee.status === statusFilter;
       return matchesSearchTerm && matchesDepartment && matchesStatus;
@@ -334,29 +388,42 @@ export default function PayrollPage() {
     setBulkActionType(type);
     setIsBulkPrintDialogOpen(false);
 
-    try {
-      const selectedDate = new Date(parseInt(year), parseInt(month) - 1, 1);
-      const lastDay = lastDayOfMonth(selectedDate);
-      const formattedDate = lastDay.toISOString().split('T')[0];
+    // Yield to main thread to allow loader and dialog closure to paint
+    setTimeout(async () => {
+      try {
+        const selectedDate = new Date(parseInt(year), parseInt(month) - 1, 1);
+        const lastDay = lastDayOfMonth(selectedDate);
+        const formattedDate = lastDay.toISOString().split('T')[0];
 
-      const payslipPromises = filteredEmployees.map(emp => getPayslipDetails(emp, formattedDate, {
-        departments,
-        directions,
-        services
-      }));
-      const allPayslips = await Promise.all(payslipPromises);
+        const payslipPromises = filteredEmployees.map(emp => getPayslipDetails(emp, formattedDate, {
+          departments,
+          directions,
+          services
+        }));
+        const allPayslips = await Promise.all(payslipPromises);
 
-      setBulkPayslips(allPayslips);
-    } catch (err) {
-      console.error(`Failed to prepare bulk ${type}:`, err);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: `Impossible de préparer les bulletins pour ${type === 'print' ? "l'impression" : "l'export PDF"}.`
-      });
-      setIsProcessingBulk(false);
-      setBulkActionType(null);
-    }
+        setBulkPayslips(allPayslips);
+
+        // Log the bulk action
+        logPrintAction({
+          userId: user?.id || 'anonymous',
+          userName: user?.name || 'Utilisateur inconnu',
+          actionType: type,
+          period: `${month.padStart(2, '0')}-${year}`,
+          count: allPayslips.length,
+          employeeIds: filteredEmployees.map(e => e.id)
+        });
+      } catch (err) {
+        console.error(`Failed to prepare bulk ${type}:`, err);
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: `Impossible de préparer les bulletins pour ${type === 'print' ? "l'impression" : "l'export PDF"}.`
+        });
+        setIsProcessingBulk(false);
+        setBulkActionType(null);
+      }
+    }, 100);
   };
 
 
@@ -390,6 +457,24 @@ export default function PayrollPage() {
                   </p>
                 </CardContent>
               </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Bulletins Imprimés ({months.find(m => m.value === month)?.label})</CardTitle>
+                  <Printer className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{printStats.total}</div>
+                  <div className="flex gap-4 mt-1">
+                    <p className="text-[10px] text-muted-foreground uppercase font-bold">
+                      <span className="text-blue-500">{printStats.print}</span> Papier
+                    </p>
+                    <p className="text-[10px] text-muted-foreground uppercase font-bold">
+                      <span className="text-indigo-500">{printStats.pdf}</span> PDF
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           )}
 
@@ -405,11 +490,14 @@ export default function PayrollPage() {
               <div className="flex flex-col sm:flex-row gap-2 mb-4 flex-wrap">
                 <div className="relative flex-1 min-w-[200px]">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                  <Input
+                  <DebouncedInput
                     placeholder="Rechercher par nom, matricule..."
                     className="pl-10"
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={(val) => startTransition(() => {
+                      setSearchTerm(val);
+                      setDebouncedSearchTerm(val);
+                    })}
                   />
                 </div>
                 <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
@@ -481,12 +569,12 @@ export default function PayrollPage() {
                               <DropdownMenuContent align="end">
                                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                 {canViewSalaries && (
-                                  <DropdownMenuItem onClick={() => openEditSheet(employee)}>
+                                  <DropdownMenuItem onSelect={() => openEditSheet(employee)}>
                                     <Pencil className="mr-2 h-4 w-4" />
                                     Modifier les infos de paie
                                   </DropdownMenuItem>
                                 )}
-                                <DropdownMenuItem onClick={() => openDateDialog(employee)}>
+                                <DropdownMenuItem onSelect={() => openDateDialog(employee)}>
                                   <Eye className="mr-2 h-4 w-4" />
                                   Afficher le bulletin
                                 </DropdownMenuItem>
@@ -529,12 +617,12 @@ export default function PayrollPage() {
                           <DropdownMenuContent align="end">
                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
                             {canViewSalaries && (
-                              <DropdownMenuItem onClick={() => openEditSheet(employee)}>
+                              <DropdownMenuItem onSelect={() => openEditSheet(employee)}>
                                 <Pencil className="mr-2 h-4 w-4" />
                                 Modifier
                               </DropdownMenuItem>
                             )}
-                            <DropdownMenuItem onClick={() => openDateDialog(employee)}>
+                            <DropdownMenuItem onSelect={() => openDateDialog(employee)}>
                               <Eye className="mr-2 h-4 w-4" />
                               Bulletin
                             </DropdownMenuItem>
@@ -592,7 +680,7 @@ export default function PayrollPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="monthly">Bulletin Unique (Mensuel)</SelectItem>
-                    <SelectItem value="period">Période Personnalisée</SelectItem>
+                    {canViewSalaries && <SelectItem value="period">Période Personnalisée</SelectItem>}
                   </SelectContent>
                 </Select>
               </div>
@@ -612,7 +700,19 @@ export default function PayrollPage() {
                   <Select value={month} onValueChange={setMonth}>
                     <SelectTrigger id="month"><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      {months.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}
+                      {months.map(m => {
+                        const isFutureMonth = parseInt(year) === new Date().getFullYear() && parseInt(m.value) > (new Date().getMonth() + 1);
+                        const isFutureYear = parseInt(year) > new Date().getFullYear();
+                        return (
+                          <SelectItem
+                            key={m.value}
+                            value={m.value}
+                            disabled={!canViewSalaries && (isFutureYear || isFutureMonth)}
+                          >
+                            {m.label}
+                          </SelectItem>
+                        );
+                      })}
                     </SelectContent>
                   </Select>
                 </div>
@@ -625,7 +725,10 @@ export default function PayrollPage() {
                     <Select value={endYear} onValueChange={setEndYear}>
                       <SelectTrigger id="endYear"><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        {years.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
+                        {years.map(y => {
+                          const isFutureYear = parseInt(y) > new Date().getFullYear();
+                          return <SelectItem key={y} value={y} disabled={!canViewSalaries && isFutureYear}>{y}</SelectItem>
+                        })}
                       </SelectContent>
                     </Select>
                   </div>
@@ -636,6 +739,8 @@ export default function PayrollPage() {
                       <SelectContent>
                         {months.map(m => {
                           const isBeforeStart = parseInt(endYear) < parseInt(year) || (parseInt(endYear) === parseInt(year) && parseInt(m.value) < parseInt(month));
+                          const isFutureMonth = parseInt(endYear) === new Date().getFullYear() && parseInt(m.value) > (new Date().getMonth() + 1);
+                          const isFutureYear = parseInt(endYear) > new Date().getFullYear();
                           return (
                             <SelectItem
                               key={m.value}
@@ -675,7 +780,10 @@ export default function PayrollPage() {
                 <Select value={year} onValueChange={setYear}>
                   <SelectTrigger id="bulk-year"><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {years.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
+                    {years.map(y => {
+                      const isFutureYear = parseInt(y) > new Date().getFullYear();
+                      return <SelectItem key={y} value={y} disabled={!canViewSalaries && isFutureYear}>{y}</SelectItem>
+                    })}
                   </SelectContent>
                 </Select>
               </div>
@@ -684,7 +792,19 @@ export default function PayrollPage() {
                 <Select value={month} onValueChange={setMonth}>
                   <SelectTrigger id="bulk-month"><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {months.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}
+                    {months.map(m => {
+                      const isFutureMonth = parseInt(year) === new Date().getFullYear() && parseInt(m.value) > (new Date().getMonth() + 1);
+                      const isFutureYear = parseInt(year) > new Date().getFullYear();
+                      return (
+                        <SelectItem 
+                          key={m.value} 
+                          value={m.value} 
+                          disabled={!canViewSalaries && (isFutureYear || isFutureMonth)}
+                        >
+                          {m.label}
+                        </SelectItem>
+                      );
+                    })}
                   </SelectContent>
                 </Select>
               </div>

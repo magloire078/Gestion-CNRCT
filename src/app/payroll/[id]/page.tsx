@@ -19,21 +19,23 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
-import { format, parseISO, isValid } from "date-fns";
+import { format, parseISO, isValid, addMonths, lastDayOfMonth } from "date-fns";
 import { fr } from "date-fns/locale";
+import { logPrintAction } from "@/services/print-tracking-service";
 
 export default function PayslipDetailPage() {
     const params = useParams();
     const searchParams = useSearchParams();
     const router = useRouter();
     const { toast } = useToast();
-    const { hasPermission } = useAuth();
+    const { user, hasPermission } = useAuth();
     
     // In this app, /payroll/[id] refers to an employee ID
     const employeeId = params.id as string;
     const payslipDate = searchParams.get('payslipDate') || format(new Date(), 'yyyy-MM-dd');
+    const endDate = searchParams.get('endDate');
 
-    const [payslipDetails, setPayslipDetails] = useState<PayslipDetails | null>(null);
+    const [allPayslips, setAllPayslips] = useState<PayslipDetails[]>([]);
     const [loading, setLoading] = useState(true);
     const [isPrinting, setIsPrinting] = useState(false);
 
@@ -45,8 +47,26 @@ export default function PayslipDetailPage() {
                 const employeeDoc = await getEmployee(employeeId);
                 
                 if (employeeDoc) {
-                    const details = await getPayslipDetails(employeeDoc, payslipDate);
-                    setPayslipDetails(details);
+                    if (endDate) {
+                        // Period mode: Generate multiple payslips
+                        const start = parseISO(payslipDate);
+                        const end = parseISO(endDate);
+                        const dates: string[] = [];
+                        
+                        let current = start;
+                        while (current <= end) {
+                            dates.push(format(lastDayOfMonth(current), 'yyyy-MM-dd'));
+                            current = addMonths(current, 1);
+                        }
+
+                        const detailsPromises = dates.map(date => getPayslipDetails(employeeDoc, date));
+                        const results = await Promise.all(detailsPromises);
+                        setAllPayslips(results);
+                    } else {
+                        // Single mode
+                        const details = await getPayslipDetails(employeeDoc, payslipDate);
+                        setAllPayslips([details]);
+                    }
                 } else {
                      toast({
                         variant: "destructive",
@@ -60,7 +80,7 @@ export default function PayslipDetailPage() {
                 toast({
                     variant: "destructive",
                     title: "Erreur",
-                    description: "Impossible de générer le bulletin de paie."
+                    description: "Impossible de générer le(s) bulletin(s) de paie."
                 });
             } finally {
                 setLoading(false);
@@ -68,10 +88,39 @@ export default function PayslipDetailPage() {
         }
 
         fetchData();
-    }, [employeeId, payslipDate, router, toast]);
+    }, [employeeId, payslipDate, endDate, router, toast]);
 
     const handlePrint = () => {
         setIsPrinting(true);
+        
+        // Log the printing action
+        if (allPayslips.length > 0) {
+            if (endDate) {
+                // For a range, we log each payslip individually to ensure they appear in their respective monthly stats
+                allPayslips.forEach(ps => {
+                    const psDate = ps.employeeInfo.paymentDate ? parseISO(ps.employeeInfo.paymentDate) : parseISO(payslipDate);
+                    logPrintAction({
+                        userId: user?.id || 'anonymous',
+                        userName: user?.name || 'Utilisateur inconnu',
+                        actionType: 'print',
+                        period: format(psDate, 'MM-yyyy'),
+                        count: 1,
+                        employeeIds: [employeeId]
+                    });
+                });
+            } else {
+                // Single mode
+                logPrintAction({
+                    userId: user?.id || 'anonymous',
+                    userName: user?.name || 'Utilisateur inconnu',
+                    actionType: 'print',
+                    period: format(parseISO(payslipDate), 'MM-yyyy'),
+                    count: 1,
+                    employeeIds: [employeeId]
+                });
+            }
+        }
+
         // Little delay to ensure state update potentially triggers re-render if needed
         setTimeout(() => {
             window.print();
@@ -88,11 +137,11 @@ export default function PayslipDetailPage() {
         );
     }
 
-    if (!payslipDetails) return null;
+    if (allPayslips.length === 0) return null;
 
-    const periodDisplay = isValid(parseISO(payslipDate)) 
-        ? format(parseISO(payslipDate), "MMMM yyyy", { locale: fr })
-        : "Période inconnue";
+    const periodDisplay = endDate 
+        ? `de ${format(parseISO(payslipDate), "MMMM yyyy", { locale: fr })} à ${format(parseISO(endDate), "MMMM yyyy", { locale: fr })}`
+        : format(parseISO(payslipDate), "MMMM yyyy", { locale: fr });
 
     return (
         <div className="space-y-8 pb-20">
@@ -128,19 +177,27 @@ export default function PayslipDetailPage() {
             </div>
 
             {/* Main Preview Container (visible on screen only) */}
-            <div className="bg-white rounded-[3rem] shadow-2xl shadow-slate-300/60 overflow-hidden border border-slate-100 min-h-[1000px] relative print:hidden">
-                {/* Decorative Pattern */}
-                <div className="absolute top-0 right-0 w-64 h-64 bg-slate-50 rounded-bl-full opacity-50 -z-0 pointer-events-none" />
-                
-                <div className="relative z-10 p-4 md:p-8">
-                    <PayslipTemplate payslipDetails={payslipDetails} />
-                </div>
+            <div className="space-y-8 print:hidden">
+                {allPayslips.map((payslip, index) => (
+                    <div key={index} className="bg-white rounded-[3rem] shadow-2xl shadow-slate-300/60 overflow-hidden border border-slate-100 min-h-[1000px] relative">
+                        {/* Decorative Pattern */}
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-slate-50 rounded-bl-full opacity-50 -z-0 pointer-events-none" />
+                        
+                        <div className="relative z-10 p-4 md:p-8">
+                            <PayslipTemplate payslipDetails={payslip} />
+                        </div>
+                    </div>
+                ))}
             </div>
 
             {/* Print Container (Visible only in print, ID must be print-section for globals.css) */}
             {typeof document !== 'undefined' && createPortal(
                 <div id="print-section" className="bg-white">
-                    <PayslipTemplate payslipDetails={payslipDetails} />
+                    {allPayslips.map((payslip, index) => (
+                        <div key={index} className={index > 0 ? "print:break-before-page" : ""}>
+                            <PayslipTemplate payslipDetails={payslip} />
+                        </div>
+                    ))}
                 </div>,
                 document.body
             )}

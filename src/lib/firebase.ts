@@ -102,6 +102,8 @@ export {
   arrayRemove,
   writeBatch,
   runTransaction,
+  or,
+  and,
 } from 'firebase/firestore';
 
 

@@ -15,18 +15,27 @@ import {
     SheetTitle,
     SheetClose,
 } from "@/components/ui/sheet";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { IVORIAN_REGIONS } from "@/constants/regions";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { HeritageItem, HeritageCategory } from "@/types/heritage";
 import { heritageCategoryLabels } from "@/types/heritage";
+import { LocationPicker } from "@/components/common/location-picker";
 
 interface AddHeritageItemSheetProps {
     isOpen: boolean;
-    onClose: () => void;
-    onAddItem: (itemData: Omit<HeritageItem, "id">) => Promise<void>;
+    onCloseAction: () => void;
+    onAddItemAction: (itemData: Omit<HeritageItem, "id">) => Promise<void>;
     category: HeritageCategory;
 }
 
-export function AddHeritageItemSheet({ isOpen, onClose, onAddItem, category }: AddHeritageItemSheetProps) {
+export function AddHeritageItemSheet({ isOpen, onCloseAction, onAddItemAction, category }: AddHeritageItemSheetProps) {
     const [formData, setFormData] = useState<Partial<Omit<HeritageItem, 'id'>>>({
         category: category
     });
@@ -48,7 +57,7 @@ export function AddHeritageItemSheet({ isOpen, onClose, onAddItem, category }: A
 
     const handleClose = () => {
         resetForm();
-        onClose();
+        onCloseAction();
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -63,7 +72,7 @@ export function AddHeritageItemSheet({ isOpen, onClose, onAddItem, category }: A
         setError("");
 
         try {
-            await onAddItem({ ...formData, category } as Omit<HeritageItem, 'id'>);
+            await onAddItemAction({ ...formData, category } as Omit<HeritageItem, 'id'>);
             handleClose();
         } catch (err) {
             setError(err instanceof Error ? err.message : "Échec de l'ajout.");
@@ -99,7 +108,15 @@ export function AddHeritageItemSheet({ isOpen, onClose, onAddItem, category }: A
 
                                 <div className="space-y-2">
                                     <Label htmlFor="region">Région / Localité</Label>
-                                    <Input id="region" name="region" value={formData.region || ''} onChange={handleInputChange} />
+                                    <Select 
+                                        value={formData.region || ''} 
+                                        onValueChange={(v) => setFormData(prev => ({ ...prev, region: v }))}
+                                    >
+                                        <SelectTrigger><SelectValue placeholder="Sélectionnez une région..." /></SelectTrigger>
+                                        <SelectContent>
+                                            {IVORIAN_REGIONS.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                                        </SelectContent>
+                                    </Select>
                                 </div>
 
                                 <div className="space-y-2">
@@ -107,14 +124,48 @@ export function AddHeritageItemSheet({ isOpen, onClose, onAddItem, category }: A
                                     <Input id="village" name="village" value={formData.village || ''} onChange={handleInputChange} />
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="latitude">Latitude</Label>
-                                        <Input id="latitude" name="latitude" type="number" step="any" value={formData.latitude ?? ''} onChange={handleInputChange} placeholder="Ex: 7.5399" />
+                                <div className="pt-4 border-t border-slate-100 space-y-4">
+                                    <div className="flex flex-col gap-1">
+                                        <Label className="text-sm font-bold text-slate-700">Source Géographique</Label>
+                                        <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Sélectionnez l'emplacement précis sur la carte</p>
                                     </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="longitude">Longitude</Label>
-                                        <Input id="longitude" name="longitude" type="number" step="any" value={formData.longitude ?? ''} onChange={handleInputChange} placeholder="Ex: -5.5470" />
+                                    
+                                    <LocationPicker 
+                                        onLocationSelectAction={(lat, lng) => {
+                                            setFormData(prev => ({ ...prev, latitude: lat, longitude: lng }));
+                                        }}
+                                        initialLat={formData.latitude}
+                                        initialLng={formData.longitude}
+                                        className="border shadow-sm rounded-xl bg-slate-50/50"
+                                    />
+
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="latitude" className="text-[10px] font-black uppercase text-slate-400">Latitude</Label>
+                                            <Input 
+                                                id="latitude" 
+                                                name="latitude" 
+                                                type="number" 
+                                                step="any" 
+                                                value={formData.latitude ?? ''} 
+                                                onChange={handleInputChange} 
+                                                placeholder="0.0000" 
+                                                className="bg-white border-slate-200 focus-visible:ring-blue-500/20"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="longitude" className="text-[10px] font-black uppercase text-slate-400">Longitude</Label>
+                                            <Input 
+                                                id="longitude" 
+                                                name="longitude" 
+                                                type="number" 
+                                                step="any" 
+                                                value={formData.longitude ?? ''} 
+                                                onChange={handleInputChange} 
+                                                placeholder="0.0000" 
+                                                className="bg-white border-slate-200 focus-visible:ring-blue-500/20"
+                                            />
+                                        </div>
                                     </div>
                                 </div>
 

@@ -1,47 +1,96 @@
-
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useTransition } from "react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Loader2, FileText, Printer } from "lucide-react";
+import { Printer, Loader2, FileText, AlertCircle } from "lucide-react";
+import { generateDisaReport, type DisaReportState as DisaReportResult } from "./actions";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { generateDisaReport, type DisaReportState } from "./actions";
-import { Month } from "@/types/common";
+import Image from "next/image";
 
-const initialState: DisaReportState = {
-    reportData: null,
-    grandTotal: null,
-    organizationLogos: null,
-    year: null,
-    error: null,
+// Helper for formatting currency in CFA
+const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('fr-FR').format(amount);
 };
 
-export default function DisaReportPage() {
-    const [state, setState] = useState<DisaReportState>(initialState);
+// Year labels for headers
+const monthLabels = [
+    "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
+    "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"
+];
+
+const DisaHeader = ({ organizationLogos, year, isPrinting = false }: { organizationLogos?: any, year: string, isPrinting?: boolean }) => (
+    <div className={`mb-4 border-b pb-4 ${isPrinting ? 'border-black' : ''}`}>
+        <div className="flex justify-between items-start">
+            {/* Left: Organization Info - NOW CENTERED AS REQUESTED */}
+            <div className="flex flex-col gap-1 items-center min-w-[250px]">
+                <div className="text-center mb-1 leading-tight">
+                    <p className="font-bold text-[10px] uppercase tracking-tight">Chambre Nationale de Rois</p>
+                    <p className="font-bold text-[10px] uppercase tracking-tight">Et des Chefs Traditionnels</p>
+                </div>
+                {organizationLogos?.mainLogoUrl && (
+                    <div className="relative h-16 w-40">
+                        <Image
+                            src={organizationLogos.mainLogoUrl}
+                            alt="Logo Principal"
+                            fill
+                            className="object-contain object-center"
+                            unoptimized
+                        />
+                    </div>
+                )}
+            </div>
+            
+            {/* Center: Report Title, Year and CNPS */}
+            <div className="text-center flex-1">
+                <div className="flex items-center justify-center gap-3">
+                    <h2 className="text-2xl font-black uppercase tracking-tight leading-none">D.I.S.A</h2>
+                    <div className="px-3 py-0.5 border-2 border-black rounded bg-white">
+                        <p className="text-xl font-black italic">{year}</p>
+                    </div>
+                </div>
+                <p className="text-[10px] font-bold mt-1">DÉCLARATION INDIVIDUELLE DES SALAIRES ANNUELS</p>
+                <p className="text-[11px] font-black uppercase mt-2 border-t-2 border-black/5 pt-1 inline-block min-w-[150px]">
+                    CNPS - SÉCURITÉ SOCIALE
+                </p>
+            </div>
+
+            {/* Right: National Info (Centered relative to each other) */}
+            <div className="flex flex-col gap-1 items-center min-w-[200px]">
+                <p className="font-bold text-[10px] uppercase leading-tight mb-1 text-center">République de Côte d'Ivoire</p>
+                {organizationLogos?.secondaryLogoUrl && (
+                    <div className="relative h-14 w-14">
+                        <Image
+                            src={organizationLogos.secondaryLogoUrl}
+                            alt="Logo Secondaire"
+                            fill
+                            className="object-contain"
+                            unoptimized
+                        />
+                    </div>
+                )}
+                <p className="text-[9px] italic text-center mt-1">Union - Discipline - Travail</p>
+            </div>
+        </div>
+    </div>
+);
+
+export default function DisaPage() {
     const [year, setYear] = useState<string>(new Date().getFullYear().toString());
-    const [isPrinting, setIsPrinting] = useState(false);
+    const [isPending, startTransition] = useTransition();
     const [loading, setLoading] = useState(false);
+    const [isPrinting, setIsPrinting] = useState(false);
+    const [state, setState] = useState<DisaReportResult>({
+        reportData: null,
+        grandTotal: null,
+        organizationLogos: null,
+        year: null,
+        error: null
+    });
 
-    const years = Array.from({ length: 10 }, (_, i) => (new Date().getFullYear() - i).toString());
-    const monthLabels: Month[] = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
-
-    const formatCurrency = (value: number) => value === 0 ? '-' : Math.round(value).toLocaleString('fr-FR');
+    const years = Array.from({ length: 5 }, (_, i) => (new Date().getFullYear() - i).toString());
 
     const handlePrint = () => {
         setIsPrinting(true);
@@ -54,7 +103,7 @@ export default function DisaReportPage() {
             const result = await generateDisaReport(year);
             setState(result);
         } catch (error) {
-            setState(prev => ({ ...prev, error: "Une erreur inattendue est survenue." }));
+            setState((prev: DisaReportResult) => ({ ...prev, error: "Une erreur inattendue est survenue lors de la génération du rapport." }));
         } finally {
             setLoading(false);
         }
@@ -67,21 +116,87 @@ export default function DisaReportPage() {
                 @media print { 
                     @page { 
                         size: landscape; 
-                        margin: 10mm 10mm 10mm 10mm; 
+                        margin: 10mm 5mm 15mm 5mm; 
                     }
                     body {
                         margin: 0;
                         padding: 0;
-                        -webkit-print-color-adjust: exact;
-                        print-color-adjust: exact;
+                        color: black !important;
+                        visibility: hidden;
+                        -webkit-print-color-adjust: exact !important;
+                        print-color-adjust: exact !important;
                     }
                     #print-section {
-                        width: 100%;
+                        visibility: visible;
+                        position: absolute;
+                        left: 0;
+                        top: 0;
+                        width: 1080px !important; /* Expanded width to use full landscape space */
+                        margin: 0 !important;
+                        padding: 0 !important;
+                        background: transparent !important;
                     }
-                    thead { display: table-header-group; }
-                    tfoot { display: table-footer-group; }
-                    tr { page-break-inside: avoid; }
+                    #print-section * {
+                        visibility: visible;
+                    }
+                    /* HEADER BLEU PRINT CORRECTION - EXTRA STRONG BORDERS */
+                    #print-section thead tr th {
+                        background-color: #1e3a8a !important;
+                        color: white !important;
+                        -webkit-print-color-adjust: exact !important;
+                        print-color-adjust: exact !important;
+                        font-weight: 900 !important;
+                        border: 1px solid white !important; 
+                        font-size: 9px !important;
+                        white-space: nowrap !important;
+                    }
+                    thead { display: table-header-group !important; }
+                    tfoot { display: table-footer-group !important; }
+                    tr { page-break-inside: avoid !important; }
                     .print-hidden { display: none !important; }
+                    
+                    /* Reset cleanup rules that was overriding background colors */
+                    #print-section table {
+                        border-collapse: collapse !important;
+                        width: 100% !important;
+                        font-family: sans-serif !important;
+                        border: 1px solid #1e3a8a !important; 
+                        table-layout: fixed !important; /* Fixed layout to prevent cell growth */
+                    }
+                    #print-section td {
+                        padding: 1px 2px !important;
+                        border: 0.8px solid #475569 !important;
+                        /* Supprimé background: white !important; pour permettre l'effet striped */
+                        font-size: 8.5px !important; 
+                        overflow: hidden !important;
+                        text-overflow: clip !important;
+                        white-space: nowrap !important;
+                        word-break: keep-all !important;
+                        letter-spacing: -0.025em !important; /* trackers-tighter equivalent */
+                    }
+                    
+                    /* Pagination */
+                    body { counter-reset: page; }
+                    .page-number::after {
+                        counter-increment: page;
+                        content: "Page " counter(page);
+                    }
+                    .footer-print {
+                        position: fixed;
+                        bottom: 0px;
+                        right: 0px;
+                        padding: 2px;
+                        font-size: 8px;
+                        color: #64748b;
+                        background: transparent !important;
+                    }
+
+                    /* Zebra stripping for print */
+                    #print-section tbody tr:nth-child(even) {
+                        background-color: #f1f5f9 !important;
+                        -webkit-print-color-adjust: exact !important;
+                        print-color-adjust: exact !important;
+                    }
                 }
             `;
             document.head.appendChild(style);
@@ -100,6 +215,7 @@ export default function DisaReportPage() {
                 <div className="flex items-center justify-between">
                     <h1 className="text-3xl font-bold tracking-tight">Rapport DISA (Déclaration des Salaires)</h1>
                 </div>
+
                 <Card>
                     <CardHeader>
                         <CardTitle>Générateur de Rapport DISA Annuel</CardTitle>
@@ -112,21 +228,36 @@ export default function DisaReportPage() {
                             <div className="flex flex-col sm:flex-row gap-4 items-end mb-6 p-4 border rounded-lg max-w-md">
                                 <div className="grid gap-2 flex-1 w-full">
                                     <Label htmlFor="year">Année de la déclaration</Label>
-                                    <Select name="year" value={year} onValueChange={setYear}>
-                                        <SelectTrigger id="year"><SelectValue /></SelectTrigger>
+                                    <Select name="year" value={year} onValueChange={(val) => startTransition(() => setYear(val))}>
+                                        <SelectTrigger id="year">
+                                            <SelectValue placeholder="Choisir l'année" />
+                                        </SelectTrigger>
                                         <SelectContent>
-                                            {years.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
+                                            {years.map((y: string) => (
+                                                <SelectItem key={y} value={y}>{y}</SelectItem>
+                                            ))}
                                         </SelectContent>
                                     </Select>
                                 </div>
                                 <Button type="submit" disabled={loading} className="w-full sm:w-auto">
-                                    {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileText className="mr-2 h-4 w-4" />}
-                                    Générer le rapport
+                                    {loading ? (
+                                        <>
+                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                            Génération...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <FileText className="mr-2 h-4 w-4" />
+                                            Générer le rapport
+                                        </>
+                                    )}
                                 </Button>
                             </div>
                         </form>
+
                         {state.error && (
                             <Alert variant="destructive">
+                                <AlertCircle className="h-4 w-4" />
                                 <AlertTitle>Erreur</AlertTitle>
                                 <AlertDescription>{state.error}</AlertDescription>
                             </Alert>
@@ -142,53 +273,61 @@ export default function DisaReportPage() {
                                     <CardTitle>Rapport DISA pour {state.year}</CardTitle>
                                     <CardDescription>Total de {state.reportData.length} employé(s) listé(s).</CardDescription>
                                 </div>
-                                <Button variant="outline" onClick={handlePrint}>
+                                <Button variant="outline" onClick={handlePrint} disabled={loading}>
                                     <Printer className="mr-2 h-4 w-4" />
                                     Imprimer
                                 </Button>
                             </div>
                         </CardHeader>
                         <CardContent>
-                            <div className="overflow-x-auto border rounded-lg">
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead className="sticky left-0 z-10 w-10 px-2 bg-card">N°</TableHead>
-                                            <TableHead className="sticky left-10 z-10 w-24 px-2 bg-card">Matricule</TableHead>
-                                            <TableHead className="sticky left-[136px] z-10 min-w-[150px] px-2 bg-card">Nom et Prénoms</TableHead>
-                                            {monthLabels.map((m, i) => <TableHead key={`header-month-${i}`} className="text-right px-2">{m}</TableHead>)}
-                                            <TableHead className="text-right font-bold px-2 bg-blue-50/50 dark:bg-blue-900/10 text-blue-700 dark:text-blue-300">Gratification</TableHead>
-                                            <TableHead className="text-right font-bold px-2">Total Brut</TableHead>
-                                            <TableHead className="text-right font-bold px-2">CNPS</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {state.reportData.map((row, index) => (
-                                            <TableRow key={row.matricule} className="hover:bg-muted/50 transition-colors">
-                                                <TableCell className="sticky left-0 px-2 bg-card">{index + 1}</TableCell>
-                                                <TableCell className="sticky left-10 px-2 bg-card">{row.matricule}</TableCell>
-                                                <TableCell className="font-medium whitespace-nowrap sticky left-[136px] px-2 bg-card">{row.name}</TableCell>
-                                                {row.monthlySalaries.map((salary, i) => (
-                                                    <TableCell key={`${row.matricule}-month-${i}`} className="text-right font-mono text-xs px-2">{formatCurrency(salary)}</TableCell>
+                            <DisaHeader organizationLogos={state.organizationLogos} year={state.year || ""} />
+                            
+                            <div className="overflow-x-auto border rounded-xl overflow-hidden mt-6 shadow-sm">
+                                <table className="w-full border-collapse">
+                                    <thead className="bg-[#1e3a8a] text-white">
+                                        <tr>
+                                            <th className="w-12 text-center text-[10px] font-black uppercase bg-[#1e3a8a] border-[1px] border-white/40 p-2 text-white">N°</th>
+                                            <th className="w-24 text-center text-[10px] font-black uppercase bg-[#1e3a8a] border-[1px] border-white/40 p-2 text-white">Mat.</th>
+                                            <th className="min-w-[200px] text-left pl-4 text-[10px] font-black uppercase bg-[#1e3a8a] border-[1px] border-white/40 p-2 text-white">Nom et Prénoms</th>
+                                            {monthLabels.map((m: string, i: number) => (
+                                                <th key={`header-month-${i}`} className="text-right text-[10px] font-black uppercase border-[1px] border-white/40 bg-[#1e3a8a] px-2 p-2 text-white">
+                                                    {m.substring(0, 3)}.
+                                                </th>
+                                            ))}
+                                            <th className="text-right font-black text-[10px] uppercase px-3 bg-[#1e3a8a] text-white border-[1px] border-white/40 p-2">Gratif.</th>
+                                            <th className="text-right font-black text-[10px] uppercase px-3 bg-[#1e3a8a] border-[1px] border-white/40 p-2 text-white">Tot Brut</th>
+                                            <th className="text-right font-black text-[10px] uppercase px-3 bg-[#1e3a8a] border-[1px] border-white/40 p-2 text-white">CNPS</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="bg-white">
+                                        {state.reportData.map((row: any, index: number) => (
+                                            <tr key={row.matricule} className="border-b border-slate-100 hover:bg-slate-50/80 even:bg-slate-50/40 transition-colors">
+                                                <td className="text-center font-bold border-[0.5px] border-slate-200 text-[11px] p-2">{index + 1}</td>
+                                                <td className="text-center font-mono font-bold border-[0.5px] border-slate-200 text-[11px] p-2">{row.matricule}</td>
+                                                <td className="font-bold whitespace-nowrap pl-4 border-[0.5px] border-slate-200 text-[12px] p-2">{row.name}</td>
+                                                {row.monthlySalaries.map((salary: number, i: number) => (
+                                                    <td key={`${row.matricule}-month-${i}`} className="text-right font-mono text-[11px] border-[0.5px] border-slate-200 px-2 tracking-tighter p-2">
+                                                        {formatCurrency(salary)}
+                                                    </td>
                                                 ))}
-                                                <TableCell className="text-right font-mono font-bold px-2 bg-blue-50/50 dark:bg-blue-900/10 text-blue-700 dark:text-blue-300">{formatCurrency(row.gratification)}</TableCell>
-                                                <TableCell className="text-right font-mono font-bold px-2">{formatCurrency(row.totalBrut)}</TableCell>
-                                                <TableCell className="text-right font-mono font-bold px-2">{formatCurrency(row.totalCNPS)}</TableCell>
-                                            </TableRow>
+                                                <td className="text-right font-mono font-black text-[11px] px-2 border-[0.5px] border-slate-200 tracking-tighter p-2">{formatCurrency(row.gratification)}</td>
+                                                <td className="text-right font-mono font-black text-[11px] px-2 border-[0.5px] border-slate-200 tracking-tighter p-2">{formatCurrency(row.totalBrut)}</td>
+                                                <td className="text-right font-mono font-black text-[11px] px-2 border-[0.5px] border-slate-200 tracking-tighter p-2 text-primary">{formatCurrency(row.totalCNPS)}</td>
+                                            </tr>
                                         ))}
                                         {state.grandTotal && (
-                                            <TableRow className="font-bold bg-muted hover:bg-muted">
-                                                <TableCell colSpan={3} className="text-right sticky left-0 px-2 bg-muted">TOTAUX</TableCell>
-                                                {state.grandTotal.monthly.map((total, index) => (
-                                                    <TableCell key={`total-month-${index}`} className="text-right font-mono text-xs px-2">{formatCurrency(total)}</TableCell>
+                                            <tr className="font-bold bg-slate-50">
+                                                <td colSpan={3} className="text-right font-black text-[11px] uppercase pr-4 border-[0.5px] border-slate-200 p-2">TOTAUX GÉNÉRAUX</td>
+                                                {state.grandTotal.monthly.map((total: number, index: number) => (
+                                                    <td key={`total-month-${index}`} className="text-right font-mono text-[11px] font-black border-[0.5px] border-slate-200 px-2 tracking-tighter p-2">{formatCurrency(total)}</td>
                                                 ))}
-                                                <TableCell className="text-right font-mono px-2 bg-blue-100/50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-200">{formatCurrency(state.grandTotal.gratification)}</TableCell>
-                                                <TableCell className="text-right font-mono px-2">{formatCurrency(state.grandTotal.brut)}</TableCell>
-                                                <TableCell className="text-right font-mono px-2">{formatCurrency(state.grandTotal.cnps)}</TableCell>
-                                            </TableRow>
+                                                <td className="text-right font-mono text-[11px] font-black px-2 border-[0.5px] border-slate-200 tracking-tighter p-2">{formatCurrency(state.grandTotal.gratification)}</td>
+                                                <td className="text-right font-mono text-[11px] font-black px-2 border-[0.5px] border-slate-200 tracking-tighter p-2">{formatCurrency(state.grandTotal.brut)}</td>
+                                                <td className="text-right font-mono text-[11px] font-black px-2 border-[0.5px] border-slate-200 tracking-tighter p-2 text-primary">{formatCurrency(state.grandTotal.cnps)}</td>
+                                            </tr>
                                         )}
-                                    </TableBody>
-                                </Table>
+                                    </tbody>
+                                </table>
                             </div>
                         </CardContent>
                     </Card>
@@ -204,81 +343,74 @@ export default function DisaReportPage() {
                 )}
             </div>
 
-            {isPrinting && state.reportData && state.organizationLogos && state.grandTotal && (
-                <div id="print-section" className="bg-white text-black p-1 font-sans">
-                    <header className="flex justify-between items-start mb-2">
-                        <div className="w-1/4 text-center flex flex-col justify-center items-center h-16">
-                            <p className="font-bold text-sm leading-tight text-blue-900">Chambre Nationale des Rois et Chefs Traditionnels</p>
-                            {state.organizationLogos.mainLogoUrl && <img src={state.organizationLogos.mainLogoUrl} alt="Logo Principal" className="max-h-12 max-w-full h-auto w-auto mt-1" />}
-                        </div>
-                        <div className="w-2/4 text-center pt-2">
-                            {/* Empty space as requested */}
-                        </div>
-                        <div className="w-1/4 text-center flex flex-col justify-center items-center h-16">
-                            <p className="font-bold text-sm leading-tight">République de Côte d'Ivoire</p>
-                            {state.organizationLogos.secondaryLogoUrl && <img src={state.organizationLogos.secondaryLogoUrl} alt="Logo Secondaire" className="max-h-10 max-w-full h-auto w-auto my-0.5" />}
-                            <p className="border-t border-black px-2 text-[8px] mt-0.5">Union - Discipline - Travail</p>
-                        </div>
-                    </header>
-                    <div className="text-center mt-4 mb-2">
-                        <h1 className="text-base font-bold underline">DÉCLARATION INDIVIDUELLE DES SALAIRES ET APPOINTEMENTS (DISA) - ANNEE {state.year}</h1>
-                    </div>
-                    <table className="w-auto text-[4px] border-collapse border border-gray-600 ml-1">
-                        <thead className="bg-slate-200 text-slate-900 border-b-2 border-slate-700">
-                            <tr>
-                                <th className="border border-gray-600 p-[0.3px] w-[20px] font-medium text-center">N°</th>
-                                <th className="border border-gray-600 p-[0.3px] w-[30px] font-medium text-center">Mat.</th>
-                                <th className="border border-gray-600 p-[0.3px] w-[100px] text-left pl-1 font-medium">Nom et Prénoms</th>
-                                {monthLabels.map((m, i) => (
-                                    <th key={`header-print-month-${i}`} className="border border-gray-600 p-[0.3px] w-[30px] font-medium text-center">
-                                        {m.substring(0, 3)}.
-                                    </th>
-                                ))}
-                                <th className="border border-gray-600 p-[0.5px] w-[35px] font-medium text-center">Gratif.</th>
-                                <th className="border border-gray-600 p-[0.5px] w-[40px] font-medium text-center">Tot Brut</th>
-                                <th className="border border-gray-600 p-[0.5px] w-[25px] font-medium text-center">CNPS</th>
-                            </tr>
-                        </thead>
+            {isPrinting && state.reportData && state.grandTotal && (
+                <div id="print-section" className="bg-white text-black font-sans p-1">
+                    <DisaHeader organizationLogos={state.organizationLogos} year={state.year || ""} isPrinting={true} />
+                    
+                    <table className="w-[1080px] text-[8.5px] border-collapse bg-white table-fixed">
+                        <thead>
+                                <tr className="bg-[#1e3a8a] text-white">
+                                    <th className="p-1 w-[25px] font-black text-center uppercase border border-white">N°</th>
+                                    <th className="p-1 w-[40px] font-black text-center uppercase border border-white">Mat.</th>
+                                    <th className="p-1 w-[150px] text-left pl-1 font-black uppercase border border-white">Nom et Prénoms</th>
+                                    {monthLabels.map((m: string, i: number) => (
+                                        <th key={`header-print-month-${i}`} className="p-1 w-[58px] font-black text-center uppercase border border-white">
+                                            {m.substring(0, 3)}.
+                                        </th>
+                                    ))}
+                                    <th className="p-1 w-[55px] font-black text-center uppercase border border-white">Gratif.</th>
+                                    <th className="p-1 w-[55px] font-black text-center uppercase border border-white">Tot Brut</th>
+                                    <th className="p-1 w-[55px] font-black text-center uppercase border border-white">CNPS</th>
+                                </tr>
+                            </thead>
                         <tbody>
-                            {state.reportData.map((row, index) => (
-                                <tr key={`print-row-${row.matricule}`} className="even:bg-slate-50 odd:bg-white text-slate-800">
-                                    <td className="border border-gray-600 p-[0.3px] text-center">{index + 1}</td>
-                                    <td className="border border-gray-600 p-[0.3px] text-center">{row.matricule}</td>
-                                    <td className="border border-gray-600 p-[0.3px] whitespace-nowrap pl-1">{row.name}</td>
-                                    {row.monthlySalaries.map((salary, i) => (
-                                        <td key={`print-cell-${row.matricule}-month-${i}`} className="border border-gray-600 p-[0.3px] text-right pr-1 tracking-tighter">
-                                            {salary === 0 ? '-' : Math.round(salary).toLocaleString('fr-FR')}
+                             {state.reportData.map((row: any, index: number) => (
+                                <tr key={`print-row-${row.matricule}`} className="text-black even:bg-slate-100/50">
+                                    <td className="py-1 px-1 text-center font-bold border border-slate-600">{index + 1}</td>
+                                    <td className="py-1 px-1 text-center font-mono border border-slate-600">{row.matricule}</td>
+                                    <td className="py-1 px-1 whitespace-nowrap text-left pl-1 font-bold border border-slate-600 overflow-hidden text-clip">{row.name}</td>
+                                    {row.monthlySalaries.map((salary: number, i: number) => (
+                                        <td key={`print-cell-${row.matricule}-month-${i}`} className="py-1 px-0.5 text-right font-mono border border-slate-600 tracking-tighter" style={{ fontVariantNumeric: 'tabular-nums' }}>
+                                            {formatCurrency(salary)}
                                         </td>
                                     ))}
-                                    <td className="border border-gray-600 p-[0.3px] text-right pr-1 font-medium">{formatCurrency(row.gratification)}</td>
-                                    <td className="border border-gray-600 p-[0.3px] text-right pr-1 font-medium">{formatCurrency(row.totalBrut)}</td>
-                                    <td className="border border-gray-600 p-[0.3px] text-right pr-1 font-medium">{formatCurrency(row.totalCNPS)}</td>
+                                    <td className="py-1 px-0.5 text-right font-mono border border-slate-600 tracking-tighter" style={{ fontVariantNumeric: 'tabular-nums' }}>{formatCurrency(row.gratification)}</td>
+                                    <td className="py-1 px-0.5 text-right font-bold font-mono border border-slate-600 tracking-tighter" style={{ fontVariantNumeric: 'tabular-nums' }}>{formatCurrency(row.totalBrut)}</td>
+                                    <td className="py-1 px-0.5 text-right font-mono border border-slate-600 tracking-tighter" style={{ fontVariantNumeric: 'tabular-nums' }}>{formatCurrency(row.totalCNPS)}</td>
                                 </tr>
                             ))}
-                            <tr className="font-bold bg-slate-100 text-slate-900 border-t-2 border-slate-700">
-                                <td colSpan={3} className="border border-gray-600 p-[0.3px] text-right pr-2 text-[4.5px]">TOTAL</td>
-                                {state.grandTotal.monthly.map((total, index) => (
-                                    <td key={`print-total-month-${index}`} className="border border-gray-600 p-[0.3px] text-right pr-1 text-[4.5px]">
+                            <tr className="font-black bg-slate-100 text-black">
+                                <td colSpan={3} className="py-1.5 px-1 text-right pr-4 border border-slate-700 text-[10px]">TOTAL GÉNÉRAL</td>
+                                {state.grandTotal.monthly.map((total: number, index: number) => (
+                                    <td key={`print-total-month-${index}`} className="py-1.5 px-0.5 text-right font-black border border-slate-700 text-[8px] tracking-tighter" style={{ fontVariantNumeric: 'tabular-nums' }}>
                                         {formatCurrency(total)}
                                     </td>
                                 ))}
-                                <td className="border border-gray-600 p-[0.3px] text-right pr-1 text-[4.5px]">{formatCurrency(state.grandTotal.gratification)}</td>
-                                <td className="border border-gray-600 p-[0.3px] text-right pr-1 text-[4.5px]">{formatCurrency(state.grandTotal.brut)}</td>
-                                <td className="border border-gray-600 p-[0.3px] text-right pr-1 text-[4.5px]">{formatCurrency(state.grandTotal.cnps)}</td>
+                                <td className="py-1.5 px-0.5 text-right font-black border border-slate-700 text-[8px] tracking-tighter" style={{ fontVariantNumeric: 'tabular-nums' }}>{formatCurrency(state.grandTotal.gratification)}</td>
+                                <td className="py-1.5 px-0.5 text-right font-black border border-slate-700 text-[8px] tracking-tighter" style={{ fontVariantNumeric: 'tabular-nums' }}>{formatCurrency(state.grandTotal.brut)}</td>
+                                <td className="py-1.5 px-0.5 text-right font-black border border-slate-700 text-[8px] tracking-tighter" style={{ fontVariantNumeric: 'tabular-nums' }}>{formatCurrency(state.grandTotal.cnps)}</td>
                             </tr>
                         </tbody>
                     </table>
                     <footer className="mt-4 text-[8px]">
                         <div className="flex justify-between items-end">
-                            <div></div>
+                            <div className="text-[7.5px] italic leading-tight max-w-[300px]">
+                                Document généré automatiquement par le système de gestion de la CNRCT le {new Date().toLocaleDateString('fr-FR')}. Page certifiée conforme aux données de l'exercice fiscal {state.year}.
+                            </div>
                             <div className="text-center leading-tight opacity-70">
                                 <p className="font-bold uppercase">Chambre Nationale de Rois et Chefs Traditionnels (CNRCT)</p>
                                 <p>Yamoussoukro, Riviera - BP 201 Yamoussoukro | Tél : (225) 30 64 06 60 | Fax : (+255) 30 64 06 63</p>
-                                <p>www.cnrct.ci - Email : info@cnrct.ci</p>
                             </div>
-                            <div><p className="page-number"></p></div>
+                            <div className="min-w-[180px] border-t-2 border-black pt-1 text-center font-black uppercase text-[9px]">
+                                Signature et Cachet
+                            </div>
                         </div>
                     </footer>
+
+                    {/* Pagination fixe */}
+                    <div className="hidden print:block footer-print opacity-70">
+                        <span className="page-number"></span>
+                    </div>
                 </div>
             )}
         </>

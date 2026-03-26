@@ -15,10 +15,17 @@ export function subscribeToTickets(
     const q = query(ticketsCollection, orderBy("createdAt", "desc"));
     const unsubscribe = onSnapshot(q,
         (snapshot) => {
-            const tickets = snapshot.docs.map((doc: any) => ({
-                id: doc.id,
-                ...doc.data()
-            } as Ticket));
+            const tickets = snapshot.docs.map((doc: any) => {
+                const data = doc.data();
+                return {
+                    id: doc.id,
+                    messages: [], // Ensure mandatory array is initialized
+                    ...data,
+                    // If these are Firestore Timestamps, convert them to ISO strings
+                    createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate().toISOString() : data.createdAt,
+                    updatedAt: data.updatedAt instanceof Timestamp ? data.updatedAt.toDate().toISOString() : data.updatedAt,
+                } as unknown as Ticket;
+            });
             callback(tickets);
         },
         (error) => {
@@ -34,7 +41,14 @@ export async function getTicket(id: string): Promise<Ticket | null> {
     const docRef = doc(db, 'tickets', id);
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
-        return { id: docSnap.id, ...docSnap.data() } as Ticket;
+        const data = docSnap.data();
+        return { 
+            id: docSnap.id, 
+            messages: [], // Ensure mandatory array is initialized
+            ...data,
+            createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate().toISOString() : data.createdAt,
+            updatedAt: data.updatedAt instanceof Timestamp ? data.updatedAt.toDate().toISOString() : data.updatedAt,
+        } as unknown as Ticket;
     }
     return null;
 }

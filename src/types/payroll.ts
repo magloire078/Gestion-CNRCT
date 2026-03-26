@@ -42,3 +42,14 @@ export type BudgetLine = {
     allocatedAmount: number;
     year: number;
 };
+
+export type PrintLog = {
+    id?: string;
+    userId: string;
+    userName: string;
+    actionType: 'print' | 'pdf';
+    period: string; // MM-YYYY
+    count: number;
+    employeeIds: string[];
+    timestamp: any; // Firestore Timestamp
+};

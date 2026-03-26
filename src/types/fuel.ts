@@ -13,6 +13,7 @@ export interface FuelProvider {
 export interface FuelCard {
     id: string;
     cardNumber: string;
+    label?: string; // e.g. "CARTE MISSION 2"
     providerId: string;
     assignmentType: 'vehicle' | 'employee' | 'generic' | 'unassigned';
     assignmentId?: string; // vehicle plate or employee id
@@ -32,6 +33,12 @@ export interface FuelTransaction {
     vehiclePlate?: string; // Captured even if generic card
     driverName?: string; // Captured even if generic card
     receiptNumber?: string;
+    missionNumber?: string;
+    missionRoute?: string;
+    missionDuration?: string;
+    missionHead?: string;
+    unitPrice?: number;
+    service?: string;
     notes?: string;
     performedBy: string; // User ID
 }

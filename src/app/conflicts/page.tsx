@@ -1,8 +1,8 @@
-
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { PlusCircle, Search, Sparkles, Loader2, List, Map, MoreHorizontal, Pencil, Eye, Trash2 } from "lucide-react";
+import { format, parseISO, isValid } from "date-fns";
+import { PlusCircle, Search, Loader2, List, Map, MoreHorizontal, Pencil, Eye, Trash2, Printer, Settings2, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
     Card,
@@ -31,11 +31,19 @@ import {
     AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
-import type { Conflict, Chief, ConflictType } from "@/lib/data";
+import type { Conflict, Chief, ConflictType, ConflictTypeData } from "@/lib/data";
 import { conflictTypeVariantMap, conflictTypes, conflictStatuses } from "@/lib/data";
+import { subscribeToConflictTypes, addConflictType, deleteConflictType } from "@/services/conflict-type-service";
 import { AddConflictSheet } from "@/components/conflicts/add-conflict-sheet";
 import { EditConflictSheet } from "@/components/conflicts/edit-conflict-sheet";
 import { Input } from "@/components/ui/input";
@@ -46,15 +54,16 @@ import type { HeritageItem } from "@/types/heritage";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
-import { getConflictResolutionAdvice, type ConflictResolutionOutput } from "@/ai/flows/conflict-resolution-flow";
+import { IVORIAN_REGIONS } from "@/constants/regions";
 import { PaginationControls } from "@/components/common/pagination-controls";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PrintConflictsList, PrintConflictDetail } from "@/components/conflicts/conflict-print-templates";
 import { cn } from "@/lib/utils";
 import dynamic from 'next/dynamic';
 
 const GISMap = dynamic(() => import('@/components/common/gis-map-v3').then(m => m.GISMap), {
     ssr: false,
-    loading: () => <Skeleton className="h-[600px] w-full" />,
+    loading: () => <Skeleton className="h-[800px] w-full" />,
 });
 
 
@@ -79,19 +88,30 @@ export default function ConflictsPage() {
     const [searchTerm, setSearchTerm] = useState("");
     const { toast } = useToast();
 
-    const [isAnalysisDialogOpen, setIsAnalysisDialogOpen] = useState(false);
-    const [isAiLoading, setIsAiLoading] = useState(false);
-    const [currentConflict, setCurrentConflict] = useState<Conflict | null>(null);
-    const [aiSuggestions, setAiSuggestions] = useState<ConflictResolutionOutput | null>(null);
+    const [selectedYear, setSelectedYear] = useState<string>("Tous");
 
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10);
-    const { user, hasPermission } = useAuth();
+    const { user, hasPermission, settings } = useAuth();
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [conflictToDelete, setConflictToDelete] = useState<Conflict | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
 
-    const isAdmin = user?.role?.name === 'Administrateur' || user?.role?.name === 'Super Administrateur';
+    // New Enhancement States
+    const [dynamicConflictTypes, setDynamicConflictTypes] = useState<ConflictTypeData[]>([]);
+    const [selectedRegion, setSelectedRegion] = useState<string>("Tous");
+    const [selectedConflictType, setSelectedConflictType] = useState<string>("Tous");
+    const [isAddTypeDialogOpen, setIsAddTypeDialogOpen] = useState(false);
+    const [newTypeName, setNewTypeName] = useState("");
+    const [isAddingType, setIsAddingType] = useState(false);
+
+    // Printing States
+    const [isPrintingList, setIsPrintingList] = useState(false);
+    const [printingConflict, setPrintingConflict] = useState<Conflict | null>(null);
+
+    const canDelete = hasPermission('page:admin:view') || hasPermission('feature:conflicts:delete');
+    const canEdit = hasPermission('page:conflicts:view') || hasPermission('feature:conflicts:edit');
+    const canAdd = hasPermission('page:conflicts:view') || true; // Everyone can report (standard MGP)
 
     const loading = conflicts === null || chiefs === null || heritageItems === null;
 
@@ -123,8 +143,14 @@ export default function ConflictsPage() {
             setHeritageItems([]);
         });
 
+        const unsubscribeTypes = subscribeToConflictTypes(
+            (types) => setDynamicConflictTypes(types),
+            (err) => console.error("Error loading conflict types:", err)
+        );
+
         return () => {
             if (unsubscribe) unsubscribe();
+            if (unsubscribeTypes) unsubscribeTypes();
         };
     }, []);
 
@@ -158,43 +184,13 @@ export default function ConflictsPage() {
 
     const handleEditClick = (conflict: Conflict) => {
         setEditingConflict(conflict);
-        setIsEditSheetOpen(true);
+        setTimeout(() => setIsEditSheetOpen(true), 50);
     }
 
-    const handleAnalyzeConflict = async (conflict: Conflict) => {
-        setCurrentConflict(conflict);
-        setIsAnalysisDialogOpen(true);
-        setIsAiLoading(true);
-        setAiSuggestions(null);
-        try {
-            const suggestions = await getConflictResolutionAdvice({ 
-                description: conflict.description,
-                latitude: conflict.latitude,
-                longitude: conflict.longitude
-            });
-            setAiSuggestions(suggestions);
-            
-            // Sauvegarder le score de risque dans Firestore pour affichage permanent
-            if (suggestions.riskScore) {
-                await updateConflict(conflict.id, { 
-                    riskScore: suggestions.riskScore 
-                });
-            }
-        } catch (err) {
-            toast({
-                variant: "destructive",
-                title: "Erreur d'analyse IA",
-                description: "Impossible d'obtenir des suggestions de l'IA. Veuillez réessayer."
-            })
-            console.error(err);
-        } finally {
-            setIsAiLoading(false);
-        }
-    }
 
     const handleDeleteClick = (conflict: Conflict) => {
         setConflictToDelete(conflict);
-        setIsDeleteDialogOpen(true);
+        setTimeout(() => setIsDeleteDialogOpen(true), 50);
     };
 
     const handleDeleteConfirm = async () => {
@@ -202,37 +198,104 @@ export default function ConflictsPage() {
         setIsDeleting(true);
         try {
             await deleteConflict(conflictToDelete.id);
+            setIsDeleteDialogOpen(false);
+            setConflictToDelete(null);
             toast({
                 title: "Conflit supprimé",
                 description: "Le signalement de conflit a été retiré de la base de données.",
             });
-            setIsDeleteDialogOpen(false);
-            setConflictToDelete(null);
         } catch (err) {
             console.error("Failed to delete conflict:", err);
             toast({
                 variant: "destructive",
-                title: "Erreur lors de la suppression",
-                description: "Impossible de supprimer le conflit. Veuillez réessayer.",
+                title: "Erreur de suppression",
+                description: "Une erreur est survenue lors de la suppression du conflit.",
             });
         } finally {
             setIsDeleting(false);
         }
     };
 
+    const handleAddType = async () => {
+        if (!newTypeName.trim()) return;
+        setIsAddingType(true);
+        try {
+            await addConflictType(newTypeName.trim());
+            setNewTypeName("");
+            setIsAddTypeDialogOpen(false);
+            toast({
+                title: "Type de conflit ajouté",
+            });
+        } catch (err) {
+            console.error(err);
+            toast({
+                variant: "destructive",
+                title: "Erreur lors de l'ajout du type",
+            });
+        } finally {
+            setIsAddingType(false);
+        }
+    };
+
+    const handlePrint = () => {
+        setIsPrintingList(true);
+        // The PrintConflictsList component handles calling window.print() via PrintLayout
+        // We'll reset the state after a timeout to allow the print dialog to open
+        setTimeout(() => {
+            setIsPrintingList(false);
+        }, 3000);
+    };
+
+    const handlePrintIndividual = (conflict: Conflict) => {
+        setPrintingConflict(conflict);
+        setTimeout(() => {
+            setPrintingConflict(null);
+        }, 3000);
+    };
+
     const filteredConflicts = useMemo(() => {
         if (!conflicts) return [];
         const filtered = conflicts.filter(conflict => {
             const searchTermLower = searchTerm.toLowerCase();
-            return conflict.village.toLowerCase().includes(searchTermLower) ||
+            const matchesSearch = conflict.village.toLowerCase().includes(searchTermLower) ||
                 conflict.description.toLowerCase().includes(searchTermLower) ||
-                (conflict.mediatorName || '').toLowerCase().includes(searchTermLower);
+                (conflict.mediatorName || '').toLowerCase().includes(searchTermLower) ||
+                (conflict.region || '').toLowerCase().includes(searchTermLower);
+            
+            const conflictYear = conflict.reportedDate.split('-')[0];
+            const matchesYear = selectedYear === "Tous" || conflictYear === selectedYear;
+            const matchesRegion = selectedRegion === "Tous" || conflict.region === selectedRegion;
+            const matchesType = selectedConflictType === "Tous" || conflict.type === selectedConflictType;
+            
+            return matchesSearch && matchesYear && matchesRegion && matchesType;
         });
         if (currentPage > Math.ceil(filtered.length / itemsPerPage)) {
             setCurrentPage(1);
         }
         return filtered;
-    }, [conflicts, searchTerm, currentPage, itemsPerPage]);
+    }, [conflicts, searchTerm, currentPage, itemsPerPage, selectedYear, selectedRegion, selectedConflictType]);
+
+    const regions = useMemo(() => {
+        return IVORIAN_REGIONS;
+    }, []);
+
+
+
+    const allConflictTypes = useMemo(() => {
+        const staticTypes = Array.from(conflictTypes);
+        const dynamicTypes = dynamicConflictTypes.map(t => t.name);
+        return Array.from(new Set([...staticTypes, ...dynamicTypes])).sort();
+    }, [dynamicConflictTypes]);
+
+    const availableYears = useMemo(() => {
+        if (!conflicts) return [];
+        const years = new Set<string>();
+        conflicts.forEach(c => {
+            const year = c.reportedDate.split('-')[0];
+            if (year) years.add(year);
+        });
+        return Array.from(years).sort((a, b) => b.localeCompare(a));
+    }, [conflicts]);
 
     const paginatedConflicts = useMemo(() => {
         const startIndex = (currentPage - 1) * itemsPerPage;
@@ -247,11 +310,33 @@ export default function ConflictsPage() {
                 <h1 className="text-3xl font-bold tracking-tight">
                     Gestion des Conflits
                 </h1>
-                <Button onClick={() => setIsAddSheetOpen(true)} className="w-full sm:w-auto">
-                    <PlusCircle className="mr-2 h-4 w-4" />
-                    Signaler un conflit
-                </Button>
+                <div className="flex flex-wrap gap-2">
+                    <Button variant="outline" onClick={handlePrint} className="w-full sm:w-auto">
+                        <Printer className="mr-2 h-4 w-4" />
+                        Imprimer
+                    </Button>
+                    <Button variant="outline" onClick={() => setIsAddTypeDialogOpen(true)} title="Gérer les types de conflit">
+                        <Settings2 className="h-4 w-4" />
+                    </Button>
+                    <Link href="/conflicts/analytics">
+                        <Button variant="outline" className="w-full sm:w-auto bg-blue-50/50 border-blue-100 hover:bg-blue-50 text-blue-600">
+                            <TrendingUp className="mr-2 h-4 w-4" />
+                            Analyses
+                        </Button>
+                    </Link>
+                    <Link href="/conflicts/report">
+                        <Button variant="outline" className="w-full sm:w-auto">
+                            <List className="mr-2 h-4 w-4" />
+                            Rapport
+                        </Button>
+                    </Link>
+                    <Button onClick={() => setIsAddSheetOpen(true)} className="w-full sm:w-auto">
+                        <PlusCircle className="mr-2 h-4 w-4" />
+                        Signaler un conflit
+                    </Button>
+                </div>
             </div>
+
 
             <Tabs defaultValue="list">
                 <TabsList className="grid w-full grid-cols-2 sm:w-[400px] mb-6">
@@ -277,6 +362,43 @@ export default function ConflictsPage() {
                                         onChange={(e) => setSearchTerm(e.target.value)}
                                     />
                                 </div>
+                                <Select value={selectedYear} onValueChange={setSelectedYear}>
+                                    <SelectTrigger className="w-full sm:w-[150px]">
+                                        <SelectValue placeholder="Année" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="Tous">Toutes les années</SelectItem>
+                                        {availableYears.map(year => (
+                                            <SelectItem key={year} value={year}>{year}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+
+                                <Select value={selectedRegion} onValueChange={setSelectedRegion}>
+                                    <SelectTrigger className="w-full sm:w-[150px]">
+                                        <SelectValue placeholder="Région" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="Tous">Toutes les régions</SelectItem>
+                                        {regions.map(region => (
+                                            <SelectItem key={region} value={region}>{region}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+
+                                <Select value={selectedConflictType} onValueChange={setSelectedConflictType}>
+                                    <SelectTrigger className="w-full sm:w-[150px]">
+                                        <SelectValue placeholder="Type" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="Tous">Tous les types</SelectItem>
+                                        {allConflictTypes.map(type => (
+                                            <SelectItem key={type} value={type}>{type}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+
+
                             </div>
                             <div className="mb-4 text-sm text-muted-foreground">
                                 {filteredConflicts.length} résultat(s) trouvé(s).
@@ -288,10 +410,11 @@ export default function ConflictsPage() {
                                         <TableRow>
                                             <TableHead>N°</TableHead>
                                             <TableHead>Village</TableHead>
-                                            <TableHead>Type</TableHead>
-                                            <TableHead>Description</TableHead>
-                                            <TableHead>Médiateur</TableHead>
-                                            <TableHead>Risque</TableHead>
+                                            <TableHead>Région</TableHead>
+                                            <TableHead>Typologie</TableHead>
+                                            <TableHead>Parties</TableHead>
+                                            <TableHead>Impact</TableHead>
+                                            <TableHead>Signalé le</TableHead>
                                             <TableHead>Statut</TableHead>
                                             <TableHead>Actions</TableHead>
                                         </TableRow>
@@ -314,34 +437,17 @@ export default function ConflictsPage() {
                                                 <TableRow key={conflict.id}>
                                                     <TableCell>{(currentPage - 1) * itemsPerPage + index + 1}</TableCell>
                                                     <TableCell className="font-medium">{conflict.village}</TableCell>
-                                                    <TableCell><Badge variant={conflictTypeVariantMap[conflict.type] || 'outline'}>{conflict.type}</Badge></TableCell>
-                                                    <TableCell className="max-w-xs truncate">{conflict.description}</TableCell>
-                                                    <TableCell>{conflict.mediatorName || 'Non assigné'}</TableCell>
-                                                    <TableCell>
-                                                        {conflict.riskScore ? (
-                                                            <div className="flex flex-col gap-1.5 min-w-[100px]">
-                                                                <div className="flex items-center justify-between text-[10px] font-bold">
-                                                                    <span className={cn(
-                                                                        conflict.riskScore <= 3 ? "text-green-600" :
-                                                                        conflict.riskScore <= 7 ? "text-yellow-600" : "text-red-600"
-                                                                    )}>
-                                                                        {conflict.riskScore}/10
-                                                                    </span>
-                                                                </div>
-                                                                <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden border border-slate-200/50">
-                                                                    <div 
-                                                                        className={cn(
-                                                                            "h-full transition-all duration-500",
-                                                                            conflict.riskScore <= 3 ? "bg-green-500" :
-                                                                            conflict.riskScore <= 7 ? "bg-yellow-500" : "bg-red-500"
-                                                                        )}
-                                                                        style={{ width: `${conflict.riskScore * 10}%` }}
-                                                                    />
-                                                                </div>
-                                                            </div>
-                                                        ) : (
-                                                            <Badge variant="outline" className="text-[10px] font-normal text-muted-foreground border-dashed">Non analysé</Badge>
-                                                        )}
+                                                    <TableCell>{conflict.region || '-'}</TableCell>
+                                                     <TableCell><Badge variant={(conflictTypeVariantMap as any)[conflict.type] || 'outline'}>{conflict.type}</Badge></TableCell>
+                                                    <TableCell className="max-w-[150px] truncate" title={conflict.parties}>{conflict.parties || '-'}</TableCell>
+                                                    <TableCell className="max-w-[200px] truncate" title={conflict.impact}>{conflict.impact || '-'}</TableCell>
+                                                    <TableCell className="whitespace-nowrap">
+                                                        {conflict.reportedDate ? (
+                                                            (() => {
+                                                                const d = parseISO(conflict.reportedDate);
+                                                                return isValid(d) ? format(d, 'dd/MM/yyyy') : conflict.reportedDate;
+                                                            })()
+                                                        ) : '-'}
                                                     </TableCell>
                                                     <TableCell>
                                                         <Badge variant={statusVariantMap[conflict.status] || 'default'}>{conflict.status}</Badge>
@@ -352,13 +458,15 @@ export default function ConflictsPage() {
                                                                 <Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button>
                                                             </DropdownMenuTrigger>
                                                             <DropdownMenuContent align="end">
-                                                                <DropdownMenuItem onSelect={() => handleEditClick(conflict)}>
-                                                                    <Pencil className="mr-2 h-4 w-4" /> Modifier
-                                                                </DropdownMenuItem>
-                                                                <DropdownMenuItem onSelect={() => handleAnalyzeConflict(conflict)}>
-                                                                    <Sparkles className="mr-2 h-4 w-4" /> Analyser avec IA
-                                                                </DropdownMenuItem>
-                                                                {isAdmin && (
+                                                                {canEdit && (
+                                                                    <DropdownMenuItem onSelect={() => handleEditClick(conflict)}>
+                                                                        <Pencil className="mr-2 h-4 w-4" /> Modifier
+                                                                    </DropdownMenuItem>
+                                                                )}
+                                                                 <DropdownMenuItem onSelect={() => handlePrintIndividual(conflict)}>
+                                                                     <Printer className="mr-2 h-4 w-4" /> Imprimer Fiche MGP
+                                                                 </DropdownMenuItem>
+                                                                {canDelete && (
                                                                     <DropdownMenuItem
                                                                         onSelect={() => handleDeleteClick(conflict)}
                                                                         className="text-destructive focus:text-destructive"
@@ -387,25 +495,67 @@ export default function ConflictsPage() {
                                                 <CardTitle className="text-base">
                                                     {(currentPage - 1) * itemsPerPage + index + 1}. {conflict.village}
                                                 </CardTitle>
-                                                <CardDescription>
-                                                    <Badge variant={conflictTypeVariantMap[conflict.type] || 'outline'}>{conflict.type}</Badge>
-                                                </CardDescription>
+                                                <div className="space-y-4">
+                                                    <div className="grid grid-cols-2 gap-4">
+                                                        <div>
+                                                            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Typologie</p>
+                                                            <Badge variant={(conflictTypeVariantMap as any)[conflict.type] || 'outline'} className="mt-1 font-medium">{conflict.type}</Badge>
+                                                        </div>
+                                                    </div>
+
+                                                        <div>
+                                                            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Région</p>
+                                                            <p className="mt-1 font-medium text-foreground">{conflict.region || '-'}</p>
+                                                        </div>
+                                                </div>
                                             </CardHeader>
-                                            <CardContent className="p-4 pt-0 space-y-2">
-                                                <Badge variant={statusVariantMap[conflict.status] || 'default'}>{conflict.status}</Badge>
-                                                <p className="text-sm"><span className="font-medium">Médiateur:</span> {conflict.mediatorName || 'Non assigné'}</p>
-                                                <p className="text-sm text-muted-foreground">{conflict.description}</p>
-                                                <p className="text-sm"><span className="font-medium">Signalé le:</span> {conflict.reportedDate}</p>
+                                            <CardContent className="p-4 pt-0 space-y-3">
+                                                <div className="flex flex-wrap gap-2">
+                                                    <Badge variant={statusVariantMap[conflict.status] || 'default'}>{conflict.status}</Badge>
+                                                </div>
+                                                
+                                                <div className="space-y-1">
+                                                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Description</p>
+                                                    <p className="text-sm text-slate-700 leading-relaxed line-clamp-3">{conflict.description}</p>
+                                                </div>
+
+                                                {(conflict.parties || conflict.impact) && (
+                                                    <div className="grid grid-cols-1 gap-2 p-3 bg-slate-50 rounded-lg border border-slate-100">
+                                                        {conflict.parties && (
+                                                            <div>
+                                                                <p className="text-[10px] font-bold text-slate-400 uppercase">Parties en conflit</p>
+                                                                <p className="text-xs text-slate-600 italic">{conflict.parties}</p>
+                                                            </div>
+                                                        )}
+                                                        {conflict.impact && (
+                                                            <div>
+                                                                <p className="text-[10px] font-bold text-slate-400 uppercase">Impact</p>
+                                                                <p className="text-xs text-slate-600 line-clamp-2">{conflict.impact}</p>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
+
+                                                <div className="flex flex-col gap-1 pt-1 border-t border-slate-100">
+                                                    <p className="text-[11px] font-medium text-slate-500">
+                                                        <span className="text-slate-400 italic">Médiateur:</span> {conflict.mediatorName || 'Non assigné'}
+                                                    </p>
+                                                    <p className="text-[11px] font-medium text-slate-500">
+                                                        <span className="text-slate-400 italic">Signalé le:</span> {conflict.reportedDate}
+                                                    </p>
+                                                </div>
                                                 <div className="flex gap-2 pt-2">
-                                                    <Button variant="outline" size="sm" onClick={() => handleEditClick(conflict)}>
-                                                        <Pencil className="mr-2 h-4 w-4" /> Modifier
-                                                    </Button>
-                                                    <Button variant="outline" size="sm" onClick={() => handleAnalyzeConflict(conflict)}>
-                                                        <Sparkles className="mr-2 h-4 w-4" /> Analyser
-                                                    </Button>
-                                                    {isAdmin && (
+                                                    {canEdit && (
+                                                        <Button variant="outline" size="sm" onClick={() => handleEditClick(conflict)} className="flex-1">
+                                                            <Pencil className="mr-2 h-4 w-4" /> Modifier
+                                                        </Button>
+                                                    )}
+                                                     <Button variant="outline" size="sm" onClick={() => handlePrintIndividual(conflict)} className="flex-1">
+                                                         <Printer className="mr-2 h-4 w-4" /> Imprimer
+                                                     </Button>
+                                                    {canDelete && (
                                                         <Button variant="outline" size="sm" onClick={() => handleDeleteClick(conflict)} className="text-destructive hover:text-destructive hover:bg-destructive/10">
-                                                            <Trash2 className="mr-2 h-4 w-4" />
+                                                            <Trash2 className="h-4 w-4" />
                                                         </Button>
                                                     )}
                                                 </div>
@@ -450,12 +600,11 @@ export default function ConflictsPage() {
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                 />
                             </div>
-                            <div className="h-[600px] w-full rounded-lg border overflow-hidden">
+                            <div className="h-[800px] w-full rounded-lg border overflow-hidden">
                                 <GISMap
                                     conflicts={filteredConflicts}
                                     chiefs={chiefs || []}
                                     heritage={heritageItems || []}
-                                    onAiAnalyze={handleAnalyzeConflict}
                                     onAddPoint={(lat, lng) => {
                                         toast({
                                             title: "Signalement Map",
@@ -472,6 +621,7 @@ export default function ConflictsPage() {
                 isOpen={isAddSheetOpen}
                 onCloseAction={() => setIsAddSheetOpen(false)}
                 onAddConflictAction={handleAddConflict}
+                availableTypes={allConflictTypes}
             />
             {editingConflict && (
                 <EditConflictSheet
@@ -479,81 +629,10 @@ export default function ConflictsPage() {
                     onCloseAction={() => setIsEditSheetOpen(false)}
                     onUpdateConflictAction={handleUpdateConflict}
                     conflict={editingConflict}
+                    availableTypes={allConflictTypes}
                 />
             )}
 
-            <AlertDialog open={isAnalysisDialogOpen} onOpenChange={setIsAnalysisDialogOpen}>
-                <AlertDialogContent className="max-w-2xl">
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Analyse IA du Conflit</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            Suggestions générées par l'IA pour le conflit à <span className="font-bold">{currentConflict?.village}</span>.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    {isAiLoading && (
-                        <div className="flex items-center justify-center h-48">
-                            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                        </div>
-                    )}
-                    {aiSuggestions && (
-                        <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-4">
-                            {aiSuggestions.riskScore && (
-                                <div className="flex flex-col gap-3 p-4 rounded-xl bg-slate-50 border border-slate-200">
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-2">
-                                            <div className={cn(
-                                                "h-3 w-3 rounded-full animate-pulse",
-                                                aiSuggestions.riskScore <= 3 ? "bg-green-500" :
-                                                aiSuggestions.riskScore <= 7 ? "bg-yellow-500" : "bg-red-500"
-                                            )} />
-                                            <span className="text-sm font-bold text-slate-700 uppercase tracking-wider">Évaluation du Risque Spatial</span>
-                                        </div>
-                                        <Badge className={cn(
-                                            "font-bold",
-                                            aiSuggestions.riskScore <= 3 ? "bg-green-100 text-green-700 hover:bg-green-100" :
-                                            aiSuggestions.riskScore <= 7 ? "bg-yellow-100 text-yellow-700 hover:bg-yellow-100" : "bg-red-100 text-red-700 hover:bg-red-100"
-                                        )}>
-                                            {aiSuggestions.riskScore}/10
-                                        </Badge>
-                                    </div>
-                                    <div className="h-3 bg-slate-200 rounded-full overflow-hidden shadow-inner">
-                                        <div 
-                                            className={cn(
-                                                "h-full transition-all duration-1000 ease-out",
-                                                aiSuggestions.riskScore <= 3 ? "bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]" :
-                                                aiSuggestions.riskScore <= 7 ? "bg-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.5)]" : "bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]"
-                                            )}
-                                            style={{ width: `${aiSuggestions.riskScore * 10}%` }}
-                                        />
-                                    </div>
-                                    <p className="text-[11px] text-slate-500 italic">
-                                        * Cet indice est calculé par l'IA en fonction de la proximité des autorités traditionnelles et de la nature du conflit décrit.
-                                    </p>
-                                </div>
-                            )}
-                            <div>
-                                <h4 className="font-semibold mb-2">Analyse du Conflit</h4>
-                                <p className="text-sm text-muted-foreground">{aiSuggestions.analysis}</p>
-                            </div>
-                            <div>
-                                <h4 className="font-semibold mb-2">Étapes de Médiation Suggérées</h4>
-                                <ul className="list-decimal list-inside space-y-1 text-sm text-muted-foreground">
-                                    {aiSuggestions.mediationSteps.map((step, i) => <li key={i}>{step}</li>)}
-                                </ul>
-                            </div>
-                            <div>
-                                <h4 className="font-semibold mb-2">Stratégies de Communication</h4>
-                                <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-                                    {aiSuggestions.communicationStrategies.map((strategy, i) => <li key={i}>{strategy}</li>)}
-                                </ul>
-                            </div>
-                        </div>
-                    )}
-                    <AlertDialogFooter>
-                        <AlertDialogAction onClick={() => setIsAnalysisDialogOpen(false)}>Fermer</AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
 
             <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
                 <AlertDialogContent>
@@ -579,6 +658,22 @@ export default function ConflictsPage() {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+
+            {/* Print Templates Rendering */}
+            {isPrintingList && (
+                <PrintConflictsList 
+                    conflicts={filteredConflicts} 
+                    organizationSettings={settings} 
+                    subtitle={`Filtre: ${selectedRegion === 'Tous' ? 'Toutes Régions' : selectedRegion} | ${selectedConflictType === 'Tous' ? 'Tous Types' : selectedConflictType}`}
+                />
+            )}
+
+            {printingConflict && (
+                <PrintConflictDetail 
+                    conflict={printingConflict} 
+                    organizationSettings={settings} 
+                />
+            )}
         </div>
     );
 }

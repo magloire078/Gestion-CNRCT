@@ -69,7 +69,11 @@ export function FuelTransactionList({ transactions, cards, onDelete }: Transacti
                                     <div className="flex items-center gap-2 text-muted-foreground">
                                         <User className="h-3 w-3" /> {t.driverName || 'N/A'}
                                     </div>
-                                    {t.odometer && <div className="text-[10px] text-muted-foreground italic">{t.odometer.toLocaleString()} km</div>}
+                                    <div className="flex items-center gap-4 text-[10px] text-muted-foreground italic">
+                                        {t.odometer && <span>{t.odometer.toLocaleString()} km</span>}
+                                        {t.receiptNumber && <span>Ticket: {t.receiptNumber}</span>}
+                                        {t.missionNumber && <span>Mission: {t.missionNumber}</span>}
+                                    </div>
                                 </div>
                             ) : (
                                 <span className="text-muted-foreground">Rechargement de crédit</span>

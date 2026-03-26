@@ -15,13 +15,21 @@ import {
   SheetTitle,
   SheetClose,
 } from "@/components/ui/sheet";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { IVORIAN_REGIONS } from "@/constants/regions";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { Custom } from "@/lib/data";
 
 interface AddCustomSheetProps {
   isOpen: boolean;
-  onClose: () => void;
-  onAddCustom: (customData: Omit<Custom, "id">) => Promise<void>;
+  onCloseAction: () => void;
+  onAddCustomAction: (customData: Omit<Custom, "id">) => Promise<void>;
 }
 
 const formFields = [
@@ -47,7 +55,7 @@ const formFields = [
   { id: 'intergenerationalTransmission', label: 'Transmission Intergénérationnelle', type: 'textarea' },
 ];
 
-export function AddCustomSheet({ isOpen, onClose, onAddCustom }: AddCustomSheetProps) {
+export function AddCustomSheet({ isOpen, onCloseAction, onAddCustomAction }: AddCustomSheetProps) {
   const [formData, setFormData] = useState<Partial<Omit<Custom, 'id'>>>({});
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -64,7 +72,7 @@ export function AddCustomSheet({ isOpen, onClose, onAddCustom }: AddCustomSheetP
 
   const handleClose = () => {
     resetForm();
-    onClose();
+    onCloseAction();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -79,7 +87,7 @@ export function AddCustomSheet({ isOpen, onClose, onAddCustom }: AddCustomSheetP
     setError("");
     
     try {
-      await onAddCustom(formData as Omit<Custom, 'id'>);
+      await onAddCustomAction(formData as Omit<Custom, 'id'>);
       handleClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Échec de l'ajout de la fiche.");
@@ -104,7 +112,17 @@ export function AddCustomSheet({ isOpen, onClose, onAddCustom }: AddCustomSheetP
                 {formFields.map(field => (
                   <div key={field.id} className="space-y-2">
                     <Label htmlFor={field.id}>{field.label}</Label>
-                    {field.type === 'textarea' ? (
+                    {field.id === 'regions' ? (
+                      <Select 
+                        value={(formData as any)[field.id] || ''} 
+                        onValueChange={(v) => setFormData(prev => ({ ...prev, regions: v }))}
+                      >
+                        <SelectTrigger><SelectValue placeholder="Sélectionnez une région..." /></SelectTrigger>
+                        <SelectContent>
+                          {IVORIAN_REGIONS.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    ) : field.type === 'textarea' ? (
                       <Textarea
                         id={field.id}
                         name={field.id}

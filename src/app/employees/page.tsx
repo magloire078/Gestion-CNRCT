@@ -147,7 +147,7 @@ export default function EmployeesPage() {
   }, [authLoading, hasPermission, router, toast]);
 
   useEffect(() => {
-    if (personnelTypeFilter === 'directoire' || personnelTypeFilter === 'all-geo') {
+    if (personnelTypeFilter === 'directoire' || personnelTypeFilter === 'all-geo' || personnelTypeFilter === 'regional') {
       const timer = setTimeout(() => setShowDirectoireMap(true), 300);
       return () => clearTimeout(timer);
     }
@@ -478,9 +478,9 @@ export default function EmployeesPage() {
             </div>
           )}
 
-          {personnelTypeFilter === 'directoire' && showDirectoireMap && (
+          {isGeoTab && showDirectoireMap && (
             <div className="mb-6">
-              <DirectoireMap members={filteredEmployees} className="h-[500px]" />
+              <DirectoireMap members={filteredEmployees} className="h-[1000px]" />
             </div>
           )}
 

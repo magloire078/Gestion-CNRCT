@@ -40,7 +40,7 @@ export function PayslipTemplate({ payslipDetails }: { payslipDetails: PayslipDet
                 </div>
 
                 <div className="flex-1 text-center flex flex-col justify-center items-center h-full">
-                    <p className="font-bold text-xs whitespace-nowrap">REPUBLIQUE DE CÔTE D'IVOIRE</p>
+                    <p className="font-bold text-xs whitespace-nowrap">République de Côte d'Ivoire</p>
                     {organizationLogos.secondaryLogoUrl && <img src={organizationLogos.secondaryLogoUrl} alt="Emblème de la Côte d'Ivoire" className="max-h-[80px] max-w-full h-auto w-auto my-1" />}
                     <p className="text-xs whitespace-nowrap">Union - Discipline - Travail</p>
                 </div>

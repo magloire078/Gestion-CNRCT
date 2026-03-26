@@ -1,16 +1,17 @@
-import { useEffect, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import type { OrganizationSettings } from "@/lib/data";
+import type { OrganizationSettings } from "@/types/common";
 
 interface PrintLayoutProps {
-    logos: OrganizationSettings;
+    logos: OrganizationSettings | null;
     title: string;
     subtitle?: string;
-    columns: { header: string; key: string; align?: 'left' | 'center' | 'right'; className?: string }[];
-    data: Record<string, any>[];
+    columns?: { header: string; key: string; align?: 'left' | 'center' | 'right'; className?: string }[];
+    data?: Record<string, any>[];
+    children?: ReactNode;
 }
 
-export function PrintLayout({ logos, title, subtitle, columns, data }: PrintLayoutProps) {
+export function PrintLayout({ logos, title, subtitle, columns, data, children }: PrintLayoutProps) {
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
@@ -26,47 +27,67 @@ export function PrintLayout({ logos, title, subtitle, columns, data }: PrintLayo
     if (!mounted) return null;
 
     return createPortal(
-        <div id="print-section" className="bg-white text-black p-8 w-full print:shadow-none print:border-none print:p-0">
-            <header className="flex justify-between items-start mb-8 h-[100px]">
-                <div className="w-1/4 text-center flex flex-col justify-center items-center h-full">
-                    <p className="font-bold text-sm leading-tight">Chambre Nationale des Rois et Chefs Traditionnels</p>
-                    {logos.mainLogoUrl && <img src={logos.mainLogoUrl} alt="Logo Principal" className="max-h-20 max-w-full h-auto w-auto mt-1" />}
+        <div id="print-section" className="bg-white text-black w-full print:shadow-none print:border-none">
+                <div className="avoid-page-break">
+                    <header className="flex justify-between items-start mb-8 min-h-[140px]">
+                        <div className="w-1/3 text-center flex flex-col justify-center items-center h-full">
+                            <p className="font-bold text-sm leading-tight text-blue-900">Chambre Nationale des Rois<br />et Chefs Traditionnels</p>
+                            {logos?.mainLogoUrl && (
+                                <img 
+                                    src={logos.mainLogoUrl} 
+                                    alt="Logo Principal" 
+                                    className="max-h-24 max-w-full h-auto w-auto mt-2" 
+                                    loading="eager"
+                                />
+                            )}
+                        </div>
+                        <div className="w-1/3"></div>
+                        <div className="w-1/3 text-center flex flex-col justify-center items-center h-full">
+                            <p className="font-bold text-sm leading-tight">République de Côte d'Ivoire</p>
+                            {logos?.secondaryLogoUrl && (
+                                <img 
+                                    src={logos.secondaryLogoUrl} 
+                                    alt="Logo Secondaire" 
+                                    className="max-h-20 max-w-full h-auto w-auto my-2" 
+                                    loading="eager"
+                                />
+                            )}
+                            <p className="border-t border-black px-4 text-[10px] mt-1">Union - Discipline - Travail</p>
+                        </div>
+                    </header>
                 </div>
-                <div className="w-2/4"></div>
-                <div className="w-1/4 text-center flex flex-col justify-center items-center h-full">
-                    <p className="font-bold text-sm whitespace-nowrap">REPUBLIQUE DE CÔTE D'IVOIRE</p>
-                    {logos.secondaryLogoUrl && <img src={logos.secondaryLogoUrl} alt="Logo Secondaire" className="max-h-16 max-w-full h-auto w-auto my-1" />}
-                    <p className="text-xs">Union - Discipline - Travail</p>
-                </div>
-            </header>
 
             <div className="text-center my-6">
                 <h1 className="text-lg font-bold underline uppercase">{title}</h1>
-                {subtitle && <h2 className="text-md font-bold mt-4 uppercase">{subtitle}</h2>}
+                {subtitle && <h2 className="text-md font-bold mt-4">{subtitle}</h2>}
             </div>
 
-            <table className="w-full table-fixed text-[9px] border-collapse border border-black">
-                <thead className="bg-slate-200 text-slate-900">
-                    <tr>
-                        {columns.map(col => (
-                            <th key={col.key} className={`border border-black p-1 font-bold ${col.className !== undefined ? col.className : 'whitespace-nowrap'} text-${col.align === 'center' ? 'center' : 'left'}`}>
-                                {col.header}
-                            </th>
-                        ))}
-                    </tr>
-                </thead>
-                <tbody>
-                    {data.map((row, index) => (
-                        <tr key={index} className="even:bg-slate-50 odd:bg-white text-slate-800">
+            {children ? (
+                children
+            ) : columns && data ? (
+                <table className="w-full table-fixed text-[9px] border-collapse border border-black">
+                    <thead className="bg-slate-200 text-slate-900">
+                        <tr>
                             {columns.map(col => (
-                                <td key={col.key} className={`border border-black p-1 ${col.className !== undefined ? col.className : 'whitespace-nowrap'} text-${col.align === 'center' ? 'center' : 'left'}`}>
-                                    {row[col.key]}
-                                </td>
+                                <th key={col.key} className={`border border-black p-1 font-bold ${col.className !== undefined ? col.className : 'whitespace-nowrap'} text-${col.align === 'center' ? 'center' : 'left'}`}>
+                                    {col.header}
+                                </th>
                             ))}
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {data.map((row, index) => (
+                            <tr key={index} className="even:bg-slate-50 odd:bg-white text-slate-800">
+                                {columns.map(col => (
+                                    <td key={col.key} className={`border border-black p-1 ${col.className !== undefined ? col.className : 'whitespace-nowrap'} text-${col.align === 'center' ? 'center' : 'left'}`}>
+                                        {row[col.key]}
+                                    </td>
+                                ))}
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            ) : null}
 
             <footer className="mt-8 text-xs">
                 <div className="flex justify-between items-end">

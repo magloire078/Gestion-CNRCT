@@ -22,12 +22,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { Chief, ChiefRole, DesignationMode } from "@/lib/data";
+import type { Chief, ChiefRole, DesignationMode } from "@/types/chief";
 import { getChiefs } from "@/services/chief-service";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Upload } from "lucide-react";
 import { Textarea } from "../ui/textarea";
 import { divisions } from "@/lib/ivory-coast-divisions";
+import { IVORIAN_REGIONS } from "@/constants/regions";
 import { ScrollArea } from "../ui/scroll-area";
 import {
   Accordion,
@@ -35,6 +36,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { LocationPicker } from "@/components/common/location-picker";
 
 interface AddChiefDialogProps {
   isOpen: boolean;
@@ -229,7 +231,7 @@ export function AddChiefSheet({ isOpen, onCloseAction, onAddChiefAction }: AddCh
                 <AccordionTrigger>Localisation</AccordionTrigger>
                 <AccordionContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
-                    <div><Label htmlFor="region">Région</Label><Select value={selectedRegion} onValueChange={v => { setSelectedRegion(v); setSelectedDepartment(''); setSelectedSubPrefecture(''); setSelectedVillage(''); }}><SelectTrigger><SelectValue placeholder="Sélectionnez une région..." /></SelectTrigger><SelectContent>{Object.keys(divisions).map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}<SelectItem value="AUTRE">Autre...</SelectItem></SelectContent></Select></div>
+                    <div><Label htmlFor="region">Région</Label><Select value={selectedRegion} onValueChange={v => { setSelectedRegion(v); setSelectedDepartment(''); setSelectedSubPrefecture(''); setSelectedSubPrefecture(''); setSelectedVillage(''); }}><SelectTrigger><SelectValue placeholder="Sélectionnez une région..." /></SelectTrigger><SelectContent>{IVORIAN_REGIONS.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}<SelectItem value="AUTRE">Autre...</SelectItem></SelectContent></Select></div>
                     {selectedRegion === 'AUTRE' && <div><Label htmlFor="customRegion">Nouvelle Région</Label><Input id="customRegion" value={customRegion} onChange={e => setCustomRegion(e.target.value)} placeholder="Nom de la nouvelle région" /></div>}
 
                     <div><Label htmlFor="department">Département</Label><Select value={selectedDepartment} onValueChange={v => { setSelectedDepartment(v); setSelectedSubPrefecture(''); setSelectedVillage(''); }} disabled={!selectedRegion || selectedRegion === 'AUTRE'}><SelectTrigger><SelectValue placeholder="Sélectionnez un département..." /></SelectTrigger><SelectContent>{departments.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}<SelectItem value="AUTRE">Autre...</SelectItem></SelectContent></Select></div>
@@ -241,8 +243,57 @@ export function AddChiefSheet({ isOpen, onCloseAction, onAddChiefAction }: AddCh
                     <div><Label htmlFor="village">Village/Commune</Label><Select value={selectedVillage} onValueChange={setSelectedVillage} disabled={!selectedSubPrefecture || selectedSubPrefecture === 'AUTRE'}><SelectTrigger><SelectValue placeholder="Sélectionnez un village..." /></SelectTrigger><SelectContent>{villages.map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}<SelectItem value="AUTRE">Autre...</SelectItem></SelectContent></Select></div>
                     {selectedVillage === 'AUTRE' && <div><Label htmlFor="customVillage">Nouveau Village</Label><Input id="customVillage" value={customVillage} onChange={e => setCustomVillage(e.target.value)} placeholder="Nom du nouveau village" /></div>}
 
-                    <div><Label htmlFor="latitude">Latitude</Label><Input id="latitude" type="number" step="any" value={latitude} onChange={(e) => setLatitude(e.target.value === '' ? '' : parseFloat(e.target.value))} placeholder="Ex: 5.345" /></div>
-                    <div><Label htmlFor="longitude">Longitude</Label><Input id="longitude" type="number" step="any" value={longitude} onChange={(e) => setLongitude(e.target.value === '' ? '' : parseFloat(e.target.value))} placeholder="Ex: -4.028" /></div>
+                    <div className="col-span-2 pt-4 border-t border-slate-100 space-y-4">
+                        <div className="flex flex-col gap-1">
+                            <Label className="text-sm font-bold text-slate-700">Position Géographique (SIG)</Label>
+                            <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Sélectionnez la position sur la carte pour la cartographie</p>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            <div className="lg:col-span-2">
+                                <LocationPicker 
+                                    onLocationSelectAction={(lat, lng) => {
+                                        setLatitude(lat);
+                                        setLongitude(lng);
+                                    }}
+                                    initialLat={latitude !== '' ? latitude : undefined}
+                                    initialLng={longitude !== '' ? longitude : undefined}
+                                    className="border shadow-sm rounded-xl bg-slate-50/50"
+                                />
+                            </div>
+                            <div className="flex flex-col gap-4">
+                                <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 space-y-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="latitude" className="text-[10px] font-black uppercase text-slate-400">Latitude</Label>
+                                        <Input 
+                                            id="latitude" 
+                                            type="number" 
+                                            step="any" 
+                                            value={latitude} 
+                                            onChange={(e) => setLatitude(e.target.value === '' ? '' : parseFloat(e.target.value))} 
+                                            placeholder="0.000000"
+                                            className="bg-white border-slate-200 focus-visible:ring-blue-500/20"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="longitude" className="text-[10px] font-black uppercase text-slate-400">Longitude</Label>
+                                        <Input 
+                                            id="longitude" 
+                                            type="number" 
+                                            step="any" 
+                                            value={longitude} 
+                                            onChange={(e) => setLongitude(e.target.value === '' ? '' : parseFloat(e.target.value))} 
+                                            placeholder="0.000000"
+                                            className="bg-white border-slate-200 focus-visible:ring-blue-500/20"
+                                        />
+                                    </div>
+                                </div>
+                                <p className="text-[10px] text-slate-400 italic">
+                                    Les coordonnées sont automatiquement synchronisées avec le marqueur sur la carte.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
                   </div>
                 </AccordionContent>
               </AccordionItem>

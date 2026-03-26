@@ -5,7 +5,7 @@ import React from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Pencil, Trash2, Fuel, User, Car } from "lucide-react";
+import { MoreHorizontal, Pencil, Trash2, Fuel, User, Car, Printer } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import type { FuelCard, FuelProvider } from "@/types/fuel";
 import type { Employe, Fleet } from "@/lib/data";
@@ -16,11 +16,12 @@ interface CardListProps {
     onEdit?: (card: FuelCard) => void;
     onDelete?: (id: string) => void;
     onRecharge?: (card: FuelCard) => void;
+    onPrint?: (card: FuelCard) => void;
     employees?: Employe[];
     vehicles?: Fleet[];
 }
 
-export function FuelCardList({ cards, providers, onEdit, onDelete, onRecharge, employees = [], vehicles = [] }: CardListProps) {
+export function FuelCardList({ cards, providers, onEdit, onDelete, onRecharge, onPrint, employees = [], vehicles = [] }: CardListProps) {
     if (cards.length === 0) {
         return (
             <div className="text-center py-10 text-muted-foreground border-2 border-dashed rounded-lg">
@@ -87,6 +88,9 @@ export function FuelCardList({ cards, providers, onEdit, onDelete, onRecharge, e
                                 <DropdownMenuContent align="end">
                                     <DropdownMenuItem onClick={() => onRecharge?.(c)}>
                                         <Fuel className="mr-2 h-4 w-4" /> Recharger
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => onPrint?.(c)}>
+                                        <Printer className="mr-2 h-4 w-4" /> Rapport de Mission
                                     </DropdownMenuItem>
                                     <DropdownMenuItem onClick={() => onEdit?.(c)}>
                                         <Pencil className="mr-2 h-4 w-4" /> Modifier

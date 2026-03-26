@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -39,6 +39,7 @@ export default function LeaveReportPage() {
   const [isPrinting, setIsPrinting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [reportData, setReportData] = useState<ReportData | null>(null);
+  const [isPending, startTransition] = useTransition();
   
   const years = Array.from({ length: 10 }, (_, i) => (new Date().getFullYear() - i).toString());
   const months = Array.from({ length: 12 }, (_, i) => ({ value: (i + 1).toString(), label: format(new Date(2000, i, 1), 'MMMM', { locale: fr }) }));
@@ -130,7 +131,7 @@ export default function LeaveReportPage() {
           <div className="flex flex-col sm:flex-row gap-4 items-end mb-6 p-4 border rounded-lg">
             <div className="grid gap-2 flex-1 w-full">
               <Label htmlFor="year">Année</Label>
-              <Select value={year} onValueChange={setYear}>
+              <Select value={year} onValueChange={(val) => startTransition(() => setYear(val))}>
                 <SelectTrigger id="year"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {years.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
@@ -139,7 +140,7 @@ export default function LeaveReportPage() {
             </div>
             <div className="grid gap-2 flex-1 w-full">
               <Label htmlFor="month">Mois</Label>
-              <Select value={month} onValueChange={setMonth}>
+              <Select value={month} onValueChange={(val) => startTransition(() => setMonth(val))}>
                 <SelectTrigger id="month"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {months.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}
@@ -148,7 +149,7 @@ export default function LeaveReportPage() {
             </div>
              <div className="grid gap-2 flex-1 w-full">
                 <Label htmlFor="statusFilter">Statut</Label>
-                <Select value={statusFilter} onValueChange={(val: any) => setStatusFilter(val)}>
+                <Select value={statusFilter} onValueChange={(val: any) => startTransition(() => setStatusFilter(val))}>
                 <SelectTrigger id="statusFilter"><SelectValue /></SelectTrigger>
                 <SelectContent>
                     <SelectItem value="all">Tous</SelectItem>

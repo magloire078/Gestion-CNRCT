@@ -29,6 +29,7 @@ import {
 import { FuelProviderList } from "@/components/fleet/fuel-provider-list";
 import { FuelCardList } from "@/components/fleet/fuel-card-list";
 import { FuelTransactionList } from "@/components/fleet/fuel-transaction-list";
+import { FuelMissionReport } from "@/components/fleet/fuel-mission-report";
 
 // Types
 import { FuelProvider, FuelCard, FuelTransaction } from "@/types/fuel";
@@ -47,6 +48,7 @@ export default function FuelManagementPage() {
     const [isCardDialogOpen, setIsCardDialogOpen] = useState(false);
     const [isRechargeDialogOpen, setIsRechargeDialogOpen] = useState(false);
     const [isExpenseDialogOpen, setIsExpenseDialogOpen] = useState(false);
+    const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
 
     const [selectedCard, setSelectedCard] = useState<FuelCard | null>(null);
 
@@ -236,6 +238,10 @@ export default function FuelManagementPage() {
                                     setSelectedCard(card);
                                     setIsRechargeDialogOpen(true);
                                 }}
+                                onPrint={(card) => {
+                                    setSelectedCard(card);
+                                    setIsReportDialogOpen(true);
+                                }}
                             />
                         </CardContent>
                     </Card>
@@ -290,6 +296,18 @@ export default function FuelManagementPage() {
                 employees={employees}
                 vehicles={vehicles}
             />
+
+            {selectedCard && (
+                <FuelMissionReport
+                    open={isReportDialogOpen}
+                    onOpenChange={setIsReportDialogOpen}
+                    card={selectedCard}
+                    transactions={transactions}
+                    providerName={providers.find(p => p.id === selectedCard.providerId)?.name}
+                    month={new Date().getMonth()}
+                    year={new Date().getFullYear()}
+                />
+            )}
         </div>
     );
 }

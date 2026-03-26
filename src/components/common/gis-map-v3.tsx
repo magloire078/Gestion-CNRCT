@@ -5,9 +5,9 @@ import 'leaflet/dist/leaflet.css';
 import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 
-import { 
-    MapPin, Navigation, Info, User, Loader2, 
-    ZoomIn, ZoomOut, Maximize, Sparkles 
+import {
+    MapPin, Navigation, Info, User, Loader2,
+    ZoomIn, ZoomOut, Maximize
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -25,9 +25,9 @@ interface GISMapProps {
     selectedId?: string | null;
     onMarkerClick?: (id: string, type: 'chief' | 'conflict' | 'heritage') => void;
     onAddPoint?: (lat: number, lng: number) => void;
-    onAiAnalyze?: (conflict: Conflict) => void;
     className?: string;
     showFilters?: boolean;
+    height?: string;
 }
 
 export function GISMap(props: GISMapProps) {
@@ -38,9 +38,9 @@ export function GISMap(props: GISMapProps) {
         selectedId,
         onMarkerClick,
         onAddPoint,
-        onAiAnalyze,
         className,
-        showFilters = true
+        showFilters = true,
+        height = '800px'
     } = props;
 
     const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -73,7 +73,7 @@ export function GISMap(props: GISMapProps) {
         const initLeaflet = async () => {
             const Leaflet = (await import('leaflet')).default;
             await import('leaflet.markercluster');
-            
+
             // Fix icon paths
             // @ts-ignore
             delete Leaflet.Icon.Default.prototype._getIconUrl;
@@ -97,7 +97,7 @@ export function GISMap(props: GISMapProps) {
     }, []);
 
     // Création de l'icône personnalisée (Helper interne)
-    const createCustomIcon = useCallback((type: 'chief' | 'conflict' | 'heritage' | 'selected', category?: string) => {
+    const createCustomIcon = useCallback((type: 'chief' | 'conflict' | 'heritage' | 'selected', options?: { category?: string, status?: string }) => {
         if (!L) return null;
 
         let color = 'bg-blue-600';
@@ -107,7 +107,14 @@ export function GISMap(props: GISMapProps) {
             color = 'bg-blue-600';
             iconSvg = '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>';
         } else if (type === 'conflict') {
-            color = 'bg-red-500';
+            // Mapping des couleurs par statut
+            const statusColors: Record<string, string> = {
+                'Résolu': 'bg-emerald-500',
+                'En médiation': 'bg-amber-500',
+                'En cours': 'bg-rose-500',
+                'default': 'bg-red-500'
+            };
+            color = statusColors[options?.status || 'default'] || statusColors.default;
             iconSvg = '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>';
         } else if (type === 'heritage') {
             const colors: Record<string, string> = {
@@ -115,7 +122,7 @@ export function GISMap(props: GISMapProps) {
                 alliances: 'bg-purple-600',
                 default: 'bg-yellow-600'
             };
-            color = colors[category || 'default'] || colors.default;
+            color = colors[options?.category || 'default'] || colors.default;
             iconSvg = '<path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.07 5.82 22 7 14.14 2 9.27l6.91-1.01L12 2z"/>';
         } else if (type === 'selected') {
             color = 'bg-red-600';
@@ -133,7 +140,7 @@ export function GISMap(props: GISMapProps) {
 
         return L.divIcon({
             className: `custom-${type}-icon`,
-            html: `<div class="w-8 h-8 ${color} rounded-full border-2 border-white shadow-lg flex items-center justify-center transform transition-transform hover:scale-110">
+            html: `<div class="w-8 h-8 ${color} rounded-full border-2 border-white shadow-lg flex items-center justify-center transform transition-transform hover:scale-110 shadow-[0_4px_12px_rgba(0,0,0,0.15)]">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">${iconSvg}</svg>
             </div>`,
             iconSize: [32, 32],
@@ -147,7 +154,7 @@ export function GISMap(props: GISMapProps) {
         if (!L || !mapContainerRef.current || mapRef.current) return;
 
         const container = mapContainerRef.current;
-        
+
         // Protection cruciale : si le conteneur a déjà un _leaflet_id, 
         // c'est qu'une instance s'est déjà attachée (possible en StrictMode).
         if ((container as any)._leaflet_id) {
@@ -158,7 +165,7 @@ export function GISMap(props: GISMapProps) {
         try {
             // Nettoyage agressif avant création
             container.innerHTML = '';
-            
+
             const map = L.map(container, {
                 center: [7.539989, -5.54708],
                 zoom: 7,
@@ -220,7 +227,7 @@ export function GISMap(props: GISMapProps) {
             const marker = L.marker([chief.latitude, chief.longitude], {
                 icon: createCustomIcon(selectedId === chief.id ? 'selected' : 'chief')
             });
-            
+
             const popupContent = document.createElement('div');
             popupContent.className = 'p-3 min-w-[200px] font-sans';
             popupContent.innerHTML = `
@@ -247,7 +254,7 @@ export function GISMap(props: GISMapProps) {
         conflicts.forEach(conflict => {
             if (!conflict.latitude || !conflict.longitude) return;
             const marker = L.marker([conflict.latitude, conflict.longitude], {
-                icon: createCustomIcon('conflict')
+                icon: createCustomIcon('conflict', { status: conflict.status })
             });
 
             const popupContent = document.createElement('div');
@@ -258,18 +265,10 @@ export function GISMap(props: GISMapProps) {
                     <p class="text-sm font-bold text-slate-800">${conflict.village}</p>
                 </div>
                 <p class="text-xs text-slate-600 mb-4 italic leading-relaxed">"${conflict.description}"</p>
-                <button id="ai-btn-${conflict.id}" class="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-[10px] py-2.5 rounded-lg font-bold hover:opacity-90 transition-all shadow-sm">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>
-                    DÉPLOYER ANALYSE IA
-                </button>
             `;
 
             marker.bindPopup(popupContent);
-            marker.on('popupopen', () => {
-                const btn = document.getElementById(`ai-btn-${conflict.id}`);
-                if (btn) btn.onclick = () => onAiAnalyze?.(conflict);
-            });
-            
+
             layers.conflicts.addLayer(marker);
         });
 
@@ -286,7 +285,7 @@ export function GISMap(props: GISMapProps) {
         if (!mapRef.current || !layersRef.current[layer]) return;
         const map = mapRef.current;
         const target = layersRef.current[layer];
-        
+
         const newState = !activeLayers[layer];
         if (newState) {
             map.addLayer(target);
@@ -297,13 +296,13 @@ export function GISMap(props: GISMapProps) {
     };
 
     if (typeof window === 'undefined' || !isClient) {
-        return <div className={cn("bg-slate-50 relative", className)} style={{ minHeight: '600px' }} />;
+        return <div className={cn("bg-slate-50 relative", className)} style={{ minHeight: height }} />;
     }
 
     return (
-        <div className={cn("bg-slate-50 relative group rounded-xl overflow-hidden shadow-2xl border border-slate-200", className)} style={{ minHeight: '600px' }}>
+        <div className={cn("bg-slate-50 relative group rounded-xl overflow-hidden shadow-2xl border border-slate-200", className)} style={{ minHeight: height }}>
             <div key={instanceId} ref={mapContainerRef} className="absolute inset-0 z-0" id={instanceId} />
-            
+
             {/* Overlay de Chargement */}
             {!mapReady && (
                 <div className="absolute inset-0 bg-slate-50/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center gap-4">
@@ -316,26 +315,26 @@ export function GISMap(props: GISMapProps) {
             {mapReady && (
                 <div className="absolute top-4 right-4 z-10 flex flex-col gap-2">
                     <div className="bg-white/90 backdrop-blur-md p-1 rounded-xl shadow-xl border border-white/50 flex flex-col gap-1">
-                        <Button 
-                            variant="ghost" 
-                            size="icon" 
+                        <Button
+                            variant="ghost"
+                            size="icon"
                             className="h-9 w-9 rounded-lg hover:bg-blue-50 text-slate-600"
                             onClick={() => mapRef.current?.zoomIn()}
                         >
                             <ZoomIn className="h-5 w-5" />
                         </Button>
-                        <Button 
-                            variant="ghost" 
-                            size="icon" 
+                        <Button
+                            variant="ghost"
+                            size="icon"
                             className="h-9 w-9 rounded-lg hover:bg-blue-50 text-slate-600"
                             onClick={() => mapRef.current?.zoomOut()}
                         >
                             <ZoomOut className="h-5 w-5" />
                         </Button>
                         <div className="h-px bg-slate-200 mx-2" />
-                        <Button 
-                            variant="ghost" 
-                            size="icon" 
+                        <Button
+                            variant="ghost"
+                            size="icon"
                             className="h-9 w-9 rounded-lg hover:bg-blue-50 text-slate-600"
                             onClick={() => {
                                 if (navigator.geolocation) {
@@ -355,7 +354,7 @@ export function GISMap(props: GISMapProps) {
             {showFilters && mapReady && (
                 <div className="absolute bottom-6 left-6 z-10">
                     <div className="bg-slate-900/90 backdrop-blur-xl p-2 rounded-2xl shadow-2xl border border-white/10 flex items-center gap-2">
-                        <button 
+                        <button
                             onClick={() => toggleLayer('chiefs')}
                             className={cn(
                                 "flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all",
@@ -365,7 +364,7 @@ export function GISMap(props: GISMapProps) {
                             <User className="h-3.5 w-3.5" />
                             Chefs
                         </button>
-                        <button 
+                        <button
                             onClick={() => toggleLayer('conflicts')}
                             className={cn(
                                 "flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all",
@@ -376,16 +375,6 @@ export function GISMap(props: GISMapProps) {
                             Conflits
                         </button>
                         <div className="w-px h-6 bg-white/10 mx-1" />
-                        <button 
-                            onClick={() => toggleLayer('heatmap')}
-                            className={cn(
-                                "flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all",
-                                activeLayers.heatmap ? "bg-amber-500 text-white shadow-lg shadow-amber-500/30" : "text-slate-400 hover:text-white"
-                            )}
-                        >
-                            <Sparkles className="h-3.5 w-3.5" />
-                            Heatmap
-                        </button>
                     </div>
                 </div>
             )}

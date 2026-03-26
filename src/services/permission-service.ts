@@ -94,12 +94,32 @@ export function checkPermission(
 export async function syncDefaultPermissionsIfMissing(roleId: string): Promise<void> {
     const roleRef = doc(db, rolesCollection, roleId);
     const snap = await getDoc(roleRef);
-    if (!snap.exists() || !snap.data().resourcePermissions) {
-        const defaults = getDefaultPermissions(roleId);
-        if (snap.exists()) {
-            await updateDoc(roleRef, { resourcePermissions: defaults });
-        } else {
-            await setDoc(roleRef, { name: roleId, permissions: [], resourcePermissions: defaults }, { merge: true });
+    const defaults = getDefaultPermissions(roleId);
+
+    if (!snap.exists()) {
+        await setDoc(roleRef, { 
+            name: roleId, 
+            permissions: [], 
+            resourcePermissions: defaults 
+        }, { merge: true });
+        return;
+    }
+
+    const data = snap.data();
+    const currentPerms = data.resourcePermissions as ResourcePermissions || {};
+    
+    // Vrifie si de nouvelles ressources sont prsentes dans les defaults mais absentes de Firestore
+    let needsUpdate = false;
+    const mergedPerms = { ...currentPerms };
+
+    for (const resourceId in defaults) {
+        if (!mergedPerms[resourceId]) {
+            mergedPerms[resourceId] = defaults[resourceId];
+            needsUpdate = true;
         }
+    }
+
+    if (needsUpdate || !data.resourcePermissions) {
+        await updateDoc(roleRef, { resourcePermissions: mergedPerms });
     }
 }

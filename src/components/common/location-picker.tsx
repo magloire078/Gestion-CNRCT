@@ -195,7 +195,7 @@ export function LocationPicker({
                 </Button>
             </div>
 
-            <div className="relative h-[300px] w-full rounded-xl border border-slate-200 overflow-hidden bg-slate-100">
+            <div className="relative h-[500px] w-full rounded-xl border border-slate-200 overflow-hidden bg-slate-100">
                 <div ref={mapContainerRef} className="absolute inset-0 z-0 h-full w-full" />
                 <div className="absolute bottom-3 left-3 z-[400] bg-white/80 backdrop-blur-sm p-2 rounded-lg text-[10px] text-slate-600 border shadow-sm">
                     <p className="flex items-center gap-1"><MapPin className="h-3 w-3" /> Cliquez pour choisir ou déplacez le marqueur</p>

@@ -76,6 +76,7 @@ export type Employe = {
     Commune?: string;
     Village?: string;
     CNPS?: boolean;
+    Date_Cessation_CNPS?: string; // YYYY-MM-DD
     Photo?: string;
     solde_conges?: number;
     Droit?: number;

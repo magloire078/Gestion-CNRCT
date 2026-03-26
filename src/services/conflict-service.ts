@@ -45,10 +45,31 @@ export async function getConflict(id: string): Promise<Conflict | null> {
     return null;
 }
 
+export async function getConflictByTrackingId(trackingId: string): Promise<Conflict | null> {
+    if (!trackingId) return null;
+    const { where } = await import('@/lib/firebase');
+    const q = query(conflictsCollection, where("trackingId", "==", trackingId.toUpperCase()));
+    const snapshot = await getDocs(q);
+    if (!snapshot.empty) {
+        const doc = snapshot.docs[0];
+        return { id: doc.id, ...doc.data() } as Conflict;
+    }
+    return null;
+}
+
 
 export async function addConflict(conflictDataToAdd: Omit<Conflict, 'id'>): Promise<Conflict> {
-    const docRef = await addDoc(conflictsCollection, conflictDataToAdd);
-    return { id: docRef.id, ...conflictDataToAdd };
+    // Generate unique tracking ID: CNRCT-YYYY-[Random 4 digits]
+    const year = new Date().getFullYear();
+    const random = Math.floor(1000 + Math.random() * 9000);
+    const trackingId = `CNRCT-${year}-${random}`;
+    
+    const docRef = await addDoc(conflictsCollection, {
+        ...conflictDataToAdd,
+        trackingId,
+        createdAt: new Date().toISOString()
+    });
+    return { id: docRef.id, ...conflictDataToAdd, trackingId };
 }
 
 export async function updateConflict(id: string, dataToUpdate: Partial<Omit<Conflict, 'id'>>): Promise<void> {
@@ -59,4 +80,20 @@ export async function updateConflict(id: string, dataToUpdate: Partial<Omit<Conf
 export async function deleteConflict(id: string): Promise<void> {
     const conflictDocRef = doc(db, 'conflicts', id);
     await deleteDoc(conflictDocRef);
+}
+
+export async function batchAddConflicts(conflicts: Omit<Conflict, 'id'>[]): Promise<number> {
+    const { writeBatch, doc } = await import('@/lib/firebase');
+    const batch = writeBatch(db);
+    
+    conflicts.forEach(conflict => {
+        const newDocRef = doc(collection(db, 'conflicts'));
+        batch.set(newDocRef, {
+            ...conflict,
+            createdAt: new Date().toISOString()
+        });
+    });
+    
+    await batch.commit();
+    return conflicts.length;
 }

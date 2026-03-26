@@ -34,6 +34,8 @@ export type Chief = {
     regencyStartDate?: string;
     regencyEndDate?: string;
     villageId?: string;
+    status?: 'actif' | 'archive' | 'a_vie';
+
 };
 
 export type Custom = {

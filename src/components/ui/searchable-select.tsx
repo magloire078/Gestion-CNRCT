@@ -36,7 +36,7 @@ interface SearchableSelectProps {
     disabled?: boolean
 }
 
-export function SearchableSelect({
+export const SearchableSelect = React.memo(({
     items,
     value,
     onValueChange,
@@ -45,7 +45,7 @@ export function SearchableSelect({
     emptyMessage = "Aucun résultat trouvé.",
     className,
     disabled = false,
-}: SearchableSelectProps) {
+}: SearchableSelectProps) => {
     const [open, setOpen] = React.useState(false)
 
     const selectedItem = React.useMemo(
@@ -99,4 +99,4 @@ export function SearchableSelect({
             </PopoverContent>
         </Popover>
     )
-}
+});

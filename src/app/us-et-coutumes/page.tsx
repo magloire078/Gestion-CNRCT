@@ -4,7 +4,8 @@ import { useState, useEffect, useMemo } from "react";
 import { 
     PlusCircle, Search, BookText, Edit, Trash2, 
     Eye, Quote, Globe, MapPin, History,
-    Users, Landmark, Scroll, ChevronRight
+    Users, Landmark, Scroll, ChevronRight,
+    Map as MapIcon
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,6 +18,7 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import type { Custom } from "@/lib/data";
 import { subscribeToCustoms, addCustom, deleteCustom } from "@/services/customs-service";
@@ -26,6 +28,7 @@ import Link from 'next/link';
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { IVORIAN_REGIONS } from "@/constants/regions";
 
 export default function UsEtCoutumesPage() {
   const [customs, setCustoms] = useState<Custom[]>([]);
@@ -33,6 +36,7 @@ export default function UsEtCoutumesPage() {
   const [error, setError] = useState<string | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [regionFilter, setRegionFilter] = useState<string>("all");
   const { toast } = useToast();
   const [deleteTarget, setDeleteTarget] = useState<Custom | null>(null);
   const router = useRouter();
@@ -86,11 +90,14 @@ export default function UsEtCoutumesPage() {
   };
 
   const filteredCustoms = useMemo(() => {
-    return customs.filter((custom) =>
-      custom.ethnicGroup.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      custom.regions.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [customs, searchTerm]);
+    const lowerSearch = searchTerm.toLowerCase();
+    return customs.filter((custom) => {
+      const matchesSearch = custom.ethnicGroup.toLowerCase().includes(lowerSearch) ||
+                            custom.regions.toLowerCase().includes(lowerSearch);
+      const matchesRegion = regionFilter === "all" || custom.regions === regionFilter;
+      return matchesSearch && matchesRegion;
+    });
+  }, [customs, searchTerm, regionFilter]);
 
   return (
     <div className="flex flex-col gap-10 pb-20">
@@ -114,15 +121,31 @@ export default function UsEtCoutumesPage() {
       <div className="flex flex-col gap-8 px-2">
           {/* Controls */}
           <div className="flex flex-col md:flex-row items-center gap-4 justify-between">
-              <div className="relative group w-full md:w-[400px]">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
-                <Input
-                  placeholder="Rechercher une ethnie, une région, un rite..."
-                  className="pl-12 h-14 rounded-2xl border-none shadow-xl shadow-slate-200/50 bg-white focus:ring-slate-900 text-base"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
+              <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
+                <div className="relative group w-full md:w-[400px]">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
+                  <Input
+                    placeholder="Rechercher une ethnie, une région, un rite..."
+                    className="pl-12 h-14 rounded-2xl border-none shadow-xl shadow-slate-200/50 bg-white focus:ring-slate-900 text-base"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </div>
+
+                <Select value={regionFilter} onValueChange={setRegionFilter}>
+                    <SelectTrigger className="h-14 rounded-2xl border-none shadow-xl shadow-slate-200/50 bg-white w-full md:w-[220px] font-bold text-slate-600">
+                         <div className="flex items-center gap-2">
+                            <MapIcon className="h-4 w-4 text-slate-400" />
+                            <SelectValue placeholder="Filtrer par région" />
+                         </div>
+                    </SelectTrigger>
+                    <SelectContent className="rounded-2xl shadow-2xl border-slate-100 max-h-[300px]">
+                        <SelectItem value="all" className="font-bold">Toutes les régions</SelectItem>
+                        {IVORIAN_REGIONS.map(r => <SelectItem key={r} value={r} className="rounded-lg">{r}</SelectItem>)}
+                    </SelectContent>
+                </Select>
               </div>
+
               <div className="flex items-center gap-2">
                   <Badge variant="outline" className="h-10 px-4 rounded-xl border-slate-200 bg-white text-slate-500 font-bold">
                       {filteredCustoms.length} Fiches répertoriées
@@ -217,8 +240,8 @@ export default function UsEtCoutumesPage() {
 
       <AddCustomSheet 
         isOpen={isSheetOpen}
-        onClose={() => setIsSheetOpen(false)}
-        onAddCustom={handleAddCustom}
+        onCloseAction={() => setIsSheetOpen(false)}
+        onAddCustomAction={handleAddCustom}
       />
       <ConfirmationDialog
         isOpen={!!deleteTarget}

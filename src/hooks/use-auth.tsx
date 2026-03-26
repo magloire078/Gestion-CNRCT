@@ -77,11 +77,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const hasPermission = (permission: string) => {
     if (loading || !user) return false;
-    // Admins and Super Admins have all permissions
-    if (user.role?.name === 'Administrateur' || user.role?.name === 'Super Administrateur') {
-      return true;
+    
+    // Super-admins/Dirigeants have all permissions (bypass by ID or by specific email for safety)
+    if (
+      user.roleId === 'dirigeant-president' || 
+      user.roleId === 'super-admin' || 
+      user.roleId === 'LHcHyfBzile3r0vyFOFb' || // Explicit ID for safety
+      user.email === 'magloire078@gmail.com'
+    ) return true;
+
+    // 1. Check legacy permissions array
+    if (user.permissions?.includes(permission)) return true;
+
+    // 2. Harmonization with new CRUD matrix (resourcePermissions)
+    // Pattern: "page:xxx:view" -> check if resource xxx has 'read' access
+    if (permission.startsWith('page:') && permission.endsWith(':view')) {
+      const resourceId = permission.split(':')[1];
+      if (user.resourcePermissions?.[resourceId]?.read) return true;
     }
-    return user.permissions?.includes(permission) || false;
+
+    // Pattern: "feature:xxx:import" or "feature:xxx:export" -> check 'create' or 'update'
+    if (permission.startsWith('feature:')) {
+      const parts = permission.split(':');
+      const resourceId = parts[1];
+      const action = parts[2];
+      if (action === 'import' || action === 'export') {
+        // Import/Export are usually 'create' or 'update' level permissions
+        if (user.resourcePermissions?.[resourceId]?.create || user.resourcePermissions?.[resourceId]?.update) return true;
+      }
+    }
+
+    return false;
   }
 
   const value = { user, loading, hasPermission, settings };

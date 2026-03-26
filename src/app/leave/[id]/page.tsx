@@ -15,8 +15,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getLeave, updateLeaveStatus } from "@/services/leave-service";
-import { getEmployee } from "@/services/employee-service";
-import type { Leave, Employe } from "@/lib/data";
+import { getEmployee, getOrganizationalUnits } from "@/services/employee-service";
+import type { Leave, Employe, Direction, Service } from "@/lib/data";
 import { useAuth } from "@/hooks/use-auth";
 import { format, parseISO, eachDayOfInterval, getDay } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -29,6 +29,7 @@ export default function LeaveDetailPage() {
     const { toast } = useToast();
     const [leave, setLeave] = useState<Leave | null>(null);
     const [employee, setEmployee] = useState<Employe | null>(null);
+    const [units, setUnits] = useState<{ directions: Direction[], services: Service[] } | null>(null);
     const [loading, setLoading] = useState(true);
     const { user, hasPermission } = useAuth();
 
@@ -37,7 +38,15 @@ export default function LeaveDetailPage() {
     useEffect(() => {
         async function fetchData() {
             try {
-                const leaveData = await getLeave(id);
+                const [leaveData, orgUnits] = await Promise.all([
+                    getLeave(id),
+                    getOrganizationalUnits()
+                ]);
+                
+                if (orgUnits) {
+                    setUnits({ directions: orgUnits.directions, services: orgUnits.services });
+                }
+
                 if (leaveData) {
                     setLeave(leaveData);
                     if (leaveData.employeeId) {
@@ -278,11 +287,11 @@ export default function LeaveDetailPage() {
                             <div className="space-y-3 pt-4 border-t border-slate-800">
                                 <div className="flex items-center gap-2 text-sm">
                                     <Building2 className="h-4 w-4 text-slate-500" />
-                                    <span>{employee?.direction || "Direction non spécifiée"}</span>
+                                    <span>{units?.directions.find(d => d.id === employee?.directionId)?.name || "Direction non spécifiée"}</span>
                                 </div>
                                 <div className="flex items-center gap-2 text-sm">
                                     <MapPin className="h-4 w-4 text-slate-500" />
-                                    <span>{employee?.service || "Service non spécifié"}</span>
+                                    <span>{units?.services.find(s => s.id === employee?.serviceId)?.name || "Service non spécifié"}</span>
                                 </div>
                             </div>
 

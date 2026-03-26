@@ -33,8 +33,13 @@ export type Mission = {
     lieuMission?: string;
 };
 
-export const conflictTypes = ["Foncier", "Succession", "Intercommunautaire", "Politique", "Autre"] as const;
+export const conflictTypes = ["Foncier", "Succession", "Intercommunautaire", "Politique", "Affaires civiles", "Autre"] as const;
 export type ConflictType = typeof conflictTypes[number];
+
+export type ConflictTypeData = {
+    id: string;
+    name: string;
+};
 
 export const conflictStatuses = ["En cours", "Résolu", "En médiation"] as const;
 export type ConflictStatus = typeof conflictStatuses[number];
@@ -44,21 +49,39 @@ export const conflictTypeVariantMap: Record<ConflictType, "default" | "secondary
     "Succession": "secondary",
     "Intercommunautaire": "destructive",
     "Politique": "outline",
+    "Affaires civiles": "default",
     "Autre": "outline",
+};
+
+export type ConflictComment = {
+    id: string;
+    date: string;
+    author: string;
+    content: string;
 };
 
 export type Conflict = {
     id: string; // Firestore document ID
+    trackingId?: string; // Format unique: CNRCT-YYYY-XXXX
     village: string;
-    type: ConflictType;
+    district?: string;
+    region?: string;
+    type: string;
     description: string;
+    parties?: string; // Parties en conflit
+    impact?: string; // Impact ou suites du conflit
     reportedDate: string; // YYYY-MM-DD
+    incidentDate?: string; // Date réelle de l'incident (MGP Standard)
+    isAnonymous?: boolean; // Plainte anonyme (MGP Standard)
     status: ConflictStatus;
     latitude?: number;
     longitude?: number;
     mediatorName?: string;
     riskScore?: number;
     aiCategory?: string;
+    resolutionDetails?: string; // Détails de la résolution (MGP Standard)
+    resolutionDate?: string; // Date de résolution
+    comments?: ConflictComment[]; // Journal des étapes / Timeline
 };
 
 export type OrganizationSettings = {

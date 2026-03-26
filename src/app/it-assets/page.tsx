@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useTransition } from "react";
 import { PlusCircle, Search, Eye, Pencil, Trash2, MoreHorizontal, Laptop, Monitor, Printer as PrinterIcon, Keyboard, Mouse, FileCode, Package as PackageIcon, Download, Server, Printer, QrCode } from "lucide-react";
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
@@ -29,6 +29,7 @@ import { PrintLabels } from "@/components/it-assets/print-labels";
 import { PrintSingleLabel } from "@/components/it-assets/print-single-label";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { PrintAssetsList } from "@/components/it-assets/print-assets-list";
+import { DebouncedInput } from "@/components/ui/debounced-input";
 
 
 type Status = 'En utilisation' | 'En stock' | 'En réparation' | 'Retiré';
@@ -67,6 +68,8 @@ export default function ItAssetsPage() {
   const { hasPermission } = useAuth();
 
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+  const [isPending, startTransition] = useTransition();
   const [typeFilter, setTypeFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
 
@@ -176,7 +179,7 @@ export default function ItAssetsPage() {
 
   const filteredAssets = useMemo(() => {
     const filtered = assets.filter(asset => {
-      const searchTermLower = searchTerm.toLowerCase();
+      const searchTermLower = debouncedSearchTerm.toLowerCase();
       const matchesSearch =
         asset.tag.toLowerCase().includes(searchTermLower) ||
         (asset.fabricant || '').toLowerCase().includes(searchTermLower) ||
@@ -195,7 +198,7 @@ export default function ItAssetsPage() {
     }
     return filtered;
 
-  }, [assets, searchTerm, typeFilter, statusFilter, currentPage, itemsPerPage]);
+  }, [assets, debouncedSearchTerm, typeFilter, statusFilter, currentPage, itemsPerPage]);
 
   const paginatedAssets = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
@@ -333,14 +336,20 @@ export default function ItAssetsPage() {
             <div className="flex flex-col sm:flex-row gap-4 mb-4">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                <Input
+                <DebouncedInput
                   placeholder="Rechercher par N° inventaire, IP, modèle..."
                   className="pl-10"
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={(val) => startTransition(() => {
+                    setSearchTerm(val.toString());
+                    setDebouncedSearchTerm(val.toString());
+                  })}
                 />
               </div>
-              <Select value={typeFilter} onValueChange={setTypeFilter}>
+              <Select value={typeFilter} onValueChange={(val) => startTransition(() => {
+                setTypeFilter(val);
+                setCurrentPage(1);
+              })}>
                 <SelectTrigger className="w-full sm:w-[180px]">
                   <SelectValue placeholder="Filtrer par type" />
                 </SelectTrigger>
@@ -349,7 +358,10 @@ export default function ItAssetsPage() {
                   {assetTypes.map(type => <SelectItem key={type} value={type}>{type}</SelectItem>)}
                 </SelectContent>
               </Select>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <Select value={statusFilter} onValueChange={(val) => startTransition(() => {
+                setStatusFilter(val);
+                setCurrentPage(1);
+              })}>
                 <SelectTrigger className="w-full sm:w-[180px]">
                   <SelectValue placeholder="Filtrer par statut" />
                 </SelectTrigger>

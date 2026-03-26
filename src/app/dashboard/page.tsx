@@ -22,19 +22,27 @@ import {
     Globe, Bot, Loader2 as LoaderIcon, Briefcase, 
     CalendarOff, PlusCircle, Eye, Receipt, 
     FilePlus2, Rocket, TrendingUp, Sparkles,
-    LayoutDashboard, ArrowUpRight, Activity,
-    History, Map as MapIcon, HelpCircle
+    LayoutDashboard, ArrowUpRight, Activity, Award,
+    History, Map as MapIcon, HelpCircle,    ChevronDown, 
+    MoreHorizontal, 
+    AlertTriangle,
+    Plus,
+    Trash2,
+    FileText,
+    Database,
+    ChevronRight,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { EmployeeDistributionChart } from '@/components/charts/employee-distribution-chart';
 import { AssetStatusChart } from '@/components/charts/asset-status-chart';
+import { ConflictHeatmap } from '@/components/charts/conflict-heatmap';
 import { EmployeeActivityReport } from '@/components/reports/employee-activity-report';
 import { NewsFeed } from '@/components/news/news-feed';
 import type { Employe, Leave, Asset, Fleet, OrganizationSettings, Chief, Department, Mission, Evaluation } from '@/lib/data';
 import { Skeleton } from '@/components/ui/skeleton';
 import { differenceInYears, parseISO, format, addMonths, isAfter, lastDayOfMonth } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { PrintLayout } from '@/components/reports/print-layout';
 import { Badge } from '@/components/ui/badge';
 import { AddLeaveRequestSheet } from "@/components/leave/add-leave-request-sheet";
@@ -179,6 +187,7 @@ export default function DashboardPage() {
         globalStats,
         loading,
         seniorityAnniversaries,
+        birthdayAnniversaries,
         upcomingRetirements,
         selectedAnniversaryMonth,
         setSelectedAnniversaryMonth,
@@ -211,15 +220,23 @@ export default function DashboardPage() {
                 <div className="flex flex-col gap-10">
                     {/* Hero Welcome */}
                     <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 pt-4">
-                        <div className="space-y-2">
-                             <div className="flex items-center gap-2 mb-2">
-                                <div className="h-6 w-1 bg-slate-900 rounded-full" />
-                                <Badge variant="outline" className="border-slate-200 text-[10px] font-black uppercase tracking-widest text-slate-400">Système de Pilotage v3.0</Badge>
-                             </div>
-                             <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tighter">Bienvenue, <span className="text-slate-500 font-medium">{user?.name}</span></h1>
-                             <p className="text-slate-400 text-base md:text-lg font-medium leading-relaxed max-w-2xl">
-                                Votre centre de commandement centralisé pour la gestion du Directoire et des instances régionales.
-                             </p>
+                        <div className="flex flex-col md:flex-row md:items-center gap-6">
+                            <Avatar className="h-20 w-20 md:h-28 md:w-28 border-4 border-white shadow-2xl">
+                                <AvatarImage src={user?.photoUrl || undefined} alt={user?.name || ''} />
+                                <AvatarFallback className="bg-slate-100 font-bold text-slate-400 text-2xl">
+                                    {user?.name?.charAt(0)}
+                                </AvatarFallback>
+                            </Avatar>
+                            <div className="space-y-2">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <div className="h-6 w-1 bg-slate-900 rounded-full" />
+                                    <Badge variant="outline" className="border-slate-200 text-[10px] font-black uppercase tracking-widest text-slate-400">Système de Pilotage v3.0</Badge>
+                                </div>
+                                <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tighter">Bienvenue, <span className="text-slate-500 font-medium">{user?.name}</span></h1>
+                                <p className="text-slate-400 text-base md:text-lg font-medium leading-relaxed max-w-2xl">
+                                    Votre centre de commandement centralisé pour la gestion du Directoire et des instances régionales.
+                                </p>
+                            </div>
                         </div>
                         <div className="flex items-center gap-4">
                             <Button variant="outline" className="h-14 rounded-2xl px-6 border-slate-200 font-bold bg-white text-slate-600 shadow-xl shadow-slate-100 hover:bg-slate-50 transition-all">
@@ -243,10 +260,17 @@ export default function DashboardPage() {
                                 <TabsTrigger value="alerts" className="px-0 py-4 h-auto rounded-none border-b-2 border-transparent data-[state=active]:border-slate-900 data-[state=active]:bg-transparent shadow-none text-sm font-black uppercase tracking-widest text-slate-400 data-[state=active]:text-slate-900 transition-all">
                                     Alertes Événementielles
                                 </TabsTrigger>
+                                <TabsTrigger value="stability" className="px-0 py-4 h-auto rounded-none border-b-2 border-transparent data-[state=active]:border-slate-900 data-[state=active]:bg-transparent shadow-none text-sm font-black uppercase tracking-widest text-slate-400 data-[state=active]:text-slate-900 transition-all">
+                                    Territoires & Stabilité
+                                </TabsTrigger>
                             </TabsList>
                             <div className="hidden md:flex items-center gap-4 text-[10px] font-bold text-slate-300 uppercase tracking-wider">
-                                <div className="flex items-center gap-1.5"><div className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" /> Serveurs OK</div>
-                                <div className="flex items-center gap-1.5"><div className="h-2 w-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]" /> Synchro Firestore</div>
+                                {user?.role?.name === 'Super Administrateur' && (
+                                    <>
+                                        <div className="flex items-center gap-1.5"><div className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" /> Serveurs OK</div>
+                                        <div className="flex items-center gap-1.5"><div className="h-2 w-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]" /> Synchro Firestore</div>
+                                    </>
+                                )}
                             </div>
                         </div>
 
@@ -255,7 +279,7 @@ export default function DashboardPage() {
                             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
                                 <StatCard loading={loading} title="Effectifs Opérationnels" value={globalStats.activeEmployees.toString()} icon={Users} color="primary" trend={{ value: "+2.4%", up: true }} />
                                 <StatCard loading={loading} title="Membres du Directoire" value={globalStats.employees.filter(e => getEmployeeGroup(e, globalStats.departments) === 'directoire' && e.status === 'Actif').length.toString()} icon={Crown} color="amber" trend={{ value: "Stable", up: true }} />
-                                <StatCard loading={loading} title="Couverture CNPS" value={`${Math.round((globalStats.cnpsEmployees / globalStats.activeEmployees) * 100)}%`} icon={ShieldCheck} color="success" trend={{ value: "+5%", up: true }} description="Employés déclarés" />
+                                <StatCard loading={loading} title="Tensions Actives" value={globalStats.conflicts.filter(c => c.status !== 'Résolu').length.toString()} icon={AlertTriangle} color="rose" trend={{ value: "-4%", up: false }} description="Dossiers en cours/médiation" />
                                 <StatCard loading={loading} title="Unités Administratives" value={globalStats.departments.length.toString()} icon={Building} color="info" trend={{ value: "+1", up: true }} />
                             </div>
 
@@ -340,53 +364,96 @@ export default function DashboardPage() {
                                     <CardHeader className="p-8 border-b border-slate-50 flex flex-row items-center justify-between">
                                         <div className="space-y-1">
                                             <CardTitle className="text-xl flex items-center gap-2">
-                                                <Cake className="h-5 w-5 text-rose-500" /> Seniorité & Jubilés
+                                                <Sparkles className="h-5 w-5 text-rose-500" /> Célébrations & Milestones
                                             </CardTitle>
-                                            <CardDescription className="text-xs font-medium uppercase tracking-widest text-slate-400">Événements de carrière prévus</CardDescription>
+                                            <CardDescription className="text-xs font-medium uppercase tracking-widest text-slate-400">Événements mensuels du personnel</CardDescription>
                                         </div>
                                         <div className="flex items-center gap-3">
                                             <Select value={selectedAnniversaryMonth} onValueChange={setSelectedAnniversaryMonth}>
                                                 <SelectTrigger className="h-10 rounded-xl border-slate-100 bg-slate-50 w-[120px] font-bold text-xs"><SelectValue /></SelectTrigger>
                                                 <SelectContent className="rounded-xl">{monthsForSelect.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent>
                                             </Select>
-                                            <Button variant="outline" size="icon" className="h-10 w-10 rounded-xl border-slate-100 shadow-sm hover:bg-slate-50 transition-all" onClick={setIsPrintingAnniversaries}>
+                                            <Button variant="outline" size="icon" className="h-10 w-10 rounded-xl border-slate-100 shadow-sm hover:bg-slate-50 transition-all" onClick={() => setIsPrintingAnniversaries(true)}>
                                                 <Printer className="h-4 w-4 text-slate-400" />
                                             </Button>
                                         </div>
                                     </CardHeader>
                                     <CardContent className="p-8">
-                                        {loading ? <Skeleton className="h-[300px] w-full" /> : (
-                                            <div className="space-y-6">
-                                                {seniorityAnniversaries.length > 0 ? seniorityAnniversaries.map(emp => {
-                                                    const years = emp.dateEmbauche ? differenceInYears(new Date(parseInt(selectedAnniversaryYear), parseInt(selectedAnniversaryMonth)), parseISO(emp.dateEmbauche)) : 0;
-                                                    return (
-                                                        <div key={emp.id} className="flex items-center justify-between group p-3 hover:bg-rose-50/50 rounded-2xl transition-all border border-transparent hover:border-rose-100">
-                                                            <div className="flex items-center gap-4">
-                                                                <Avatar className="h-12 w-12 border-2 border-white shadow-md">
-                                                                    <AvatarImage src={emp.photoUrl} alt={emp.name} />
-                                                                    <AvatarFallback className="bg-rose-50 text-rose-400 font-bold"><Cake className="h-5 w-5" /></AvatarFallback>
-                                                                </Avatar>
-                                                                <div>
-                                                                    <p className="font-bold text-slate-900">{`${emp.lastName || ''} ${emp.firstName || ''}`.trim()}</p>
-                                                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{emp.poste}</p>
+                                        <Tabs defaultValue="seniority" className="w-full">
+                                            <TabsList className="grid w-full grid-cols-2 bg-slate-50 mb-6 rounded-xl p-1">
+                                                <TabsTrigger value="seniority" className="text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:text-blue-600 transition-all rounded-lg">
+                                                    <Award className="h-3.5 w-3.5 mr-2" /> Ancienneté
+                                                </TabsTrigger>
+                                                <TabsTrigger value="birthdays" className="text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:text-rose-600 transition-all rounded-lg">
+                                                    <Cake className="h-3.5 w-3.5 mr-2" /> Naissances
+                                                </TabsTrigger>
+                                            </TabsList>
+
+                                            {loading ? <Skeleton className="h-[300px] w-full rounded-2xl" /> : (
+                                                <>
+                                                    <TabsContent value="seniority" className="space-y-6 focus-visible:outline-none">
+                                                        {seniorityAnniversaries.length > 0 ? seniorityAnniversaries.map(emp => {
+                                                            const years = emp.dateEmbauche ? differenceInYears(new Date(parseInt(selectedAnniversaryYear), parseInt(selectedAnniversaryMonth)), parseISO(emp.dateEmbauche)) : 0;
+                                                            return (
+                                                                <div key={`senior-${emp.id}`} className="flex items-center justify-between group p-3 hover:bg-blue-50/50 rounded-2xl transition-all border border-transparent hover:border-blue-100">
+                                                                    <div className="flex items-center gap-4">
+                                                                        <Avatar className="h-12 w-12 border-2 border-white shadow-md">
+                                                                            <AvatarImage src={emp.photoUrl} alt={emp.name} />
+                                                                            <AvatarFallback className="bg-blue-50 text-blue-400 font-bold"><Award className="h-5 w-5" /></AvatarFallback>
+                                                                        </Avatar>
+                                                                        <div>
+                                                                            <p className="font-bold text-slate-900">{`${emp.lastName || ''} ${emp.firstName || ''}`.trim()}</p>
+                                                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{emp.poste}</p>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="flex flex-col items-end gap-1">
+                                                                        <Badge className="bg-blue-100 text-blue-600 hover:bg-blue-100 border-none font-black px-3 py-1 rounded-lg">{years} ans</Badge>
+                                                                        <span className="text-[10px] text-slate-300 font-bold italic">Ancienneté</span>
+                                                                    </div>
+                                                                </div>
+                                                            )
+                                                        }) : (
+                                                            <div className="py-20 text-center flex flex-col items-center gap-4 text-slate-300">
+                                                                <div className="h-16 w-16 bg-slate-50 rounded-full flex items-center justify-center border border-slate-100">
+                                                                    <Award className="h-8 w-8 opacity-20" />
+                                                                </div>
+                                                                <p className="text-sm italic font-medium">Aucun jubilé pour cette période.</p>
+                                                            </div>
+                                                        )}
+                                                    </TabsContent>
+
+                                                    <TabsContent value="birthdays" className="space-y-6 focus-visible:outline-none">
+                                                        {birthdayAnniversaries.length > 0 ? birthdayAnniversaries.map(emp => (
+                                                            <div key={`birth-${emp.id}`} className="flex items-center justify-between group p-3 hover:bg-rose-50/50 rounded-2xl transition-all border border-transparent hover:border-rose-100">
+                                                                <div className="flex items-center gap-4">
+                                                                    <Avatar className="h-12 w-12 border-2 border-white shadow-md">
+                                                                        <AvatarImage src={emp.photoUrl} alt={emp.name} />
+                                                                        <AvatarFallback className="bg-rose-50 text-rose-400 font-bold"><Cake className="h-5 w-5" /></AvatarFallback>
+                                                                    </Avatar>
+                                                                    <div>
+                                                                        <p className="font-bold text-slate-900">{`${emp.lastName || ''} ${emp.firstName || ''}`.trim()}</p>
+                                                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{emp.poste}</p>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="flex flex-col items-end gap-1">
+                                                                    <Badge className="bg-rose-100 text-rose-600 hover:bg-rose-100 border-none font-black px-3 py-1 rounded-lg">
+                                                                        {emp.Date_Naissance ? format(parseISO(emp.Date_Naissance), 'dd MMMM', { locale: fr }) : '-'}
+                                                                    </Badge>
+                                                                    <span className="text-[10px] text-slate-300 font-bold italic">Anniversaire</span>
                                                                 </div>
                                                             </div>
-                                                            <div className="flex flex-col items-end gap-1">
-                                                                <Badge className="bg-rose-100 text-rose-600 hover:bg-rose-100 border-none font-black px-3 py-1 rounded-lg">{years} ans</Badge>
-                                                                <span className="text-[10px] text-slate-300 font-bold italic">Ancienneté</span>
+                                                        )) : (
+                                                            <div className="py-20 text-center flex flex-col items-center gap-4 text-slate-300">
+                                                                <div className="h-16 w-16 bg-slate-50 rounded-full flex items-center justify-center border border-slate-100">
+                                                                    <Cake className="h-8 w-8 opacity-20" />
+                                                                </div>
+                                                                <p className="text-sm italic font-medium">Aucun anniversaire pour cette période.</p>
                                                             </div>
-                                                        </div>
-                                                    )
-                                                }) : (
-                                                    <div className="py-20 text-center flex flex-col items-center gap-4 text-slate-300">
-                                                        <div className="h-16 w-16 bg-slate-50 rounded-full flex items-center justify-center border border-slate-100">
-                                                            <CalendarOff className="h-8 w-8 opacity-20" />
-                                                        </div>
-                                                        <p className="text-sm italic font-medium">Aucun anniversaire d'ancienneté pour cette période.</p>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )}
+                                                        )}
+                                                    </TabsContent>
+                                                </>
+                                            )}
+                                        </Tabs>
                                     </CardContent>
                                 </Card>
 
@@ -403,7 +470,7 @@ export default function DashboardPage() {
                                                 <SelectTrigger className="h-10 rounded-xl border-slate-100 bg-slate-50 w-[100px] font-bold text-xs"><SelectValue /></SelectTrigger>
                                                 <SelectContent className="rounded-xl">{retirementYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent>
                                             </Select>
-                                            <Button variant="outline" size="icon" className="h-10 w-10 rounded-xl border-slate-100 shadow-sm hover:bg-slate-50 transition-all" onClick={setIsPrintingRetirements}>
+                                            <Button variant="outline" size="icon" className="h-10 w-10 rounded-xl border-slate-100 shadow-sm hover:bg-slate-50 transition-all" onClick={() => setIsPrintingRetirements(true)}>
                                                 <Printer className="h-4 w-4 text-slate-400" />
                                             </Button>
                                         </div>
@@ -442,6 +509,65 @@ export default function DashboardPage() {
                                         )}
                                     </CardContent>
                                 </Card>
+                            </div>
+                        </TabsContent>
+
+                        <TabsContent value="stability" className="space-y-10 focus-visible:outline-none focus-visible:ring-0">
+                            {/* Territorial Heatmap Integration */}
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                                <div className="lg:col-span-2">
+                                    <ConflictHeatmap conflicts={globalStats.conflicts} className="h-full border-2 border-slate-100" />
+                                </div>
+                                <div className="space-y-8">
+                                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-[2.5rem] bg-slate-900 text-white overflow-hidden p-8">
+                                        <h3 className="text-sm font-black uppercase tracking-widest text-blue-400 mb-6 flex items-center gap-2">
+                                            <ShieldCheck className="h-4 w-4" /> Analyse de Sûreté
+                                        </h3>
+                                        <div className="space-y-6">
+                                            <div className="flex justify-between items-end border-b border-slate-800 pb-4">
+                                                <div>
+                                                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">Dossiers Résolus</p>
+                                                    <p className="text-2xl font-black">{globalStats.conflicts.filter(c => c.status === 'Résolu').length}</p>
+                                                </div>
+                                                <Badge className="bg-emerald-500/20 text-emerald-400 border-none font-black">Success</Badge>
+                                            </div>
+                                            <div className="flex justify-between items-end border-b border-slate-800 pb-4">
+                                                <div>
+                                                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">Médiations en cours</p>
+                                                    <p className="text-2xl font-black">{globalStats.conflicts.filter(c => c.status === 'En médiation').length}</p>
+                                                </div>
+                                                <Badge className="bg-amber-500/20 text-amber-400 border-none font-black text-[10px]">Alerte</Badge>
+                                            </div>
+                                            <div className="flex justify-between items-end">
+                                                <div>
+                                                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">Zones Rouges</p>
+                                                    <p className="text-2xl font-black">2 Régions</p>
+                                                </div>
+                                                <Badge className="bg-rose-500/20 text-rose-400 border-none font-black text-[10px]">Critique</Badge>
+                                            </div>
+                                        </div>
+                                        <Button className="w-full mt-8 bg-blue-600 hover:bg-blue-700 h-12 rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-blue-500/30" asChild>
+                                            <Link href="/conflicts/analytics">Rapport Complet <TrendingUp className="ml-2 h-4 w-4" /></Link>
+                                        </Button>
+                                    </Card>
+
+                                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-[2.5rem] bg-white p-8">
+                                        <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-6">Dernières Alertes SIG</h3>
+                                        <div className="space-y-4">
+                                            {globalStats.conflicts.slice(0, 3).map(c => (
+                                                <div key={c.id} className="flex gap-4 p-3 rounded-2xl hover:bg-slate-50 transition-all group">
+                                                    <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center shrink-0", c.status === 'Résolu' ? "bg-emerald-50 text-emerald-500" : "bg-rose-50 text-rose-500")}>
+                                                        <AlertTriangle className="h-5 w-5" />
+                                                    </div>
+                                                    <div className="min-w-0">
+                                                        <p className="text-[9px] font-black uppercase text-slate-400 tracking-tighter">{c.village} ({c.region})</p>
+                                                        <p className="text-xs font-bold text-slate-900 group-hover:text-blue-600 transition-colors line-clamp-1">{c.parties}</p>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </Card>
+                                </div>
                             </div>
                         </TabsContent>
                     </Tabs>

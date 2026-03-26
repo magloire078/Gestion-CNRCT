@@ -9,7 +9,7 @@ import {
     ArrowRight, Printer, Share2,
     Shield, Building2, Briefcase,
     Info, ListChecks, Landmark,
-    Car, Hotel
+    Car, Hotel, CreditCard
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -21,6 +21,10 @@ import type { Mission } from "@/lib/data";
 import { useAuth } from "@/hooks/use-auth";
 import { format, parseISO } from "date-fns";
 import { fr } from "date-fns/locale";
+import { cn } from "@/lib/utils";
+import { getOrganizationSettings } from "@/services/organization-service";
+import type { OrganizationSettings, MissionParticipant } from "@/lib/data";
+import { GroupMissionRequestPrint, IndividualMissionSlipPrint } from "@/components/missions/mission-print-templates";
 
 export default function MissionDetailPage() {
     const { id } = useParams() as { id: string };
@@ -28,15 +32,26 @@ export default function MissionDetailPage() {
     const [mission, setMission] = useState<Mission | null>(null);
     const [loading, setLoading] = useState(true);
     const { user, hasPermission } = useAuth();
+    
+    const [logos, setLogos] = useState<OrganizationSettings | null>(null);
+    const [showGroupPrint, setShowGroupPrint] = useState(false);
+    const [showIndividualPrint, setShowIndividualPrint] = useState(false);
+    const [selectedParticipant, setSelectedParticipant] = useState<MissionParticipant | null>(null);
 
     const canEdit = hasPermission('page:missions:view');
 
     useEffect(() => {
         async function fetchMission() {
             try {
-                const data = await getMission(id);
+                const [data, orgSettings] = await Promise.all([
+                    getMission(id),
+                    getOrganizationSettings()
+                ]);
                 if (data) {
                     setMission(data);
+                }
+                if (orgSettings) {
+                    setLogos(orgSettings);
                 }
             } catch (err) {
                 console.error(err);
@@ -113,7 +128,7 @@ export default function MissionDetailPage() {
                 </div>
 
                 <div className="flex items-center gap-2">
-                    <Button variant="outline" className="rounded-lg h-10">
+                    <Button variant="outline" className="rounded-lg h-10" onClick={() => setShowGroupPrint(true)}>
                         <Printer className="mr-2 h-4 w-4" /> Imprimer
                     </Button>
                     {canEdit && (
@@ -265,9 +280,23 @@ export default function MissionDetailPage() {
                                                     </span>
                                                 </div>
                                             </div>
-                                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={() => router.push(`/employees/${p.employeeId}`)}>
-                                                <ArrowRight className="h-4 w-4" />
-                                            </Button>
+                                            <div className="flex items-center gap-1">
+                                                <Button 
+                                                    variant="ghost" 
+                                                    size="icon" 
+                                                    className="h-8 w-8 rounded-full text-blue-500 hover:text-blue-700 hover:bg-blue-50" 
+                                                    title="Imprimer Fiche"
+                                                    onClick={() => {
+                                                        setSelectedParticipant(p);
+                                                        setShowIndividualPrint(true);
+                                                    }}
+                                                >
+                                                    <Printer className="h-4 w-4" />
+                                                </Button>
+                                                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={() => router.push(`/employees/${p.employeeId}`)}>
+                                                    <ArrowRight className="h-4 w-4" />
+                                                </Button>
+                                            </div>
                                         </CardContent>
                                     </Card>
                                 ))}
@@ -377,6 +406,27 @@ export default function MissionDetailPage() {
                     </Card>
                 </div>
             </div>
+
+            {/* Print Templates */}
+            {showGroupPrint && mission && logos && (
+                <GroupMissionRequestPrint 
+                    mission={mission} 
+                    logos={logos} 
+                    onCloseAction={() => setShowGroupPrint(false)} 
+                />
+            )}
+
+            {showIndividualPrint && mission && logos && selectedParticipant && (
+                <IndividualMissionSlipPrint 
+                    mission={mission} 
+                    participant={selectedParticipant} 
+                    logos={logos} 
+                    onCloseAction={() => {
+                        setShowIndividualPrint(false);
+                        setSelectedParticipant(null);
+                    }} 
+                />
+            )}
         </div>
     );
 }

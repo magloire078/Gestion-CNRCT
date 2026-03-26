@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useTransition } from "react";
 import Link from 'next/link';
 import { PlusCircle, Check, X, Search, Loader2, FileText, Pencil, Hash } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { DebouncedInput } from "@/components/ui/debounced-input";
 import type { Leave, Employe } from "@/lib/data";
 import { AddLeaveRequestSheet } from "@/components/leave/add-leave-request-sheet";
 import { EditLeaveRequestSheet } from "@/components/leave/edit-leave-request-sheet";
@@ -68,6 +69,8 @@ export default function LeavePage() {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [activeTab, setActiveTab] = useState("list");
+  const [isPending, startTransition] = useTransition();
   const { user, hasPermission } = useAuth();
   const router = useRouter();
 
@@ -169,8 +172,10 @@ export default function LeavePage() {
   };
 
   const openEditSheet = (leave: Leave) => {
-    setSelectedLeave(leave);
-    setIsEditSheetOpen(true);
+    startTransition(() => {
+      setSelectedLeave(leave);
+      setIsEditSheetOpen(true);
+    });
   }
 
   const filteredLeaves = useMemo(() => {
@@ -265,7 +270,7 @@ export default function LeavePage() {
         </Card>
       </div>
 
-      <Tabs defaultValue="list">
+      <Tabs value={activeTab} onValueChange={(v) => startTransition(() => setActiveTab(v))}>
         <TabsList className="grid w-full grid-cols-2 sm:w-[400px]">
           <TabsTrigger value="list">Liste</TabsTrigger>
           <TabsTrigger value="calendar">Calendrier</TabsTrigger>
@@ -282,14 +287,14 @@ export default function LeavePage() {
               <div className="flex flex-col sm:flex-row gap-4 mb-4">
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                  <Input
+                  <DebouncedInput
                     placeholder="Rechercher par employé (nom, matricule...)"
                     className="pl-10"
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={(val) => startTransition(() => setSearchTerm(String(val)))}
                   />
                 </div>
-                <Select value={typeFilter} onValueChange={setTypeFilter}>
+                <Select value={typeFilter} onValueChange={(v) => startTransition(() => setTypeFilter(v))}>
                   <SelectTrigger className="w-full sm:w-[180px]">
                     <SelectValue placeholder="Filtrer par type" />
                   </SelectTrigger>
@@ -298,7 +303,7 @@ export default function LeavePage() {
                     {leaveTypes.map(type => <SelectItem key={type} value={type}>{type}</SelectItem>)}
                   </SelectContent>
                 </Select>
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <Select value={statusFilter} onValueChange={(v) => startTransition(() => setStatusFilter(v))}>
                   <SelectTrigger className="w-full sm:w-[180px]">
                     <SelectValue placeholder="Filtrer par statut" />
                   </SelectTrigger>

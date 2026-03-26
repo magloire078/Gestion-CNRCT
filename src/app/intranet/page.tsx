@@ -20,12 +20,11 @@ import {
     Users, ShieldCheck, Crown, Building, 
     Cake, Bot, Briefcase, CalendarOff, 
     PlusCircle, Receipt, Rocket, Sparkles,
-    Bell, MessageSquare, Newspaper, 
+    Bell, MessageSquare, 
     ArrowRight, MapPin, Search, Calendar,
-    Zap, Heart, Award
+    Zap, Heart, Award, Laptop
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { NewsFeed } from '@/components/news/news-feed';
 import type { Employe, Leave, Department, Chief } from '@/lib/data';
 import { Skeleton } from '@/components/ui/skeleton';
 import { differenceInYears, parseISO, format } from 'date-fns';
@@ -33,6 +32,12 @@ import { fr } from 'date-fns/locale';
 import { useToast } from "@/hooks/use-toast";
 import { getEmployeeGroup } from '@/services/employee-service';
 import { cn } from "@/lib/utils";
+import dynamic from 'next/dynamic';
+
+const DirectoireMap = dynamic(() => import('@/components/employees/directoire-map').then(m => m.DirectoireMap), {
+    ssr: false,
+    loading: () => <Skeleton className="h-[400px] w-full rounded-2xl" />,
+});
 
 interface QuickTileProps {
     title: string;
@@ -78,8 +83,16 @@ export default function IntranetPage() {
         summary,
         loadingSummary,
         seniorityAnniversaries,
+        birthdayAnniversaries,
     } = useDashboardData(user);
     const { formatDate } = useFormat();
+
+    const directoireMembers = useMemo(() => {
+        return globalStats.employees.filter(emp => 
+            emp.status === 'Actif' && 
+            getEmployeeGroup(emp, globalStats.departments) === 'directoire'
+        );
+    }, [globalStats.employees, globalStats.departments]);
 
     const [isSheetOpen, setIsSheetOpen] = useState(false);
 
@@ -110,10 +123,18 @@ export default function IntranetPage() {
                             <Rocket className="h-3.5 w-3.5 text-blue-400 animate-pulse" />
                             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-400">Portail Collaborateurs CNRCT</span>
                         </div>
-                        <h1 className="text-4xl md:text-6xl font-black text-white tracking-tighter leading-tight">
-                            Bonjour, {user?.name?.split(' ')[0]} 👋<br />
-                            <span className="text-slate-400 font-medium text-2xl md:text-3xl">Prêt pour les défis d'aujourd'hui ?</span>
-                        </h1>
+                        <div className="flex flex-col md:flex-row md:items-center gap-6">
+                            <Avatar className="h-20 w-20 md:h-28 md:w-28 border-4 border-white/10 shadow-2xl">
+                                <AvatarImage src={user?.photoUrl} alt={user?.name} />
+                                <AvatarFallback className="bg-blue-600 text-white text-2xl font-black">
+                                    {user?.name?.split(' ').map(n => n[0]).join('') || "U"}
+                                </AvatarFallback>
+                            </Avatar>
+                            <h1 className="text-4xl md:text-6xl font-black text-white tracking-tighter leading-tight">
+                                Bonjour, {user?.name?.split(' ')[0]} 👋<br />
+                                <span className="text-slate-400 font-medium text-2xl md:text-3xl">Prêt pour les défis d'aujourd'hui ?</span>
+                            </h1>
+                        </div>
                     </div>
                     
                     {/* Quick AI Insight */}
@@ -171,57 +192,114 @@ export default function IntranetPage() {
             </div>
 
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-12">
-                {/* News Section */}
+                {/* Directoire Map Section */}
                 <div className="xl:col-span-2 space-y-8">
                     <div className="flex items-center justify-between px-2">
                         <div className="flex items-center gap-3">
-                            <div className="h-10 w-10 rounded-2xl bg-slate-900 flex items-center justify-center shadow-lg">
-                                <Newspaper className="h-5 w-5 text-white" />
+                            <div className="h-10 w-10 rounded-2xl bg-[#006039] flex items-center justify-center shadow-lg">
+                                <MapPin className="h-5 w-5 text-white" />
                             </div>
-                            <h2 className="text-2xl font-black text-slate-900 tracking-tight">Actualités du Directoire</h2>
+                            <h2 className="text-2xl font-black text-slate-900 tracking-tight">Répartition Géographique du Directoire</h2>
                         </div>
-                        <Button variant="ghost" className="text-xs font-black uppercase tracking-widest text-slate-400 hover:text-slate-900">Tout voir</Button>
                     </div>
-                    <NewsFeed />
+                    <div className="relative group">
+                        <DirectoireMap 
+                            members={directoireMembers} 
+                        />
+                    </div>
                 </div>
 
                 {/* Sidebar Community */}
                 <div className="space-y-12">
-                     {/* Birthdays Widget */}
                      <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden">
                         <CardHeader className="bg-rose-50/50 border-b border-rose-100 p-8">
                             <CardTitle className="text-lg flex items-center gap-3 text-rose-900">
-                                <Heart className="h-5 w-5 text-rose-500" /> Célébrations
+                                <Sparkles className="h-5 w-5 text-rose-500" /> Célébrations
                             </CardTitle>
-                            <CardDescription className="text-rose-700/60 font-medium">Les anniversaires de vos collègues ce mois-ci.</CardDescription>
+                            <CardDescription className="text-rose-700/60 font-medium">Les événements marquants de vos collègues.</CardDescription>
                         </CardHeader>
                         <CardContent className="p-8">
-                            <div className="space-y-6">
+                            <Tabs defaultValue="birthdays" className="w-full">
+                                <TabsList className="grid w-full grid-cols-2 bg-rose-50/50 mb-6 rounded-xl">
+                                    <TabsTrigger value="birthdays" className="text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:text-rose-600 transition-all rounded-lg">
+                                        <Cake className="h-3.5 w-3.5 mr-2" /> Anniversaires
+                                    </TabsTrigger>
+                                    <TabsTrigger value="seniority" className="text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:text-blue-600 transition-all rounded-lg">
+                                        <Award className="h-3.5 w-3.5 mr-2" /> Ancienneté
+                                    </TabsTrigger>
+                                </TabsList>
+
                                 {loading ? (
-                                    Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-12 w-full rounded-2xl" />)
-                                ) : seniorityAnniversaries.length > 0 ? (
-                                    seniorityAnniversaries.slice(0, 5).map(emp => (
-                                        <div key={emp.id} className="flex items-center gap-4 group p-1 hover:bg-rose-50/30 rounded-2xl transition-all">
-                                            <Avatar className="h-12 w-12 border-2 border-white shadow-md">
-                                                <AvatarImage src={emp.photoUrl} alt={emp.name} />
-                                                <AvatarFallback className="bg-rose-50 text-rose-400 font-bold">{emp.lastName?.charAt(0)}</AvatarFallback>
-                                            </Avatar>
-                                            <div className="flex-1 min-w-0">
-                                                <p className="font-bold text-slate-900 group-hover:text-rose-600 transition-colors truncate">{emp.name}</p>
-                                                <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest truncate">{emp.poste}</p>
-                                            </div>
-                                            <div className="h-8 w-8 rounded-full bg-rose-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <Award className="h-4 w-4 text-rose-500" />
-                                            </div>
-                                        </div>
-                                    ))
+                                    <div className="space-y-4">
+                                        {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-14 w-full rounded-2xl" />)}
+                                    </div>
                                 ) : (
-                                    <p className="text-center text-slate-300 italic py-10">Aucun événement ce mois-ci.</p>
+                                    <>
+                                        <TabsContent value="birthdays" className="space-y-4 focus-visible:outline-none">
+                                            {birthdayAnniversaries.length > 0 ? (
+                                                birthdayAnniversaries.map(emp => (
+                                                    <div key={`birth-${emp.id}`} className="flex items-center gap-4 group p-1 hover:bg-rose-50/30 rounded-2xl transition-all">
+                                                        <Avatar className="h-12 w-12 border-2 border-white shadow-md">
+                                                            <AvatarImage src={emp.photoUrl} alt={emp.name} />
+                                                            <AvatarFallback className="bg-rose-50 text-rose-400 font-bold">{emp.lastName?.charAt(0)}</AvatarFallback>
+                                                        </Avatar>
+                                                        <div className="flex-1 min-w-0">
+                                                            <p className="font-bold text-slate-900 group-hover:text-rose-600 transition-colors truncate">{emp.name}</p>
+                                                            <div className="flex items-center gap-2">
+                                                                <Cake className="h-3 w-3 text-rose-300" />
+                                                                <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest truncate">Jour de naissance</p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="h-8 w-8 rounded-full bg-rose-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                                            <Heart className="h-4 w-4 text-rose-500" />
+                                                        </div>
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <div className="py-10 text-center">
+                                                    <div className="mx-auto h-12 w-12 rounded-full bg-rose-50 flex items-center justify-center mb-3">
+                                                        <Cake className="h-6 w-6 text-rose-200" />
+                                                    </div>
+                                                    <p className="text-xs text-slate-300 italic">Aucun anniversaire ce mois-ci.</p>
+                                                </div>
+                                            )}
+                                        </TabsContent>
+
+                                        <TabsContent value="seniority" className="space-y-4 focus-visible:outline-none">
+                                            {seniorityAnniversaries.length > 0 ? (
+                                                seniorityAnniversaries.map(emp => (
+                                                    <div key={`senior-${emp.id}`} className="flex items-center gap-4 group p-1 hover:bg-blue-50/30 rounded-2xl transition-all">
+                                                        <Avatar className="h-12 w-12 border-2 border-white shadow-md">
+                                                            <AvatarImage src={emp.photoUrl} alt={emp.name} />
+                                                            <AvatarFallback className="bg-blue-50 text-blue-400 font-bold">{emp.lastName?.charAt(0)}</AvatarFallback>
+                                                        </Avatar>
+                                                        <div className="flex-1 min-w-0">
+                                                            <p className="font-bold text-slate-900 group-hover:text-blue-600 transition-colors truncate">{emp.name}</p>
+                                                            <div className="flex items-center gap-2">
+                                                                <Award className="h-3 w-3 text-blue-300" />
+                                                                <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest truncate">Années d'excellence</p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="h-8 w-8 rounded-full bg-blue-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                                            <Sparkles className="h-4 w-4 text-blue-500" />
+                                                        </div>
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <div className="py-10 text-center">
+                                                    <div className="mx-auto h-12 w-12 rounded-full bg-blue-50 flex items-center justify-center mb-3">
+                                                        <Award className="h-6 w-6 text-blue-200" />
+                                                    </div>
+                                                    <p className="text-xs text-slate-300 italic">Aucun jubilé ce mois-ci.</p>
+                                                </div>
+                                            )}
+                                        </TabsContent>
+                                    </>
                                 )}
-                            </div>
+                            </Tabs>
                         </CardContent>
-                        <CardFooter className="bg-rose-50/20 p-6 flex justify-center border-t border-rose-50">
-                            <span className="text-[10px] font-black text-rose-400 uppercase tracking-[0.2em]">Bonne fête à tous !</span>
+                        <CardFooter className="bg-rose-50/10 p-6 flex justify-center border-t border-rose-50/50">
+                            <span className="text-[10px] font-black text-rose-400 uppercase tracking-[0.2em]">Célébrons nos talents !</span>
                         </CardFooter>
                     </Card>
 

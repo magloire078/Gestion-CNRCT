@@ -20,6 +20,8 @@ import { useToast } from "@/hooks/use-toast";
 import { getChief, updateChief } from "@/services/chief-service";
 import type { Chief, ChiefRole, DesignationMode } from "@/lib/data";
 import { divisions } from "@/lib/ivory-coast-divisions";
+import { IVORIAN_REGIONS } from "@/constants/regions";
+import { LocationPicker } from "@/components/common/location-picker";
 
 export default function EditChiefPage() {
     const { id } = useParams() as { id: string };
@@ -86,9 +88,9 @@ export default function EditChiefPage() {
                     setPhotoPreview(data.photoUrl || "");
                     
                     // Division loading
-                    if (data.region && divisions[data.region]) {
+                    if (data.region && ((IVORIAN_REGIONS as readonly string[]).includes(data.region) || data.region === "AUTRE")) {
                         setSelectedRegion(data.region);
-                        if (data.department && divisions[data.region][data.department]) {
+                        if (data.department && divisions[data.region]?.[data.department]) {
                             setSelectedDepartment(data.department);
                             if (data.subPrefecture && divisions[data.region][data.department][data.subPrefecture]) {
                                 setSelectedSubPrefecture(data.subPrefecture);
@@ -107,7 +109,8 @@ export default function EditChiefPage() {
                             setSelectedDepartment("AUTRE");
                             setCustomDepartment(data.department);
                         }
-                    } else {
+                    } else if (data.region) {
+                        // If region is not in our standard list, we still allow it but mark as AUTRE
                         setSelectedRegion("AUTRE");
                         setCustomRegion(data.region);
                     }
@@ -157,8 +160,8 @@ export default function EditChiefPage() {
                 title,
                 role,
                 designationDate: designationDate || undefined,
-                designationMode: designationMode as DesignationMode,
-                sexe: sexe as Chief['sexe'],
+                designationMode: (designationMode || undefined) as DesignationMode,
+                sexe: (sexe || undefined) as Chief['sexe'],
                 region: finalRegion,
                 department: finalDepartment,
                 subPrefecture: finalSubPrefecture,
@@ -263,7 +266,7 @@ export default function EditChiefPage() {
                                     <div className="space-y-2"><Label>Région</Label>
                                         <Select value={selectedRegion} onValueChange={v => { setSelectedRegion(v); setSelectedDepartment(''); setSelectedSubPrefecture(''); setSelectedVillage(''); }}>
                                             <SelectTrigger><SelectValue /></SelectTrigger>
-                                            <SelectContent>{Object.keys(divisions).map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}<SelectItem value="AUTRE">Autre...</SelectItem></SelectContent>
+                                            <SelectContent>{IVORIAN_REGIONS.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}<SelectItem value="AUTRE">Autre...</SelectItem></SelectContent>
                                         </Select>
                                     </div>
                                     <div className="space-y-2"><Label>Département</Label>
@@ -272,9 +275,53 @@ export default function EditChiefPage() {
                                             <SelectContent>{departments.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}<SelectItem value="AUTRE">Autre...</SelectItem></SelectContent>
                                         </Select>
                                     </div>
-                                    <div className="col-span-1 md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div className="space-y-2"><Label>Latitude</Label><Input type="number" step="any" value={latitude} onChange={e => setLatitude(e.target.value ? parseFloat(e.target.value) : '')} /></div>
-                                        <div className="space-y-2"><Label>Longitude</Label><Input type="number" step="any" value={longitude} onChange={e => setLongitude(e.target.value ? parseFloat(e.target.value) : '')} /></div>
+                                    <div className="col-span-1 md:col-span-2 pt-4 border-t border-slate-100 space-y-4">
+                                        <div className="flex flex-col gap-1">
+                                            <Label className="text-sm font-bold text-slate-700 uppercase tracking-widest">Localisation SIG</Label>
+                                        </div>
+                                        
+                                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                            <div className="lg:col-span-2">
+                                                <LocationPicker 
+                                                    onLocationSelectAction={(lat, lng) => {
+                                                        setLatitude(lat);
+                                                        setLongitude(lng);
+                                                    }}
+                                                    initialLat={latitude !== '' ? Number(latitude) : undefined}
+                                                    initialLng={longitude !== '' ? Number(longitude) : undefined}
+                                                    className="border shadow-sm rounded-xl bg-slate-50/50"
+                                                />
+                                            </div>
+                                            <div className="space-y-4">
+                                                <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 space-y-4">
+                                                    <div className="space-y-2">
+                                                        <Label htmlFor="latitude" className="text-[10px] font-black uppercase text-slate-400">Latitude</Label>
+                                                        <Input 
+                                                            id="latitude" 
+                                                            type="number" 
+                                                            step="any" 
+                                                            value={latitude} 
+                                                            onChange={e => setLatitude(e.target.value ? parseFloat(e.target.value) : '')} 
+                                                            className="bg-white border-slate-200 focus-visible:ring-blue-500/20"
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <Label htmlFor="longitude" className="text-[10px] font-black uppercase text-slate-400">Longitude</Label>
+                                                        <Input 
+                                                            id="longitude" 
+                                                            type="number" 
+                                                            step="any" 
+                                                            value={longitude} 
+                                                            onChange={e => setLongitude(e.target.value ? parseFloat(e.target.value) : '')} 
+                                                            className="bg-white border-slate-200 focus-visible:ring-blue-500/20"
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <p className="text-[10px] text-slate-400 italic">
+                                                    Utilisez la carte pour ajuster précisément la position de l'autorité.
+                                                </p>
+                                            </div>
+                                        </div>
                                     </div>
                                 </AccordionContent>
                             </AccordionItem>

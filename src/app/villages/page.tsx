@@ -1,321 +1,517 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import Link from "next/link";
-import { getVillages } from "@/services/village-service";
-import { getChiefs } from "@/services/chief-service";
-import type { Village, Chief } from "@/lib/data";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect, useMemo, useTransition } from "react";
 import { 
-    MapPin, Search, Users, Crown, Plus, 
-    ArrowRight, X, Landmark, Compass, 
-    Filter, Map as MapIcon, ChevronRight,
-    Building2, Shrub
+    Search, 
+    Filter, 
+    MapPin, 
+    Users, 
+    Plus, 
+    ChevronRight,
+    SearchX,
+    LayoutGrid,
+    RefreshCw,
+    X,
+    Building2,
+    Map as MapIcon,
+    Printer,
+    Download
 } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { DebouncedInput } from "@/components/ui/debounced-input";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { 
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { 
+    Card, 
+    CardContent, 
+    CardDescription, 
+    CardFooter, 
+    CardHeader, 
+    CardTitle 
+} from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { cn } from "@/lib/utils";
+import { subscribeToVillages } from "@/services/village-service";
+import { subscribeToChiefs } from "@/services/chief-service";
+import { getOrganizationSettings } from "@/services/organization-service";
+import { Village } from "@/types/village";
+import { Chief } from "@/types/chief";
+import { OrganizationSettings } from "@/types/common";
+import { IVORIAN_REGIONS } from "@/constants/regions";
+import { divisions } from "@/lib/ivory-coast-divisions";
+import Link from "next/link";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
+import { AddVillageSheet } from "@/components/villages/add-village-sheet";
+import { PrintVillagesList } from "@/components/villages/print-villages-list";
 
-type VillageEntry = {
-    key: string;
-    name: string;
-    region: string;
-    department: string;
-    subPrefecture: string;
-    chiefs: Chief[];
+export type VillageEntry = {
+    village: Village;
+    currentChief: Chief | null;
+    archivedChiefsCount: number;
 };
 
+type SeatStatus = "all" | "occupied" | "vacant";
+
 export default function VillagesPage() {
+    // Data State
     const [villages, setVillages] = useState<Village[]>([]);
     const [chiefs, setChiefs] = useState<Chief[]>([]);
+    const [orgSettings, setOrgSettings] = useState<OrganizationSettings | null>(null);
     const [loading, setLoading] = useState(true);
-    const [search, setSearch] = useState("");
-    const [regionFilter, setRegionFilter] = useState("all");
-    const [departmentFilter, setDepartmentFilter] = useState("all");
-    const [communeFilter, setCommuneFilter] = useState("all");
+    
+    // UI State
+    const [searchQuery, setSearchQuery] = useState("");
+    const [selectedRegion, setSelectedRegion] = useState<string>("all");
+    const [selectedDepartment, setSelectedDepartment] = useState<string>("all");
+    const [selectedCommune, setSelectedCommune] = useState<string>("all");
+    const [seatStatus, setSeatStatus] = useState<SeatStatus>("all");
+    const [printDate, setPrintDate] = useState("");
+    const [isPending, startTransition] = useTransition();
 
+    // Fetch Data with Real-time Sync
     useEffect(() => {
-        Promise.all([getVillages(), getChiefs()])
-            .then(([v, c]) => {
-                setVillages(v);
-                setChiefs(c);
-            })
-            .catch(console.error)
-            .finally(() => setLoading(false));
+        setLoading(true);
+        
+        // Subscription to Villages
+        const unsubscribeVillages = subscribeToVillages((updatedVillages) => {
+            setVillages(updatedVillages);
+            if (chiefs.length > 0) setLoading(false);
+        });
+
+        // Subscription to Chiefs
+        const unsubscribeChiefs = subscribeToChiefs((updatedChiefs) => {
+            setChiefs(updatedChiefs);
+            setLoading(false);
+        }, (error) => {
+            console.error("Error subscribing to chiefs:", error);
+        });
+
+        // Fetch Organization Settings
+        getOrganizationSettings().then(setOrgSettings);
+
+        return () => {
+            unsubscribeVillages();
+            unsubscribeChiefs();
+        };
     }, []);
 
-    const villageEntries = useMemo<VillageEntry[]>(() => {
-        const map = new Map<string, VillageEntry>();
+    useEffect(() => {
+        setPrintDate(format(new Date(), "dd/MM/yyyy"));
+    }, []);
 
-        for (const c of chiefs) {
-            if (!c.village) continue;
-            const key = [c.village, c.region || '', c.department || '', c.subPrefecture || '']
-                .join('||')
-                .toLowerCase();
-            if (!map.has(key)) {
-                map.set(key, {
-                    key,
-                    name: c.village,
-                    region: c.region || '',
-                    department: c.department || '',
-                    subPrefecture: c.subPrefecture || '',
-                    chiefs: [],
-                });
-            }
-            map.get(key)!.chiefs.push(c);
-        }
-
-        for (const v of villages) {
-            const key = [v.name, v.region || '', v.department || '', v.subPrefecture || '']
-                .join('||')
-                .toLowerCase();
-            if (!map.has(key)) {
-                map.set(key, {
-                    key,
-                    name: v.name,
-                    region: v.region || '',
-                    department: v.department || '',
-                    subPrefecture: v.subPrefecture || '',
-                    chiefs: [],
-                });
-            }
-        }
-
-        return [...map.values()].sort((a, b) => a.name.localeCompare(b.name));
-    }, [chiefs, villages]);
-
-    const regions = useMemo(() => [...new Set(villageEntries.map(v => v.region).filter(Boolean))].sort(), [villageEntries]);
-    const departments = useMemo(() => {
-        const base = regionFilter !== 'all' ? villageEntries.filter(v => v.region === regionFilter) : villageEntries;
-        return [...new Set(base.map(v => v.department).filter(Boolean))].sort();
-    }, [villageEntries, regionFilter]);
-    const communes = useMemo(() => {
-        let base = villageEntries;
-        if (regionFilter !== 'all') base = base.filter(v => v.region === regionFilter);
-        if (departmentFilter !== 'all') base = base.filter(v => v.department === departmentFilter);
-        return [...new Set(base.map(v => v.subPrefecture).filter(Boolean))].sort();
-    }, [villageEntries, regionFilter, departmentFilter]);
-
-    const handleRegionChange = (v: string) => { setRegionFilter(v); setDepartmentFilter('all'); setCommuneFilter('all'); };
-    const handleDeptChange = (v: string) => { setDepartmentFilter(v); setCommuneFilter('all'); };
-    const hasActiveFilters = regionFilter !== 'all' || departmentFilter !== 'all' || communeFilter !== 'all' || search;
-
-    const filtered = useMemo(() => {
-        const lowerSearch = search.toLowerCase();
-        return villageEntries.filter(v => {
-            if (regionFilter !== 'all' && v.region !== regionFilter) return false;
-            if (departmentFilter !== 'all' && v.department !== departmentFilter) return false;
-            if (communeFilter !== 'all' && v.subPrefecture !== communeFilter) return false;
-            if (!lowerSearch) return true;
-            if (v.name.toLowerCase().includes(lowerSearch)) return true;
-            if (v.region.toLowerCase().includes(lowerSearch)) return true;
-            if (v.department.toLowerCase().includes(lowerSearch)) return true;
-            if (v.subPrefecture.toLowerCase().includes(lowerSearch)) return true;
-            if (v.chiefs.some(c =>
-                c.name?.toLowerCase().includes(lowerSearch) ||
-                c.firstName?.toLowerCase().includes(lowerSearch) ||
-                c.lastName?.toLowerCase().includes(lowerSearch) ||
-                c.contact?.toLowerCase().includes(lowerSearch)
-            )) return true;
-            return false;
+    // Derived Data: Merge Villages and Chiefs
+    const villageEntries = useMemo(() => {
+        return villages.map(village => {
+            const villageChiefs = chiefs.filter(c => c.villageId === village.id);
+            const currentChief = villageChiefs.find(c => c.status === 'actif' || c.status === 'a_vie') || null;
+            const archivedChiefsCount = villageChiefs.filter(c => c.status === 'archive').length;
+            
+            return {
+                village,
+                currentChief,
+                archivedChiefsCount
+            };
         });
-    }, [villageEntries, search, regionFilter, departmentFilter, communeFilter]);
+    }, [villages, chiefs]);
 
-    const clearFilters = () => { setSearch(''); setRegionFilter('all'); setDepartmentFilter('all'); setCommuneFilter('all'); };
+    // Filtering Options logic
+    const departments = useMemo(() => {
+        if (selectedRegion === "all") return [];
+        return Object.keys(divisions[selectedRegion] || {});
+    }, [selectedRegion]);
+
+    const communes = useMemo(() => {
+        if (selectedRegion === "all" || selectedDepartment === "all") return [];
+        return Object.keys(divisions[selectedRegion]?.[selectedDepartment] || {});
+    }, [selectedRegion, selectedDepartment]);
+
+    // Apply Filters
+    const filteredVillages = useMemo(() => {
+        return villageEntries.filter(entry => {
+            const v = entry.village;
+            const c = entry.currentChief;
+            
+            // Region Filter
+            if (selectedRegion !== "all" && v.region !== selectedRegion) return false;
+            
+            // Department Filter
+            if (selectedDepartment !== "all" && v.department !== selectedDepartment) return false;
+            
+            // Commune Filter
+            if (selectedCommune !== "all" && v.subPrefecture !== selectedCommune && v.commune !== selectedCommune) return false;
+
+            // Seat Status Filter
+            if (seatStatus === "occupied" && !c) return false;
+            if (seatStatus === "vacant" && c) return false;
+            
+            // Search Query
+            if (searchQuery) {
+                const query = searchQuery.toLowerCase();
+                const matchesVillage = v.name.toLowerCase().includes(query) || 
+                                     v.region.toLowerCase().includes(query) ||
+                                     v.department.toLowerCase().includes(query);
+                const matchesChief = c?.name?.toLowerCase().includes(query) || 
+                                   c?.CNRCTRegistrationNumber?.toLowerCase().includes(query);
+                
+                if (!matchesVillage && !matchesChief) return false;
+            }
+            
+            return true;
+        });
+    }, [villageEntries, searchQuery, selectedRegion, selectedDepartment, selectedCommune, seatStatus]);
+
+    const printSubtitle = useMemo(() => {
+        let subtitle = `Total: ${filteredVillages.length} | Date: ${printDate}`;
+        if (selectedRegion !== "all") subtitle += ` | Région: ${selectedRegion}`;
+        if (selectedDepartment !== "all") subtitle += ` | Dept: ${selectedDepartment}`;
+        if (selectedCommune !== "all") subtitle += ` | S/P: ${selectedCommune}`;
+        if (seatStatus !== "all") subtitle += ` | Statut: ${seatStatus === 'occupied' ? 'Occupés' : 'Vacants'}`;
+        if (searchQuery) subtitle += ` | Recherche: ${searchQuery}`;
+        return subtitle;
+    }, [filteredVillages.length, printDate, selectedRegion, selectedDepartment, selectedCommune, seatStatus, searchQuery]);
+
+    const stats = {
+        total: filteredVillages.length,
+        vacant: filteredVillages.filter(v => !v.currentChief).length,
+        occupied: filteredVillages.filter(v => v.currentChief).length
+    };
+
+    const clearFilters = () => {
+        setSearchQuery("");
+        setSelectedRegion("all");
+        setSelectedDepartment("all");
+        setSelectedCommune("all");
+        setSeatStatus("all");
+    };
+
+    const handlePrint = () => {
+        setTimeout(() => {
+            window.print();
+        }, 1500);
+    };
 
     return (
-        <div className="flex flex-col gap-8 pb-20">
-            {/* Header with Background Pattern */}
-            <div className="relative p-8 md:p-12 rounded-[2.5rem] bg-slate-900 overflow-hidden group shadow-2xl shadow-slate-200">
-                <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:20px_20px]" />
-                <div className="absolute -bottom-24 -right-24 h-64 w-64 bg-slate-800 rounded-full blur-3xl opacity-50 transition-all group-hover:scale-110" />
+        <div className="min-h-screen bg-slate-50/50">
+            {/* Print View Component (Hidden by default, shown during print) */}
+            <div className="hidden print:block">
+                <PrintVillagesList 
+                    villages={filteredVillages} 
+                    organizationSettings={orgSettings} 
+                    subtitle={printSubtitle}
+                />
+            </div>
+
+            {/* Header Section */}
+            <div className="relative overflow-hidden bg-slate-900 pt-16 pb-32 print:hidden">
+                <div className="absolute inset-0 opacity-10">
+                    <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '40px 40px' }}></div>
+                </div>
                 
-                <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
-                    <div className="max-w-2xl">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800 border border-slate-700 mb-4">
-                            <Compass className="h-3.5 w-3.5 text-slate-400 animate-spin-slow" />
-                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Géo-Administration Territoriale</span>
+                <div className="container relative mx-auto px-4 lg:px-8">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                        <div>
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="p-3 bg-amber-500/10 rounded-2xl border border-amber-500/20">
+                                    <MapIcon className="h-8 w-8 text-amber-500" />
+                                </div>
+                                <h1 className="text-4xl font-black text-white tracking-tight">
+                                    Localités & Autorités
+                                </h1>
+                            </div>
+                            <p className="text-slate-400 text-lg max-w-2xl font-medium leading-relaxed">
+                                Cartographie administrative et gestion des sièges des autorités traditionnelles en Côte d'Ivoire.
+                            </p>
+                            
+                            <div className="flex flex-wrap gap-4 mt-8">
+                                <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl px-6 py-3">
+                                    <span className="text-3xl font-black text-white">{stats.total}</span>
+                                    <span className="ml-2 text-slate-400 font-semibold uppercase tracking-wider text-xs">Localités</span>
+                                </div>
+                                <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl px-6 py-3">
+                                    <span className="text-3xl font-black text-green-400">{stats.occupied}</span>
+                                    <span className="ml-2 text-slate-400 font-semibold uppercase tracking-wider text-xs">Sièges Occupés</span>
+                                </div>
+                                <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl px-6 py-3">
+                                    <span className="text-3xl font-black text-amber-400">{stats.vacant}</span>
+                                    <span className="ml-2 text-slate-400 font-semibold uppercase tracking-wider text-xs">Vacances de Trône</span>
+                                </div>
+                            </div>
                         </div>
-                        <h1 className="text-4xl md:text-5xl font-black text-white tracking-tighter mb-4">Archives des Villages</h1>
-                        <p className="text-slate-400 text-base md:text-lg font-medium leading-relaxed">
-                            Accédez aux données structurelles de nos localités. Gestion centralisée des chefferies et des divisions administratives.
-                        </p>
-                    </div>
-                    <Button asChild size="lg" className="bg-white text-slate-900 hover:bg-slate-100 rounded-2xl h-14 px-8 font-bold shadow-2xl shadow-black/20 shrink-0">
-                        <Link href="/chiefs/new">
-                            <Plus className="mr-2 h-5 w-5" />
-                            Nouveau Chef
-                        </Link>
-                    </Button>
-                </div>
 
-                {/* Quick Stats Overlay */}
-                <div className="relative z-10 grid grid-cols-2 md:grid-cols-4 gap-4 mt-12 bg-white/5 backdrop-blur-md p-4 rounded-3xl border border-white/10">
-                    <div className="flex flex-col p-2">
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Localités</span>
-                        <span className="text-2xl font-black text-white">{filtered.length}</span>
-                    </div>
-                    <div className="flex flex-col p-2">
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Autorités</span>
-                        <span className="text-2xl font-black text-white">{chiefs.length}</span>
-                    </div>
-                    <div className="flex flex-col p-2">
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Régions</span>
-                        <span className="text-2xl font-black text-white">{regions.length}</span>
-                    </div>
-                    <div className="flex flex-col p-2">
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Couverture</span>
-                        <span className="text-2xl font-black text-white">100%</span>
-                    </div>
-                </div>
-            </div>
-
-            {/* Advanced Filters Bar */}
-            <div className="flex flex-col lg:flex-row gap-4 p-6 bg-white rounded-[2rem] shadow-xl shadow-slate-200/50 border border-slate-50 sticky top-4 z-30">
-                <div className="relative flex-1 group">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
-                    <Input
-                        placeholder="Rechercher une localité, un chef, une subdivision..."
-                        className="pl-12 h-14 rounded-2xl border-slate-100 bg-slate-50/50 focus:bg-white text-base shadow-inner transition-all"
-                        value={search}
-                        onChange={e => setSearch(e.target.value)}
-                    />
-                </div>
-                <div className="flex flex-col sm:flex-row gap-3">
-                    <Select value={regionFilter} onValueChange={handleRegionChange}>
-                        <SelectTrigger className="h-14 rounded-2xl border-slate-100 bg-slate-50/50 w-full sm:w-[200px] font-bold text-slate-600">
-                             <div className="flex items-center gap-2">
-                                <MapIcon className="h-4 w-4 text-slate-400" />
-                                <SelectValue placeholder="Région" />
-                             </div>
-                        </SelectTrigger>
-                        <SelectContent className="rounded-2xl shadow-2xl border-slate-100">
-                            <SelectItem value="all" className="font-bold">Toutes les régions</SelectItem>
-                            {regions.map(r => <SelectItem key={r} value={r} className="rounded-lg">{r}</SelectItem>)}
-                        </SelectContent>
-                    </Select>
-                    
-                    <Select value={departmentFilter} onValueChange={handleDeptChange} disabled={regionFilter === 'all' && departments.length === 0}>
-                        <SelectTrigger className="h-14 rounded-2xl border-slate-100 bg-slate-50/50 w-full sm:w-[200px] font-bold text-slate-600">
-                             <div className="flex items-center gap-2">
-                                <Landmark className="h-4 w-4 text-slate-400" />
-                                <SelectValue placeholder="Département" />
-                             </div>
-                        </SelectTrigger>
-                        <SelectContent className="rounded-2xl shadow-2xl border-slate-100">
-                            <SelectItem value="all" className="font-bold">Tous les départements</SelectItem>
-                            {departments.map(d => <SelectItem key={d} value={d} className="rounded-lg">{d}</SelectItem>)}
-                        </SelectContent>
-                    </Select>
-
-                    {hasActiveFilters && (
-                        <Button variant="ghost" size="icon" onClick={clearFilters} className="h-14 w-14 rounded-2xl hover:bg-red-50 hover:text-red-500 transition-colors shrink-0">
-                            <X className="h-6 w-6" />
-                        </Button>
-                    )}
-                </div>
-            </div>
-
-            {/* Village Grid */}
-            {loading ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                    {Array.from({ length: 12 }).map((_, i) => (
-                        <div key={i} className="h-[320px] rounded-[2rem] bg-slate-100 animate-pulse" />
-                    ))}
-                </div>
-            ) : filtered.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-32 rounded-[3rem] bg-slate-50 border-2 border-dashed border-slate-200 gap-6">
-                    <div className="h-24 w-24 bg-white rounded-full flex items-center justify-center shadow-xl">
-                        <MapPin className="h-12 w-12 text-slate-200" />
-                    </div>
-                    <div className="text-center space-y-2">
-                        <p className="text-xl font-black text-slate-800 uppercase tracking-tighter">Territoire inconnu</p>
-                        <p className="text-sm text-slate-400 max-w-xs font-medium italic">Aucun village ne correspond à vos critères de recherche actuels.</p>
-                    </div>
-                    <Button variant="outline" onClick={clearFilters} className="rounded-xl font-bold h-11 px-8">Réinitialiser l'exploration</Button>
-                </div>
-            ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                    {filtered.map((v) => {
-                        const currentChief = v.chiefs.find(c => !c.regencyEndDate) || v.chiefs[0];
-                        return (
-                            <Link
-                                key={v.key}
-                                href={`/villages/${encodeURIComponent(v.name)}?region=${encodeURIComponent(v.region)}&dept=${encodeURIComponent(v.department)}&commune=${encodeURIComponent(v.subPrefecture)}`}
-                                className="group"
+                        <div className="flex flex-col sm:flex-row gap-3">
+                            <Button 
+                                variant="outline" 
+                                className="bg-white/5 border-white/10 text-white hover:bg-white/10 rounded-2xl h-14 px-8 font-bold"
+                                onClick={handlePrint}
+                                disabled={filteredVillages.length === 0}
                             >
-                                <Card className="h-full border-none shadow-xl shadow-slate-200/50 rounded-[2rem] overflow-hidden hover:shadow-2xl hover:shadow-slate-300 transition-all duration-500 flex flex-col relative group">
-                                    {/* Card Header Illustration */}
-                                    <div className="h-28 bg-slate-50 relative overflow-hidden flex items-center justify-center p-4">
-                                        <div className="absolute inset-0 bg-gradient-to-br from-slate-100 to-white opacity-50" />
-                                        <div className="absolute top-4 right-4 opacity-5 transition-transform group-hover:scale-150 duration-700">
-                                            <Building2 className="h-20 w-20" />
-                                        </div>
-                                        <div className="relative flex items-center gap-3">
-                                            <div className="h-12 w-12 rounded-2xl bg-white shadow-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                                                <Shrub className="h-6 w-6 text-slate-900" />
-                                            </div>
-                                            <div className="flex flex-col">
-                                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-300">Territoire</span>
-                                                <span className="text-sm font-black text-slate-900 truncate max-w-[140px]">{v.name}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <CardHeader className="px-6 pt-6 pb-2">
-                                        <div className="flex items-center gap-2 mb-2">
-                                             <Badge className="bg-slate-900 border-none text-[9px] font-black uppercase tracking-[0.1em] h-5">{v.region}</Badge>
-                                             <Badge variant="outline" className="text-[9px] font-black uppercase tracking-[0.1em] h-5 border-slate-200">{v.department}</Badge>
-                                        </div>
-                                        <CardDescription className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <MapPin className="h-3 w-3" /> {v.subPrefecture || "Sans commune"}
-                                        </CardDescription>
-                                    </CardHeader>
-
-                                    <CardContent className="px-6 pt-4 flex-grow space-y-6">
-                                        {currentChief ? (
-                                            <div className="flex items-center gap-4 p-3 rounded-2xl bg-slate-50/80 border border-slate-50 group-hover:bg-white group-hover:border-slate-100 transition-all shadow-sm group-hover:shadow-md">
-                                                <Avatar className="h-12 w-12 border-2 border-white shadow-sm shrink-0">
-                                                    <AvatarImage src={currentChief.photoUrl} alt={currentChief.name} />
-                                                    <AvatarFallback className="bg-slate-200 text-slate-500 font-black">{currentChief.lastName?.charAt(0)}</AvatarFallback>
-                                                </Avatar>
-                                                <div className="flex flex-col min-w-0">
-                                                    <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Autorité Actuelle</span>
-                                                    <span className="text-xs font-bold text-slate-700 truncate">{currentChief.name}</span>
-                                                </div>
-                                            </div>
-                                        ) : (
-                                            <div className="h-[66px] rounded-2xl bg-slate-50 border border-slate-200 border-dashed flex items-center justify-center p-4">
-                                                <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">Vacance du Trône</span>
-                                            </div>
-                                        )}
-
-                                        <div className="flex items-center justify-between pt-2">
-                                            <div className="flex items-center gap-2">
-                                                <div className="h-8 w-8 rounded-lg bg-slate-100 flex items-center justify-center shadow-inner">
-                                                    <Crown className="h-4 w-4 text-slate-400" />
-                                                </div>
-                                                <div className="flex flex-col leading-none">
-                                                    <span className="text-[14px] font-black text-slate-900">{v.chiefs.length}</span>
-                                                    <span className="text-[9px] font-bold text-slate-400 uppercase">Archivés</span>
-                                                </div>
-                                            </div>
-                                            <div className="h-8 w-8 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-slate-900 group-hover:rotate-[-45deg] transition-all duration-500">
-                                                <ArrowRight className="h-4 w-4 text-slate-300 group-hover:text-white" />
-                                            </div>
-                                        </div>
-                                    </CardContent>
-                                    <div className="h-1 bg-slate-900 w-0 group-hover:w-full transition-all duration-700 mt-auto" />
-                                </Card>
-                            </Link>
-                        );
-                    })}
+                                <Printer className="mr-2 h-5 w-5" />
+                                Imprimer la liste
+                            </Button>
+                            <AddVillageSheet />
+                        </div>
+                    </div>
                 </div>
-            )}
+            </div>
+
+            {/* Filter Bar Section */}
+            <div className="container mx-auto px-4 lg:px-8 -mt-16 print:hidden">
+                <Card className="rounded-[2.5rem] border-none shadow-2xl shadow-slate-200/50 overflow-hidden bg-white/80 backdrop-blur-xl">
+                    <CardContent className="p-8">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-6 items-end">
+                            {/* Search Input */}
+                            <div className="lg:col-span-4 group">
+                                <label className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3 block px-1">
+                                    Recherche par nom ou numéro
+                                </label>
+                                <div className="relative">
+                                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-amber-500 transition-colors" />
+                                    <DebouncedInput
+                                        placeholder="Village, Chef, Matricule..."
+                                        value={searchQuery}
+                                        onChange={(val) => startTransition(() => setSearchQuery(val.toString()))}
+                                        className="pl-12 h-14 bg-slate-50 border-transparent focus:bg-white focus:ring-4 focus:ring-amber-500/10 rounded-2xl text-lg transition-all font-medium"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Region Filter */}
+                            <div className="lg:col-span-2">
+                                <label className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3 block px-1">
+                                    Région
+                                </label>
+                                <Select value={selectedRegion} onValueChange={(val) => startTransition(() => {
+                                    setSelectedRegion(val);
+                                    setSelectedDepartment("all");
+                                    setSelectedCommune("all");
+                                })}>
+                                    <SelectTrigger className="h-14 bg-slate-50 border-transparent rounded-2xl font-bold">
+                                        <SelectValue placeholder="Région" />
+                                    </SelectTrigger>
+                                    <SelectContent className="rounded-2xl border-slate-100">
+                                        <SelectItem value="all">Toutes les régions</SelectItem>
+                                        {IVORIAN_REGIONS.map(region => (
+                                            <SelectItem key={region} value={region}>{region}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            {/* Department Filter */}
+                            <div className="lg:col-span-2">
+                                <label className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3 block px-1">
+                                    Département
+                                </label>
+                                <Select 
+                                    value={selectedDepartment} 
+                                    onValueChange={(val) => startTransition(() => {
+                                        setSelectedDepartment(val);
+                                        setSelectedCommune("all");
+                                    })}
+                                    disabled={selectedRegion === "all"}
+                                >
+                                    <SelectTrigger className="h-14 bg-slate-50 border-transparent rounded-2xl font-bold">
+                                        <SelectValue placeholder="Département" />
+                                    </SelectTrigger>
+                                    <SelectContent className="rounded-2xl border-slate-100">
+                                        <SelectItem value="all">Tous les dép.</SelectItem>
+                                        {departments.map(dept => (
+                                            <SelectItem key={dept} value={dept}>{dept}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            {/* Commune Filter */}
+                            <div className="lg:col-span-2">
+                                <label className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3 block px-1">
+                                    S-Préf. / Commune
+                                </label>
+                                <Select 
+                                    value={selectedCommune} 
+                                    onValueChange={(val) => startTransition(() => setSelectedCommune(val))}
+                                    disabled={selectedDepartment === "all"}
+                                >
+                                    <SelectTrigger className="h-14 bg-slate-50 border-transparent rounded-2xl font-bold">
+                                        <SelectValue placeholder="S-Préf." />
+                                    </SelectTrigger>
+                                    <SelectContent className="rounded-2xl border-slate-100">
+                                        <SelectItem value="all">Toutes les s-préf.</SelectItem>
+                                        {communes.map(comm => (
+                                            <SelectItem key={comm} value={comm}>{comm}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            {/* Seat Status Filter */}
+                            <div className="lg:col-span-2">
+                                <label className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3 block px-1">
+                                    Statut du trône
+                                </label>
+                                <Select value={seatStatus} onValueChange={(val: SeatStatus) => startTransition(() => setSeatStatus(val))}>
+                                    <SelectTrigger className="h-14 bg-slate-50 border-transparent rounded-2xl font-bold">
+                                        <SelectValue placeholder="Filtrer" />
+                                    </SelectTrigger>
+                                    <SelectContent className="rounded-2xl border-slate-100">
+                                        <SelectItem value="all">Tous les sièges</SelectItem>
+                                        <SelectItem value="occupied" className="text-green-600 font-bold">Occupés</SelectItem>
+                                        <SelectItem value="vacant" className="text-amber-600 font-bold">Vacances</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+
+                        {(searchQuery || selectedRegion !== "all" || seatStatus !== "all") && (
+                            <div className="flex items-center gap-4 mt-8 pt-6 border-t border-slate-100">
+                                <span className="text-sm font-bold text-slate-400 uppercase tracking-widest">Filtres actifs:</span>
+                                <div className="flex flex-wrap gap-2">
+                                    {selectedRegion !== "all" && <Badge variant="secondary" className="bg-slate-100 text-slate-700 font-bold px-3 py-1 rounded-lg border-none">{selectedRegion}</Badge>}
+                                    {selectedDepartment !== "all" && <Badge variant="secondary" className="bg-slate-100 text-slate-700 font-bold px-3 py-1 rounded-lg border-none">{selectedDepartment}</Badge>}
+                                    {selectedCommune !== "all" && <Badge variant="secondary" className="bg-slate-100 text-slate-700 font-bold px-3 py-1 rounded-lg border-none">{selectedCommune}</Badge>}
+                                    {seatStatus !== "all" && <Badge variant="secondary" className="bg-amber-100 text-amber-700 font-bold px-3 py-1 rounded-lg border-none">{seatStatus === "occupied" ? "Sièges Occupés" : "Vacance de Trône"}</Badge>}
+                                    <Button variant="ghost" size="sm" onClick={clearFilters} className="text-amber-600 hover:text-amber-700 font-black uppercase text-[10px] tracking-widest">
+                                        Réinitialiser
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+            </div>
+
+            {/* Grid Content */}
+            <div className="container mx-auto px-4 lg:px-8 py-16 print:hidden">
+                {loading ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                        {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                            <Card key={i} className="rounded-[2rem] border-none shadow-xl shadow-slate-200/50 overflow-hidden">
+                                <Skeleton className="h-44 w-full" />
+                                <CardContent className="p-6 space-y-4">
+                                    <Skeleton className="h-6 w-3/4" />
+                                    <Skeleton className="h-4 w-1/2" />
+                                    <div className="pt-4 border-t border-slate-50">
+                                        <Skeleton className="h-12 w-full rounded-xl" />
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </div>
+                ) : filteredVillages.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                        {filteredVillages.map((entry) => (
+                            <VillageCard key={entry.village.id} entry={entry} />
+                        ))}
+                    </div>
+                ) : (
+                    <div className="bg-white rounded-[3rem] p-16 text-center shadow-xl shadow-slate-200/50 border border-slate-50">
+                        <div className="mx-auto w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mb-6">
+                            <SearchX className="h-12 w-12 text-slate-300" />
+                        </div>
+                        <h3 className="text-2xl font-black text-slate-900 mb-2">Aucun village trouvé</h3>
+                        <p className="text-slate-500 font-medium mb-8 max-w-sm mx-auto">
+                            Désolé, nous n'avons trouvé aucune localité correspondant à vos critères de recherche.
+                        </p>
+                        <Button onClick={clearFilters} variant="outline" className="rounded-2xl px-8 h-12 font-bold ring-offset-slate-50">
+                            Effacer les filtres
+                        </Button>
+                    </div>
+                )}
+            </div>
         </div>
+    );
+}
+
+function VillageCard({ entry }: { entry: VillageEntry }) {
+    const { village, currentChief, archivedChiefsCount } = entry;
+
+    return (
+        <Card className="group relative rounded-[2.5rem] border-none shadow-xl shadow-slate-200/50 overflow-hidden bg-white hover:shadow-2xl hover:shadow-amber-500/10 transition-all duration-500 hover:-translate-y-2">
+            {/* Background Pattern Header */}
+            <div className="h-32 bg-slate-900 relative p-6 flex flex-col justify-end overflow-hidden">
+                <div className="absolute inset-0 opacity-20 transition-transform duration-700 group-hover:scale-110">
+                    <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '24px 24px' }}></div>
+                </div>
+                <div className="absolute top-4 right-4 h-12 w-12 bg-white/5 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/10 opacity-0 group-hover:opacity-100 transition-all duration-500 group-hover:rotate-12">
+                    <MapPin className="h-5 w-5 text-white" />
+                </div>
+                
+                <h3 className="text-xl font-black text-white truncate group-hover:text-amber-400 transition-colors z-10">
+                    {village.name}
+                </h3>
+                <p className="text-slate-400 text-xs font-black uppercase tracking-widest truncate z-10">
+                    {village.region} • {village.department}
+                </p>
+
+                {/* Hover Commune overlay */}
+                <div className="absolute inset-x-0 bottom-0 bg-amber-500 translate-y-full group-hover:translate-y-0 transition-transform duration-500 p-2 flex items-center justify-center">
+                    <span className="text-white text-[10px] font-black uppercase tracking-[0.2em]">{village.subPrefecture}</span>
+                </div>
+            </div>
+
+            <CardContent className="p-6 pt-8">
+                <div className="relative mb-6">
+                    <div className="flex items-center gap-4">
+                        <Avatar className="h-16 w-16 rounded-2xl border-4 border-slate-50 shadow-sm group-hover:border-amber-50 ring-2 ring-transparent group-hover:ring-amber-500/20 transition-all duration-500">
+                            <AvatarImage src={currentChief?.photoUrl || ""} />
+                            <AvatarFallback className="bg-slate-100 text-slate-400 font-black rounded-2xl">
+                                {currentChief?.name?.charAt(0) || <Users className="h-6 w-6" />}
+                            </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
+                                Autorité Actuelle
+                            </p>
+                            {currentChief ? (
+                                <>
+                                    <h4 className="text-sm font-black text-slate-900 truncate leading-none mb-1 group-hover:text-amber-600 transition-colors">
+                                        {currentChief.name}
+                                    </h4>
+                                    <Badge className="bg-green-50 text-green-700 text-[10px] font-black hover:bg-green-50 border-none px-2 rounded-md">
+                                        SIÈGE OCCUPÉ
+                                    </Badge>
+                                </>
+                            ) : (
+                                <>
+                                    <p className="text-sm font-bold text-slate-400 italic mb-1">Non renseignée</p>
+                                    <Badge className="bg-amber-50 text-amber-700 text-[10px] font-black hover:bg-amber-50 border-none px-2 rounded-md">
+                                        VACANCE DU TRÔNE
+                                    </Badge>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 mt-8 pt-6 border-t border-slate-50">
+                    <div>
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.1em] mb-1">Archives</p>
+                        <p className="text-sm font-black text-slate-900">{archivedChiefsCount} Prédécesseurs</p>
+                    </div>
+                    <div className="text-right">
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.1em] mb-1">Source</p>
+                        <p className="text-sm font-black text-slate-900">{village.codeINS || "N/A"}</p>
+                    </div>
+                </div>
+            </CardContent>
+
+            <CardFooter className="p-6 pt-0">
+                <Button asChild className="w-full h-12 rounded-xl border-none shadow-none text-xs font-black uppercase tracking-widest group-hover:bg-slate-900 transition-all duration-500 overflow-hidden relative">
+                    <Link href={`/villages/${village.id}`}>
+                        <span className="relative z-10">Détails de la localité</span>
+                        <ChevronRight className="relative z-10 w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                        <div className="absolute inset-0 bg-gradient-to-r from-slate-800 to-slate-900 translate-x-full group-hover:translate-x-0 transition-transform duration-500"></div>
+                    </Link>
+                </Button>
+            </CardFooter>
+        </Card>
     );
 }

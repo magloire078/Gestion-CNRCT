@@ -16,20 +16,38 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getChief } from "@/services/chief-service";
+import { subscribeToConflicts } from "@/services/conflict-service";
 import type { Chief } from "@/lib/data";
+import type { Conflict } from "@/types/common";
 import { cn } from "@/lib/utils";
+import { TrendingUp, AlertTriangle } from "lucide-react";
 
 export default function ChiefProfilePage() {
     const { id } = useParams() as { id: string };
     const router = useRouter();
     const [chief, setChief] = useState<Chief | null>(null);
+    const [conflicts, setConflicts] = useState<Conflict[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        let unsubscribe: (() => void) | undefined;
         async function fetchChief() {
             try {
                 const data = await getChief(id);
                 setChief(data);
+                
+                // Subscribe to conflicts for this chief's area
+                unsubscribe = subscribeToConflicts(
+                    (allConflicts) => {
+                        const related = allConflicts.filter(c => 
+                            (c.village === data?.village) || 
+                            (c.region === data?.region)
+                        );
+                        setConflicts(related);
+                    },
+                    (err) => console.error(err)
+                );
+
             } catch (err) {
                 console.error("Error fetching chief details:", err);
             } finally {
@@ -37,6 +55,9 @@ export default function ChiefProfilePage() {
             }
         }
         fetchChief();
+        return () => {
+            if (unsubscribe) unsubscribe();
+        };
     }, [id]);
 
     if (loading) {
@@ -150,9 +171,17 @@ export default function ChiefProfilePage() {
                 {/* Colonne Gauche - Détails & Bio */}
                 <div className="lg:col-span-2 space-y-8">
                     <Tabs defaultValue="info" className="w-full">
-                        <TabsList className="grid w-full grid-cols-3 mb-6 bg-slate-100/50 p-1 rounded-xl">
+                        <TabsList className="grid w-full grid-cols-4 mb-6 bg-slate-100/50 p-1 rounded-xl">
                             <TabsTrigger value="info" className="rounded-lg font-bold text-xs uppercase tracking-widest">Général</TabsTrigger>
                             <TabsTrigger value="territory" className="rounded-lg font-bold text-xs uppercase tracking-widest">Territoire</TabsTrigger>
+                            <TabsTrigger value="tensions" className="rounded-lg font-bold text-xs uppercase tracking-widest relative">
+                                Tensions
+                                {conflicts.filter(c => c.status !== 'Résolu').length > 0 && (
+                                    <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[8px] font-black text-white border-2 border-white animate-pulse">
+                                        {conflicts.filter(c => c.status !== 'Résolu').length}
+                                    </span>
+                                )}
+                            </TabsTrigger>
                             <TabsTrigger value="heritage" className="rounded-lg font-bold text-xs uppercase tracking-widest">Histoire</TabsTrigger>
                         </TabsList>
                         
@@ -257,6 +286,83 @@ export default function ChiefProfilePage() {
                                         </div>
                                     </div>
                                 </CardContent>
+                            </Card>
+                        </TabsContent>
+
+                        <TabsContent value="tensions" className="space-y-6">
+                            <div className="flex items-center justify-between mb-2">
+                                <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight flex items-center gap-3">
+                                    <AlertCircle className="h-6 w-6 text-rose-500" /> Stabilité Territoriale
+                                </h3>
+                                <Badge variant="outline" className="font-black text-[10px] uppercase border-slate-200">
+                                    {conflicts.length} Dossiers répertoriés
+                                </Badge>
+                            </div>
+
+                            <Card className="border-none shadow-sm overflow-hidden">
+                                <CardContent className="p-0">
+                                    {conflicts.length === 0 ? (
+                                        <div className="p-20 text-center space-y-4">
+                                            <div className="h-16 w-16 bg-emerald-50 rounded-full flex items-center justify-center mx-auto text-emerald-500">
+                                                <CheckCircle2 className="h-8 w-8" />
+                                            </div>
+                                            <div>
+                                                <p className="font-black text-slate-800 uppercase text-sm">Zone Pacifiée</p>
+                                                <p className="text-xs text-slate-400">Aucun conflit répertorié dans le ressort de cette autorité.</p>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="divide-y divide-slate-50">
+                                            {conflicts.map(conflict => (
+                                                <div key={conflict.id} className="p-6 hover:bg-slate-50 transition-colors flex flex-col md:flex-row gap-6">
+                                                    <div className="flex-1 space-y-3">
+                                                        <div className="flex items-center gap-3">
+                                                            <Badge className={cn(
+                                                                "font-black text-[9px] uppercase tracking-widest border-none",
+                                                                conflict.status === 'Résolu' ? "bg-emerald-50 text-emerald-600" : 
+                                                                conflict.status === 'En médiation' ? "bg-amber-50 text-amber-600" : "bg-rose-50 text-rose-600"
+                                                            )}>
+                                                                {conflict.status}
+                                                            </Badge>
+                                                            <span className="text-[10px] font-bold text-slate-300 uppercase tracking-tighter">ID: {conflict.trackingId || '—'}</span>
+                                                        </div>
+                                                        <h4 className="text-base font-black text-slate-900 leading-snug">
+                                                            {conflict.type}
+                                                        </h4>
+                                                        <p className="text-xs text-slate-500 font-medium line-clamp-2">
+                                                            Parties : <span className="text-slate-700 font-bold">{conflict.parties}</span>
+                                                        </p>
+                                                    </div>
+                                                    <div className="flex flex-col md:items-end justify-between gap-4">
+                                                        <div className="text-[10px] font-bold text-slate-400 uppercase text-right">
+                                                            Signalé le : {conflict.reportedDate || 'N/A'}
+                                                        </div>
+                                                        <Button size="sm" variant="ghost" className="h-9 rounded-xl font-bold text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50 group" asChild>
+                                                            <Link href="/conflicts">
+                                                                Détails du dossier <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                                                            </Link>
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </CardContent>
+                            </Card>
+
+                            <Card className="bg-amber-50 border border-amber-100 p-6 rounded-3xl">
+                                <div className="flex gap-4">
+                                    <div className="h-10 w-10 bg-amber-100 rounded-2xl flex items-center justify-center text-amber-600 shrink-0">
+                                        <TrendingUp className="h-5 w-5" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <p className="font-black text-amber-900 text-sm uppercase">Rôle de Médiation</p>
+                                        <p className="text-xs text-amber-800 leading-relaxed font-medium">
+                                            En tant qu'autorité traditionnelle, Sa Majesté est le premier garant de la paix sociale dans son ressort. 
+                                            Tout nouveau dossier ouvert dans cette zone est automatiquement notifié au bureau de médiation territoriale.
+                                        </p>
+                                    </div>
+                                </div>
                             </Card>
                         </TabsContent>
                     </Tabs>

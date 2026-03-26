@@ -31,13 +31,13 @@ import type { User, Employe } from "@/lib/data";
 
 interface LinkUserEmployeeDialogProps {
   isOpen: boolean;
-  onClose: () => void;
-  onConfirm: (userId: string, employeeId: string) => Promise<void>;
+  onCloseAction: () => void;
+  onConfirmAction: (userId: string, employeeId: string) => Promise<void>;
   user: User | null;
   employees: Employe[];
 }
 
-export function LinkUserEmployeeDialog({ isOpen, onClose, onConfirm, user, employees }: LinkUserEmployeeDialogProps) {
+export function LinkUserEmployeeDialog({ isOpen, onCloseAction, onConfirmAction, user, employees }: LinkUserEmployeeDialogProps) {
   const [selectedEmployeeId, setSelectedEmployeeId] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -59,7 +59,7 @@ export function LinkUserEmployeeDialog({ isOpen, onClose, onConfirm, user, emplo
 
   const handleClose = () => {
     setError("");
-    onClose();
+    onCloseAction();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -72,7 +72,7 @@ export function LinkUserEmployeeDialog({ isOpen, onClose, onConfirm, user, emplo
     setIsSubmitting(true);
     setError("");
     try {
-      await onConfirm(user.id, selectedEmployeeId);
+      await onConfirmAction(user.id, selectedEmployeeId);
       handleClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Une erreur est survenue.");

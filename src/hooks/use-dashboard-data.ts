@@ -3,17 +3,16 @@
 import { useState, useEffect, useMemo } from "react";
 import type { User, Leave, Employe, Evaluation, Asset, Mission, Chief, Department, OrganizationSettings } from "@/lib/data";
 import { subscribeToLeaves, calculateLeaveBalance } from "@/services/leave-service";
-import { getEmployee, subscribeToEmployees, getEmployeeGroup } from "@/services/employee-service";
+import { getEmployee, subscribeToEmployees, getEmployeeGroup, subscribeToDirectoireMembers } from "@/services/employee-service";
 import { subscribeToEvaluations } from "@/services/evaluation-service";
 import { getAssets, subscribeToAssets } from "@/services/asset-service";
 import { getMissions, subscribeToMissions } from "@/services/mission-service";
-import { getDashboardSummary } from "@/ai/flows/dashboard-summary-flow";
 import { getOrganizationSettings } from "@/services/organization-service";
 import { subscribeToChiefs } from "@/services/chief-service";
 import { subscribeToDepartments } from "@/services/department-service";
+import { subscribeToConflicts } from "@/services/conflict-service";
+import type { Conflict } from "@/types/common";
 import { parseISO, differenceInYears, isAfter } from 'date-fns';
-let cachedSummary: string | null = null;
-let isSummaryFetching = false;
 
 export function useDashboardData(user: User | null) {
     const [globalStats, setGlobalStats] = useState({
@@ -24,6 +23,7 @@ export function useDashboardData(user: User | null) {
         cnpsEmployees: 0,
         missionsInProgress: 0,
         chiefs: 0,
+        conflicts: [] as Conflict[],
     });
     const [personalStats, setPersonalStats] = useState({
         leaveBalance: null as number | null,
@@ -33,6 +33,7 @@ export function useDashboardData(user: User | null) {
     const [summary, setSummary] = useState<string | null>(null);
     const [organizationLogos, setOrganizationLogos] = useState<OrganizationSettings | null>(null);
     const [seniorityAnniversaries, setSeniorityAnniversaries] = useState<Employe[]>([]);
+    const [birthdayAnniversaries, setBirthdayAnniversaries] = useState<Employe[]>([]);
     const [upcomingRetirements, setUpcomingRetirements] = useState<(Employe & { calculatedRetirementDate: Date })[]>([]);
 
     const [loading, setLoading] = useState(true);
@@ -44,7 +45,7 @@ export function useDashboardData(user: User | null) {
 
     useEffect(() => {
         setLoading(true);
-        setLoadingSummary(true);
+        setLoadingSummary(false); // Summary disabled
 
         const unsubscribers: (() => void)[] = [];
         let isMounted = true;
@@ -66,15 +67,30 @@ export function useDashboardData(user: User | null) {
             }
 
             // --- Global Data (initialized with delays) ---
-            unsubscribers.push(subscribeToEmployees(employees => {
-                if (!isMounted) return;
-                setGlobalStats(prev => ({
-                    ...prev,
-                    employees,
-                    activeEmployees: employees.filter(e => e.status === 'Actif').length,
-                    cnpsEmployees: employees.filter(e => e.CNPS === true && e.status === 'Actif').length
-                }));
-            }, console.error));
+            const canReadAllEmployees = user?.roleId && ['administrateur', 'dirigeant-president', 'manager-rh', 'LHcHyfBzile3r0vyFOFb', 'super-admin'].includes(user.roleId);
+
+            if (canReadAllEmployees) {
+                unsubscribers.push(subscribeToEmployees(employees => {
+                    if (!isMounted) return;
+                    setGlobalStats(prev => ({
+                        ...prev,
+                        employees,
+                        activeEmployees: employees.filter(e => e.status === 'Actif').length,
+                        cnpsEmployees: employees.filter(e => e.CNPS === true && e.status === 'Actif').length
+                    }));
+                }, console.error));
+            } else {
+                // Regular users can only see Directoire members (for the map)
+                unsubscribers.push(subscribeToDirectoireMembers((employees: Employe[]) => {
+                    if (!isMounted) return;
+                    setGlobalStats(prev => ({
+                        ...prev,
+                        employees,
+                        activeEmployees: employees.filter((e: Employe) => e.status === 'Actif').length,
+                        cnpsEmployees: 0 // Information restricted
+                    }));
+                }, console.error));
+            }
 
             await new Promise(resolve => setTimeout(resolve, 50));
             if (!isMounted) return;
@@ -116,26 +132,15 @@ export function useDashboardData(user: User | null) {
                 setGlobalStats(prev => ({ ...prev, departments }));
             }, console.error));
 
-            if (cachedSummary) {
-                if (isMounted) {
-                    setSummary(cachedSummary);
-                    setLoadingSummary(false);
-                }
-            } else if (!isSummaryFetching) {
-                isSummaryFetching = true;
-                getDashboardSummary()
-                    .then(summary => {
-                        cachedSummary = summary;
-                        if (isMounted) setSummary(summary);
-                    })
-                    .catch(console.error)
-                    .finally(() => {
-                        isSummaryFetching = false;
-                        if (isMounted) setLoadingSummary(false);
-                    });
-            } else {
-                if (isMounted) setLoadingSummary(false);
-            }
+            await new Promise(resolve => setTimeout(resolve, 50));
+            if (!isMounted) return;
+
+            unsubscribers.push(subscribeToConflicts(conflicts => {
+                if (!isMounted) return;
+                setGlobalStats(prev => ({ ...prev, conflicts }));
+            }, console.error));
+
+            setLoadingSummary(false);
 
             // --- Personal Data ---
             if (user) {
@@ -181,14 +186,23 @@ export function useDashboardData(user: User | null) {
         const anniversaryYear = parseInt(selectedAnniversaryYear);
         const referenceDate = new Date(anniversaryYear, anniversaryMonth);
 
-        const anniversaries = globalStats.employees.filter(emp => {
-            if (!emp.dateEmbauche || emp.CNPS !== true) return false;
+        const seniority = globalStats.employees.filter(emp => {
+            if (!emp.dateEmbauche || emp.status !== 'Actif') return false;
             try {
                 const hireDate = parseISO(emp.dateEmbauche);
-                return hireDate.getMonth() === anniversaryMonth && differenceInYears(referenceDate, hireDate) >= 2;
+                return hireDate.getMonth() === anniversaryMonth && differenceInYears(referenceDate, hireDate) >= 1;
             } catch { return false; }
         });
-        setSeniorityAnniversaries(anniversaries);
+        setSeniorityAnniversaries(seniority);
+
+        const birthdays = globalStats.employees.filter(emp => {
+            if (!emp.Date_Naissance || emp.status !== 'Actif') return false;
+            try {
+                const birthDate = parseISO(emp.Date_Naissance);
+                return birthDate.getMonth() === anniversaryMonth;
+            } catch { return false; }
+        });
+        setBirthdayAnniversaries(birthdays);
 
         const retirementYearNum = parseInt(selectedRetirementYear);
         const retirements = globalStats.employees
@@ -218,6 +232,7 @@ export function useDashboardData(user: User | null) {
         loadingSummary,
         organizationLogos,
         seniorityAnniversaries,
+        birthdayAnniversaries,
         upcomingRetirements,
         selectedAnniversaryMonth,
         setSelectedAnniversaryMonth,

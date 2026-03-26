@@ -52,6 +52,7 @@ const providerSchema = z.object({
 
 const cardSchema = z.object({
     cardNumber: z.string().min(5, "Le numéro de carte est requis"),
+    label: z.string().optional(),
     providerId: z.string().min(1, "Le prestataire est requis"),
     assignmentType: z.enum(["vehicle", "employee", "generic", "unassigned"]),
     assignmentId: z.string().optional(),
@@ -74,6 +75,12 @@ const expenseSchema = z.object({
     vehiclePlate: z.string().optional(),
     driverName: z.string().optional(),
     receiptNumber: z.string().optional(),
+    missionNumber: z.string().optional(),
+    missionRoute: z.string().optional(),
+    missionDuration: z.string().optional(),
+    missionHead: z.string().optional(),
+    unitPrice: z.coerce.number().optional(),
+    service: z.string().optional(),
     notes: z.string().optional(),
 });
 
@@ -244,6 +251,17 @@ export function FuelCardDialog({
                                 <FormItem>
                                     <FormLabel>Numéro de Carte</FormLabel>
                                     <FormControl><Input placeholder="0000 0000 0000 0000" {...field} /></FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="label"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Libellé de la carte (Optionnel)</FormLabel>
+                                    <FormControl><Input placeholder="ex: CARTE MISSION 2" {...field} /></FormControl>
                                     <FormMessage />
                                 </FormItem>
                             )}
@@ -573,22 +591,22 @@ export function FuelExpenseDialog({
                         <div className="grid grid-cols-2 gap-4">
                             <FormField
                                 control={form.control}
-                                name="amount"
+                                name="date"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Montant du plein (F)</FormLabel>
-                                        <FormControl><Input type="number" {...field} /></FormControl>
+                                        <FormLabel>Date</FormLabel>
+                                        <FormControl><Input type="date" {...field} /></FormControl>
                                         <FormMessage />
                                     </FormItem>
                                 )}
                             />
                             <FormField
                                 control={form.control}
-                                name="liters"
+                                name="receiptNumber"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Litrage (L)</FormLabel>
-                                        <FormControl><Input type="number" step="0.01" {...field} /></FormControl>
+                                        <FormLabel>N° de Ticket / Reçu</FormLabel>
+                                        <FormControl><Input placeholder="00123" {...field} /></FormControl>
                                         <FormMessage />
                                     </FormItem>
                                 )}
@@ -641,22 +659,117 @@ export function FuelExpenseDialog({
                         <div className="grid grid-cols-2 gap-4">
                             <FormField
                                 control={form.control}
-                                name="odometer"
+                                name="amount"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Kilométrage</FormLabel>
-                                        <FormControl><Input type="number" placeholder="Km au compteur" {...field} /></FormControl>
+                                        <FormLabel>Montant du plein (F)</FormLabel>
+                                        <FormControl><Input type="number" {...field} /></FormControl>
                                         <FormMessage />
                                     </FormItem>
                                 )}
                             />
                             <FormField
                                 control={form.control}
-                                name="receiptNumber"
+                                name="liters"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>N° Ticket / Facture</FormLabel>
-                                        <FormControl><Input placeholder="Référence reçu" {...field} /></FormControl>
+                                        <FormLabel>Litrage (L)</FormLabel>
+                                        <FormControl><Input type="number" step="0.01" {...field} /></FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+                        <div className="grid grid-cols-1">
+                            <FormField
+                                control={form.control}
+                                name="missionNumber"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>N° de Mission</FormLabel>
+                                        <FormControl><Input placeholder="ex: MISSION-001" {...field} /></FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <FormField
+                                control={form.control}
+                                name="missionRoute"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Trajet de la mission</FormLabel>
+                                        <FormControl><Input placeholder="ex: Yakro - Abj - Yakro" {...field} /></FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="missionDuration"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Durée de la mission</FormLabel>
+                                        <FormControl><Input placeholder="ex: Du 02 au 04 Déc" {...field} /></FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <FormField
+                                control={form.control}
+                                name="missionHead"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Chef de la mission</FormLabel>
+                                        <SearchableSelect
+                                            items={employees.map(e => ({
+                                                value: e.name,
+                                                label: e.name,
+                                                searchTerms: `${e.name}`
+                                            }))}
+                                            value={field.value}
+                                            onValueChange={field.onChange}
+                                            placeholder="Sélectionner"
+                                            searchPlaceholder="Rechercher..."
+                                        />
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="service"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Service</FormLabel>
+                                        <FormControl><Input placeholder="ex: DAFP, DAS..." {...field} /></FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <FormField
+                                control={form.control}
+                                name="unitPrice"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Prix du litre (Optionnel)</FormLabel>
+                                        <FormControl><Input type="number" placeholder="600" {...field} /></FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="odometer"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Index Kilométrique (KM)</FormLabel>
+                                        <FormControl><Input type="number" placeholder="125000" {...field} /></FormControl>
                                         <FormMessage />
                                     </FormItem>
                                 )}

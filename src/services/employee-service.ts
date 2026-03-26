@@ -2,7 +2,7 @@
 
 import {
     collection, getDocs, addDoc, doc, updateDoc, deleteDoc, onSnapshot,
-    Unsubscribe, query, orderBy, where, writeBatch, getDoc, setDoc, limit,
+    Unsubscribe, query, orderBy, where, writeBatch, getDoc, setDoc, limit, or, and,
     type QuerySnapshot, type DocumentData, type QueryDocumentSnapshot, type DocumentSnapshot
 } from '@/lib/firebase';
 import type { Employe, Chief, Department } from '@/lib/data';
@@ -22,7 +22,7 @@ const employeesCollection = collection(db, 'employees');
 const chiefsCollection = collection(db, 'chiefs');
 
 // Department IDs for special groups
-const GROUPE_DIRECTOIRE_ID = 'DVeCoGfRfL3p43eQeYwz';
+const GROUPE_DIRECTOIRE_ID = '9ywKFDgVMS86rZLPYhpm';
 
 export type EmployeeGroup = 'directoire' | 'regional' | 'personnel-siege' | 'chauffeur-directoire' | 'garde-republicaine' | 'gendarme' | 'all';
 
@@ -154,6 +154,44 @@ export function subscribeToEmployees(
         },
         (error: Error) => {
             onError(new FirestorePermissionError("Impossible de charger les employés.", { query: "allEmployees" }));
+        }
+    );
+    return unsubscribe;
+}
+
+/**
+ * Subscribes only to employees belonging to the Directoire group.
+ * This is used to allow non-admin users to see the map.
+ */
+export function subscribeToDirectoireMembers(
+    callback: (employees: Employe[]) => void,
+    onError: (error: Error) => void
+): Unsubscribe {
+    const q = query(
+        employeesCollection, 
+        and(
+            where("status", "==", "Actif"),
+            or(
+                where("departmentId", "==", GROUPE_DIRECTOIRE_ID),
+                where("matricule", ">=", "DIR"),
+                where("matricule", "<=", "DIR\uf8ff"),
+                where("matricule", ">=", "PRE"),
+                where("matricule", "<=", "PRE\uf8ff")
+            )
+        )
+    );
+    
+    const unsubscribe = onSnapshot(q,
+        (snapshot: QuerySnapshot<DocumentData>) => {
+            const employees = snapshot.docs.map((doc: QueryDocumentSnapshot<DocumentData>) => {
+                const data = { id: doc.id, ...doc.data() };
+                return data as Employe;
+            });
+            callback(employees);
+        },
+        (error: Error) => {
+            console.error("[EmployeeService] Error in subscribeToDirectoireMembers:", error);
+            onError(error);
         }
     );
     return unsubscribe;

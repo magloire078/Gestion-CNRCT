@@ -9,6 +9,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -30,6 +31,7 @@ import {
     Briefcase, Banknote, ShieldCheck,
     ChevronRight, TrendingUp
 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { differenceInYears, parseISO, format } from "date-fns";
 import { fr } from "date-fns/locale";

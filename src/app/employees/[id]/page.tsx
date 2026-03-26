@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useTransition } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { 
@@ -12,6 +12,13 @@ import type { Employe, Department, Direction, Service } from "@/lib/data";
 import { useAuth } from "@/hooks/use-auth";
 import { useFormat } from "@/hooks/use-format";
 import { useToast } from "@/hooks/use-toast";
+import { 
+    getEmployeeHistory, 
+    deleteEmployeeHistoryEvent
+} from "@/services/employee-history-service";
+import { AddHistoryEventSheet } from "@/components/employees/add-history-event-sheet";
+import { EmployeeHistoryTimeline } from "@/components/employees/employee-history-timeline";
+import { type EmployeeEvent } from "@/lib/data";
 import {
     Card,
     CardContent,
@@ -85,6 +92,13 @@ export default function EmployeeDetailPage() {
     const [units, setUnits] = useState<{ departments: Department[], directions: Direction[], services: Service[] } | null>(null);
     const [loading, setLoading] = useState(true);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+    
+    // History state
+    const [historyEvents, setHistoryEvents] = useState<EmployeeEvent[]>([]);
+    const [isHistorySheetOpen, setIsHistorySheetOpen] = useState(false);
+    const [eventToEdit, setEventToEdit] = useState<EmployeeEvent | null>(null);
+    const [activeTab, setActiveTab] = useState("info");
+    const [isPending, startTransition] = useTransition();
 
     const employeeId = params.id as string;
 
@@ -93,12 +107,14 @@ export default function EmployeeDetailPage() {
 
         Promise.all([
             getEmployee(employeeId),
-            getOrganizationalUnits()
+            getOrganizationalUnits(),
+            getEmployeeHistory(employeeId)
         ])
-        .then(([emp, orgUnits]) => {
+        .then(([emp, orgUnits, history]) => {
             if (emp) {
                 setEmployee(emp);
                 setUnits(orgUnits);
+                setHistoryEvents(history);
             } else {
                 toast({
                     variant: "destructive",
@@ -111,6 +127,29 @@ export default function EmployeeDetailPage() {
         .catch(console.error)
         .finally(() => setLoading(false));
     }, [employeeId, router, toast]);
+
+    const handleRefreshHistory = async () => {
+        try {
+            const history = await getEmployeeHistory(employeeId);
+            setHistoryEvents(history);
+            // Also refresh employee data in case salary changed
+            const emp = await getEmployee(employeeId);
+            if (emp) setEmployee(emp);
+        } catch (error) {
+            console.error("Failed to refresh history", error);
+        }
+    };
+
+    const handleDeleteEvent = async (event: EmployeeEvent) => {
+        if (!window.confirm("Êtes-vous sûr de vouloir supprimer cet événement ?")) return;
+        try {
+            await deleteEmployeeHistoryEvent(employeeId, event.id);
+            toast({ title: "Événement supprimé", description: "L'historique a été mis à jour." });
+            handleRefreshHistory();
+        } catch (error) {
+            toast({ variant: "destructive", title: "Erreur", description: "Impossible de supprimer l'événement." });
+        }
+    };
 
     const handleDelete = async () => {
         try {
@@ -234,7 +273,12 @@ export default function EmployeeDetailPage() {
             </div>
 
             {/* Content Tabs */}
-            <Tabs defaultValue="info" className="space-y-8">
+            <Tabs 
+                defaultValue="info" 
+                value={activeTab}
+                onValueChange={(v) => startTransition(() => setActiveTab(v))}
+                className="space-y-8"
+            >
                 <TabsList className="bg-white border border-slate-100 p-1.5 rounded-[2rem] shadow-xl shadow-slate-200/50 flex flex-wrap h-auto gap-2">
                     <TabsTrigger value="info" className="rounded-2xl px-8 py-3 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-[10px] transition-all">
                         <UserCircle2 className="mr-2 h-4 w-4" /> Identité
@@ -469,55 +513,45 @@ export default function EmployeeDetailPage() {
                 {/* History Tab */}
                 <TabsContent value="history" className="focus-visible:outline-none">
                     <Card className="border-none shadow-xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden">
-                        <CardHeader className="p-8 pb-4">
+                        <CardHeader className="p-8 pb-4 flex flex-row items-center justify-between">
                             <CardTitle className="text-xl flex items-center gap-3">
-                                <History className="h-5 w-5 text-blue-500" /> Fil d'évenements Carrière
+                                <History className="h-5 w-5 text-blue-500" /> Historique de Carrière
                             </CardTitle>
+                            {canEdit && (
+                                <Button 
+                                    onClick={() => {
+                                        setEventToEdit(null);
+                                        setIsHistorySheetOpen(true);
+                                    }}
+                                    className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl"
+                                >
+                                    <PlusCircle className="mr-2 h-4 w-4" /> Nouvel Événement
+                                </Button>
+                            )}
                         </CardHeader>
                         <CardContent className="p-8 pt-4">
-                            <div className="relative space-y-12 before:absolute before:left-6 before:top-2 before:h-[calc(100%-1rem)] before:w-1 before:bg-slate-100">
-                                {/* Entry Point */}
-                                <div className="relative flex gap-10">
-                                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-slate-900 text-white shadow-xl z-10">
-                                        <CheckCircle2 className="h-6 w-6" />
-                                    </div>
-                                    <div className="pt-2">
-                                        <p className="text-sm font-black uppercase text-slate-400 tracking-widest mb-1">{formatDate(employee.dateEmbauche)}</p>
-                                        <h4 className="text-lg font-black text-slate-900">Intégration au Directoire</h4>
-                                        <p className="text-sm text-slate-500 mt-2 font-medium">Nomination officielle au poste de <b>{employee.poste}</b> au sein du département <b>{deptName}</b>.</p>
-                                    </div>
-                                </div>
-
-                                {/* Current State */}
-                                <div className="relative flex gap-10">
-                                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-blue-500 text-white shadow-xl z-10 animate-pulse">
-                                        <Briefcase className="h-6 w-6" />
-                                    </div>
-                                    <div className="pt-2">
-                                        <p className="text-sm font-black uppercase text-blue-400 tracking-widest mb-1">AUJOURD'HUI</p>
-                                        <h4 className="text-lg font-black text-slate-900">Positionnement Actuel</h4>
-                                        <p className="text-sm text-slate-500 mt-2 font-medium">L'employé est actuellement en statut <Badge className="bg-emerald-500">{employee.status}</Badge>.</p>
-                                    </div>
-                                </div>
-
-                                {/* Future Item (Retirement) */}
-                                {employee.Date_Depart && (
-                                    <div className="relative flex gap-10 opacity-40">
-                                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-slate-200 text-slate-500 shadow-xl z-10">
-                                            <Calendar className="h-6 w-6" />
-                                        </div>
-                                        <div className="pt-2">
-                                            <p className="text-sm font-black uppercase text-slate-400 tracking-widest mb-1">{formatDate(employee.Date_Depart)}</p>
-                                            <h4 className="text-lg font-black text-slate-900 italic">Départ en Retraite (Prévisionnel)</h4>
-                                            <p className="text-sm text-slate-500 mt-2 font-medium">Fin de fonction administrative prévue après 60 ans révolus.</p>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
+                            {activeTab === "history" && (
+                                <EmployeeHistoryTimeline 
+                                    events={historyEvents}
+                                    onEdit={(event) => {
+                                        setEventToEdit(event);
+                                        setIsHistorySheetOpen(true);
+                                    }}
+                                    onDelete={handleDeleteEvent}
+                                />
+                            )}
                         </CardContent>
                     </Card>
                 </TabsContent>
             </Tabs>
+
+            <AddHistoryEventSheet 
+                isOpen={isHistorySheetOpen}
+                onCloseAction={() => setIsHistorySheetOpen(false)}
+                employeeId={employeeId}
+                eventToEdit={eventToEdit}
+                onEventSavedAction={() => handleRefreshHistory()}
+            />
 
             <ConfirmationDialog
                 isOpen={isDeleteDialogOpen}

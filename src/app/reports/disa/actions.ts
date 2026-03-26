@@ -116,73 +116,84 @@ export async function generateDisaReport(yearStr: string): Promise<DisaReportSta
     const reportRows: DisaRow[] = [];
 
     for (const employee of employeesForYear) {
-      const monthlySalaries: number[] = [];
-      let totalCNPS = 0;
-      const employeeHistory = employeeHistories.get(employee.id) || [];
-      const hireDate = employee.dateEmbauche ? parseISO(employee.dateEmbauche) : null;
-      const departureDate = employee.Date_Depart ? parseISO(employee.Date_Depart) : null;
+      try {
+        const monthlySalaries: number[] = [];
+        let totalCNPS = 0;
+        
+        // Detailed logging for debugging
+        console.log(`Processing DISA for: ${employee.lastName} ${employee.firstName} (${employee.matricule})`);
 
-      // Gratification Calculation: 75% of December's base salary or last active month
-      const dateForGratification = lastDayOfMonth(new Date(reportYear, 11)); // December 31st
-      const salaryStructureDec = getSalaryStructureForDate(employee, employeeHistory, dateForGratification);
-      const baseSalaryDec = Number(salaryStructureDec.baseSalary || 0);
-
-      let gratification = 0;
-      const isPresentInDecember = !departureDate || !isBefore(departureDate, dateForGratification);
-
-      if (isPresentInDecember) {
-        // Calculate December Brut Salary
-        const primeAncienneteDec = calculatePrimeAnciennete(baseSalaryDec, hireDate, dateForGratification);
-        const brutImposableDec = calculateBrutSalary(baseSalaryDec, primeAncienneteDec, salaryStructureDec);
-
-        gratification = brutImposableDec;
-      } else {
-        gratification = 0;
-      }
-
-      for (let month = 0; month < 12; month++) {
-        const dateForPayslip = lastDayOfMonth(new Date(reportYear, month));
-        let brutImposable = 0;
-
-        if (hireDate && isBefore(dateForPayslip, hireDate)) {
-          monthlySalaries.push(0);
-          continue;
-        }
-        if (departureDate && isBefore(departureDate, dateForPayslip)) {
-          monthlySalaries.push(0);
-          continue;
+        const hireDate = employee.dateEmbauche ? parseISO(employee.dateEmbauche) : null;
+        if (employee.dateEmbauche && (!hireDate || !isValid(hireDate))) {
+          console.warn(`Invalid hire date for ${employee.matricule}: ${employee.dateEmbauche}`);
         }
 
-        const salaryStructure = getSalaryStructureForDate(employee, employeeHistory, dateForPayslip);
-        const baseSalary = Number(salaryStructure.baseSalary || 0);
-        const primeAnciennete = calculatePrimeAnciennete(baseSalary, hireDate, dateForPayslip);
-        brutImposable = calculateBrutSalary(baseSalary, primeAnciennete, salaryStructure);
+        const departureDate = employee.Date_Depart ? parseISO(employee.Date_Depart) : null;
+        if (employee.Date_Depart && (!departureDate || !isValid(departureDate))) {
+          console.warn(`Invalid departure date for ${employee.matricule}: ${employee.Date_Depart}`);
+        }
+
+        const employeeHistory = employeeHistories.get(employee.id) || [];
+
+        // Gratification Calculation: using December's structure or last active month
+        const dateForGratification = lastDayOfMonth(new Date(reportYear, 11)); // December 31st
+        const salaryStructureDec = getSalaryStructureForDate(employee, employeeHistory, dateForGratification);
+        const baseSalaryDec = Number(salaryStructureDec?.baseSalary || 0);
+
+        let gratification = 0;
+        const isPresentInDecember = !departureDate || !isBefore(departureDate, dateForGratification);
+
+        if (isPresentInDecember) {
+          const primeAncienneteDec = calculatePrimeAnciennete(baseSalaryDec, hireDate, dateForGratification);
+          const brutImposableDec = calculateBrutSalary(baseSalaryDec, primeAncienneteDec, salaryStructureDec);
+          gratification = isNaN(brutImposableDec) ? 0 : brutImposableDec;
+        }
+
+        for (let month = 0; month < 12; month++) {
+          const dateForPayslip = lastDayOfMonth(new Date(reportYear, month));
+          
+          if ((hireDate && isBefore(dateForPayslip, hireDate)) || 
+              (departureDate && isBefore(departureDate, dateForPayslip))) {
+            monthlySalaries.push(0);
+            continue;
+          }
+
+          const salaryStructure = getSalaryStructureForDate(employee, employeeHistory, dateForPayslip);
+          const baseSalary = Number(salaryStructure?.baseSalary || 0);
+          const primeAnciennete = calculatePrimeAnciennete(baseSalary, hireDate, dateForPayslip);
+          const brutImposable = calculateBrutSalary(baseSalary, primeAnciennete, salaryStructure);
+          
+          const validBrut = isNaN(brutImposable) ? 0 : brutImposable;
+          
+          if (employee.CNPS === true) {
+            totalCNPS += validBrut * 0.063;
+          }
+
+          monthlySalaries.push(Math.round(validBrut));
+        }
+
+        const totalMonthlyBrut = monthlySalaries.reduce((sum, current) => sum + current, 0);
+        const totalBrut = totalMonthlyBrut + gratification;
 
         if (employee.CNPS === true) {
-          totalCNPS += brutImposable * 0.063;
+          totalCNPS += gratification * 0.063;
         }
 
-        monthlySalaries.push(Math.round(brutImposable));
+        reportRows.push({
+          matricule: employee.matricule || 'N/A',
+          name: `${(employee.lastName || '').toUpperCase()} ${employee.firstName || ''}`.trim(),
+          cnpsStatus: employee.CNPS || false,
+          monthlySalaries,
+          gratification,
+          totalBrut: Math.round(totalBrut),
+          totalCNPS: Math.round(totalCNPS),
+          sexe: employee.sexe || '-',
+          dateNaissance: employee.Date_Naissance || '-',
+        });
+      } catch (employeeError) {
+        console.error(`Error processing DISA for employee ${employee.matricule}:`, employeeError);
+        // Continue to next employee instead of failing the whole report
       }
-
-      const totalMonthlyBrut = monthlySalaries.reduce((sum, current) => sum + current, 0);
-      const totalBrut = totalMonthlyBrut + gratification;
-
-      if (employee.CNPS === true) {
-        totalCNPS += gratification * 0.063;
-      }
-
-      reportRows.push({
-        matricule: employee.matricule || 'N/A',
-        name: `${(employee.lastName || '').toUpperCase()} ${employee.firstName || ''}`.trim(),
-        cnpsStatus: employee.CNPS || false,
-        monthlySalaries,
-        gratification,
-        totalBrut: Math.round(totalBrut),
-        totalCNPS: Math.round(totalCNPS),
-        sexe: employee.sexe || '-',
-        dateNaissance: employee.Date_Naissance || '-',
-      });
     }
 
     const grandTotal = reportRows.reduce((acc, row) => {
@@ -205,7 +216,7 @@ export async function generateDisaReport(yearStr: string): Promise<DisaReportSta
       },
       organizationLogos,
       year: yearStr,
-      error: null,
+      error: reportRows.length === 0 && employeesForYear.length > 0 ? "Certaines données d'employés ont causé des erreurs. Vérifiez la console." : null,
     };
 
   } catch (err) {
@@ -215,7 +226,7 @@ export async function generateDisaReport(yearStr: string): Promise<DisaReportSta
       grandTotal: null,
       organizationLogos: null,
       year: yearStr,
-      error: `Erreur: ${err instanceof Error ? err.message : String(err)}`
+      error: `Erreur critique: ${err instanceof Error ? err.message : String(err)}`
     };
   }
 }

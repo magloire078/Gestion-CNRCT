@@ -2,7 +2,7 @@
 
 import { collection, getDocs, addDoc, onSnapshot, Unsubscribe, query, orderBy, deleteDoc, doc, updateDoc, getDoc, writeBatch, where, setDoc, limit } from '@/lib/firebase';
 import { uploadToCloudinary } from '@/lib/cloudinary';
-import type { Chief, ChiefRole } from '@/lib/data';
+import type { Chief, ChiefRole } from '@/types/chief';
 import { db, storage } from '@/lib/firebase';
 import { FirestorePermissionError } from '@/lib/errors';
 

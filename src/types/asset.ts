@@ -24,10 +24,24 @@ export type Fleet = {
 export type Supply = {
     id: string; // Firestore document ID
     name: string;
+    code?: string; // SYSCOHADA code (e.g. 335)
     category: "Papeterie" | "Cartouches d'encre" | "Matériel de nettoyage" | "Autre";
     inkType?: string; // e.g., 'HP 651', 'Toner 12A'
     quantity: number;
     reorderLevel: number;
     lastRestockDate: string; // YYYY-MM-DD
     linkedAssetTag?: string; // Link to an Asset (e.g., a printer)
+    photoUrl?: string;
+};
+
+export type SupplyTransaction = {
+    id?: string;
+    supplyId: string;
+    supplyName: string;
+    recipientId?: string; // Employee ID
+    recipientName: string; // Employee name or manual entry
+    quantity: number;
+    date: string; // YYYY-MM-DD
+    type: 'distribution' | 'restock';
+    performedBy: string; // User ID
 };

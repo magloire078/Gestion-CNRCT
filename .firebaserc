@@ -1,5 +1,7 @@
 {
   "projects": {
     "default": "gestion-cnrct"
-  }
+  },
+  "targets": {},
+  "etags": {}
 }

@@ -29,13 +29,13 @@ import { addService, updateService } from "@/services/service-service";
 
 interface ServiceDialogProps {
   isOpen: boolean;
-  onClose: () => void;
+  onCloseAction: () => void;
   service?: Service | null;
   directions: Direction[];
   departments: Department[];
 }
 
-export function ServiceDialog({ isOpen, onClose, service, directions, departments }: ServiceDialogProps) {
+export function ServiceDialog({ isOpen, onCloseAction, service, directions, departments }: ServiceDialogProps) {
   const [name, setName] = useState("");
   const [parentType, setParentType] = useState<'direction' | 'department'>('direction');
   const [parentId, setParentId] = useState("");
@@ -70,7 +70,7 @@ export function ServiceDialog({ isOpen, onClose, service, directions, department
 
   const handleClose = () => {
     setError("");
-    onClose();
+    onCloseAction();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

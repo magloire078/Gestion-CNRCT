@@ -27,12 +27,12 @@ import { useToast } from "@/hooks/use-toast";
 
 interface AddUserSheetProps {
   isOpen: boolean;
-  onClose: () => void;
-  onAddUser: () => void;
+  onCloseAction: () => void;
+  onAddUserAction: () => void;
   roles: Role[];
 }
 
-export function AddUserSheet({ isOpen, onClose, onAddUser, roles }: AddUserSheetProps) {
+export function AddUserSheet({ isOpen, onCloseAction, onAddUserAction, roles }: AddUserSheetProps) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [roleId, setRoleId] = useState("");
@@ -49,7 +49,7 @@ export function AddUserSheet({ isOpen, onClose, onAddUser, roles }: AddUserSheet
 
   const handleClose = () => {
     resetForm();
-    onClose();
+    onCloseAction();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -65,7 +65,7 @@ export function AddUserSheet({ isOpen, onClose, onAddUser, roles }: AddUserSheet
       // Note: This only creates the user in Firestore. The auth user must be created separately.
       // In a real app, this might be a Cloud Function that does both.
       await addUser({ name, email, roleId });
-      onAddUser();
+      onAddUserAction();
       handleClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Échec de l'ajout de l'utilisateur.");

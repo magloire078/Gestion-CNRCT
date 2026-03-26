@@ -37,7 +37,8 @@ async function getUserProfile(userId: string): Promise<User | null> {
             id: userId,
             ...userData,
             role: userRole,
-            permissions: userRole?.permissions || []
+            permissions: userRole?.permissions || [],
+            resourcePermissions: userRole?.resourcePermissions || {}
         };
     } catch (error) {
         // Silently handle permission errors during initial auth state changes
@@ -127,80 +128,91 @@ export async function signUp(userData: { name: string, email: string }, password
 }
 
 export async function signIn(email: string, password: string): Promise<User> {
-    const { isConfigValid } = await import('@/lib/firebase');
-    if (!isConfigValid) {
-        throw new Error("Firebase configuration is missing");
-    }
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    const { user } = userCredential;
-
-    let userProfile = await getUserProfile(user.uid);
-
-    // Just-in-time profile creation if profile doesn't exist
-    if (!userProfile) {
-        // Before creating, verify the document truly doesn't exist.
-        // getUserProfile() can return null both when the doc is missing AND
-        // when it fails silently due to permission errors (e.g. on roles collection).
-        const userDocRef = doc(db, 'users', user.uid);
-        const userDocSnap = await getDoc(userDocRef);
-
-        if (!userDocSnap.exists()) {
-            // Truly new user — create profile
-            console.warn(`User profile not found for uid: ${user.uid}. Creating one now.`);
-            try {
-                // Check if admin pre-provisioned this user
-                const { collection, getDocs, query, where, deleteDoc } = await import('@/lib/firebase');
-                const q = query(collection(db, 'users'), where('email', '==', user.email));
-                const querySnapshot = await getDocs(q);
-
-                let preProvisionedData = null;
-                let oldDocId = null;
-                if (!querySnapshot.empty) {
-                    const oldDoc = querySnapshot.docs.find(d => d.id !== user.uid);
-                    if (oldDoc) {
-                        preProvisionedData = oldDoc.data();
-                        oldDocId = oldDoc.id;
-                        console.warn(`Found pre-provisioned profile for ${user.email} (doc: ${oldDocId}), migrating to ${user.uid}`);
-                    }
-                }
-
-                userProfile = await createUserProfile(user, user.displayName || user.email!, preProvisionedData);
-
-                if (oldDocId) {
-                    try {
-                        const { deleteDoc, updateDoc } = await import('@/lib/firebase');
-                        if (preProvisionedData?.employeeId) {
-                            await updateDoc(doc(db, 'employees', preProvisionedData.employeeId), {
-                                userId: user.uid
-                            });
-                        }
-                        await deleteDoc(doc(db, 'users', oldDocId));
-                    } catch (e) {
-                        console.warn("Could not delete old pre-provisioned doc or update employee:", e);
-                    }
-                }
-            } catch (profileError) {
-                console.error("Just-in-time profile creation failed:", profileError);
-                throw new Error("profile-creation-failed");
-            }
-        } else {
-            // Profile doc exists but role/permissions couldn't be loaded.
-            // Build a minimal profile from raw document data.
-            console.warn(`Profile doc exists for ${user.uid} but role couldn't be resolved. Using minimal profile.`);
-            const rawData = userDocSnap.data();
-            userProfile = {
-                id: user.uid,
-                name: rawData.name || user.displayName || user.email!,
-                email: rawData.email || user.email!,
-                roleId: rawData.roleId || '',
-                photoUrl: rawData.photoUrl || user.photoURL || '',
-                role: null,
-                permissions: [],
-            };
+    try {
+        const { isConfigValid } = await import('@/lib/firebase');
+        if (!isConfigValid) {
+            throw new Error("Firebase configuration is missing");
         }
-    }
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const { user } = userCredential;
 
-    return userProfile;
+        let userProfile = await getUserProfile(user.uid);
+
+        // Just-in-time profile creation if profile doesn't exist
+        if (!userProfile) {
+            // Before creating, verify the document truly doesn't exist.
+            // getUserProfile() can return null both when the doc is missing AND
+            // when it fails silently due to permission errors (e.g. on roles collection).
+            const userDocRef = doc(db, 'users', user.uid);
+            const userDocSnap = await getDoc(userDocRef);
+
+            if (!userDocSnap.exists()) {
+                // Truly new user — create profile
+                console.warn(`User profile not found for uid: ${user.uid}. Creating one now.`);
+                try {
+                    // Check if admin pre-provisioned this user
+                    const { collection, getDocs, query, where, deleteDoc } = await import('@/lib/firebase');
+                    const q = query(collection(db, 'users'), where('email', '==', user.email));
+                    const querySnapshot = await getDocs(q);
+
+                    let preProvisionedData = null;
+                    let oldDocId = null;
+                    if (!querySnapshot.empty) {
+                        const oldDoc = querySnapshot.docs.find(d => d.id !== user.uid);
+                        if (oldDoc) {
+                            preProvisionedData = oldDoc.data();
+                            oldDocId = oldDoc.id;
+                            console.warn(`Found pre-provisioned profile for ${user.email} (doc: ${oldDocId}), migrating to ${user.uid}`);
+                        }
+                    }
+
+                    userProfile = await createUserProfile(user, user.displayName || user.email!, preProvisionedData);
+
+                    if (oldDocId) {
+                        try {
+                            const { deleteDoc, updateDoc } = await import('@/lib/firebase');
+                            if (preProvisionedData?.employeeId) {
+                                await updateDoc(doc(db, 'employees', preProvisionedData.employeeId), {
+                                    userId: user.uid
+                                });
+                            }
+                            await deleteDoc(doc(db, 'users', oldDocId));
+                        } catch (e) {
+                            console.warn("Could not delete old pre-provisioned doc or update employee:", e);
+                        }
+                    }
+                } catch (profileError) {
+                    console.error("Just-in-time profile creation failed:", profileError);
+                    throw new Error("profile-creation-failed");
+                }
+            } else {
+                // Profile doc exists but role/permissions couldn't be loaded.
+                // Build a minimal profile from raw document data.
+                console.warn(`Profile doc exists for ${user.uid} but role couldn't be resolved. Using minimal profile.`);
+                const rawData = userDocSnap.data();
+                userProfile = {
+                    id: user.uid,
+                    name: rawData.name || user.displayName || user.email!,
+                    email: rawData.email || user.email!,
+                    roleId: rawData.roleId || '',
+                    photoUrl: rawData.photoUrl || user.photoURL || '',
+                    role: null,
+                    permissions: [],
+                };
+            }
+        }
+
+        return userProfile;
+    } catch (error: any) {
+        console.error("[AuthService] SignIn Error:", {
+            code: error.code,
+            message: error.message,
+            name: error.name,
+            stack: error.stack,
+            errorObject: error
+        });
+        throw error;
+    }
 }
 
 export async function signOut(): Promise<void> {

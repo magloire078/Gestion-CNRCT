@@ -1,7 +1,7 @@
 
 
 import { db } from '@/lib/firebase';
-import { collection, getDocs, addDoc, onSnapshot, Unsubscribe, query, orderBy, doc, updateDoc, getDoc } from '@/lib/firebase';
+import { collection, getDocs, addDoc, onSnapshot, Unsubscribe, query, orderBy, doc, updateDoc, getDoc, where } from '@/lib/firebase';
 import { evaluationSchema } from '@/lib/schemas/evaluation-schema';
 import type { Evaluation, Goal } from '@/lib/data';
 import { createNotification } from './notification-service';

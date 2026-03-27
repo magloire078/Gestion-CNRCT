@@ -1,6 +1,10 @@
-
+import React, { useState } from "react";
 import { ArrowUp, ArrowDown, GripVertical } from "lucide-react";
 import type { ColumnKeys } from "@/lib/constants/employee";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 
 interface PrintDialogProps {
   isOpen: boolean;
@@ -22,7 +26,7 @@ export function PrintDialog({ isOpen, onClose, onPrint, allColumns }: PrintDialo
   );
 
   const handleCheckboxChange = (key: ColumnKeys) => {
-    setSelectedColumns(prev => ({ ...prev, [key]: !prev[key] }));
+    setSelectedColumns((prev: Record<ColumnKeys, boolean>) => ({ ...prev, [key]: !prev[key] }));
   };
 
   const moveColumn = (index: number, direction: 'up' | 'down') => {
@@ -45,7 +49,7 @@ export function PrintDialog({ isOpen, onClose, onPrint, allColumns }: PrintDialo
 
   const handlePrintClick = () => {
     // Return selected columns in the user-defined order
-    const selected = columnOrder.filter(key => selectedColumns[key]);
+    const selected = columnOrder.filter((key: ColumnKeys) => selectedColumns[key]);
     if (selected.length > 0) {
       onPrint(selected);
     }
@@ -79,7 +83,7 @@ export function PrintDialog({ isOpen, onClose, onPrint, allColumns }: PrintDialo
           </div>
 
           <div className="space-y-1">
-            {columnOrder.map((key, index) => (
+            {columnOrder.map((key: ColumnKeys, index: number) => (
               <div 
                 key={key} 
                 className={`flex items-center justify-between p-2 rounded-lg border ${selectedColumns[key] ? 'border-primary/20 bg-primary/5 shadow-sm' : 'border-slate-100 bg-slate-50/50 opacity-60'} transition-all`}
@@ -94,7 +98,7 @@ export function PrintDialog({ isOpen, onClose, onPrint, allColumns }: PrintDialo
                     htmlFor={key} 
                     className={`text-sm font-medium cursor-pointer ${selectedColumns[key] ? 'text-slate-900' : 'text-slate-500'}`}
                   >
-                    {allColumns[key]}
+                    {allColumns[key as ColumnKeys]}
                   </Label>
                 </div>
                 

@@ -33,6 +33,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { IVORIAN_REGIONS } from "@/constants/regions";
+import { DebouncedInput } from "@/components/ui/debounced-input";
 
 interface EditEmployeeFormProps {
   employee: Employe;
@@ -98,7 +99,7 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
     setFormData(prev => ({ ...prev, [id]: value }));
   };
 
-  const handleSelectChange = (id: keyof Employe, value: string) => {
+  const handleSelectChange = (id: keyof Employe, value: any) => {
     setFormData(prev => {
       const newData = { ...prev, [id]: value };
       if (id === 'departmentId') {
@@ -109,6 +110,10 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
       }
       return newData;
     });
+  };
+
+  const handleValueChange = (id: string, value: string | number) => {
+    setFormData(prev => ({ ...prev, [id]: value }));
   };
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -253,19 +258,19 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                   <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="lastName">Nom de famille</Label>
-                      <Input id="lastName" value={formData.lastName || ''} onChange={handleInputChange} />
+                      <DebouncedInput id="lastName" value={formData.lastName || ''} onChange={(val) => handleValueChange('lastName', val as string)} />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="firstName">Prénom(s)</Label>
-                      <Input id="firstName" value={formData.firstName || ''} onChange={handleInputChange} />
+                      <DebouncedInput id="firstName" value={formData.firstName || ''} onChange={(val) => handleValueChange('firstName', val as string)} />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="email">Email professionnel</Label>
-                      <Input id="email" type="email" value={formData.email || ''} onChange={handleInputChange} />
+                      <DebouncedInput id="email" type="email" value={formData.email || ''} onChange={(val) => handleValueChange('email', val as string)} />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="mobile">Contact mobile</Label>
-                      <Input id="mobile" value={formData.mobile || ''} onChange={handleInputChange} />
+                      <DebouncedInput id="mobile" value={formData.mobile || ''} onChange={(val) => handleValueChange('mobile', val as string)} />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="Date_Naissance">Date de naissance</Label>
@@ -307,11 +312,11 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                   <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="matricule">Matricule</Label>
-                      <Input id="matricule" value={formData.matricule || ''} onChange={handleInputChange} className="bg-slate-50" />
+                      <DebouncedInput id="matricule" value={formData.matricule || ''} onChange={(val) => handleValueChange('matricule', val as string)} className="bg-slate-50" />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="poste">Poste actuel</Label>
-                      <Input id="poste" value={formData.poste || ''} onChange={handleInputChange} />
+                      <DebouncedInput id="poste" value={formData.poste || ''} onChange={(val) => handleValueChange('poste', val as string)} />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="dateEmbauche">Date d'embauche</Label>

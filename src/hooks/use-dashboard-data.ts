@@ -2,9 +2,9 @@
 
 import { useState, useEffect, useMemo } from "react";
 import type { User, Leave, Employe, Evaluation, Asset, Mission, Chief, Department, OrganizationSettings } from "@/lib/data";
-import { subscribeToLeaves, calculateLeaveBalance } from "@/services/leave-service";
+import { subscribeToLeaves, subscribeToUserLeaves, calculateLeaveBalance } from "@/services/leave-service";
 import { getEmployee, subscribeToEmployees, getEmployeeGroup, subscribeToDirectoireMembers } from "@/services/employee-service";
-import { subscribeToEvaluations } from "@/services/evaluation-service";
+import { subscribeToEvaluations, subscribeToUserEvaluations } from "@/services/evaluation-service";
 import { getAssets, subscribeToAssets } from "@/services/asset-service";
 import { getMissions, subscribeToMissions } from "@/services/mission-service";
 import { getOrganizationSettings } from "@/services/organization-service";
@@ -135,10 +135,13 @@ export function useDashboardData(user: User | null) {
             await new Promise(resolve => setTimeout(resolve, 50));
             if (!isMounted) return;
 
-            unsubscribers.push(subscribeToConflicts(conflicts => {
-                if (!isMounted) return;
-                setGlobalStats(prev => ({ ...prev, conflicts }));
-            }, console.error));
+            const canReadConflicts = user?.roleId && ['administrateur', 'LHcHyfBzile3r0vyFOFb', 'cadre-superieur-directeur'].includes(user.roleId);
+            if (canReadConflicts) {
+                unsubscribers.push(subscribeToConflicts(conflicts => {
+                    if (!isMounted) return;
+                    setGlobalStats(prev => ({ ...prev, conflicts }));
+                }, console.error));
+            }
 
             setLoadingSummary(false);
 
@@ -147,23 +150,24 @@ export function useDashboardData(user: User | null) {
                 await new Promise(resolve => setTimeout(resolve, 50));
                 if (!isMounted) return;
 
-                unsubscribers.push(subscribeToLeaves(allLeaves => {
-                    if (!isMounted) return;
-                    const userLeaves = allLeaves.filter(l => l.employee === user.name);
-                    calculateLeaveBalance(userLeaves).then(balance => {
-                        if (isMounted) setPersonalStats(prev => ({ ...prev, leaveBalance: balance }));
-                    });
-                }, console.error));
+                if (user.employeeId) {
+                    unsubscribers.push(subscribeToUserLeaves(user.employeeId, allLeaves => {
+                        if (!isMounted) return;
+                        // allLeaves are already filtered by employeeId in this new subscription
+                        calculateLeaveBalance(allLeaves).then(balance => {
+                            if (isMounted) setPersonalStats(prev => ({ ...prev, leaveBalance: balance }));
+                        });
+                    }, console.error));
 
-                await new Promise(resolve => setTimeout(resolve, 50));
-                if (!isMounted) return;
-
-                unsubscribers.push(subscribeToEvaluations(allEvals => {
+                    await new Promise(resolve => setTimeout(resolve, 50));
                     if (!isMounted) return;
-                    const userEvals = allEvals.filter(e => e.employeeId === user.id);
-                    const latestEval = userEvals.sort((a, b) => new Date(b.evaluationDate).getTime() - new Date(a.evaluationDate).getTime())[0] || null;
-                    setPersonalStats(prev => ({ ...prev, latestEvaluation: latestEval }));
-                }, console.error));
+
+                    unsubscribers.push(subscribeToUserEvaluations(user.employeeId, userEvals => {
+                        if (!isMounted) return;
+                        const latestEval = userEvals[0] || null; // Already sorted by date in the service
+                        setPersonalStats(prev => ({ ...prev, latestEvaluation: latestEval }));
+                    }, console.error));
+                }
 
             }
         };

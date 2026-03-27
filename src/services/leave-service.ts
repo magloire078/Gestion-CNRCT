@@ -71,6 +71,34 @@ export function subscribeToLeaves(
     return unsubscribe;
 }
 
+export function subscribeToUserLeaves(
+    employeeId: string,
+    callback: (leaves: Leave[]) => void,
+    onError: (error: Error) => void
+): Unsubscribe {
+    const q = query(
+        leavesCollection, 
+        where("employeeId", "==", employeeId),
+        orderBy("startDate", "desc")
+    );
+    const unsubscribe = onSnapshot(q,
+        (snapshot) => {
+            const leaves = snapshot.docs.map((doc: any) => {
+                const data = { id: doc.id, ...doc.data() };
+                const result = leaveSchema.safeParse(data);
+                if (!result.success) {
+                    console.error(`[LeaveService] validation error for ${doc.id}:`, result.error.format());
+                    return data as unknown as Leave;
+                }
+                return result.data as unknown as Leave;
+            });
+            callback(leaves);
+        },
+        onError
+    );
+    return unsubscribe;
+}
+
 export async function getLeaves(): Promise<Leave[]> {
     try {
         const q = query(leavesCollection, orderBy("startDate", "desc"));

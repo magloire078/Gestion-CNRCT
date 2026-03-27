@@ -467,29 +467,20 @@ export async function getDirectoireMembers(): Promise<Employe[]> {
     try {
         const DIRECTOIRE_DEPT_ID = '9ywKFDgVMS86rZLPYhpm';
         
-        // Use parallel queries for better performance and to cover all criteria
-        const queries = [
-            query(employeesCollection, where('departmentId', '==', DIRECTOIRE_DEPT_ID), where('status', '==', 'Actif')),
-            query(employeesCollection, where('matricule', '>=', 'DIR'), where('matricule', '<=', 'DIR\uf8ff'), where('status', '==', 'Actif')),
-            query(employeesCollection, where('matricule', '>=', 'PRE'), where('matricule', '<=', 'PRE\uf8ff'), where('status', '==', 'Actif')),
-            query(employeesCollection, where('matricule', '>=', 'D 0'), where('matricule', '<=', 'D 0\uf8ff'), where('status', '==', 'Actif'))
-        ];
-
-        const snapshots = await Promise.all(queries.map(q => getDocs(q)));
-        const membersMap = new Map<string, Employe>();
-
-        snapshots.forEach(snapshot => {
-            snapshot.docs.forEach(doc => {
-                membersMap.set(doc.id, { id: doc.id, ...doc.data() } as Employe);
-            });
-        });
-
-        // Add Secretary General if not already included (case-insensitive contains isn't possible in Firestore, 
-        // but it's likely covered by department or matricule. If not, we fetch all active and filter as fallback 
-        // to ensure we don't miss anyone, but ideally we'd have a specific flag or category).
-        // For now, these two queries should cover ~99% of members.
-
-        const directoireMembers = Array.from(membersMap.values());
+        // Fetch all active employees and filter locally to avoid missing index errors during dev/setup
+        const q = query(employeesCollection, where('status', '==', 'Actif'));
+        const snapshot = await getDocs(q);
+        
+        const directoireMembers = snapshot.docs
+            .map(doc => ({ id: doc.id, ...doc.data() } as Employe))
+            .filter(emp => 
+                emp.departmentId === DIRECTOIRE_DEPT_ID ||
+                (emp.matricule && (
+                    emp.matricule.startsWith('DIR') || 
+                    emp.matricule.startsWith('PRE') || 
+                    emp.matricule.startsWith('D 0')
+                ))
+            );
 
         // Sorting priority based on official hierarchy
         const getRank = (poste: string = '') => {
@@ -586,11 +577,12 @@ export async function getRegionalCommittees(): Promise<RegionalCommittee[]> {
         const regions = Object.keys(divisions);
         const committees: RegionalCommittee[] = [];
 
-        // Fetch all active regional staff (who have a Region assigned)
-        // Note: we fetch broadly and filter locally to avoid complex composite indices for each region
-        const q = query(employeesCollection, where('status', '==', 'Actif'), where('Region', '>=', ''));
+        // Fetch all active staff and filter locally to avoid missing index errors
+        const q = query(employeesCollection, where('status', '==', 'Actif'));
         const snapshot = await getDocs(q);
-        const allRegionalStaff = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Employe));
+        const allRegionalStaff = snapshot.docs
+            .map(doc => ({ id: doc.id, ...doc.data() } as Employe))
+            .filter(s => !!s.Region);
 
         regions.forEach(region => {
             const regionalStaff = allRegionalStaff.filter(s => s.Region === region);
@@ -607,8 +599,6 @@ export async function getRegionalCommittees(): Promise<RegionalCommittee[]> {
             });
         });
 
-        // Filter out regions with zero members to keep the UI clean if necessary, 
-        // or keep them as "Installation en cours"
         return committees;
     } catch (error) {
         console.error('[employee-service] Error fetching regional committees:', error);

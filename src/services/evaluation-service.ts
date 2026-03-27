@@ -34,6 +34,34 @@ export function subscribeToEvaluations(
     return unsubscribe;
 }
 
+export function subscribeToUserEvaluations(
+    employeeId: string,
+    callback: (evaluations: Evaluation[]) => void,
+    onError: (error: Error) => void
+): Unsubscribe {
+    const q = query(
+        evaluationsCollection, 
+        where("employeeId", "==", employeeId),
+        orderBy("evaluationDate", "desc")
+    );
+    const unsubscribe = onSnapshot(q,
+        (snapshot) => {
+            const evaluations = snapshot.docs.map((doc: any) => {
+                const data = { id: doc.id, ...doc.data() };
+                const result = evaluationSchema.safeParse(data);
+                if (!result.success) {
+                    console.error(`[EvaluationService] validation error for ${doc.id}:`, result.error.format());
+                    return data as Evaluation;
+                }
+                return result.data as Evaluation;
+            });
+            callback(evaluations);
+        },
+        onError
+    );
+    return unsubscribe;
+}
+
 export async function getEvaluations(): Promise<Evaluation[]> {
     const snapshot = await getDocs(query(evaluationsCollection, orderBy("evaluationDate", "desc")));
     return snapshot.docs.map((doc: any) => {

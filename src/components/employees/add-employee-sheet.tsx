@@ -42,6 +42,7 @@ import { Textarea } from "../ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { IVORIAN_REGIONS } from "@/constants/regions";
 import { ScrollArea } from "../ui/scroll-area";
+import { DebouncedInput } from "@/components/ui/debounced-input";
 
 interface AddEmployeeSheetProps {
   isOpen: boolean;
@@ -238,18 +239,18 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
                       </div>
                     </div>
 
-                    <div><Label htmlFor="matricule">Matricule</Label><Input id="matricule" value={matricule} onChange={(e) => setMatricule(e.target.value)} required /></div>
-                    <div><Label htmlFor="lastName">Nom</Label><Input id="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} required /></div>
-                    <div><Label htmlFor="firstName">Prénom(s)</Label><Input id="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} required /></div>
-                    <div><Label htmlFor="email">Email</Label><Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} /></div>
-                    <div><Label htmlFor="poste">Poste</Label><Input id="poste" value={poste} onChange={(e) => setPoste(e.target.value)} required /></div>
+                    <div><Label htmlFor="matricule">Matricule</Label><DebouncedInput id="matricule" value={matricule} onChange={(val) => setMatricule(val as string)} required /></div>
+                    <div><Label htmlFor="lastName">Nom</Label><DebouncedInput id="lastName" value={lastName} onChange={(val) => setLastName(val as string)} required /></div>
+                    <div><Label htmlFor="firstName">Prénom(s)</Label><DebouncedInput id="firstName" value={firstName} onChange={(val) => setFirstName(val as string)} required /></div>
+                    <div><Label htmlFor="email">Email</Label><DebouncedInput id="email" type="email" value={email} onChange={(val) => setEmail(val as string)} /></div>
+                    <div><Label htmlFor="poste">Poste</Label><DebouncedInput id="poste" value={poste} onChange={(val) => setPoste(val as string)} required /></div>
 
                     <div><Label htmlFor="departmentId">Département</Label><Select value={departmentId} onValueChange={(value) => { setDepartmentId(value); setDirectionId(''); setServiceId(''); }} required><SelectTrigger><SelectValue placeholder="Sélectionnez..." /></SelectTrigger><SelectContent>{departmentList.map(dep => (<SelectItem key={dep.id} value={dep.id}>{dep.name}</SelectItem>))}</SelectContent></Select></div>
                     <div><Label htmlFor="directionId">Direction</Label><Select value={directionId} onValueChange={(value) => { setDirectionId(value); setServiceId(''); }} disabled={!departmentId || filteredDirections.length === 0}><SelectTrigger><SelectValue placeholder="Sélectionnez..." /></SelectTrigger><SelectContent>{filteredDirections.map(dir => (<SelectItem key={dir.id} value={dir.id}>{dir.name}</SelectItem>))}</SelectContent></Select></div>
                     <div><Label htmlFor="serviceId">Service</Label><Select value={serviceId} onValueChange={setServiceId} disabled={!departmentId || filteredServices.length === 0}><SelectTrigger><SelectValue placeholder="Sélectionnez..." /></SelectTrigger><SelectContent>{filteredServices.map(svc => (<SelectItem key={svc.id} value={svc.id}>{svc.name}</SelectItem>))}</SelectContent></Select></div>
 
                     <div><Label htmlFor="region">Région</Label><Select value={region} onValueChange={setRegion}><SelectTrigger><SelectValue placeholder="Sélectionnez une région..." /></SelectTrigger><SelectContent>{IVORIAN_REGIONS.map(r => (<SelectItem key={r} value={r}>{r}</SelectItem>))}</SelectContent></Select></div>
-                    <div><Label htmlFor="village">Village</Label><Input id="village" value={village} onChange={(e) => setVillage(e.target.value)} /></div>
+                    <div><Label htmlFor="village">Village</Label><DebouncedInput id="village" value={village} onChange={(val) => setVillage(val as string)} /></div>
 
                     <div><Label htmlFor="status">Statut</Label><Select value={status} onValueChange={(value: Employe['status']) => setStatus(value)} required><SelectTrigger><SelectValue placeholder="Sélectionnez un statut" /></SelectTrigger><SelectContent><SelectItem value="Actif">Actif</SelectItem><SelectItem value="En congé">En congé</SelectItem><SelectItem value="Licencié">Licencié</SelectItem><SelectItem value="Retraité">Retraité</SelectItem><SelectItem value="Décédé">Décédé</SelectItem></SelectContent></Select></div>
                     <div><Label htmlFor="dateDepart">Date de Départ</Label><Input id="dateDepart" type="date" value={dateDepart} onChange={(e) => setDateDepart(e.target.value)} /></div>

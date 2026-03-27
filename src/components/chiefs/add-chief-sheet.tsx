@@ -30,6 +30,7 @@ import { Textarea } from "../ui/textarea";
 import { divisions } from "@/lib/ivory-coast-divisions";
 import { IVORIAN_REGIONS } from "@/constants/regions";
 import { ScrollArea } from "../ui/scroll-area";
+import { DebouncedInput } from "@/components/ui/debounced-input";
 import {
   Accordion,
   AccordionContent,
@@ -215,9 +216,9 @@ export function AddChiefSheet({ isOpen, onCloseAction, onAddChiefAction }: AddCh
                       <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}><Upload className="mr-2 h-4 w-4" />Télécharger</Button>
                       <Input ref={fileInputRef} type="file" className="hidden" accept="image/*" onChange={handlePhotoChange} />
                     </div>
-                    <div><Label htmlFor="lastName">Nom</Label><Input id="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} required /></div>
-                    <div><Label htmlFor="firstName">Prénom(s)</Label><Input id="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} required /></div>
-                    <div><Label htmlFor="title">Titre traditionnel</Label><Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Ex: Roi des N'zima" required /></div>
+                    <div><Label htmlFor="lastName">Nom</Label><DebouncedInput id="lastName" value={lastName} onChange={(val) => setLastName(val as string)} required /></div>
+                    <div><Label htmlFor="firstName">Prénom(s)</Label><DebouncedInput id="firstName" value={firstName} onChange={(val) => setFirstName(val as string)} required /></div>
+                    <div><Label htmlFor="title">Titre traditionnel</Label><DebouncedInput id="title" value={title} onChange={(val) => setTitle(val as string)} placeholder="Ex: Roi des N'zima" required /></div>
                     <div><Label htmlFor="role">Rôle</Label><Select value={role} onValueChange={(v: ChiefRole) => setRole(v)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Roi">Roi</SelectItem><SelectItem value="Chef de province">Chef de province</SelectItem><SelectItem value="Chef de canton">Chef de canton</SelectItem><SelectItem value="Chef de tribu">Chef de tribu</SelectItem><SelectItem value="Chef de Village">Chef de Village</SelectItem></SelectContent></Select></div>
                     <div><Label htmlFor="designationDate">Date de désignation</Label><Input id="designationDate" type="date" value={designationDate} onChange={e => setDesignationDate(e.target.value)} /></div>
                     <div><Label htmlFor="designationMode">Mode de désignation</Label><Select value={designationMode} onValueChange={(v: DesignationMode) => setDesignationMode(v)}><SelectTrigger><SelectValue placeholder="Sélectionnez..." /></SelectTrigger><SelectContent><SelectItem value="Héritage">Héritage</SelectItem><SelectItem value="Élection">Élection</SelectItem><SelectItem value="Nomination coutumière">Nomination coutumière</SelectItem><SelectItem value="Autre">Autre</SelectItem></SelectContent></Select></div>
@@ -301,8 +302,8 @@ export function AddChiefSheet({ isOpen, onCloseAction, onAddChiefAction }: AddCh
                 <AccordionTrigger>Affiliation Culturelle</AccordionTrigger>
                 <AccordionContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
-                    <div><Label htmlFor="ethnicGroup">Groupe ethnique</Label><Input id="ethnicGroup" value={ethnicGroup} onChange={e => setEthnicGroup(e.target.value)} /></div>
-                    <div><Label htmlFor="languages">Langue(s) parlée(s)</Label><Input id="languages" value={languages} onChange={e => setLanguages(e.target.value)} placeholder="Séparées par une virgule" /></div>
+                    <div><Label htmlFor="ethnicGroup">Groupe ethnique</Label><DebouncedInput id="ethnicGroup" value={ethnicGroup} onChange={(val) => setEthnicGroup(val as string)} /></div>
+                    <div><Label htmlFor="languages">Langue(s) parlée(s)</Label><DebouncedInput id="languages" value={languages} onChange={(val) => setLanguages(val as string)} placeholder="Séparées par une virgule" /></div>
                     <div className="col-span-2"><Label htmlFor="bio">Biographie / Us et coutumes</Label><Textarea id="bio" value={bio} onChange={(e) => setBio(e.target.value)} rows={3} placeholder="Brève biographie, historique, us et coutumes..." /></div>
                   </div>
                 </AccordionContent>
@@ -311,8 +312,8 @@ export function AddChiefSheet({ isOpen, onCloseAction, onAddChiefAction }: AddCh
                 <AccordionTrigger>Contact</AccordionTrigger>
                 <AccordionContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
-                    <div><Label htmlFor="contact">Numéro de téléphone</Label><Input id="contact" type="text" value={contact} onChange={(e) => setContact(e.target.value)} /></div>
-                    <div><Label htmlFor="email">Adresse email</Label><Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} /></div>
+                    <div><Label htmlFor="contact">Numéro de téléphone</Label><DebouncedInput id="contact" type="text" value={contact} onChange={(val) => setContact(val as string)} /></div>
+                    <div><Label htmlFor="email">Adresse email</Label><DebouncedInput id="email" type="email" value={email} onChange={(val) => setEmail(val as string)} /></div>
                     <div className="col-span-2"><Label htmlFor="address">Adresse postale</Label><Input id="address" value={address} onChange={e => setAddress(e.target.value)} /></div>
                   </div>
                 </AccordionContent>

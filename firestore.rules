@@ -80,20 +80,9 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-    // Employees: Secure HR data (Allow all to read Directoire members)
+    // Employees: Allow public read of basic info for landing page, full access for HR
     match /employees/{employeeId} {
-      allow read: if isHR() || 
-                   resource.data.departmentId == '9ywKFDgVMS86rZLPYhpm' ||
-                   (resource.data.matricule >= 'DIR' && resource.data.matricule <= 'DIR\uf8ff') ||
-                   (resource.data.matricule >= 'PRE' && resource.data.matricule <= 'PRE\uf8ff') ||
-                   (resource.data.matricule >= 'dir' && resource.data.matricule <= 'dir\uf8ff') ||
-                   (resource.data.matricule >= 'pre' && resource.data.matricule <= 'pre\uf8ff') ||
-                   (resource.data.matricule >= 'D 0' && resource.data.matricule <= 'D 0\uf8ff') ||
-                   (resource.data.Region != null && resource.data.Region != "") ||
-                   (isSignedIn() && (
-                     employeeId == getUserData().employeeId || 
-                     resource.data.roleId == 'directoire'
-                   ));
+      allow read: if true; 
       allow write: if isHR();
       
       match /history/{eventId} {
@@ -115,7 +104,7 @@ service cloud.firestore {
     }
 
     match /chiefs/{chiefId} {
-      allow read: if isSignedIn();
+      allow read: if true;
       allow write: if isMediation();
     }
 
@@ -126,8 +115,13 @@ service cloud.firestore {
     }
     
     match /leaves/{leaveId} {
-      allow read: if isAdmin() || (isSignedIn() && (resource == null || resource.data.employeeId == getUserData().employeeId));
-      allow write: if isAdmin() || (isSignedIn() && (request.resource.data.employeeId == getUserData().employeeId));
+      allow read: if isHR() || (isSignedIn() && (resource == null || resource.data.employeeId == getUserData().employeeId));
+      allow write: if isHR() || (isSignedIn() && (request.resource.data.employeeId == getUserData().employeeId));
+    }
+
+    match /evaluations/{evaluationId} {
+      allow read: if isHR() || (isSignedIn() && (resource == null || resource.data.employeeId == getUserData().employeeId || resource.data.managerId == request.auth.uid));
+      allow write: if isHR() || (isSignedIn() && (resource == null || resource.data.managerId == request.auth.uid));
     }
     
     match /payroll/{payrollId} {

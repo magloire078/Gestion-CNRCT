@@ -110,8 +110,13 @@ export function DirectoireMapComponent({ members, className }: DirectoireMapProp
             zoomDelta: 0.5,
             wheelPxPerZoomLevel: 120,
             minZoom: 5,
-            maxZoom: 18
+            maxZoom: 18,
+            preferCanvas: true // Use canvas for better performance
         });
+
+        // Add a layer group for markers
+        const markerGroup = L.layerGroup().addTo(map);
+        (map as any)._markerGroup = markerGroup;
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; OpenStreetMap contributors'
@@ -125,12 +130,10 @@ export function DirectoireMapComponent({ members, className }: DirectoireMapProp
         if (!mapReady || !L || !mapRef.current) return;
 
         const map = mapRef.current;
-        // Clean existing markers
-        map.eachLayer((layer: any) => {
-            if (layer instanceof L.Marker) {
-                map.removeLayer(layer);
-            }
-        });
+        const markerGroup = (map as any)._markerGroup || L.layerGroup().addTo(map);
+        
+        // Clean existing markers from the personal group
+        markerGroup.clearLayers();
 
         const bounds = L.latLngBounds([]);
         let hasMarkers = false;
@@ -159,14 +162,14 @@ export function DirectoireMapComponent({ members, className }: DirectoireMapProp
             const icon = L.divIcon({
                 className: 'custom-member-icon',
                 html: `
-                    <div class="flex flex-col items-center group cursor-pointer transition-transform hover:scale-110">
+                    <div class="flex flex-col items-center group cursor-pointer transition-transform hover:scale-105">
                         <div class="relative">
-                            <div class="w-12 h-12 rounded-full border-4 border-white shadow-2xl overflow-hidden bg-primary/10 ring-2 ring-primary/20">
+                            <div class="w-12 h-12 rounded-full border-2 border-white shadow-xl overflow-hidden bg-white ring-1 ring-primary/10">
                                 <img src="${member.photoUrl || member.Photo || '#'}" class="w-full h-full object-cover" onerror="this.src='https://api.dicebear.com/7.x/initials/svg?seed=${member.name}'" />
                             </div>
-                            <div class="absolute -bottom-1 -right-1 w-4 h-4 ${statusColorClass} border-2 border-white rounded-full transition-colors duration-500"></div>
+                            <div class="absolute -bottom-1 -right-1 w-3.5 h-3.5 ${statusColorClass} border-2 border-white rounded-full transition-colors duration-500"></div>
                         </div>
-                        <div class="mt-1 bg-white/40 backdrop-blur-md px-1 md:px-1.5 py-0.5 rounded-full shadow-lg border border-white/20 whitespace-nowrap text-center scale-[0.6] sm:scale-75 origin-top transition-all group-hover:scale-100 min-w-[50px] md:min-w-[80px] print:scale-50 print:min-w-[50px]">
+                        <div class="mt-1 bg-white/95 px-1 md:px-1.5 py-0.5 rounded-full shadow-md border border-white/40 whitespace-nowrap text-center scale-[0.65] sm:scale-75 origin-top transition-all group-hover:scale-100 min-w-[50px] md:min-w-[80px] print:scale-50 print:min-w-[50px]">
                             <p class="text-[6px] md:text-[7px] font-black text-[#006039] leading-tight uppercase tracking-tight">${member.name}</p>
                             <p class="text-[5px] md:text-[6px] text-[#D4AF37] font-bold uppercase tracking-widest mt-0">${region}</p>
                         </div>
@@ -177,28 +180,34 @@ export function DirectoireMapComponent({ members, className }: DirectoireMapProp
                 popupAnchor: [0, -48]
             });
 
-            const marker = L.marker([lat, lng], { icon }).addTo(map);
+            const marker = L.marker([lat, lng], { 
+                icon,
+                riseOnHover: true // Optimize marker stacking
+            }).addTo(markerGroup);
 
-            const popupContent = document.createElement('div');
-            popupContent.className = 'custom-glass-popup p-1.5 min-w-[180px] text-center rounded-xl overflow-hidden';
-            popupContent.innerHTML = `
-                <div class="flex flex-col items-center gap-1.5">
-                    <div class="relative w-14 h-14 rounded-full border-2 border-[#D4AF37]/50 overflow-hidden shadow-inner bg-white/20 backdrop-blur-sm">
-                        <img src="${member.photoUrl || member.Photo || '#'}" class="w-full h-full object-cover" onerror="this.src='https://api.dicebear.com/7.x/initials/svg?seed=${member.name}'" />
-                        <div class="absolute bottom-0.5 right-0.5 w-3 h-3 ${statusColorClass} border border-white rounded-full"></div>
-                    </div>
-                    <div>
-                        <h3 class="font-bold text-[11px] text-[#006039] leading-tight mb-0.5 uppercase">${member.name}</h3>
-                        <p class="text-[8px] text-[#D4AF37] font-semibold uppercase tracking-wider mb-1">${member.poste}</p>
-                        <div class="flex items-center justify-center gap-2 mb-2">
-                           <span class="px-2 py-0.5 rounded-full text-[7px] font-bold uppercase ${isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}">${member.status || (member.bActif ? 'Actif' : 'Inactif')}</span>
-                           <p class="text-[9px] font-bold text-gray-700/80 flex items-center gap-1">📍 <span class="uppercase">${region}</span></p>
+            // Lazy Load Popup Content only on click
+            marker.bindPopup(() => {
+                const container = document.createElement('div');
+                container.className = 'custom-glass-popup p-1.5 min-w-[180px] text-center rounded-xl overflow-hidden';
+                container.innerHTML = `
+                    <div class="flex flex-col items-center gap-1.5">
+                        <div class="relative w-14 h-14 rounded-full border-2 border-[#D4AF37]/50 overflow-hidden shadow-inner bg-white/40">
+                            <img src="${member.photoUrl || member.Photo || '#'}" class="w-full h-full object-cover" onerror="this.src='https://api.dicebear.com/7.x/initials/svg?seed=${member.name}'" />
+                            <div class="absolute bottom-0.5 right-0.5 w-3 h-3 ${statusColorClass} border border-white rounded-full"></div>
                         </div>
+                        <div>
+                            <h3 class="font-bold text-[11px] text-[#006039] leading-tight mb-0.5 uppercase">${member.name}</h3>
+                            <p class="text-[8px] text-[#D4AF37] font-semibold uppercase tracking-wider mb-1">${member.poste}</p>
+                            <div class="flex items-center justify-center gap-2 mb-2">
+                               <span class="px-2 py-0.5 rounded-full text-[7px] font-bold uppercase ${isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}">${member.status || (member.bActif ? 'Actif' : 'Inactif')}</span>
+                               <p class="text-[9px] font-bold text-gray-700/80 flex items-center gap-1">📍 <span class="uppercase">${region}</span></p>
+                            </div>
+                        </div>
+                        <a href="/employees/${member.id}" class="inline-flex items-center justify-center px-4 py-1.5 bg-[#006039]/90 text-white text-[8px] font-black uppercase tracking-widest rounded-full shadow-md hover:bg-[#004d2e] transition-all transform hover:scale-105 active:scale-95">Profil Complet</a>
                     </div>
-                    <a href="/employees/${member.id}" class="inline-flex items-center justify-center px-4 py-1.5 bg-[#006039]/90 text-white text-[8px] font-black uppercase tracking-widest rounded-full shadow-md hover:bg-[#004d2e] transition-all transform hover:scale-105 active:scale-95">Profil Complet</a>
-                </div>
-            `;
-            marker.bindPopup(popupContent, {
+                `;
+                return container;
+            }, {
                 className: 'glass-popup-container',
                 maxWidth: 220
             });

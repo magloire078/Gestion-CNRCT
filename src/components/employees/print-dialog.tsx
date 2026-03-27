@@ -1,18 +1,5 @@
 
-"use client";
-
-import { useState, useEffect } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
+import { ArrowUp, ArrowDown, GripVertical } from "lucide-react";
 import type { ColumnKeys } from "@/lib/constants/employee";
 
 interface PrintDialogProps {
@@ -30,8 +17,21 @@ export function PrintDialog({ isOpen, onClose, onPrint, allColumns }: PrintDialo
     }, {} as Record<ColumnKeys, boolean>)
   );
 
+  const [columnOrder, setColumnOrder] = useState<ColumnKeys[]>(
+    () => Object.keys(allColumns) as ColumnKeys[]
+  );
+
   const handleCheckboxChange = (key: ColumnKeys) => {
     setSelectedColumns(prev => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const moveColumn = (index: number, direction: 'up' | 'down') => {
+    const newOrder = [...columnOrder];
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex >= 0 && targetIndex < newOrder.length) {
+      [newOrder[index], newOrder[targetIndex]] = [newOrder[targetIndex], newOrder[index]];
+      setColumnOrder(newOrder);
+    }
   };
 
   const handleSelectAll = (checked: boolean) => {
@@ -44,56 +44,94 @@ export function PrintDialog({ isOpen, onClose, onPrint, allColumns }: PrintDialo
   }
 
   const handlePrintClick = () => {
-    const selected = (Object.keys(selectedColumns) as ColumnKeys[]).filter(key => selectedColumns[key]);
+    // Return selected columns in the user-defined order
+    const selected = columnOrder.filter(key => selectedColumns[key]);
     if (selected.length > 0) {
       onPrint(selected);
     }
   };
 
   const areAllSelected = Object.values(selectedColumns).every(Boolean);
-  const isIndeterminate = !areAllSelected && Object.values(selectedColumns).some(Boolean);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Paramètres d'impression</DialogTitle>
           <DialogDescription>
-            Sélectionnez les colonnes que vous souhaitez afficher sur la liste imprimée.
+            Sélectionnez et réorganisez les colonnes pour votre document imprimé.
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-4 py-4">
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="select-all"
-              checked={areAllSelected}
-              onCheckedChange={(checked) => handleSelectAll(Boolean(checked))}
-              aria-label="Tout sélectionner"
-            />
-            <Label htmlFor="select-all" className="font-bold">
-              Tout sélectionner / Désélectionner
-            </Label>
+        
+        <div className="space-y-6 py-4">
+          <div className="flex items-center justify-between border-b pb-2">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="select-all"
+                checked={areAllSelected}
+                onCheckedChange={(checked) => handleSelectAll(Boolean(checked))}
+              />
+              <Label htmlFor="select-all" className="font-bold cursor-pointer">
+                Tout sélectionner
+              </Label>
+            </div>
+            <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Ordre & Visibilité</span>
           </div>
-          <hr />
-          <div className="grid grid-cols-2 gap-4">
-            {(Object.keys(allColumns) as ColumnKeys[]).map(key => (
-              <div key={key} className="flex items-center space-x-2">
-                <Checkbox
-                  id={key}
-                  checked={selectedColumns[key]}
-                  onCheckedChange={() => handleCheckboxChange(key)}
-                />
-                <Label htmlFor={key}>{allColumns[key]}</Label>
+
+          <div className="space-y-1">
+            {columnOrder.map((key, index) => (
+              <div 
+                key={key} 
+                className={`flex items-center justify-between p-2 rounded-lg border ${selectedColumns[key] ? 'border-primary/20 bg-primary/5 shadow-sm' : 'border-slate-100 bg-slate-50/50 opacity-60'} transition-all`}
+              >
+                <div className="flex items-center space-x-3">
+                  <Checkbox
+                    id={key}
+                    checked={selectedColumns[key]}
+                    onCheckedChange={() => handleCheckboxChange(key)}
+                  />
+                  <Label 
+                    htmlFor={key} 
+                    className={`text-sm font-medium cursor-pointer ${selectedColumns[key] ? 'text-slate-900' : 'text-slate-500'}`}
+                  >
+                    {allColumns[key]}
+                  </Label>
+                </div>
+                
+                <div className="flex items-center gap-1">
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-7 w-7"
+                    disabled={index === 0}
+                    onClick={() => moveColumn(index, 'up')}
+                  >
+                    <ArrowUp className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-7 w-7"
+                    disabled={index === columnOrder.length - 1}
+                    onClick={() => moveColumn(index, 'down')}
+                  >
+                    <ArrowDown className="h-3.5 w-3.5" />
+                  </Button>
+                  <div className="ml-1 cursor-grab active:cursor-grabbing text-slate-300">
+                    <GripVertical className="h-4 w-4" />
+                  </div>
+                </div>
               </div>
             ))}
           </div>
         </div>
-        <DialogFooter>
+
+        <DialogFooter className="border-t pt-4">
           <Button type="button" variant="outline" onClick={onClose}>
             Annuler
           </Button>
-          <Button type="button" onClick={handlePrintClick}>
-            Imprimer
+          <Button type="button" onClick={handlePrintClick} disabled={!Object.values(selectedColumns).some(Boolean)}>
+            Générer l'impression
           </Button>
         </DialogFooter>
       </DialogContent>

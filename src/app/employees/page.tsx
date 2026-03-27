@@ -5,7 +5,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from "next/link";
-import { format, parseISO } from "date-fns";
+import { format, parseISO, differenceInYears } from "date-fns";
 import { fr } from "date-fns/locale";
 import { PlusCircle, Search, Download, Printer, Eye, Pencil, Trash2, MoreHorizontal, ShieldCheck, Globe, Building } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -42,7 +42,7 @@ import { PrintLayout } from "@/components/reports/print-layout";
 import { divisions } from "@/lib/ivory-coast-divisions";
 import dynamic from 'next/dynamic';
 import { useTransition } from "react";
-const DirectoireMap = dynamic(() => import('@/components/employees/directoire-map').then(m => m.DirectoireMap), {
+const DirectoireMap = dynamic<{ members: any[]; className?: string }>(() => import('@/components/employees/directoire-map').then(m => m.DirectoireMap), {
   ssr: false,
   loading: () => <Skeleton className="h-[400px] w-full rounded-xl" />,
 });
@@ -102,6 +102,10 @@ export default function EmployeesPage() {
 
   const [printDate, setPrintDate] = useState('');
   const [showDirectoireMap, setShowDirectoireMap] = useState(false);
+
+  // Sorting state
+  const [sortBy, setSortBy] = useState<'matricule' | 'name' | 'Date_Naissance' | 'Region'>('name');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -263,12 +267,37 @@ export default function EmployeesPage() {
       return matchesSearchTerm && matchesDepartment && matchesStatus && matchesCnps && matchesSexe && matchesPersonnelType &&
              matchesRegion && matchesGeoDept && matchesSubPref && matchesVillageFiltered;
     });
+
+    // Apply sorting
+    const sorted = [...filtered].sort((a, b) => {
+      let comparison = 0;
+      if (sortBy === 'name') {
+        comparison = (a.lastName || '').localeCompare(b.lastName || '') || 
+                     (a.firstName || '').localeCompare(b.firstName || '') ||
+                     (a.matricule || '').localeCompare(b.matricule || '');
+      } else if (sortBy === 'Date_Naissance') {
+        const dateA = a.Date_Naissance ? new Date(a.Date_Naissance).getTime() : 0;
+        const dateB = b.Date_Naissance ? new Date(b.Date_Naissance).getTime() : 0;
+        comparison = dateA - dateB || (a.lastName || '').localeCompare(b.lastName || '');
+      } else if (sortBy === 'Region') {
+        comparison = (a.Region || '').localeCompare(b.Region || '') ||
+                     (a.lastName || '').localeCompare(b.lastName || '') ||
+                     (a.firstName || '').localeCompare(b.firstName || '') ||
+                     (a.matricule || '').localeCompare(b.matricule || '');
+      } else {
+        // Default to matricule
+        comparison = (a.matricule || '').localeCompare(b.matricule || '') ||
+                     (a.lastName || '').localeCompare(b.lastName || '');
+      }
+      return sortOrder === 'asc' ? comparison : -comparison;
+    });
+
     // Reset page to 1 if filters change and current page is out of bounds
-    if (currentPage > Math.ceil(filtered.length / itemsPerPage)) {
+    if (currentPage > Math.ceil(sorted.length / itemsPerPage)) {
       setCurrentPage(1);
     }
-    return filtered;
-  }, [employees, debouncedSearchTerm, departmentFilter, statusFilter, cnpsFilter, sexeFilter, personnelTypeFilter, currentPage, itemsPerPage, departments, debouncedVillageFilter, isGeoTab, regionFilter, geoDepartementFilter, subPrefectureFilter]);
+    return sorted;
+  }, [enrichedEmployees, debouncedSearchTerm, departmentFilter, statusFilter, cnpsFilter, sexeFilter, personnelTypeFilter, currentPage, itemsPerPage, departments, debouncedVillageFilter, isGeoTab, regionFilter, geoDepartementFilter, subPrefectureFilter, sortBy, sortOrder]);
 
   const paginatedEmployees = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
@@ -360,7 +389,6 @@ export default function EmployeesPage() {
     const now = new Date();
     setPrintDate(now.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }));
 
-    // Fetch logos before printing
     const logos = await getOrganizationSettings();
     setOrganizationLogos(logos);
 
@@ -625,20 +653,38 @@ export default function EmployeesPage() {
                     <SelectItem value="false">Non Déclaré</SelectItem>
                   </SelectContent>
                 </Select>
-                <Select value={sexeFilter} onValueChange={(val) => startTransition(() => {
-                  setSexeFilter(val);
-                  setCurrentPage(1);
-                })}>
-                  <SelectTrigger className="flex-1 min-w-[150px]">
-                    <SelectValue placeholder="Filter par Sexe" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Tous les sexes</SelectItem>
-                    <SelectItem value="Homme">Homme</SelectItem>
-                    <SelectItem value="Femme">Femme</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+                  <Select value={sexeFilter} onValueChange={(val) => startTransition(() => {
+                    setSexeFilter(val);
+                    setCurrentPage(1);
+                  })}>
+                    <SelectTrigger className="flex-1 min-w-[150px]">
+                      <SelectValue placeholder="Filter par Sexe" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Tous les sexes</SelectItem>
+                      <SelectItem value="Homme">Homme</SelectItem>
+                      <SelectItem value="Femme">Femme</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select value={`${sortBy}-${sortOrder}`} onValueChange={(val) => {
+                    const [newSortBy, newSortOrder] = val.split('-') as [any, any];
+                    setSortBy(newSortBy);
+                    setSortOrder(newSortOrder);
+                  }}>
+                    <SelectTrigger className="flex-1 min-w-[180px]">
+                      <SelectValue placeholder="Trier par" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="name-asc">Nom (A-Z)</SelectItem>
+                      <SelectItem value="name-desc">Nom (Z-A)</SelectItem>
+                      <SelectItem value="matricule-asc">Matricule (Croissant)</SelectItem>
+                      <SelectItem value="matricule-desc">Matricule (Décroissant)</SelectItem>
+                      <SelectItem value="Date_Naissance-asc">Date Naissance (Plus âgé)</SelectItem>
+                      <SelectItem value="Date_Naissance-desc">Date Naissance (Plus jeune)</SelectItem>
+                      {isGeoTab && <SelectItem value="Region-asc">Région (A-Z)</SelectItem>}
+                    </SelectContent>
+                  </Select>
+                </div>
 
               <div className="mb-4 text-sm text-muted-foreground">
                 {filteredEmployees.length} résultat(s) trouvé(s).
@@ -798,6 +844,7 @@ export default function EmployeesPage() {
               poste: 'w-[14%]',
               department: 'w-[12%]',
               sexe: 'w-[4%]',
+              age: 'w-[4%]',
               Date_Naissance: 'w-[8%]',
               Lieu_Naissance: 'w-[10%]',
               email: 'w-[12%]',
@@ -812,21 +859,32 @@ export default function EmployeesPage() {
             return {
               header: allColumns[key],
               key,
-              align: ['index', 'matricule', 'sexe', 'Date_Naissance', 'dateEmbauche', 'Date_Depart', 'CNPS', 'status'].includes(key) ? 'center' : 'left',
+              align: ['index', 'matricule', 'sexe', 'Date_Naissance', 'dateEmbauche', 'Date_Depart', 'CNPS', 'status', 'age'].includes(key) ? 'center' : 'left',
               className: `${widthMap[key] || ''} ${isTextColumn ? 'whitespace-normal' : 'whitespace-nowrap'} overflow-hidden`,
             };
           })}
-
-
           data={filteredEmployees.map((employee, index) => {
+            const now = new Date();
             const row: Record<string, any> = {
               index: index + 1,
               name: `${(employee.lastName || '').toUpperCase()} ${employee.firstName || ''}`.trim(),
             };
+            
             columnsToPrint.forEach(key => {
-              if (key === 'index') return;
-              if (key === 'name') return;
-              if (key === 'department') {
+              if (key === 'index' || key === 'name') return;
+              
+              if (key === 'age') {
+                if (!employee.Date_Naissance) {
+                  row[key] = 'N/A';
+                } else {
+                  try {
+                    const birthDate = parseISO(employee.Date_Naissance);
+                    row[key] = differenceInYears(now, birthDate).toString();
+                  } catch {
+                    row[key] = 'N/A';
+                  }
+                }
+              } else if (key === 'department') {
                 row[key] = getEmployeeOrgUnit(employee);
               } else if (key === 'sexe') {
                 const s = (employee[key] || '').toLowerCase();

@@ -12,6 +12,7 @@ export const allColumns = {
     CNPS: "CNPS",
     dateEmbauche: "Prise de Service",
     Date_Depart: "Date Dep.",
+    age: "Âge",
 } as const;
 
 export type ColumnKeys = keyof typeof allColumns;

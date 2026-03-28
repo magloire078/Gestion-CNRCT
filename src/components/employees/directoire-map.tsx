@@ -264,7 +264,7 @@ export function DirectoireMapComponent({ members, className }: DirectoireMapProp
     }, [mapContainerRef]);
 
     if (!isClient) {
-        return <div className={cn("bg-muted rounded-2xl flex items-center justify-center", className)} style={{ minHeight: '1000px' }}>
+        return <div className={cn("bg-muted rounded-2xl flex items-center justify-center min-h-[1000px]", className)}>
             <Loader2 className="h-10 w-10 animate-spin text-muted-foreground" />
         </div>;
     }
@@ -272,8 +272,7 @@ export function DirectoireMapComponent({ members, className }: DirectoireMapProp
     return (
         <div 
             id="print-section"
-            className={cn("relative rounded-2xl overflow-hidden shadow-2xl border-2 border-[#D4AF37]/20 bg-white", className)} 
-            style={{ minHeight: '1000px' }}
+            className={cn("relative rounded-2xl overflow-hidden shadow-2xl border-2 border-[#D4AF37]/20 bg-white min-h-[1000px]", className)} 
         >
             <div ref={mapContainerRef} className="absolute inset-0 z-0" />
             {!mapReady && (

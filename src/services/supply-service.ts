@@ -193,3 +193,12 @@ export function subscribeToSupplyTransactions(
     );
     return unsubscribe;
 }
+
+export async function getSupplyTransactions(): Promise<SupplyTransaction[]> {
+    const q = query(transactionsCollection, orderBy("timestamp", "desc"));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map((doc: any) => ({
+        id: doc.id,
+        ...doc.data()
+    } as SupplyTransaction));
+}

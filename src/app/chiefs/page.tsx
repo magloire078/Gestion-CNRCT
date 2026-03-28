@@ -43,7 +43,6 @@ import { subscribeToChiefs, addChief, deleteChief } from "@/services/chief-servi
 import { AddChiefSheet } from "@/components/chiefs/add-chief-sheet";
 import { Badge } from "@/components/ui/badge";
 import Papa from "papaparse";
-import { ImportChiefsDataCard } from "@/components/chiefs/import-chiefs-data-card";
 import { useAuth } from "@/hooks/use-auth";
 import { PaginationControls } from "@/components/common/pagination-controls";
 import { ConfirmationDialog } from "@/components/common/confirmation-dialog";
@@ -188,7 +187,6 @@ export default function ChiefsPage() {
         </div>
       </div>
 
-      {canImport && <ImportChiefsDataCard />}
 
       <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden">
         <CardHeader className="bg-slate-50/50 border-b border-slate-100 p-8">

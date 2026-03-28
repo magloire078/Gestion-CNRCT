@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
+import { cn } from "@/lib/utils";
+import { Loader2, Crown, Navigation } from 'lucide-react';
+import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Loader2, MapPin, User, Camera, Download, Printer } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import type { Employe } from '@/lib/data';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import 'leaflet.markercluster/dist/MarkerCluster.css';
+import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 
 // Coordonnées centrales approximatives des régions de Côte d'Ivoire
 const REGION_COORDS: Record<string, [number, number]> = {
@@ -48,292 +48,299 @@ const REGION_COORDS: Record<string, [number, number]> = {
     "District Autonome de Yamoussoukro": [6.8276, -5.2893]
 };
 
-interface DirectoireMapProps {
-    members: Employe[];
-    className?: string;
+/**
+ * Generic type for members that can be displayed on the map.
+ * Supports both Employe and Chief types.
+ */
+export interface MapMember {
+    id: string;
+    name?: string;
+    lastName?: string;
+    firstName?: string;
+    photoUrl?: string;
+    Photo?: string; // Legacy field for Employe
+    Region?: string; // For Employe
+    region?: string; // For Chief
+    department?: string;
+    Departement?: string;
+    village?: string;
+    Village?: string;
+    status?: string;
+    poste?: string;
+    role?: string;
+    title?: string;
+    latitude?: number;
+    longitude?: number;
+    bActif?: boolean;
 }
 
-export function DirectoireMapComponent({ members, className }: DirectoireMapProps) {
+interface DirectoireMapProps {
+    members: MapMember[];
+    className?: string;
+    title?: string;
+    subtitle?: string;
+}
+
+export const DirectoireMap: React.FC<DirectoireMapProps> = ({ 
+    members, 
+    className,
+    title = "Cartographie du Directoire",
+    subtitle = "Localisation géographique des membres et autorités"
+}) => {
     const mapContainerRef = useRef<HTMLDivElement>(null);
-    const mapRef = useRef<any>(null);
+    const mapInstanceRef = useRef<L.Map | null>(null);
+    const markerClusterGroupRef = useRef<L.MarkerClusterGroup | null>(null);
     const [isClient, setIsClient] = useState(false);
-    const [L, setL] = useState<any>(null);
     const [mapReady, setMapReady] = useState(false);
 
     useEffect(() => {
         setIsClient(true);
-        const initLeaflet = async () => {
-            const Leaflet = (await import('leaflet')).default;
-            setL(Leaflet);
-        };
-        initLeaflet();
-
-        return () => {
-            if (mapRef.current) {
-                mapRef.current.remove();
-                mapRef.current = null;
-            }
-        };
+        // Import Leaflet plugins on client side
+        import('leaflet.markercluster');
     }, []);
 
-    const handleCapture = useCallback(async () => {
-        if (!mapContainerRef.current) return;
-        try {
-            const html2canvas = (await import('html2canvas')).default;
-            const canvas = await html2canvas(mapContainerRef.current, {
-                useCORS: true,
-                allowTaint: true,
-                backgroundColor: '#ffffff',
-                logging: false,
-                scale: 2, // Better quality
-            });
-            const link = document.createElement('a');
-            link.download = `cartographie-directoire-${new Date().toISOString().substring(0, 10)}.png`;
-            link.href = canvas.toDataURL('image/png');
-            link.click();
-        } catch (error) {
-            console.error('Error capturing map:', error);
+    // Helper to extract common fields
+    const getMemberData = (member: MapMember) => {
+        const name = member.name || `${member.lastName || ''} ${member.firstName || ''}`.trim();
+        const photo = member.photoUrl || member.Photo;
+        const region = member.region || member.Region || "Inconnue";
+        const locality = member.village || member.Village || member.department || member.Departement || "";
+        const role = member.role || member.title || member.poste || "Membre";
+        const isActive = member.status === 'Actif' || member.bActif === true;
+        
+        // Priority: Exact coordinates -> Region fallback
+        let lat = member.latitude;
+        let lng = member.longitude;
+        
+        if (lat === undefined || lng === undefined) {
+            const coords = REGION_COORDS[region];
+            if (coords) {
+                lat = coords[0];
+                lng = coords[1];
+            }
         }
-    }, [mapContainerRef]);
+        
+        return { name, photo, region, locality, role, lat, lng, isActive };
+    };
+
+    const validMembers = useMemo(() => {
+        return members.map(m => ({ ...m, ...getMemberData(m) }))
+                     .filter(m => m.lat !== undefined && m.lng !== undefined);
+    }, [members]);
 
     useEffect(() => {
-        if (!L || !mapContainerRef.current || mapRef.current) return;
+        if (!isClient || !mapContainerRef.current || mapInstanceRef.current) return;
 
-        const container = mapContainerRef.current;
-        if ((container as any)._leaflet_id) return;
-
-        const map = L.map(container, {
-            center: [7.539989, -5.54708],
-            zoom: 6,
-            zoomControl: true,
-            zoomSnap: 0.1,
-            zoomDelta: 0.5,
-            wheelPxPerZoomLevel: 120,
-            minZoom: 5,
-            maxZoom: 18,
-            preferCanvas: true // Use canvas for better performance
+        // Côte d'Ivoire view
+        const map = L.map(mapContainerRef.current, {
+            center: [7.539989, -5.547080],
+            zoom: 7,
+            scrollWheelZoom: false,
+            zoomControl: false
         });
 
-        // Add a layer group for markers
-        const markerGroup = L.layerGroup().addTo(map);
-        (map as any)._markerGroup = markerGroup;
-
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap contributors'
+        // Elegant Dark Matter theme
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
         }).addTo(map);
 
-        mapRef.current = map;
-        setMapReady(true);
-    }, [L]);
-
-    useEffect(() => {
-        if (!mapReady || !L || !mapRef.current) return;
-
-        const map = mapRef.current;
-        const markerGroup = (map as any)._markerGroup || L.layerGroup().addTo(map);
-        
-        // Clean existing markers from the personal group
-        markerGroup.clearLayers();
-
-        const bounds = L.latLngBounds([]);
-        let hasMarkers = false;
-
-        members.forEach((member, index) => {
-            const region = member.Region || member.department; // Fallback
-            if (!region) return;
-
-            const coords = REGION_COORDS[region];
-            if (!coords) return;
-
-            // Deterministic offset based on member ID to prevent markers from jumping
-            const idSeed = member.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) + index;
-            const latOffset = ((idSeed % 100) / 100 - 0.5) * 0.1;
-            const lngOffset = (((idSeed * 13) % 100) / 100 - 0.5) * 0.1;
-
-            const lat = coords[0] + latOffset;
-            const lng = coords[1] + lngOffset;
-
-            bounds.extend([lat, lng]);
-            hasMarkers = true;
-
-            const isActive = member.status === 'Actif' || member.bActif === true;
-            const statusColorClass = isActive ? 'bg-emerald-500' : 'bg-red-500';
-
-            const icon = L.divIcon({
-                className: 'custom-member-icon',
-                html: `
-                    <div class="flex flex-col items-center group cursor-pointer transition-transform hover:scale-105">
-                        <div class="relative">
-                            <div class="w-12 h-12 rounded-full border-2 border-white shadow-xl overflow-hidden bg-white ring-1 ring-primary/10">
-                                <img src="${member.photoUrl || member.Photo || '#'}" class="w-full h-full object-cover" onerror="this.src='https://api.dicebear.com/7.x/initials/svg?seed=${member.name}'" />
-                            </div>
-                            <div class="absolute -bottom-1 -right-1 w-3.5 h-3.5 ${statusColorClass} border-2 border-white rounded-full transition-colors duration-500"></div>
-                        </div>
-                        <div class="mt-1 bg-white/95 px-1 md:px-1.5 py-0.5 rounded-full shadow-md border border-white/40 whitespace-nowrap text-center scale-[0.65] sm:scale-75 origin-top transition-all group-hover:scale-100 min-w-[50px] md:min-w-[80px] print:scale-50 print:min-w-[50px]">
-                            <p class="text-[6px] md:text-[7px] font-black text-[#006039] leading-tight uppercase tracking-tight">${member.name}</p>
-                            <p class="text-[5px] md:text-[6px] text-[#D4AF37] font-bold uppercase tracking-widest mt-0">${region}</p>
-                        </div>
-                    </div>
-                `,
-                iconSize: [120, 100],
-                iconAnchor: [60, 48],
-                popupAnchor: [0, -48]
-            });
-
-            const marker = L.marker([lat, lng], { 
-                icon,
-                riseOnHover: true // Optimize marker stacking
-            }).addTo(markerGroup);
-
-            // Lazy Load Popup Content only on click
-            marker.bindPopup(() => {
-                const container = document.createElement('div');
-                container.className = 'custom-glass-popup p-1.5 min-w-[180px] text-center rounded-xl overflow-hidden';
-                container.innerHTML = `
-                    <div class="flex flex-col items-center gap-1.5">
-                        <div class="relative w-14 h-14 rounded-full border-2 border-[#D4AF37]/50 overflow-hidden shadow-inner bg-white/40">
-                            <img src="${member.photoUrl || member.Photo || '#'}" class="w-full h-full object-cover" onerror="this.src='https://api.dicebear.com/7.x/initials/svg?seed=${member.name}'" />
-                            <div class="absolute bottom-0.5 right-0.5 w-3 h-3 ${statusColorClass} border border-white rounded-full"></div>
-                        </div>
-                        <div>
-                            <h3 class="font-bold text-[11px] text-[#006039] leading-tight mb-0.5 uppercase">${member.name}</h3>
-                            <p class="text-[8px] text-[#D4AF37] font-semibold uppercase tracking-wider mb-1">${member.poste}</p>
-                            <div class="flex items-center justify-center gap-2 mb-2">
-                               <span class="px-2 py-0.5 rounded-full text-[7px] font-bold uppercase ${isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}">${member.status || (member.bActif ? 'Actif' : 'Inactif')}</span>
-                               <p class="text-[9px] font-bold text-gray-700/80 flex items-center gap-1">📍 <span class="uppercase">${region}</span></p>
-                            </div>
-                        </div>
-                        <a href="/employees/${member.id}" class="inline-flex items-center justify-center px-4 py-1.5 bg-[#006039]/90 text-white text-[8px] font-black uppercase tracking-widest rounded-full shadow-md hover:bg-[#004d2e] transition-all transform hover:scale-105 active:scale-95">Profil Complet</a>
-                    </div>
-                `;
-                return container;
-            }, {
-                className: 'glass-popup-container',
-                maxWidth: 220
-            });
+        const markers = L.markerClusterGroup({
+            showCoverageOnHover: false,
+            spiderfyOnMaxZoom: true,
+            zoomToBoundsOnClick: true,
+            iconCreateFunction: (cluster) => {
+                const count = cluster.getChildCount();
+                return L.divIcon({
+                    html: `<div class="flex items-center justify-center w-10 h-10 rounded-full bg-[#D4AF37] border-2 border-white shadow-xl text-white font-black text-xs">
+                             ${count}
+                           </div>`,
+                    className: 'custom-cluster-icon',
+                    iconSize: [40, 40]
+                });
+            }
         });
 
-        if (hasMarkers) {
-            map.fitBounds(bounds, {
-                padding: [50, 50],
-                maxZoom: 8, // Don't zoom in too much for a single member
-                animate: true
-            });
-        }
-    }, [mapReady, L, members]);
+        mapInstanceRef.current = map;
+        markerClusterGroupRef.current = markers;
+        setMapReady(true);
 
-    const handlePrint = useCallback(async () => {
-        if (!mapContainerRef.current) return;
-        try {
-            const html2canvas = (await import('html2canvas')).default;
-            const canvas = await html2canvas(mapContainerRef.current, {
-                useCORS: true,
-                allowTaint: true,
-                backgroundColor: '#ffffff',
-                scale: 2,
-            });
-            const dataUrl = canvas.toDataURL('image/png');
-            
-            const printWindow = window.open('', '_blank');
-            if (printWindow) {
-                printWindow.document.write(`
-                    <html>
-                        <head>
-                            <title>Impression Cartographie Directoire</title>
-                            <style>
-                                body { margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-                                img { max-width: 100%; height: auto; }
-                                @media print {
-                                    body { margin: 0; }
-                                    img { width: 100%; height: auto; }
-                                }
-                            </style>
-                        </head>
-                        <body>
-                            <img src="${dataUrl}" onload="window.print(); window.close();" />
-                        </body>
-                    </html>
-                `);
-                printWindow.document.close();
+        return () => {
+            if (mapInstanceRef.current) {
+                mapInstanceRef.current.remove();
+                mapInstanceRef.current = null;
             }
-        } catch (error) {
-            console.error('Error printing map:', error);
-            // Fallback to native print if capture fails
-            window.print();
+        };
+    }, [isClient]);
+
+    useEffect(() => {
+        if (!mapReady || !markerClusterGroupRef.current || !mapInstanceRef.current) return;
+
+        const markers = markerClusterGroupRef.current;
+        const map = mapInstanceRef.current;
+        markers.clearLayers();
+
+        validMembers.forEach((member, index) => {
+            // Apply slight jitter for markers at the same region centroid if needed
+            let lat = member.lat!;
+            let lng = member.lng!;
+            
+            // Check if this member is using region coords (not exact)
+            const regionCoords = REGION_COORDS[member.region || ""];
+            if (regionCoords && regionCoords[0] === lat && regionCoords[1] === lng) {
+                const idSeed = member.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) + index;
+                lat += ((idSeed % 100) / 100 - 0.5) * 0.05;
+                lng += (((idSeed * 13) % 100) / 100 - 0.5) * 0.05;
+            }
+
+            const marker = L.marker([lat, lng], {
+                icon: L.divIcon({
+                    html: `
+                        <div class="relative group cursor-pointer">
+                            <div class="w-12 h-12 rounded-2xl border-2 border-[#D4AF37] shadow-2xl overflow-hidden bg-white transform transition-all duration-300 group-hover:scale-125 group-hover:-translate-y-2">
+                                ${member.photo 
+                                    ? `<img src="${member.photo}" class="w-full h-full object-cover" />`
+                                    : `<div class="w-full h-full flex items-center justify-center bg-slate-100"><span class="text-xs font-black text-slate-400 capitalize">${(member.name || "?")[0]}</span></div>`
+                                }
+                            </div>
+                            <div class="absolute -bottom-1 -right-1 w-5 h-5 bg-[#D4AF37] rounded-lg flex items-center justify-center shadow-lg">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path></svg>
+                            </div>
+                        </div>
+                    `,
+                    className: 'custom-marker',
+                    iconSize: [48, 48],
+                    iconAnchor: [24, 48]
+                })
+            });
+
+            const popupContent = `
+                <div class="p-4 min-w-[200px] bg-slate-900 text-white rounded-2xl">
+                    <div class="flex items-center gap-3 mb-3 border-b border-white/10 pb-3">
+                        <div class="w-12 h-12 rounded-xl overflow-hidden border border-[#D4AF37]/50 shadow-lg">
+                            <img src="${member.photo || 'https://api.dicebear.com/7.x/initials/svg?seed=' + member.name}" class="w-full h-full object-cover" />
+                        </div>
+                        <div>
+                            <h4 class="text-xs font-black text-[#D4AF37] uppercase tracking-wider">${member.name}</h4>
+                            <p class="text-[9px] text-slate-400 font-bold uppercase">${member.role}</p>
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="flex items-center gap-2">
+                            <div class="w-5 h-5 rounded-lg bg-white/5 flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                            </div>
+                            <p class="text-[9px] font-bold text-slate-300 uppercase letter-wider">${member.region}</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="w-5 h-5 rounded-lg bg-white/5 flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                            </div>
+                            <p class="text-xs font-medium text-slate-100">${member.locality}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            marker.bindPopup(popupContent, {
+                className: 'glass-popup',
+                maxWidth: 300,
+                offset: [0, -35]
+            });
+
+            markers.addLayer(marker);
+        });
+
+        map.addLayer(markers);
+
+        if (validMembers.length > 0) {
+            const group = L.featureGroup(markers.getLayers());
+            map.fitBounds(group.getBounds().pad(0.1), { animate: true });
         }
-    }, [mapContainerRef]);
+    }, [mapReady, validMembers]);
 
     if (!isClient) {
-        return <div className={cn("bg-muted rounded-2xl flex items-center justify-center min-h-[1000px]", className)}>
+        return <div className={cn("bg-muted rounded-2xl flex items-center justify-center min-h-[600px]", className)}>
             <Loader2 className="h-10 w-10 animate-spin text-muted-foreground" />
         </div>;
     }
 
     return (
         <div 
-            id="print-section"
-            className={cn("relative rounded-2xl overflow-hidden shadow-2xl border-2 border-[#D4AF37]/20 bg-white min-h-[1000px]", className)} 
+            id="map-visualization"
+            className={cn("relative rounded-2xl overflow-hidden shadow-2xl border-2 border-[#D4AF37]/20 bg-white min-h-[600px]", className)} 
         >
             <div ref={mapContainerRef} className="absolute inset-0 z-0" />
-            {!mapReady && (
-                <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/50 backdrop-blur-sm">
-                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                </div>
-            )}
-            <div className="absolute top-4 right-4 z-10 flex flex-col gap-2 items-end print:hidden">
-                <div className="bg-white/40 backdrop-blur-lg p-1.5 rounded-xl shadow-lg border border-white/20 flex items-center gap-2">
-                    <h4 className="font-bold text-[9px] uppercase tracking-wider text-[#006039] flex items-center gap-1.5">
-                        <User className="w-2 h-2" />
-                        Cartographie
-                    </h4>
-                    <div className="h-3 w-[1px] bg-black/10" />
-                    <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-6 w-6 text-[#006039] hover:bg-white/40"
-                        onClick={handleCapture}
-                        title="Capturer la carte"
-                    >
-                        <Camera className="h-3 w-3" />
-                    </Button>
-                    <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-6 w-6 text-[#006039] hover:bg-white/40"
-                        onClick={handlePrint}
-                        title="Imprimer la carte"
-                    >
-                        <Printer className="h-3 w-3" />
-                    </Button>
+            
+            {/* Elegant Header Overlay */}
+            <div className="absolute top-0 left-0 right-0 z-[1000] p-6 pointer-events-none">
+                <div className="bg-slate-900/80 backdrop-blur-xl border border-white/10 rounded-3xl p-5 shadow-2xl inline-block pointer-events-auto">
+                    <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-xl bg-[#D4AF37] flex items-center justify-center shadow-lg shadow-[#D4AF37]/20">
+                            <Crown className="w-5 h-5 text-white stroke-[2.5]" />
+                        </div>
+                        <div>
+                            <h2 className="text-lg font-black text-white uppercase tracking-tighter leading-tight">{title}</h2>
+                            <p className="text-[9px] font-black text-[#D4AF37] uppercase tracking-widest leading-none mt-1">{subtitle}</p>
+                        </div>
+                        <div className="ml-6 pl-6 border-l border-white/10 flex items-center gap-6">
+                            <div className="text-center">
+                                <span className="block text-xl font-black text-white leading-none">${members.length}</span>
+                                <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Membres</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
+
+            {/* Quick Actions Overlay (Bottom Right) */}
+            <div className="absolute bottom-6 right-6 z-[1000] flex flex-col gap-2 pointer-events-auto">
+                <button 
+                    onClick={() => {
+                        if (mapInstanceRef.current) {
+                            mapInstanceRef.current.setView([7.539989, -5.547080], 7);
+                        }
+                    }}
+                    title="Recentrer"
+                    className="p-3 bg-white/90 backdrop-blur-md rounded-2xl shadow-xl hover:bg-white transition-all group border border-slate-200"
+                >
+                    <Navigation className="w-5 h-5 text-slate-600 group-hover:text-[#D4AF37]" />
+                </button>
+            </div>
+
+            {!mapReady && (
+                <div className="absolute inset-0 z-10 flex items-center justify-center bg-muted/20 backdrop-blur-sm">
+                    <div className="text-center">
+                        <Loader2 className="h-10 w-10 animate-spin text-[#D4AF37] mx-auto mb-4" />
+                        <p className="text-xs font-black text-slate-500 uppercase tracking-widest">Initialisation de la carte...</p>
+                    </div>
+                </div>
+            )}
+
             <style dangerouslySetInnerHTML={{ __html: `
-                .glass-popup-container .leaflet-popup-content-wrapper {
-                    background: rgba(255, 255, 255, 0.45) !important;
-                    backdrop-filter: blur(12px) !important;
-                    -webkit-backdrop-filter: blur(12px) !important;
-                    border: 1px solid rgba(255, 255, 255, 0.3) !important;
-                    box-shadow: 0 8px 32px 0 rgba(0, 96, 57, 0.15) !important;
-                    border-radius: 1rem !important;
+                .glass-popup .leaflet-popup-content-wrapper {
+                    background: transparent !important;
+                    box-shadow: none !important;
                     padding: 0 !important;
                 }
-                .glass-popup-container .leaflet-popup-content {
+                .glass-popup .leaflet-popup-content {
                     margin: 0 !important;
-                    width: auto !important;
                 }
-                .glass-popup-container .leaflet-popup-tip {
-                    background: rgba(255, 255, 255, 0.45) !important;
-                    backdrop-filter: blur(12px) !important;
-                    -webkit-backdrop-filter: blur(12px) !important;
-                    border-left: 1px solid rgba(255, 255, 255, 0.3) !important;
-                    border-bottom: 1px solid rgba(255, 255, 255, 0.3) !important;
+                .glass-popup .leaflet-popup-tip {
+                    background: #0f172a !important;
                 }
                 .leaflet-container {
+                    background: #111 !important;
                     font-family: inherit !important;
                 }
-            `}} />
+                .custom-cluster-icon {
+                    background: transparent !important;
+                    border: none !important;
+                }
+                .leaflet-div-icon {
+                    background: transparent !important;
+                    border: none !important;
+                }
+            ` }} />
         </div>
     );
-}
-
-export const DirectoireMap = React.memo(DirectoireMapComponent);
+};

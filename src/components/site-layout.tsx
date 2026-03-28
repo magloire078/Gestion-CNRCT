@@ -174,7 +174,11 @@ const allMenuItems = [
     icon: FileText,
     permission: "group:reports:view",
     subItems: [
-      { href: "/reports/disa", label: "DISA", icon: FileText, permission: "page:payroll:view" },
+      { href: "/reports/employees", label: "Personnel", icon: Users, permission: "page:dashboard:view" },
+      { href: "/reports/chiefs", label: "Rois & Chefs", icon: Crown, permission: "page:chiefs:view" },
+      { href: "/reports/supplies", label: "Logistique", icon: Package, permission: "page:supplies:view" },
+      { href: "/reports/assets", label: "Patrimoine", icon: Laptop, permission: "page:it-assets:view" },
+      { href: "/reports/disa", label: "DISA (Paie)", icon: FileText, permission: "page:payroll:view" },
       { href: "/reports/nominative", label: "Tableau Nominatif", icon: FileText, permission: "page:payroll:view" },
       { href: "/leave/report", label: "Rapport Congés", icon: FileClock, permission: "page:leaves:view" },
       { href: "/missions/report", label: "Rapport Missions", icon: FileClock, permission: "page:missions:view" },

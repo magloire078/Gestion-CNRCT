@@ -13,7 +13,8 @@ import { getDepartments } from './department-service';
 import { getDirections } from './direction-service';
 import { getServices } from './service-service';
 import { uploadToCloudinary } from '@/lib/cloudinary';
-import { FirestorePermissionError } from '@/lib/errors';
+
+import { FirestorePermissionError, FirestoreQuotaError, FirestoreTimeoutError } from '@/lib/errors';
 import { parseISO, addYears, format, isValid } from 'date-fns';
 import { divisions } from '@/lib/ivory-coast-divisions';
 
@@ -310,27 +311,44 @@ const processEmployeeData = (employeeData: Partial<Employe>): Partial<Employe> =
 }
 
 
+
+
 export async function addEmployee(employeeData: Omit<Employe, 'id'>, photoFile: File | null): Promise<Employe> {
     try {
         let photoUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(employeeData.name || 'E')}&background=006039&color=fff&size=100`;
         const docRef = doc(collection(db, "employees"));
 
         if (photoFile) {
-            photoUrl = await uploadToCloudinary(photoFile);
+            try {
+                photoUrl = await uploadToCloudinary(photoFile);
+            } catch (error) {
+                console.error("Cloudinary upload failed, using default avatar:", error);
+            }
         }
 
         const processedData = processEmployeeData({ ...employeeData, photoUrl });
 
-        await setDoc(docRef, processedData);
+        const addPromise = setDoc(docRef, processedData);
+        const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new FirestoreTimeoutError()), 15000)
+        );
+        
+        await Promise.race([addPromise, timeoutPromise]);
 
         const newEmployee = { id: docRef.id, ...processedData } as Employe;
-        await createOrUpdateChiefFromEmployee(newEmployee);
+        
+        // Non-blocking chief sync
+        createOrUpdateChiefFromEmployee(newEmployee).catch(err => 
+            console.error("Failed to sync chief from employee:", err)
+        );
 
         return newEmployee;
     } catch (error: any) {
         if (error.code === 'permission-denied') {
             throw new FirestorePermissionError("Vous n'avez pas la permission d'ajouter un nouvel employé.", { operation: 'add', path: 'employees' });
         }
+        if (error.code === 'resource-exhausted') throw new FirestoreQuotaError();
+        if (error instanceof FirestoreTimeoutError) throw error;
         throw error;
     }
 }
@@ -341,9 +359,14 @@ export async function batchAddEmployees(employees: Omit<Employe, 'id'>[]): Promi
     const matricules = employees.map(e => e.matricule).filter(Boolean);
     if (matricules.length === 0) return 0;
 
-    const existingMatriculesQuery = query(employeesCollection, where('matricule', 'in', matricules));
-    const existingSnapshot = await getDocs(existingMatriculesQuery);
-    const existingMatricules = new Set(existingSnapshot.docs.map((d: QueryDocumentSnapshot<DocumentData>) => d.data().matricule));
+    let existingMatricules = new Set<string>();
+    try {
+        const existingMatriculesQuery = query(employeesCollection, where('matricule', 'in', matricules));
+        const existingSnapshot = await getDocs(existingMatriculesQuery);
+        existingMatricules = new Set(existingSnapshot.docs.map((d: QueryDocumentSnapshot<DocumentData>) => d.data().matricule));
+    } catch (error) {
+        console.error("Failed to check existing matricules, proceeding with all:", error);
+    }
 
     let addedCount = 0;
     const employeesToSyncToChiefs: Employe[] = [];
@@ -360,15 +383,22 @@ export async function batchAddEmployees(employees: Omit<Employe, 'id'>[]): Promi
 
     if (addedCount > 0) {
         try {
-            await batch.commit();
-            // Sync to chiefs after commit
+            const batchPromise = batch.commit();
+            const timeoutPromise = new Promise((_, reject) => 
+                setTimeout(() => reject(new FirestoreTimeoutError()), 20000)
+            );
+            await Promise.race([batchPromise, timeoutPromise]);
+            
+            // Sync to chiefs after commit (non-blocking)
             for (const emp of employeesToSyncToChiefs) {
-                await createOrUpdateChiefFromEmployee(emp);
+                createOrUpdateChiefFromEmployee(emp).catch(e => console.error("Chief sync error:", e));
             }
         } catch (error: any) {
             if (error.code === 'permission-denied') {
                 throw new FirestorePermissionError("Vous n'avez pas la permission d'importer des employés en masse.", { operation: 'batch-add', path: 'employees' });
             }
+            if (error.code === 'resource-exhausted') throw new FirestoreQuotaError();
+            if (error instanceof FirestoreTimeoutError) throw error;
             throw error;
         }
     }
@@ -382,7 +412,11 @@ export async function updateEmployee(employeeId: string, employeeDataToUpdate: P
         let updateData: Partial<Employe> = { ...employeeDataToUpdate };
 
         if (photoFile) {
-            updateData.photoUrl = await uploadToCloudinary(photoFile);
+            try {
+                updateData.photoUrl = await uploadToCloudinary(photoFile);
+            } catch (error) {
+                console.error("Cloudinary upload failed during update:", error);
+            }
         }
 
         updateData = processEmployeeData(updateData);
@@ -391,16 +425,24 @@ export async function updateEmployee(employeeId: string, employeeDataToUpdate: P
             delete (updateData as any).id;
         }
 
-        await updateDoc(employeeDocRef, updateData);
+        const updatePromise = updateDoc(employeeDocRef, updateData);
+        const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new FirestoreTimeoutError()), 15000)
+        );
+        await Promise.race([updatePromise, timeoutPromise]);
 
-        const updatedEmployee = await getEmployee(employeeId);
-        if (updatedEmployee) {
-            await createOrUpdateChiefFromEmployee(updatedEmployee);
-        }
+        // Refresh and sync to chief (non-blocking)
+        getEmployee(employeeId).then(updatedEmployee => {
+            if (updatedEmployee) {
+                createOrUpdateChiefFromEmployee(updatedEmployee).catch(e => console.error("Chief sync error:", e));
+            }
+        });
     } catch (error: any) {
         if (error.code === 'permission-denied') {
             throw new FirestorePermissionError(`Vous n'avez pas la permission de modifier l'employé ${employeeDataToUpdate.name}.`, { operation: 'update', path: `employees/${employeeId}` });
         }
+        if (error.code === 'resource-exhausted') throw new FirestoreQuotaError();
+        if (error instanceof FirestoreTimeoutError) throw error;
         throw error;
     }
 }
@@ -410,24 +452,36 @@ export async function searchEmployees(queryText: string): Promise<Employe[]> {
         return getEmployees();
     }
     const lowerCaseQuery = queryText.toLowerCase();
-    const allEmployees = await getEmployees();
-
-    return allEmployees.filter(employee =>
-        (employee.name?.toLowerCase() || '').includes(lowerCaseQuery) ||
-        (employee.firstName?.toLowerCase() || '').includes(lowerCaseQuery) ||
-        (employee.lastName?.toLowerCase() || '').includes(lowerCaseQuery) ||
-        (employee.matricule?.toLowerCase() || '').includes(lowerCaseQuery)
-    );
+    
+    try {
+        const allEmployees = await getEmployees();
+        return allEmployees.filter(employee =>
+            (employee.name?.toLowerCase() || '').includes(lowerCaseQuery) ||
+            (employee.firstName?.toLowerCase() || '').includes(lowerCaseQuery) ||
+            (employee.lastName?.toLowerCase() || '').includes(lowerCaseQuery) ||
+            (employee.matricule?.toLowerCase() || '').includes(lowerCaseQuery)
+        );
+    } catch (error) {
+        console.error("Search failed:", error);
+        return [];
+    }
 }
 
 export async function deleteEmployee(employeeId: string): Promise<void> {
     try {
         const employeeDocRef = doc(db, 'employees', employeeId);
-        await deleteDoc(employeeDocRef);
+        
+        const deletePromise = deleteDoc(employeeDocRef);
+        const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new FirestoreTimeoutError()), 10000)
+        );
+        await Promise.race([deletePromise, timeoutPromise]);
     } catch (error: any) {
         if (error.code === 'permission-denied') {
             throw new FirestorePermissionError(`Vous n'avez pas la permission de supprimer cet employé.`, { operation: 'delete', path: `employees/${employeeId}` });
         }
+        if (error.code === 'resource-exhausted') throw new FirestoreQuotaError();
+        if (error instanceof FirestoreTimeoutError) throw error;
         throw error;
     }
 }

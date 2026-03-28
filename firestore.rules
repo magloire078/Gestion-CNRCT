@@ -13,38 +13,54 @@ service cloud.firestore {
     }
 
     function hasPermission(permission) {
-      return isSignedIn() && (
-        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && getUserData().permissions != null && permission in getUserData().permissions) ||
-        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && getUserData().roleId != null && exists(/databases/$(database)/documents/roles/$(getUserData().roleId)) && permission in get(/databases/$(database)/documents/roles/$(getUserData().roleId)).data.permissions)
-      );
+      if (!isSignedIn()) return false;
+      let user = get(/databases/$(database)/documents/users/$(request.auth.uid));
+      return (user.data.permissions != null && permission in user.data.permissions) ||
+             (user.data.roleId != null && 
+              exists(/databases/$(database)/documents/roles/$(user.data.roleId)) && 
+              permission in get(/databases/$(database)/documents/roles/$(user.data.roleId)).data.permissions);
     }
 
     // Role checks based on roleId
     function isSuperAdmin() {
       return isSignedIn() && (
-        getUserData().roleId == 'dirigeant-president' ||
-        request.auth.token.email == 'magloire078@gmail.com'
+        request.auth.token.email == 'magloire078@gmail.com' ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roleId in ['dirigeant-president', 'super-admin']
       );
     }
     
     function isAdmin() {
-      return isSignedIn() && (
-        isSuperAdmin() ||
-        getUserData().roleId in ['dirigeant-president', 'cadre-superieur-directeur', 'administrateur'] ||
-        hasPermission('page:admin:view')
-      );
+      if (!isSignedIn()) return false;
+      if (request.auth.token.email == 'magloire078@gmail.com') return true;
+      let roleId = get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roleId;
+      return roleId in [
+          'dirigeant-president', 
+          'cadre-superieur-directeur', 
+          'administrateur', 
+          'administrateurs', 
+          'comptable', 
+          'comptables',
+          'super-admin'
+        ] || hasPermission('page:admin:view');
     }
 
     function isComptable() {
-      return isAdmin() || getUserData().roleId == 'comptable';
+      if (isAdmin()) return true;
+      let roleId = get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roleId;
+      return roleId in ['comptable', 'comptables'];
     }
     
     function isHR() {
-      return isAdmin() || hasPermission('group:personnel:view');
+      if (isAdmin()) return true;
+      let roleId = get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roleId;
+      return roleId in ['manager-rh', 'rh', 'responsable-rh'] || 
+             hasPermission('group:personnel:view');
     }
 
     function isMediation() {
-      return isAdmin() || 
+      if (isAdmin()) return true;
+      let roleId = get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roleId;
+      return roleId in ['mediateur', 'mediateurs', 'mediation', 'mediations'] || 
              hasPermission('page:conflicts:view') || 
              hasResourcePermission('conflicts', 'read');
     }
@@ -52,13 +68,16 @@ service cloud.firestore {
     function hasResourcePermission(resource, action) {
       return isSignedIn() && 
              exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             getUserData().roleId != null &&
              exists(/databases/$(database)/documents/roles/$(getUserData().roleId)) &&
              get(/databases/$(database)/documents/roles/$(getUserData().roleId)).data.resourcePermissions[resource][action] == true;
     }
 
     function isPatrimoine() {
       return isAdmin() || 
-             getUserData().roleId in ['manager-rh', 'responsable-it', 'gestionnaire-stock', 'patrimoine'] ||
+             (getUserData().roleId != null && getUserData().roleId in [
+               'manager-rh', 'responsable-it', 'it', 'gestionnaire-stock', 'patrimoine', 'patrimoines'
+             ]) ||
              hasPermission('page:fleet:view') || 
              hasPermission('page:supplies:view') ||
              hasResourcePermission('supplies', 'update') ||

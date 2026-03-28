@@ -253,6 +253,7 @@ export function EditSupplySheet({
                         type="button" 
                         onClick={() => { setPhotoFile(null); setPhotoPreview(null); }}
                         className="absolute top-0 right-0 bg-red-500 text-white rounded-bl-lg p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 shadow-sm"
+                        title="Supprimer la photo"
                       >
                         <X className="h-3 w-3" />
                       </button>

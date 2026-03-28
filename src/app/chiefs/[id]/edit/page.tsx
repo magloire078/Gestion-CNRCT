@@ -221,7 +221,15 @@ export default function EditChiefPage() {
                                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                                     <Upload className="h-6 w-6 text-white drop-shadow-md" />
                                 </div>
-                                <input ref={fileInputRef} type="file" className="hidden" accept="image/*" onChange={handlePhotoChange} />
+                                <input 
+                                    ref={fileInputRef} 
+                                    type="file" 
+                                    className="hidden" 
+                                    accept="image/*" 
+                                    onChange={handlePhotoChange} 
+                                    title="Changer la photo"
+                                    aria-label="Changer la photo de profil du chef"
+                                />
                             </div>
                             <div>
                                 <CardTitle className="text-2xl font-black text-slate-800 tracking-tight">{title} {firstName} {lastName}</CardTitle>

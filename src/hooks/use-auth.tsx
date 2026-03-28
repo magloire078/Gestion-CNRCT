@@ -44,22 +44,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Load organization settings only after we know the auth state
         // This prevents permission errors when not authenticated
         if (!settingsDone) {
-          getOrganizationSettings().then(orgSettings => {
-            if (isMounted) {
-              setSettings(orgSettings);
-              settingsDone = true;
-              checkDone();
-            }
-          });
+          getOrganizationSettings()
+            .then(orgSettings => {
+              if (isMounted) {
+                setSettings(orgSettings);
+                settingsDone = true;
+                checkDone();
+              }
+            })
+            .catch(err => {
+              console.warn("[Auth] Failed to load organization settings:", err);
+              if (isMounted) {
+                settingsDone = true; // Still mark as done to unblock app loading
+                checkDone();
+              }
+            });
         } else {
           checkDone();
         }
       }
     });
 
+    // Timeout safety: Force loading to false after 8 seconds if somehow stuck
+    const timeoutId = setTimeout(() => {
+      if (isMounted && loading) {
+        console.warn("[Auth] Initialization timeout - forcing loading to false");
+        setLoading(false);
+      }
+    }, 8000);
+
     return () => {
       isMounted = false;
       unsubscribeAuth();
+      clearTimeout(timeoutId);
     };
   }, []);
 

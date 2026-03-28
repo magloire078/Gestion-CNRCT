@@ -43,6 +43,7 @@ import { useToast } from "@/hooks/use-toast";
 import { IVORIAN_REGIONS } from "@/constants/regions";
 import { ScrollArea } from "../ui/scroll-area";
 import { DebouncedInput } from "@/components/ui/debounced-input";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface AddEmployeeSheetProps {
   isOpen: boolean;
@@ -235,7 +236,7 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
                         <div className="flex flex-col gap-2">
                           <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}><Upload className="mr-2 h-4 w-4" />Télécharger</Button>
                         </div>
-                        <Input ref={fileInputRef} type="file" className="hidden" accept="image/*" onChange={handlePhotoChange} />
+                        <Input ref={fileInputRef} type="file" className="hidden" accept="image/*" onChange={handlePhotoChange} title="Choisir une photo" />
                       </div>
                     </div>
 
@@ -259,12 +260,12 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
 
                     <div className="flex items-center gap-6 p-4 bg-slate-50 rounded-xl border border-dashed border-slate-200">
                       <div className="flex items-center space-x-2">
-                        <input 
-                          type="checkbox" 
+                        <Checkbox 
                           id="cnps-add" 
                           checked={cnps} 
-                          onChange={(e) => setCnps(e.target.checked)}
+                          onCheckedChange={(checked) => setCnps(checked as boolean)}
                           className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                          title="Cotise à la CNPS"
                         />
                         <Label htmlFor="cnps-add" className="font-bold text-xs uppercase tracking-tight">Cotise à la CNPS</Label>
                       </div>

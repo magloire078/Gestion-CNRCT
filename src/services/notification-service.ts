@@ -9,33 +9,53 @@ import { parseISO, differenceInMonths } from 'date-fns';
 const notificationsCollection = collection(db, 'notifications');
 const usersCollection = collection(db, 'users');
 
+import { FirestorePermissionError, FirestoreQuotaError, FirestoreTimeoutError } from '@/lib/errors';
+
 async function createNotification(data: Omit<Notification, 'id' | 'isRead' | 'createdAt'>) {
 
     // If userId is a special keyword like 'manager', find all users with that role
     if (data.userId === 'manager') {
-        const managerQuery = query(usersCollection, where('roleId', 'in', ['manager-rh', 'administrateur', 'super-admin']));
-        const managerSnapshot = await getDocs(managerQuery);
+        try {
+            const managerQuery = query(usersCollection, where('roleId', 'in', ['manager-rh', 'administrateur', 'super-admin']));
+            const managerSnapshot = await getDocs(managerQuery);
 
-        const batch = writeBatch(db);
-        managerSnapshot.forEach(managerDoc => {
-            const notificationData = {
-                ...data,
-                userId: managerDoc.id, // Target specific manager user ID
-                isRead: false,
-                createdAt: new Date().toISOString()
-            };
-            const newNotifRef = doc(collection(db, 'notifications'));
-            batch.set(newNotifRef, notificationData);
-        });
-        await batch.commit();
-
+            const batch = writeBatch(db);
+            managerSnapshot.forEach(managerDoc => {
+                const notificationData = {
+                    ...data,
+                    userId: managerDoc.id, // Target specific manager user ID
+                    isRead: false,
+                    createdAt: new Date().toISOString()
+                };
+                const newNotifRef = doc(collection(db, 'notifications'));
+                batch.set(newNotifRef, notificationData);
+            });
+            
+            const batchPromise = batch.commit();
+            const timeoutPromise = new Promise((_, reject) => 
+                setTimeout(() => reject(new FirestoreTimeoutError()), 15000)
+            );
+            await Promise.race([batchPromise, timeoutPromise]);
+        } catch (error: any) {
+            console.error("Failed to create manager notifications:", error);
+            if (error.code === 'resource-exhausted') throw new FirestoreQuotaError();
+        }
     } else {
         const notificationData = {
             ...data,
             isRead: false,
             createdAt: new Date().toISOString()
         };
-        await addDoc(notificationsCollection, notificationData);
+        try {
+            const addPromise = addDoc(notificationsCollection, notificationData);
+            const timeoutPromise = new Promise((_, reject) => 
+                setTimeout(() => reject(new FirestoreTimeoutError()), 10000)
+            );
+            await Promise.race([addPromise, timeoutPromise]);
+        } catch (error: any) {
+            console.error("Failed to create single notification:", error);
+            if (error.code === 'resource-exhausted') throw new FirestoreQuotaError();
+        }
     }
 }
 

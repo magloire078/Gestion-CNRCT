@@ -34,6 +34,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { IVORIAN_REGIONS } from "@/constants/regions";
 import { DebouncedInput } from "@/components/ui/debounced-input";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface EditEmployeeFormProps {
   employee: Employe;
@@ -209,7 +210,7 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                   <Button type="button" variant="outline" size="sm" className="flex-1 invisible">
                   </Button>
                 </div>
-                <input ref={fileInputRef} type="file" className="hidden" accept="image/*" onChange={handlePhotoChange} />
+                <input ref={fileInputRef} type="file" className="hidden" accept="image/*" onChange={handlePhotoChange} title="Choisir une photo" />
               </div>
 
               <div className="space-y-4 pt-4 border-t">
@@ -382,13 +383,13 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                   <CardHeader><CardTitle className="text-lg">Informations Sociales</CardTitle></CardHeader>
                   <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                      <div className="flex items-center space-x-2 pt-8">
-                       <input 
-                        type="checkbox" 
+                        <Checkbox 
                         id="CNPS" 
                         checked={!!formData.CNPS} 
-                        onChange={(e) => setFormData(prev => ({ ...prev, CNPS: e.target.checked }))}
+                        onCheckedChange={(checked) => setFormData(prev => ({ ...prev, CNPS: !!checked }))}
                         className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-                       />
+                        title="Déclaré à la CNPS"
+                      />
                        <Label htmlFor="CNPS">Déclaré à la CNPS</Label>
                     </div>
                     <div className="space-y-2">

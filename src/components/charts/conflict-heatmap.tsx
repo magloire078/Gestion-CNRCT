@@ -160,8 +160,7 @@ export const ConflictHeatmap = memo(function ConflictHeatmap({ conflicts, classN
                 )}
                 <div 
                     ref={mapContainerRef} 
-                    className="h-[700px] w-full" 
-                    style={{ background: '#f8fafc' }}
+                    className="h-[700px] w-full bg-slate-50" 
                 />
                 
                 {/* Overlay Legend */}

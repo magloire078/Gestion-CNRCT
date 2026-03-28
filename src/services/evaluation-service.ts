@@ -107,15 +107,21 @@ export async function getEvaluation(id: string): Promise<Evaluation | null> {
     return null;
 }
 
+import { FirestorePermissionError, FirestoreQuotaError, FirestoreTimeoutError } from '@/lib/errors';
+
 export async function addEvaluation(evaluationDataToAdd: Omit<Evaluation, 'id'>): Promise<Evaluation> {
     const docRef = await addDoc(evaluationsCollection, evaluationDataToAdd);
 
-    await createNotification({
-        userId: evaluationDataToAdd.managerId,
-        title: 'Nouvelle Évaluation Créée',
-        description: `Une nouvelle évaluation pour ${evaluationDataToAdd.employeeName} est prête à être remplie.`,
-        href: `/evaluations/${docRef.id}`
-    });
+    try {
+        await createNotification({
+            userId: evaluationDataToAdd.managerId,
+            title: 'Nouvelle Évaluation Créée',
+            description: `Une nouvelle évaluation pour ${evaluationDataToAdd.employeeName} est prête à être remplie.`,
+            href: `/evaluations/${docRef.id}`
+        });
+    } catch (error) {
+        console.error("Failed to create notification after evaluation add:", error);
+    }
 
     return { id: docRef.id, ...evaluationDataToAdd };
 }
@@ -133,33 +139,48 @@ export async function updateEvaluation(evaluationId: string, dataToUpdate: Parti
     if (dataToUpdate.goals !== undefined) updatePayload.goals = dataToUpdate.goals;
     if (dataToUpdate.status !== undefined) updatePayload.status = dataToUpdate.status;
 
-    await updateDoc(evalDocRef, updatePayload);
+    try {
+        const updatePromise = updateDoc(evalDocRef, updatePayload);
+        const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new FirestoreTimeoutError()), 15000)
+        );
+        await Promise.race([updatePromise, timeoutPromise]);
+    } catch (error: any) {
+        console.error("Error in updateEvaluation:", error);
+        if (error.code === 'resource-exhausted') throw new FirestoreQuotaError();
+        if (error instanceof FirestoreTimeoutError) throw error;
+        throw error;
+    }
 
     // Send notifications based on status change
     if (dataToUpdate.status) {
-        const currentEval = await getEvaluation(evaluationId);
-        if (!currentEval) return;
+        try {
+            const currentEval = await getEvaluation(evaluationId);
+            if (!currentEval) return;
 
-        if (dataToUpdate.status === 'Pending Employee Sign-off') {
-            await createNotification({
-                userId: currentEval.employeeId,
-                title: 'Évaluation Prête',
-                description: `Votre évaluation de performance pour la période ${currentEval.reviewPeriod} est prête pour vos commentaires.`,
-                href: `/evaluations/${evaluationId}`
-            });
-        } else if (dataToUpdate.status === 'Completed') {
-            await createNotification({
-                userId: currentEval.employeeId,
-                title: 'Évaluation Finalisée',
-                description: `Votre évaluation de performance pour la période ${currentEval.reviewPeriod} a été finalisée.`,
-                href: `/evaluations/${evaluationId}`
-            });
-            await createNotification({
-                userId: currentEval.managerId,
-                title: 'Évaluation Finalisée',
-                description: `L'évaluation de ${currentEval.employeeName} pour ${currentEval.reviewPeriod} a été finalisée.`,
-                href: `/evaluations/${evaluationId}`
-            });
+            if (dataToUpdate.status === 'Pending Employee Sign-off') {
+                await createNotification({
+                    userId: currentEval.employeeId,
+                    title: 'Évaluation Prête',
+                    description: `Votre évaluation de performance pour la période ${currentEval.reviewPeriod} est prête pour vos commentaires.`,
+                    href: `/evaluations/${evaluationId}`
+                });
+            } else if (dataToUpdate.status === 'Completed') {
+                await createNotification({
+                    userId: currentEval.employeeId,
+                    title: 'Évaluation Finalisée',
+                    description: `Votre évaluation de performance pour la période ${currentEval.reviewPeriod} a été finalisée.`,
+                    href: `/evaluations/${evaluationId}`
+                });
+                await createNotification({
+                    userId: currentEval.managerId,
+                    title: 'Évaluation Finalisée',
+                    description: `L'évaluation de ${currentEval.employeeName} pour ${currentEval.reviewPeriod} a été finalisée.`,
+                    href: `/evaluations/${evaluationId}`
+                });
+            }
+        } catch (error) {
+            console.error("Failed to send notifications after status update:", error);
         }
     }
 }

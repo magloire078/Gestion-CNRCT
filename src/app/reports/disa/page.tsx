@@ -370,25 +370,25 @@ export default function DisaPage() {
                                     <td className="py-1 px-1 text-center font-mono border border-slate-600">{row.matricule}</td>
                                     <td className="py-1 px-1 whitespace-nowrap text-left pl-1 font-bold border border-slate-600 overflow-hidden text-clip">{row.name}</td>
                                     {row.monthlySalaries.map((salary: number, i: number) => (
-                                        <td key={`print-cell-${row.matricule}-month-${i}`} className="py-1 px-0.5 text-right font-mono border border-slate-600 tracking-tighter" style={{ fontVariantNumeric: 'tabular-nums' }}>
+                                        <td key={`print-cell-${row.matricule}-month-${i}`} className="py-1 px-0.5 text-right font-mono border border-slate-600 tracking-tighter tabular-nums">
                                             {formatCurrency(salary)}
                                         </td>
                                     ))}
-                                    <td className="py-1 px-0.5 text-right font-mono border border-slate-600 tracking-tighter" style={{ fontVariantNumeric: 'tabular-nums' }}>{formatCurrency(row.gratification)}</td>
-                                    <td className="py-1 px-0.5 text-right font-bold font-mono border border-slate-600 tracking-tighter" style={{ fontVariantNumeric: 'tabular-nums' }}>{formatCurrency(row.totalBrut)}</td>
-                                    <td className="py-1 px-0.5 text-right font-mono border border-slate-600 tracking-tighter" style={{ fontVariantNumeric: 'tabular-nums' }}>{formatCurrency(row.totalCNPS)}</td>
+                                    <td className="py-1 px-0.5 text-right font-mono border border-slate-600 tracking-tighter tabular-nums">{formatCurrency(row.gratification)}</td>
+                                    <td className="py-1 px-0.5 text-right font-bold font-mono border border-slate-600 tracking-tighter tabular-nums">{formatCurrency(row.totalBrut)}</td>
+                                    <td className="py-1 px-0.5 text-right font-mono border border-slate-600 tracking-tighter tabular-nums">{formatCurrency(row.totalCNPS)}</td>
                                 </tr>
                             ))}
                             <tr className="font-black bg-slate-100 text-black">
                                 <td colSpan={3} className="py-1.5 px-1 text-right pr-4 border border-slate-700 text-[10px]">TOTAL GÉNÉRAL</td>
                                 {state.grandTotal.monthly.map((total: number, index: number) => (
-                                    <td key={`print-total-month-${index}`} className="py-1.5 px-0.5 text-right font-black border border-slate-700 text-[8px] tracking-tighter" style={{ fontVariantNumeric: 'tabular-nums' }}>
+                                    <td key={`print-total-month-${index}`} className="py-1.5 px-0.5 text-right font-black border border-slate-700 text-[8px] tracking-tighter tabular-nums">
                                         {formatCurrency(total)}
                                     </td>
                                 ))}
-                                <td className="py-1.5 px-0.5 text-right font-black border border-slate-700 text-[8px] tracking-tighter" style={{ fontVariantNumeric: 'tabular-nums' }}>{formatCurrency(state.grandTotal.gratification)}</td>
-                                <td className="py-1.5 px-0.5 text-right font-black border border-slate-700 text-[8px] tracking-tighter" style={{ fontVariantNumeric: 'tabular-nums' }}>{formatCurrency(state.grandTotal.brut)}</td>
-                                <td className="py-1.5 px-0.5 text-right font-black border border-slate-700 text-[8px] tracking-tighter" style={{ fontVariantNumeric: 'tabular-nums' }}>{formatCurrency(state.grandTotal.cnps)}</td>
+                                <td className="py-1.5 px-0.5 text-right font-black border border-slate-700 text-[8px] tracking-tighter tabular-nums">{formatCurrency(state.grandTotal.gratification)}</td>
+                                <td className="py-1.5 px-0.5 text-right font-black border border-slate-700 text-[8px] tracking-tighter tabular-nums">{formatCurrency(state.grandTotal.brut)}</td>
+                                <td className="py-1.5 px-0.5 text-right font-black border border-slate-700 text-[8px] tracking-tighter tabular-nums">{formatCurrency(state.grandTotal.cnps)}</td>
                             </tr>
                         </tbody>
                     </table>

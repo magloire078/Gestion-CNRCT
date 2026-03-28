@@ -8,8 +8,22 @@ export class FirestorePermissionError extends Error {
     super(message);
     this.name = "FirestorePermissionError";
     this.context = context;
-    
-    // This is to ensure the prototype chain is correctly set up.
     Object.setPrototypeOf(this, FirestorePermissionError.prototype);
+  }
+}
+
+export class FirestoreQuotaError extends Error {
+  constructor(message: string = "Le quota de requêtes Firestore a été dépassé. Veuillez réessayer plus tard.") {
+    super(message);
+    this.name = "FirestoreQuotaError";
+    Object.setPrototypeOf(this, FirestoreQuotaError.prototype);
+  }
+}
+
+export class FirestoreTimeoutError extends Error {
+  constructor(message: string = "La requête a pris trop de temps. Vérifiez votre connexion.") {
+    super(message);
+    this.name = "FirestoreTimeoutError";
+    Object.setPrototypeOf(this, FirestoreTimeoutError.prototype);
   }
 }

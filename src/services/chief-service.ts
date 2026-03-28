@@ -4,7 +4,7 @@ import { collection, getDocs, addDoc, onSnapshot, Unsubscribe, query, orderBy, d
 import { uploadToCloudinary } from '@/lib/cloudinary';
 import type { Chief, ChiefRole } from '@/types/chief';
 import { db, storage } from '@/lib/firebase';
-import { FirestorePermissionError } from '@/lib/errors';
+import { FirestorePermissionError, FirestoreQuotaError, FirestoreTimeoutError } from '@/lib/errors';
 
 const chiefsCollection = collection(db, 'chiefs');
 
@@ -239,7 +239,12 @@ export async function updateChief(id: string, chiefData: Partial<Omit<Chief, 'id
     const updateData: { [key: string]: any } = { ...chiefData };
 
     if (photoFile) {
-        updateData.photoUrl = await uploadToCloudinary(photoFile);
+        try {
+            updateData.photoUrl = await uploadToCloudinary(photoFile);
+        } catch (error) {
+            console.error("Cloudinary upload failed:", error);
+            // We continue without photo update if it fails, or throw
+        }
     }
 
     // Ensure numeric values are stored as numbers
@@ -264,10 +269,23 @@ export async function updateChief(id: string, chiefData: Partial<Omit<Chief, 'id
     });
 
     try {
-        await updateDoc(chiefDocRef, updateData);
+        // Implementation of a 15-second timeout for the Firestore update
+        const updatePromise = updateDoc(chiefDocRef, updateData);
+        const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new FirestoreTimeoutError()), 15000)
+        );
+
+        await Promise.race([updatePromise, timeoutPromise]);
     } catch (error: any) {
+        console.error("Error in updateChief:", error);
         if (error.code === 'permission-denied') {
             throw new FirestorePermissionError(`Vous n'avez pas la permission de modifier le chef ${chiefData.name}.`, { operation: 'update', path: `chiefs/${id}` });
+        }
+        if (error.code === 'resource-exhausted') {
+            throw new FirestoreQuotaError();
+        }
+        if (error instanceof FirestoreTimeoutError) {
+            throw error;
         }
         throw error;
     }

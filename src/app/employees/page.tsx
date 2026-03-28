@@ -33,7 +33,6 @@ import Papa from "papaparse";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PaginationControls } from "@/components/common/pagination-controls";
-import { ImportEmployeesDataCard } from "@/components/employees/import-employees-data-card";
 import { useAuth } from "@/hooks/use-auth";
 import { ConfirmationDialog } from "@/components/common/confirmation-dialog";
 import { PrintLayout } from "@/components/reports/print-layout";
@@ -500,11 +499,6 @@ export default function EmployeesPage() {
             </TabsList>
           </Tabs>
 
-          {canImport && (personnelTypeFilter === 'all' || personnelTypeFilter === 'personnel-siege') && (
-            <div className="mb-6">
-              <ImportEmployeesDataCard />
-            </div>
-          )}
 
           {isGeoTab && showDirectoireMap && (
             <div className="mb-6">

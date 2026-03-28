@@ -7,7 +7,7 @@ export const allPermissions = {
   "Gestion des Rois & Chefs": "page:chiefs:view",
   "Accès à la Cartographie": "page:mapping:view",
   "Gestion de la Paie": "page:payroll:view",
-  "Gestion des Congés": "page:leave:view",
+  "Gestion des Congés": "page:leaves:view",
   "Gestion des Évaluations": "page:evaluations:view",
   "Gestion des Indemnités": "page:indemnities:view",
   "Gestion des Missions": "page:missions:view",

@@ -78,8 +78,7 @@ export function subscribeToUserLeaves(
 ): Unsubscribe {
     const q = query(
         leavesCollection, 
-        where("employeeId", "==", employeeId),
-        orderBy("startDate", "desc")
+        where("employeeId", "==", employeeId)
     );
     const unsubscribe = onSnapshot(q,
         (snapshot) => {
@@ -92,7 +91,15 @@ export function subscribeToUserLeaves(
                 }
                 return result.data as unknown as Leave;
             });
-            callback(leaves);
+
+            // Client-side sorting by startDate descending
+            const sortedLeaves = leaves.sort((a: Leave, b: Leave) => {
+                const dateA = a.startDate ? new Date(a.startDate).getTime() : 0;
+                const dateB = b.startDate ? new Date(b.startDate).getTime() : 0;
+                return dateB - dateA;
+            });
+
+            callback(sortedLeaves);
         },
         onError
     );

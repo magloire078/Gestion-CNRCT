@@ -84,7 +84,7 @@ export default function LeavePage() {
 
   // Secondary permission check - allow access if user has permission OR has a linked employee ID
   useEffect(() => {
-    if (!loading && !hasPermission('page:leave:view') && !user?.employeeId) {
+    if (!loading && !hasPermission('page:leaves:view') && !user?.employeeId) {
       router.replace('/intranet');
       toast({
         variant: "destructive",
@@ -187,7 +187,7 @@ export default function LeavePage() {
       };
     }).filter(leaveWithDetails => {
       // Data-level filtering: If not admin/HR, only show the user's own leaves
-      if (!hasPermission('page:leave:view') && user?.employeeId) {
+      if (!hasPermission('page:leaves:view') && user?.employeeId) {
         if (leaveWithDetails.employeeId !== user.employeeId) return false;
       }
 
@@ -230,7 +230,7 @@ export default function LeavePage() {
           Gestion des Congés
         </h1>
         <div className="flex gap-2">
-          {hasPermission('page:leave:view') && (
+          {hasPermission('page:leaves:view') && (
             <Button variant="outline" asChild>
               <Link href="/leave/report">
                 <FileText className="mr-2 h-4 w-4" />
@@ -379,7 +379,7 @@ export default function LeavePage() {
                                   <Pencil className="h-4 w-4" />
                                   <span className="sr-only">Modifier</span>
                                 </Button>
-                                {hasPermission('page:leave:view') && (
+                                {hasPermission('page:leaves:view') && (
                                   <>
                                     <Button
                                       variant="outline"

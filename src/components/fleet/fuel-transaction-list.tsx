@@ -84,16 +84,18 @@ export function FuelTransactionList({ transactions, cards, onDelete }: Transacti
                             {t.liters && <div className="text-[10px] font-normal text-muted-foreground">{t.liters} L</div>}
                         </TableCell>
                         <TableCell>
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                    <DropdownMenuItem className="text-destructive" onClick={() => onDelete?.(t.id)}>
-                                        <Trash2 className="mr-2 h-4 w-4" /> Supprimer
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
+                            {onDelete && (
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                        <DropdownMenuItem className="text-destructive" onClick={() => onDelete(t.id)}>
+                                            <Trash2 className="mr-2 h-4 w-4" /> Supprimer
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            )}
                         </TableCell>
                     </TableRow>
                 ))}

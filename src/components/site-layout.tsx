@@ -113,7 +113,7 @@ const allMenuItems = [
       { href: "/employees?filter=personnel-siege", label: "Personnel Siège", icon: Users, permission: "page:employees:view" },
       { href: "/employees?filter=chauffeur-directoire", label: "Chauffeur Directoire", icon: Car, permission: "page:employees:view" },
       { href: "/payroll", label: "Paie", icon: Landmark, permission: "page:payroll:view" },
-      { href: "/leave", label: "Congés", icon: CalendarOff, permission: "page:leave:view" },
+      { href: "/leave", label: "Congés", icon: CalendarOff, permission: "page:leaves:view" },
       { href: "/evaluations", label: "Évaluations", icon: ClipboardCheck, permission: "page:evaluations:view" },
       { href: "/indemnities", label: "Indemnités", icon: Scale, permission: "page:indemnities:view" },
     ]
@@ -135,7 +135,7 @@ const allMenuItems = [
     permission: "group:repertoires:view",
     subItems: [
       { href: "/chiefs", label: "Rois & Chefs", icon: Crown, permission: "page:chiefs:view" },
-      { href: "/villages", label: "Villages", icon: MapPin, permission: "page:chiefs:view" },
+      { href: "/villages", label: "Villages", icon: MapPin, permission: "page:villages:view" },
     ]
   },
   {
@@ -144,14 +144,14 @@ const allMenuItems = [
     icon: History,
     permission: "group:repertoires:view",
     subItems: [
-      { href: "/heritage", label: "Aperçu Global", icon: LayoutDashboard, permission: "page:chiefs:view" },
+      { href: "/heritage", label: "Aperçu Global", icon: LayoutDashboard, permission: "page:heritage:view" },
       { href: "/us-et-coutumes", label: "Us & Coutumes", icon: BookText, permission: "page:us-et-coutumes:view" },
-      { href: "/heritage/ethnies", label: "Ethnies & Groupes", icon: Users2, permission: "page:chiefs:view" },
-      { href: "/heritage/culinaire", label: "Arts Culinaires", icon: Utensils, permission: "page:chiefs:view" },
-      { href: "/heritage/masques", label: "Masques & Statues", icon: Drama, permission: "page:chiefs:view" },
-      { href: "/heritage/danses", label: "Danses & Musiques", icon: Music, permission: "page:chiefs:view" },
-      { href: "/heritage/jeux", label: "Jeux Traditionnels", icon: Gamepad2, permission: "page:chiefs:view" },
-      { href: "/heritage/alliances", label: "Alliances Inter-ethnies", icon: HeartHandshake, permission: "page:chiefs:view" },
+      { href: "/heritage/ethnies", label: "Ethnies & Groupes", icon: Users2, permission: "page:heritage:view" },
+      { href: "/heritage/culinaire", label: "Arts Culinaires", icon: Utensils, permission: "page:heritage:view" },
+      { href: "/heritage/masques", label: "Masques & Statues", icon: Drama, permission: "page:heritage:view" },
+      { href: "/heritage/danses", label: "Danses & Musiques", icon: Music, permission: "page:heritage:view" },
+      { href: "/heritage/jeux", label: "Jeux Traditionnels", icon: Gamepad2, permission: "page:heritage:view" },
+      { href: "/heritage/alliances", label: "Alliances Inter-ethnies", icon: HeartHandshake, permission: "page:heritage:view" },
     ]
   },
   {
@@ -174,9 +174,9 @@ const allMenuItems = [
     icon: FileText,
     permission: "group:reports:view",
     subItems: [
-      { href: "/reports/disa", label: "DISA", icon: FileText, permission: "page:reports:disa:view" },
-      { href: "/reports/nominative", label: "Tableau Nominatif", icon: FileText, permission: "page:reports:nominative:view" },
-      { href: "/leave/report", label: "Rapport Congés", icon: FileClock, permission: "page:leave:view" },
+      { href: "/reports/disa", label: "DISA", icon: FileText, permission: "page:payroll:view" },
+      { href: "/reports/nominative", label: "Tableau Nominatif", icon: FileText, permission: "page:payroll:view" },
+      { href: "/leave/report", label: "Rapport Congés", icon: FileClock, permission: "page:leaves:view" },
       { href: "/missions/report", label: "Rapport Missions", icon: FileClock, permission: "page:missions:view" },
       { href: "/conflicts/report", label: "Rapport Conflits", icon: FileClock, permission: "page:conflicts:view" },
     ]
@@ -191,8 +191,8 @@ const allMenuItems = [
       { href: "/employees?filter=garde-republicaine", label: "Garde Républicaine", icon: ShieldHalf, permission: "page:employees:view" },
       { href: "/employees?filter=gendarme", label: "Gendarmes", icon: ShieldHalf, permission: "page:employees:view" },
       { href: "/it-assets", label: "Actifs TI", icon: Laptop, permission: "page:it-assets:view" },
-      { href: "/documents", label: "Documents", icon: FileText, permission: "page:documents:view" },
-      { href: "/helpdesk", label: "Helpdesk", icon: LifeBuoy, permission: "page:helpdesk:view" },
+      { href: "/documents", label: "Documents", icon: FileText, permission: "page:repository:view" },
+      { href: "/helpdesk", label: "Helpdesk", icon: LifeBuoy, permission: "page:tickets:view" },
       { href: "/backup", label: "Sauvegarde & Restauration", icon: DatabaseBackup, permission: "page:backup:view" },
       { href: "/admin", label: "Paramètres Admin", icon: Shield, permission: "page:admin:view" },
     ]

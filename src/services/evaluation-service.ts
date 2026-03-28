@@ -12,7 +12,7 @@ export function subscribeToEvaluations(
     callback: (evaluations: Evaluation[]) => void,
     onError: (error: Error) => void
 ): Unsubscribe {
-    const q = query(evaluationsCollection, orderBy("evaluationDate", "desc"));
+    const q = query(evaluationsCollection);
     const unsubscribe = onSnapshot(q,
         (snapshot) => {
             const evaluations = snapshot.docs.map((doc: any) => {
@@ -24,7 +24,15 @@ export function subscribeToEvaluations(
                 }
                 return result.data as Evaluation;
             });
-            callback(evaluations);
+
+            // Client-side sorting by evaluationDate descending
+            const sortedEvaluations = evaluations.sort((a: Evaluation, b: Evaluation) => {
+                const dateA = a.evaluationDate ? new Date(a.evaluationDate).getTime() : 0;
+                const dateB = b.evaluationDate ? new Date(b.evaluationDate).getTime() : 0;
+                return dateB - dateA;
+            });
+
+            callback(sortedEvaluations);
         },
         (error) => {
             console.error("Error subscribing to evaluations:", error);
@@ -41,8 +49,7 @@ export function subscribeToUserEvaluations(
 ): Unsubscribe {
     const q = query(
         evaluationsCollection, 
-        where("employeeId", "==", employeeId),
-        orderBy("evaluationDate", "desc")
+        where("employeeId", "==", employeeId)
     );
     const unsubscribe = onSnapshot(q,
         (snapshot) => {
@@ -55,7 +62,15 @@ export function subscribeToUserEvaluations(
                 }
                 return result.data as Evaluation;
             });
-            callback(evaluations);
+
+            // Client-side sorting by evaluationDate descending
+            const sortedEvaluations = evaluations.sort((a: Evaluation, b: Evaluation) => {
+                const dateA = a.evaluationDate ? new Date(a.evaluationDate).getTime() : 0;
+                const dateB = b.evaluationDate ? new Date(b.evaluationDate).getTime() : 0;
+                return dateB - dateA;
+            });
+
+            callback(sortedEvaluations);
         },
         onError
     );

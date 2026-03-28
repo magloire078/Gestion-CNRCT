@@ -61,12 +61,16 @@ export function FuelProviderList({ providers, onEdit, onDelete }: ProviderListPr
                                     <Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
-                                    <DropdownMenuItem onClick={() => onEdit?.(p)}>
-                                        <Pencil className="mr-2 h-4 w-4" /> Modifier
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem className="text-destructive" onClick={() => onDelete?.(p.id)}>
-                                        <Trash2 className="mr-2 h-4 w-4" /> Supprimer
-                                    </DropdownMenuItem>
+                                    {onEdit && (
+                                        <DropdownMenuItem onClick={() => onEdit(p)}>
+                                            <Pencil className="mr-2 h-4 w-4" /> Modifier
+                                        </DropdownMenuItem>
+                                    )}
+                                    {onDelete && (
+                                        <DropdownMenuItem className="text-destructive" onClick={() => onDelete(p.id)}>
+                                            <Trash2 className="mr-2 h-4 w-4" /> Supprimer
+                                        </DropdownMenuItem>
+                                    )}
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         </TableCell>

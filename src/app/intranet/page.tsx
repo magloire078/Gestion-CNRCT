@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
@@ -75,6 +75,8 @@ const QuickTile = ({ title, description, icon: Icon, href, onClick, color, permi
 
 export default function IntranetPage() {
     const { user } = useAuth();
+    const [activeTab, setActiveTab] = useState("birthdays");
+    const [isPending, startTransition] = React.useTransition();
     const router = useRouter();
     const { toast } = useToast();
     const {
@@ -87,12 +89,20 @@ export default function IntranetPage() {
     } = useDashboardData(user);
     const { formatDate } = useFormat();
 
+    const departmentMap = useMemo(() => {
+        const map = new Map<string, Department>();
+        if (globalStats.departments) {
+            globalStats.departments.forEach(d => map.set(d.id, d));
+        }
+        return map;
+    }, [globalStats.departments]);
+
     const directoireMembers = useMemo(() => {
         return globalStats.employees.filter(emp => 
             emp.status === 'Actif' && 
-            getEmployeeGroup(emp, globalStats.departments) === 'directoire'
+            getEmployeeGroup(emp, departmentMap) === 'directoire'
         );
-    }, [globalStats.employees, globalStats.departments]);
+    }, [globalStats.employees, departmentMap]);
 
     const [isSheetOpen, setIsSheetOpen] = useState(false);
 
@@ -105,7 +115,17 @@ export default function IntranetPage() {
             });
             return;
         }
+        toast({
+            title: "Chargement...",
+            description: "Veuillez patienter pendant la redirection.",
+        });
         router.push(path);
+    };
+
+    const handleTabChange = (value: string) => {
+        startTransition(() => {
+            setActiveTab(value);
+        });
     };
 
     return (
@@ -172,7 +192,7 @@ export default function IntranetPage() {
                     icon={CalendarOff}
                     onClick={() => handleActionClick('/leave')}
                     color="bg-rose-500"
-                    permission="page:leave:view"
+                    permission="page:leaves:view"
                 />
                 <QuickTile 
                     title="Support Technique" 
@@ -219,7 +239,7 @@ export default function IntranetPage() {
                             <CardDescription className="text-rose-700/60 font-medium">Les événements marquants de vos collègues.</CardDescription>
                         </CardHeader>
                         <CardContent className="p-8">
-                            <Tabs defaultValue="birthdays" className="w-full">
+                            <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
                                 <TabsList className="grid w-full grid-cols-2 bg-rose-50/50 mb-6 rounded-xl">
                                     <TabsTrigger value="birthdays" className="text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:text-rose-600 transition-all rounded-lg">
                                         <Cake className="h-3.5 w-3.5 mr-2" /> Anniversaires

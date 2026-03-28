@@ -33,7 +33,7 @@ export default function LeaveDetailPage() {
     const [loading, setLoading] = useState(true);
     const { user, hasPermission } = useAuth();
 
-    const canApprove = hasPermission('page:leave:view');
+    const canApprove = hasPermission('page:leaves:view');
 
     useEffect(() => {
         async function fetchData() {

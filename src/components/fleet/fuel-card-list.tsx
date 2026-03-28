@@ -86,18 +86,26 @@ export function FuelCardList({ cards, providers, onEdit, onDelete, onRecharge, o
                                     <Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
-                                    <DropdownMenuItem onClick={() => onRecharge?.(c)}>
-                                        <Fuel className="mr-2 h-4 w-4" /> Recharger
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => onPrint?.(c)}>
-                                        <Printer className="mr-2 h-4 w-4" /> Rapport de Mission
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => onEdit?.(c)}>
-                                        <Pencil className="mr-2 h-4 w-4" /> Modifier
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem className="text-destructive" onClick={() => onDelete?.(c.id)}>
-                                        <Trash2 className="mr-2 h-4 w-4" /> Supprimer
-                                    </DropdownMenuItem>
+                                    {onRecharge && (
+                                        <DropdownMenuItem onClick={() => onRecharge(c)}>
+                                            <Fuel className="mr-2 h-4 w-4" /> Recharger
+                                        </DropdownMenuItem>
+                                    )}
+                                    {onPrint && (
+                                        <DropdownMenuItem onClick={() => onPrint(c)}>
+                                            <Printer className="mr-2 h-4 w-4" /> Rapport de Mission
+                                        </DropdownMenuItem>
+                                    )}
+                                    {onEdit && (
+                                        <DropdownMenuItem onClick={() => onEdit(c)}>
+                                            <Pencil className="mr-2 h-4 w-4" /> Modifier
+                                        </DropdownMenuItem>
+                                    )}
+                                    {onDelete && (
+                                        <DropdownMenuItem className="text-destructive" onClick={() => onDelete(c.id)}>
+                                            <Trash2 className="mr-2 h-4 w-4" /> Supprimer
+                                        </DropdownMenuItem>
+                                    )}
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         </TableCell>

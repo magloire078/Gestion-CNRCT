@@ -34,6 +34,10 @@ service cloud.firestore {
         hasPermission('page:admin:view')
       );
     }
+
+    function isComptable() {
+      return isAdmin() || getUserData().roleId == 'comptable';
+    }
     
     function isHR() {
       return isAdmin() || hasPermission('group:personnel:view');
@@ -58,7 +62,8 @@ service cloud.firestore {
              hasPermission('page:fleet:view') || 
              hasPermission('page:supplies:view') ||
              hasResourcePermission('supplies', 'update') ||
-             hasResourcePermission('fleet', 'update');
+             hasResourcePermission('fleet', 'update') ||
+             hasResourcePermission('fuel', 'update');
     }
 
     // Default deny
@@ -108,10 +113,15 @@ service cloud.firestore {
       allow write: if isMediation();
     }
 
+    match /conflict-types/{id} {
+      allow read: if isSignedIn();
+      allow write: if isMediation();
+    }
+
     // Missions, Leaves, Payroll: Owner or Admin
     match /missions/{missionId} {
       allow read: if true; // Public institutional missions
-      allow write: if isAdmin() || (isSignedIn() && (request.resource.data.employeeId == getUserData().employeeId));
+      allow write: if isAdmin() || isComptable() || (isSignedIn() && (request.resource.data.employeeId == getUserData().employeeId));
     }
     
     match /leaves/{leaveId} {
@@ -125,14 +135,24 @@ service cloud.firestore {
     }
     
     match /payroll/{payrollId} {
-      allow read: if isHR() || (isSignedIn() && resource.data.employeeId == getUserData().employeeId);
-      allow write: if isHR();
+      allow read: if isHR() || isComptable() || (isSignedIn() && resource.data.employeeId == getUserData().employeeId);
+      allow write: if isHR() || isComptable();
+    }
+
+    match /budgetLines/{lineId} {
+      allow read: if isSignedIn();
+      allow write: if isComptable() || isAdmin();
     }
 
     // Infrastructure & Assets
     match /heritage/{assetId} {
       allow read: if isSignedIn();
       allow write: if isPatrimoine();
+    }
+
+    match /assets/{assetId} {
+      allow read: if isSignedIn();
+      allow write: if isPatrimoine() || isAdmin();
     }
 
     match /fleet/{vehicleId} {
@@ -148,6 +168,11 @@ service cloud.firestore {
     match /supply_transactions/{id} {
       allow read: if isSignedIn();
       allow write: if isPatrimoine();
+    }
+
+    match /customs/{id} {
+      allow read: if isSignedIn();
+      allow write: if isMediation() || isAdmin();
     }
 
     // News: Public read, Admin write
@@ -169,6 +194,7 @@ service cloud.firestore {
     match /services/{id} { allow read: if isSignedIn(); allow write: if isAdmin(); }
     match /repository/{id} { allow read: if isSignedIn(); allow write: if isAdmin(); }
     match /tickets/{id} { allow read, write: if isSignedIn(); }
+    
     match /notifications/{id} { 
       allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || resource.data.userId == 'all');
       allow create, update: if isSignedIn();
@@ -180,7 +206,7 @@ service cloud.firestore {
       allow read: if isHR();
     }
 
-    match /conflict-types/{id} {
+    match /regency_history/{historyId} {
       allow read: if isSignedIn();
       allow write: if isMediation();
     }
@@ -188,17 +214,23 @@ service cloud.firestore {
     // Fuel Management
     match /fuel_providers/{id} {
       allow read: if isSignedIn();
-      allow write: if isPatrimoine();
+      allow create: if isSuperAdmin() || isPatrimoine() || hasResourcePermission('fuel', 'create');
+      allow update: if isSuperAdmin() || isPatrimoine() || hasResourcePermission('fuel', 'update');
+      allow delete: if isSuperAdmin() || isPatrimoine() || hasResourcePermission('fuel', 'delete');
     }
 
     match /fuel_cards/{id} {
       allow read: if isSignedIn();
-      allow write: if isPatrimoine();
+      allow create: if isSuperAdmin() || isPatrimoine() || hasResourcePermission('fuel', 'create');
+      allow update: if isSuperAdmin() || isPatrimoine() || hasResourcePermission('fuel', 'update');
+      allow delete: if isSuperAdmin() || isPatrimoine() || hasResourcePermission('fuel', 'delete');
     }
 
     match /fuel_transactions/{id} {
       allow read: if isSignedIn();
-      allow write: if isPatrimoine();
+      allow create: if isSuperAdmin() || isPatrimoine() || hasResourcePermission('fuel', 'create');
+      allow update: if isSuperAdmin() || isPatrimoine() || hasResourcePermission('fuel', 'update');
+      allow delete: if isSuperAdmin() || isPatrimoine() || hasResourcePermission('fuel', 'delete');
     }
   }
 }

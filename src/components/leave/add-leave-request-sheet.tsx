@@ -61,7 +61,7 @@ export function AddLeaveRequestSheet({
 
   useEffect(() => {
     if (isOpen) {
-      if (user?.employeeId && !hasPermission('page:leave:view')) {
+      if (user?.employeeId && !hasPermission('page:leaves:view')) {
         setEmployee(user.name || "");
         setEmployeeId(user.employeeId);
       }
@@ -161,7 +161,7 @@ export function AddLeaveRequestSheet({
                     role="combobox"
                     aria-expanded={isEmployeeComboboxOpen}
                     className="col-span-3 justify-between font-normal"
-                    disabled={!!user?.employeeId && !hasPermission('page:leave:view')}
+                    disabled={!!user?.employeeId && !hasPermission('page:leaves:view')}
                   >
                     {employee
                       ? getDisplayName(employees.find((emp) => emp.id === employeeId || emp.name === employee))

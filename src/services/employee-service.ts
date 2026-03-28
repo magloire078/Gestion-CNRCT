@@ -35,11 +35,20 @@ export type RegionalCommittee = {
 /**
  * Determines the group an employee belongs to based on their properties.
  * @param employee The employee object.
- * @param departments A list of all available departments.
+ * @param departments A list of all available departments or a Map for faster lookup.
  * @returns The group name as a string.
  */
-export function getEmployeeGroup(employee: Employe, departments: Department[]): EmployeeGroup {
-    const departmentName = departments.find(d => d.id === employee.departmentId)?.name;
+export function getEmployeeGroup(
+    employee: Employe, 
+    departments: Department[] | Map<string, Department>
+): EmployeeGroup {
+    let departmentName: string | undefined;
+
+    if (departments instanceof Map) {
+        departmentName = departments.get(employee.departmentId || '')?.name;
+    } else {
+        departmentName = departments.find(d => d.id === employee.departmentId)?.name;
+    }
 
     if (departmentName === 'Garde Républicaine') {
         return 'garde-republicaine';

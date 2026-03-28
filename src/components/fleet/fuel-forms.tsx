@@ -30,10 +30,13 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
 import {
     addFuelProvider,
     addFuelCard,
-    addFuelTransaction
+    addFuelTransaction,
+    updateFuelProvider,
+    updateFuelCard
 } from "@/services/fuel-card-service";
 import { FuelProvider, FuelCard } from "@/types/fuel";
 import { Employe, Fleet } from "@/lib/data";
@@ -88,30 +91,43 @@ const expenseSchema = z.object({
 
 export function FuelProviderDialog({
     open,
-    onOpenChangeAction
+    onOpenChangeAction,
+    provider
 }: {
     open: boolean;
     onOpenChangeAction: (open: boolean) => void;
+    provider?: FuelProvider | null;
 }) {
     const { toast } = useToast();
     const [loading, setLoading] = useState(false);
     const form = useForm<z.infer<typeof providerSchema>>({
         resolver: zodResolver(providerSchema),
-        defaultValues: { name: "" },
+        values: provider ? {
+            name: provider.name,
+            contactPerson: provider.contactPerson || "",
+            phoneNumber: provider.phoneNumber || "",
+            email: provider.email || "",
+            contractNumber: provider.contractNumber || ""
+        } : { name: "", contactPerson: "", phoneNumber: "", email: "", contractNumber: "" },
     });
 
     async function onSubmit(values: z.infer<typeof providerSchema>) {
         setLoading(true);
         try {
-            await addFuelProvider({
-                ...values,
-                status: 'active'
-            });
-            toast({ title: "Succès", description: "Prestataire ajouté avec succès." });
+            if (provider?.id) {
+                await updateFuelProvider(provider.id, values);
+                toast({ title: "Succès", description: "Prestataire mis à jour." });
+            } else {
+                await addFuelProvider({
+                    ...values,
+                    status: 'active'
+                });
+                toast({ title: "Succès", description: "Prestataire ajouté avec succès." });
+            }
             form.reset();
             onOpenChangeAction(false);
         } catch (error) {
-            toast({ variant: "destructive", title: "Erreur", description: "Impossible d'ajouter le prestataire." });
+            toast({ variant: "destructive", title: "Erreur", description: "Operation échouée." });
         } finally {
             setLoading(false);
         }
@@ -121,8 +137,8 @@ export function FuelProviderDialog({
         <Dialog open={open} onOpenChange={onOpenChangeAction}>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>Nouveau Prestataire</DialogTitle>
-                    <DialogDescription>Ajouter une compagnie pétrolière ou un fournisseur de cartes.</DialogDescription>
+                    <DialogTitle>{provider ? "Modifier le Prestataire" : "Nouveau Prestataire"}</DialogTitle>
+                    <DialogDescription>{provider ? "Mettre à jour les informations du prestataire." : "Ajouter une compagnie pétrolière ou un fournisseur de cartes."}</DialogDescription>
                 </DialogHeader>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -190,44 +206,60 @@ export function FuelCardDialog({
     onOpenChangeAction,
     providers,
     employees,
-    vehicles
+    vehicles,
+    card
 }: {
     open: boolean;
     onOpenChangeAction: (open: boolean) => void;
     providers: FuelProvider[];
     employees: Employe[];
     vehicles: Fleet[];
+    card?: FuelCard | null;
 }) {
     const { toast } = useToast();
     const [loading, setLoading] = useState(false);
     const form = useForm<z.infer<typeof cardSchema>>({
         resolver: zodResolver(cardSchema),
-        defaultValues: {
+        values: card ? {
+            cardNumber: card.cardNumber,
+            label: card.label || "",
+            providerId: card.providerId,
+            assignmentType: card.assignmentType,
+            assignmentId: card.assignmentId || "",
+            expiryDate: card.expiryDate || ""
+        } : {
             cardNumber: "",
             assignmentType: "unassigned",
-            providerId: ""
+            providerId: "",
+            label: "",
+            assignmentId: "",
+            expiryDate: ""
         },
     });
 
     async function onSubmit(values: z.infer<typeof cardSchema>) {
         setLoading(true);
         try {
-            // If the assignmentType is generic or unassigned, we don't need assignmentId
-            const submissionValues = {
-                ...values,
-                assignmentId: (values.assignmentType === 'unassigned' || values.assignmentType === 'generic')
-                    ? ""
-                    : values.assignmentId,
-                currentBalance: 0,
-                status: 'active' as const
-            };
+            const assignmentId = (values.assignmentType === 'unassigned' || values.assignmentType === 'generic')
+                ? ""
+                : values.assignmentId;
 
-            await addFuelCard(submissionValues);
-            toast({ title: "Succès", description: "Carte ajoutée avec succès." });
+            if (card?.id) {
+                await updateFuelCard(card.id, { ...values, assignmentId });
+                toast({ title: "Succès", description: "Carte mise à jour." });
+            } else {
+                await addFuelCard({
+                    ...values,
+                    assignmentId,
+                    currentBalance: 0,
+                    status: 'active' as const
+                });
+                toast({ title: "Succès", description: "Carte ajoutée avec succès." });
+            }
             form.reset();
             onOpenChangeAction(false);
         } catch (error) {
-            toast({ variant: "destructive", title: "Erreur", description: "Impossible d'ajouter la carte." });
+            toast({ variant: "destructive", title: "Erreur", description: "Operation échouée." });
         } finally {
             setLoading(false);
         }
@@ -239,8 +271,8 @@ export function FuelCardDialog({
         <Dialog open={open} onOpenChange={onOpenChangeAction}>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>Nouvelle Carte Carburant</DialogTitle>
-                    <DialogDescription>Enregistrer une nouvelle carte et définir son affectation.</DialogDescription>
+                    <DialogTitle>{card ? "Modifier la Carte" : "Nouvelle Carte Carburant"}</DialogTitle>
+                    <DialogDescription>{card ? "Modifier l'affectation ou le numéro de la carte." : "Enregistrer une nouvelle carte et définir son affectation."}</DialogDescription>
                 </DialogHeader>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -382,7 +414,7 @@ export function FuelCardDialog({
                         <DialogFooter>
                             <Button type="submit" disabled={loading} className="w-full">
                                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                Créer la Carte
+                                {card ? "Mettre à jour" : "Créer la Carte"}
                             </Button>
                         </DialogFooter>
                     </form>
@@ -404,6 +436,7 @@ export function FuelRechargeDialog({
     defaultCardId?: string;
 }) {
     const { toast } = useToast();
+    const { user } = useAuth();
     const [loading, setLoading] = useState(false);
     const form = useForm<z.infer<typeof rechargeSchema>>({
         resolver: zodResolver(rechargeSchema),
@@ -421,7 +454,7 @@ export function FuelRechargeDialog({
                 ...values,
                 type: 'recharge',
                 liters: 0,
-                performedBy: "Admin" // TODO: Get from Auth
+                performedBy: user?.name || "Admin"
             });
             toast({ title: "Succès", description: "Rechargement effectué." });
             form.reset();
@@ -526,6 +559,7 @@ export function FuelExpenseDialog({
     vehicles: Fleet[];
 }) {
     const { toast } = useToast();
+    const { user } = useAuth();
     const [loading, setLoading] = useState(false);
     const form = useForm<z.infer<typeof expenseSchema>>({
         resolver: zodResolver(expenseSchema),
@@ -542,7 +576,7 @@ export function FuelExpenseDialog({
             await addFuelTransaction({
                 ...values,
                 type: 'expense',
-                performedBy: "Admin" // TODO: Get from Auth
+                performedBy: user?.name || "Admin"
             });
             toast({ title: "Succès", description: "Dépense enregistrée." });
             form.reset();

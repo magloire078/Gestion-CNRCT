@@ -13,23 +13,28 @@ import {
     subscribeToFuelProviders,
     subscribeToFuelCards,
     subscribeToFuelTransactions,
-    deleteFuelTransaction
+    deleteFuelTransaction,
+    deleteFuelProvider,
+    deleteFuelCard
 } from "@/services/fuel-card-service";
 import { subscribeToEmployees } from "@/services/employee-service";
 import { subscribeToVehicles } from "@/services/fleet-service";
 import { Employe, Fleet } from "@/lib/data";
 
 // Components
-import {
-    FuelProviderDialog,
-    FuelCardDialog,
-    FuelRechargeDialog,
-    FuelExpenseDialog
-} from "@/components/fleet/fuel-forms";
+import { useAuth } from "@/hooks/use-auth";
+import dynamic from "next/dynamic";
+
+// Dynamic imports for dialogs to improve INP
+const FuelProviderDialog = dynamic(() => import("@/components/fleet/fuel-forms").then(mod => mod.FuelProviderDialog));
+const FuelCardDialog = dynamic(() => import("@/components/fleet/fuel-forms").then(mod => mod.FuelCardDialog));
+const FuelRechargeDialog = dynamic(() => import("@/components/fleet/fuel-forms").then(mod => mod.FuelRechargeDialog));
+const FuelExpenseDialog = dynamic(() => import("@/components/fleet/fuel-forms").then(mod => mod.FuelExpenseDialog));
+const FuelMissionReport = dynamic(() => import("@/components/fleet/fuel-mission-report").then(mod => mod.FuelMissionReport));
+
 import { FuelProviderList } from "@/components/fleet/fuel-provider-list";
 import { FuelCardList } from "@/components/fleet/fuel-card-list";
 import { FuelTransactionList } from "@/components/fleet/fuel-transaction-list";
-import { FuelMissionReport } from "@/components/fleet/fuel-mission-report";
 
 // Types
 import { FuelProvider, FuelCard, FuelTransaction } from "@/types/fuel";
@@ -49,32 +54,64 @@ export default function FuelManagementPage() {
     const [isRechargeDialogOpen, setIsRechargeDialogOpen] = useState(false);
     const [isExpenseDialogOpen, setIsExpenseDialogOpen] = useState(false);
     const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
+    const [selectedProvider, setSelectedProvider] = useState<FuelProvider | null>(null);
+    const [selectedCardForEdit, setSelectedCardForEdit] = useState<FuelCard | null>(null);
 
     const [selectedCard, setSelectedCard] = useState<FuelCard | null>(null);
 
-    useEffect(() => {
-        const unsubProviders = subscribeToFuelProviders(setProviders, (err) => {
-            console.error(err);
-            toast({ variant: "destructive", title: "Erreur", description: "Impossible de charger les prestataires." });
-        });
-        const unsubCards = subscribeToFuelCards(setCards, (err) => {
-            console.error(err);
-            toast({ variant: "destructive", title: "Erreur", description: "Impossible de charger les cartes." });
-        });
-        const unsubTrans = subscribeToFuelTransactions(setTransactions, (err) => {
-            console.error(err);
-            toast({ variant: "destructive", title: "Erreur", description: "Impossible de charger les transactions." });
-        });
-        const unsubEmployees = subscribeToEmployees(setEmployees, (err) => {
-            console.error(err);
-            toast({ variant: "destructive", title: "Erreur", description: "Impossible de charger les employés." });
-        });
-        const unsubVehicles = subscribeToVehicles(setVehicles, (err) => {
-            console.error(err);
-            toast({ variant: "destructive", title: "Erreur", description: "Impossible de charger les véhicules." });
-        });
+    const { user } = useAuth();
+    
+    // Permission checks (Super-Admin always has all rights)
+    const canCreate = user?.roleId === 'super-admin' || user?.roleId === 'LHcHyfBzile3r0vyFOFb' || user?.resourcePermissions?.fuel?.create;
+    const canUpdate = user?.roleId === 'super-admin' || user?.roleId === 'LHcHyfBzile3r0vyFOFb' || user?.resourcePermissions?.fuel?.update;
+    const canDelete = user?.roleId === 'super-admin' || user?.roleId === 'LHcHyfBzile3r0vyFOFb' || user?.resourcePermissions?.fuel?.delete;
 
-        const timer = setTimeout(() => setLoading(false), 500);
+    useEffect(() => {
+        let unsubProviders = () => {};
+        let unsubCards = () => {};
+        let unsubTrans = () => {};
+        let unsubEmployees = () => {};
+        let unsubVehicles = () => {};
+
+        // Stagger subscriptions to avoid main thread blocking
+        const timers: NodeJS.Timeout[] = [];
+
+        timers.push(setTimeout(() => {
+            unsubProviders = subscribeToFuelProviders(setProviders, (err) => {
+                console.error(err);
+                toast({ variant: "destructive", title: "Erreur", description: "Impossible de charger les prestataires." });
+            });
+        }, 0));
+
+        timers.push(setTimeout(() => {
+            unsubCards = subscribeToFuelCards(setCards, (err) => {
+                console.error(err);
+                toast({ variant: "destructive", title: "Erreur", description: "Impossible de charger les cartes." });
+            });
+        }, 50));
+
+        timers.push(setTimeout(() => {
+            unsubTrans = subscribeToFuelTransactions(setTransactions, (err) => {
+                console.error(err);
+                toast({ variant: "destructive", title: "Erreur", description: "Impossible de charger les transactions." });
+            });
+        }, 100));
+
+        timers.push(setTimeout(() => {
+            unsubEmployees = subscribeToEmployees(setEmployees, (err) => {
+                console.error(err);
+                toast({ variant: "destructive", title: "Erreur", description: "Impossible de charger les employés." });
+            });
+        }, 150));
+
+        timers.push(setTimeout(() => {
+            unsubVehicles = subscribeToVehicles(setVehicles, (err) => {
+                console.error(err);
+                toast({ variant: "destructive", title: "Erreur", description: "Impossible de charger les véhicules." });
+            });
+        }, 200));
+
+        const loadingTimer = setTimeout(() => setLoading(false), 800);
 
         return () => {
             unsubProviders();
@@ -82,7 +119,8 @@ export default function FuelManagementPage() {
             unsubTrans();
             unsubEmployees();
             unsubVehicles();
-            clearTimeout(timer);
+            timers.forEach(clearTimeout);
+            clearTimeout(loadingTimer);
         };
     }, []);
 
@@ -95,12 +133,43 @@ export default function FuelManagementPage() {
     }, [transactions, cards]);
 
     const handleDeleteTransaction = async (id: string) => {
+        if (!confirm("Voulez-vous vraiment supprimer cette transaction ? Le solde de la carte sera rétabli.")) return;
         try {
             await deleteFuelTransaction(id);
             toast({ title: "Succès", description: "Transaction supprimée et solde mis à jour." });
         } catch (err) {
             toast({ variant: "destructive", title: "Erreur", description: "Impossible de supprimer la transaction." });
         }
+    };
+
+    const handleDeleteProvider = async (id: string) => {
+        if (!confirm("Voulez-vous vraiment supprimer ce prestataire ?")) return;
+        try {
+            await deleteFuelProvider(id);
+            toast({ title: "Succès", description: "Prestataire supprimé." });
+        } catch (err) {
+            toast({ variant: "destructive", title: "Erreur", description: "Impossible de supprimer le prestataire." });
+        }
+    };
+
+    const handleDeleteCard = async (id: string) => {
+        if (!confirm("Voulez-vous vraiment supprimer cette carte ?")) return;
+        try {
+            await deleteFuelCard(id);
+            toast({ title: "Succès", description: "Carte supprimée." });
+        } catch (err) {
+            toast({ variant: "destructive", title: "Erreur", description: "Impossible de supprimer la carte." });
+        }
+    };
+
+    const handleEditProvider = (provider: FuelProvider) => {
+        setSelectedProvider(provider);
+        setIsProviderDialogOpen(true);
+    };
+
+    const handleEditCard = (card: FuelCard) => {
+        setSelectedCardForEdit(card);
+        setIsCardDialogOpen(true);
     };
 
     if (loading) {
@@ -193,7 +262,7 @@ export default function FuelManagementPage() {
                             <CardDescription>Flux financiers et consommation des 30 derniers jours.</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <FuelTransactionList transactions={transactions.slice(0, 10)} cards={cards} onDelete={handleDeleteTransaction} />
+                            <FuelTransactionList transactions={transactions.slice(0, 10)} cards={cards} onDelete={canDelete ? handleDeleteTransaction : undefined} />
                         </CardContent>
                     </Card>
                 </TabsContent>
@@ -206,12 +275,17 @@ export default function FuelManagementPage() {
                                 <CardTitle>Liste des Prestataires</CardTitle>
                                 <CardDescription>Entreprises fournissant les services de carburant (Total: {providers.length})</CardDescription>
                             </div>
-                            <Button className="gap-2" onClick={() => setIsProviderDialogOpen(true)}>
-                                <Plus className="h-4 w-4" /> Nouveau Prestataire
-                            </Button>
+                            {canCreate && (
+                                <Button className="gap-2" onClick={() => {
+                                    setSelectedProvider(null);
+                                    setIsProviderDialogOpen(true);
+                                }}>
+                                    <Plus className="h-4 w-4" /> Nouveau Prestataire
+                                </Button>
+                            )}
                         </CardHeader>
                         <CardContent>
-                            <FuelProviderList providers={providers} />
+                            <FuelProviderList providers={providers} onDelete={canDelete ? handleDeleteProvider : undefined} onEdit={canUpdate ? handleEditProvider : undefined} />
                         </CardContent>
                     </Card>
                 </TabsContent>
@@ -224,9 +298,14 @@ export default function FuelManagementPage() {
                                 <CardTitle>Gestion des Cartes Carburant</CardTitle>
                                 <CardDescription>Cartes affectées aux véhicules ou au personnel.</CardDescription>
                             </div>
-                            <Button className="gap-2" onClick={() => setIsCardDialogOpen(true)}>
-                                <Plus className="h-4 w-4" /> Nouvelle Carte
-                            </Button>
+                            {canCreate && (
+                                <Button className="gap-2" onClick={() => {
+                                    setSelectedCardForEdit(null);
+                                    setIsCardDialogOpen(true);
+                                }}>
+                                    <Plus className="h-4 w-4" /> Nouvelle Carte
+                                </Button>
+                            )}
                         </CardHeader>
                         <CardContent>
                             <FuelCardList
@@ -234,10 +313,12 @@ export default function FuelManagementPage() {
                                 providers={providers}
                                 employees={employees}
                                 vehicles={vehicles}
-                                onRecharge={(card) => {
+                                onDelete={canDelete ? handleDeleteCard : undefined}
+                                onEdit={canUpdate ? handleEditCard : undefined}
+                                onRecharge={canCreate ? (card) => {
                                     setSelectedCard(card);
                                     setIsRechargeDialogOpen(true);
-                                }}
+                                } : undefined}
                                 onPrint={(card) => {
                                     setSelectedCard(card);
                                     setIsReportDialogOpen(true);
@@ -256,16 +337,20 @@ export default function FuelManagementPage() {
                                 <CardDescription>Toutes les transactions de rechargement et de consommation.</CardDescription>
                             </div>
                             <div className="flex gap-2">
-                                <Button variant="outline" className="gap-2 border-emerald-500 text-emerald-600 hover:bg-emerald-50" onClick={() => setIsRechargeDialogOpen(true)}>
-                                    <PlusCircle className="h-4 w-4" /> Recharger
-                                </Button>
-                                <Button className="gap-2" onClick={() => setIsExpenseDialogOpen(true)}>
-                                    <Plus className="h-4 w-4" /> Enregistrer un plein
-                                </Button>
+                                {canCreate && (
+                                    <>
+                                        <Button variant="outline" className="gap-2 border-emerald-500 text-emerald-600 hover:bg-emerald-50" onClick={() => setIsRechargeDialogOpen(true)}>
+                                            <PlusCircle className="h-4 w-4" /> Recharger
+                                        </Button>
+                                        <Button className="gap-2" onClick={() => setIsExpenseDialogOpen(true)}>
+                                            <Plus className="h-4 w-4" /> Enregistrer un plein
+                                        </Button>
+                                    </>
+                                )}
                             </div>
                         </CardHeader>
                         <CardContent>
-                            <FuelTransactionList transactions={transactions} cards={cards} onDelete={handleDeleteTransaction} />
+                            <FuelTransactionList transactions={transactions} cards={cards} onDelete={canDelete ? handleDeleteTransaction : undefined} />
                         </CardContent>
                     </Card>
                 </TabsContent>
@@ -275,6 +360,7 @@ export default function FuelManagementPage() {
             <FuelProviderDialog
                 open={isProviderDialogOpen}
                 onOpenChangeAction={setIsProviderDialogOpen}
+                provider={selectedProvider}
             />
             <FuelCardDialog
                 open={isCardDialogOpen}
@@ -282,6 +368,7 @@ export default function FuelManagementPage() {
                 providers={providers}
                 employees={employees}
                 vehicles={vehicles}
+                card={selectedCardForEdit}
             />
             <FuelRechargeDialog
                 open={isRechargeDialogOpen}

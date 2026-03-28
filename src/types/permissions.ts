@@ -108,7 +108,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, ResourcePermissions> = {
         intranet: ALL_READ, 'organization-chart': ALL_READ,
         indemnities: ALL_READ,
     }),
-    'comptables': buildDefault({
+    'comptable': buildDefault({
         dashboard: ALL_READ, payroll: ALL_CRUD, budget: ALL_CRUD,
         repository: READ_CREATE, tickets: ALL_READ, assistant: ALL_READ,
         intranet: ALL_READ, indemnities: READ_UPDATE,
@@ -162,7 +162,7 @@ export const ENTERPRISE_ROLES: RoleConfig[] = [
     { id: 'manager-rh', label: 'Manager RH', isSystem: false, defaultPermissions: DEFAULT_ROLE_PERMISSIONS['manager-rh'] },
     { id: 'mediation', label: 'Chargé de Médiation', isSystem: false, defaultPermissions: DEFAULT_ROLE_PERMISSIONS['mediation'] },
     { id: 'patrimoine', label: 'Responsable Patrimoine', isSystem: false, defaultPermissions: DEFAULT_ROLE_PERMISSIONS['patrimoine'] },
-    { id: 'comptables', label: 'Comptable', isSystem: false, defaultPermissions: DEFAULT_ROLE_PERMISSIONS['comptables'] },
+    { id: 'comptable', label: 'Comptable', isSystem: false, defaultPermissions: DEFAULT_ROLE_PERMISSIONS['comptable'] },
     { id: 'chef-de-service', label: 'Chef de Service', isSystem: false, defaultPermissions: DEFAULT_ROLE_PERMISSIONS['chef-de-service'] },
     { id: 'responsable-it', label: 'Responsable IT', isSystem: false, defaultPermissions: DEFAULT_ROLE_PERMISSIONS['responsable-it'] },
     { id: 'gestionnaire-stock', label: 'Gestionnaire de Stock et fournitures', isSystem: false, defaultPermissions: DEFAULT_ROLE_PERMISSIONS['gestionnaire-stock'] },

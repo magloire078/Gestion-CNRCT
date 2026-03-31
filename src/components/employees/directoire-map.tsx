@@ -5,6 +5,9 @@ import { cn } from "@/lib/utils";
 import { Loader2, Crown, Navigation } from 'lucide-react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+if (typeof window !== 'undefined') {
+    require('leaflet.markercluster');
+}
 import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 
@@ -136,12 +139,12 @@ export const DirectoireMap: React.FC<DirectoireMapProps> = ({
             center: [7.539989, -5.547080],
             zoom: 7,
             scrollWheelZoom: false,
-            zoomControl: false
+            zoomControl: true
         });
 
-        // Elegant Dark Matter theme
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
+        // ESRI World Topo Map - Rich and detailed topographic theme
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
+            attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ, TomTom, Intermap, iPC, USGS, FAO, NPS, NRCAN, GeoBase, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), and the GIS User Community'
         }).addTo(map);
 
         const markers = L.markerClusterGroup({
@@ -151,11 +154,13 @@ export const DirectoireMap: React.FC<DirectoireMapProps> = ({
             iconCreateFunction: (cluster) => {
                 const count = cluster.getChildCount();
                 return L.divIcon({
-                    html: `<div class="flex items-center justify-center w-10 h-10 rounded-full bg-[#D4AF37] border-2 border-white shadow-xl text-white font-black text-xs">
-                             ${count}
+                    html: `<div class="flex items-center justify-center w-12 h-12 rounded-full bg-white border-2 border-[#D4AF37] shadow-xl">
+                             <div class="flex items-center justify-center w-10 h-10 rounded-full bg-[#D4AF37] text-white font-black text-xs">
+                               ${count}
+                             </div>
                            </div>`,
                     className: 'custom-cluster-icon',
-                    iconSize: [40, 40]
+                    iconSize: [48, 48]
                 });
             }
         });
@@ -195,21 +200,25 @@ export const DirectoireMap: React.FC<DirectoireMapProps> = ({
             const marker = L.marker([lat, lng], {
                 icon: L.divIcon({
                     html: `
-                        <div class="relative group cursor-pointer">
-                            <div class="w-12 h-12 rounded-2xl border-2 border-[#D4AF37] shadow-2xl overflow-hidden bg-white transform transition-all duration-300 group-hover:scale-125 group-hover:-translate-y-2">
+                        <div class="flex flex-col items-center group cursor-pointer">
+                            <div class="relative w-12 h-12 rounded-full border-2 border-white shadow-2xl overflow-hidden bg-slate-200 transform transition-all duration-300 group-hover:scale-125 group-hover:-translate-y-2">
                                 ${member.photo 
                                     ? `<img src="${member.photo}" class="w-full h-full object-cover" />`
                                     : `<div class="w-full h-full flex items-center justify-center bg-slate-100"><span class="text-xs font-black text-slate-400 capitalize">${(member.name || "?")[0]}</span></div>`
                                 }
+                                ${member.isActive 
+                                    ? `<div class="absolute bottom-1 right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full shadow-lg"></div>` 
+                                    : ''
+                                }
                             </div>
-                            <div class="absolute -bottom-1 -right-1 w-5 h-5 bg-[#D4AF37] rounded-lg flex items-center justify-center shadow-lg">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path></svg>
+                            <div class="mt-1 px-2 py-0.5 bg-[#006039] text-white text-[8px] font-black rounded shadow-lg whitespace-nowrap uppercase tracking-tighter opacity-90 group-hover:opacity-100 transition-opacity">
+                                ${member.name}
                             </div>
                         </div>
                     `,
                     className: 'custom-marker',
-                    iconSize: [48, 48],
-                    iconAnchor: [24, 48]
+                    iconSize: [60, 60],
+                    iconAnchor: [30, 60]
                 })
             });
 
@@ -254,7 +263,7 @@ export const DirectoireMap: React.FC<DirectoireMapProps> = ({
 
         if (validMembers.length > 0) {
             const group = L.featureGroup(markers.getLayers());
-            map.fitBounds(group.getBounds().pad(0.1), { animate: true });
+            map.fitBounds(group.getBounds().pad(0.4), { animate: true });
         }
     }, [mapReady, validMembers]);
 
@@ -272,20 +281,20 @@ export const DirectoireMap: React.FC<DirectoireMapProps> = ({
             <div ref={mapContainerRef} className="absolute inset-0 z-0" />
             
             {/* Elegant Header Overlay */}
-            <div className="absolute top-0 left-0 right-0 z-[1000] p-6 pointer-events-none">
-                <div className="bg-slate-900/80 backdrop-blur-xl border border-white/10 rounded-3xl p-5 shadow-2xl inline-block pointer-events-auto">
-                    <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-xl bg-[#D4AF37] flex items-center justify-center shadow-lg shadow-[#D4AF37]/20">
-                            <Crown className="w-5 h-5 text-white stroke-[2.5]" />
+            <div className="absolute top-4 left-0 right-0 z-[1000] flex justify-center pointer-events-none">
+                <div className="bg-slate-900/80 backdrop-blur-xl border border-white/10 rounded-2xl p-3 shadow-2xl inline-block pointer-events-auto">
+                    <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-[#D4AF37] flex items-center justify-center shadow-lg shadow-[#D4AF37]/20">
+                            <Crown className="w-4 h-4 text-white stroke-[2.5]" />
                         </div>
                         <div>
-                            <h2 className="text-lg font-black text-white uppercase tracking-tighter leading-tight">{title}</h2>
-                            <p className="text-[9px] font-black text-[#D4AF37] uppercase tracking-widest leading-none mt-1">{subtitle}</p>
+                            <h2 className="text-sm font-black text-white uppercase tracking-tighter leading-tight">{title}</h2>
+                            <p className="text-[8px] font-black text-[#D4AF37] uppercase tracking-widest leading-none mt-0.5">{subtitle}</p>
                         </div>
-                        <div className="ml-6 pl-6 border-l border-white/10 flex items-center gap-6">
+                        <div className="ml-4 pl-4 border-l border-white/10 flex items-center gap-4">
                             <div className="text-center">
-                                <span className="block text-xl font-black text-white leading-none">${members.length}</span>
-                                <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Membres</span>
+                                <span className="block text-lg font-black text-white leading-none">{members.length}</span>
+                                <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none">Membres</span>
                             </div>
                         </div>
                     </div>
@@ -297,7 +306,7 @@ export const DirectoireMap: React.FC<DirectoireMapProps> = ({
                 <button 
                     onClick={() => {
                         if (mapInstanceRef.current) {
-                            mapInstanceRef.current.setView([7.539989, -5.547080], 7);
+                            mapInstanceRef.current.setView([7.539989, -5.547080], 6);
                         }
                     }}
                     title="Recentrer"
@@ -329,7 +338,7 @@ export const DirectoireMap: React.FC<DirectoireMapProps> = ({
                     background: #0f172a !important;
                 }
                 .leaflet-container {
-                    background: #111 !important;
+                    background: #e5e7eb !important;
                     font-family: inherit !important;
                 }
                 .custom-cluster-icon {
@@ -339,6 +348,9 @@ export const DirectoireMap: React.FC<DirectoireMapProps> = ({
                 .leaflet-div-icon {
                     background: transparent !important;
                     border: none !important;
+                }
+                .custom-marker {
+                    z-index: 1000 !important;
                 }
             ` }} />
         </div>

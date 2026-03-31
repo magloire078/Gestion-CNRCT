@@ -24,8 +24,9 @@ export type Fleet = {
 export type Supply = {
     id: string; // Firestore document ID
     name: string;
-    code?: string; // SYSCOHADA code (e.g. 335)
-    category: "Papeterie" | "Cartouches d'encre" | "Matériel de nettoyage" | "Autre";
+    code?: string; // Standardized code (e.g. XX-YY-NNN)
+    supplierReference?: string; // Legacy/Supplier code
+    category: "Papeterie" | "Cartouches d'encre" | "Matériel de nettoyage" | "Fournitures de bureau" | "Consommables Informatiques" | "Archives" | "Outils" | "Autre";
     inkType?: string; // e.g., 'HP 651', 'Toner 12A'
     quantity: number;
     reorderLevel: number;
@@ -42,6 +43,7 @@ export type SupplyTransaction = {
     recipientName: string; // Employee name or manual entry
     quantity: number;
     date: string; // YYYY-MM-DD
+    timestamp?: string; // ISO String
     type: 'distribution' | 'restock';
     performedBy: string; // User ID
 };

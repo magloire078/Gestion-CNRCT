@@ -60,6 +60,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PrintConflictsList, PrintConflictDetail } from "@/components/conflicts/conflict-print-templates";
 import { cn } from "@/lib/utils";
 import dynamic from 'next/dynamic';
+import { PermissionGuard } from "@/components/auth/permission-guard";
 
 const GISMap = dynamic(() => import('@/components/common/gis-map-v3').then(m => m.GISMap), {
     ssr: false,
@@ -305,7 +306,8 @@ export default function ConflictsPage() {
     const totalPages = Math.ceil(filteredConflicts.length / itemsPerPage);
 
     return (
-        <div className="flex flex-col gap-6">
+        <PermissionGuard permission="page:conflicts:view">
+            <div className="flex flex-col gap-6">
             <div className="flex items-center justify-between">
                 <h1 className="text-3xl font-bold tracking-tight">
                     Gestion des Conflits
@@ -464,7 +466,7 @@ export default function ConflictsPage() {
                                                                     </DropdownMenuItem>
                                                                 )}
                                                                  <DropdownMenuItem onSelect={() => handlePrintIndividual(conflict)}>
-                                                                     <Printer className="mr-2 h-4 w-4" /> Imprimer Fiche MGP
+                                                                     <Printer className="mr-2 h-4 w-4" /> Imprimer Fiche du Conflit
                                                                  </DropdownMenuItem>
                                                                 {canDelete && (
                                                                     <DropdownMenuItem
@@ -675,5 +677,6 @@ export default function ConflictsPage() {
                 />
             )}
         </div>
+        </PermissionGuard>
     );
 }

@@ -22,7 +22,7 @@ import {
     PlusCircle, Receipt, Rocket, Sparkles,
     Bell, MessageSquare, 
     ArrowRight, MapPin, Search, Calendar,
-    Zap, Heart, Award, Laptop
+    Zap, Heart, Award, Laptop, FileText
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { Employe, Leave, Department, Chief } from '@/lib/data';
@@ -36,7 +36,7 @@ import dynamic from 'next/dynamic';
 
 const DirectoireMap = dynamic(() => import('@/components/employees/directoire-map').then(m => m.DirectoireMap), {
     ssr: false,
-    loading: () => <Skeleton className="h-[400px] w-full rounded-2xl" />,
+    loading: () => <Skeleton className="h-[1240px] w-full rounded-xl" />,
 });
 
 interface QuickTileProps {
@@ -54,15 +54,15 @@ const QuickTile = ({ title, description, icon: Icon, href, onClick, color, permi
     if (permission && !hasPermission(permission)) return null;
 
     const content = (
-        <div className="group relative flex flex-col p-6 rounded-[2rem] bg-white border border-slate-100 shadow-xl shadow-slate-200/40 hover:shadow-2xl hover:shadow-slate-300/50 transition-all duration-500 hover:-translate-y-1 overflow-hidden h-full">
-            <div className={cn("absolute top-0 right-0 p-8 opacity-5 transition-transform group-hover:scale-125 duration-700", color)}>
-                <Icon className="h-20 w-20" />
+        <div className="group relative flex flex-col p-5 rounded-2xl bg-white border border-slate-100 shadow-lg shadow-slate-200/40 hover:shadow-xl hover:shadow-slate-300/50 transition-all duration-500 hover:-translate-y-1 overflow-hidden h-full">
+            <div className={cn("absolute top-0 right-0 p-6 opacity-5 transition-transform group-hover:scale-125 duration-700", color)}>
+                <Icon className="h-16 w-16" />
             </div>
-            <div className={cn("h-12 w-12 rounded-2xl flex items-center justify-center mb-6 shadow-lg", color)}>
-                <Icon className="h-6 w-6 text-white" />
+            <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center mb-4 shadow-lg", color)}>
+                <Icon className="h-5 w-5 text-white" />
             </div>
-            <h3 className="text-lg font-black text-slate-900 mb-1">{title}</h3>
-            <p className="text-xs text-slate-400 font-medium mb-6 leading-relaxed italic">{description}</p>
+            <h3 className="text-base font-black text-slate-900 mb-1">{title}</h3>
+            <p className="text-xs text-slate-400 font-medium mb-4 leading-relaxed italic line-clamp-2">{description}</p>
             <div className="mt-auto flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-slate-900 transition-colors">
                 Accéder <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
             </div>
@@ -131,7 +131,7 @@ export default function IntranetPage() {
     return (
         <div className="pb-20 space-y-12">
             {/* Immersive Welcome Section */}
-            <div className="relative rounded-[3rem] bg-slate-900 p-8 md:p-14 overflow-hidden group shadow-2xl shadow-slate-200">
+            <div className="relative rounded-2xl bg-slate-900 p-6 md:p-10 overflow-hidden group shadow-2xl shadow-slate-200">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(59,130,246,0.1),transparent)] transition-opacity group-hover:opacity-60" />
                 <div className="absolute top-0 right-0 p-12 opacity-10 pointer-events-none transition-transform group-hover:scale-110 duration-1000">
                     <Zap className="h-64 w-64 text-blue-400" />
@@ -158,9 +158,9 @@ export default function IntranetPage() {
                     </div>
                     
                     {/* Quick AI Insight */}
-                    <Card className="md:w-80 bg-white/5 backdrop-blur-xl border border-white/10 rounded-[2.5rem] p-6 shadow-2xl">
+                    <Card className="md:w-80 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-2xl">
                         <div className="flex items-center gap-3 mb-4">
-                            <div className="h-10 w-10 rounded-xl bg-blue-500 flex items-center justify-center shadow-lg shadow-blue-500/20">
+                            <div className="h-10 w-10 rounded-lg bg-blue-500 flex items-center justify-center shadow-lg shadow-blue-500/20">
                                 <Bot className="h-5 w-5 text-white" />
                             </div>
                             <span className="text-xs font-black uppercase tracking-widest text-white/80">CNRCT Intelligence</span>
@@ -176,8 +176,23 @@ export default function IntranetPage() {
                 </div>
             </div>
 
-            {/* Quick Actions Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 px-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 px-2">
+                <QuickTile 
+                    title="Intelligence & Rapports" 
+                    description="Accédez aux analyses, statistiques et rapports DISA/Nominatifs."
+                    icon={FileText}
+                    href="/reports"
+                    color="bg-indigo-600"
+                    permission="group:reports:view"
+                />
+                <QuickTile 
+                    title="Gestion Opérationnelle" 
+                    description="Pilotage de la logistique, du patrimoine TI et de la flotte."
+                    icon={Zap}
+                    href="/management"
+                    color="bg-slate-900"
+                    permission="group:operations:view"
+                />
                 <QuickTile 
                     title="Ma Rémunération" 
                     description="Consultez et téléchargez vos bulletins de paie mensuels."
@@ -211,151 +226,144 @@ export default function IntranetPage() {
                 />
             </div>
 
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-12">
-                {/* Directoire Map Section */}
-                <div className="xl:col-span-2 space-y-8">
-                    <div className="flex items-center justify-between px-2">
-                        <div className="flex items-center gap-3">
-                            <div className="h-10 w-10 rounded-2xl bg-[#006039] flex items-center justify-center shadow-lg">
-                                <MapPin className="h-5 w-5 text-white" />
-                            </div>
-                            <h2 className="text-2xl font-black text-slate-900 tracking-tight">Répartition Géographique du Directoire</h2>
+            {/* Directoire Map Section - Full Width */}
+            <div className="space-y-10 px-2 mt-8 mb-8">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <div className="h-12 w-12 rounded-2xl bg-[#006039] flex items-center justify-center shadow-xl shadow-[#006039]/20">
+                            <MapPin className="h-6 w-6 text-white" />
+                        </div>
+                        <div>
+                            <h2 className="text-3xl font-black text-slate-900 tracking-tight">Répartition Géographique du Directoire</h2>
+                            <p className="text-slate-500 font-medium text-sm mt-1">Aperçu global et stratégique de l'institution sur le territoire</p>
                         </div>
                     </div>
-                    <div className="relative group">
-                        <DirectoireMap 
-                            members={directoireMembers} 
-                        />
-                    </div>
                 </div>
-
-                {/* Sidebar Community */}
-                <div className="space-y-12">
-                     <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden">
-                        <CardHeader className="bg-rose-50/50 border-b border-rose-100 p-8">
-                            <CardTitle className="text-lg flex items-center gap-3 text-rose-900">
-                                <Sparkles className="h-5 w-5 text-rose-500" /> Célébrations
-                            </CardTitle>
-                            <CardDescription className="text-rose-700/60 font-medium">Les événements marquants de vos collègues.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="p-8">
-                            <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-                                <TabsList className="grid w-full grid-cols-2 bg-rose-50/50 mb-6 rounded-xl">
-                                    <TabsTrigger value="birthdays" className="text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:text-rose-600 transition-all rounded-lg">
-                                        <Cake className="h-3.5 w-3.5 mr-2" /> Anniversaires
-                                    </TabsTrigger>
-                                    <TabsTrigger value="seniority" className="text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:text-blue-600 transition-all rounded-lg">
-                                        <Award className="h-3.5 w-3.5 mr-2" /> Ancienneté
-                                    </TabsTrigger>
-                                </TabsList>
-
-                                {loading ? (
-                                    <div className="space-y-4">
-                                        {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-14 w-full rounded-2xl" />)}
-                                    </div>
-                                ) : (
-                                    <>
-                                        <TabsContent value="birthdays" className="space-y-4 focus-visible:outline-none">
-                                            {birthdayAnniversaries.length > 0 ? (
-                                                birthdayAnniversaries.map(emp => (
-                                                    <div key={`birth-${emp.id}`} className="flex items-center gap-4 group p-1 hover:bg-rose-50/30 rounded-2xl transition-all">
-                                                        <Avatar className="h-12 w-12 border-2 border-white shadow-md">
-                                                            <AvatarImage src={emp.photoUrl} alt={emp.name} />
-                                                            <AvatarFallback className="bg-rose-50 text-rose-400 font-bold">{emp.lastName?.charAt(0)}</AvatarFallback>
-                                                        </Avatar>
-                                                        <div className="flex-1 min-w-0">
-                                                            <p className="font-bold text-slate-900 group-hover:text-rose-600 transition-colors truncate">{emp.name}</p>
-                                                            <div className="flex items-center gap-2">
-                                                                <Cake className="h-3 w-3 text-rose-300" />
-                                                                <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest truncate">Jour de naissance</p>
-                                                            </div>
-                                                        </div>
-                                                        <div className="h-8 w-8 rounded-full bg-rose-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                                            <Heart className="h-4 w-4 text-rose-500" />
-                                                        </div>
-                                                    </div>
-                                                ))
-                                            ) : (
-                                                <div className="py-10 text-center">
-                                                    <div className="mx-auto h-12 w-12 rounded-full bg-rose-50 flex items-center justify-center mb-3">
-                                                        <Cake className="h-6 w-6 text-rose-200" />
-                                                    </div>
-                                                    <p className="text-xs text-slate-300 italic">Aucun anniversaire ce mois-ci.</p>
-                                                </div>
-                                            )}
-                                        </TabsContent>
-
-                                        <TabsContent value="seniority" className="space-y-4 focus-visible:outline-none">
-                                            {seniorityAnniversaries.length > 0 ? (
-                                                seniorityAnniversaries.map(emp => (
-                                                    <div key={`senior-${emp.id}`} className="flex items-center gap-4 group p-1 hover:bg-blue-50/30 rounded-2xl transition-all">
-                                                        <Avatar className="h-12 w-12 border-2 border-white shadow-md">
-                                                            <AvatarImage src={emp.photoUrl} alt={emp.name} />
-                                                            <AvatarFallback className="bg-blue-50 text-blue-400 font-bold">{emp.lastName?.charAt(0)}</AvatarFallback>
-                                                        </Avatar>
-                                                        <div className="flex-1 min-w-0">
-                                                            <p className="font-bold text-slate-900 group-hover:text-blue-600 transition-colors truncate">{emp.name}</p>
-                                                            <div className="flex items-center gap-2">
-                                                                <Award className="h-3 w-3 text-blue-300" />
-                                                                <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest truncate">Années d'excellence</p>
-                                                            </div>
-                                                        </div>
-                                                        <div className="h-8 w-8 rounded-full bg-blue-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                                            <Sparkles className="h-4 w-4 text-blue-500" />
-                                                        </div>
-                                                    </div>
-                                                ))
-                                            ) : (
-                                                <div className="py-10 text-center">
-                                                    <div className="mx-auto h-12 w-12 rounded-full bg-blue-50 flex items-center justify-center mb-3">
-                                                        <Award className="h-6 w-6 text-blue-200" />
-                                                    </div>
-                                                    <p className="text-xs text-slate-300 italic">Aucun jubilé ce mois-ci.</p>
-                                                </div>
-                                            )}
-                                        </TabsContent>
-                                    </>
-                                )}
-                            </Tabs>
-                        </CardContent>
-                        <CardFooter className="bg-rose-50/10 p-6 flex justify-center border-t border-rose-50/50">
-                            <span className="text-[10px] font-black text-rose-400 uppercase tracking-[0.2em]">Célébrons nos talents !</span>
-                        </CardFooter>
-                    </Card>
-
-                    {/* Quick Stats Summary */}
-                    <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-[2.5rem] bg-indigo-900 text-white overflow-hidden relative">
-                        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20" />
-                        <CardHeader className="relative p-8">
-                            <CardTitle className="text-lg flex items-center gap-3">
-                                <Zap className="h-5 w-5 text-indigo-400" /> Écosystème CNRCT
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="relative p-8 pt-0 space-y-6">
-                            <div className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/10">
-                                <div className="flex items-center gap-3">
-                                    <Users className="h-5 w-5 text-indigo-400" />
-                                    <span className="text-xs font-bold uppercase tracking-widest opacity-60">Collègues</span>
-                                </div>
-                                <span className="text-xl font-black">{globalStats.activeEmployees}</span>
-                            </div>
-                            <div className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/10">
-                                <div className="flex items-center gap-3">
-                                    <Building className="h-5 w-5 text-indigo-400" />
-                                    <span className="text-xs font-bold uppercase tracking-widest opacity-60">Départements</span>
-                                </div>
-                                <span className="text-xl font-black">{globalStats.departments.length}</span>
-                            </div>
-                            <div className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/10">
-                                <div className="flex items-center gap-3">
-                                    <ShieldCheck className="h-5 w-5 text-indigo-400" />
-                                    <span className="text-xs font-bold uppercase tracking-widest opacity-60">Projets Actifs</span>
-                                </div>
-                                <span className="text-xl font-black">100%</span>
-                            </div>
-                        </CardContent>
-                    </Card>
+                <div className="relative group w-full rounded-2xl shadow-xl border border-slate-100/50 p-2 bg-slate-50">
+                    <DirectoireMap 
+                        className="min-h-[600px] lg:min-h-[1240px] w-full shadow-md rounded-xl"
+                        members={directoireMembers} 
+                    />
                 </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 px-2">
+                {/* Sidebar Community - Ecosystem */}
+                <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-2xl bg-indigo-900 text-white overflow-hidden relative h-full">
+                    <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20" />
+                    <CardHeader className="relative p-6">
+                        <CardTitle className="text-xl flex items-center gap-3">
+                            <Zap className="h-6 w-6 text-indigo-400" /> Écosystème CNRCT
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="relative p-6 pt-0 space-y-3">
+                        <div className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
+                            <div className="flex items-center gap-3">
+                                <Users className="h-5 w-5 text-indigo-400" />
+                                <span className="text-xs font-bold uppercase tracking-widest opacity-80">Collègues Actifs</span>
+                            </div>
+                            <span className="text-2xl font-black">{globalStats.activeEmployees}</span>
+                        </div>
+                        <div className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
+                            <div className="flex items-center gap-3">
+                                <Building className="h-5 w-5 text-indigo-400" />
+                                <span className="text-xs font-bold uppercase tracking-widest opacity-80">Départements</span>
+                            </div>
+                            <span className="text-2xl font-black">{globalStats.departments.length}</span>
+                        </div>
+                        <div className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
+                            <div className="flex items-center gap-3">
+                                <ShieldCheck className="h-5 w-5 text-indigo-400" />
+                                <span className="text-xs font-bold uppercase tracking-widest opacity-80">Projets & Missions</span>
+                            </div>
+                            <span className="text-2xl font-black">En cours</span>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* Sidebar Community - Celebrations */}
+                <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-2xl overflow-hidden h-full">
+                    <CardHeader className="bg-rose-50/50 border-b border-rose-100 p-6">
+                        <CardTitle className="text-xl flex items-center gap-3 text-rose-900">
+                            <Sparkles className="h-6 w-6 text-rose-500" /> Célébrations
+                        </CardTitle>
+                        <CardDescription className="text-rose-700/60 font-medium text-xs mt-1">Les événements marquants de l'institution.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="p-6">
+                        <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+                            <TabsList className="grid w-full grid-cols-2 bg-rose-50/50 mb-6 rounded-lg h-10">
+                                <TabsTrigger value="birthdays" className="text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:text-rose-600 transition-all rounded-md h-full">
+                                    <Cake className="h-3.5 w-3.5 mr-2" /> Anniversaires
+                                </TabsTrigger>
+                                <TabsTrigger value="seniority" className="text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:text-blue-600 transition-all rounded-md h-full">
+                                    <Award className="h-3.5 w-3.5 mr-2" /> Ancienneté
+                                </TabsTrigger>
+                            </TabsList>
+
+                            {loading ? (
+                                <div className="space-y-3">
+                                    {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-12 w-full rounded-xl" />)}
+                                </div>
+                            ) : (
+                                <>
+                                    <TabsContent value="birthdays" className="space-y-3 focus-visible:outline-none">
+                                        {birthdayAnniversaries.length > 0 ? (
+                                            birthdayAnniversaries.map(emp => (
+                                                <div key={`birth-${emp.id}`} className="flex items-center gap-4 group p-1.5 hover:bg-rose-50/40 rounded-xl transition-all">
+                                                    <Avatar className="h-10 w-10 border-2 border-white shadow-md">
+                                                        <AvatarImage src={emp.photoUrl} alt={emp.name} />
+                                                        <AvatarFallback className="bg-rose-50 text-rose-500 font-bold text-sm">{emp.lastName?.charAt(0)}</AvatarFallback>
+                                                    </Avatar>
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className="font-bold text-slate-900 group-hover:text-rose-600 transition-colors truncate text-sm">{emp.name}</p>
+                                                        <div className="flex items-center gap-1.5 mt-0.5">
+                                                            <Cake className="h-3 w-3 text-rose-300" />
+                                                            <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest truncate">Jour de naissance</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <div className="py-8 text-center">
+                                                <div className="mx-auto h-12 w-12 rounded-full bg-rose-50 flex items-center justify-center mb-3">
+                                                    <Cake className="h-6 w-6 text-rose-200" />
+                                                </div>
+                                                <p className="text-sm text-slate-400 italic">Aucun anniversaire ce mois-ci.</p>
+                                            </div>
+                                        )}
+                                    </TabsContent>
+
+                                    <TabsContent value="seniority" className="space-y-3 focus-visible:outline-none">
+                                        {seniorityAnniversaries.length > 0 ? (
+                                            seniorityAnniversaries.map(emp => (
+                                                <div key={`senior-${emp.id}`} className="flex items-center gap-4 group p-1.5 hover:bg-blue-50/40 rounded-xl transition-all">
+                                                    <Avatar className="h-10 w-10 border-2 border-white shadow-md">
+                                                        <AvatarImage src={emp.photoUrl} alt={emp.name} />
+                                                        <AvatarFallback className="bg-blue-50 text-blue-500 font-bold text-sm">{emp.lastName?.charAt(0)}</AvatarFallback>
+                                                    </Avatar>
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className="font-bold text-slate-900 group-hover:text-blue-600 transition-colors truncate text-sm">{emp.name}</p>
+                                                        <div className="flex items-center gap-1.5 mt-0.5">
+                                                            <Award className="h-3 w-3 text-blue-300" />
+                                                            <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest truncate">Années d'excellence</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <div className="py-8 text-center">
+                                                <div className="mx-auto h-12 w-12 rounded-full bg-blue-50 flex items-center justify-center mb-3">
+                                                    <Award className="h-6 w-6 text-blue-200" />
+                                                </div>
+                                                <p className="text-sm text-slate-400 italic">Aucun jubilé ce mois-ci.</p>
+                                            </div>
+                                        )}
+                                    </TabsContent>
+                                </>
+                            )}
+                        </Tabs>
+                    </CardContent>
+                </Card>
             </div>
         </div>
     );

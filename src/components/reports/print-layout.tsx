@@ -9,25 +9,37 @@ interface PrintLayoutProps {
     columns?: { header: string; key: string; align?: 'left' | 'center' | 'right'; className?: string }[];
     data?: Record<string, any>[];
     children?: ReactNode;
+    orientation?: 'landscape' | 'portrait';
 }
 
-export function PrintLayout({ logos, title, subtitle, columns, data, children }: PrintLayoutProps) {
+export function PrintLayout({ logos, title, subtitle, columns, data, children, orientation = 'landscape' }: PrintLayoutProps) {
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
         setMounted(true);
-        // Add landscape class for inventory lists
-        document.body.classList.add('print-landscape');
+        // Add landscape class for inventory lists if requested
+        if (orientation === 'landscape') {
+            document.body.classList.add('print-landscape');
+        }
+        
+        // Laisser le temps au portail de se rendre dans le DOM puis déclencher l'impression
+        const printTimer = setTimeout(() => {
+            window.print();
+        }, 800);
+
         return () => {
+            clearTimeout(printTimer);
             setMounted(false);
-            document.body.classList.remove('print-landscape');
+            if (orientation === 'landscape') {
+                document.body.classList.remove('print-landscape');
+            }
         };
-    }, []);
+    }, [orientation]);
 
     if (!mounted) return null;
 
     return createPortal(
-        <div id="print-section" className="bg-white text-black w-full print:shadow-none print:border-none">
+        <div id="print-section" className="bg-white text-black w-full print:shadow-none print:border-none print:pb-24">
                 <div className="avoid-page-break">
                     <header className="flex justify-between items-start mb-8 min-h-[140px]">
                         <div className="w-1/3 text-center flex flex-col justify-center items-center h-full">
@@ -89,14 +101,17 @@ export function PrintLayout({ logos, title, subtitle, columns, data, children }:
                 </table>
             ) : null}
 
-            <footer className="mt-8 text-xs">
-                <div className="flex justify-between items-end">
-                    <div></div>
-                    <div className="text-center">
+            {/* Footer répété sur chaque page d'impression grâce à la classe print-page-footer */}
+            <footer className="mt-8 text-xs print-page-footer">
+                <div className="flex justify-between items-start border-t border-slate-200/50 pt-2 px-8 pb-2">
+                    <div className="w-[100px]"></div>
+                    <div className="text-center flex-1 text-[10px] text-slate-600">
                         <p>Yamoussoukro, Riviera - BP 201 Yamoussoukro | Tél : (225) 30 64 06 60 | Fax : (+255) 30 64 06 63</p>
                         <p>www.cnrct.ci - Email : info@cnrct.ci</p>
                     </div>
-                    <div><p className="page-number"></p></div>
+                    <div className="w-[100px] text-right text-[9px] text-slate-400 italic">
+                        {/* Le navigateur gère lu-même la vraie numérotation des pages (1/2 etc.) dans les paramètres d'en-tête/pied de page */}
+                    </div>
                 </div>
             </footer>
         </div>,

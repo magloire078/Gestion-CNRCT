@@ -39,6 +39,7 @@ import { subscribeToEmployees } from "@/services/employee-service";
 import { Badge } from "@/components/ui/badge";
 import Papa from "papaparse";
 import { cn } from "@/lib/utils";
+import { PermissionGuard } from "@/components/auth/permission-guard";
 
 export default function EmployeeReportsPage() {
     const [employees, setEmployees] = useState<Employe[]>([]);
@@ -90,11 +91,11 @@ export default function EmployeeReportsPage() {
             Nom: e.name,
             Sexe: e.sexe,
             Email: e.email,
-            Téléphone: e.phone,
+            Téléphone: e.mobile,
             Département: e.department,
             Poste: e.poste,
             Status: e.status || (e.bActif ? 'Actif' : 'Inactif'),
-            Date_Embauche: e.hireDate
+            Date_Embauche: e.dateEmbauche
         })));
         
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -121,7 +122,8 @@ export default function EmployeeReportsPage() {
     }
 
     return (
-        <div className="flex flex-col gap-8 pb-20 animate-in fade-in duration-700">
+        <PermissionGuard permission="page:employees:view">
+            <div className="flex flex-col gap-8 pb-20 animate-in fade-in duration-700">
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 print:hidden">
                 <div>
@@ -293,7 +295,7 @@ export default function EmployeeReportsPage() {
                                             <div className="flex flex-col items-end gap-1">
                                                 <div className="flex items-center gap-1.5 text-slate-500">
                                                     <Calendar className="h-3 w-3" />
-                                                    <span className="text-xs font-bold">{employee.hireDate || 'N/A'}</span>
+                                                    <span className="text-xs font-bold">{employee.dateEmbauche || 'N/A'}</span>
                                                 </div>
                                             </div>
                                         </TableCell>
@@ -305,5 +307,6 @@ export default function EmployeeReportsPage() {
                 </CardContent>
             </Card>
         </div>
+        </PermissionGuard>
     );
 }

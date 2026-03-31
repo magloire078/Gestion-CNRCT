@@ -119,16 +119,17 @@ export default function HeritageCategoryPage() {
 
     return (
         <div className="flex flex-col gap-8 pb-20">
-            {/* Header Heritage */}
-            <div className="relative h-[240px] rounded-[2.5rem] overflow-hidden bg-slate-900 group">
-                <div 
-                    className="absolute inset-0 bg-cover bg-center opacity-30 transition-transform duration-1000 group-hover:scale-110"
-                    style={{ backgroundImage: `url(${style.image})` }}
+            {/* Heritage Category Hero */}
+            <div className="relative h-[200px] rounded-xl overflow-hidden bg-slate-900 group">
+                <img 
+                    src={style.image}
+                    alt=""
+                    className="absolute inset-0 w-full h-full object-cover opacity-30 transition-transform duration-1000 group-hover:scale-110"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent" />
                 
-                <div className="relative h-full flex flex-col justify-between p-8 md:p-12 z-10">
-                    <Button variant="ghost" className="w-fit text-white/70 hover:text-white hover:bg-white/10 rounded-xl" onClick={() => router.back()}>
+                <div className="relative h-full flex flex-col justify-between p-4 md:p-6 z-10">
+                    <Button variant="ghost" className="w-fit text-white/70 hover:text-white hover:bg-white/10 rounded-lg" onClick={() => router.back()}>
                         <ArrowLeft className="mr-2 h-4 w-4" /> Retour
                     </Button>
                     
@@ -142,7 +143,7 @@ export default function HeritageCategoryPage() {
                                 {categoryLabel}
                             </h1>
                         </div>
-                        <Button onClick={() => setIsSheetOpen(true)} className="bg-white text-slate-900 hover:bg-slate-100 rounded-2xl h-14 px-8 font-black shadow-2xl transition-all hover:-translate-y-1">
+                        <Button onClick={() => setIsSheetOpen(true)} className="bg-white text-slate-900 hover:bg-slate-100 rounded-lg h-14 px-8 font-black shadow-2xl transition-all hover:-translate-y-1">
                             <PlusCircle className="mr-2 h-5 w-5" />
                             Ajouter un élément
                         </Button>
@@ -156,19 +157,19 @@ export default function HeritageCategoryPage() {
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
                     <Input
                         placeholder={`Rechercher un(e) ${categoryLabel.toLowerCase()}...`}
-                        className="pl-12 h-14 rounded-2xl border-none shadow-xl shadow-slate-200/50 bg-white"
+                        className="pl-12 h-14 rounded-lg border-none shadow-xl shadow-slate-200/50 bg-white"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
                 <Select value={regionFilter} onValueChange={setRegionFilter}>
-                    <SelectTrigger className="h-14 rounded-2xl border-none shadow-xl shadow-slate-200/50 bg-white w-full md:w-[240px] font-bold text-slate-600">
+                    <SelectTrigger className="h-14 rounded-lg border-none shadow-xl shadow-slate-200/50 bg-white w-full md:w-[240px] font-bold text-slate-600">
                         <div className="flex items-center gap-2">
                             <Filter className="h-4 w-4 text-slate-400" />
                             <SelectValue placeholder="Région" />
                         </div>
                     </SelectTrigger>
-                    <SelectContent className="rounded-2xl border-none shadow-2xl">
+                    <SelectContent className="rounded-xl border-none shadow-2xl">
                         <SelectItem value="all" className="font-bold">Toutes les régions</SelectItem>
                         {IVORIAN_REGIONS.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
                     </SelectContent>
@@ -184,7 +185,7 @@ export default function HeritageCategoryPage() {
             ) : filteredItems.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-2">
                     {filteredItems.map((item) => (
-                        <Card key={item.id} className="group border-none shadow-xl hover:shadow-2xl transition-all duration-500 rounded-[2rem] overflow-hidden bg-white flex flex-col h-full">
+                        <Card key={item.id} className="group border-none shadow-xl hover:shadow-2xl transition-all duration-500 rounded-lg overflow-hidden bg-white flex flex-col h-full">
                             <div className="aspect-[16/10] relative overflow-hidden bg-slate-100">
                                 {item.imageUrl ? (
                                     <img 
@@ -203,7 +204,7 @@ export default function HeritageCategoryPage() {
                                 </Badge>
                             </div>
                             
-                            <CardContent className="p-8 flex flex-col flex-1">
+                            <CardContent className="p-4 flex flex-col flex-1">
                                 <div className="space-y-4 flex-1">
                                     <div className="space-y-1">
                                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{item.region || "Toute la Côte d'Ivoire"}</p>
@@ -214,20 +215,20 @@ export default function HeritageCategoryPage() {
                                     </p>
                                     
                                     <div className="flex flex-wrap gap-2 pt-2">
-                                        <div className="flex items-center gap-1.5 p-2 rounded-xl bg-slate-50 border border-slate-100 text-[9px] font-bold text-slate-600 uppercase">
+                                        <div className="flex items-center gap-1.5 p-2 rounded-lg bg-slate-50 border border-slate-100 text-[9px] font-bold text-slate-600 uppercase">
                                             <MapPin className="h-3 w-3 text-slate-400" /> {item.village || "Plusieurs localités"}
                                         </div>
-                                        <div className="flex items-center gap-1.5 p-2 rounded-xl bg-slate-50 border border-slate-100 text-[9px] font-bold text-slate-600 uppercase">
+                                        <div className="flex items-center gap-1.5 p-2 rounded-lg bg-slate-50 border border-slate-100 text-[9px] font-bold text-slate-600 uppercase">
                                             <History className="h-3 w-3 text-slate-400" /> {item.historicalContext ? "Documenté" : "Archivé"}
                                         </div>
                                     </div>
                                 </div>
 
                                 <div className="mt-8 pt-6 border-t border-slate-50 flex items-center justify-between">
-                                    <Button variant="ghost" className="h-10 w-10 text-rose-500 hover:text-rose-600 hover:bg-rose-50 rounded-xl" onClick={() => setDeleteTarget(item)}>
+                                    <Button variant="ghost" className="h-10 w-10 text-rose-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg" onClick={() => setDeleteTarget(item)}>
                                         <Landmark className="h-4 w-4" />
                                     </Button>
-                                    <Button className="rounded-xl h-10 px-6 font-bold text-xs uppercase group-hover:bg-blue-600 group-hover:text-white transition-all shadow-lg shadow-blue-500/10" asChild>
+                                    <Button className="rounded-lg h-10 px-6 font-bold text-xs uppercase group-hover:bg-blue-600 group-hover:text-white transition-all shadow-lg shadow-blue-500/10" asChild>
                                         <Link href={`/heritage/${category}/${item.id}`}>
                                             Consulter <ChevronRight className="ml-2 h-4 w-4" />
                                         </Link>
@@ -238,7 +239,7 @@ export default function HeritageCategoryPage() {
                     ))}
                 </div>
             ) : (
-                <Card className="border-none shadow-none bg-slate-50/50 rounded-[3rem] p-20 flex flex-col items-center justify-center text-center mx-2">
+                <Card className="border-none shadow-none bg-slate-50/50 rounded-xl p-8 flex flex-col items-center justify-center text-center mx-2">
                     <div className="h-32 w-32 bg-white rounded-full flex items-center justify-center shadow-xl mb-8">
                         <style.icon className="h-16 w-16 text-slate-200" />
                     </div>
@@ -246,7 +247,7 @@ export default function HeritageCategoryPage() {
                     <p className="mt-2 text-slate-400 max-w-sm italic font-medium">
                         Aucun élément n'a été trouvé pour la catégorie <span className="font-bold text-slate-600">{categoryLabel}</span> dans cette zone.
                     </p>
-                    <Button onClick={() => setIsSheetOpen(true)} className="mt-8 bg-slate-900 rounded-2xl h-12 px-8 font-bold">
+                    <Button onClick={() => setIsSheetOpen(true)} className="mt-8 bg-slate-900 rounded-lg h-12 px-8 font-bold">
                         Commencer l'archivage
                     </Button>
                 </Card>

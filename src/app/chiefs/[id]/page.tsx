@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { useParams, useRouter } from "next/navigation";
 import { 
     ChevronLeft, MapPin, Phone, Mail, 
@@ -20,7 +21,17 @@ import { subscribeToConflicts } from "@/services/conflict-service";
 import type { Chief } from "@/lib/data";
 import type { Conflict } from "@/types/common";
 import { cn } from "@/lib/utils";
-import { TrendingUp, AlertTriangle } from "lucide-react";
+import { TrendingUp, AlertTriangle, Loader2 } from "lucide-react";
+
+const GISMap = dynamic(() => import('@/components/common/gis-map-v3').then(m => m.GISMap), {
+  ssr: false,
+  loading: () => (
+    <div className="h-full w-full bg-slate-50 flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed">
+        <Loader2 className="h-8 w-8 text-slate-300 animate-spin" />
+        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest animate-pulse">Chargement de la carte...</p>
+    </div>
+  ),
+});
 
 export default function ChiefProfilePage() {
     const { id } = useParams() as { id: string };
@@ -117,13 +128,13 @@ export default function ChiefProfilePage() {
                 </div>
             </div>
 
-            {/* Header Profil Premium */}
-            <div className="relative overflow-hidden rounded-3xl bg-white border shadow-sm p-6 md:p-10">
+            {/* Chief Profile card */}
+            <div className="relative overflow-hidden rounded-2xl bg-white border shadow-sm p-6 md:p-8">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-slate-50 rounded-full -mr-32 -mt-32 opacity-50 pointer-events-none" />
                 
                 <div className="flex flex-col md:flex-row gap-8 items-center md:items-start text-center md:text-left relative z-10">
                     <div className="relative group">
-                        <Avatar className="h-48 w-48 rounded-2xl border-4 border-white shadow-2xl transition-transform group-hover:scale-[1.02]">
+                        <Avatar className="h-48 w-48 rounded-xl border-4 border-white shadow-2xl transition-transform group-hover:scale-[1.02]">
                             <AvatarImage src={chief.photoUrl} alt={chief.name} className="object-cover" />
                             <AvatarFallback className="text-4xl font-bold bg-slate-100">{chief.name?.charAt(0)}</AvatarFallback>
                         </Avatar>
@@ -235,15 +246,39 @@ export default function ChiefProfilePage() {
                                         <CardTitle className="text-sm font-bold uppercase tracking-widest text-slate-500">Contact Officiel</CardTitle>
                                     </CardHeader>
                                     <CardContent className="pt-4 space-y-4">
-                                        <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 border border-slate-100 group hover:border-blue-200 transition-colors">
-                                            <div className="h-8 w-8 rounded-full bg-white flex items-center justify-center text-slate-400 group-hover:text-blue-500">
-                                                <Phone className="h-4 w-4" />
+                                        {chief.phone && (
+                                            <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 border border-slate-100 group hover:border-blue-200 transition-colors">
+                                                <div className="h-8 w-8 rounded-full bg-white flex items-center justify-center text-slate-400 group-hover:text-blue-500">
+                                                    <Phone className="h-4 w-4" />
+                                                </div>
+                                                <div className="flex-1">
+                                                    <p className="text-[10px] font-bold text-slate-400 uppercase">Téléphone Principal</p>
+                                                    <p className="text-sm font-bold text-slate-800">{chief.phone}</p>
+                                                </div>
                                             </div>
-                                            <div className="flex-1">
-                                                <p className="text-[10px] font-bold text-slate-400 uppercase">Téléphone</p>
-                                                <p className="text-sm font-bold text-slate-800">{chief.contact || "Non renseigné"}</p>
+                                        )}
+                                        {chief.contact && (
+                                            <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 border border-slate-100 group hover:border-blue-200 transition-colors">
+                                                <div className="h-8 w-8 rounded-full bg-white flex items-center justify-center text-slate-400 group-hover:text-blue-500">
+                                                    <Phone className="h-4 w-4" />
+                                                </div>
+                                                <div className="flex-1">
+                                                    <p className="text-[10px] font-bold text-slate-400 uppercase">{chief.phone ? "Contact Secondaire" : "Contact"}</p>
+                                                    <p className="text-sm font-bold text-slate-800">{chief.contact}</p>
+                                                </div>
                                             </div>
-                                        </div>
+                                        )}
+                                        {!chief.phone && !chief.contact && (
+                                            <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 border border-slate-100">
+                                                <div className="h-8 w-8 rounded-full bg-white flex items-center justify-center text-slate-400">
+                                                    <Phone className="h-4 w-4" />
+                                                </div>
+                                                <div className="flex-1">
+                                                    <p className="text-[10px] font-bold text-slate-400 uppercase">Coordonnées</p>
+                                                    <p className="text-sm font-bold text-slate-400 italic">Non renseigné</p>
+                                                </div>
+                                            </div>
+                                        )}
                                         <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 border border-slate-100 group hover:border-blue-200 transition-colors">
                                             <div className="h-8 w-8 rounded-full bg-white flex items-center justify-center text-slate-400 group-hover:text-blue-500">
                                                 <Mail className="h-4 w-4" />
@@ -259,15 +294,19 @@ export default function ChiefProfilePage() {
                         </TabsContent>
 
                         <TabsContent value="territory" className="space-y-6">
-                            <Card className="border-none shadow-sm">
-                                <CardContent className="pt-6">
-                                    <div className="aspect-video bg-slate-100 rounded-2xl flex flex-col items-center justify-center text-muted-foreground border-2 border-dashed gap-2 group hover:bg-slate-50 transition-colors">
-                                        <MapPin className="h-10 w-10 text-slate-300 group-hover:text-blue-500 group-hover:scale-110 transition-all" />
-                                        <p className="font-bold uppercase tracking-widest text-xs">Carte du Territoire</p>
-                                        <p className="text-[10px]">Coordonnées : {chief.latitude?.toFixed(4)}, {chief.longitude?.toFixed(4)}</p>
+                            <Card className="border-none shadow-sm overflow-hidden">
+                                <CardContent className="p-0">
+                                    <div className="aspect-video w-full rounded-xl overflow-hidden shadow-inner border border-slate-100">
+                                        <GISMap 
+                                          chiefs={[chief]} 
+                                          conflicts={conflicts}
+                                          selectedId={chief.id}
+                                          showFilters={false}
+                                          height="100%"
+                                        />
                                     </div>
                                     
-                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
+                                    <div className="p-6 grid grid-cols-2 md:grid-cols-4 gap-4">
                                         <div className="p-4 rounded-xl bg-white border shadow-sm">
                                             <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Village</p>
                                             <p className="text-sm font-bold text-slate-800">{chief.village}</p>
@@ -302,7 +341,7 @@ export default function ChiefProfilePage() {
                             <Card className="border-none shadow-sm overflow-hidden">
                                 <CardContent className="p-0">
                                     {conflicts.length === 0 ? (
-                                        <div className="p-20 text-center space-y-4">
+                                        <div className="p-12 text-center space-y-4">
                                             <div className="h-16 w-16 bg-emerald-50 rounded-full flex items-center justify-center mx-auto text-emerald-500">
                                                 <CheckCircle2 className="h-8 w-8" />
                                             </div>
@@ -350,7 +389,7 @@ export default function ChiefProfilePage() {
                                 </CardContent>
                             </Card>
 
-                            <Card className="bg-amber-50 border border-amber-100 p-6 rounded-3xl">
+                            <Card className="bg-amber-50 border border-amber-100 p-6 rounded-2xl">
                                 <div className="flex gap-4">
                                     <div className="h-10 w-10 bg-amber-100 rounded-2xl flex items-center justify-center text-amber-600 shrink-0">
                                         <TrendingUp className="h-5 w-5" />

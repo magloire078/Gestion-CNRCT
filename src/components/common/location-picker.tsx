@@ -62,7 +62,7 @@ export function LocationPicker({
         const map = L.map(container, {
             center,
             zoom: initialLat ? 14 : 6,
-            zoomControl: false
+            zoomControl: true
         });
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {

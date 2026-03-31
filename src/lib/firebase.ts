@@ -44,9 +44,7 @@ const finalConfig = isConfigValid ? firebaseConfig : {
 };
 
 const app = getApps().length === 0 ? initializeApp(finalConfig) : getApp();
-const db = initializeFirestore(app, {
-  experimentalForceLongPolling: true,
-});
+const db = initializeFirestore(app, {});
 const auth = getAuth(app);
 const storage = getStorage(app);
 

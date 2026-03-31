@@ -117,24 +117,35 @@ export function subscribeToRoles(
     return unsubscribe;
 }
 
+let cachedRoles: Role[] | null = null;
+
 export async function getRoles(): Promise<Role[]> {
-    const snapshot = await getDocs(query(rolesCollection, orderBy("name", "asc")));
-    if (snapshot.empty) {
-        // Only try to initialize default roles if we have sufficient permissions.
-        // Non-admin users (read-only) will silently skip this step.
-        try {
-            await initializeDefaultRoles();
-            const newSnapshot = await getDocs(query(rolesCollection, orderBy("name", "asc")));
-            return newSnapshot.docs.map((doc: QueryDocumentSnapshot<DocumentData>) => ({ id: doc.id, ...doc.data() } as Role));
-        } catch (initError) {
-            console.warn('[RoleService] Could not initialize default roles (insufficient permissions). Returning empty list.', initError);
-            return [];
+    if (cachedRoles) return cachedRoles;
+    
+    try {
+        const snapshot = await getDocs(query(rolesCollection, orderBy("name", "asc")));
+        if (snapshot.empty) {
+            // Only try to initialize default roles if we have sufficient permissions.
+            // Non-admin users (read-only) will silently skip this step.
+            try {
+                await initializeDefaultRoles();
+                const newSnapshot = await getDocs(query(rolesCollection, orderBy("name", "asc")));
+                cachedRoles = newSnapshot.docs.map((doc: QueryDocumentSnapshot<DocumentData>) => ({ id: doc.id, ...doc.data() } as Role));
+                return cachedRoles;
+            } catch (initError) {
+                console.warn('[RoleService] Could not initialize default roles (insufficient permissions). Returning empty list.', initError);
+                return [];
+            }
         }
+        cachedRoles = snapshot.docs.map((doc: QueryDocumentSnapshot<DocumentData>) => ({
+            id: doc.id,
+            ...doc.data()
+        } as Role));
+        return cachedRoles;
+    } catch (error) {
+        console.warn('[RoleService] Error fetching roles:', error);
+        return [];
     }
-    return snapshot.docs.map((doc: QueryDocumentSnapshot<DocumentData>) => ({
-        id: doc.id,
-        ...doc.data()
-    } as Role));
 }
 
 export async function addRole(roleDataToAdd: Omit<Role, 'id'>): Promise<Role> {

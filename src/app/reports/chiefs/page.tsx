@@ -95,7 +95,7 @@ export default function ChiefsReportsPage() {
             Département: c.department,
             Sous_Préfecture: c.subPrefecture,
             Village: c.village,
-            Téléphone: c.phone,
+            Téléphone: c.phone || c.contact,
             Email: c.email
         })));
         
@@ -295,7 +295,7 @@ export default function ChiefsReportsPage() {
                                                     </div>
                                                     <div>
                                                         <p className="font-black text-slate-900 leading-none uppercase tracking-tighter">{chief.lastName} {chief.firstName}</p>
-                                                        <p className="text-[10px] text-slate-500 font-bold uppercase mt-1">{chief.phone || 'Aucun contact'}</p>
+                                                        <p className="text-[10px] text-slate-500 font-bold uppercase mt-1">{chief.phone || chief.contact || 'Aucun contact'}</p>
                                                     </div>
                                                 </div>
                                             </TableCell>

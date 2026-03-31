@@ -59,6 +59,7 @@ export function AddChiefSheet({ isOpen, onCloseAction, onAddChiefAction }: AddCh
   const [email, setEmail] = useState("");
   const [address, setAddress] = useState("");
   const [sexe, setSexe] = useState<Chief['sexe'] | "">("");
+  const [phone, setPhone] = useState("");
   const [contact, setContact] = useState("");
   const [bio, setBio] = useState("");
   const [photoFile, setPhotoFile] = useState<File | null>(null);
@@ -81,6 +82,7 @@ export function AddChiefSheet({ isOpen, onCloseAction, onAddChiefAction }: AddCh
   const [dateOfBirth, setDateOfBirth] = useState("");
   const [regencyStartDate, setRegencyStartDate] = useState("");
   const [regencyEndDate, setRegencyEndDate] = useState("");
+  const [status, setStatus] = useState<Chief['status']>("actif");
 
   const [allChiefs, setAllChiefs] = useState<Chief[]>([]);
   const [error, setError] = useState("");
@@ -107,7 +109,7 @@ export function AddChiefSheet({ isOpen, onCloseAction, onAddChiefAction }: AddCh
 
 
   const resetForm = () => {
-    setFirstName(""); setLastName(""); setTitle(""); setRole("Chef de Village"); setSexe(""); setContact("");
+    setFirstName(""); setLastName(""); setTitle(""); setRole("Chef de Village"); setSexe(""); setPhone(""); setContact("");
     setBio(""); setPhotoFile(null); setPhotoPreview(`https://placehold.co/100x100.png`);
     setSelectedRegion(""); setCustomRegion("");
     setSelectedDepartment(""); setCustomDepartment("");
@@ -115,7 +117,7 @@ export function AddChiefSheet({ isOpen, onCloseAction, onAddChiefAction }: AddCh
     setSelectedVillage(""); setCustomVillage("");
     setLatitude(''); setLongitude('');
     setParentChiefId(null); setDateOfBirth("");
-    setRegencyStartDate(""); setRegencyEndDate(""); setError("");
+    setRegencyStartDate(""); setRegencyEndDate(""); setStatus("actif"); setError("");
     setDesignationDate(""); setDesignationMode(""); setEthnicGroup(""); setLanguages("");
     setCNRCTRegistrationNumber(""); setOfficialDocuments(""); setEmail(""); setAddress("");
     if (fileInputRef.current) fileInputRef.current.value = "";
@@ -168,11 +170,13 @@ export function AddChiefSheet({ isOpen, onCloseAction, onAddChiefAction }: AddCh
         village: finalVillage,
         ethnicGroup: ethnicGroup || undefined,
         languages: languages ? languages.split(',').map(s => s.trim()) : undefined,
+        phone: phone || undefined,
         contact,
         email: email || undefined,
         address: address || undefined,
         CNRCTRegistrationNumber: CNRCTRegistrationNumber || undefined,
         officialDocuments: officialDocuments || undefined,
+        status: status || 'actif',
         bio,
         photoUrl: '', // This will be set by the service after upload
       };
@@ -312,7 +316,8 @@ export function AddChiefSheet({ isOpen, onCloseAction, onAddChiefAction }: AddCh
                 <AccordionTrigger>Contact</AccordionTrigger>
                 <AccordionContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
-                    <div><Label htmlFor="contact">Numéro de téléphone</Label><DebouncedInput id="contact" type="text" value={contact} onChange={(val) => setContact(val as string)} /></div>
+                    <div><Label htmlFor="phone">Téléphone Principal</Label><DebouncedInput id="phone" type="text" value={phone} onChange={(val) => setPhone(val as string)} placeholder="Ex: +225 0700000000" /></div>
+                    <div><Label htmlFor="contact">Contact Secondaire / Autre</Label><DebouncedInput id="contact" type="text" value={contact} onChange={(val) => setContact(val as string)} /></div>
                     <div><Label htmlFor="email">Adresse email</Label><DebouncedInput id="email" type="email" value={email} onChange={(val) => setEmail(val as string)} /></div>
                     <div className="col-span-2"><Label htmlFor="address">Adresse postale</Label><Input id="address" value={address} onChange={e => setAddress(e.target.value)} /></div>
                   </div>
@@ -326,6 +331,19 @@ export function AddChiefSheet({ isOpen, onCloseAction, onAddChiefAction }: AddCh
                     <div className="col-span-2"><Label htmlFor="officialDocuments">Documents officiels</Label><Textarea id="officialDocuments" value={officialDocuments} onChange={(e) => setOfficialDocuments(e.target.value)} rows={2} placeholder="Listez les décrets, arrêtés..." /></div>
                     <div><Label htmlFor="regencyStartDate">Début de Régence</Label><Input id="regencyStartDate" type="date" value={regencyStartDate} onChange={(e) => setRegencyStartDate(e.target.value)} /></div>
                     <div><Label htmlFor="regencyEndDate">Fin de Régence / Décès</Label><Input id="regencyEndDate" type="date" value={regencyEndDate} onChange={(e) => setRegencyEndDate(e.target.value)} /></div>
+                    <div>
+                      <Label htmlFor="status">Statut Actuel</Label>
+                      <Select value={status} onValueChange={(v) => setStatus(v as Chief['status'])}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Sélectionnez..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="actif">En Exercice (Actif)</SelectItem>
+                          <SelectItem value="a_vie">Régence à Vie</SelectItem>
+                          <SelectItem value="archive">Ancien / Archivé</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                 </AccordionContent>
               </AccordionItem>

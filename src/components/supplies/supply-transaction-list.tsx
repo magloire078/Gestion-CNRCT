@@ -16,7 +16,7 @@ interface SupplyTransactionListProps {
     onDelete?: (id: string) => void;
 }
 
-export function SupplyTransactionList({ transactions, onDelete }: SupplyTransactionListProps) {
+export const SupplyTransactionList = React.memo(({ transactions, onDelete }: SupplyTransactionListProps) => {
     if (transactions.length === 0) {
         return (
             <div className="text-center py-20 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
@@ -103,4 +103,6 @@ export function SupplyTransactionList({ transactions, onDelete }: SupplyTransact
             </Table>
         </div>
     );
-}
+});
+
+SupplyTransactionList.displayName = "SupplyTransactionList";

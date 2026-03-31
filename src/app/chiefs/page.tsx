@@ -34,6 +34,14 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { IVORIAN_REGIONS } from "@/constants/regions";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -59,8 +67,25 @@ export default function ChiefsPage() {
   const [deleteTarget, setDeleteTarget] = useState<Chief | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
 
+  const [selectedRole, setSelectedRole] = useState<string>("all");
+  const [selectedRegion, setSelectedRegion] = useState<string>("all");
+  const [selectedStatus, setSelectedStatus] = useState<string>("all");
+
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(viewMode === 'grid' ? 12 : 10);
+
+  const stats = useMemo(() => {
+    const activeCount = chiefs.filter(c => c.status === 'actif' || c.status === 'a_vie' || !c.status).length;
+    const highLevelRoles = chiefs.filter(c => c.role === 'Roi' || c.role === 'Chef de province').length;
+    const regionsCount = new Set(chiefs.map(c => c.region)).size;
+    
+    return {
+      total: chiefs.length,
+      active: activeCount,
+      highLevel: highLevelRoles,
+      regions: regionsCount
+    };
+  }, [chiefs]);
 
   const canImport = hasPermission('feature:chiefs:import');
   const canExport = hasPermission('feature:chiefs:export');
@@ -114,14 +139,19 @@ export default function ChiefsPage() {
   };
 
   const filteredChiefs = useMemo(() => {
-    const filtered = chiefs.filter((chief) =>
-      (chief.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (chief.region || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (chief.village || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (chief.title || '').toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    return filtered;
-  }, [chiefs, searchTerm]);
+    return chiefs.filter((chief) => {
+      const matchesSearch = (chief.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            (chief.region || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            (chief.village || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            (chief.title || '').toLowerCase().includes(searchTerm.toLowerCase());
+                            
+      const matchesRole = selectedRole === 'all' || chief.role === selectedRole;
+      const matchesRegion = selectedRegion === 'all' || chief.region === selectedRegion;
+      const matchesStatus = selectedStatus === 'all' || (chief.status || 'actif') === selectedStatus;
+      
+      return matchesSearch && matchesRole && matchesRegion && matchesStatus;
+    });
+  }, [chiefs, searchTerm, selectedRole, selectedRegion, selectedStatus]);
 
   const paginatedChiefs = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
@@ -187,6 +217,61 @@ export default function ChiefsPage() {
         </div>
       </div>
 
+      {/* Stats Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <Card className="border-none shadow-xl shadow-slate-200/50 rounded-3xl overflow-hidden group hover:scale-[1.02] transition-all">
+              <CardContent className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                      <div className="h-12 w-12 rounded-2xl bg-slate-900 flex items-center justify-center">
+                          <Crown className="h-6 w-6 text-white" />
+                      </div>
+                      <Badge variant="secondary" className="bg-slate-50 text-slate-900 border-none font-bold">CNRCT</Badge>
+                  </div>
+                  <h3 className="text-3xl font-black text-slate-900">{stats.total}</h3>
+                  <p className="text-sm text-slate-500 font-bold uppercase tracking-wider mt-1">Autorités répertoriées</p>
+              </CardContent>
+          </Card>
+
+          <Card className="border-none shadow-xl shadow-slate-200/50 rounded-3xl overflow-hidden group hover:scale-[1.02] transition-all">
+              <CardContent className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                      <div className="h-12 w-12 rounded-2xl bg-amber-500/10 flex items-center justify-center">
+                          <ShieldCheck className="h-6 w-6 text-amber-600" />
+                      </div>
+                      <Badge variant="secondary" className="bg-amber-50 text-amber-700 border-none font-bold">Souverains</Badge>
+                  </div>
+                  <h3 className="text-3xl font-black text-slate-900">{stats.highLevel}</h3>
+                  <p className="text-sm text-slate-500 font-bold uppercase tracking-wider mt-1">Rois & Provinces</p>
+              </CardContent>
+          </Card>
+
+          <Card className="border-none shadow-xl shadow-slate-200/50 rounded-3xl overflow-hidden group hover:scale-[1.02] transition-all">
+              <CardContent className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                      <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center">
+                          <MapPin className="h-6 w-6 text-emerald-600" />
+                      </div>
+                      <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 border-none font-bold">Rayonnement</Badge>
+                  </div>
+                  <h3 className="text-3xl font-black text-slate-900">{stats.regions}</h3>
+                  <p className="text-sm text-slate-500 font-bold uppercase tracking-wider mt-1">Régions couvertes</p>
+              </CardContent>
+          </Card>
+
+          <Card className="border-none shadow-xl shadow-slate-200/50 rounded-3xl overflow-hidden group hover:scale-[1.02] transition-all">
+              <CardContent className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                      <div className="h-12 w-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center">
+                          <UserCheck className="h-6 w-6 text-indigo-600" />
+                      </div>
+                      <Badge variant="secondary" className="bg-indigo-50 text-indigo-700 border-none font-bold">Actifs</Badge>
+                  </div>
+                  <h3 className="text-3xl font-black text-slate-900">{stats.total > 0 ? ((stats.active / stats.total) * 100).toFixed(0) : 0}%</h3>
+                  <p className="text-sm text-slate-500 font-bold uppercase tracking-wider mt-1">Taux d'activité</p>
+              </CardContent>
+          </Card>
+      </div>
+
 
       <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden">
         <CardHeader className="bg-slate-50/50 border-b border-slate-100 p-8">
@@ -201,17 +286,58 @@ export default function ChiefsPage() {
                     </div>
                 </div>
                 
-                <div className="flex flex-col sm:flex-row items-center gap-4">
-                    <div className="relative group w-full sm:w-[320px]">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
-                        <Input
-                            placeholder="Nom, titre, village, région..."
-                            className="pl-12 h-12 rounded-2xl border-none bg-white shadow-inner focus:ring-slate-900"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
+                <div className="flex flex-col xl:flex-row items-center gap-4 w-full lg:w-auto">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full xl:w-auto print:hidden">
+                        <Select value={selectedRole} onValueChange={setSelectedRole}>
+                            <SelectTrigger className="w-full sm:w-[150px] h-10 rounded-xl bg-white border-slate-200">
+                                <SelectValue placeholder="Tous les Rôles" />
+                            </SelectTrigger>
+                            <SelectContent className="rounded-xl">
+                                <SelectItem value="all">Tous les Rôles</SelectItem>
+                                <SelectItem value="Roi">Rois</SelectItem>
+                                <SelectItem value="Chef de province">Provinces</SelectItem>
+                                <SelectItem value="Chef de canton">Cantons</SelectItem>
+                                <SelectItem value="Chef de tribu">Tribus</SelectItem>
+                                <SelectItem value="Chef de Village">Villages</SelectItem>
+                            </SelectContent>
+                        </Select>
+
+                        <Select value={selectedRegion} onValueChange={setSelectedRegion}>
+                            <SelectTrigger className="w-full sm:w-[150px] h-10 rounded-xl bg-white border-slate-200">
+                                <SelectValue placeholder="Toutes Régions" />
+                            </SelectTrigger>
+                            <SelectContent className="rounded-xl">
+                                <SelectItem value="all">Toutes Régions</SelectItem>
+                                {IVORIAN_REGIONS.map(r => (
+                                    <SelectItem key={r} value={r}>{r}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+
+                        <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                            <SelectTrigger className="w-full sm:w-[130px] h-10 rounded-xl bg-white border-slate-200">
+                                <SelectValue placeholder="Tous Statuts" />
+                            </SelectTrigger>
+                            <SelectContent className="rounded-xl">
+                                <SelectItem value="all">Tous Statuts</SelectItem>
+                                <SelectItem value="actif">En Exercice</SelectItem>
+                                <SelectItem value="a_vie">À Vie</SelectItem>
+                                <SelectItem value="archive">Archivés</SelectItem>
+                            </SelectContent>
+                        </Select>
                     </div>
-                    <div className="flex items-center p-1.5 bg-white rounded-2xl shadow-inner border border-slate-100 shrink-0">
+
+                    <div className="flex items-center gap-3 w-full lg:w-auto">
+                        <div className="relative group flex-grow lg:w-[280px]">
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
+                            <Input
+                                placeholder="Rechercher..."
+                                className="pl-11 h-10 rounded-xl border-none bg-white shadow-inner focus:ring-slate-900"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        </div>
+                        <div className="flex items-center p-1 bg-white rounded-xl shadow-inner border border-slate-100 shrink-0">
                         <Button 
                             variant={viewMode === 'grid' ? 'default' : 'ghost'} 
                             size="icon" 
@@ -231,7 +357,8 @@ export default function ChiefsPage() {
                     </div>
                 </div>
             </div>
-        </CardHeader>
+        </div>
+    </CardHeader>
 
         <CardContent className="p-8">
           {error && <div className="p-12 text-center text-red-500 font-black uppercase tracking-widest">{error}</div>}
@@ -348,7 +475,7 @@ export default function ChiefsPage() {
                                         <span className="text-[10px] text-slate-400">{chief.region} / {chief.department}</span>
                                     </div>
                                 </TableCell>
-                                <TableCell className="text-xs font-medium text-slate-500 italic">{chief.contact || "—"}</TableCell>
+                                <TableCell className="text-xs font-medium text-slate-500 italic">{chief.phone || chief.contact || "—"}</TableCell>
                                 <TableCell className="text-right">
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>

@@ -41,6 +41,7 @@ export default function EditChiefPage() {
     const [designationDate, setDesignationDate] = useState("");
     const [designationMode, setDesignationMode] = useState<DesignationMode | "">("");
     const [sexe, setSexe] = useState<Chief['sexe'] | "">("");
+    const [phone, setPhone] = useState("");
     const [contact, setContact] = useState("");
     const [email, setEmail] = useState("");
     const [address, setAddress] = useState("");
@@ -76,6 +77,7 @@ export default function EditChiefPage() {
                     setDesignationDate(data.designationDate || "");
                     setDesignationMode(data.designationMode || "");
                     setSexe(data.sexe || "");
+                    setPhone(data.phone || "");
                     setContact(data.contact || "");
                     setEmail(data.email || "");
                     setAddress(data.address || "");
@@ -168,6 +170,7 @@ export default function EditChiefPage() {
                 village: finalVillage,
                 ethnicGroup: ethnicGroup || undefined,
                 languages: languages ? languages.split(',').map(s => s.trim()) : undefined,
+                phone: phone || undefined,
                 contact,
                 email: email || undefined,
                 address: address || undefined,
@@ -264,7 +267,8 @@ export default function EditChiefPage() {
                                             <SelectContent><SelectItem value="Homme">Homme</SelectItem><SelectItem value="Femme">Femme</SelectItem></SelectContent>
                                         </Select>
                                     </div>
-                                    <div className="space-y-2"><Label>Contact Téléphone</Label><Input value={contact} onChange={e => setContact(e.target.value)} /></div>
+                                    <div className="space-y-2"><Label>Téléphone Principal</Label><Input value={phone} onChange={e => setPhone(e.target.value)} placeholder="+225 0700000000" /></div>
+                                    <div className="space-y-2"><Label>Contact Secondaire</Label><Input value={contact} onChange={e => setContact(e.target.value)} /></div>
                                 </AccordionContent>
                             </AccordionItem>
 

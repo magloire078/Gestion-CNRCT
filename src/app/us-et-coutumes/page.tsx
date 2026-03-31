@@ -101,8 +101,8 @@ export default function UsEtCoutumesPage() {
 
   return (
     <div className="flex flex-col gap-10 pb-20">
-      {/* Hero Header */}
-      <div className="relative h-[200px] rounded-[2rem] overflow-hidden bg-slate-900 flex flex-col justify-end p-8 md:p-12 mb-2 group">
+      {/* Customs Hero Header */}
+      <div className="relative h-[200px] rounded-2xl overflow-hidden bg-slate-900 flex flex-col justify-end p-6 md:p-8 mb-2 group">
          <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1523805081730-61444927f07a?auto=format&fit=crop&q=80')] opacity-20 bg-cover bg-center transition-transform duration-1000 group-hover:scale-105" />
          <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/60 to-transparent" />
          <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
@@ -111,7 +111,7 @@ export default function UsEtCoutumesPage() {
                 <h1 className="text-4xl md:text-5xl font-black text-white tracking-tighter">Us & Coutumes</h1>
                 <p className="text-slate-400 text-sm max-w-xl font-medium italic">Répertoire encyclopédique des traditions et institutions traditionnelles de Côte d'Ivoire.</p>
             </div>
-            <Button onClick={() => setIsSheetOpen(true)} className="bg-white text-slate-900 hover:bg-slate-100 rounded-2xl h-12 px-6 font-bold shadow-2xl">
+            <Button onClick={() => setIsSheetOpen(true)} className="bg-white text-slate-900 hover:bg-slate-100 rounded-xl h-12 px-6 font-bold shadow-2xl">
                 <PlusCircle className="mr-2 h-5 w-5" />
                 Enregistrer une tradition
             </Button>
@@ -126,20 +126,20 @@ export default function UsEtCoutumesPage() {
                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
                   <Input
                     placeholder="Rechercher une ethnie, une région, un rite..."
-                    className="pl-12 h-14 rounded-2xl border-none shadow-xl shadow-slate-200/50 bg-white focus:ring-slate-900 text-base"
+                    className="pl-12 h-14 rounded-xl border-none shadow-xl shadow-slate-200/50 bg-white focus:ring-slate-900 text-base"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
                 </div>
 
                 <Select value={regionFilter} onValueChange={setRegionFilter}>
-                    <SelectTrigger className="h-14 rounded-2xl border-none shadow-xl shadow-slate-200/50 bg-white w-full md:w-[220px] font-bold text-slate-600">
+                    <SelectTrigger className="h-14 rounded-xl border-none shadow-xl shadow-slate-200/50 bg-white w-full md:w-[220px] font-bold text-slate-600">
                          <div className="flex items-center gap-2">
                             <MapIcon className="h-4 w-4 text-slate-400" />
                             <SelectValue placeholder="Filtrer par région" />
                          </div>
                     </SelectTrigger>
-                    <SelectContent className="rounded-2xl shadow-2xl border-slate-100 max-h-[300px]">
+                    <SelectContent className="rounded-xl shadow-2xl border-slate-100 max-h-[300px]">
                         <SelectItem value="all" className="font-bold">Toutes les régions</SelectItem>
                         {IVORIAN_REGIONS.map(r => <SelectItem key={r} value={r} className="rounded-lg">{r}</SelectItem>)}
                     </SelectContent>
@@ -157,20 +157,20 @@ export default function UsEtCoutumesPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {loading ? (
               Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="h-[400px] rounded-3xl bg-slate-100 animate-pulse" />
+                <div key={i} className="h-[400px] rounded-xl bg-slate-100 animate-pulse" />
               ))
             ) : filteredCustoms.length > 0 ? (
               filteredCustoms.map((custom) => (
                 <Card 
                     key={custom.id} 
-                    className="flex flex-col border-none shadow-xl shadow-slate-200/50 rounded-3xl overflow-hidden hover:shadow-2xl hover:shadow-slate-300/50 transition-all duration-500 group"
+                    className="flex flex-col border-none shadow-xl shadow-slate-200/50 rounded-xl overflow-hidden hover:shadow-2xl hover:shadow-slate-300/50 transition-all duration-500 group"
                 >
                     <div className="h-24 bg-slate-50 flex items-end px-6 relative overflow-hidden">
                         <div className="absolute top-4 right-6 opacity-5 transition-transform group-hover:scale-125">
                             <Landmark className="h-24 w-24" />
                         </div>
                         <div className="flex items-center gap-3 mb-[-12px] z-10">
-                            <div className="h-14 w-14 rounded-2xl bg-slate-900 flex items-center justify-center shadow-lg group-hover:-translate-y-1 transition-transform">
+                            <div className="h-14 w-14 rounded-xl bg-slate-900 flex items-center justify-center shadow-lg group-hover:-translate-y-1 transition-transform">
                                 <Scroll className="h-7 w-7 text-white" />
                             </div>
                         </div>
@@ -192,7 +192,7 @@ export default function UsEtCoutumesPage() {
                         </div>
                         
                         <div className="mt-6 grid grid-cols-2 gap-3">
-                            <div className="flex flex-col gap-1 p-3 rounded-2xl bg-slate-50/50 border border-slate-50">
+                            <div className="flex flex-col gap-1 p-3 rounded-xl bg-slate-50/50 border border-slate-50">
                                 <Users className="h-3.5 w-3.5 text-slate-300" />
                                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Organisation</span>
                                 <span className="text-[11px] font-bold text-slate-700 truncate">Traditionnelle</span>
@@ -221,7 +221,7 @@ export default function UsEtCoutumesPage() {
               ))
             ) : (
                 <div className="md:col-span-2 lg:col-span-3">
-                    <Card className="border-none shadow-none bg-slate-50/50 rounded-[3rem] p-20 flex flex-col items-center justify-center text-center">
+                    <Card className="border-none shadow-none bg-slate-50/50 rounded-2xl p-12 flex flex-col items-center justify-center text-center">
                         <div className="h-32 w-32 bg-white rounded-full flex items-center justify-center shadow-xl mb-8">
                             <BookText className="h-16 w-16 text-slate-200" />
                         </div>
@@ -229,7 +229,7 @@ export default function UsEtCoutumesPage() {
                         <p className="mt-2 text-slate-400 max-w-sm italic">
                             Aucune fiche n'a été trouvée pour votre recherche. Soyez le premier à documenter ces coutumes millénaires !
                         </p>
-                        <Button onClick={() => setIsSheetOpen(true)} className="mt-8 bg-slate-900 rounded-2xl h-12 px-8 font-bold">
+                        <Button onClick={() => setIsSheetOpen(true)} className="mt-8 bg-slate-900 rounded-xl h-12 px-8 font-bold">
                             Commencer l'archivage
                         </Button>
                     </Card>

@@ -58,6 +58,7 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { logPrintAction, getPrintStatsForPeriod } from "@/services/print-tracking-service";
 import { useTransition } from "react";
+import { PermissionGuard } from "@/components/auth/permission-guard";
 
 // Simplified debounced input to keep typing local and fast
 function DebouncedInput({ 
@@ -141,17 +142,7 @@ export default function PayrollPage() {
     fetchStats();
   }, [month, year, isProcessingBulk]);
 
-  // Secondary permission check - allow access if user has permission OR has a linked employee ID
-  useEffect(() => {
-    if (!loading && !hasPermission('page:payroll:view') && !user?.employeeId) {
-      router.replace('/intranet');
-      toast({
-        variant: "destructive",
-        title: "Accès refusé",
-        description: "Vous n'avez pas les permissions pour accéder à cette page."
-      });
-    }
-  }, [loading, hasPermission, user, router, toast]);
+  // Redirection logic removed in favor of PermissionGuard wrapper
 
 
   useEffect(() => {
@@ -428,7 +419,7 @@ export default function PayrollPage() {
 
 
   return (
-    <>
+    <PermissionGuard permission="page:payroll:view">
       <div className={isProcessingBulk ? 'print-hidden' : ''}>
         <div className="flex flex-col gap-6">
           <div className="flex items-center justify-between">
@@ -836,6 +827,6 @@ export default function PayrollPage() {
         );
         return typeof document !== 'undefined' ? createPortal(content, document.body) : content;
       })()}
-    </>
+    </PermissionGuard>
   );
 }

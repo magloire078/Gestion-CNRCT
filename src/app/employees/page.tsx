@@ -41,6 +41,7 @@ import { PrintLayout } from "@/components/reports/print-layout";
 import { divisions } from "@/lib/ivory-coast-divisions";
 import dynamic from 'next/dynamic';
 import { useTransition } from "react";
+import { PermissionGuard } from "@/components/auth/permission-guard";
 const DirectoireMap = dynamic<{ members: any[]; className?: string }>(() => import('@/components/employees/directoire-map').then(m => m.DirectoireMap), {
   ssr: false,
   loading: () => <Skeleton className="h-[400px] w-full rounded-xl" />,
@@ -455,7 +456,7 @@ export default function EmployeesPage() {
 
 
   return (
-    <>
+    <PermissionGuard permission="page:employees:view">
       <div className={isPrinting ? 'print-hidden' : ''}>
         <div className="flex flex-col gap-6 main-content">
           <div className="flex items-center justify-between">
@@ -500,7 +501,7 @@ export default function EmployeesPage() {
           </Tabs>
 
 
-          {isGeoTab && showDirectoireMap && (
+          {isGeoTab && personnelTypeFilter !== 'directoire' && personnelTypeFilter !== 'regional' && showDirectoireMap && (
             <div className="mb-6">
               <DirectoireMap members={filteredEmployees} className="h-[1000px]" />
             </div>
@@ -901,6 +902,6 @@ export default function EmployeesPage() {
           })}
         />
       )}
-    </>
+    </PermissionGuard>
   );
 }

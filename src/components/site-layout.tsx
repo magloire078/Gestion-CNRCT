@@ -50,6 +50,7 @@ import {
   HeartHandshake,
   Users2,
   History,
+  Zap,
 } from "lucide-react";
 
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
@@ -81,6 +82,8 @@ import { cn } from "@/lib/utils";
 
 const allMenuItems = [
   { href: "/intranet", label: "Accueil", icon: LayoutDashboard },
+  { href: "/helpdesk", label: "Assistance IT", icon: LifeBuoy },
+  { href: "/management", label: "Gestion", icon: Zap, permission: "group:operations:view" },
   { href: "/dashboard", label: "Tableau de Bord RH", icon: ShieldCheck, permission: "page:dashboard:view" },
   {
     isCollapsible: true,
@@ -172,8 +175,10 @@ const allMenuItems = [
     isCollapsible: true,
     label: "Rapports",
     icon: FileText,
+    href: "/reports",
     permission: "group:reports:view",
     subItems: [
+      { href: "/reports", label: "Vue d'ensemble", icon: LayoutDashboard, permission: "group:reports:view" },
       { href: "/reports/employees", label: "Personnel", icon: Users, permission: "page:dashboard:view" },
       { href: "/reports/chiefs", label: "Rois & Chefs", icon: Crown, permission: "page:chiefs:view" },
       { href: "/reports/supplies", label: "Logistique", icon: Package, permission: "page:supplies:view" },
@@ -196,7 +201,6 @@ const allMenuItems = [
       { href: "/employees?filter=gendarme", label: "Gendarmes", icon: ShieldHalf, permission: "page:employees:view" },
       { href: "/it-assets", label: "Actifs TI", icon: Laptop, permission: "page:it-assets:view" },
       { href: "/documents", label: "Documents", icon: FileText, permission: "page:repository:view" },
-      { href: "/helpdesk", label: "Helpdesk", icon: LifeBuoy, permission: "page:tickets:view" },
       { href: "/backup", label: "Sauvegarde & Restauration", icon: DatabaseBackup, permission: "page:backup:view" },
       { href: "/admin", label: "Paramètres Admin", icon: Shield, permission: "page:admin:view" },
     ]

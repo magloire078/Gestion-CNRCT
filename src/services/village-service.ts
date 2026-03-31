@@ -1,6 +1,6 @@
 import { collection, getDocs, addDoc, onSnapshot, Unsubscribe, query, orderBy, deleteDoc, doc, updateDoc, getDoc, where, setDoc } from '@/lib/firebase';
 import { db } from '@/lib/firebase';
-import type { Village } from '@/lib/data';
+import type { Village } from '@/types/village';
 import { FirestorePermissionError } from '@/lib/errors';
 
 const villagesCollection = collection(db, 'villages');
@@ -35,6 +35,18 @@ export async function getVillageByLocation(region: string, department: string, s
 }
 
 export async function addVillage(villageData: Omit<Village, 'id'>): Promise<Village> {
+    // Check for existing village with same coordinates admin
+    const existing = await getVillageByLocation(
+        villageData.region,
+        villageData.department,
+        villageData.subPrefecture,
+        villageData.name
+    );
+
+    if (existing) {
+        throw new Error(`La localité de ${villageData.name} est déjà répertoriée dans la sous-préfecture de ${villageData.subPrefecture}.`);
+    }
+
     const docRef = await addDoc(villagesCollection, villageData);
     return { id: docRef.id, ...villageData } as Village;
 }

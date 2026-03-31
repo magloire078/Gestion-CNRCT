@@ -13,7 +13,9 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { getChiefs } from '@/services/chief-service';
 import { subscribeToConflicts, updateConflict } from '@/services/conflict-service';
+import { getAllHeritageItems } from '@/services/heritage-service';
 import type { Chief, Conflict } from '@/lib/data';
+import type { HeritageItem } from '@/types/heritage';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -38,6 +40,7 @@ export default function MappingPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [chiefs, setChiefs] = useState<Chief[]>([]);
   const [conflicts, setConflicts] = useState<Conflict[]>([]);
+  const [heritageItems, setHeritageItems] = useState<HeritageItem[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
@@ -55,14 +58,16 @@ export default function MappingPage() {
         }
       } catch (error) {
         console.error('Failed to load chiefs for map', error);
-        if (isMounted) {
-          toast({
-            variant: 'destructive',
-            title: 'Erreur',
-            description: 'Impossible de charger les données des chefs pour la carte.',
-          });
-        }
       }
+    }
+
+    async function fetchHeritage() {
+        try {
+            const data = await getAllHeritageItems();
+            if (isMounted) setHeritageItems(data);
+        } catch (error) {
+            console.error('Failed to load heritage for map', error);
+        }
     }
 
     const unsubConflicts = subscribeToConflicts(
@@ -71,17 +76,10 @@ export default function MappingPage() {
       },
       (error) => {
         console.error('Failed to load conflicts for map', error);
-        if (isMounted) {
-          toast({
-            variant: 'destructive',
-            title: 'Erreur',
-            description: 'Impossible de charger les données des conflits.',
-          });
-        }
       }
     );
 
-    Promise.all([fetchChiefs()]).finally(() => {
+    Promise.all([fetchChiefs(), fetchHeritage()]).finally(() => {
       if (isMounted) setLoading(false);
     });
 
@@ -89,7 +87,7 @@ export default function MappingPage() {
       isMounted = false;
       unsubConflicts();
     }
-  }, [toast]);
+  }, []);
 
 
   const filteredChiefs = useMemo(() => {
@@ -221,6 +219,7 @@ export default function MappingPage() {
                 <GISMap 
                   chiefs={chiefs} 
                   conflicts={filteredConflicts}
+                  heritage={heritageItems}
                   selectedId={selectedChiefId}
                   onMarkerClick={(id) => setSelectedChiefId(id)}
                   onAddPoint={(lat, lng) => {
@@ -251,7 +250,12 @@ export default function MappingPage() {
                     <div className="h-3 w-px bg-slate-200" />
                     <div className="flex items-center gap-2">
                         <div className="h-3 w-3 rounded-full bg-red-600 shadow-[0_0_8px_rgba(220,38,38,0.5)]" />
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600">Points de Conflit</span>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600">Conflits</span>
+                    </div>
+                    <div className="h-3 w-px bg-slate-200" />
+                    <div className="flex items-center gap-2">
+                        <div className="h-3 w-3 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]" />
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600">Patrimoine</span>
                     </div>
                 </div>
             </div>

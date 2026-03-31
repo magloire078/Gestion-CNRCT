@@ -35,6 +35,7 @@ import { format, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { PaginationControls } from "@/components/common/pagination-controls";
 import { useAuth } from "@/hooks/use-auth";
+import { PermissionGuard } from "@/components/auth/permission-guard";
 
 type Status = "Planifiée" | "En cours" | "Terminée" | "Annulée";
 
@@ -149,20 +150,10 @@ export default function MissionsPage() {
 
   const totalPages = Math.ceil(filteredMissions.length / itemsPerPage);
 
-  // Secondary permission check - allow access if user has permission OR has a linked employee ID
-  useEffect(() => {
-    if (!loading && !hasPermission('page:missions:view') && !user?.employeeId) {
-      router.replace('/intranet');
-      toast({
-        variant: "destructive",
-        title: "Accès refusé",
-        description: "Vous n'avez pas les permissions pour accéder à cette page."
-      });
-    }
-  }, [loading, hasPermission, user, router, toast]);
+  // Redirection logic removed in favor of PermissionGuard wrapper
 
   return (
-    <>
+    <PermissionGuard permission="page:missions:view">
       <div className="flex flex-col gap-6">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold tracking-tight">
@@ -334,7 +325,7 @@ export default function MissionsPage() {
         title={`Supprimer la mission : ${deleteTarget?.title}`}
         description="Êtes-vous sûr de vouloir supprimer cette mission ? Cette action est irréversible."
       />
-    </>
+    </PermissionGuard>
   );
 }
 

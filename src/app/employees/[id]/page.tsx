@@ -61,6 +61,7 @@ import {
     Download,
     ChevronLeft,
     CheckCircle2,
+    XCircle,
     Banknote,
     UserCircle,
     UserCircle2,
@@ -175,10 +176,10 @@ export default function EmployeeDetailPage() {
     if (loading) {
         return (
             <div className="space-y-8 animate-pulse">
-                <div className="h-48 bg-slate-100 rounded-[3rem]" />
+                <div className="h-48 bg-slate-100 rounded-3xl" />
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    <div className="h-96 bg-slate-50 rounded-[2rem]" />
-                    <div className="lg:col-span-2 h-96 bg-slate-50 rounded-[2rem]" />
+                    <div className="h-96 bg-slate-50 rounded-2xl" />
+                    <div className="lg:col-span-2 h-96 bg-slate-50 rounded-2xl" />
                 </div>
             </div>
         );
@@ -190,10 +191,26 @@ export default function EmployeeDetailPage() {
     const canDelete = hasPermission('page:employees:delete');
     const canViewSalary = hasPermission('page:payroll:view') || hasPermission('feature:payroll:view-sensitive');
 
+    // Salary total calculations (fallback if database totals are 0)
+    const baseSalary = employee.baseSalary || 0;
+    const primeAnciennete = employee.primeAnciennete || 0;
+    const indemniteLogement = employee.indemniteLogement || 0;
+    const indemniteTransport = employee.indemniteTransportImposable || 0;
+    const otherIndemnities = (employee.indemniteResponsabilite || 0) + 
+                             (employee.indemniteSujetion || 0) + 
+                             (employee.indemniteCommunication || 0) + 
+                             (employee.indemniteRepresentation || 0);
+    
+    const calculatedBrut = baseSalary + primeAnciennete + indemniteLogement + indemniteTransport + otherIndemnities;
+    const displayBrut = (employee.Salaire_Brut && employee.Salaire_Brut > 0) ? employee.Salaire_Brut : calculatedBrut;
+    const displayNet = (employee.Salaire_Net && employee.Salaire_Net > 0) ? employee.Salaire_Net : displayBrut;
+
+    const isActive = employee.status === "Actif";
+
     return (
         <div className="flex flex-col gap-8 pb-20">
             {/* Header / Hero Section */}
-            <div className="relative overflow-hidden bg-slate-900 rounded-[3rem] p-8 md:p-12 shadow-2xl">
+            <div className="relative overflow-hidden bg-slate-900 rounded-3xl p-8 md:p-12 shadow-2xl">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_50%,rgba(59,130,246,0.1),transparent)]" />
                 <div className="relative z-10 flex flex-col md:flex-row items-center gap-8 md:gap-12">
                     <div className="relative">
@@ -203,8 +220,15 @@ export default function EmployeeDetailPage() {
                                 {employee.lastName?.charAt(0)}
                             </AvatarFallback>
                         </Avatar>
-                        <div className="absolute -bottom-2 -right-2 bg-emerald-500 h-10 w-10 rounded-full border-4 border-slate-900 flex items-center justify-center shadow-lg">
-                            <CheckCircle2 className="h-5 w-5 text-white" />
+                        <div className={cn(
+                            "absolute -bottom-2 -right-2 h-10 w-10 rounded-full border-4 border-slate-900 flex items-center justify-center shadow-lg",
+                            isActive ? "bg-emerald-500" : "bg-rose-500"
+                        )}>
+                            {isActive ? (
+                                <CheckCircle2 className="h-5 w-5 text-white" />
+                            ) : (
+                                <XCircle className="h-5 w-5 text-white" />
+                            )}
                         </div>
                     </div>
 
@@ -279,7 +303,7 @@ export default function EmployeeDetailPage() {
                 onValueChange={(v) => startTransition(() => setActiveTab(v))}
                 className="space-y-8"
             >
-                <TabsList className="bg-white border border-slate-100 p-1.5 rounded-[2rem] shadow-xl shadow-slate-200/50 flex flex-wrap h-auto gap-2">
+                <TabsList className="bg-white border border-slate-100 p-1.5 rounded-3xl shadow-xl shadow-slate-200/50 flex flex-wrap h-auto gap-2">
                     <TabsTrigger value="info" className="rounded-2xl px-8 py-3 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-[10px] transition-all">
                         <UserCircle2 className="mr-2 h-4 w-4" /> Identité
                     </TabsTrigger>
@@ -298,7 +322,7 @@ export default function EmployeeDetailPage() {
 
                 {/* Identity Tab */}
                 <TabsContent value="info" className="grid grid-cols-1 lg:grid-cols-3 gap-8 focus-visible:outline-none">
-                    <Card className="lg:col-span-2 border-none shadow-xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden">
+                    <Card className="lg:col-span-2 border-none shadow-xl shadow-slate-200/50 rounded-2xl overflow-hidden">
                         <CardHeader className="p-8 pb-4">
                             <CardTitle className="text-xl flex items-center gap-3">
                                 <CheckCircle2 className="h-5 w-5 text-emerald-500" /> État Civil & Identité
@@ -348,7 +372,7 @@ export default function EmployeeDetailPage() {
                         </CardContent>
                     </Card>
 
-                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-[2.5rem] bg-slate-50 overflow-hidden self-start">
+                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-2xl bg-slate-50 overflow-hidden self-start">
                         <CardHeader className="p-8 pb-4">
                             <CardTitle className="text-xl flex items-center gap-3">
                                 <Award className="h-5 w-5 text-amber-500" /> Qualifications
@@ -367,7 +391,7 @@ export default function EmployeeDetailPage() {
 
                 {/* Career Tab */}
                 <TabsContent value="career" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 focus-visible:outline-none">
-                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden">
+                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-2xl overflow-hidden">
                         <CardHeader className="p-8 pb-4 bg-slate-900 text-white">
                             <div className="flex items-center gap-3">
                                 <Building2 className="h-5 w-5 text-blue-400" />
@@ -390,7 +414,7 @@ export default function EmployeeDetailPage() {
                         </CardContent>
                     </Card>
 
-                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden">
+                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-2xl overflow-hidden">
                         <CardHeader className="p-8 pb-4 bg-blue-600 text-white">
                              <div className="flex items-center gap-3">
                                 <Calendar className="h-5 w-5 text-blue-200" />
@@ -415,7 +439,7 @@ export default function EmployeeDetailPage() {
                         </CardContent>
                     </Card>
 
-                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden lg:col-span-1">
+                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-2xl overflow-hidden lg:col-span-1">
                         <CardHeader className="p-8 pb-4 bg-emerald-600 text-white">
                             <div className="flex items-center gap-3">
                                 <ShieldCheck className="h-5 w-5 text-emerald-200" />
@@ -442,7 +466,7 @@ export default function EmployeeDetailPage() {
                 {/* Salary Tab */}
                 {canViewSalary && (
                     <TabsContent value="salary" className="grid grid-cols-1 lg:grid-cols-2 gap-8 focus-visible:outline-none">
-                        <Card className="border-none shadow-xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden relative">
+                        <Card className="border-none shadow-xl shadow-slate-200/50 rounded-2xl overflow-hidden relative">
                              <div className="absolute top-0 right-0 p-8 opacity-5">
                                 <Banknote className="h-32 w-32" />
                              </div>
@@ -452,9 +476,9 @@ export default function EmployeeDetailPage() {
                                 </CardTitle>
                              </CardHeader>
                              <CardContent className="p-8 pt-4 space-y-6">
-                                <div className="flex justify-between items-center p-4 rounded-3xl bg-emerald-50 border border-emerald-100">
+                                <div className="flex justify-between items-center p-4 rounded-xl bg-emerald-50 border border-emerald-100">
                                     <span className="text-sm font-black text-emerald-900 uppercase tracking-widest">Salaire Brut Total</span>
-                                    <span className="text-2xl font-black text-emerald-600">{formatCurrency(employee.Salaire_Brut || 0)}</span>
+                                    <span className="text-2xl font-black text-emerald-600">{formatCurrency(displayBrut)}</span>
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-6">
@@ -476,15 +500,15 @@ export default function EmployeeDetailPage() {
                                     </div>
                                 </div>
 
-                                <div className="p-4 rounded-3xl bg-slate-900 text-white flex justify-between items-center group overflow-hidden relative">
+                                <div className="p-4 rounded-xl bg-slate-900 text-white flex justify-between items-center group overflow-hidden relative">
                                     <div className="absolute inset-0 bg-blue-500 w-0 group-hover:w-full transition-all duration-700 opacity-20" />
                                     <span className="text-sm font-black uppercase tracking-[0.2em] relative z-10">Net à Payer</span>
-                                    <span className="text-3xl font-black text-blue-400 relative z-10">{formatCurrency(employee.Salaire_Net || 0)}</span>
+                                    <span className="text-3xl font-black text-blue-400 relative z-10">{formatCurrency(displayNet)}</span>
                                 </div>
                              </CardContent>
                         </Card>
 
-                        <Card className="border-none shadow-xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden">
+                        <Card className="border-none shadow-xl shadow-slate-200/50 rounded-xl overflow-hidden">
                              <CardHeader className="p-8 pb-4">
                                 <CardTitle className="text-xl flex items-center gap-3">
                                     <CreditCard className="h-5 w-5 text-blue-500" /> Coordonnées Bancaires
@@ -512,7 +536,7 @@ export default function EmployeeDetailPage() {
 
                 {/* History Tab */}
                 <TabsContent value="history" className="focus-visible:outline-none">
-                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden">
+                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-2xl overflow-hidden">
                         <CardHeader className="p-8 pb-4 flex flex-row items-center justify-between">
                             <CardTitle className="text-xl flex items-center gap-3">
                                 <History className="h-5 w-5 text-blue-500" /> Historique de Carrière

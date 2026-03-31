@@ -23,6 +23,7 @@ import { Employe, Fleet } from "@/lib/data";
 
 // Components
 import { useAuth } from "@/hooks/use-auth";
+import { PermissionGuard } from "@/components/auth/permission-guard";
 import dynamic from "next/dynamic";
 
 // Dynamic imports for dialogs to improve INP
@@ -187,6 +188,7 @@ export default function FuelManagementPage() {
     }
 
     return (
+        <PermissionGuard permission="page:fuel:view">
         <div className="flex flex-col gap-6 p-6">
             <div className="flex items-center justify-between">
                 <div>
@@ -396,5 +398,6 @@ export default function FuelManagementPage() {
                 />
             )}
         </div>
+        </PermissionGuard>
     );
 }

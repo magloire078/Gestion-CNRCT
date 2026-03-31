@@ -19,6 +19,7 @@ export type Chief = {
     customs?: string;
     languages?: string[];
     contact: string;
+    phone?: string;
     email?: string;
     address?: string;
     CNRCTRegistrationNumber?: string;

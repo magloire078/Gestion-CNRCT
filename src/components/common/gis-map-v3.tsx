@@ -7,7 +7,7 @@ import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 
 import {
     MapPin, Navigation, Info, User, Loader2,
-    ZoomIn, ZoomOut, Maximize
+    Maximize
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -169,7 +169,7 @@ export function GISMap(props: GISMapProps) {
             const map = L.map(container, {
                 center: [7.539989, -5.54708],
                 zoom: 7,
-                zoomControl: false,
+                zoomControl: true,
                 attributionControl: true
             });
 
@@ -248,6 +248,10 @@ export function GISMap(props: GISMapProps) {
             marker.bindPopup(popupContent);
             marker.on('click', () => onMarkerClick?.(chief.id, 'chief'));
             layers.chiefs.addLayer(marker);
+
+            if (selectedId === chief.id) {
+                map.flyTo([chief.latitude, chief.longitude], 12);
+            }
         });
 
         // Ajout des conflits
@@ -259,17 +263,63 @@ export function GISMap(props: GISMapProps) {
 
             const popupContent = document.createElement('div');
             popupContent.className = 'p-4 min-w-[250px] font-sans';
+            const statusColor = conflict.status === 'Résolu' ? 'text-emerald-700' : 'text-rose-700';
+            const statusBg = conflict.status === 'Résolu' ? 'bg-emerald-50' : 'bg-rose-50';
+            
             popupContent.innerHTML = `
-                <div class="bg-red-50 -m-4 p-4 mb-3 border-b border-red-100 rounded-t-lg">
-                    <h3 class="text-xs font-bold text-red-700 uppercase tracking-widest mb-1">SIGNALEMENT CONFLIT</h3>
+                <div class="${statusBg} -m-4 p-4 mb-3 border-b border-white/20 rounded-t-lg">
+                    <h3 class="text-[10px] font-black ${statusColor} uppercase tracking-[0.2em] mb-1">INCIDENT: ${conflict.status}</h3>
                     <p class="text-sm font-bold text-slate-800">${conflict.village}</p>
                 </div>
-                <p class="text-xs text-slate-600 mb-4 italic leading-relaxed">"${conflict.description}"</p>
+                <div class="space-y-2 mt-4">
+                    <p class="text-xs text-slate-600 italic leading-relaxed">"${conflict.description}"</p>
+                    <div class="pt-4 border-t border-slate-100 italic font-medium text-[10px] text-slate-400 uppercase tracking-widest">
+                        Type: ${conflict.type}
+                    </div>
+                </div>
             `;
 
             marker.bindPopup(popupContent);
-
             layers.conflicts.addLayer(marker);
+
+            if (selectedId === conflict.id) {
+                map.flyTo([conflict.latitude, conflict.longitude], 13);
+            }
+        });
+
+        // Ajout du patrimoine (NOUVEAU)
+        heritage.forEach(item => {
+            if (!item.latitude || !item.longitude) return;
+            const marker = L.marker([item.latitude, item.longitude], {
+                icon: createCustomIcon('heritage', { category: item.category })
+            });
+
+            const popupContent = document.createElement('div');
+            popupContent.className = 'p-4 min-w-[220px] font-sans';
+            popupContent.innerHTML = `
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="h-8 w-8 rounded-lg bg-amber-100 flex items-center justify-center text-amber-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-black text-slate-900 uppercase tracking-tight">${item.name}</h3>
+                        <p class="text-[9px] font-bold text-amber-600 uppercase tracking-widest">${heritageCategoryLabels[item.category]}</p>
+                    </div>
+                </div>
+                <p class="text-xs text-slate-500 line-clamp-2 italic mb-3">"${item.description}"</p>
+                <div class="pt-2 border-t border-slate-50">
+                     <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 line-clamp-1">
+                        📍 ${item.village || 'Région'}, ${item.region}
+                     </p>
+                </div>
+            `;
+
+            marker.bindPopup(popupContent);
+            layers.heritage.addLayer(marker);
+
+            if (selectedId === item.id) {
+                map.flyTo([item.latitude, item.longitude], 14);
+            }
         });
 
         // Visibilité initiale
@@ -278,7 +328,7 @@ export function GISMap(props: GISMapProps) {
         if (activeLayers.heritage) map.addLayer(layers.heritage);
         if (activeLayers.proximity) map.addLayer(layers.proximity);
 
-    }, [mapReady, chiefs, conflicts, heritage, selectedId, L, activeLayers]);
+    }, [mapReady, chiefs, conflicts, heritage, selectedId, L]);
 
     // Toggles
     const toggleLayer = (layer: keyof typeof activeLayers) => {
@@ -296,11 +346,18 @@ export function GISMap(props: GISMapProps) {
     };
 
     if (typeof window === 'undefined' || !isClient) {
-        return <div className={cn("bg-slate-50 relative", className)} style={{ minHeight: height }} />;
+        return <div className={cn("bg-slate-50 relative map-container-dynamic", className)} />;
     }
 
     return (
-        <div className={cn("bg-slate-50 relative group rounded-xl overflow-hidden shadow-2xl border border-slate-200", className)} style={{ minHeight: height }}>
+        <div 
+            className={cn("bg-slate-50 relative group rounded-xl overflow-hidden shadow-2xl border border-slate-200 map-container-dynamic", className)}
+        >
+            <style jsx>{`
+                .map-container-dynamic {
+                    min-height: ${height};
+                }
+            `}</style>
             <div key={instanceId} ref={mapContainerRef} className="absolute inset-0 z-0" id={instanceId} />
 
             {/* Overlay de Chargement */}
@@ -315,23 +372,6 @@ export function GISMap(props: GISMapProps) {
             {mapReady && (
                 <div className="absolute top-4 right-4 z-10 flex flex-col gap-2">
                     <div className="bg-white/90 backdrop-blur-md p-1 rounded-xl shadow-xl border border-white/50 flex flex-col gap-1">
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-9 w-9 rounded-lg hover:bg-blue-50 text-slate-600"
-                            onClick={() => mapRef.current?.zoomIn()}
-                        >
-                            <ZoomIn className="h-5 w-5" />
-                        </Button>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-9 w-9 rounded-lg hover:bg-blue-50 text-slate-600"
-                            onClick={() => mapRef.current?.zoomOut()}
-                        >
-                            <ZoomOut className="h-5 w-5" />
-                        </Button>
-                        <div className="h-px bg-slate-200 mx-2" />
                         <Button
                             variant="ghost"
                             size="icon"
@@ -368,11 +408,21 @@ export function GISMap(props: GISMapProps) {
                             onClick={() => toggleLayer('conflicts')}
                             className={cn(
                                 "flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all",
-                                activeLayers.conflicts ? "bg-red-500 text-white shadow-lg shadow-red-500/30" : "text-slate-400 hover:text-white"
+                                activeLayers.conflicts ? "bg-rose-500 text-white shadow-lg shadow-rose-500/30" : "text-slate-400 hover:text-white"
                             )}
                         >
                             <MapPin className="h-3.5 w-3.5" />
                             Conflits
+                        </button>
+                        <button
+                            onClick={() => toggleLayer('heritage')}
+                            className={cn(
+                                "flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all",
+                                activeLayers.heritage ? "bg-amber-500 text-white shadow-lg shadow-amber-500/30" : "text-slate-400 hover:text-white"
+                            )}
+                        >
+                            <Info className="h-3.5 w-3.5" />
+                            Patrimoine
                         </button>
                         <div className="w-px h-6 bg-white/10 mx-1" />
                     </div>

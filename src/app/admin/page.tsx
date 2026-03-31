@@ -33,6 +33,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { useAdminData } from "@/hooks/use-admin-data";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PermissionGuard } from "@/components/auth/permission-guard";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 import type { User, Role, Department, Direction, Service, Employe } from "@/lib/data";
@@ -218,8 +219,9 @@ export default function AdminPage() {
   };
 
   return (
-    <TooltipProvider>
-      <>
+    <PermissionGuard permission="page:admin:view">
+      <TooltipProvider>
+        <>
         <div className="flex flex-col gap-6">
           <div className="flex items-center gap-4">
             <Avatar className="h-12 w-12 border-2 border-primary/10 shadow-lg">
@@ -733,5 +735,6 @@ export default function AdminPage() {
         />
       </>
     </TooltipProvider >
+    </PermissionGuard>
   );
 }

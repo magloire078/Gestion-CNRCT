@@ -44,6 +44,7 @@ import { useRouter } from "next/navigation";
 import { ConfirmationDialog } from "@/components/common/confirmation-dialog";
 import { PaginationControls } from "@/components/common/pagination-controls";
 import Link from "next/link";
+import { PermissionGuard } from "@/components/auth/permission-guard";
 
 
 const statusVariantMap: Record<Fleet['status'], "default" | "secondary" | "outline" | "destructive"> = {
@@ -146,7 +147,7 @@ export default function FleetPage() {
   const totalPages = Math.ceil(filteredVehicles.length / itemsPerPage);
 
   return (
-    <>
+    <PermissionGuard permission="page:fleet:view">
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight">
@@ -329,6 +330,6 @@ export default function FleetPage() {
         title={`Supprimer le véhicule ${deleteTarget?.plate}`}
         description="Êtes-vous sûr de vouloir supprimer ce véhicule ? Cette action est irréversible."
     />
-    </>
+    </PermissionGuard>
   );
 }

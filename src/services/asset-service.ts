@@ -179,3 +179,34 @@ export async function deleteAsset(tag: string): Promise<void> {
         throw error;
     }
 }
+
+export async function getAssetStatusCounts() {
+    const assets = await getAssets();
+    const counts = {
+        'En utilisation': 0,
+        'En stock': 0,
+        'En réparation': 0,
+        'Retiré': 0
+    };
+    
+    assets.forEach(asset => {
+        if (counts[asset.status] !== undefined) {
+            counts[asset.status]++;
+        }
+    });
+    
+    return counts;
+}
+
+export async function getAssetTypeDistribution() {
+    const assets = await getAssets();
+    const distribution: Record<string, number> = {};
+    
+    assets.forEach(asset => {
+        distribution[asset.type] = (distribution[asset.type] || 0) + 1;
+    });
+    
+    return Object.entries(distribution)
+        .map(([name, value]) => ({ name, value }))
+        .sort((a, b) => b.value - a.value);
+}

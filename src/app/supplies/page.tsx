@@ -6,8 +6,14 @@ import {
     Pencil, Trash2, LayoutGrid, List,
     Archive, AlertTriangle, CheckCircle2,
     TrendingDown, BarChart3, Filter,
-    Download, ShoppingCart, Info, ChevronRight
+    Download, ShoppingCart, Info, ChevronRight,
+    Printer, Zap
 } from "lucide-react";
+import { InstitutionalHeader } from "@/components/reports/institutional-header";
+import { InstitutionalFooter } from "@/components/reports/institutional-footer";
+import { InstitutionalReportWrapper } from "@/components/reports/institutional-report-wrapper";
+import { PrintSuppliesDialog, type PrintOptions } from "@/components/supplies/print-supplies-dialog";
+import { bulkImportSupplies } from "@/scripts/import-supplies";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -44,7 +50,7 @@ import {
 } from "@/components/ui/select";
 import { 
     subscribeToSupplies, addSupply, updateSupply, deleteSupply,
-    subscribeToSupplyTransactions 
+    subscribeToSupplyTransactions, deleteSupplyTransaction
 } from "@/services/supply-service";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
@@ -60,12 +66,14 @@ import {
 import type { Supply, SupplyTransaction } from "@/lib/data";
 import { SupplyTransactionList } from "@/components/supplies/supply-transaction-list";
 import { useAuth } from "@/hooks/use-auth";
+import { PermissionGuard } from "@/components/auth/permission-guard";
 
 
 import { supplyCategories } from "@/lib/constants/supply";
 import { AddSupplySheet } from "@/components/supplies/add-supply-sheet";
 import { EditSupplySheet } from "@/components/supplies/edit-supply-sheet";
 import { DistributeSupplyDialog } from "@/components/supplies/distribute-supply-dialog";
+import { RestockSupplyDialog } from "@/components/supplies/restock-supply-dialog";
 
 const getStockStatus = (quantity: number, reorderLevel: number) => {
     if (quantity <= 0) return { text: "Rupture", color: "destructive", variant: "destructive" as any, value: 5, className: "bg-red-500", icon: AlertTriangle };
@@ -79,12 +87,14 @@ const SupplyRow = memo(({
     supply, 
     index, 
     openDistributeDialog, 
+    openRestockDialog,
     openEditSheet, 
     setDeleteTarget 
 }: {
     supply: Supply;
     index: number;
     openDistributeDialog: (s: Supply) => void;
+    openRestockDialog: (s: Supply) => void;
     openEditSheet: (s: Supply) => void;
     setDeleteTarget: (s: Supply) => void;
 }) => {
@@ -139,13 +149,16 @@ const SupplyRow = memo(({
             <TableCell className="text-right">
                 <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full border border-slate-100 shadow-sm hover:bg-slate-100">
                         <MoreHorizontal className="h-4 w-4" />
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="rounded-xl shadow-xl border-slate-100">
-                    <DropdownMenuItem onClick={() => openDistributeDialog(supply)} className="cursor-pointer font-bold text-slate-900">
-                        <ShoppingCart className="mr-2 h-4 w-4" /> Donner à...
+                    <DropdownMenuItem onClick={() => openDistributeDialog(supply)} className="cursor-pointer font-bold text-slate-900 border-b border-slate-50">
+                        <ShoppingCart className="mr-2 h-4 w-4 text-blue-600" /> Donner à...
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => openRestockDialog(supply)} className="cursor-pointer font-bold text-emerald-700 bg-emerald-50/50">
+                        <PlusCircle className="mr-2 h-4 w-4" /> Réapprovisionner
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => openEditSheet(supply)} className="cursor-pointer">
                         <Pencil className="mr-2 h-4 w-4" /> Modifier
@@ -168,8 +181,12 @@ export default function SuppliesPage() {
   const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
   const [selectedSupply, setSelectedSupply] = useState<Supply | null>(null);
   const [isDistributeDialogOpen, setIsDistributeDialogOpen] = useState(false);
+  const [isRestockDialogOpen, setIsRestockDialogOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Supply | null>(null);
   const [activeTab, setActiveTab] = useState("inventory");
+  const [isPrintDialogOpen, setIsPrintDialogOpen] = useState(false);
+  const [printOptions, setPrintOptions] = useState<PrintOptions | null>(null);
+  const [isPrinting, setIsPrinting] = useState(false);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -180,6 +197,8 @@ export default function SuppliesPage() {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [historyPage, setHistoryPage] = useState(1);
+  const [historyItemsPerPage, setHistoryItemsPerPage] = useState(10);
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
 
   useEffect(() => {
@@ -258,6 +277,60 @@ export default function SuppliesPage() {
     }
   };
 
+  const handleDeleteTransaction = async (id: string) => {
+    if (confirm("Voulez-vous vraiment supprimer cette trace du journal ? Cela n'affectera pas le stock actuel.")) {
+        try {
+            await deleteSupplyTransaction(id);
+            toast({
+                title: "Trace supprimée",
+                description: "Le mouvement a été retiré du journal.",
+            });
+        } catch (err) {
+            console.error("Failed to delete transaction:", err);
+            toast({
+                variant: "destructive",
+                title: "Erreur",
+                description: "Impossible de supprimer la trace.",
+            });
+        }
+    }
+  };
+
+  const [isPendingAction, setIsPendingAction] = useState(false);
+
+  const handleCleanDuplicates = async () => {
+    if (!confirm("Cette opération va supprimer tous les articles d'inventaire dont l'identifiant n'est pas synchronisé. Continuer ?")) return;
+    
+    setIsPendingAction(true);
+    try {
+        let deletedCount = 0;
+        // Identify duplicates: those whose ID is not their code
+        for (const supply of supplies) {
+            if (supply.id !== supply.code && supply.code) {
+                // Another document already exists with the code as ID
+                const exists = supplies.some(s => s.id === supply.code);
+                if (exists) {
+                    await deleteSupply(supply.id);
+                    deletedCount++;
+                }
+            }
+        }
+        toast({
+            title: "Nettoyage terminé",
+            description: `${deletedCount} doublons ont été supprimés.`,
+        });
+    } catch (err) {
+        console.error("Cleanup failed:", err);
+        toast({
+            variant: "destructive",
+            title: "Erreur",
+            description: "Certains doublons n'ont pas pu être supprimés.",
+        });
+    } finally {
+        setIsPendingAction(false);
+    }
+  };
+
   const openEditSheet = useCallback((supply: Supply) => {
     startTransition(() => {
       setSelectedSupply(supply);
@@ -269,6 +342,13 @@ export default function SuppliesPage() {
     startTransition(() => {
       setSelectedSupply(supply);
       setIsDistributeDialogOpen(true);
+    });
+  }, []);
+
+  const openRestockDialog = useCallback((supply: Supply) => {
+    startTransition(() => {
+      setSelectedSupply(supply);
+      setIsRestockDialogOpen(true);
     });
   }, []);
 
@@ -287,7 +367,7 @@ export default function SuppliesPage() {
         supply.category?.toLowerCase().includes(searchTermLower) ||
         (supply.code && supply.code.toLowerCase().includes(searchTermLower));
       const matchesCategory = categoryFilter === 'all' || supply.category === categoryFilter;
-      return matchesSearch && matchesCategory;
+      return matchesSearch && (matchesCategory || !supply.category);
     });
   }, [supplies, deferredSearchTerm, categoryFilter]);
 
@@ -306,6 +386,39 @@ export default function SuppliesPage() {
 
   const totalPages = Math.ceil(filteredSupplies.length / itemsPerPage);
 
+  const paginatedTransactions = useMemo(() => {
+    const startIndex = (historyPage - 1) * historyItemsPerPage;
+    return transactions.slice(startIndex, startIndex + historyItemsPerPage);
+  }, [transactions, historyPage, historyItemsPerPage]);
+
+  const historyTotalPages = Math.ceil(transactions.length / historyItemsPerPage);
+
+  const handlePrint = useCallback((options: PrintOptions) => {
+    setPrintOptions(options);
+    // Give it a small timeout for state to settle before starting print process
+    setTimeout(() => {
+      setIsPrinting(true);
+    }, 100);
+  }, []);
+
+  const printableSupplies = useMemo(() => {
+    if (!printOptions) return [];
+    let items = supplies;
+    if (!printOptions.includeOutOfStock) {
+        items = items.filter(s => s.quantity > 0);
+    }
+    if (printOptions.category !== 'all') {
+        items = items.filter(s => s.category === printOptions.category);
+    }
+    
+    return [...items].sort((a, b) => {
+        if (printOptions.sortBy === 'name') return a.name.localeCompare(b.name);
+        if (printOptions.sortBy === 'quantity') return b.quantity - a.quantity;
+        if (printOptions.sortBy === 'category') return (a.category || '').localeCompare(b.category || '');
+        return 0;
+    });
+  }, [supplies, printOptions]);
+
   const stats = useMemo(() => {
     const totalItems = supplies.length;
     const lowStock = supplies.filter(s => s.quantity > 0 && s.quantity <= s.reorderLevel).length;
@@ -315,6 +428,7 @@ export default function SuppliesPage() {
 
 
   return (
+    <PermissionGuard permission="page:supplies:view">
     <div className="flex flex-col gap-8 pb-20">
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -341,7 +455,21 @@ export default function SuppliesPage() {
                     <LayoutGrid className="h-4 w-4" />
                 </Button>
             </div>
-            <Button onClick={() => setIsAddSheetOpen(true)} className="bg-slate-900 rounded-xl h-11">
+            <Button 
+                onClick={() => setIsPrintDialogOpen(true)} 
+                variant="outline" 
+                className="rounded-xl border-slate-200 font-bold shadow-sm"
+            >
+              <Printer className="mr-2 h-4 w-4" /> Imprimer
+            </Button>
+            <Button 
+                onClick={bulkImportSupplies}
+                variant="outline" 
+                className="rounded-xl border-emerald-200 bg-emerald-50 text-emerald-700 font-bold shadow-sm hover:bg-emerald-100"
+            >
+              <Zap className="mr-2 h-4 w-4" /> Synchroniser Listes
+            </Button>
+            <Button onClick={() => setIsAddSheetOpen(true)} className="bg-slate-900 rounded-xl h-11 font-bold">
                 <PlusCircle className="mr-2 h-4 w-4" />
                 Nouvel Article
             </Button>
@@ -434,10 +562,10 @@ export default function SuppliesPage() {
                     <Table>
                         <TableHeader className="bg-slate-50/80">
                         <TableRow className="border-slate-100 hover:bg-transparent">
-                            <TableHead className="w-12 text-center text-[10px] font-bold uppercase tracking-widest text-slate-400">#</TableHead>
-                            <TableHead className="w-[100px] text-[10px] font-bold uppercase tracking-widest text-slate-400">Code</TableHead>
-                            <TableHead className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Libellé Article</TableHead>
-                            <TableHead className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Classification</TableHead>
+                            <TableHead className="py-4 pl-6 font-bold text-slate-700 uppercase tracking-wider text-[11px]">Code</TableHead>
+                            <TableHead className="py-4 font-bold text-slate-700 uppercase tracking-wider text-[11px]">Désignation</TableHead>
+                            <TableHead className="py-4 font-bold text-slate-700 uppercase tracking-wider text-[11px]">Réf. Fournisseur</TableHead>
+                            <TableHead className="py-4 font-bold text-slate-700 uppercase tracking-wider text-[11px]">Catégorie</TableHead>
                             <TableHead className="text-center text-[10px] font-bold uppercase tracking-widest text-slate-400">Stock</TableHead>
                             <TableHead className="text-center text-[10px] font-bold uppercase tracking-widest text-slate-400">Seuil Alerte</TableHead>
                             <TableHead className="w-[180px] text-[10px] font-bold uppercase tracking-widest text-slate-400">Santé du Stock</TableHead>
@@ -458,12 +586,13 @@ export default function SuppliesPage() {
                             </TableRow>
                             ))
                         ) : paginatedSupplies.length > 0 ? (
-                            paginatedSupplies.map((supply, index) => (
+                            paginatedSupplies.map((item, index) => (
                                 <SupplyRow 
-                                    key={supply.id}
-                                    supply={supply}
+                                    key={item.id}
+                                    supply={item}
                                     index={(currentPage - 1) * itemsPerPage + index}
                                     openDistributeDialog={openDistributeDialog}
+                                    openRestockDialog={openRestockDialog}
                                     openEditSheet={openEditSheet}
                                     setDeleteTarget={handleSetDeleteTarget}
                                 />
@@ -600,8 +729,23 @@ export default function SuppliesPage() {
                 <CardDescription>Suivi détaillé des distributions et réapprovisionnements.</CardDescription>
             </CardHeader>
             <CardContent className="pt-6">
-                <SupplyTransactionList transactions={transactions} />
+                <SupplyTransactionList 
+                    transactions={paginatedTransactions} 
+                    onDelete={handleDeleteTransaction}
+                />
             </CardContent>
+            {historyTotalPages > 1 && (
+                <CardFooter className="bg-slate-50/50 border-t border-slate-100 px-6 py-4">
+                    <PaginationControls
+                        currentPage={historyPage}
+                        totalPages={historyTotalPages}
+                        onPageChange={setHistoryPage}
+                        itemsPerPage={historyItemsPerPage}
+                        onItemsPerPageChange={setHistoryItemsPerPage}
+                        totalItems={transactions.length}
+                    />
+                </CardFooter>
+            )}
         </Card>
       </TabsContent>
       </Tabs>
@@ -621,12 +765,19 @@ export default function SuppliesPage() {
           supply={selectedSupply}
         />
       )}
-      {isDistributeDialogOpen && selectedSupply && (
-        <DistributeSupplyDialog
-          isOpen={isDistributeDialogOpen}
-          onCloseAction={closeDistributeDialog}
-          supply={selectedSupply}
-        />
+      {(isDistributeDialogOpen || isRestockDialogOpen) && selectedSupply && (
+          <>
+              <DistributeSupplyDialog 
+                  isOpen={isDistributeDialogOpen} 
+                  onCloseAction={() => setIsDistributeDialogOpen(false)} 
+                  supply={selectedSupply} 
+              />
+              <RestockSupplyDialog
+                  isOpen={isRestockDialogOpen}
+                  onCloseAction={() => setIsRestockDialogOpen(false)}
+                  supply={selectedSupply}
+              />
+          </>
       )}
       <ConfirmationDialog
         isOpen={!!deleteTarget}
@@ -635,6 +786,55 @@ export default function SuppliesPage() {
         title={`Supprimer "${deleteTarget?.name}"`}
         description="Êtes-vous sûr de vouloir supprimer cet article de l'inventaire ? Cette action est irréversible."
       />
+
+      {isPrintDialogOpen && (
+          <PrintSuppliesDialog 
+            isOpen={isPrintDialogOpen} 
+            onCloseAction={() => setIsPrintDialogOpen(false)} 
+            onPrintAction={handlePrint}
+          />
+      )}
+
+      <InstitutionalReportWrapper isPrinting={isPrinting} onAfterPrint={() => setIsPrinting(false)}>
+        {/* Hidden Printable Report Container */}
+        <div id="printable-report" className="hidden print:block bg-white p-10 min-h-screen">
+          <InstitutionalHeader 
+            title="Inventaire des fournitures et consommables" 
+            period={`Situation au ${new Date().toLocaleDateString('fr-FR')}`}
+          />
+            
+          <div className="my-8">
+            <div className="overflow-hidden rounded-2xl border border-slate-200">
+                <Table>
+                    <TableHeader className="bg-slate-50">
+                        <TableRow className="border-slate-100">
+                            <TableHead className="font-bold py-3 pl-6">Code</TableHead>
+                            <TableHead className="font-bold py-3">Désignation</TableHead>
+                            <TableHead className="font-bold py-3">Catégorie</TableHead>
+                            <TableHead className="text-center font-bold py-3 pr-6">Quantité</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {printableSupplies.map((item) => (
+                            <TableRow key={item.id} className="border-slate-50 h-10">
+                                <TableCell className="py-2 pl-6 font-mono text-[10px] text-slate-400">{item.code || '---'}</TableCell>
+                                <TableCell className="py-2 font-bold text-slate-800 text-[11px]">{item.name}</TableCell>
+                                <TableCell className="py-2 text-[10px] text-slate-500 font-medium">{item.category}</TableCell>
+                                <TableCell className="py-2 text-center pr-6 font-black text-slate-900">{item.quantity}</TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </div>
+          </div>
+
+          <InstitutionalFooter 
+            signatoryName="COULIBALY Hamadou"
+            signatoryTitle="Contrôleur Interne et Qualité, CNRCT"
+          />
+        </div>
+      </InstitutionalReportWrapper>
     </div>
+    </PermissionGuard>
   );
 }

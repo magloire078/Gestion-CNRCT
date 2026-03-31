@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { 
@@ -21,6 +22,16 @@ import { Chief } from "@/types/chief";
 import { HeritageItem, HeritageCategory, heritageCategoryLabels } from "@/types/heritage";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+
+const GISMap = dynamic(() => import('@/components/common/gis-map-v3').then(m => m.GISMap), {
+  ssr: false,
+  loading: () => (
+    <div className="h-full w-full bg-slate-50 flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed">
+        <Loader2 className="h-8 w-8 text-slate-300 animate-spin" />
+        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest animate-pulse">Chargement de la carte...</p>
+    </div>
+  ),
+});
 
 export default function VillageDetailPage() {
     const params = useParams();
@@ -103,8 +114,8 @@ export default function VillageDetailPage() {
 
     return (
         <div className="flex flex-col gap-8 pb-20">
-            {/* Header / Hero */}
-            <div className="relative h-[300px] rounded-[3rem] overflow-hidden bg-slate-900 group">
+            {/* Village Hero Section */}
+            <div className="relative h-[280px] rounded-2xl overflow-hidden bg-slate-900 group">
                 {village.photoUrl ? (
                     <img src={village.photoUrl} alt={village.name} className="absolute inset-0 w-full h-full object-cover opacity-40" />
                 ) : (
@@ -112,7 +123,7 @@ export default function VillageDetailPage() {
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent" />
                 
-                <div className="relative h-full flex flex-col justify-between p-8 md:p-12 z-10">
+                <div className="relative h-full flex flex-col justify-between p-6 md:p-8 z-10">
                     <Button variant="ghost" className="w-fit text-white/70 hover:text-white hover:bg-white/10 rounded-xl" onClick={() => router.back()}>
                         <ArrowLeft className="mr-2 h-4 w-4" /> Retour
                     </Button>
@@ -141,7 +152,7 @@ export default function VillageDetailPage() {
                         
                         <div className="flex items-center gap-3">
                             {activeChief && (
-                                <Card className="bg-white/10 backdrop-blur-xl border-white/10 p-4 rounded-3xl flex items-center gap-4 text-white">
+                                <Card className="bg-white/10 backdrop-blur-xl border-white/10 p-4 rounded-xl flex items-center gap-4 text-white">
                                     <div className="h-12 w-12 rounded-2xl bg-amber-500 flex items-center justify-center text-xl font-black shadow-lg">
                                         {activeChief.name.charAt(0)}
                                     </div>
@@ -168,7 +179,7 @@ export default function VillageDetailPage() {
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         {/* Demographic Column */}
                         <div className="space-y-8">
-                            <Card className="rounded-[2.5rem] border-none shadow-xl shadow-slate-200/50 p-8 space-y-6">
+                            <Card className="rounded-xl border-none shadow-xl shadow-slate-200/50 p-8 space-y-6">
                                 <div className="space-y-1">
                                     <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest">Démographie</h3>
                                     <p className="text-xs text-slate-500 font-medium italic">Données basées sur le dernier recensement.</p>
@@ -195,7 +206,7 @@ export default function VillageDetailPage() {
                                 </div>
                             </Card>
 
-                            <Card className="rounded-[2.5rem] border-none shadow-xl shadow-slate-200/50 p-8 bg-slate-900 text-white overflow-hidden relative">
+                            <Card className="rounded-xl border-none shadow-xl shadow-slate-200/50 p-8 bg-slate-900 text-white overflow-hidden relative">
                                 <div className="absolute top-0 right-0 p-8 opacity-10">
                                     <Coffee className="h-24 w-24" />
                                 </div>
@@ -211,25 +222,32 @@ export default function VillageDetailPage() {
                         {/* Main Info Column */}
                         <div className="lg:col-span-2 space-y-8">
                              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <Card className="rounded-[2.5rem] border-none shadow-xl shadow-slate-200/50 p-8 flex flex-col justify-between hover:shadow-2xl transition-all duration-500 group">
-                                    <div className="space-y-4">
-                                        <div className="h-12 w-12 rounded-2xl bg-slate-50 flex items-center justify-center group-hover:scale-110 transition-transform">
-                                            <MapPin className="h-6 w-6 text-slate-400" />
-                                        </div>
-                                        <div>
-                                            <h4 className="text-sm font-black text-slate-900 uppercase">Situation Géographique</h4>
-                                            <p className="text-xs text-slate-500 font-medium">Coordonnées SIG archivées au répertoire national.</p>
-                                        </div>
+                                <Card className="rounded-xl border-none shadow-xl shadow-slate-200/50 overflow-hidden flex flex-col hover:shadow-2xl transition-all duration-500 group">
+                                    <div className="h-48 w-full bg-slate-100 relative">
+                                        <GISMap 
+                                          chiefs={chiefs} 
+                                          heritage={heritage}
+                                          selectedId={activeChief?.id || null}
+                                          showFilters={false}
+                                          height="100%"
+                                        />
                                     </div>
-                                    <div className="mt-8 pt-6 border-t border-slate-50 flex items-center justify-between">
-                                        <div className="text-xs font-black text-slate-900 tracking-tighter">
-                                            {village.latitude?.toFixed(4)} N, {village.longitude?.toFixed(4)} W
+                                    <div className="p-6 space-y-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="h-10 w-10 rounded-xl bg-slate-50 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                                <MapPin className="h-5 w-5 text-slate-400" />
+                                            </div>
+                                            <div>
+                                                <h4 className="text-xs font-black text-slate-900 uppercase">Localisation SIG</h4>
+                                                <div className="text-[10px] font-bold text-slate-400">
+                                                    {village.latitude?.toFixed(4)} N, {village.longitude?.toFixed(4)} W
+                                                </div>
+                                            </div>
                                         </div>
-                                        <Badge variant="outline" className="font-black text-[9px] uppercase">Géo-référencé</Badge>
                                     </div>
                                 </Card>
 
-                                <Card className="rounded-[2.5rem] border-none shadow-xl shadow-slate-200/50 p-8 flex flex-col justify-between hover:shadow-2xl transition-all duration-500 group">
+                                <Card className="rounded-xl border-none shadow-xl shadow-slate-200/50 p-8 flex flex-col justify-between hover:shadow-2xl transition-all duration-500 group">
                                     <div className="space-y-4">
                                         <div className="h-12 w-12 rounded-2xl bg-amber-50 flex items-center justify-center group-hover:scale-110 transition-transform">
                                             <Shield className="h-6 w-6 text-amber-500" />
@@ -285,7 +303,7 @@ export default function VillageDetailPage() {
                         {heritage.length > 0 ? (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pr-4">
                                 {heritage.map(item => (
-                                    <Card key={item.id} className="group rounded-3xl border-none shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden bg-white">
+                                    <Card key={item.id} className="group rounded-xl border-none shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden bg-white">
                                         <div className="h-44 bg-slate-100 relative overflow-hidden">
                                             {item.imageUrl && <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />}
                                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
@@ -306,7 +324,7 @@ export default function VillageDetailPage() {
                                 ))}
                             </div>
                         ) : (
-                            <Card className="rounded-[3rem] border-none bg-slate-50 p-20 flex flex-col items-center justify-center text-center mr-4">
+                            <Card className="rounded-2xl border-none bg-slate-50 p-12 flex flex-col items-center justify-center text-center mr-4">
                                 <Landmark className="h-16 w-16 text-slate-200 mb-6" />
                                 <h3 className="text-xl font-black text-slate-900 uppercase">Aucun patrimoine répertorié</h3>
                                 <p className="text-sm text-slate-400 font-medium max-w-sm mt-2 font-medium">Les traditions spécifiques de ce village n'ont pas encore été liées à cette fiche.</p>
@@ -316,7 +334,7 @@ export default function VillageDetailPage() {
                 </TabsContent>
 
                 <TabsContent value="history" className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                    <Card className="rounded-[3rem] border-none shadow-xl shadow-slate-200/50 p-12 space-y-8 bg-white max-w-4xl">
+                    <Card className="rounded-2xl border-none shadow-xl shadow-slate-200/50 p-10 space-y-8 bg-white max-w-4xl">
                         <div className="flex items-center gap-4">
                             <div className="h-14 w-14 rounded-2xl bg-slate-900 flex items-center justify-center shadow-lg"><Info className="h-7 w-7 text-white"/></div>
                             <div>

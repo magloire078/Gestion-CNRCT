@@ -10,9 +10,13 @@ const ticketsCollection = collection(db, 'tickets');
 
 export function subscribeToTickets(
     callback: (tickets: Ticket[]) => void,
-    onError: (error: Error) => void
+    onError: (error: Error) => void,
+    userId?: string
 ): Unsubscribe {
-    const q = query(ticketsCollection, orderBy("createdAt", "desc"));
+    let q = query(ticketsCollection, orderBy("createdAt", "desc"));
+    if (userId) {
+        q = query(ticketsCollection, where("createdBy", "==", userId), orderBy("createdAt", "desc"));
+    }
     const unsubscribe = onSnapshot(q,
         (snapshot) => {
             const tickets = snapshot.docs.map((doc: any) => {

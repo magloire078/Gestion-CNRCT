@@ -20,8 +20,8 @@
     --primary: 217 91% 50%;
     --primary-foreground: 0 0% 100%;
 
-    /* Secondary: Elegant Violet */
-    --secondary: 262 52% 47%;
+    /* Secondary: Professional Slate/Green Mix (aligned with CNRCT) */
+    --secondary: 156 100% 15%;
     --secondary-foreground: 0 0% 100%;
 
     /* Muted: Softer grays */
@@ -57,7 +57,7 @@
     --chart-1: 225 73% 63%;
     --chart-2: 16, 82%, 58%;
     --chart-3: 338, 78%, 59%;
-    --chart-4: 280, 82%, 58%;
+    --chart-4: 46, 65%, 52%;
     --chart-5: 45, 93%, 47%;
   }
 
@@ -77,9 +77,9 @@
     --primary: 217 91% 60%;
     --primary-foreground: 222 47% 11%;
 
-    /* Secondary: Neon Violet */
-    --secondary: 262 83% 58%;
-    --secondary-foreground: 222 47% 11%;
+    /* Secondary: Professional Emerald */
+    --secondary: 156 100% 30%;
+    --secondary-foreground: 210 40% 98%;
 
     /* Muted */
     --muted: 217 32% 17%;
@@ -170,6 +170,7 @@
   /* Glassmorphism Effects */
   .glass-card {
     background: rgba(255, 255, 255, 0.05);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
     backdrop-filter: blur(16px) saturate(180%);
     border: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
@@ -305,12 +306,14 @@
   /* Glassmorphism Dialog */
   .glass-dialog {
     background: rgba(255, 255, 255, 0.7) !important;
+    -webkit-backdrop-filter: blur(12px) saturate(180%) !important;
     backdrop-filter: blur(12px) saturate(180%) !important;
     border: 1px solid rgba(255, 255, 255, 0.3) !important;
   }
 
   .dark .glass-dialog {
     background: rgba(15, 23, 42, 0.7) !important;
+    -webkit-backdrop-filter: blur(12px) saturate(180%) !important;
     backdrop-filter: blur(12px) saturate(180%) !important;
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
   }
@@ -367,6 +370,16 @@
   .badge-premium-error {
     background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
     box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+  }
+
+  /* Pattern Utilities */
+  .pattern-dots {
+    background-image: radial-gradient(circle at 2px 2px, currentColor 1px, transparent 0);
+    background-size: 24px 24px;
+  }
+  .pattern-dots-lg {
+    background-image: radial-gradient(circle at 2px 2px, currentColor 1px, transparent 0);
+    background-size: 40px 40px;
   }
 }
 
@@ -461,6 +474,7 @@
     #print-section table thead th {
         background-color: white !important;
         -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
         border: 0 !important;
     }
 
@@ -477,6 +491,16 @@
     /* Apply dymo-label page when print-dymo-label class is on body */
     body.print-dymo-label {
       page: dymo-label;
+    }
+
+    .print-page-footer {
+      position: fixed !important;
+      bottom: 0 !important;
+      left: 0 !important;
+      width: 100% !important;
+      background: white !important;
+      padding-top: 10px !important;
+      display: block !important;
     }
 
     body.print-dymo-label #print-section {

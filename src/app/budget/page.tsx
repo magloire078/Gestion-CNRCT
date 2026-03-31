@@ -54,6 +54,7 @@ import {
     PieChart, Pie, Cell, Legend
 } from 'recharts';
 import { cn } from "@/lib/utils";
+import { PermissionGuard } from "@/components/auth/permission-guard";
 
 const COLORS = ['#0f172a', '#334155', '#475569', '#64748b', '#94a3b8', '#cbd5e1'];
 
@@ -190,7 +191,8 @@ export default function BudgetPage() {
   }, [filteredLines, budgetLines, years]);
 
   return (
-    <div className="flex flex-col gap-8 pb-20">
+    <PermissionGuard permission="page:budget:view">
+        <div className="flex flex-col gap-8 pb-20">
       {/* Page Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -465,5 +467,6 @@ export default function BudgetPage() {
         description="Cette action est irréversible et supprimera définitivement la ligne budgétaire du système."
       />
     </div>
+    </PermissionGuard>
   );
 }

@@ -40,9 +40,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (isMounted) {
         setUser(currentUser);
         authDone = true;
+        
+        // Settings can load in parallel or after auth
+        // We checkDone() here if settingsDone is already true or we can proceed without them
+        checkDone();
 
-        // Load organization settings only after we know the auth state
-        // This prevents permission errors when not authenticated
+        // Load organization settings only once
         if (!settingsDone) {
           getOrganizationSettings()
             .then(orgSettings => {
@@ -59,19 +62,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 checkDone();
               }
             });
-        } else {
-          checkDone();
         }
       }
     });
 
-    // Timeout safety: Force loading to false after 8 seconds if somehow stuck
+    // Timeout safety: Force loading to false after 15 seconds if somehow stuck
     const timeoutId = setTimeout(() => {
       if (isMounted && loading) {
         console.warn("[Auth] Initialization timeout - forcing loading to false");
+        // Try to proceed with whatever state we have
         setLoading(false);
       }
-    }, 8000);
+    }, 15000);
 
     return () => {
       isMounted = false;

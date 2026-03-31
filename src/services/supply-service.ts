@@ -1,7 +1,7 @@
 
 
 import { db } from '@/lib/firebase';
-import { collection, getDocs, addDoc, onSnapshot, Unsubscribe, query, orderBy, doc, updateDoc, deleteDoc, writeBatch, increment, getDoc } from '@/lib/firebase';
+import { collection, getDocs, addDoc, onSnapshot, Unsubscribe, query, orderBy, doc, updateDoc, deleteDoc, writeBatch, increment, getDoc, where } from '@/lib/firebase';
 import type { Supply, SupplyTransaction } from '@/lib/data';
 import { createNotification } from './notification-service';
 import { uploadToCloudinary } from '@/lib/cloudinary';
@@ -42,7 +42,6 @@ export function subscribeToSupplies(
     );
     return unsubscribe;
 }
-
 export async function getSupplies(): Promise<Supply[]> {
     const snapshot = await getDocs(query(suppliesCollection, orderBy("name", "asc")));
     return snapshot.docs.map((doc: any) => ({
@@ -51,12 +50,37 @@ export async function getSupplies(): Promise<Supply[]> {
     } as Supply));
 }
 
+/**
+ * Checks if a supply code is already in use by another article.
+ */
+export async function isCodeUnique(code: string, excludeId?: string): Promise<boolean> {
+    if (!code) return true;
+    const q = query(suppliesCollection, where("code", "==", code));
+    const snapshot = await getDocs(q);
+    
+    if (snapshot.empty) return true;
+    
+    // If we have an excludeId (during update), check if the existing doc is the same one
+    if (excludeId && snapshot.docs.length === 1 && snapshot.docs[0].id === excludeId) {
+        return true;
+    }
+    
+    return false;
+}
+
 export async function addSupply(supplyDataToAdd: Omit<Supply, "id">, userId?: string, photoFile: File | null = null): Promise<Supply> {
     let photoUrl = supplyDataToAdd.photoUrl;
     if (photoFile) {
         photoUrl = await uploadToCloudinary(photoFile);
     }
     
+    if (supplyDataToAdd.code) {
+        const unique = await isCodeUnique(supplyDataToAdd.code);
+        if (!unique) {
+            throw new Error(`Le code "${supplyDataToAdd.code}" est déjà utilisé par un autre article.`);
+        }
+    }
+
     const sanitizedData = sanitizeData({ ...supplyDataToAdd, photoUrl });
     const docRef = await addDoc(suppliesCollection, sanitizedData);
     
@@ -88,6 +112,13 @@ export async function addSupply(supplyDataToAdd: Omit<Supply, "id">, userId?: st
 
 export async function updateSupply(id: string, dataToUpdate: Partial<Omit<Supply, 'id'>>, userId?: string, photoFile: File | null = null): Promise<void> {
     const supplyDocRef = doc(db, 'supplies', id);
+    
+    if (dataToUpdate.code) {
+        const unique = await isCodeUnique(dataToUpdate.code, id);
+        if (!unique) {
+            throw new Error(`Le code "${dataToUpdate.code}" est déjà utilisé par un autre article.`);
+        }
+    }
     
     // Fetch old data to check quantity change
     const oldDoc = await getDoc(supplyDocRef);
@@ -201,4 +232,45 @@ export async function getSupplyTransactions(): Promise<SupplyTransaction[]> {
         id: doc.id,
         ...doc.data()
     } as SupplyTransaction));
+}
+
+export async function getSupplySummary() {
+    const supplies = await getSupplies();
+    const totalItems = supplies.length;
+    const lowStock = supplies.filter((s: Supply) => s.quantity <= s.reorderLevel && s.quantity > 0).length;
+    const outOfStock = supplies.filter((s: Supply) => s.quantity === 0).length;
+    
+    return {
+        totalItems,
+        lowStock,
+        outOfStock,
+        categoriesCount: new Set(supplies.map((s: Supply) => s.category)).size
+    };
+}
+
+export async function getSupplyCategoryTrends() {
+    const transactions = await getSupplyTransactions();
+    const categoryTotals: Record<string, number> = {};
+    
+    // Simple count of distributions by supply name for trends
+    transactions
+        .filter(t => t.type === 'distribution')
+        .forEach(t => {
+            categoryTotals[t.supplyName] = (categoryTotals[t.supplyName] || 0) + t.quantity;
+        });
+
+    return Object.entries(categoryTotals)
+        .map(([name, value]) => ({ name, value }))
+        .sort((a, b) => b.value - a.value)
+        .slice(0, 5);
+}
+
+export async function getSupplyRecentActivity(limit: number = 5) {
+    const transactions = await getSupplyTransactions();
+    return transactions.slice(0, limit);
+}
+
+export async function deleteSupplyTransaction(id: string): Promise<void> {
+    const transactionDocRef = doc(db, 'supply_transactions', id);
+    await deleteDoc(transactionDocRef);
 }

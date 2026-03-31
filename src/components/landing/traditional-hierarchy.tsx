@@ -17,7 +17,7 @@ export function TraditionalHierarchy() {
         </div>
         <div className="flex flex-wrap justify-center gap-4 max-w-4xl mx-auto">
           {ranks.map((rank) => (
-            <Badge key={rank} variant="secondary" className="text-lg px-6 py-2 rounded-full border-primary/10">
+            <Badge key={rank} variant="secondary" className="text-lg px-6 py-2 rounded-md border-primary/10">
               {rank}
             </Badge>
           ))}

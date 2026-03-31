@@ -79,6 +79,7 @@ export function ImportChiefsDataCard() {
                 subPrefecture: String(row.subprefecture || ''),
                 village: String(row.village || ''),
                 contact: String(row.contact || ''),
+                phone: row.phone ? String(row.phone) : undefined,
                 bio: String(row.bio || ''),
                 photoUrl: String(row.photourl || `https://placehold.co/100x100.png`),
                 latitude: row.latitude ? Number(row.latitude) : undefined,

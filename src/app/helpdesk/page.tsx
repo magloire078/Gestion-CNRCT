@@ -46,6 +46,7 @@ import { format, parseISO } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
+import { PermissionGuard } from "@/components/auth/permission-guard";
 
 
 const statusVariantMap: Record<TicketStatus, { label: string, color: string, icon: any, bg: string }> = {
@@ -65,7 +66,9 @@ const ticketPriorities: TicketPriority[] = ['Basse', 'Moyenne', 'Haute'];
 const ticketStatuses: TicketStatus[] = ['Ouvert', 'En cours', 'Fermé'];
 
 export default function HelpdeskPage() {
-  const { user } = useAuth();
+  const { user, hasPermission } = useAuth();
+  // Seuls les vrais administrateurs peuvent voir tous les tickets.
+  const isAdmin = user?.roleId === 'super-admin' || user?.roleId === 'admin' || hasPermission("group:admin:view");
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
 
@@ -96,6 +99,7 @@ export default function HelpdeskPage() {
   };
 
   useEffect(() => {
+    if (!user) return;
     const unsubscribe = subscribeToTickets(
       (fetchedTickets) => {
         setTickets(fetchedTickets);
@@ -105,10 +109,11 @@ export default function HelpdeskPage() {
         setError("Impossible de charger les tickets.");
         console.error(err);
         setLoading(false);
-      }
+      },
+      isAdmin ? undefined : user.id
     );
     return () => unsubscribe();
-  }, []);
+  }, [user, isAdmin]);
 
   const handleAddTicket = async (newTicketData: Omit<Ticket, "id" | "createdAt" | "updatedAt" | "status">) => {
      try {
@@ -126,6 +131,11 @@ export default function HelpdeskPage() {
 
   const filteredTickets = useMemo(() => {
     return tickets.filter(ticket => {
+      // Sécurité supplémentaire : si l'utilisateur n'est pas admin, on force le client-side
+      if (!isAdmin && ticket.createdBy !== user?.id) {
+          return false;
+      }
+
       const searchTermLower = searchTerm.toLowerCase();
       const matchesSearch = ticket.title.toLowerCase().includes(searchTermLower) ||
                             ticket.id.toLowerCase().includes(searchTermLower) ||
@@ -136,7 +146,7 @@ export default function HelpdeskPage() {
 
       return matchesSearch && matchesStatus && matchesPriority;
     });
-  }, [tickets, searchTerm, filters]);
+  }, [tickets, searchTerm, filters, isAdmin, user]);
 
   const stats = useMemo(() => {
     const open = tickets.filter(t => t.status === 'Ouvert').length;
@@ -165,8 +175,8 @@ export default function HelpdeskPage() {
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight">Centre de Support</h1>
-          <p className="text-muted-foreground mt-1 text-sm">Gestion des incidents et demandes d'assistance IT.</p>
+          <h1 className="text-3xl font-extrabold tracking-tight">{isAdmin ? "Centre de Support" : "Mes Billets (Tickets)"}</h1>
+          <p className="text-muted-foreground mt-1 text-sm">{isAdmin ? "Gestion des incidents et demandes d'assistance IT." : "Suivez et gérez vos demandes d'assistance."}</p>
         </div>
         <Button onClick={() => setIsAddSheetOpen(true)} className="bg-slate-900 rounded-xl h-11 shadow-lg shadow-slate-200">
           <PlusCircle className="mr-2 h-4 w-4" />
@@ -175,6 +185,7 @@ export default function HelpdeskPage() {
       </div>
 
       {/* Analytics Mini Dashboard */}
+      {isAdmin && (
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="border-none shadow-sm bg-blue-50/80 group">
           <CardHeader className="pb-2">
@@ -206,6 +217,7 @@ export default function HelpdeskPage() {
           </CardHeader>
         </Card>
       </div>
+      )}
 
       <Card className="border-none shadow-xl shadow-slate-200/50 overflow-hidden">
         <div className="h-1.5 bg-slate-900 w-full" />

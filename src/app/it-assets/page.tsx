@@ -24,6 +24,7 @@ import { ImportAssetsDataCard } from "@/components/it-assets/import-assets-data-
 import { PrintAssetsDialog } from "@/components/it-assets/print-assets-dialog";
 import { PaginationControls } from "@/components/common/pagination-controls";
 import { useAuth } from "@/hooks/use-auth";
+import { PermissionGuard } from "@/components/auth/permission-guard";
 import { BarcodeScanner } from "@/components/it-assets/barcode-scanner";
 import { PrintLabels } from "@/components/it-assets/print-labels";
 import { PrintSingleLabel } from "@/components/it-assets/print-single-label";
@@ -288,6 +289,7 @@ export default function ItAssetsPage() {
 
 
   return (
+    <PermissionGuard permission="page:it-assets:view">
     <>
       <div className={`flex flex-col gap-6 ${isPrinting || isPrintingLabels || isPrintingSingleLabel ? 'print-hidden' : ''}`}>
         <div className="flex items-center justify-between">
@@ -594,7 +596,7 @@ export default function ItAssetsPage() {
               </DialogDescription>
             </DialogHeader>
             <div className="flex justify-center items-center p-4 my-4 bg-muted rounded-md">
-              <div className="border shadow-md" style={{ transform: 'scale(1.5)', transformOrigin: 'center' }}>
+              <div className="border shadow-md scale-150 origin-center">
                 <PrintSingleLabel asset={assetForLabelPreview} settings={organizationLogos} isPreview={true} />
               </div>
             </div>
@@ -609,5 +611,6 @@ export default function ItAssetsPage() {
         </Dialog>
       )}
     </>
+    </PermissionGuard>
   );
 }

@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/select";
 import type { Supply, Asset } from "@/lib/data";
 import { supplyCategories } from "@/lib/constants/supply";
-import { X, Image as ImageIcon } from "lucide-react";
+import { X, Image as ImageIcon, AlertCircle } from "lucide-react";
 import { getAssets } from "@/services/asset-service";
 import { useToast } from "@/hooks/use-toast";
 import { SYSCOHADA_SUPPLIES_CATALOG, type SyscohadaItem } from "@/services/syscohada-service";
@@ -41,6 +41,7 @@ export function AddSupplySheet({
 }: AddSupplySheetProps) {
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
+  const [supplierReference, setSupplierReference] = useState("");
   const [category, setCategory] = useState<Supply['category'] | "">("");
   const [inkType, setInkType] = useState("");
   const [quantity, setQuantity] = useState(0);
@@ -144,6 +145,7 @@ export function AddSupplySheet({
       await onAddSupplyAction({
         name,
         code: code || undefined,
+        supplierReference: supplierReference || undefined,
         category: category as Supply['category'],
         quantity,
         reorderLevel,
@@ -288,9 +290,10 @@ export function AddSupplySheet({
               <Input id="reorderLevel" type="number" value={reorderLevel} onChange={(e) => setReorderLevel(Number(e.target.value))} className="col-span-3" />
             </div>
             {error && (
-              <p className="col-span-4 text-center text-sm text-destructive">
-                {error}
-              </p>
+              <div className="col-span-4 flex items-center justify-center gap-2 p-3 rounded-lg bg-red-50 text-red-600 border border-red-100 animate-in fade-in zoom-in duration-300">
+                <AlertCircle className="h-4 w-4" />
+                <p className="text-xs font-bold leading-tight">{error}</p>
+              </div>
             )}
           </div>
           <SheetFooter>

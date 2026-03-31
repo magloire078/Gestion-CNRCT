@@ -82,17 +82,18 @@ interface PrintConflictDetailProps {
 export function PrintConflictDetail({ conflict, organizationSettings }: PrintConflictDetailProps) {
     return (
         <PrintLayout 
-            title={`Fiche de Suivi de Conflit / Plainte MGP`}
+            title={`Fiche de Suivi de Conflit`}
             logos={organizationSettings}
             subtitle={`Référence : #${conflict.id.substring(0, 8).toUpperCase()}`}
+            orientation="portrait"
         >
             <div className="space-y-8 text-sm">
                 <div className="grid grid-cols-2 gap-8 border-b border-black pb-4">
-                    <div className="space-y-2">
+                    <div className="space-y-1">
                         <p><span className="font-bold uppercase w-32 inline-block">Localité :</span> {conflict.village}</p>
                         <p><span className="font-bold uppercase w-32 inline-block">Région :</span> {conflict.region || "-"}</p>
                     </div>
-                    <div className="space-y-2">
+                    <div className="space-y-1">
                         <p><span className="font-bold uppercase w-32 inline-block">Date Signalement :</span> {conflict.reportedDate}</p>
                         <p><span className="font-bold uppercase w-32 inline-block">Date Incident :</span> {conflict.incidentDate || "Non précisée"}</p>
                         <p><span className="font-bold uppercase w-32 inline-block">Nature :</span> {conflict.type}</p>
@@ -156,7 +157,7 @@ export function PrintConflictDetail({ conflict, organizationSettings }: PrintCon
                     </div>
                 </div>
 
-                <div className="mt-12 flex justify-between items-start text-center">
+                <div className="mt-12 flex justify-between items-start text-center break-inside-avoid bg-white p-2">
                     <div className="w-1/3">
                         <p className="font-bold underline uppercase text-[10px]">Le Médiateur</p>
                         <div className="h-20"></div>

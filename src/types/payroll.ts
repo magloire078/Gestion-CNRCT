@@ -37,10 +37,13 @@ export type PayslipDetails = {
 
 export type BudgetLine = {
     id: string; // Firestore document ID
-    code: string;
-    name: string;
-    allocatedAmount: number;
-    year: number;
+    type: 'emploi' | 'ressource';
+    code: string; // Ligne dans l'image
+    paragraphe?: string;
+    name: string; // Libellé
+    allocatedAmount: number; // Dotation/Prévision Année N
+    previousAmount?: number; // Dotation/Prévision Année N-1
+    year: number; // Année de référence (ex: 2026)
 };
 
 export type PrintLog = {

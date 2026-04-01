@@ -8,7 +8,8 @@ import {
     Landmark, Globe, History, 
     Loader2, ChevronRight, School,
     Plus, Coffee, Info, Camera,
-    Home, Droplets, Zap, Shield
+    Home, Droplets, Zap, Shield,
+    Pencil
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -22,6 +23,7 @@ import { Chief } from "@/types/chief";
 import { HeritageItem, HeritageCategory, heritageCategoryLabels } from "@/types/heritage";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { EditVillageSheet } from "@/components/villages/edit-village-sheet";
 
 const GISMap = dynamic(() => import('@/components/common/gis-map-v3').then(m => m.GISMap), {
   ssr: false,
@@ -42,6 +44,7 @@ export default function VillageDetailPage() {
     const [chiefs, setChiefs] = useState<Chief[]>([]);
     const [heritage, setHeritage] = useState<HeritageItem[]>([]);
     const [loading, setLoading] = useState(true);
+    const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
 
     useEffect(() => {
         if (!id) return;
@@ -124,9 +127,14 @@ export default function VillageDetailPage() {
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent" />
                 
                 <div className="relative h-full flex flex-col justify-between p-6 md:p-8 z-10">
-                    <Button variant="ghost" className="w-fit text-white/70 hover:text-white hover:bg-white/10 rounded-xl" onClick={() => router.back()}>
-                        <ArrowLeft className="mr-2 h-4 w-4" /> Retour
-                    </Button>
+                    <div className="flex items-center gap-3">
+                        <Button variant="ghost" className="w-fit text-white/70 hover:text-white hover:bg-white/10 rounded-xl" onClick={() => router.back()}>
+                            <ArrowLeft className="mr-2 h-4 w-4" /> Retour
+                        </Button>
+                        <Button variant="ghost" className="w-fit text-white border-white/10 bg-white/5 hover:bg-white/10 rounded-xl" onClick={() => setIsEditSheetOpen(true)}>
+                            <Pencil className="mr-2 h-4 w-4" /> Modifier la localité
+                        </Button>
+                    </div>
                     
                     <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                         <div className="space-y-4">
@@ -373,6 +381,14 @@ export default function VillageDetailPage() {
                     </div>
                 </TabsContent>
             </Tabs>
+
+            {village && (
+                <EditVillageSheet 
+                    village={village} 
+                    open={isEditSheetOpen} 
+                    onOpenChangeAction={setIsEditSheetOpen} 
+                />
+            )}
         </div>
     );
 }

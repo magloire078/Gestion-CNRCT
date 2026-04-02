@@ -1,44 +1,18 @@
-
 "use client";
 
-import { useState, useMemo } from "react";
-import Link from "next/link";
+import { useState, useMemo, useCallback, memo } from "react";
 import { useAuth } from "@/hooks/use-auth";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  CardFooter,
-} from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { Input } from "@/components/ui/input";
-import { PlusCircle, Trash2, Pencil, ChevronRight, Link2, Search, Users, Shield, Building, Layers, Settings, AlertTriangle, ShieldCheck } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
 import { useAdminData } from "@/hooks/use-admin-data";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PermissionGuard } from "@/components/auth/permission-guard";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Layers, Users, ShieldCheck, Building } from "lucide-react";
 
-import type { User, Role, Department, Direction, Service, Employe } from "@/lib/data";
+import type { User, Role, Department, Direction, Service } from "@/lib/data";
 import { deleteUser, updateUser } from "@/services/user-service";
-import { deleteRole, updateRole } from "@/services/role-service";
+import { deleteRole } from "@/services/role-service";
 import { addDepartment, updateDepartment, deleteDepartment } from "@/services/department-service";
 import { addDirection, updateDirection, deleteDirection } from "@/services/direction-service";
 import { addService, updateService, deleteService } from "@/services/service-service";
@@ -46,30 +20,59 @@ import { updateEmployee } from "@/services/employee-service";
 
 import { AddUserSheet } from "@/components/admin/add-user-sheet";
 import { AddRoleSheet } from "@/components/admin/add-role-sheet";
-import { ImportDataCard } from "@/components/admin/import-data-card";
-import { ImportVillagesCard } from "@/components/admin/import-villages-card";
 import { ConfirmationDialog } from "@/components/common/confirmation-dialog";
 import { DepartmentDialog } from "@/components/admin/department-dialog";
 import { EditUserRoleDialog } from "@/components/admin/edit-user-role-dialog";
 import { DirectionDialog } from "@/components/admin/direction-dialog";
 import { ServiceDialog } from "@/components/admin/service-dialog";
-import { Badge } from "@/components/ui/badge";
 import { LinkUserEmployeeDialog } from "@/components/admin/link-user-employee-dialog";
-import { PaginationControls } from "@/components/common/pagination-controls";
-import { cn } from "@/lib/utils";
 import { PermissionLock } from "@/components/admin/permission-lock";
-import { PermissionMatrix } from "@/components/admin/permission-matrix";
+import { UserPermissionsDialog } from "@/components/admin/user-permissions-dialog";
+import { OverviewTab } from "@/components/admin/tabs/overview-tab";
+import { UsersTab } from "@/components/admin/tabs/users-tab";
+import { SecurityTab } from "@/components/admin/tabs/security-tab";
+import { OrgTab } from "@/components/admin/tabs/org-tab";
 
-// --- Empty State Component ---
-function EmptyState({ icon: Icon, message }: { icon: React.ElementType; message: string }) {
-  return (
-    <div className="flex flex-col items-center justify-center gap-2 py-10 text-center text-muted-foreground">
-      <Icon className="h-8 w-8 opacity-30" />
-      <p className="text-sm">{message}</p>
+// Constantes pour éviter les re-créations
+const SYSTEM_ROLES = new Set([
+  'dirigeant-president', 'cadre-superieur-directeur', 
+  'cadre-intermediaire-chef-service', 'employe-operationnel', 
+  'stagiaire-apprenti', 'super-admin', 'administrateur'
+]);
+
+const TAB_CONFIG = [
+  { value: "overview", label: "Vue d'ensemble", icon: Layers },
+  { value: "users", label: "Utilisateurs", icon: Users },
+  { value: "security", label: "Sécurité", icon: ShieldCheck },
+  { value: "org", label: "Organisation", icon: Building },
+] as const;
+
+// Composant d'en-tête mémoïsé
+const AdminHeader = memo(({ user }: { user: User | null }) => (
+  <div className="flex items-center justify-between">
+    <div className="flex items-center gap-5">
+      <div className="relative group">
+        <Avatar className="h-16 w-16 border-[3px] border-background shadow-2xl transition-transform group-hover:scale-105">
+          <AvatarImage src={user?.photoUrl || undefined} alt={user?.name || ''} />
+          <AvatarFallback className="bg-gradient-to-br from-primary/10 to-primary/30 font-black text-primary text-xl">
+            {user?.name?.charAt(0) || 'A'}
+          </AvatarFallback>
+        </Avatar>
+        <div className="absolute -bottom-1 -right-1 h-5 w-5 rounded-full border-4 border-background bg-green-500 shadow-sm" />
+      </div>
+      <div className="space-y-1">
+        <h1 className="text-4xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
+          Administration
+        </h1>
+        <p className="text-muted-foreground font-medium text-sm">
+          Gérez l&apos;accès, la sécurité et la structure organisationnelle.
+        </p>
+      </div>
     </div>
-  );
-}
+  </div>
+));
 
+AdminHeader.displayName = 'AdminHeader';
 
 export default function AdminPage() {
   const {
@@ -86,655 +89,400 @@ export default function AdminPage() {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  const [isAddUserSheetOpen, setIsAddUserSheetOpen] = useState(false);
-  const [isAddRoleSheetOpen, setIsAddRoleSheetOpen] = useState(false);
-  const [isDepartmentDialogOpen, setIsDepartmentDialogOpen] = useState(false);
-  const [isDirectionDialogOpen, setIsDirectionDialogOpen] = useState(false);
-  const [isServiceDialogOpen, setIsServiceDialogOpen] = useState(false);
-  const [isEditUserDialogOpen, setIsEditUserDialogOpen] = useState(false);
-  const [isLinkUserDialogOpen, setIsLinkUserDialogOpen] = useState(false);
+  // États regroupés par catégorie
+  const [dialogs, setDialogs] = useState({
+    addUser: false,
+    addRole: false,
+    department: false,
+    direction: false,
+    service: false,
+    editUser: false,
+    linkUser: false,
+    permissions: false,
+  });
 
-  const [editingDepartment, setEditingDepartment] = useState<Department | null>(null);
-  const [editingDirection, setEditingDirection] = useState<Direction | null>(null);
-  const [editingService, setEditingService] = useState<Service | null>(null);
-  const [editingUser, setEditingUser] = useState<User | null>(null);
-  const [linkingUser, setLinkingUser] = useState<User | null>(null);
-  const [editingRole, setEditingRole] = useState<Role | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<{ id: string; type: 'user' | 'role' | 'department' | 'direction' | 'service'; name: string } | null>(null);
+  const [editingItems, setEditingItems] = useState({
+    department: null as Department | null,
+    direction: null as Direction | null,
+    service: null as Service | null,
+    user: null as User | null,
+    linkingUser: null as User | null,
+  permissionsUser: null as User | null,
+  });
 
-  const [userSearch, setUserSearch] = useState("");
-  const [userCurrentPage, setUserCurrentPage] = useState(1);
-  const [userItemsPerPage, setUserItemsPerPage] = useState(5);
+  type DeleteTargetType = 'user' | 'role' | 'department' | 'direction' | 'service';
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; type: DeleteTargetType; name: string } | null>(null);
 
-  const filteredUsers = useMemo(() => {
-    if (!users) return [];
-    const q = userSearch.toLowerCase().trim();
-    if (!q) return users;
-    return users.filter(u =>
-      u.name?.toLowerCase().includes(q) ||
-      u.email?.toLowerCase().includes(q)
-    );
-  }, [users, userSearch]);
+  // Mémoïsation des données dérivées
+  const employeeMap = useMemo(
+    () => new Map(allEmployees?.map(e => [e.id, e])),
+    [allEmployees]
+  );
 
-  const paginatedUsers = useMemo(() => {
-    const startIndex = (userCurrentPage - 1) * userItemsPerPage;
-    return filteredUsers.slice(startIndex, startIndex + userItemsPerPage);
-  }, [filteredUsers, userCurrentPage, userItemsPerPage]);
-
-  const totalUserPages = useMemo(() => {
-    return Math.max(1, Math.ceil(filteredUsers.length / userItemsPerPage));
-  }, [filteredUsers, userItemsPerPage]);
-
-  const employeeMap = useMemo(() => {
-    const map = new Map<string, Employe>();
-    if (allEmployees) {
-      allEmployees.forEach(e => map.set(e.id, e));
-    }
-    return map;
-  }, [allEmployees]);
-
-  const mappedRolesForMatrix = useMemo(() => {
-    if (!roles) return [];
-    return roles.map(r => ({
+  const mappedRolesForMatrix = useMemo(
+    () => roles?.map(r => ({
       id: r.id,
       label: r.name,
-      isSystem: ['dirigeant-president', 'cadre-superieur-directeur', 'cadre-intermediaire-chef-service', 'employe-operationnel', 'stagiaire-apprenti', 'super-admin', 'administrateur'].includes(r.id)
-    }));
-  }, [roles]);
+      isSystem: SYSTEM_ROLES.has(r.id)
+    })) ?? [],
+    [roles]
+  );
 
-  const handleAddUser = () => {
-    setIsAddUserSheetOpen(false);
-    toast({ title: "Utilisateur ajouté", description: `Le nouvel utilisateur a été ajouté avec succès.` });
-  };
+  // Gestionnaires centralisés pour les dialogues
+  const openDialog = useCallback((name: keyof typeof dialogs) => {
+    setDialogs(prev => ({ ...prev, [name]: true }));
+  }, []);
 
-  const handleAddRole = (newRole: Role) => {
-    setIsAddRoleSheetOpen(false);
+  const closeDialog = useCallback((name: keyof typeof dialogs) => {
+    setDialogs(prev => ({ ...prev, [name]: false }));
+  }, []);
+
+  // Handlers CRUD optimisés
+  const handleAddUser = useCallback(() => {
+    closeDialog('addUser');
+    toast({ title: "Utilisateur ajouté", description: "Le nouvel utilisateur a été ajouté avec succès." });
+  }, [closeDialog, toast]);
+
+  const handleAddRole = useCallback((newRole: Role) => {
+    closeDialog('addRole');
     toast({ title: "Rôle ajouté", description: `Le rôle ${newRole.name} a été ajouté avec succès.` });
-  };
+  }, [closeDialog, toast]);
 
-
-  const handleSaveDepartment = async (name: string) => {
+  const handleSaveDepartment = useCallback(async (name: string) => {
+    const { department } = editingItems;
     try {
-      if (editingDepartment) {
-        await updateDepartment(editingDepartment.id, { name });
+      if (department) {
+        await updateDepartment(department.id, { name });
         toast({ title: "Département mis à jour" });
       } else {
         await addDepartment({ name });
         toast({ title: "Département ajouté" });
       }
+      closeDialog('department');
+      setEditingItems(prev => ({ ...prev, department: null }));
     } catch (err) {
-      toast({ variant: "destructive", title: "Erreur", description: "Impossible d'enregistrer le département." });
+      toast({ 
+        variant: "destructive", 
+        title: "Erreur", 
+        description: "Impossible d'enregistrer le département." 
+      });
     }
-  };
+  }, [editingItems, closeDialog, toast]);
 
-  const handleSaveDirection = async (name: string, departmentId: string) => {
+  const handleSaveDirection = useCallback(async (name: string, departmentId: string) => {
+    const { direction } = editingItems;
     try {
-      if (editingDirection) {
-        await updateDirection(editingDirection.id, { name, departmentId });
+      if (direction) {
+        await updateDirection(direction.id, { name, departmentId });
         toast({ title: "Direction mise à jour" });
       } else {
         await addDirection({ name, departmentId });
         toast({ title: "Direction ajoutée" });
       }
+      closeDialog('direction');
+      setEditingItems(prev => ({ ...prev, direction: null }));
     } catch (err) {
-      toast({ variant: "destructive", title: "Erreur", description: "Impossible d'enregistrer la direction." });
+      toast({ 
+        variant: "destructive", 
+        title: "Erreur", 
+        description: "Impossible d'enregistrer la direction." 
+      });
     }
-  };
+  }, [editingItems, closeDialog, toast]);
 
-  const handleUpdateUserRole = async (userId: string, newRoleId: string) => {
+  const handleSaveService = useCallback(async (data: { name: string; directionId?: string; departmentId?: string }) => {
+    const { service } = editingItems;
+    try {
+      if (service) {
+        await updateService(service.id, data);
+        toast({ title: "Service mis à jour" });
+      } else {
+        await addService(data as Omit<Service, 'id'>);
+        toast({ title: "Service ajouté" });
+      }
+      closeDialog('service');
+      setEditingItems(prev => ({ ...prev, service: null }));
+    } catch (err) {
+      toast({ 
+        variant: "destructive", 
+        title: "Erreur", 
+        description: "Impossible d'enregistrer le service." 
+      });
+    }
+  }, [editingItems, closeDialog, toast]);
+
+  const handleUpdateUserRole = useCallback(async (userId: string, newRoleId: string) => {
     try {
       await updateUser(userId, { roleId: newRoleId });
-      toast({ title: "Rôle mis à jour", description: "Le rôle de l'utilisateur a été modifié avec succès." });
-      setIsEditUserDialogOpen(false);
+      toast({ 
+        title: "Rôle mis à jour", 
+        description: "Le rôle de l'utilisateur a été modifié avec succès." 
+      });
+      closeDialog('editUser');
+      setEditingItems(prev => ({ ...prev, user: null }));
     } catch (err) {
-      toast({ variant: "destructive", title: "Erreur", description: "Impossible de mettre à jour le rôle de l'utilisateur." });
+      toast({ 
+        variant: "destructive", 
+        title: "Erreur", 
+        description: "Impossible de mettre à jour le rôle de l'utilisateur." 
+      });
     }
-  };
+  }, [closeDialog, toast]);
 
-  const handleLinkUserToEmployee = async (userId: string, employeeId: string) => {
+  const handleLinkUserToEmployee = useCallback(async (userId: string, employeeId: string) => {
     try {
-      await updateUser(userId, { employeeId });
-      await updateEmployee(employeeId, { userId });
-      toast({ title: "Utilisateur lié", description: "Le compte utilisateur a été lié au profil employé." });
-      setIsLinkUserDialogOpen(false);
+      await Promise.all([
+        updateUser(userId, { employeeId }),
+        updateEmployee(employeeId, { userId })
+      ]);
+      toast({ 
+        title: "Utilisateur lié", 
+        description: "Le compte utilisateur a été lié au profil employé." 
+      });
+      closeDialog('linkUser');
+      setEditingItems(prev => ({ ...prev, linkingUser: null }));
     } catch (err) {
-      toast({ variant: "destructive", title: "Erreur", description: "Impossible de lier l'utilisateur à l'employé." });
+      toast({ 
+        variant: "destructive", 
+        title: "Erreur", 
+        description: "Impossible de lier l'utilisateur à l'employé." 
+      });
     }
-  };
+  }, [closeDialog, toast]);
 
-  const handleConfirmDelete = async () => {
+  const handleConfirmDelete = useCallback(async () => {
     if (!deleteTarget) return;
+    
+    const deleteActions = {
+      user: () => deleteUser(deleteTarget.id),
+      role: () => deleteRole(deleteTarget.id),
+      department: () => deleteDepartment(deleteTarget.id),
+      direction: () => deleteDirection(deleteTarget.id),
+      service: () => deleteService(deleteTarget.id),
+    };
+
     try {
-      if (deleteTarget.type === 'user') await deleteUser(deleteTarget.id);
-      else if (deleteTarget.type === 'role') await deleteRole(deleteTarget.id);
-      else if (deleteTarget.type === 'department') await deleteDepartment(deleteTarget.id);
-      else if (deleteTarget.type === 'direction') await deleteDirection(deleteTarget.id);
-      else if (deleteTarget.type === 'service') await deleteService(deleteTarget.id);
-      toast({ title: "Suppression réussie", description: `"${deleteTarget.name}" a été supprimé.` });
+      await deleteActions[deleteTarget.type]();
+      toast({ 
+        title: "Suppression réussie", 
+        description: `"${deleteTarget.name}" a été supprimé.` 
+      });
     } catch (err) {
-      toast({ variant: "destructive", title: "Erreur", description: `Impossible de supprimer "${deleteTarget.name}".` });
+      toast({ 
+        variant: "destructive", 
+        title: "Erreur", 
+        description: `Impossible de supprimer "${deleteTarget.name}".` 
+      });
     } finally {
       setDeleteTarget(null);
     }
-  };
+  }, [deleteTarget, toast]);
+
+  const handleDeleteRequest = useCallback((
+    id: string, 
+    type: DeleteTargetType, 
+    name: string
+  ) => {
+    setDeleteTarget({ id, type, name });
+  }, []);
+
+  // Valeurs par défaut pour éviter les vérifications null répétées
+  const defaultArray = useMemo(() => [], []);
+  const safeUsers = users ?? defaultArray;
+  const safeRoles = roles ?? defaultArray;
+  const safeDepartments = departments ?? defaultArray;
+  const safeDirections = directions ?? defaultArray;
+  const safeServices = services ?? defaultArray;
 
   return (
     <PermissionGuard permission="page:admin:view">
       <TooltipProvider>
-        <>
-        <div className="flex flex-col gap-6">
-          <div className="flex items-center gap-4">
-            <Avatar className="h-12 w-12 border-2 border-primary/10 shadow-lg">
-                <AvatarImage src={user?.photoUrl || undefined} alt={user?.name || ''} />
-                <AvatarFallback className="bg-slate-100 font-bold text-slate-400">
-                    {user?.name?.charAt(0)}
-                </AvatarFallback>
-            </Avatar>
-            <h1 className="text-3xl font-bold tracking-tight">Administration</h1>
-          </div>
+        <div className="flex flex-col gap-8 pb-12 overflow-x-hidden">
+          <AdminHeader user={user} />
 
-          {error && <p className="text-destructive text-center py-4">{error}</p>}
+          {error && (
+            <div className="p-4 rounded-2xl bg-destructive/10 border border-destructive/20 text-destructive text-center font-semibold">
+              {error}
+            </div>
+          )}
 
-
-          {/* ─── Accès Sécurisé aux Paramètres ─── */}
           <PermissionLock userEmail={user?.email ?? ''}>
-            <Tabs defaultValue="overview" className="w-full space-y-6">
-              <TabsList className="bg-muted/50 p-1 border border-border/50 backdrop-blur-sm">
-                <TabsTrigger value="overview" className="gap-2 px-4 shadow-none">
-                  <Layers className="h-4 w-4" /> Vue d&apos;ensemble
-                </TabsTrigger>
-                <TabsTrigger value="users" className="gap-2 px-4 shadow-none">
-                  <Users className="h-4 w-4" /> Utilisateurs
-                </TabsTrigger>
-                <TabsTrigger value="security" className="gap-2 px-4 shadow-none">
-                  <ShieldCheck className="h-4 w-4" /> Sécurité
-                </TabsTrigger>
-                <TabsTrigger value="org" className="gap-2 px-4 shadow-none">
-                  <Building className="h-4 w-4" /> Organisation
-                </TabsTrigger>
-              </TabsList>
+            <Tabs defaultValue="overview" className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="overflow-x-auto pb-2 -mx-2 px-2 scrollbar-none">
+                <TabsList className="bg-muted/40 p-1.5 border border-border/50 backdrop-blur-md rounded-2xl shadow-sm inline-flex gap-1">
+                  {TAB_CONFIG.map(({ value, label, icon: Icon }) => (
+                    <TabsTrigger 
+                      key={value}
+                      value={value} 
+                      className="gap-2 px-6 py-2.5 rounded-xl data-[state=active]:bg-background data-[state=active]:shadow-lg active:scale-95 transition-all text-sm font-bold"
+                    >
+                      <Icon className="h-4.5 w-4.5" />
+                      {label}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+              </div>
 
-              {/* SECTION: VUE D'ENSEMBLE */}
-              <TabsContent value="overview" className="space-y-6 outline-none">
-                <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-                  <ImportDataCard />
-                  <ImportVillagesCard />
-                  <Card className="border-border/50 shadow-sm transition-all hover:shadow-md">
-                    <CardHeader>
-                      <CardTitle className="text-xl">Paramètres Généraux</CardTitle>
-                      <CardDescription>Gérez les paramètres globaux de l&apos;application.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-1 -mx-4 -mb-4 px-4 pb-4">
-                      <Link href="/settings/organization" className="flex items-center justify-between p-3 rounded-xl hover:bg-muted/50 transition-all group">
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 rounded-lg bg-primary/5 group-hover:bg-primary/10 transition-colors">
-                            <Building className="h-4 w-4 text-primary" />
-                          </div>
-                          <div>
-                            <p className="font-semibold text-sm">Organisation</p>
-                            <p className="text-xs text-muted-foreground">Logos et informations de l&apos;entreprise.</p>
-                          </div>
-                        </div>
-                        <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
-                      </Link>
-                      <Link href="/settings" className="flex items-center justify-between p-3 rounded-xl hover:bg-muted/50 transition-all group">
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 rounded-lg bg-primary/5 group-hover:bg-primary/10 transition-colors">
-                            <Settings className="h-4 w-4 text-primary" />
-                          </div>
-                          <div>
-                            <p className="font-semibold text-sm">Paramètres système</p>
-                            <p className="text-xs text-muted-foreground">Notifications, abonnement et configuration.</p>
-                          </div>
-                        </div>
-                        <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
-                      </Link>
-                    </CardContent>
-                  </Card>
-                </div>
+              <TabsContent value="overview" className="outline-none focus-visible:ring-0">
+                <OverviewTab 
+                  users={safeUsers} 
+                  roles={safeRoles} 
+                  departments={safeDepartments} 
+                  loading={loading} 
+                />
               </TabsContent>
 
-              {/* SECTION: UTILISATEURS */}
-              <TabsContent value="users" className="outline-none">
-                <Card className="border-border/50 shadow-sm transition-all hover:shadow-md overflow-hidden">
-                  <CardHeader className="bg-muted/30 border-b border-border/10">
-                    <CardTitle className="text-xl">Gestion des Utilisateurs</CardTitle>
-                    <CardDescription>Ajoutez, modifiez ou supprimez les utilisateurs de l&apos;application.</CardDescription>
-                  </CardHeader>
-                  <CardContent className="pt-6">
-                    <div className="flex items-center justify-between mb-6 gap-2">
-                      <div className="relative flex-1">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          placeholder="Rechercher par nom ou email..."
-                          value={userSearch}
-                          onChange={(e) => { setUserSearch(e.target.value); setUserCurrentPage(1); }}
-                          className="pl-9 h-9"
-                        />
-                      </div>
-                      <Button onClick={() => setIsAddUserSheetOpen(true)} size="sm">
-                        <PlusCircle className="mr-2 h-4 w-4" />Ajouter
-                      </Button>
-                    </div>
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>N°</TableHead>
-                          <TableHead>Nom</TableHead>
-                          <TableHead>Email</TableHead>
-                          <TableHead>Rôle</TableHead>
-                          <TableHead><span className="sr-only">Actions</span></TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {loading ? (
-                          Array.from({ length: 3 }).map((_, i) => (
-                            <TableRow key={i}>
-                              <TableCell><Skeleton className="h-4 w-4" /></TableCell>
-                              <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                              <TableCell><Skeleton className="h-4 w-40" /></TableCell>
-                              <TableCell><Skeleton className="h-4 w-20" /></TableCell>
-                              <TableCell><Skeleton className="h-4 w-12" /></TableCell>
-                              <TableCell><div className="flex justify-end gap-2"><Skeleton className="h-8 w-8" /><Skeleton className="h-8 w-8" /></div></TableCell>
-                            </TableRow>
-                          ))
-                        ) : paginatedUsers.length === 0 ? (
-                          <TableRow>
-                            <TableCell colSpan={6}>
-                              {userSearch
-                                ? <EmptyState icon={Search} message={`Aucun utilisateur trouvé pour "${userSearch}"`} />
-                                : <EmptyState icon={Users} message="Aucun utilisateur. Ajoutez le premier." />}
-                            </TableCell>
-                          </TableRow>
-                        ) : (
-                          paginatedUsers.map((user, index) => (
-                            <TableRow key={user.id}>
-                              <TableCell>{(userCurrentPage - 1) * userItemsPerPage + index + 1}</TableCell>
-                              <TableCell className="font-medium">
-                                {user.name}
-                                {user.employeeId && (
-                                  <p className="text-xs text-muted-foreground">
-                                    Lié : {employeeMap.get(user.employeeId)?.name || 'N/A'}
-                                  </p>
-                                )}
-                              </TableCell>
-                              <TableCell className="text-sm">{user.email}</TableCell>
-                              <TableCell>
-                                <Badge
-                                  variant={!user.role ? "destructive" : "secondary"}
-                                  className={cn(!user.role && "gap-1")}
-                                >
-                                  {!user.role && <AlertTriangle className="h-3 w-3" />}
-                                  {user.role?.name || 'Non assigné'}
-                                </Badge>
-                              </TableCell>
-                              <TableCell className="text-right whitespace-nowrap">
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Button variant="ghost" size="icon" onClick={() => { setLinkingUser(user); setIsLinkUserDialogOpen(true); }}>
-                                      <Link2 className="h-4 w-4" /><span className="sr-only">Lier à un employé</span>
-                                    </Button>
-                                  </TooltipTrigger>
-                                  <TooltipContent>Lier à un employé</TooltipContent>
-                                </Tooltip>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Button variant="ghost" size="icon" onClick={() => { setEditingUser(user); setIsEditUserDialogOpen(true); }}>
-                                      <Pencil className="h-4 w-4" /><span className="sr-only">Modifier le rôle</span>
-                                    </Button>
-                                  </TooltipTrigger>
-                                  <TooltipContent>Modifier le rôle</TooltipContent>
-                                </Tooltip>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Button variant="ghost" size="icon" onClick={() => setDeleteTarget({ id: user.id, type: 'user', name: user.name })}>
-                                      <Trash2 className="h-4 w-4" /><span className="sr-only">Supprimer</span>
-                                    </Button>
-                                  </TooltipTrigger>
-                                  <TooltipContent>Supprimer l'utilisateur</TooltipContent>
-                                </Tooltip>
-                              </TableCell>
-                            </TableRow>
-                          ))
-                        )}
-                      </TableBody>
-                    </Table>
-                  </CardContent>
-                  {!loading && filteredUsers.length > userItemsPerPage && (
-                    <CardFooter>
-                      <PaginationControls
-                        currentPage={userCurrentPage}
-                        totalPages={totalUserPages}
-                        onPageChange={setUserCurrentPage}
-                        itemsPerPage={userItemsPerPage}
-                        onItemsPerPageChange={setUserItemsPerPage}
-                        totalItems={filteredUsers.length}
-                      />
-                    </CardFooter>
-                  )}
-                </Card>
+              <TabsContent value="users" className="outline-none focus-visible:ring-0">
+                <UsersTab 
+                  users={safeUsers} 
+                  loading={loading}
+                  employeeMap={employeeMap}
+                  onAddUserAction={() => openDialog('addUser')}
+                  onLinkUserAction={(u: User) => {
+                    setEditingItems(prev => ({ ...prev, linkingUser: u }));
+                    openDialog('linkUser');
+                  }}
+                  onEditRoleAction={(u: User) => {
+                    setEditingItems(prev => ({ ...prev, user: u }));
+                    openDialog('editUser');
+                  }}
+                  onEditPermissionsAction={(u: User) => {
+                    setEditingItems(prev => ({ ...prev, permissionsUser: u }));
+                    openDialog('permissions');
+                  }}
+                  onDeleteUserAction={(id: string, name: string) => 
+                    handleDeleteRequest(id, 'user', name)
+                  }
+                />
               </TabsContent>
 
-              {/* SECTION: SÉCURITÉ */}
-              <TabsContent value="security" className="space-y-6 outline-none">
-                <div className="grid gap-6">
-                  {/* Roles Table */}
-                  <Card className="border-border/50 shadow-sm transition-all hover:shadow-md overflow-hidden">
-                    <CardHeader className="bg-muted/30 border-b border-border/10">
-                      <CardTitle className="text-xl">Gestion des Rôles</CardTitle>
-                      <CardDescription>Définissez les rôles et leurs permissions.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="pt-6">
-                      <div className="flex justify-end mb-6">
-                        <Button onClick={() => setIsAddRoleSheetOpen(true)} size="sm">
-                          <PlusCircle className="mr-2 h-4 w-4" />Ajouter un rôle
-                        </Button>
-                      </div>
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>N°</TableHead>
-                            <TableHead>Rôle</TableHead>
-                            <TableHead className="text-right w-[100px]">Actions</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {loading ? (
-                            Array.from({ length: 2 }).map((_, i) => (
-                              <TableRow key={i}>
-                                <TableCell><Skeleton className="h-4 w-4" /></TableCell>
-                                <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                                <TableCell><Skeleton className="h-8 w-8" /></TableCell>
-                              </TableRow>
-                            ))
-                          ) : !roles || roles.length === 0 ? (
-                            <TableRow>
-                              <TableCell colSpan={3}>
-                                <EmptyState icon={Shield} message="Aucun rôle défini. Créez le premier rôle." />
-                              </TableCell>
-                            </TableRow>
-                          ) : (
-                            roles.map((role, index) => (
-                              <TableRow key={role.id}>
-                                <TableCell>{index + 1}</TableCell>
-                                <TableCell className="font-medium">{role.name}</TableCell>
-                                <TableCell className="text-right whitespace-nowrap">
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <Button variant="ghost" size="icon" onClick={() => setDeleteTarget({ id: role.id, type: 'role', name: role.name })}>
-                                        <Trash2 className="h-4 w-4" />
-                                      </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>Supprimer le rôle</TooltipContent>
-                                  </Tooltip>
-                                </TableCell>
-                              </TableRow>
-                            ))
-                          )}
-                        </TableBody>
-                      </Table>
-                    </CardContent>
-                  </Card>
-
-                  {/* Permissions CRUD */}
-                  {(user?.roleId === 'LHcHyfBzile3r0vyFOFb' || user?.roleId === 'super-admin') && (
-                    <Card className="border-primary/20 shadow-sm transition-all hover:shadow-md overflow-hidden">
-                      <CardHeader className="bg-primary/5 border-b border-primary/10">
-                        <CardTitle className="flex items-center gap-2 text-xl">
-                          <ShieldCheck className="h-5 w-5 text-primary" />
-                          Matrice des Permissions CRUD
-                        </CardTitle>
-                        <CardDescription>
-                          Contrôlez précisément les droits de Lecture, Création, Modification et Suppression par ressource.
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="pt-6">
-                        <PermissionMatrix roles={mappedRolesForMatrix} />
-                      </CardContent>
-                    </Card>
-                  )}
-                </div>
+              <TabsContent value="security" className="outline-none focus-visible:ring-0">
+                <SecurityTab 
+                  roles={safeRoles}
+                  loading={loading}
+                  currentUser={user}
+                  onAddRoleAction={() => openDialog('addRole')}
+                  onDeleteRoleAction={(id: string, name: string) => 
+                    handleDeleteRequest(id, 'role', name)
+                  }
+                  mappedRolesForMatrix={mappedRolesForMatrix}
+                />
               </TabsContent>
 
-              {/* SECTION: ORGANISATION */}
-              <TabsContent value="org" className="space-y-6 outline-none">
-                <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-3">
-
-                  {/* Departments */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Départements</CardTitle>
-                      <CardDescription>Niveau le plus élevé de l'organisation.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex justify-end mb-4">
-                        <Button size="sm" onClick={() => { setEditingDepartment(null); setIsDepartmentDialogOpen(true); }}>
-                          <PlusCircle className="mr-2 h-4 w-4" />Ajouter
-                        </Button>
-                      </div>
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>N°</TableHead>
-                            <TableHead>Nom</TableHead>
-                            <TableHead className="w-[100px] text-right">Actions</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {loading ? (
-                            Array.from({ length: 3 }).map((_, i) => (
-                              <TableRow key={i}>
-                                <TableCell><Skeleton className="h-4 w-4" /></TableCell>
-                                <TableCell><Skeleton className="h-4 w-full" /></TableCell>
-                                <TableCell><div className="flex justify-end gap-2"><Skeleton className="h-8 w-8" /><Skeleton className="h-8 w-8" /></div></TableCell>
-                              </TableRow>
-                            ))
-                          ) : !departments || departments.length === 0 ? (
-                            <TableRow>
-                              <TableCell colSpan={3}>
-                                <EmptyState icon={Building} message="Aucun département. Créez-en un." />
-                              </TableCell>
-                            </TableRow>
-                          ) : (
-                            departments.map((dept, index) => (
-                              <TableRow key={dept.id}>
-                                <TableCell>{index + 1}</TableCell>
-                                <TableCell className="font-medium">{dept.name}</TableCell>
-                                <TableCell className="text-right whitespace-nowrap">
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <Button variant="ghost" size="icon" onClick={() => { setEditingDepartment(dept); setIsDepartmentDialogOpen(true); }}>
-                                        <Pencil className="h-4 w-4" />
-                                      </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>Modifier</TooltipContent>
-                                  </Tooltip>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <Button variant="ghost" size="icon" onClick={() => setDeleteTarget({ id: dept.id, type: 'department', name: dept.name })}>
-                                        <Trash2 className="h-4 w-4" />
-                                      </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>Supprimer</TooltipContent>
-                                  </Tooltip>
-                                </TableCell>
-                              </TableRow>
-                            ))
-                          )}
-                        </TableBody>
-                      </Table>
-                    </CardContent>
-                  </Card>
-
-                  {/* Directions */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Directions</CardTitle>
-                      <CardDescription>Sous-divisions des départements.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex justify-end mb-4">
-                        <Button size="sm" onClick={() => { setEditingDirection(null); setIsDirectionDialogOpen(true); }} disabled={!departments || departments.length === 0}>
-                          <PlusCircle className="mr-2 h-4 w-4" />Ajouter
-                        </Button>
-                      </div>
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>N°</TableHead>
-                            <TableHead>Nom</TableHead>
-                            <TableHead>Département</TableHead>
-                            <TableHead className="w-[100px] text-right">Actions</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {loading ? (
-                            Array.from({ length: 3 }).map((_, i) => (
-                              <TableRow key={i}>
-                                <TableCell><Skeleton className="h-4 w-4" /></TableCell>
-                                <TableCell><Skeleton className="h-4 w-full" /></TableCell>
-                                <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                                <TableCell><div className="flex justify-end gap-2"><Skeleton className="h-8 w-8" /><Skeleton className="h-8 w-8" /></div></TableCell>
-                              </TableRow>
-                            ))
-                          ) : !directions || directions.length === 0 ? (
-                            <TableRow>
-                              <TableCell colSpan={4}>
-                                <EmptyState icon={Layers} message="Aucune direction. Ajoutez des départements d'abord." />
-                              </TableCell>
-                            </TableRow>
-                          ) : (
-                            directions.map((dir, index) => (
-                              <TableRow key={dir.id}>
-                                <TableCell>{index + 1}</TableCell>
-                                <TableCell className="font-medium">{dir.name}</TableCell>
-                                <TableCell className="text-sm text-muted-foreground">{departments?.find(d => d.id === dir.departmentId)?.name}</TableCell>
-                                <TableCell className="text-right whitespace-nowrap">
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <Button variant="ghost" size="icon" onClick={() => { setEditingDirection(dir); setIsDirectionDialogOpen(true); }}>
-                                        <Pencil className="h-4 w-4" />
-                                      </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>Modifier</TooltipContent>
-                                  </Tooltip>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <Button variant="ghost" size="icon" onClick={() => setDeleteTarget({ id: dir.id, type: 'direction', name: dir.name })}>
-                                        <Trash2 className="h-4 w-4" />
-                                      </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>Supprimer</TooltipContent>
-                                  </Tooltip>
-                                </TableCell>
-                              </TableRow>
-                            ))
-                          )}
-                        </TableBody>
-                      </Table>
-                    </CardContent>
-                  </Card>
-
-                  {/* Services */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Services</CardTitle>
-                      <CardDescription>Unités opérationnelles.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex justify-end mb-4">
-                        <Button size="sm" onClick={() => { setEditingService(null); setIsServiceDialogOpen(true); }} disabled={(!directions || directions.length === 0) && (!departments || departments.length === 0)}>
-                          <PlusCircle className="mr-2 h-4 w-4" />Ajouter
-                        </Button>
-                      </div>
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>N°</TableHead>
-                            <TableHead>Nom</TableHead>
-                            <TableHead>Dépend de</TableHead>
-                            <TableHead className="w-[100px] text-right">Actions</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {loading ? (
-                            Array.from({ length: 3 }).map((_, i) => (
-                              <TableRow key={i}>
-                                <TableCell><Skeleton className="h-4 w-4" /></TableCell>
-                                <TableCell><Skeleton className="h-4 w-full" /></TableCell>
-                                <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                                <TableCell><div className="flex justify-end gap-2"><Skeleton className="h-8 w-8" /><Skeleton className="h-8 w-8" /></div></TableCell>
-                              </TableRow>
-                            ))
-                          ) : !services || services.length === 0 ? (
-                            <TableRow>
-                              <TableCell colSpan={4}>
-                                <EmptyState icon={Layers} message="Aucun service. Créez-en un ci-dessus." />
-                              </TableCell>
-                            </TableRow>
-                          ) : (
-                            services.map((svc, index) => {
-                              const parent = svc.directionId
-                                ? directions?.find(d => d.id === svc.directionId)
-                                : departments?.find(d => d.id === svc.departmentId);
-                              const parentName = parent?.name || 'N/A';
-                              const parentType = svc.directionId ? 'Direction' : 'Département';
-                              return (
-                                <TableRow key={svc.id}>
-                                  <TableCell>{index + 1}</TableCell>
-                                  <TableCell className="font-medium">{svc.name}</TableCell>
-                                  <TableCell className="text-sm text-muted-foreground">
-                                    {parentName} <span className="text-xs opacity-70">({parentType})</span>
-                                  </TableCell>
-                                  <TableCell className="text-right whitespace-nowrap">
-                                    <Tooltip>
-                                      <TooltipTrigger asChild>
-                                        <Button variant="ghost" size="icon" onClick={() => { setEditingService(svc); setIsServiceDialogOpen(true); }}>
-                                          <Pencil className="h-4 w-4" />
-                                        </Button>
-                                      </TooltipTrigger>
-                                      <TooltipContent>Modifier</TooltipContent>
-                                    </Tooltip>
-                                    <Tooltip>
-                                      <TooltipTrigger asChild>
-                                        <Button variant="ghost" size="icon" onClick={() => setDeleteTarget({ id: svc.id, type: 'service', name: svc.name })}>
-                                          <Trash2 className="h-4 w-4" />
-                                        </Button>
-                                      </TooltipTrigger>
-                                      <TooltipContent>Supprimer</TooltipContent>
-                                    </Tooltip>
-                                  </TableCell>
-                                </TableRow>
-                              );
-                            })
-                          )}
-                        </TableBody>
-                      </Table>
-                    </CardContent>
-                  </Card>
-                </div>
+              <TabsContent value="org" className="outline-none focus-visible:ring-0">
+                <OrgTab 
+                  departments={safeDepartments}
+                  directions={safeDirections}
+                  services={safeServices}
+                  loading={loading}
+                  onAddDeptAction={() => {
+                    setEditingItems(prev => ({ ...prev, department: null }));
+                    openDialog('department');
+                  }}
+                  onEditDeptAction={(d: Department) => {
+                    setEditingItems(prev => ({ ...prev, department: d }));
+                    openDialog('department');
+                  }}
+                  onDeleteDeptAction={(id: string, name: string) => 
+                    handleDeleteRequest(id, 'department', name)
+                  }
+                  onAddDirAction={() => {
+                    setEditingItems(prev => ({ ...prev, direction: null }));
+                    openDialog('direction');
+                  }}
+                  onEditDirAction={(dir: Direction) => {
+                    setEditingItems(prev => ({ ...prev, direction: dir }));
+                    openDialog('direction');
+                  }}
+                  onDeleteDirAction={(id: string, name: string) => 
+                    handleDeleteRequest(id, 'direction', name)
+                  }
+                  onAddSvcAction={() => {
+                    setEditingItems(prev => ({ ...prev, service: null }));
+                    openDialog('service');
+                  }}
+                  onEditSvcAction={(svc: Service) => {
+                    setEditingItems(prev => ({ ...prev, service: svc }));
+                    openDialog('service');
+                  }}
+                  onDeleteSvcAction={(id: string, name: string) => 
+                    handleDeleteRequest(id, 'service', name)
+                  }
+                />
               </TabsContent>
             </Tabs>
           </PermissionLock>
 
-          <AddUserSheet isOpen={isAddUserSheetOpen} onCloseAction={() => setIsAddUserSheetOpen(false)} onAddUserAction={handleAddUser} roles={roles || []} />
-          <AddRoleSheet isOpen={isAddRoleSheetOpen} onCloseAction={() => setIsAddRoleSheetOpen(false)} onAddRoleAction={handleAddRole} roles={roles || []} />
-          <DepartmentDialog isOpen={isDepartmentDialogOpen} onCloseAction={() => setIsDepartmentDialogOpen(false)} onConfirmAction={handleSaveDepartment} department={editingDepartment} />
-          <DirectionDialog isOpen={isDirectionDialogOpen} onCloseAction={() => setIsDirectionDialogOpen(false)} onConfirmAction={handleSaveDirection} direction={editingDirection} departments={departments || []} />
-          <ServiceDialog isOpen={isServiceDialogOpen} onCloseAction={() => setIsServiceDialogOpen(false)} service={editingService} directions={directions || []} departments={departments || []} />
-          <EditUserRoleDialog isOpen={isEditUserDialogOpen} onCloseAction={() => setIsEditUserDialogOpen(false)} onConfirmAction={handleUpdateUserRole} user={editingUser} roles={roles || []} />
-          <LinkUserEmployeeDialog isOpen={isLinkUserDialogOpen} onCloseAction={() => setIsLinkUserDialogOpen(false)} onConfirmAction={handleLinkUserToEmployee} user={linkingUser} employees={allEmployees} />
+          {/* Dialogues */}
+          <AddUserSheet 
+            isOpen={dialogs.addUser} 
+            onCloseAction={() => closeDialog('addUser')} 
+            onAddUserAction={handleAddUser} 
+            roles={safeRoles} 
+          />
+          
+          <AddRoleSheet 
+            isOpen={dialogs.addRole} 
+            onCloseAction={() => closeDialog('addRole')} 
+            onAddRoleAction={handleAddRole} 
+            roles={safeRoles} 
+          />
+          
+          <DepartmentDialog 
+            isOpen={dialogs.department} 
+            onCloseAction={() => closeDialog('department')} 
+            onConfirmAction={handleSaveDepartment} 
+            department={editingItems.department} 
+          />
+          
+          <DirectionDialog 
+            isOpen={dialogs.direction} 
+            onCloseAction={() => closeDialog('direction')} 
+            onConfirmAction={handleSaveDirection} 
+            direction={editingItems.direction} 
+            departments={safeDepartments} 
+          />
+          
+          <ServiceDialog 
+            isOpen={dialogs.service} 
+            onCloseAction={() => closeDialog('service')} 
+            onConfirmAction={handleSaveService}
+            service={editingItems.service}
+            directions={safeDirections}
+            departments={safeDepartments}
+          />
+          
+          <EditUserRoleDialog 
+            isOpen={dialogs.editUser} 
+            onCloseAction={() => closeDialog('editUser')} 
+            onConfirmAction={handleUpdateUserRole} 
+            user={editingItems.user} 
+            roles={safeRoles} 
+          />
+          
+          <LinkUserEmployeeDialog 
+            isOpen={dialogs.linkUser} 
+            onCloseAction={() => closeDialog('linkUser')} 
+            onConfirmAction={handleLinkUserToEmployee} 
+            user={editingItems.linkingUser} 
+            employees={allEmployees} 
+          />
+          
+          <UserPermissionsDialog 
+            isOpen={dialogs.permissions} 
+            onCloseAction={() => closeDialog('permissions')} 
+            user={editingItems.permissionsUser} 
+          />
         </div>
 
         <ConfirmationDialog
           isOpen={!!deleteTarget}
           onCloseAction={() => setDeleteTarget(null)}
           onConfirmAction={handleConfirmDelete}
-          title={`Supprimer : ${deleteTarget?.name}`}
-          description={`Êtes-vous sûr de vouloir supprimer "${deleteTarget?.name}" ? Cette action est irréversible.`}
+          title={`Supprimer : ${deleteTarget?.name || ''}`}
+          description={`Êtes-vous sûr de vouloir supprimer "${deleteTarget?.name || ''}" ? Cette action est irréversible.`}
         />
-      </>
-    </TooltipProvider >
+      </TooltipProvider>
     </PermissionGuard>
   );
 }

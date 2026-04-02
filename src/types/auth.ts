@@ -1,3 +1,4 @@
+import type { Timestamp } from 'firebase/firestore';
 import type { ResourcePermissions } from './permissions';
 
 export type User = {
@@ -10,6 +11,8 @@ export type User = {
     permissions: string[]; // The resolved permissions for the user's role (legacy)
     resourcePermissions?: ResourcePermissions; // Matrix permissions (new)
     employeeId?: string; // ID de l'employé lié
+    lastActive?: Timestamp; // Dernière activité de l'utilisateur
+    isOnline?: boolean; // Statut en ligne
 }
 
 export type Role = {

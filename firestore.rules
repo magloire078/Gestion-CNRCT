@@ -3,7 +3,8 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
   
-    // Helper function to check context
+    // --- BASIC HELPERS ---
+    
     function isSignedIn() {
       return request.auth != null;
     }
@@ -12,253 +13,224 @@ service cloud.firestore {
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
     }
 
-    function hasPermission(permission) {
-      return isSignedIn() && (
-        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && getUserData().permissions != null && permission in getUserData().permissions) ||
-        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && getUserData().roleId != null && exists(/databases/$(database)/documents/roles/$(getUserData().roleId)) && permission in get(/databases/$(database)/documents/roles/$(getUserData().roleId)).data.permissions)
-      );
+    function getRoleData(roleId) {
+      return get(/databases/$(database)/documents/roles/$(roleId)).data;
     }
 
-    // Role checks based on roleId
+    // --- ROLE CHECKS ---
+    
     function isSuperAdmin() {
+      // Priorité 1 : Email hardcodé (0 Doc Read)
+      // Priorité 2 : Role ID direct
       return isSignedIn() && (
         request.auth.token.email == 'magloire078@gmail.com' ||
-        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-         getUserData().roleId in ['dirigeant-president', 'super-admin'])
+        getUserData().roleId in ['super-admin', 'LHcHyfBzile3r0vyFOFb']
       );
     }
     
     function isAdmin() {
-      return isSignedIn() && (
-        request.auth.token.email == 'magloire078@gmail.com' ||
-        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-         getUserData().roleId in [
-           'dirigeant-president', 
-           'cadre-superieur-directeur', 
-           'administrateur', 
-           'administrateurs', 
-           'comptable', 
-           'comptables',
-           'super-admin'
-         ]) || 
-        hasPermission('page:admin:view')
+      return isSuperAdmin() || (
+        isSignedIn() && (
+          getUserData().roleId == 'administrateur' || 
+          hasResourcePermission('admin', 'read')
+        )
       );
     }
 
-    function isComptable() {
-      return isAdmin() || (
-        isSignedIn() && 
-        exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-        getUserData().roleId in ['comptable', 'comptables']
-      );
-    }
+    // --- PERMISSION MATRIX HELPER (Optimized) ---
     
-    function isHR() {
-      return isAdmin() || (
-        isSignedIn() && 
-        exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-        (getUserData().roleId in ['manager-rh', 'rh', 'responsable-rh'] || hasPermission('group:personnel:view'))
-      );
-    }
-
-    function isMediation() {
-      return isAdmin() || (
-        isSignedIn() && 
-        exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-        (getUserData().roleId in ['mediateur', 'mediateurs', 'mediation', 'mediations'] || 
-         hasPermission('page:conflicts:view') || 
-         hasResourcePermission('conflicts', 'read'))
-      );
-    }
-
     function hasResourcePermission(resource, action) {
-      return isSignedIn() && 
-             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-             getUserData().roleId != null &&
-             exists(/databases/$(database)/documents/roles/$(getUserData().roleId)) &&
-             get(/databases/$(database)/documents/roles/$(getUserData().roleId)).data.resourcePermissions[resource][action] == true;
+      if (!isSignedIn()) { return false; }
+      
+      let user = getUserData();
+      let userExplicit = user.get(['resourcePermissions', resource, action], null);
+      
+      // 1. Surcharge Utilisateur (Si définie, elle gagne)
+      if (userExplicit != null) {
+        return userExplicit == true;
+      }
+      
+      // 2. Permission par défaut du Rôle
+      return user.roleId != null && 
+             getRoleData(user.roleId).resourcePermissions[resource][action] == true;
     }
 
-    function isPatrimoine() {
-      return isAdmin() || (
-        isSignedIn() && 
-        exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-        (getUserData().roleId in [
-          'manager-rh', 'responsable-it', 'it', 'gestionnaire-stock', 'patrimoine', 'patrimoines'
-        ] ||
-        hasPermission('page:fleet:view') || 
-        hasPermission('page:supplies:view') ||
-        hasResourcePermission('supplies', 'update') ||
-        hasResourcePermission('fleet', 'update') ||
-        hasResourcePermission('fuel', 'update'))
-      );
-    }
-
-    // Default deny
+    // --- DEFAULT DENY ---
     match /{document=**} {
       allow read, write: if false;
     }
 
-    // Roles: Only Super Admin can write, all registered can read
+    // --- SYSTEM COLLECTIONS ---
+    
     match /roles/{roleId} {
       allow read: if isSignedIn();
       allow write: if isSuperAdmin();
     }
     
-    // Users: Read own or admin, write own (limited) or admin
     match /users/{userId} {
-      allow read: if isSignedIn();
+      allow get: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      allow list: if isAdmin();
       allow create: if isSignedIn() && (request.auth.uid == userId || isAdmin());
-      allow update: if (request.auth.uid == userId && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['roleId', 'permissions'])) || isAdmin();
+      allow update: if isAdmin() || (
+        request.auth.uid == userId && 
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['roleId', 'resourcePermissions'])
+      );
       allow delete: if isAdmin();
     }
 
-    // Employees: Allow public read of basic info for landing page, full access for HR
+    // --- EMPLOYEES & HR ---
+    
     match /employees/{employeeId} {
-      allow read: if true; 
-      allow write: if isHR();
+      allow read: if hasResourcePermission('employees', 'read') || 
+                   (resource.data.status == 'Actif' && (
+                     resource.data.departmentId == '9ywKFDgVMS86rZLPYhpm' || 
+                     resource.data.matricule.upper().startsWith('DIR') ||
+                     resource.data.matricule.upper().startsWith('PRE') ||
+                     resource.data.poste in ['Président', 'Secrétaire Général', 'Membre du Directoire']
+                   ));
+      allow create: if hasResourcePermission('employees', 'create');
+      allow update: if hasResourcePermission('employees', 'update');
+      allow delete: if hasResourcePermission('employees', 'delete');
       
       match /history/{eventId} {
-        allow read: if isHR() || (isSignedIn() && getUserData().employeeId == employeeId);
-        allow write: if isHR();
+        allow read: if hasResourcePermission('employees', 'read');
+        allow create, update: if hasResourcePermission('employees', 'update');
+        allow delete: if isAdmin();
       }
     }
 
-    // Conflicts & Mapping: Restrict to Mediation/Admins
-    match /conflicts/{conflictId} {
-      allow read: if isMediation();
-      allow create: if isSignedIn();
-      allow update, delete: if isMediation();
-    }
+    // --- TERRITORIAL OBSERVATORY ---
     
     match /villages/{villageId} {
-      allow read: if isSignedIn();
-      allow write: if isMediation();
+      allow read: if hasResourcePermission('villages', 'read');
+      allow create: if hasResourcePermission('villages', 'create');
+      allow update: if hasResourcePermission('villages', 'update');
+      allow delete: if hasResourcePermission('villages', 'delete');
     }
 
     match /chiefs/{chiefId} {
-      allow read: if true;
-      allow write: if isMediation();
+      allow read: if hasResourcePermission('chiefs', 'read');
+      allow create: if hasResourcePermission('chiefs', 'create');
+      allow update: if hasResourcePermission('chiefs', 'update');
+      allow delete: if hasResourcePermission('chiefs', 'delete');
     }
 
-    match /conflict-types/{id} {
+    match /conflicts/{conflictId} {
+      allow read: if hasResourcePermission('conflicts', 'read');
+      allow create: if hasResourcePermission('conflicts', 'create');
+      allow update: if hasResourcePermission('conflicts', 'update');
+      allow delete: if hasResourcePermission('conflicts', 'delete');
+    }
+
+    match /regencies/{id} {
       allow read: if isSignedIn();
-      allow write: if isMediation();
+      allow create, update: if hasResourcePermission('chiefs', 'update') || isAdmin();
+      allow delete: if isAdmin();
     }
 
-    // Missions, Leaves, Payroll: Owner or Admin
-    match /missions/{missionId} {
-      allow read: if true; // Public institutional missions
-      allow write: if isAdmin() || isComptable() || (isSignedIn() && (request.resource.data.employeeId == getUserData().employeeId));
-    }
+    // --- BUDGET & FINANCE ---
     
-    match /leaves/{leaveId} {
-      allow read: if isHR() || (isSignedIn() && (resource == null || resource.data.employeeId == getUserData().employeeId));
-      allow write: if isHR() || (isSignedIn() && (request.resource.data.employeeId == getUserData().employeeId));
-    }
-
-    match /evaluations/{evaluationId} {
-      allow read: if isHR() || (isSignedIn() && (resource == null || resource.data.employeeId == getUserData().employeeId || resource.data.managerId == request.auth.uid));
-      allow write: if isHR() || (isSignedIn() && (resource == null || resource.data.managerId == request.auth.uid));
-    }
-    
-    match /payroll/{payrollId} {
-      allow read: if isHR() || isComptable() || (isSignedIn() && resource.data.employeeId == getUserData().employeeId);
-      allow write: if isHR() || isComptable();
-    }
-
     match /budgetLines/{lineId} {
-      allow read: if isSignedIn();
-      allow write: if isComptable() || isAdmin();
+      allow read: if hasResourcePermission('budget', 'read');
+      allow create: if hasResourcePermission('budget', 'create');
+      allow update: if hasResourcePermission('budget', 'update');
+      allow delete: if hasResourcePermission('budget', 'delete');
     }
 
-    // Infrastructure & Assets
+    match /payroll/{payrollId} {
+      allow read: if hasResourcePermission('payroll', 'read') || (isSignedIn() && resource.data.employeeId == getUserData().employeeId);
+      allow create, update: if hasResourcePermission('payroll', 'update');
+      allow delete: if hasResourcePermission('payroll', 'delete');
+    }
+
+    // --- LOGISTICS & ASSETS ---
+    
     match /heritage/{assetId} {
-      allow read: if isSignedIn();
-      allow write: if isPatrimoine();
-    }
-
-    match /assets/{assetId} {
-      allow get, list: if isSignedIn();
-      allow create, update, delete: if isPatrimoine() || isAdmin();
+      allow read: if hasResourcePermission('heritage', 'read');
+      allow create: if hasResourcePermission('heritage', 'create');
+      allow update: if hasResourcePermission('heritage', 'update');
+      allow delete: if hasResourcePermission('heritage', 'delete');
     }
 
     match /fleet/{vehicleId} {
-      allow read: if isSignedIn();
-      allow write: if isPatrimoine();
+      allow read: if hasResourcePermission('fleet', 'read');
+      allow create, update, delete: if hasResourcePermission('fleet', 'update');
     }
 
     match /supplies/{supplyId} {
-      allow read: if isSignedIn();
-      allow write: if isPatrimoine();
+      allow read: if hasResourcePermission('supplies', 'read');
+      allow create, update, delete: if hasResourcePermission('supplies', 'update');
     }
 
     match /supply_transactions/{id} {
-      allow read: if isSignedIn();
-      allow write: if isPatrimoine();
+      allow read: if hasResourcePermission('supplies', 'read');
+      allow create: if hasResourcePermission('supplies', 'update');
+      allow update, delete: if isAdmin();
     }
 
-    match /customs/{id} {
-      allow read: if isSignedIn();
-      allow write: if isMediation() || isAdmin();
+    match /fuel_transactions/{id} {
+      allow read: if hasResourcePermission('fuel', 'read');
+      allow create, update, delete: if hasResourcePermission('fuel', 'update');
     }
 
-    // News: Public read, Admin write
-    match /news/{newsId} {
-      allow read: if true; // Public news
-      allow write: if isAdmin();
-      allow update: if isSignedIn() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['viewCount']);
+    // --- MISSIONS & LEAVES ---
+    
+    match /missions/{missionId} {
+      allow read: if hasResourcePermission('missions', 'read') || 
+                   (isSignedIn() && getUserData().get('employeeId', '') in resource.data.get('participantIds', []));
+      allow create: if hasResourcePermission('missions', 'create');
+      allow update: if hasResourcePermission('missions', 'update');
+      allow delete: if hasResourcePermission('missions', 'delete');
+    }
+    
+    match /leaves/{leaveId} {
+      allow read: if hasResourcePermission('leaves', 'read') || (isSignedIn() && resource.data.employeeId == getUserData().employeeId);
+      allow create: if hasResourcePermission('leaves', 'create') || (isSignedIn() && request.resource.data.employeeId == getUserData().employeeId);
+      allow update: if hasResourcePermission('leaves', 'update');
+      allow delete: if hasResourcePermission('leaves', 'delete');
     }
 
-    // Settings
-    match /settings/{settingId} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-
-    // Other collections
+    // --- ADMINISTRATION & SETTINGS ---
+    
     match /departments/{id} { allow read: if isSignedIn(); allow write: if isAdmin(); }
     match /directions/{id} { allow read: if isSignedIn(); allow write: if isAdmin(); }
     match /services/{id} { allow read: if isSignedIn(); allow write: if isAdmin(); }
-    match /repository/{id} { allow read: if isSignedIn(); allow write: if isAdmin(); }
-    match /tickets/{id} { allow read, write: if isSignedIn(); }
     
+    match /settings/{settingId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    match /audit_log/{id} {
+      allow read: if hasResourcePermission('audit-log', 'read');
+      allow create: if isSignedIn();
+    }
+
     match /notifications/{id} { 
       allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || resource.data.userId == 'all');
       allow create, update: if isSignedIn();
       allow delete: if isAdmin();
     }
 
-    match /print_logs/{id} {
+    // --- TICKETS & SUPPORT ---
+    
+    match /tickets/{id} { 
+      allow read: if isSignedIn() && (resource.data.createdBy == request.auth.uid || hasResourcePermission('tickets', 'read'));
       allow create: if isSignedIn();
-      allow read: if isHR();
+      allow update: if resource.data.createdBy == request.auth.uid || hasResourcePermission('tickets', 'update');
+      allow delete: if isAdmin();
     }
 
-    match /regency_history/{historyId} {
-      allow read: if isSignedIn();
-      allow write: if isMediation();
+    // --- NEWS & REPOSITORY ---
+    
+    match /news/{newsId} {
+      allow read: if isSignedIn(); 
+      allow write: if hasResourcePermission('news', 'update');
     }
 
-    // Fuel Management
-    match /fuel_providers/{id} {
-      allow read: if isSignedIn();
-      allow create: if isSuperAdmin() || isPatrimoine() || hasResourcePermission('fuel', 'create');
-      allow update: if isSuperAdmin() || isPatrimoine() || hasResourcePermission('fuel', 'update');
-      allow delete: if isSuperAdmin() || isPatrimoine() || hasResourcePermission('fuel', 'delete');
-    }
-
-    match /fuel_cards/{id} {
-      allow read: if isSignedIn();
-      allow create: if isSuperAdmin() || isPatrimoine() || hasResourcePermission('fuel', 'create');
-      allow update: if isSuperAdmin() || isPatrimoine() || hasResourcePermission('fuel', 'update');
-      allow delete: if isSuperAdmin() || isPatrimoine() || hasResourcePermission('fuel', 'delete');
-    }
-
-    match /fuel_transactions/{id} {
-      allow read: if isSignedIn();
-      allow create: if isSuperAdmin() || isPatrimoine() || hasResourcePermission('fuel', 'create');
-      allow update: if isSuperAdmin() || isPatrimoine() || hasResourcePermission('fuel', 'update');
-      allow delete: if isSuperAdmin() || isPatrimoine() || hasResourcePermission('fuel', 'delete');
+    match /repository/{id} { 
+      allow read: if hasResourcePermission('repository', 'read'); 
+      allow write: if hasResourcePermission('repository', 'update'); 
     }
   }
 }

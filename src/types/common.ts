@@ -27,6 +27,7 @@ export type Mission = {
     title: string;
     description: string;
     participants: MissionParticipant[];
+    participantIds?: string[]; // IDs for Firestore array-contains filtering
     startDate: string; // YYYY-MM-DD
     endDate: string; // YYYY-MM-DD
     status: 'Planifiée' | 'En cours' | 'Terminée' | 'Annulée';

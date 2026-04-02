@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Printer, X, LayoutList, Filter, SortAsc, CheckCircle2 } from "lucide-react";
+import { Printer, X, LayoutList, Filter, SortAsc, CheckCircle2, FileText } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -17,15 +17,21 @@ interface PrintSuppliesDialogProps {
 
 export interface PrintOptions {
   includeOutOfStock: boolean;
+  includePhotos: boolean;
+  showHealthStatus: boolean;
   category: string;
   sortBy: 'name' | 'quantity' | 'category';
+  reportTemplate: 'standard' | 'official';
 }
 
 export function PrintSuppliesDialog({ isOpen, onCloseAction, onPrintAction }: PrintSuppliesDialogProps) {
   const [options, setOptions] = useState<PrintOptions>({
     includeOutOfStock: true,
+    includePhotos: false,
+    showHealthStatus: true,
     category: 'all',
     sortBy: 'name',
+    reportTemplate: 'standard',
   });
 
   const handlePrint = () => {
@@ -35,7 +41,7 @@ export function PrintSuppliesDialog({ isOpen, onCloseAction, onPrintAction }: Pr
 
   return (
     <Dialog open={isOpen} onOpenChange={onCloseAction}>
-      <DialogContent className="sm:max-w-[450px] rounded-[2rem] border-none shadow-2xl p-0 overflow-hidden">
+      <DialogContent className="sm:max-w-[480px] rounded-[2rem] border-none shadow-2xl p-0 overflow-hidden">
         <div className="bg-slate-900 p-8 text-white relative">
           <div className="absolute top-0 right-0 p-8 opacity-10">
              <Printer size={120} strokeWidth={1} />
@@ -46,39 +52,95 @@ export function PrintSuppliesDialog({ isOpen, onCloseAction, onPrintAction }: Pr
             </div>
             <DialogTitle className="text-2xl font-black tracking-tight uppercase">Options d'impression</DialogTitle>
             <DialogDescription className="text-slate-400 font-bold uppercase text-[10px] tracking-widest leading-none">
-              Personnalisez votre inventaire avant génération
+              Modèle & Filtres Administratifs
             </DialogDescription>
           </DialogHeader>
         </div>
 
-        <div className="p-8 space-y-8 bg-white">
-          {/* Include Out of Stock */}
-          <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100 transition-all hover:bg-slate-100/50">
+        <div className="p-8 space-y-8 bg-white max-h-[60vh] overflow-y-auto custom-scrollbar">
+          {/* Report Template Selection */}
+          <div className="space-y-3">
+              <div className="flex items-center gap-2 text-slate-400">
+                 <FileText className="h-3.5 w-3.5" />
+                 <Label className="text-[10px] font-black uppercase tracking-widest">Modèle de Rapport</Label>
+              </div>
+              <Select value={options.reportTemplate} onValueChange={(v: any) => setOptions(prev => ({ ...prev, reportTemplate: v }))}>
+                <SelectTrigger className="h-14 rounded-2xl border-slate-200 bg-slate-50/50 font-bold text-slate-900 focus:ring-slate-900 transition-all hover:bg-slate-100/50">
+                  <SelectValue placeholder="Standard (Tableau)" />
+                </SelectTrigger>
+                <SelectContent className="rounded-2xl border-slate-100 shadow-2xl">
+                  <SelectItem value="standard" className="py-3 px-4">
+                      <div className="flex flex-col gap-0.5">
+                          <span className="font-bold underline">📋 Modèle Standard</span>
+                          <span className="text-[9px] text-slate-400 font-bold uppercase">Liste d'inventaire rapide</span>
+                      </div>
+                  </SelectItem>
+                  <SelectItem value="official" className="py-3 px-4">
+                      <div className="flex flex-col gap-0.5">
+                          <span className="font-bold underline">🏛️ Modèle Officiel CNRCT</span>
+                          <span className="text-[9px] text-slate-400 font-bold uppercase tracking-tighter">Page de garde + Style PV d'Inventaire</span>
+                      </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Include Photos */}
+              <div className="flex flex-col gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100 transition-all hover:bg-slate-100/50">
+                <div className="flex items-center justify-between">
+                    <Label htmlFor="photos" className="text-xs font-black text-slate-900 uppercase">Photos</Label>
+                    <Switch 
+                    id="photos" 
+                    checked={options.includePhotos} 
+                    onCheckedChange={(val) => setOptions(prev => ({ ...prev, includePhotos: val }))}
+                    className="data-[state=checked]:bg-slate-900"
+                    />
+                </div>
+                <span className="text-[9px] text-slate-400 font-bold uppercase tracking-tighter leading-none">Inclure catalogue visuel</span>
+              </div>
+
+              {/* Show Health Status */}
+              <div className="flex flex-col gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100 transition-all hover:bg-slate-100/50">
+                <div className="flex items-center justify-between">
+                    <Label htmlFor="health" className="text-xs font-black text-slate-900 uppercase">Santé Stock</Label>
+                    <Switch 
+                    id="health" 
+                    checked={options.showHealthStatus} 
+                    onCheckedChange={(val) => setOptions(prev => ({ ...prev, showHealthStatus: val }))}
+                    className="data-[state=checked]:bg-slate-900"
+                    />
+                </div>
+                <span className="text-[9px] text-slate-400 font-bold uppercase tracking-tighter leading-none">Indicateurs & alertes</span>
+              </div>
+          </div>
+
+          <div className="flex items-center justify-between p-4 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
             <div className="flex flex-col gap-0.5">
               <Label htmlFor="stock" className="text-sm font-black text-slate-900">Articles en rupture</Label>
-              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest italic">Inclure les stocks à 0</span>
+              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest italic leading-none">Inclure les stocks à 0</span>
             </div>
             <Switch 
               id="stock" 
               checked={options.includeOutOfStock} 
               onCheckedChange={(val) => setOptions(prev => ({ ...prev, includeOutOfStock: val }))}
-              className="data-[state=checked]:bg-slate-900"
+              className="data-[state=checked]:bg-slate-900 scale-75"
             />
           </div>
 
-          <div className="space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
              {/* Category Filter */}
             <div className="space-y-3">
               <div className="flex items-center gap-2 text-slate-400">
                  <Filter className="h-3.5 w-3.5" />
-                 <Label className="text-[10px] font-black uppercase tracking-widest">Filtrer par Catégorie</Label>
+                 <Label className="text-[10px] font-black uppercase tracking-widest">Périmètre</Label>
               </div>
               <Select value={options.category} onValueChange={(v) => setOptions(prev => ({ ...prev, category: v }))}>
-                <SelectTrigger className="h-12 rounded-xl border-slate-200 bg-slate-50/50 font-bold text-slate-900 focus:ring-slate-900">
-                  <SelectValue placeholder="Toutes les catégories" />
+                <SelectTrigger className="h-10 rounded-xl border-slate-200 bg-slate-50/50 font-bold text-slate-900 focus:ring-slate-900">
+                  <SelectValue placeholder="Tout" />
                 </SelectTrigger>
                 <SelectContent className="rounded-xl border-slate-100 shadow-2xl">
-                  <SelectItem value="all">Toutes les catégories</SelectItem>
+                  <SelectItem value="all">Tout</SelectItem>
                   {supplyCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
                 </SelectContent>
               </Select>
@@ -88,16 +150,16 @@ export function PrintSuppliesDialog({ isOpen, onCloseAction, onPrintAction }: Pr
             <div className="space-y-3">
               <div className="flex items-center gap-2 text-slate-400">
                  <SortAsc className="h-3.5 w-3.5" />
-                 <Label className="text-[10px] font-black uppercase tracking-widest">Trier le document par</Label>
+                 <Label className="text-[10px] font-black uppercase tracking-widest">Tri</Label>
               </div>
               <Select value={options.sortBy} onValueChange={(v: any) => setOptions(prev => ({ ...prev, sortBy: v }))}>
-                <SelectTrigger className="h-12 rounded-xl border-slate-200 bg-slate-50/50 font-bold text-slate-900 focus:ring-slate-900">
-                  <SelectValue placeholder="Nom de l'article" />
+                <SelectTrigger className="h-10 rounded-xl border-slate-200 bg-slate-50/50 font-bold text-slate-900 focus:ring-slate-900">
+                  <SelectValue placeholder="Nom" />
                 </SelectTrigger>
                 <SelectContent className="rounded-xl border-slate-100 shadow-2xl">
-                  <SelectItem value="name">📋 Nom de l'article</SelectItem>
-                  <SelectItem value="quantity">📊 Quantité disponible</SelectItem>
-                  <SelectItem value="category">🏷️ Catégorie</SelectItem>
+                  <SelectItem value="name">Désignation</SelectItem>
+                  <SelectItem value="quantity">Quantité</SelectItem>
+                  <SelectItem value="category">Catégorie</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -105,11 +167,11 @@ export function PrintSuppliesDialog({ isOpen, onCloseAction, onPrintAction }: Pr
         </div>
 
         <DialogFooter className="bg-slate-50/50 border-t border-slate-100 p-6">
-          <Button variant="ghost" onClick={onCloseAction} className="rounded-xl font-bold text-slate-500 h-12 px-6">
+          <Button variant="ghost" onClick={onCloseAction} className="rounded-xl font-bold text-slate-500 h-14 px-6 overflow-hidden transition-all hover:bg-slate-100">
             Annuler
           </Button>
-          <Button onClick={handlePrint} className="bg-slate-900 text-white rounded-xl font-black h-12 px-8 shadow-xl hover:bg-slate-800 transition-all border-none uppercase tracking-widest text-[11px] gap-2">
-            <CheckCircle2 className="h-4 w-4" /> Générer l'impression
+          <Button onClick={handlePrint} className="bg-slate-900 text-white rounded-[1.25rem] font-black h-14 px-8 shadow-xl hover:bg-stone-800 transition-all border-none uppercase tracking-[0.15em] text-[10px] gap-3">
+            <CheckCircle2 className="h-4 w-4" /> Générer le Rapport
           </Button>
         </DialogFooter>
       </DialogContent>

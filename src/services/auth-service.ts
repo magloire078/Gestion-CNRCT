@@ -30,15 +30,16 @@ async function getUserProfile(userId: string): Promise<User | null> {
             return null;
         }
         const roles = await getRoles();
-        const userData = userDoc.data() as Omit<User, 'id' | 'role' | 'permissions'>;
+        const userData = userDoc.data() as User;
         const userRole = roles.find(r => r.id === userData.roleId) || null;
+        const userResourcePermissions = userData.resourcePermissions || {};
 
         return {
-            id: userId,
             ...userData,
+            id: userId,
             role: userRole,
             permissions: userRole?.permissions || [],
-            resourcePermissions: userRole?.resourcePermissions || {}
+            resourcePermissions: userResourcePermissions
         };
     } catch (error) {
         // Silently handle permission errors during initial auth state changes

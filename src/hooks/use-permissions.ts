@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from './use-auth';
-import { getResourcePermissions } from '@/services/permission-service';
+import { getResourcePermissions, getEffectivePermissions } from '@/services/permission-service';
 import type { ResourcePermissions, CrudAction } from '@/types/permissions';
 import { RESOURCES_CONFIG } from '@/types/permissions';
 
@@ -30,7 +30,8 @@ export function usePermissions(): UsePermissionsReturn {
             return;
         }
         try {
-            const perms = await getResourcePermissions(user.roleId);
+            // Fetch effective permissions (merged Role + User specific overrides)
+            const perms = await getEffectivePermissions(user.id, user.roleId);
             setPermissions(perms);
         } catch (err) {
             console.warn('[usePermissions] Failed to load permissions:', err);
@@ -38,7 +39,7 @@ export function usePermissions(): UsePermissionsReturn {
         } finally {
             setLoading(false);
         }
-    }, [user?.roleId]);
+    }, [user?.id, user?.roleId]);
 
     useEffect(() => {
         loadPermissions();

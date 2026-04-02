@@ -73,6 +73,7 @@ export default function MissionsPage() {
 
 
   useEffect(() => {
+    const isAdmin = hasPermission('page:missions:view');
     const unsubscribe = subscribeToMissions(
       (fetchedMissions) => {
         setMissions(fetchedMissions);
@@ -83,10 +84,13 @@ export default function MissionsPage() {
         setError("Impossible de charger les missions.");
         console.error(err);
         setLoading(false);
-      }
+      },
+      user?.id,
+      user?.employeeId,
+      isAdmin
     );
     return () => unsubscribe();
-  }, []);
+  }, [user, hasPermission]);
 
   const handleAddMission = async (newMissionData: Omit<Mission, "id">) => {
     try {

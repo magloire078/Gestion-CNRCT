@@ -16,7 +16,7 @@ export function useAdminData() {
   const [departments, setDepartments] = useState<Department[] | null>(null);
   const [directions, setDirections] = useState<Direction[] | null>(null);
   const [services, setServices] = useState<Service[] | null>(null);
-  const [allEmployees, setAllEmployees] = useState<Employe[]>([]);
+  const [allEmployees, setAllEmployees] = useState<Employe[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -42,10 +42,10 @@ export function useAdminData() {
   }, []);
 
   useEffect(() => {
-    if (users !== null && roles !== null && departments !== null && directions !== null && services !== null && allEmployees.length > 0) {
+    if (users !== null && roles !== null && departments !== null && directions !== null && services !== null && allEmployees !== null) {
       setLoading(false);
     }
   }, [users, roles, departments, directions, services, allEmployees]);
 
-  return { users, roles, departments, directions, services, allEmployees, loading, error };
+  return { users, roles, departments, directions, services, allEmployees: allEmployees || [], loading, error };
 }

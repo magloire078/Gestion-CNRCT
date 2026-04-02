@@ -17,6 +17,7 @@ export const missionSchema = z.object({
     title: z.string(),
     description: z.string(),
     participants: z.array(missionParticipantSchema),
+    participantIds: z.array(z.string()).optional(),
     startDate: z.string(),
     endDate: z.string(),
     status: z.enum(['Planifiée', 'En cours', 'Terminée', 'Annulée']),

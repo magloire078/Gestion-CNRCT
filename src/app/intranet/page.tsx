@@ -28,6 +28,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { Employe, Leave, Department, Chief } from '@/lib/data';
 import { Skeleton } from '@/components/ui/skeleton';
 import { differenceInYears, parseISO, format } from 'date-fns';
+import { ALL_MENU_ITEMS, MenuItem, SubMenuItem } from "@/constants/navigation";
 import { fr } from 'date-fns/locale';
 import { useToast } from "@/hooks/use-toast";
 import { getEmployeeGroup } from '@/services/employee-service';
@@ -89,6 +90,13 @@ export default function IntranetPage() {
     } = useDashboardData(user);
     const { formatDate } = useFormat();
 
+    const getValidPhotoUrl = (url: string | undefined | null) => {
+        if (!url) return undefined;
+        // Check if it's just an extension or a legacy broken path from port 9002
+        if (url === '.jpg' || url === '/photos/.jpg' || url.endsWith('/.jpg')) return undefined;
+        return url;
+    };
+
     const departmentMap = useMemo(() => {
         const map = new Map<string, Department>();
         if (globalStats.departments) {
@@ -145,7 +153,11 @@ export default function IntranetPage() {
                         </div>
                         <div className="flex flex-col md:flex-row md:items-center gap-6">
                             <Avatar className="h-20 w-20 md:h-28 md:w-28 border-4 border-white/10 shadow-2xl">
-                                <AvatarImage src={user?.photoUrl} alt={user?.name} />
+                                <AvatarImage 
+                                    src={getValidPhotoUrl(user?.photoUrl)} 
+                                    alt={user?.name} 
+                                    crossOrigin={user?.photoUrl?.includes('cloudinary') ? "anonymous" : undefined}
+                                />
                                 <AvatarFallback className="bg-blue-600 text-white text-2xl font-black">
                                     {user?.name?.split(' ').map(n => n[0]).join('') || "U"}
                                 </AvatarFallback>
@@ -176,54 +188,103 @@ export default function IntranetPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 px-2">
-                <QuickTile 
-                    title="Intelligence & Rapports" 
-                    description="Accédez aux analyses, statistiques et rapports DISA/Nominatifs."
-                    icon={FileText}
-                    href="/reports"
-                    color="bg-indigo-600"
-                    permission="group:reports:view"
-                />
-                <QuickTile 
-                    title="Gestion Opérationnelle" 
-                    description="Pilotage de la logistique, du patrimoine TI et de la flotte."
-                    icon={Zap}
-                    href="/management"
-                    color="bg-slate-900"
-                    permission="group:operations:view"
-                />
-                <QuickTile 
-                    title="Ma Rémunération" 
-                    description="Consultez et téléchargez vos bulletins de paie mensuels."
-                    icon={Receipt}
-                    onClick={() => handleActionClick('/payroll')}
-                    color="bg-emerald-500"
-                    permission="page:payroll:view"
-                />
-                <QuickTile 
-                    title="Mes Congés" 
-                    description="Planifiez et demandez vos congés ou absences."
-                    icon={CalendarOff}
-                    onClick={() => handleActionClick('/leave')}
-                    color="bg-rose-500"
-                    permission="page:leaves:view"
-                />
-                <QuickTile 
-                    title="Support Technique" 
-                    description="Un souci matériel ou logiciel ? Nos techniciens vous aident."
-                    icon={Laptop}
-                    href="/helpdesk"
-                    color="bg-blue-500"
-                />
-                <QuickTile 
-                    title="Missions" 
-                    description="Consultez vos ordres de mission et le calendrier."
-                    icon={Briefcase}
-                    onClick={() => handleActionClick('/missions')}
-                    color="bg-amber-500"
-                    permission="page:missions:view"
-                />
+            <div className="space-y-16 px-2">
+                {ALL_MENU_ITEMS.filter(item => item.href !== '/intranet').map((menu: MenuItem, idx: number) => {
+                    const { hasPermission } = useAuth();
+                    const visibleSubItems = menu.subItems?.filter((sub: SubMenuItem) => !sub.permission || hasPermission(sub.permission)) || [];
+                    const isParentVisible = menu.permission && hasPermission(menu.permission);
+                    
+                    if (!isParentVisible && visibleSubItems.length === 0) return null;
+
+                    return (
+                        <section 
+                            key={idx} 
+                            className="group/section relative p-8 rounded-[2.5rem] bg-slate-50/40 border border-slate-100/80 shadow-sm transition-all duration-500 hover:bg-slate-50/80 hover:shadow-md overflow-hidden"
+                        >
+                            {/* Visual background accent */}
+                            <div className="absolute -top-24 -right-24 h-64 w-64 bg-indigo-500/5 rounded-full blur-3xl group-hover/section:scale-110 transition-transform duration-700" />
+                            
+                            <div className="relative space-y-8">
+                                {/* Section Header */}
+                                <div className="flex items-center gap-5">
+                                    <div className="h-14 w-14 rounded-2xl bg-white shadow-lg shadow-slate-200/50 flex items-center justify-center text-slate-800 transition-transform group-hover/section:rotate-3">
+                                        <menu.icon className="h-7 w-7" />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-2xl font-black text-slate-900 tracking-tight uppercase tracking-[0.1em]">{menu.label}</h2>
+                                        <div className="h-1 w-12 bg-slate-200 rounded-full mt-2 group-hover/section:w-20 transition-all duration-500" />
+                                    </div>
+                                </div>
+                                
+                                {/* Indented Grid with Visual Tree Line */}
+                                <div className="relative ml-7 pl-12 border-l-2 border-slate-200/60 group-hover/section:border-slate-300 transition-colors">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                                        {menu.isCollapsible ? (
+                                            visibleSubItems.map((sub: SubMenuItem, sIdx: number) => {
+                                                // Specific mapping for colors and descriptions
+                                                let description = "Accéder à l'outil.";
+                                                let color = idx % 2 === 0 ? "bg-indigo-600" : "bg-blue-500";
+
+                                                if (sub.label === "Paie") {
+                                                    description = "Consultez et téléchargez vos bulletins de paie mensuels.";
+                                                    color = "bg-emerald-500";
+                                                }
+                                                if (sub.label === "Congés") {
+                                                    description = "Planifiez et demandez vos congés ou absences.";
+                                                    color = "bg-rose-500";
+                                                }
+                                                if (sub.label === "Missions") {
+                                                    description = "Consultez vos ordres de mission et le calendrier.";
+                                                    color = "bg-amber-500";
+                                                }
+                                                if (sub.label === "Rois & Chefs") {
+                                                    description = "Répertoire officiel des autorités coutumières.";
+                                                    color = "bg-orange-600";
+                                                }
+                                                if (sub.label === "Villages") {
+                                                    description = "Cartographie et données des localités.";
+                                                    color = "bg-teal-600";
+                                                }
+                                                if (sub.label === "Fournitures") {
+                                                    description = "Gestion des stocks et commandes logistiques.";
+                                                    color = "bg-slate-700";
+                                                }
+                                                if (sub.label === "Véhicules") {
+                                                    description = "Suivi de la flotte et entretien.";
+                                                    color = "bg-zinc-800";
+                                                }
+                                                if (sub.label === "Assistance IT") {
+                                                    description = "Un souci matériel ou logiciel ? Nos techniciens vous aident.";
+                                                    color = "bg-blue-500";
+                                                }
+
+                                                return (
+                                                    <QuickTile 
+                                                        key={sIdx}
+                                                        title={sub.label}
+                                                        description={description}
+                                                        icon={sub.icon}
+                                                        href={sub.href}
+                                                        onClick={['/payroll', '/leave', '/missions'].includes(sub.href.split('?')[0]) ? () => handleActionClick(sub.href) : undefined}
+                                                        color={color}
+                                                    />
+                                                );
+                                            })
+                                        ) : (
+                                            <QuickTile 
+                                                title={menu.label}
+                                                description="Accès direct au module complet."
+                                                icon={menu.icon}
+                                                href={menu.href}
+                                                color="bg-slate-900"
+                                            />
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    );
+                })}
             </div>
 
             {/* Directoire Map Section - Full Width */}
@@ -311,7 +372,11 @@ export default function IntranetPage() {
                                             birthdayAnniversaries.map(emp => (
                                                 <div key={`birth-${emp.id}`} className="flex items-center gap-4 group p-1.5 hover:bg-rose-50/40 rounded-xl transition-all">
                                                     <Avatar className="h-10 w-10 border-2 border-white shadow-md">
-                                                        <AvatarImage src={emp.photoUrl} alt={emp.name} />
+                                                        <AvatarImage 
+                                                            src={getValidPhotoUrl(emp.photoUrl)} 
+                                                            alt={emp.name} 
+                                                            crossOrigin={emp.photoUrl?.includes('cloudinary') ? "anonymous" : undefined}
+                                                        />
                                                         <AvatarFallback className="bg-rose-50 text-rose-500 font-bold text-sm">{emp.lastName?.charAt(0)}</AvatarFallback>
                                                     </Avatar>
                                                     <div className="flex-1 min-w-0">
@@ -338,7 +403,11 @@ export default function IntranetPage() {
                                             seniorityAnniversaries.map(emp => (
                                                 <div key={`senior-${emp.id}`} className="flex items-center gap-4 group p-1.5 hover:bg-blue-50/40 rounded-xl transition-all">
                                                     <Avatar className="h-10 w-10 border-2 border-white shadow-md">
-                                                        <AvatarImage src={emp.photoUrl} alt={emp.name} />
+                                                        <AvatarImage 
+                                                            src={getValidPhotoUrl(emp.photoUrl)} 
+                                                            alt={emp.name} 
+                                                            crossOrigin={emp.photoUrl?.includes('cloudinary') ? "anonymous" : undefined}
+                                                        />
                                                         <AvatarFallback className="bg-blue-50 text-blue-500 font-bold text-sm">{emp.lastName?.charAt(0)}</AvatarFallback>
                                                     </Avatar>
                                                     <div className="flex-1 min-w-0">

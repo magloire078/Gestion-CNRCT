@@ -30,12 +30,13 @@ import { addService, updateService } from "@/services/service-service";
 interface ServiceDialogProps {
   isOpen: boolean;
   onCloseAction: () => void;
+  onConfirmAction: (data: { name: string; directionId?: string; departmentId?: string }) => Promise<void>;
   service?: Service | null;
   directions: Direction[];
   departments: Department[];
 }
 
-export function ServiceDialog({ isOpen, onCloseAction, service, directions, departments }: ServiceDialogProps) {
+export function ServiceDialog({ isOpen, onCloseAction, onConfirmAction, service, directions, departments }: ServiceDialogProps) {
   const [name, setName] = useState("");
   const [parentType, setParentType] = useState<'direction' | 'department'>('direction');
   const [parentId, setParentId] = useState("");
@@ -95,23 +96,11 @@ export function ServiceDialog({ isOpen, onCloseAction, service, directions, depa
           dataToSave.departmentId = selectedDirection?.departmentId;
       }
 
-      if (isEditMode) {
-        await updateService(service.id, dataToSave);
-        toast({ title: "Service mis à jour" });
-      } else {
-        await addService(dataToSave as Omit<Service, 'id'>);
-        toast({ title: "Service ajouté" });
-      }
-      
+      await onConfirmAction(dataToSave);
       handleClose();
     } catch (err) {
       const message = err instanceof Error ? err.message : "Une erreur est survenue lors de l'enregistrement.";
       setError(message);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: message,
-      });
     } finally {
       setIsSubmitting(false);
     }

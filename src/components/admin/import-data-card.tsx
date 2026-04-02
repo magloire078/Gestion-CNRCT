@@ -83,6 +83,13 @@ export function ImportDataCard() {
               const combinedName = `${row.nom || ''} ${row.prenom || ''}`.trim();
               const photoPath = row.photo ? String(row.photo).trim() : null;
 
+              const isValidPhoto = photoPath && 
+                                  photoPath.length > 4 && 
+                                  !photoPath.startsWith('.') &&
+                                  (photoPath.includes('.') || photoPath.startsWith('http'));
+
+              const defaultAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(combinedName || 'E')}&background=006039&color=fff&size=100`;
+
               const employeeData: Omit<Employe, 'id'> = {
                 matricule: String(row.matricule),
                 name: combinedName,
@@ -122,7 +129,9 @@ export function ImportDataCard() {
                 situationMatrimoniale: String(row.situation_famille || ''),
                 Lieu_Naissance: String(row.lieu_naissance || ''),
                 
-                photoUrl: photoPath ? `/photos/${photoPath}` : `https://placehold.co/100x100.png`,
+                photoUrl: isValidPhoto 
+                  ? (photoPath.startsWith('http') ? photoPath : `/photos/${photoPath}`) 
+                  : defaultAvatar,
               };
 
               // Add numeric fields only if they are valid numbers

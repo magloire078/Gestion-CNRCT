@@ -16,6 +16,7 @@ export interface ResourceConfig {
     icon: string;
     availableActions: CrudAction[];
     description?: string;
+    parentId?: string; // ID of the parent resource for hierarchical display
 }
 
 export interface RoleConfig {
@@ -29,33 +30,44 @@ export interface RoleConfig {
  *  Ajouter une entrée ici suffira pour l'inclure dans la matrice.
  */
 export const RESOURCES_CONFIG: ResourceConfig[] = [
-    { id: 'dashboard', label: 'Tableau de bord', icon: 'LayoutDashboard', availableActions: ['read'] },
-    { id: 'employees', label: 'Employés', icon: 'Users', availableActions: ['read', 'create', 'update', 'delete'] },
-    { id: 'payroll', label: 'Fiches de Paie', icon: 'Wallet', availableActions: ['read', 'create', 'update', 'delete'] },
-    { id: 'leaves', label: 'Congés', icon: 'CalendarOff', availableActions: ['read', 'create', 'update', 'delete'] },
-    { id: 'missions', label: 'Missions', icon: 'MapPin', availableActions: ['read', 'create', 'update', 'delete'] },
-    { id: 'conflicts', label: 'Conflits', icon: 'AlertTriangle', availableActions: ['read', 'create', 'update', 'delete'] },
-    { id: 'supplies', label: 'Fournitures', icon: 'Package', availableActions: ['read', 'create', 'update', 'delete'] },
-    { id: 'it-assets', label: 'Assets IT', icon: 'Monitor', availableActions: ['read', 'create', 'update', 'delete'] },
-    { id: 'fleet', label: 'Flotte Véhicules', icon: 'Car', availableActions: ['read', 'create', 'update', 'delete'] },
-    { id: 'news', label: 'Actualités', icon: 'Newspaper', availableActions: ['read', 'create', 'update', 'delete'] },
-    { id: 'repository', label: 'Documents', icon: 'FolderOpen', availableActions: ['read', 'create', 'update', 'delete'] },
-    { id: 'budget', label: 'Budget', icon: 'PieChart', availableActions: ['read', 'create', 'update', 'delete'] },
-    { id: 'evaluations', label: 'Évaluations', icon: 'ClipboardList', availableActions: ['read', 'create', 'update', 'delete'] },
-    { id: 'tickets', label: 'Tickets Support', icon: 'LifeBuoy', availableActions: ['read', 'create', 'update', 'delete'] },
-    { id: 'chiefs', label: 'Chefs Coutumiers', icon: 'Crown', availableActions: ['read', 'create', 'update', 'delete'] },
-    { id: 'mapping', label: 'Cartographie', icon: 'Map', availableActions: ['read'] },
-    { id: 'assistant', label: 'Assistant IA', icon: 'Bot', availableActions: ['read'] },
-    { id: 'settings', label: 'Paramètres', icon: 'Settings', availableActions: ['read', 'update'] },
-    { id: 'admin', label: 'Administration', icon: 'ShieldCheck', availableActions: ['read', 'update'] },
-    { id: 'fuel', label: 'Gestion de carburant', icon: 'Fuel', availableActions: ['read', 'create', 'update', 'delete'] },
-    { id: 'indemnities', label: 'Indemnités', icon: 'Calculator', availableActions: ['read', 'create', 'update', 'delete'] },
-    { id: 'heritage', label: 'Patrimoine', icon: 'Landmark', availableActions: ['read', 'create', 'update', 'delete'] },
-    { id: 'us-et-coutumes', label: 'Us & Coutumes', icon: 'Scroll', availableActions: ['read', 'create', 'update', 'delete'] },
-    { id: 'villages', label: 'Villages', icon: 'MapPinned', availableActions: ['read', 'create', 'update', 'delete'] },
-    { id: 'organization-chart', label: 'Organigramme', icon: 'Network', availableActions: ['read'] },
-    { id: 'intranet', label: 'Intranet', icon: 'Globe', availableActions: ['read'] },
-    { id: 'audit-log', label: 'Journal d\'Audit', icon: 'ScrollText', availableActions: ['read'] },
+    // --- GROUPES PARENTS ---
+    { id: 'group:institution', label: "L'INSTITUTION", icon: 'Building2', availableActions: ['read'] },
+    { id: 'group:personnel', label: "PERSONNEL", icon: 'Users', availableActions: ['read'] },
+    { id: 'group:operations', label: "OPÉRATIONS", icon: 'Briefcase', availableActions: ['read'] },
+    { id: 'group:localities', label: "LOCALITÉS & AUTORITÉS", icon: 'MapPin', availableActions: ['read'] },
+    { id: 'group:heritage', label: "CULTURE & PATRIMOINE", icon: 'History', availableActions: ['read'] },
+    { id: 'group:administration', label: "ADMINISTRATION", icon: 'Shield', availableActions: ['read'] },
+
+    // --- MODULES (ENFANTS) ---
+    { id: 'dashboard', label: 'Tableau de bord', icon: 'LayoutDashboard', availableActions: ['read'], parentId: 'group:institution' },
+    { id: 'organization-chart', label: 'Organigramme', icon: 'Network', availableActions: ['read'], parentId: 'group:institution' },
+    
+    { id: 'employees', label: 'Employés', icon: 'Users', availableActions: ['read', 'create', 'update', 'delete'], parentId: 'group:personnel' },
+    { id: 'payroll', label: 'Fiches de Paie', icon: 'Wallet', availableActions: ['read', 'create', 'update', 'delete'], parentId: 'group:personnel' },
+    { id: 'leaves', label: 'Congés', icon: 'CalendarOff', availableActions: ['read', 'create', 'update', 'delete'], parentId: 'group:personnel' },
+    { id: 'evaluations', label: 'Évaluations', icon: 'ClipboardList', availableActions: ['read', 'create', 'update', 'delete'], parentId: 'group:personnel' },
+    { id: 'indemnities', label: 'Indemnités', icon: 'Calculator', availableActions: ['read', 'create', 'update', 'delete'], parentId: 'group:personnel' },
+
+    { id: 'missions', label: 'Missions', icon: 'MapPin', availableActions: ['read', 'create', 'update', 'delete'], parentId: 'group:operations' },
+    { id: 'conflicts', label: 'Conflits', icon: 'AlertTriangle', availableActions: ['read', 'create', 'update', 'delete'], parentId: 'group:operations' },
+    { id: 'supplies', label: 'Fournitures', icon: 'Package', availableActions: ['read', 'create', 'update', 'delete'], parentId: 'group:operations' },
+    { id: 'it-assets', label: 'Assets IT', icon: 'Monitor', availableActions: ['read', 'create', 'update', 'delete'], parentId: 'group:operations' },
+    { id: 'fleet', label: 'Flotte Véhicules', icon: 'Car', availableActions: ['read', 'create', 'update', 'delete'], parentId: 'group:operations' },
+    { id: 'fuel', label: 'Gestion de carburant', icon: 'Fuel', availableActions: ['read', 'create', 'update', 'delete'], parentId: 'group:operations' },
+    { id: 'budget', label: 'Budget', icon: 'PieChart', availableActions: ['read', 'create', 'update', 'delete'], parentId: 'group:operations' },
+    { id: 'repository', label: 'Référentiel Documents', icon: 'FolderOpen', availableActions: ['read', 'create', 'update', 'delete'], parentId: 'group:operations' },
+
+    { id: 'chiefs', label: 'Chefs Coutumiers', icon: 'Crown', availableActions: ['read', 'create', 'update', 'delete'], parentId: 'group:localities' },
+    { id: 'villages', label: 'Villages', icon: 'MapPinned', availableActions: ['read', 'create', 'update', 'delete'], parentId: 'group:localities' },
+    { id: 'mapping', label: 'Cartographie SIG', icon: 'Map', availableActions: ['read'], parentId: 'group:localities' },
+
+    { id: 'heritage', label: 'Patrimoine', icon: 'Landmark', availableActions: ['read', 'create', 'update', 'delete'], parentId: 'group:heritage' },
+    { id: 'us-et-coutumes', label: 'Us & Coutumes', icon: 'Scroll', availableActions: ['read', 'create', 'update', 'delete'], parentId: 'group:heritage' },
+
+    { id: 'admin', label: 'Paramètres Accès', icon: 'ShieldCheck', availableActions: ['read', 'update'], parentId: 'group:administration' },
+    { id: 'settings', label: 'Réglages Système', icon: 'Settings', availableActions: ['read', 'update'], parentId: 'group:administration' },
+    { id: 'audit-log', label: "Journal d'Audit", icon: 'ScrollText', availableActions: ['read'], parentId: 'group:administration' },
+    { id: 'tickets', label: 'Assistant IA & Support', icon: 'Bot', availableActions: ['read'], parentId: 'group:administration' },
 ];
 
 const ALL_READ: CrudPermission = { read: true, create: false, update: false, delete: false };

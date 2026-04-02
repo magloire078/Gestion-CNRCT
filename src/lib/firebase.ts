@@ -12,7 +12,7 @@ if (typeof window === 'undefined') {
 }
 
 import { initializeApp, getApps, getApp, type FirebaseOptions, type FirebaseApp } from "firebase/app";
-import { initializeFirestore, Firestore } from "firebase/firestore";
+import { initializeFirestore, Firestore, enableIndexedDbPersistence } from "firebase/firestore";
 import { getAuth, Auth } from "firebase/auth";
 import { getStorage, FirebaseStorage } from "firebase/storage";
 import { getAnalytics } from "firebase/analytics";
@@ -47,6 +47,19 @@ const app = getApps().length === 0 ? initializeApp(finalConfig) : getApp();
 const db = initializeFirestore(app, {});
 const auth = getAuth(app);
 const storage = getStorage(app);
+
+// Enable offline persistence for Firestore in the browser
+if (typeof window !== 'undefined' && isConfigValid) {
+  enableIndexedDbPersistence(db).catch((err) => {
+      if (err.code === 'failed-precondition') {
+          // Multiple tabs open, persistence can only be enabled in one tab at a a time.
+          console.warn('[Firestore] Persistence failed: Multiple tabs open');
+      } else if (err.code === 'unimplemented') {
+          // The current browser does not support all of the features required to enable persistence
+          console.warn('[Firestore] Persistence unimplemented for this browser');
+      }
+  });
+}
 
 if (isConfigValid && typeof window !== 'undefined') {
   try {

@@ -1,9 +1,17 @@
 
 
-import { collection, getDocs, addDoc, deleteDoc, doc, onSnapshot, Unsubscribe, query, orderBy, setDoc, updateDoc } from '@/lib/firebase';
+import { collection, getDocs, addDoc, deleteDoc, doc, onSnapshot, Unsubscribe, query, orderBy, setDoc, updateDoc, serverTimestamp } from '@/lib/firebase';
 import type { User, Role, Employe } from '@/lib/data';
 import { db } from '@/lib/firebase';
 import { getRoles } from './role-service';
+
+export async function updateUserActiveStatus(userId: string, isOnline: boolean = true): Promise<void> {
+    const userDocRef = doc(db, 'users', userId);
+    await updateDoc(userDocRef, {
+        lastActive: serverTimestamp(),
+        isOnline: isOnline
+    });
+}
 
 const usersCollection = collection(db, 'users');
 

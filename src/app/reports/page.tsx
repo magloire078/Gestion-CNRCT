@@ -23,6 +23,9 @@ import { getEmployees } from "@/services/employee-service";
 import { getChiefs } from "@/services/chief-service";
 import { getAssets, getAssetStatusCounts } from "@/services/asset-service";
 import { getSupplySummary } from "@/services/supply-service";
+import { getVillages } from "@/services/village-service";
+import { Compass } from "lucide-react";
+
 
 export default function ReportingDashboard() {
     const [stats, setStats] = useState({
@@ -32,30 +35,39 @@ export default function ReportingDashboard() {
         villages: 0,
         assets: 0,
         itRepair: 0,
-        lowStock: 0
+        lowStock: 0,
+        electrificationRate: 0,
+        potableWaterRate: 0
     });
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                const [emps, chiefs, assets, assetStats, supplyStats] = await Promise.all([
+                const [emps, chiefs, assets, assetStats, supplyStats, villages] = await Promise.all([
                     getEmployees(),
                     getChiefs(),
                     getAssets(),
                     getAssetStatusCounts(),
-                    getSupplySummary()
+                    getSupplySummary(),
+                    getVillages()
                 ]);
+
+                const electrified = villages.filter(v => v.hasElectricity).length;
+                const water = villages.filter(v => v.hasWater).length;
 
                 setStats({
                     employees: emps.length,
                     activeEmployees: emps.filter(e => e.status === 'Actif').length,
                     chiefs: chiefs.length,
-                    villages: new Set(chiefs.map(c => c.village)).size,
+                    villages: villages.length,
                     assets: assets.length,
                     itRepair: assetStats['En réparation'] || 0,
-                    lowStock: supplyStats.lowStock
+                    lowStock: supplyStats.lowStock,
+                    electrificationRate: villages.length > 0 ? (electrified / villages.length) * 100 : 0,
+                    potableWaterRate: villages.length > 0 ? (water / villages.length) * 100 : 0
                 });
+
             } catch (err) {
                 console.error("Error fetching dashboard stats:", err);
             } finally {
@@ -114,7 +126,16 @@ export default function ReportingDashboard() {
             color: "bg-indigo-500",
             href: "/reports/nominative",
             metrics: ["Par Grade", "Par Échelon"]
+        },
+        {
+            title: "Observatoire Territorial",
+            description: "Diagnostic des infrastructures et KPIs de développement villageois.",
+            icon: Compass,
+            color: "bg-amber-600",
+            href: "/reports/territory",
+            metrics: [`${stats.electrificationRate.toFixed(1)}% Électricité`, `${stats.potableWaterRate.toFixed(1)}% Eau Potable`]
         }
+
     ];
 
     return (

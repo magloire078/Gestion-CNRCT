@@ -9,6 +9,10 @@ const rolesCollection = collection(db, 'roles');
 
 const defaultRoles: Omit<Role, 'id'>[] = [
     {
+        name: 'Super Administrateur',
+        permissions: Object.values(allPermissions)
+    },
+    {
         name: 'Dirigeant (Président)',
         permissions: Object.values(allPermissions)
     },
@@ -73,27 +77,38 @@ const defaultRoles: Omit<Role, 'id'>[] = [
     }
 ];
 
-
 export async function initializeDefaultRoles() {
     const snapshot = await getDocs(rolesCollection);
     if (snapshot.empty) {
-
-        const batch = writeBatch(db);
-        const roleIds = [
-            'dirigeant-president',
-            'cadre-superieur-directeur',
-            'cadre-intermediaire-chef-service',
-            'employe-operationnel',
-            'stagiaire-apprenti'
-        ];
-
-        defaultRoles.forEach((role, index) => {
-            const roleRef = doc(db, 'roles', roleIds[index]);
-            batch.set(roleRef, { name: role.name, permissions: role.permissions });
-        });
-        await batch.commit();
-
+        await syncDefaultRoles();
     }
+}
+
+/**
+ * Force synchronization of default roles into Firestore.
+ * This will overwrite existing roles with the same IDs.
+ */
+export async function syncDefaultRoles() {
+    const batch = writeBatch(db);
+    const roleIds = [
+        'LHcHyfBzile3r0vyFOFb', // Super Administrateur ID
+        'dirigeant-president',
+        'cadre-superieur-directeur',
+        'cadre-intermediaire-chef-service',
+        'employe-operationnel',
+        'stagiaire-apprenti'
+    ];
+
+    defaultRoles.forEach((role, index) => {
+        const roleRef = doc(db, 'roles', roleIds[index]);
+        batch.set(roleRef, { 
+            name: role.name, 
+            permissions: role.permissions,
+            updatedAt: new Date().toISOString() 
+        });
+    });
+
+    await batch.commit();
 }
 
 export function subscribeToRoles(
@@ -128,7 +143,7 @@ export async function getRoles(): Promise<Role[]> {
             // Only try to initialize default roles if we have sufficient permissions.
             // Non-admin users (read-only) will silently skip this step.
             try {
-                await initializeDefaultRoles();
+                await syncDefaultRoles();
                 const newSnapshot = await getDocs(query(rolesCollection, orderBy("name", "asc")));
                 cachedRoles = newSnapshot.docs.map((doc: QueryDocumentSnapshot<DocumentData>) => ({ id: doc.id, ...doc.data() } as Role));
                 return cachedRoles;

@@ -34,11 +34,30 @@ async function notifyParticipants(mission: Omit<Mission, 'id'> | Mission) {
 }
 
 
+const syncParticipantIds = (mission: Omit<Mission, 'id'> | Partial<Mission>): string[] => {
+    if (!mission.participants) return [];
+    return mission.participants
+        .map(p => p.employeeId)
+        .filter((id): id is string => !!id);
+};
+
 export function subscribeToMissions(
     callback: (missions: Mission[]) => void,
-    onError: (error: Error) => void
+    onError: (error: Error) => void,
+    userId?: string,
+    employeeId?: string,
+    isAdmin: boolean = false
 ): Unsubscribe {
-    const q = query(missionsCollection, orderBy("startDate", "desc"));
+    let q = query(missionsCollection, orderBy("startDate", "desc"));
+    
+    // If not admin and we have an employeeId, only show their missions
+    if (!isAdmin && employeeId) {
+        q = query(missionsCollection, 
+            where("participantIds", "array-contains", employeeId),
+            orderBy("startDate", "desc")
+        );
+    }
+
     const unsubscribe = onSnapshot(q,
         (snapshot) => {
             const missions = snapshot.docs.map((doc: any) => {
@@ -94,8 +113,10 @@ export async function getMission(id: string): Promise<Mission | null> {
 }
 
 export async function addMission(missionDataToAdd: Omit<Mission, 'id'>): Promise<Mission> {
-    const docRef = await addDoc(missionsCollection, missionDataToAdd);
-    const newMission = { id: docRef.id, ...missionDataToAdd };
+    const participantIds = syncParticipantIds(missionDataToAdd);
+    const finalData = { ...missionDataToAdd, participantIds };
+    const docRef = await addDoc(missionsCollection, finalData);
+    const newMission = { id: docRef.id, ...finalData };
     await notifyParticipants(newMission);
     return newMission;
 }
@@ -103,6 +124,11 @@ export async function addMission(missionDataToAdd: Omit<Mission, 'id'>): Promise
 export async function updateMission(id: string, dataToUpdate: Partial<Mission>): Promise<void> {
     const docRef = doc(db, 'missions', id);
     const originalMission = await getMission(id);
+
+    // Sync participantIds if participants is provided
+    if (dataToUpdate.participants) {
+        (dataToUpdate as any).participantIds = syncParticipantIds(dataToUpdate);
+    }
 
     await updateDoc(docRef, dataToUpdate);
 

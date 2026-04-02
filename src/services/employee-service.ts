@@ -183,10 +183,10 @@ export function subscribeToDirectoireMembers(
             where("status", "==", "Actif"),
             or(
                 where("departmentId", "==", GROUPE_DIRECTOIRE_ID),
-                where("matricule", ">=", "DIR"),
-                where("matricule", "<=", "DIR\uf8ff"),
-                where("matricule", ">=", "PRE"),
-                where("matricule", "<=", "PRE\uf8ff")
+                and(where("matricule", ">=", "DIR"), where("matricule", "<=", "DIR\uf8ff")),
+                and(where("matricule", ">=", "PRE"), where("matricule", "<=", "PRE\uf8ff")),
+                and(where("matricule", ">=", "D 0"), where("matricule", "<=", "D 0\uf8ff")),
+                where("poste", "in", ['Membre du Directoire', 'Président', 'Secrétaire Général'])
             )
         )
     );
@@ -530,20 +530,23 @@ export async function getDirectoireMembers(): Promise<Employe[]> {
     try {
         const DIRECTOIRE_DEPT_ID = '9ywKFDgVMS86rZLPYhpm';
         
-        // Fetch all active employees and filter locally to avoid missing index errors during dev/setup
-        const q = query(employeesCollection, where('status', '==', 'Actif'));
+        // Fetch only authorized members via server-side query to satisfy security rules
+        const q = query(
+            employeesCollection, 
+            and(
+                where('status', '==', 'Actif'),
+                or(
+                    where('departmentId', '==', DIRECTOIRE_DEPT_ID),
+                    and(where('matricule', '>=', 'DIR'), where('matricule', '<=', 'DIR\uf8ff')),
+                    and(where('matricule', '>=', 'PRE'), where('matricule', '<=', 'PRE\uf8ff')),
+                    and(where('matricule', '>=', 'D 0'), where('matricule', '<=', 'D 0\uf8ff')),
+                    where('poste', 'in', ['Membre du Directoire', 'Président', 'Secrétaire Général'])
+                )
+            )
+        );
         const snapshot = await getDocs(q);
         
-        const directoireMembers = snapshot.docs
-            .map(doc => ({ id: doc.id, ...doc.data() } as Employe))
-            .filter(emp => 
-                emp.departmentId === DIRECTOIRE_DEPT_ID ||
-                (emp.matricule && (
-                    emp.matricule.startsWith('DIR') || 
-                    emp.matricule.startsWith('PRE') || 
-                    emp.matricule.startsWith('D 0')
-                ))
-            );
+        const directoireMembers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Employe));
 
         // Sorting priority based on official hierarchy
         const getRank = (poste: string = '') => {
@@ -640,12 +643,14 @@ export async function getRegionalCommittees(): Promise<RegionalCommittee[]> {
         const regions = Object.keys(divisions);
         const committees: RegionalCommittee[] = [];
 
-        // Fetch all active staff and filter locally to avoid missing index errors
-        const q = query(employeesCollection, where('status', '==', 'Actif'));
+        // Query specifically for regional committee members to satisfy security rules
+        const q = query(
+            employeesCollection, 
+            where('status', '==', 'Actif'),
+            where('poste', 'in', ['Membre Comité Régional', 'Président Comité Régional', 'Président'])
+        );
         const snapshot = await getDocs(q);
-        const allRegionalStaff = snapshot.docs
-            .map(doc => ({ id: doc.id, ...doc.data() } as Employe))
-            .filter(s => !!s.Region);
+        const allRegionalStaff = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Employe));
 
         regions.forEach(region => {
             const regionalStaff = allRegionalStaff.filter(s => s.Region === region);

@@ -1,27 +1,42 @@
-
 "use client";
 
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
     getResourcePermissions,
     saveAllResourcePermissions,
     syncDefaultPermissionsIfMissing,
+    clearUserPermissions,
+    PermissionTargetType,
 } from '@/services/permission-service';
-import type { ResourcePermissions, CrudAction } from '@/types/permissions';
+import type { ResourcePermissions, CrudAction, CrudPermission } from '@/types/permissions';
 import { RESOURCES_CONFIG, ENTERPRISE_ROLES } from '@/types/permissions';
+import { cn } from '@/lib/utils';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import {
     LayoutDashboard, Users, Wallet, CalendarOff, MapPin,
     AlertTriangle, Package, Monitor, Car, Newspaper,
     FolderOpen, PieChart, ClipboardList, LifeBuoy, Crown,
     Map, Bot, Settings, ShieldCheck, ScrollText, Loader2, Save,
-    RefreshCw, Fuel, Calculator, Landmark, Scroll, MapPinned, Network, Globe
+    RefreshCw, Fuel, Calculator, Landmark, Scroll, MapPinned, Network, Globe, Undo2,
+    Search, CheckCircle2, XCircle, AlertTriangle as AlertTriangleIcon
 } from 'lucide-react';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import {
     Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table';
@@ -58,62 +73,214 @@ function getAccessLevel(perms: ResourcePermissions): { label: string; variant: '
     return { label: 'Aucun accès', variant: 'destructive' };
 }
 
-interface RolePermissionsEditorProps {
-    roleId: string;
+// --- Sub-component for a single row (Memoized for performance) ---
+interface PermissionRowProps {
+    resource: typeof RESOURCES_CONFIG[0];
+    permissions: CrudPermission;
+    onToggle: (resource: string, action: CrudAction, value: boolean) => void;
     isSystem: boolean;
+    isEven: boolean;
 }
 
-function RolePermissionsEditor({ roleId, isSystem }: RolePermissionsEditorProps) {
+const PermissionRow = React.memo(function PermissionRow({ 
+    resource, 
+    permissions, 
+    onToggle, 
+    isSystem, 
+    isEven 
+}: PermissionRowProps) {
+    const Icon = ICON_MAP[resource.icon] ?? LayoutDashboard;
+    
+    const handleToggleRow = () => {
+        if (isSystem) return;
+        const allChecked = resource.availableActions.every(a => permissions[a]);
+        resource.availableActions.forEach(a => onToggle(resource.id, a, !allChecked));
+    };
+
+    return (
+        <TableRow className={cn(
+            isEven ? 'bg-background' : 'bg-muted/10',
+            resource.id.startsWith('group:') ? 'bg-slate-50/80 border-t-2 border-slate-100' : ''
+        )}>
+            <TableCell className={cn(
+                "py-3",
+                resource.parentId ? "pl-10" : "pl-4",
+                resource.id.startsWith('group:') ? "bg-slate-50/50" : ""
+            )}>
+                <div className="flex items-center justify-between gap-2">
+                    <div className={cn(
+                        "flex items-center gap-2",
+                        resource.id.startsWith('group:') ? "font-black text-slate-900 text-[11px] uppercase tracking-widest" : "font-medium text-sm text-slate-700"
+                    )}>
+                        {resource.parentId && <span className="text-slate-300 font-mono">↳</span>}
+                        <Icon className={cn("h-4 w-4 shrink-0", resource.id.startsWith('group:') ? "text-slate-900" : "text-slate-400")} />
+                        <span>{resource.label}</span>
+                    </div>
+                    {!isSystem && !resource.id.startsWith('group:') && (
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    className="h-6 w-6 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity" 
+                                    onClick={handleToggleRow}
+                                >
+                                    <CheckCircle2 className="h-3 w-3 text-muted-foreground" />
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent className="text-[10px] font-bold">Tout cocher / décocher pour cette ligne</TooltipContent>
+                        </Tooltip>
+                    )}
+                </div>
+            </TableCell>
+            {CRUD_ACTIONS.map(action => {
+                const isAvailable = resource.availableActions.includes(action);
+                const isChecked = isAvailable && (permissions[action] ?? false);
+                return (
+                    <TableCell key={action} className="text-center py-2">
+                        {isAvailable ? (
+                            <div className="flex justify-center">
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <div>
+                                            <Switch
+                                                checked={isChecked}
+                                                onCheckedChange={v => onToggle(resource.id, action, v)}
+                                                disabled={isSystem}
+                                                className={cn(
+                                                    "scale-75 origin-center",
+                                                    isChecked
+                                                        ? action === 'delete' ? 'data-[state=checked]:bg-red-500'
+                                                            : action === 'create' ? 'data-[state=checked]:bg-green-500'
+                                                                : action === 'update' ? 'data-[state=checked]:bg-amber-500'
+                                                                    : 'data-[state=checked]:bg-blue-500'
+                                                        : ''
+                                                )}
+                                            />
+                                        </div>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        {ACTION_LABELS[action].label} — {resource.label}
+                                    </TooltipContent>
+                                </Tooltip>
+                            </div>
+                        ) : (
+                            <span className="text-muted-foreground/40 text-xs">—</span>
+                        )}
+                    </TableCell>
+                );
+            })}
+        </TableRow>
+    );
+});
+
+export interface PermissionsEditorProps {
+    targetId: string;
+    targetType: PermissionTargetType;
+    isSystem?: boolean;
+    onSave?: () => void;
+}
+
+export function PermissionsEditor({ targetId, targetType, isSystem, onSave }: PermissionsEditorProps) {
     const [permissions, setPermissions] = useState<ResourcePermissions>({});
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [dirty, setDirty] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
     const { toast } = useToast();
 
     const loadPerms = useCallback(async () => {
         setLoading(true);
         try {
-            await syncDefaultPermissionsIfMissing(roleId);
-            const perms = await getResourcePermissions(roleId);
-            setPermissions(perms);
+            if (targetType === 'role') {
+                await syncDefaultPermissionsIfMissing(targetId);
+                const perms = await getResourcePermissions(targetId, targetType);
+                setPermissions(perms);
+            } else {
+                const { getDoc, doc } = await import('@/lib/firebase');
+                const { db } = await import('@/lib/firebase');
+                const userSnap = await getDoc(doc(db, 'users', targetId));
+                const roleId = userSnap.exists() ? userSnap.data().roleId : 'employe';
+                
+                const { getEffectivePermissions } = await import('@/services/permission-service');
+                const perms = await getEffectivePermissions(targetId, roleId);
+                setPermissions(perms);
+            }
             setDirty(false);
         } catch (err) {
+            console.error("Failed to load perms:", err);
             toast({ variant: 'destructive', title: 'Erreur', description: 'Impossible de charger les permissions.' });
         } finally {
             setLoading(false);
         }
-    }, [roleId, toast]);
+    }, [targetId, targetType, toast]);
 
     useEffect(() => { loadPerms(); }, [loadPerms]);
 
-    const handleToggle = (resource: string, action: CrudAction, value: boolean) => {
+    const handleToggle = useCallback((resource: string, action: CrudAction, value: boolean) => {
         if (isSystem) return;
         setPermissions(prev => ({
             ...prev,
             [resource]: {
                 ...(prev[resource] ?? { read: false, create: false, update: false, delete: false }),
                 [action]: value,
-                // If we disable read, also disable create/update/delete
                 ...(action === 'read' && !value ? { create: false, update: false, delete: false } : {}),
-                // If we enable create/update/delete, also enable read
                 ...(action !== 'read' && value ? { read: true } : {}),
             },
         }));
         setDirty(true);
-    };
+    }, [isSystem]);
 
     const handleSave = async () => {
         setSaving(true);
         try {
-            await saveAllResourcePermissions(roleId, permissions);
+            await saveAllResourcePermissions(targetId, permissions, targetType);
             setDirty(false);
             toast({ title: 'Permissions enregistrées', description: `Les droits ont été mis à jour avec succès.` });
+            if (onSave) onSave();
         } catch (err) {
             toast({ variant: 'destructive', title: 'Erreur', description: 'Impossible de sauvegarder.' });
         } finally {
             setSaving(false);
         }
     };
+
+    const handleReset = async () => {
+        if (targetType !== 'user') return;
+        setSaving(true);
+        try {
+            await clearUserPermissions(targetId);
+            setDirty(false);
+            toast({ title: 'Permissions réinitialisées', description: `L'utilisateur hérite désormais des droits de son groupe.` });
+            loadPerms();
+            if (onSave) onSave();
+        } catch (err) {
+            toast({ variant: 'destructive', title: 'Erreur', description: 'Impossible de réinitialiser.' });
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const orderedResources = React.useMemo(() => {
+        const roots = RESOURCES_CONFIG.filter(r => !r.parentId);
+        const children = RESOURCES_CONFIG.filter(r => r.parentId);
+        const result: typeof RESOURCES_CONFIG = [];
+        roots.forEach(root => {
+            result.push(root);
+            const items = children.filter(c => c.parentId === root.id);
+            result.push(...items);
+        });
+        const addedIds = new Set(result.map(r => r.id));
+        const orphans = RESOURCES_CONFIG.filter(r => !addedIds.has(r.id));
+        return [...result, ...orphans];
+    }, []);
+
+    const filteredResources = searchQuery.trim() === ''
+        ? orderedResources
+        : orderedResources.filter(r => 
+            r.label.toLowerCase().includes(searchQuery.toLowerCase()) || 
+            r.id.toLowerCase().includes(searchQuery.toLowerCase())
+          );
 
     const accessLevel = getAccessLevel(permissions);
 
@@ -127,38 +294,111 @@ function RolePermissionsEditor({ roleId, isSystem }: RolePermissionsEditorProps)
         );
     }
 
+    const hasNoSpecificPerms = targetType === 'user' && Object.keys(permissions).length === 0;
+
     return (
         <div className="space-y-4">
-            {/* Header bar */}
-            <div className="flex items-center justify-between rounded-lg border bg-card px-4 py-2">
-                <div className="flex items-center gap-3">
-                    <Badge variant={accessLevel.variant}>{accessLevel.label}</Badge>
-                    {isSystem && (
-                        <Badge variant="secondary" className="gap-1">
-                            <ShieldCheck className="h-3 w-3" /> Système — non modifiable
+            <div className="flex flex-col gap-3">
+                <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-card px-4 py-2">
+                    <div className="flex items-center gap-3">
+                        <Badge variant={hasNoSpecificPerms ? 'outline' : accessLevel.variant}>
+                            {hasNoSpecificPerms ? 'Héritage Groupe' : accessLevel.label}
                         </Badge>
-                    )}
-                </div>
-                <div className="flex items-center gap-2">
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button variant="ghost" size="icon" onClick={loadPerms} disabled={saving}>
-                                <RefreshCw className="h-4 w-4" />
+                        {isSystem && (
+                            <Badge variant="secondary" className="gap-1 font-normal opacity-80">
+                                <ShieldCheck className="h-3 w-3" /> Système
+                            </Badge>
+                        )}
+                        {targetType === 'user' && !hasNoSpecificPerms && (
+                            <Badge variant="secondary" className="bg-amber-100 text-amber-800 border-amber-200">
+                            Droits personnalisés
+                            </Badge>
+                        )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                        {targetType === 'user' ? (
+                            <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                    <Button 
+                                        variant="ghost" 
+                                        size="sm" 
+                                        className="h-8 gap-2 border border-dashed hover:bg-amber-50 hover:text-amber-700"
+                                        disabled={saving}
+                                    >
+                                        <RefreshCw className={`h-4 w-4 ${saving ? 'animate-spin' : ''}`} />
+                                        <span className="text-xs">Rétablir le groupe</span>
+                                    </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                        <AlertDialogTitle className="flex items-center gap-2">
+                                            <AlertTriangleIcon className="h-5 w-5 text-amber-600" />
+                                            Confirmer la réinitialisation
+                                        </AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                            Attention : Cela supprimera toutes les exceptions de permissions pour cet utilisateur. Il héritera à nouveau des droits de son groupe.
+                                            Cette action est irréversible.
+                                        </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                        <AlertDialogCancel>Annuler</AlertDialogCancel>
+                                        <AlertDialogAction 
+                                            onClick={handleReset}
+                                            className="bg-amber-600 hover:bg-amber-700 text-white"
+                                        >
+                                            Confirmer
+                                        </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
+                        ) : (
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button 
+                                        variant="ghost" 
+                                        size="icon" 
+                                        className="h-8 w-8" 
+                                        onClick={loadPerms} 
+                                        disabled={saving}
+                                    >
+                                        <RefreshCw className={`h-4 w-4 ${saving ? 'animate-spin' : ''}`} />
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    Actualiser depuis la base de données
+                                </TooltipContent>
+                            </Tooltip>
+                        )}
+                        
+                        {!isSystem && (
+                            <Button onClick={handleSave} disabled={!dirty || saving} size="sm" className="h-8 gap-2">
+                                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                                Enregistrer
                             </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>Actualiser</TooltipContent>
-                    </Tooltip>
-                    {!isSystem && (
-                        <Button onClick={handleSave} disabled={!dirty || saving} size="sm" className="gap-2">
-                            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                            {dirty ? 'Enregistrer les modifications' : 'Aucune modification'}
-                        </Button>
-                    )}
+                        )}
+                    </div>
+                </div>
+
+                <div className="relative">
+                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input 
+                        placeholder="Rechercher une ressource (ex: Congés, Paie...)" 
+                        className="pl-9 bg-muted/20 border-none shadow-none focus-visible:ring-1 focus-visible:ring-primary/20"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                    />
                 </div>
             </div>
 
+            {hasNoSpecificPerms && (
+                <div className="p-4 border border-dashed rounded-lg bg-muted/30 text-center text-sm text-muted-foreground italic">
+                    Cet employé n&apos;a pas de permissions spécifiques. Il utilise les droits de son groupe par défaut.
+                    Modifiez la matrice ci-dessous pour créer une exception.
+                </div>
+            )}
+
             {/* Matrix table */}
-            <div className="overflow-auto rounded-lg border">
+            <div className="overflow-auto rounded-lg border group/table">
                 <Table>
                     <TableHeader>
                         <TableRow className="bg-muted/40">
@@ -171,57 +411,24 @@ function RolePermissionsEditor({ roleId, isSystem }: RolePermissionsEditorProps)
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {RESOURCES_CONFIG.map((resource, idx) => {
-                            const Icon = ICON_MAP[resource.icon] ?? LayoutDashboard;
-                            const isEven = idx % 2 === 0;
-                            return (
-                                <TableRow key={resource.id} className={isEven ? 'bg-background' : 'bg-muted/20'}>
-                                    <TableCell>
-                                        <div className="flex items-center gap-2 font-medium">
-                                            <Icon className="h-4 w-4 text-muted-foreground shrink-0" />
-                                            {resource.label}
-                                        </div>
-                                    </TableCell>
-                                    {CRUD_ACTIONS.map(action => {
-                                        const isAvailable = resource.availableActions.includes(action);
-                                        const isChecked = isAvailable && (permissions[resource.id]?.[action] ?? false);
-                                        return (
-                                            <TableCell key={action} className="text-center">
-                                                {isAvailable ? (
-                                                    <div className="flex justify-center">
-                                                        <Tooltip>
-                                                            <TooltipTrigger asChild>
-                                                                <div>
-                                                                    <Switch
-                                                                        checked={isChecked}
-                                                                        onCheckedChange={v => handleToggle(resource.id, action, v)}
-                                                                        disabled={isSystem}
-                                                                        aria-label={`${ACTION_LABELS[action].label} — ${resource.label}`}
-                                                                        className={isChecked
-                                                                            ? action === 'delete' ? 'data-[state=checked]:bg-red-500'
-                                                                                : action === 'create' ? 'data-[state=checked]:bg-green-500'
-                                                                                    : action === 'update' ? 'data-[state=checked]:bg-amber-500'
-                                                                                        : 'data-[state=checked]:bg-blue-500'
-                                                                            : ''
-                                                                        }
-                                                                    />
-                                                                </div>
-                                                            </TooltipTrigger>
-                                                            <TooltipContent>
-                                                                {ACTION_LABELS[action].label} — {resource.label}
-                                                                {isChecked ? ' : Autorisé' : ' : Refusé'}
-                                                            </TooltipContent>
-                                                        </Tooltip>
-                                                    </div>
-                                                ) : (
-                                                    <span className="text-muted-foreground/40 text-xs">—</span>
-                                                )}
-                                            </TableCell>
-                                        );
-                                    })}
-                                </TableRow>
-                            );
-                        })}
+                        {filteredResources.length === 0 ? (
+                            <TableRow>
+                                <TableCell colSpan={5} className="h-24 text-center text-muted-foreground italic">
+                                    Aucune ressource ne correspond à votre recherche.
+                                </TableCell>
+                            </TableRow>
+                        ) : (
+                            filteredResources.map((resource, idx) => (
+                                <PermissionRow
+                                    key={resource.id}
+                                    resource={resource}
+                                    permissions={permissions[resource.id] ?? { read: false, create: false, update: false, delete: false }}
+                                    onToggle={handleToggle}
+                                    isSystem={isSystem ?? false}
+                                    isEven={idx % 2 === 0}
+                                />
+                            ))
+                        )}
                     </TableBody>
                 </Table>
             </div>
@@ -240,7 +447,7 @@ export function PermissionMatrix({ roles: customRoles }: PermissionMatrixProps) 
         return (
             <div className="flex flex-col items-center justify-center py-10 text-muted-foreground border rounded-lg bg-muted/10">
                 <ShieldCheck className="h-10 w-10 mb-2 opacity-20" />
-                <p>Aucun rle disponible pour la configuration.</p>
+                <p>Aucun groupe disponible pour la configuration.</p>
             </div>
         );
     }
@@ -248,13 +455,11 @@ export function PermissionMatrix({ roles: customRoles }: PermissionMatrixProps) 
     return (
         <div className="space-y-4">
             <div className="space-y-1">
-                <h3 className="text-base font-semibold">Matrice des droits d&apos;accs</h3>
+                <h3 className="text-base font-semibold italic text-primary/80 flex items-center gap-2">
+                    <Crown className="h-4 w-4" /> Administration des Profils (Groupes)
+                </h3>
                 <p className="text-sm text-muted-foreground">
-                    Activez ou dativez les permissions <span className="font-medium text-blue-500">Lecture</span>,{' '}
-                    <span className="font-medium text-green-500">Cration</span>,{' '}
-                    <span className="font-medium text-amber-500">Modification</span> et{' '}
-                    <span className="font-medium text-red-500">Suppression</span> par rle et par ressource.
-                    Les modifications sont actives apr enregistrement.
+                    Définissez les droits globaux appliqués à tous les membres d&apos;un groupe.
                 </p>
             </div>
 
@@ -274,7 +479,7 @@ export function PermissionMatrix({ roles: customRoles }: PermissionMatrixProps) 
 
                 {rolesToDisplay.map(role => (
                     <TabsContent key={role.id} value={role.id} className="mt-4">
-                        <RolePermissionsEditor roleId={role.id} isSystem={role.isSystem ?? false} />
+                        <PermissionsEditor targetId={role.id} targetType="role" isSystem={role.isSystem ?? false} />
                     </TabsContent>
                 ))}
             </Tabs>

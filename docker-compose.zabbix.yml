@@ -1,0 +1,49 @@
+services:
+  zabbix-db:
+    image: mysql:8.0
+    container_name: zabbix-db
+    command: [ --character-set-server=utf8mb4, --collation-server=utf8mb4_bin, --default-authentication-plugin=mysql_native_password ]
+    volumes:
+      - ./zabbix_db_data:/var/lib/mysql
+    env_file:
+      - .env.zabbix
+    restart: always
+
+  zabbix-server:
+    image: zabbix/zabbix-server-mysql:alpine-7.0-latest
+    container_name: zabbix-server
+    ports:
+      - "10051:10051"
+    volumes:
+      - ./zabbix_snmptraps:/var/lib/zabbix/snmptraps
+      - ./zabbix_export:/var/lib/zabbix/export
+    env_file:
+      - .env.zabbix
+    depends_on:
+      - zabbix-db
+    restart: always
+
+  zabbix-web:
+    image: zabbix/zabbix-web-apache-mysql:alpine-7.0-latest
+    container_name: zabbix-web
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env.zabbix
+    depends_on:
+      - zabbix-db
+      - zabbix-server
+    restart: always
+
+  zabbix-agent:
+    image: zabbix/zabbix-agent:alpine-7.0-latest
+    container_name: zabbix-agent
+    ports:
+      - "10050:10050"
+    volumes:
+      - /proc:/host/proc
+      - /sys:/host/sys
+      - /:/host/root:ro
+    env_file:
+      - .env.zabbix
+    restart: always

@@ -12,6 +12,7 @@ import {
 import { InstitutionalHeader } from "@/components/reports/institutional-header";
 import { InstitutionalFooter } from "@/components/reports/institutional-footer";
 import { InstitutionalReportWrapper } from "@/components/reports/institutional-report-wrapper";
+import { SuppliesOfficialReport } from "@/components/reports/supplies-official-report";
 import { PrintSuppliesDialog, type PrintOptions } from "@/components/supplies/print-supplies-dialog";
 import { bulkImportSupplies } from "@/scripts/import-supplies";
 import { Button } from "@/components/ui/button";
@@ -193,7 +194,7 @@ export default function SuppliesPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user, settings } = useAuth();
 
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -360,16 +361,26 @@ export default function SuppliesPage() {
   const deferredSearchTerm = useDeferredValue(searchTerm);
 
   const filteredSupplies = useMemo(() => {
-    return supplies.filter(supply => {
-      const searchTermLower = deferredSearchTerm.toLowerCase();
-      const matchesSearch = 
-        supply.name.toLowerCase().includes(searchTermLower) || 
-        supply.category?.toLowerCase().includes(searchTermLower) ||
-        (supply.code && supply.code.toLowerCase().includes(searchTermLower));
-      const matchesCategory = categoryFilter === 'all' || supply.category === categoryFilter;
-      return matchesSearch && (matchesCategory || !supply.category);
-    });
-  }, [supplies, deferredSearchTerm, categoryFilter]);
+        return supplies.filter(s => {
+            const matchesSearch = s.name.toLowerCase().includes(deferredSearchTerm.toLowerCase()) || 
+                                (s.code && s.code.toLowerCase().includes(deferredSearchTerm.toLowerCase()));
+            const matchesCategory = categoryFilter === 'all' || s.category === categoryFilter;
+            return matchesSearch && matchesCategory;
+        });
+    }, [supplies, deferredSearchTerm, categoryFilter]);
+
+    // --- Statistics calculation ---
+    const stats = useMemo(() => {
+        const total = filteredSupplies.length;
+        const outOfStock = filteredSupplies.filter(s => s.quantity <= 0).length;
+        const lowStock = filteredSupplies.filter(s => s.quantity > 0 && s.quantity <= s.reorderLevel).length;
+        
+        // Calculate average health (0-100)
+        const healthVals = filteredSupplies.map(s => getStockStatus(s.quantity, s.reorderLevel).value);
+        const avgHealth = healthVals.length > 0 ? healthVals.reduce((a, b) => a + b, 0) / healthVals.length : 100;
+        
+        return { total, outOfStock, lowStock, avgHealth };
+    }, [filteredSupplies]);
 
   // Adjust current page if filtering reduces total items
   useEffect(() => {
@@ -393,13 +404,18 @@ export default function SuppliesPage() {
 
   const historyTotalPages = Math.ceil(transactions.length / historyItemsPerPage);
 
-  const handlePrint = useCallback((options: PrintOptions) => {
+  const handlePrint = (options: PrintOptions) => {
     setPrintOptions(options);
-    // Give it a small timeout for state to settle before starting print process
-    setTimeout(() => {
-      setIsPrinting(true);
-    }, 100);
-  }, []);
+    
+    // Sort supplies for printing if needed
+    const sorted = [...filteredSupplies];
+    if (options.sortBy === 'name') sorted.sort((a, b) => a.name.localeCompare(b.name));
+    if (options.sortBy === 'quantity') sorted.sort((a, b) => b.quantity - a.quantity);
+    if (options.sortBy === 'category') sorted.sort((a, b) => a.category.localeCompare(b.category));
+    
+    setSupplies(sorted); // Note: this affects the UI too, which is fine for printing
+    setIsPrinting(true);
+  };
 
   const printableSupplies = useMemo(() => {
     if (!printOptions) return [];
@@ -419,13 +435,6 @@ export default function SuppliesPage() {
     });
   }, [supplies, printOptions]);
 
-  const stats = useMemo(() => {
-    const totalItems = supplies.length;
-    const lowStock = supplies.filter(s => s.quantity > 0 && s.quantity <= s.reorderLevel).length;
-    const outOfStock = supplies.filter(s => s.quantity <= 0).length;
-    return { totalItems, lowStock, outOfStock };
-  }, [supplies]);
-
 
   return (
     <PermissionGuard permission="page:supplies:view">
@@ -433,11 +442,18 @@ export default function SuppliesPage() {
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight">Gestion des Fournitures</h1>
+          <h1 className="text-3xl font-extrabold tracking-tight">
+            Gestion des Fournitures
+            {categoryFilter !== 'all' && (
+              <span className="ml-2 px-3 py-1 bg-slate-100 text-slate-500 rounded-lg text-lg align-middle border border-slate-200">
+                {categoryFilter}
+              </span>
+            )}
+          </h1>
           <p className="text-muted-foreground mt-1 text-sm">Contrôle de l'inventaire et suivi des réapprovisionnements.</p>
         </div>
         <div className="flex items-center gap-3">
-             <div className="p-1 bg-slate-100 rounded-xl flex items-center">
+             <div className="p-1 bg-slate-100 rounded-xl flex items-center shadow-sm">
                 <Button 
                     variant={viewMode === 'table' ? 'default' : 'ghost'} 
                     size="icon" 
@@ -460,7 +476,7 @@ export default function SuppliesPage() {
                 variant="outline" 
                 className="rounded-xl border-slate-200 font-bold shadow-sm"
             >
-              <Printer className="mr-2 h-4 w-4" /> Imprimer
+              <Printer className="mr-2 h-4 w-4" /> Imprimer Rapport
             </Button>
             <Button 
                 onClick={bulkImportSupplies}
@@ -476,61 +492,94 @@ export default function SuppliesPage() {
         </div>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="border-none shadow-sm bg-slate-900 text-white overflow-hidden group">
-            <CardHeader className="pb-2">
-                <CardDescription className="text-slate-400 font-bold text-xs uppercase tracking-widest">Total Articles</CardDescription>
-                <CardTitle className="text-3xl font-black flex items-center justify-between">
-                    {loading ? <Skeleton className="h-9 w-16 bg-slate-800" /> : stats.totalItems}
-                    <Package className="h-7 w-7 text-slate-700 transition-transform group-hover:scale-110" />
-                </CardTitle>
-            </CardHeader>
-        </Card>
-
-        <Card className="border-none shadow-sm bg-amber-50/50 overflow-hidden group">
-            <CardHeader className="pb-2">
-                <CardDescription className="text-amber-600 font-bold text-xs uppercase tracking-widest">Stock Critique</CardDescription>
-                <CardTitle className="text-3xl font-black text-amber-900 flex items-center justify-between">
-                    {loading ? <Skeleton className="h-9 w-16" /> : stats.lowStock}
-                    <TrendingDown className="h-7 w-7 text-amber-200 transition-transform group-hover:-translate-y-1" />
-                </CardTitle>
-            </CardHeader>
-        </Card>
-
-        <Card className="border-none shadow-sm bg-red-50/50 overflow-hidden group">
-            <CardHeader className="pb-2">
-                <CardDescription className="text-red-600 font-bold text-xs uppercase tracking-widest">En Rupture</CardDescription>
-                <CardTitle className="text-3xl font-black text-red-900 flex items-center justify-between">
-                    {loading ? <Skeleton className="h-9 w-16" /> : stats.outOfStock}
-                    <ShoppingCart className="h-7 w-7 text-red-200 transition-transform group-hover:rotate-12" />
-                </CardTitle>
-            </CardHeader>
-        </Card>
-      </div>
-
       {/* Global Card */}
-      <Tabs value={activeTab} onValueChange={(v) => startTransition(() => setActiveTab(v))} className="w-full">
-        <div className="flex items-center justify-between mb-4">
-            <TabsList className="bg-slate-100 p-1 rounded-xl h-11">
-                <TabsTrigger value="inventory" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm px-6 font-bold">
-                    Inventaire
+      <Tabs defaultValue="inventory" className="w-full" onValueChange={(v) => setActiveTab(v as any)}>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+            <TabsList className="bg-muted/50 p-1">
+                <TabsTrigger value="inventory" className="gap-2">
+                    <Package className="h-4 w-4" /> Inventaire
                 </TabsTrigger>
-                <TabsTrigger value="history" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm px-6 font-bold">
-                    Historique des Mouvements
+                <TabsTrigger value="history" className="gap-2">
+                    <Archive className="h-4 w-4" /> Historique
                 </TabsTrigger>
             </TabsList>
         </div>
 
-      <TabsContent value="inventory" className="mt-0">
-      <Card className="border-none shadow-xl shadow-slate-200/50 overflow-hidden">
-        <div className="h-1.5 bg-slate-900 w-full" />
-        <CardHeader className="bg-slate-50/50">
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-            <div>
-              <CardTitle>Inventaire Office</CardTitle>
-              <CardDescription>Liste exhaustive des matériels et consommables.</CardDescription>
+        {/* --- Statistical Dashboard --- */}
+        {activeTab === 'inventory' && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <Card className="bg-white shadow-sm border-slate-100 hover:border-primary/20 transition-all group">
+                    <CardContent className="p-4 flex items-center gap-4">
+                        <div className="h-10 w-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
+                            <Package className="h-5 w-5" />
+                        </div>
+                        <div className="flex flex-col">
+                            <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Total Articles</span>
+                            <span className="text-xl font-black text-slate-900">{stats.total}</span>
+                        </div>
+                    </CardContent>
+                </Card>
+                
+                <Card className="bg-white shadow-sm border-slate-100 hover:border-red-100 transition-all group">
+                    <CardContent className="p-4 flex items-center gap-4">
+                        <div className={cn(
+                            "h-10 w-10 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110",
+                            stats.outOfStock > 0 ? "bg-red-50 text-red-600" : "bg-slate-50 text-slate-300"
+                        )}>
+                            <AlertTriangle className="h-5 w-5" />
+                        </div>
+                        <div className="flex flex-col">
+                            <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Rupture de Stock</span>
+                            <span className={cn("text-xl font-black", stats.outOfStock > 0 ? "text-red-600" : "text-slate-900")}>
+                                {stats.outOfStock}
+                            </span>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card className="bg-white shadow-sm border-slate-100 hover:border-amber-100 transition-all group">
+                    <CardContent className="p-4 flex items-center gap-4">
+                        <div className={cn(
+                            "h-10 w-10 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110",
+                            stats.lowStock > 0 ? "bg-amber-50 text-amber-600" : "bg-slate-50 text-slate-300"
+                        )}>
+                            <Zap className="h-5 w-5" />
+                        </div>
+                        <div className="flex flex-col">
+                            <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Stock Critique</span>
+                            <span className={cn("text-xl font-black", stats.lowStock > 0 ? "text-amber-600" : "text-slate-900")}>
+                                {stats.lowStock}
+                            </span>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card className="bg-white shadow-sm border-slate-100 hover:border-emerald-100 transition-all group">
+                    <CardContent className="p-4 flex items-center gap-4">
+                        <div className="h-10 w-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform">
+                            <BarChart3 className="h-5 w-5" />
+                        </div>
+                        <div className="flex flex-col">
+                            <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Santé Globale</span>
+                            <span className="text-xl font-black text-emerald-600">{Math.round(stats.avgHealth)}%</span>
+                        </div>
+                    </CardContent>
+                </Card>
             </div>
+        )}
+
+      <TabsContent value="inventory" className="mt-0">
+        <Card className="border-none shadow-none bg-transparent">
+          <CardHeader className="px-0 pt-0 pb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="space-y-1">
+                    <CardTitle className="text-xl font-bold flex items-center gap-2">
+                        {categoryFilter !== 'all' ? categoryFilter : 'Inventaire Complet'}
+                    </CardTitle>
+                    <CardDescription>
+                        {filteredSupplies.length} article(s) trouvé(s)
+                    </CardDescription>
+                </div>
             <div className="flex flex-col sm:flex-row items-center gap-3">
                <div className="relative group w-full sm:w-auto">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
@@ -795,46 +844,157 @@ export default function SuppliesPage() {
           />
       )}
 
-      <InstitutionalReportWrapper isPrinting={isPrinting} onAfterPrint={() => setIsPrinting(false)}>
-        {/* Hidden Printable Report Container */}
-        <div id="printable-report" className="hidden print:block bg-white p-10 min-h-screen">
-          <InstitutionalHeader 
-            title="Inventaire des fournitures et consommables" 
-            period={`Situation au ${new Date().toLocaleDateString('fr-FR')}`}
+      {/* --- OFFICIAL REPORT RENDER (Style Conflits) --- */}
+      {isPrinting && printOptions?.reportTemplate === 'official' && (
+          <SuppliesOfficialReport 
+            logos={settings || { mainLogoUrl: '', secondaryLogoUrl: '', name: 'CNRCT', id: 'default' } as any}
+            supplies={printableSupplies}
+            categoryLabel={categoryFilter}
+            stats={stats}
+            options={{
+                includePhotos: printOptions.includePhotos,
+                showHealthStatus: printOptions.showHealthStatus
+            }}
           />
-            
-          <div className="my-8">
-            <div className="overflow-hidden rounded-2xl border border-slate-200">
-                <Table>
-                    <TableHeader className="bg-slate-50">
-                        <TableRow className="border-slate-100">
-                            <TableHead className="font-bold py-3 pl-6">Code</TableHead>
-                            <TableHead className="font-bold py-3">Désignation</TableHead>
-                            <TableHead className="font-bold py-3">Catégorie</TableHead>
-                            <TableHead className="text-center font-bold py-3 pr-6">Quantité</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {printableSupplies.map((item) => (
-                            <TableRow key={item.id} className="border-slate-50 h-10">
-                                <TableCell className="py-2 pl-6 font-mono text-[10px] text-slate-400">{item.code || '---'}</TableCell>
-                                <TableCell className="py-2 font-bold text-slate-800 text-[11px]">{item.name}</TableCell>
-                                <TableCell className="py-2 text-[10px] text-slate-500 font-medium">{item.category}</TableCell>
-                                <TableCell className="py-2 text-center pr-6 font-black text-slate-900">{item.quantity}</TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </div>
-          </div>
+      )}
 
-          <InstitutionalFooter 
-            signatoryName="COULIBALY Hamadou"
-            signatoryTitle="Contrôleur Interne et Qualité, CNRCT"
-          />
-        </div>
-      </InstitutionalReportWrapper>
-    </div>
+      {/* --- STANDARD REPORT RENDER --- */}
+      <InstitutionalReportWrapper 
+        isPrinting={isPrinting && printOptions?.reportTemplate !== 'official'} 
+        onAfterPrint={() => setIsPrinting(false)}
+      >
+        {/* Hidden Printable Report Container - Only rendered when printing starts and template is standard */}
+        {isPrinting && printOptions?.reportTemplate !== 'official' && (
+            <div id="printable-report" className="bg-white p-10 min-h-screen text-black">
+              <InstitutionalHeader 
+                title={categoryFilter !== 'all' ? `État des Stocks : ${categoryFilter}` : "État de Gestion des Fournitures et Consommables"} 
+                period={`Situation au ${new Date().toLocaleDateString('fr-FR')}`}
+              />
+                
+              {/* --- Statistical Summary in PDF --- */}
+              <div className="grid grid-cols-4 gap-6 my-8 pb-8 border-b border-slate-100">
+                  <div className="flex items-start gap-3">
+                      <div className="h-8 w-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400">
+                          <Package className="h-4 w-4" />
+                      </div>
+                      <div className="flex flex-col">
+                          <span className="text-[9px] font-black uppercase text-slate-400 mb-0.5">Nombre d'Articles</span>
+                          <span className="text-xl font-black text-slate-900 leading-tight">{stats.total}</span>
+                          <span className="text-[8px] text-slate-300">Périmètre : {categoryFilter === 'all' ? 'Tous' : categoryFilter}</span>
+                      </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                      <div className={cn(
+                          "h-8 w-8 rounded-lg flex items-center justify-center",
+                          stats.outOfStock > 0 ? "bg-red-50 text-red-500" : "bg-slate-50 text-slate-400"
+                      )}>
+                          <AlertTriangle className="h-4 w-4" />
+                      </div>
+                      <div className="flex flex-col">
+                          <span className={cn("text-[9px] font-black uppercase mb-0.5", stats.outOfStock > 0 ? "text-red-500" : "text-slate-400")}>Ruptures de stock</span>
+                          <span className={cn("text-xl font-black leading-tight", stats.outOfStock > 0 ? "text-red-600" : "text-slate-900")}>
+                                {stats.outOfStock}
+                          </span>
+                          <span className="text-[8px] text-slate-300">Nécessite réappro.</span>
+                      </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                      <div className={cn(
+                          "h-8 w-8 rounded-lg flex items-center justify-center",
+                          stats.lowStock > 0 ? "bg-amber-50 text-amber-500" : "bg-slate-50 text-slate-400"
+                      )}>
+                          <Zap className="h-4 w-4" />
+                      </div>
+                      <div className="flex flex-col">
+                          <span className={cn("text-[9px] font-black uppercase mb-0.5", stats.lowStock > 0 ? "text-amber-500" : "text-slate-400")}>Flux Critiques</span>
+                          <span className={cn("text-xl font-black leading-tight", stats.lowStock > 0 ? "text-amber-600" : "text-slate-900")}>
+                                {stats.lowStock}
+                          </span>
+                          <span className="text-[8px] text-slate-300">Sous le seuil d'alerte</span>
+                      </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                      <div className="h-8 w-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600">
+                          <BarChart3 className="h-4 w-4" />
+                      </div>
+                      <div className="flex flex-col">
+                          <span className="text-[9px] font-black uppercase text-emerald-500 mb-0.5">Santé du stock</span>
+                          <span className="text-xl font-black text-emerald-600 leading-tight">{Math.round(stats.avgHealth)}%</span>
+                          <span className="text-[8px] text-slate-300">Disponibilité moyenne</span>
+                      </div>
+                  </div>
+              </div>
+
+              <div className="my-8">
+                <div className="overflow-hidden rounded-2xl border border-slate-200">
+                    <Table>
+                        <TableHeader className="bg-slate-50">
+                            <TableRow className="border-slate-100">
+                                {printOptions?.includePhotos && <TableHead className="font-bold py-4 pl-6 w-12">Photo</TableHead>}
+                                <TableHead className={cn("font-bold py-4", !printOptions?.includePhotos && "pl-6")}>Code</TableHead>
+                                <TableHead className="font-bold py-4">Désignation</TableHead>
+                                <TableHead className="font-bold py-4 text-center">Quantité</TableHead>
+                                {printOptions?.showHealthStatus && <TableHead className="font-bold py-4 pr-6 w-[160px]">État de santé</TableHead>}
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {printableSupplies.map((item) => {
+                                const status = getStockStatus(item.quantity, item.reorderLevel);
+                                return (
+                                    <TableRow key={item.id} className="border-slate-50 h-14">
+                                        {printOptions?.includePhotos && (
+                                            <TableCell className="py-2 pl-6">
+                                                <div className="w-10 h-10 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center overflow-hidden">
+                                                    {item.photoUrl ? (
+                                                        <img src={item.photoUrl} alt="" className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        <Package className="h-4 w-4 text-slate-200" />
+                                                    )}
+                                                </div>
+                                            </TableCell>
+                                        )}
+                                        <TableCell className={cn("py-2 font-mono text-[10px] text-slate-400", !printOptions?.includePhotos && "pl-6")}>
+                                            {item.code || '---'}
+                                        </TableCell>
+                                        <TableCell className="py-2">
+                                            <div className="font-bold text-slate-800 text-[11px]">{item.name}</div>
+                                            <div className="text-[9px] text-slate-400 uppercase font-medium">{item.category}</div>
+                                        </TableCell>
+                                        <TableCell className="py-2 text-center font-black text-slate-900">{item.quantity}</TableCell>
+                                        {printOptions?.showHealthStatus && (
+                                            <TableCell className="py-2 pr-6">
+                                                <div className="flex flex-col gap-1 w-full max-w-[120px]">
+                                                    <div className="flex justify-between text-[8px] font-black uppercase">
+                                                        <span className={cn(
+                                                            status.color === 'destructive' ? "text-red-500" :
+                                                            status.color === 'warning' ? "text-amber-500" : "text-emerald-500"
+                                                        )}>{status.text}</span>
+                                                        <span className="text-slate-300">{Math.round(status.value)}%</span>
+                                                    </div>
+                                                    <Progress 
+                                                        value={status.value} 
+                                                        className="h-1 w-full bg-slate-50 rounded-full overflow-hidden border border-slate-100" 
+                                                        indicatorClassName={cn("transition-all", status.className)} 
+                                                    />
+                                                </div>
+                                            </TableCell>
+                                        )}
+                                    </TableRow>
+                                );
+                            })}
+                        </TableBody>
+                      </Table>
+                  </div>
+                </div>
+  
+                <InstitutionalFooter 
+                  signatoryName="COULIBALY Hamadou"
+                  signatoryTitle="Contrôleur Interne et Qualité, CNRCT"
+                />
+              </div>
+          )}
+        </InstitutionalReportWrapper>
+      </div>
     </PermissionGuard>
   );
 }

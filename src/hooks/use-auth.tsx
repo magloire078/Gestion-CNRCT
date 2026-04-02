@@ -4,8 +4,10 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { onAuthStateChange } from '@/services/auth-service';
+import { updateUserActiveStatus } from '@/services/user-service';
 import type { User, OrganizationSettings } from '@/lib/data';
 import { getOrganizationSettings } from '@/services/organization-service';
+import { mapPermissionToCrud } from '@/services/permission-service';
 
 interface AuthContextType {
   user: User | null;
@@ -66,14 +68,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     });
 
-    // Timeout safety: Force loading to false after 5 seconds if somehow stuck
+    // Timeout safety: Force loading to false after 7 seconds if somehow stuck
     const timeoutId = setTimeout(() => {
       if (isMounted && loading) {
-        console.warn("[Auth] Initialization timeout - forcing loading to false");
+        console.warn("[Auth] Initialization timeout (7s) - proceeding with local state to avoid blocking UI.");
         // Try to proceed with whatever state we have
         setLoading(false);
       }
-    }, 5000);
+    }, 7000);
 
     return () => {
       isMounted = false;
@@ -81,6 +83,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       clearTimeout(timeoutId);
     };
   }, []);
+
+  // Activity Tracking (Heartbeat)
+  useEffect(() => {
+    if (!user) return;
+
+    // Initial check-in
+    updateUserActiveStatus(user.id, true).catch(e => console.warn("[Auth] Heartbeat failed:", e));
+
+    // Heartbeat every 2 minutes
+    const interval = setInterval(() => {
+      updateUserActiveStatus(user.id, true).catch(e => console.warn("[Auth] Heartbeat failed:", e));
+    }, 2 * 60 * 1000);
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        updateUserActiveStatus(user.id, true).catch(e => console.warn("[Auth] Heartbeat failed:", e));
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      // Try to mark as offline on close (experimental)
+      updateUserActiveStatus(user.id, false).catch(() => {});
+    };
+  }, [user?.id]);
 
   useEffect(() => {
     if (loading) return;
@@ -94,37 +124,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [user, loading, pathname, router]);
 
-  const hasPermission = (permission: string) => {
+    const hasPermission = (permission: string) => {
     if (loading || !user) return false;
     
     // Super-admins/Dirigeants have all permissions (bypass by ID or by specific email for safety)
     if (
       user.roleId === 'dirigeant-president' || 
       user.roleId === 'super-admin' || 
-      user.roleId === 'LHcHyfBzile3r0vyFOFb' || // Explicit ID for safety
-      user.email === 'magloire078@gmail.com' ||
-      user.email === 'test10@test.com'
+      user.roleId === 'LHcHyfBzile3r0vyFOFb' || // Super Administrateur ID
+      user.email === 'magloire078@gmail.com'
     ) return true;
 
-    // 1. Check legacy permissions array
+    // 1. Check legacy permissions array (always takes priority)
     if (user.permissions?.includes(permission)) return true;
 
-    // 2. Harmonization with new CRUD matrix (resourcePermissions)
-    // Pattern: "page:xxx:view" -> check if resource xxx has 'read' access
-    if (permission.startsWith('page:') && permission.endsWith(':view')) {
-      const resourceId = permission.split(':')[1];
-      if (user.resourcePermissions?.[resourceId]?.read) return true;
+    // 2. Map the permission string to a CRUD action on a resource
+    const mapped = mapPermissionToCrud(permission);
+    if (!mapped) return false;
+
+    const { resourceId, action } = mapped;
+
+    // 3. Check for User Exceptions first (overrides)
+    const userOverrides = user.resourcePermissions || {};
+    if (userOverrides[resourceId]) {
+      return userOverrides[resourceId][action] === true;
     }
 
-    // Pattern: "feature:xxx:import" or "feature:xxx:export" -> check 'create' or 'update'
-    if (permission.startsWith('feature:')) {
-      const parts = permission.split(':');
-      const resourceId = parts[1];
-      const action = parts[2];
-      if (action === 'import' || action === 'export') {
-        // Import/Export are usually 'create' or 'update' level permissions
-        if (user.resourcePermissions?.[resourceId]?.create || user.resourcePermissions?.[resourceId]?.update) return true;
-      }
+    // 4. Fallback to Role Permissions
+    const rolePermissions = user.role?.resourcePermissions || {};
+    if (rolePermissions[resourceId]) {
+      return rolePermissions[resourceId][action] === true;
     }
 
     return false;

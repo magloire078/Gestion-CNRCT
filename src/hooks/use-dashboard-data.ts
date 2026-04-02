@@ -12,7 +12,7 @@ import { subscribeToChiefs } from "@/services/chief-service";
 import { subscribeToDepartments } from "@/services/department-service";
 import { subscribeToConflicts } from "@/services/conflict-service";
 import type { Conflict } from "@/types/common";
-import { parseISO, differenceInYears, isAfter } from 'date-fns';
+import { parseISO, differenceInYears, isAfter, isBefore, isWithinInterval, startOfDay } from 'date-fns';
 
 export function useDashboardData(user: User | null) {
     const [globalStats, setGlobalStats] = useState({
@@ -34,6 +34,7 @@ export function useDashboardData(user: User | null) {
     const [organizationLogos, setOrganizationLogos] = useState<OrganizationSettings | null>(null);
     const [seniorityAnniversaries, setSeniorityAnniversaries] = useState<Employe[]>([]);
     const [birthdayAnniversaries, setBirthdayAnniversaries] = useState<Employe[]>([]);
+    const [employeesOnLeave, setEmployeesOnLeave] = useState<(Employe & { leaveType: string, returnDate: string })[]>([]);
     const [upcomingRetirements, setUpcomingRetirements] = useState<(Employe & { calculatedRetirementDate: Date })[]>([]);
 
     const [loading, setLoading] = useState(true);
@@ -143,6 +144,39 @@ export function useDashboardData(user: User | null) {
                 }, console.error));
             }
 
+            // --- Leaves Tracking (Global) ---
+            const canReadGlobalLeaves = user?.roleId && ['administrateur', 'dirigeant-president', 'manager-rh', 'LHcHyfBzile3r0vyFOFb', 'super-admin'].includes(user.roleId);
+            
+            if (canReadGlobalLeaves) {
+                unsubscribers.push(subscribeToLeaves(allLeaves => {
+                    if (!isMounted) return;
+                    
+                    const today = startOfDay(new Date());
+                    
+                    const activeLeaves = allLeaves.filter(l => {
+                        if (l.status !== 'Approuvé') return false;
+                        try {
+                            const start = parseISO(l.startDate);
+                            const end = parseISO(l.endDate);
+                            return isWithinInterval(today, { start, end });
+                        } catch { return false; }
+                    });
+
+                    // Map leaves to actual employee objects found in globalStats.employees
+                    const onLeave = activeLeaves.map(leave => {
+                        const employee = globalStats.employees.find(e => e.id === leave.employeeId);
+                        if (!employee) return null;
+                        return {
+                            ...employee,
+                            leaveType: leave.type as string,
+                            returnDate: leave.endDate
+                        };
+                    }).filter((e): e is (Employe & { leaveType: string, returnDate: string }) => e !== null);
+
+                    setEmployeesOnLeave(onLeave);
+                }, console.error));
+            }
+
             setLoadingSummary(false);
 
             // --- Personal Data ---
@@ -237,6 +271,7 @@ export function useDashboardData(user: User | null) {
         organizationLogos,
         seniorityAnniversaries,
         birthdayAnniversaries,
+        employeesOnLeave,
         upcomingRetirements,
         selectedAnniversaryMonth,
         setSelectedAnniversaryMonth,

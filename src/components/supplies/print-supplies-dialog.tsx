@@ -1,19 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import { Printer, X, LayoutList, Filter, SortAsc, CheckCircle2, FileText } from "lucide-react";
+import { useState, memo } from "react";
+import { Printer, LayoutList, Filter, SortAsc, CheckCircle2, FileText } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supplyCategories } from "@/lib/constants/supply";
-
-interface PrintSuppliesDialogProps {
-  isOpen: boolean;
-  onCloseAction: () => void;
-  onPrintAction: (options: PrintOptions) => void;
-}
 
 export interface PrintOptions {
   includeOutOfStock: boolean;
@@ -24,7 +18,17 @@ export interface PrintOptions {
   reportTemplate: 'standard' | 'official';
 }
 
-export function PrintSuppliesDialog({ isOpen, onCloseAction, onPrintAction }: PrintSuppliesDialogProps) {
+interface PrintSuppliesDialogProps {
+  isOpen: boolean;
+  onCloseAction: () => void;
+  onPrintAction: (options: PrintOptions) => void;
+}
+
+export const PrintSuppliesDialog = memo(function PrintSuppliesDialog({ 
+  isOpen, 
+  onCloseAction, 
+  onPrintAction 
+}: PrintSuppliesDialogProps) {
   const [options, setOptions] = useState<PrintOptions>({
     includeOutOfStock: true,
     includePhotos: false,
@@ -177,4 +181,4 @@ export function PrintSuppliesDialog({ isOpen, onCloseAction, onPrintAction }: Pr
       </DialogContent>
     </Dialog>
   );
-}
+});

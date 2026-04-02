@@ -134,12 +134,15 @@ export const DirectoireMap: React.FC<DirectoireMapProps> = ({
     useEffect(() => {
         if (!isClient || !mapContainerRef.current || mapInstanceRef.current) return;
 
-        // Côte d'Ivoire view
+        // Côte d'Ivoire view - Lowered for a more zoomed-out start
         const map = L.map(mapContainerRef.current, {
             center: [7.539989, -5.547080],
-            zoom: 7,
-            scrollWheelZoom: false,
-            zoomControl: true
+            zoom: 6.5,
+            scrollWheelZoom: true,
+            zoomControl: true,
+            zoomSnap: 0.25,
+            zoomDelta: 0.25,
+            wheelPxPerZoomLevel: 120 // Slows down wheel zoom speed (default is 60)
         });
 
         // ESRI World Topo Map - Rich and detailed topographic theme
@@ -263,7 +266,8 @@ export const DirectoireMap: React.FC<DirectoireMapProps> = ({
 
         if (validMembers.length > 0) {
             const group = L.featureGroup(markers.getLayers());
-            map.fitBounds(group.getBounds().pad(0.4), { animate: true });
+            // Increased padding from 0.4 to 0.8 for a 'birds-eye' view
+            map.fitBounds(group.getBounds().pad(0.8), { animate: true });
         }
     }, [mapReady, validMembers]);
 

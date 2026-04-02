@@ -404,7 +404,7 @@ export default function SuppliesPage() {
 
   const historyTotalPages = Math.ceil(transactions.length / historyItemsPerPage);
 
-  const handlePrint = (options: PrintOptions) => {
+  const handlePrint = useCallback((options: PrintOptions) => {
     setPrintOptions(options);
     
     // Sort supplies for printing if needed
@@ -415,7 +415,11 @@ export default function SuppliesPage() {
     
     setSupplies(sorted); // Note: this affects the UI too, which is fine for printing
     setIsPrinting(true);
-  };
+  }, [filteredSupplies]);
+
+  const handleClosePrintDialog = useCallback(() => {
+    setIsPrintDialogOpen(false);
+  }, []);
 
   const printableSupplies = useMemo(() => {
     if (!printOptions) return [];
@@ -472,7 +476,7 @@ export default function SuppliesPage() {
                 </Button>
             </div>
             <Button 
-                onClick={() => setIsPrintDialogOpen(true)} 
+                onClick={() => startTransition(() => setIsPrintDialogOpen(true))} 
                 variant="outline" 
                 className="rounded-xl border-slate-200 font-bold shadow-sm"
             >
@@ -814,20 +818,22 @@ export default function SuppliesPage() {
           supply={selectedSupply}
         />
       )}
-      {(isDistributeDialogOpen || isRestockDialogOpen) && selectedSupply && (
-          <>
-              <DistributeSupplyDialog 
-                  isOpen={isDistributeDialogOpen} 
-                  onCloseAction={() => setIsDistributeDialogOpen(false)} 
-                  supply={selectedSupply} 
-              />
-              <RestockSupplyDialog
-                  isOpen={isRestockDialogOpen}
-                  onCloseAction={() => setIsRestockDialogOpen(false)}
-                  supply={selectedSupply}
-              />
-          </>
+      
+      {selectedSupply && (
+        <>
+          <DistributeSupplyDialog 
+            isOpen={isDistributeDialogOpen} 
+            onCloseAction={closeDistributeDialog} 
+            supply={selectedSupply} 
+          />
+          <RestockSupplyDialog
+            isOpen={isRestockDialogOpen}
+            onCloseAction={() => setIsRestockDialogOpen(false)}
+            supply={selectedSupply}
+          />
+        </>
       )}
+
       <ConfirmationDialog
         isOpen={!!deleteTarget}
         onCloseAction={() => setDeleteTarget(null)}
@@ -839,7 +845,7 @@ export default function SuppliesPage() {
       {isPrintDialogOpen && (
           <PrintSuppliesDialog 
             isOpen={isPrintDialogOpen} 
-            onCloseAction={() => setIsPrintDialogOpen(false)} 
+            onCloseAction={handleClosePrintDialog} 
             onPrintAction={handlePrint}
           />
       )}

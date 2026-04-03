@@ -9,6 +9,7 @@ import { Printer, Loader2, FileText, AlertCircle } from "lucide-react";
 import { generateDisaReport, type DisaReportState as DisaReportResult } from "./actions";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import Image from "next/image";
+import { PermissionGuard } from "@/components/auth/permission-guard";
 
 // Helper for formatting currency in CFA
 const formatCurrency = (amount: number) => {
@@ -210,7 +211,7 @@ export default function DisaPage() {
     }, [isPrinting]);
 
     return (
-        <>
+        <PermissionGuard permission="page:disa:view">
             <div className={`flex flex-col gap-6 ${isPrinting ? 'print-hidden' : ''}`}>
                 <div className="flex items-center justify-between">
                     <h1 className="text-3xl font-bold tracking-tight">Rapport DISA (Déclaration des Salaires)</h1>
@@ -364,7 +365,7 @@ export default function DisaPage() {
                                 </tr>
                             </thead>
                         <tbody>
-                             {state.reportData.map((row: any, index: number) => (
+                                {state.reportData.map((row: any, index: number) => (
                                 <tr key={`print-row-${row.matricule}`} className="text-black even:bg-slate-100/50">
                                     <td className="py-1 px-1 text-center font-bold border border-slate-600">{index + 1}</td>
                                     <td className="py-1 px-1 text-center font-mono border border-slate-600">{row.matricule}</td>
@@ -413,6 +414,6 @@ export default function DisaPage() {
                     </div>
                 </div>
             )}
-        </>
+        </PermissionGuard>
     );
 }

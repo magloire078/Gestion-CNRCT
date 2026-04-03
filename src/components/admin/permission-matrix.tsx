@@ -24,7 +24,8 @@ import {
     FolderOpen, PieChart, ClipboardList, LifeBuoy, Crown,
     Map, Bot, Settings, ShieldCheck, ScrollText, Loader2, Save,
     RefreshCw, Fuel, Calculator, Landmark, Scroll, MapPinned, Network, Globe, Undo2,
-    Search, CheckCircle2, XCircle, AlertTriangle as AlertTriangleIcon
+    Search, CheckCircle2, XCircle, AlertTriangle as AlertTriangleIcon,
+    FileBarChart, FileCheck, Users2, Globe2, Wrench
 } from 'lucide-react';
 import {
     AlertDialog,
@@ -50,6 +51,7 @@ const ICON_MAP: Record<string, React.ElementType> = {
     FolderOpen, PieChart, ClipboardList, LifeBuoy, Crown,
     Map, Bot, Settings, ShieldCheck, ScrollText, Fuel,
     Calculator, Landmark, Scroll, MapPinned, Network, Globe,
+    FileBarChart, FileCheck, Users2, Globe2, Wrench,
 };
 
 const ACTION_LABELS: Record<CrudAction, { label: string; short: string; color: string }> = {

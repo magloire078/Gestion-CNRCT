@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useAuth } from '@/hooks/use-auth';
 import { useDashboardData } from '@/hooks/use-dashboard-data';
 import { useFormat } from '@/hooks/use-format';
-import {
+import { 
     Card,
     CardHeader,
     CardTitle,
@@ -13,6 +13,7 @@ import {
     CardDescription,
     CardFooter
 } from '@/components/ui/card';
+import { PermissionGuard } from "@/components/auth/permission-guard";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
@@ -212,11 +213,9 @@ export default function DashboardPage() {
         { value: "9", label: "Octobre" }, { value: "10", label: "Novembre" }, { value: "11", label: "Décembre" },
     ];
 
-    const isHRAdmin = hasPermission('page:dashboard:view');
-
     return (
-        <div className="pb-20">
-            {isHRAdmin ? (
+        <PermissionGuard permission="page:dashboard:view">
+            <div className="pb-20">
                 <div className="flex flex-col gap-10">
                     {/* Hero Welcome */}
                     <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 pt-4">
@@ -572,20 +571,7 @@ export default function DashboardPage() {
                         </TabsContent>
                     </Tabs>
                 </div>
-            ) : (
-                <div className="flex flex-col items-center justify-center p-32 text-center">
-                    <div className="h-24 w-24 bg-slate-100 rounded-full flex items-center justify-center mb-8 border border-slate-200">
-                        <ShieldCheck className="h-10 w-10 text-slate-300" />
-                    </div>
-                    <h2 className="text-3xl font-black tracking-tighter text-slate-900 border-none">Accès Stratégique Restreint</h2>
-                    <p className="text-slate-400 mt-4 max-w-sm font-medium italic">
-                        Ce module nécessite des privilèges d'administration de haut niveau. Contactez votre superviseur pour les habilitations nécessaires.
-                    </p>
-                    <Button variant="outline" className="mt-8 rounded-xl font-bold h-12 px-8 border-slate-200" asChild>
-                        <Link href="/">Retour au portail</Link>
-                    </Button>
-                </div>
-            )}
-        </div>
+            </div>
+        </PermissionGuard>
     );
 }

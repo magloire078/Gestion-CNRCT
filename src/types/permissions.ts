@@ -36,6 +36,7 @@ export const RESOURCES_CONFIG: ResourceConfig[] = [
     { id: 'group:operations', label: "OPÉRATIONS", icon: 'Briefcase', availableActions: ['read'] },
     { id: 'group:localities', label: "LOCALITÉS & AUTORITÉS", icon: 'MapPin', availableActions: ['read'] },
     { id: 'group:heritage', label: "CULTURE & PATRIMOINE", icon: 'History', availableActions: ['read'] },
+    { id: 'group:reports', label: "RAPPORTS CONSOLIDÉS", icon: 'FileBarChart', availableActions: ['read'] },
     { id: 'group:administration', label: "ADMINISTRATION", icon: 'Shield', availableActions: ['read'] },
 
     // --- MODULES (ENFANTS) ---
@@ -63,6 +64,11 @@ export const RESOURCES_CONFIG: ResourceConfig[] = [
 
     { id: 'heritage', label: 'Patrimoine', icon: 'Landmark', availableActions: ['read', 'create', 'update', 'delete'], parentId: 'group:heritage' },
     { id: 'us-et-coutumes', label: 'Us & Coutumes', icon: 'Scroll', availableActions: ['read', 'create', 'update', 'delete'], parentId: 'group:heritage' },
+
+    { id: 'report-disa', label: 'Rapport DISA', icon: 'FileCheck', availableActions: ['read'], parentId: 'group:reports' },
+    { id: 'report-nominative', label: 'Tableau Nominatif', icon: 'Users2', availableActions: ['read'], parentId: 'group:reports' },
+    { id: 'report-territory', label: 'Observatoire Territorial', icon: 'Globe2', availableActions: ['read'], parentId: 'group:reports' },
+    { id: 'report-it-technical', label: 'Point Technique', icon: 'Wrench', availableActions: ['read'], parentId: 'group:reports' },
 
     { id: 'admin', label: 'Paramètres Accès', icon: 'ShieldCheck', availableActions: ['read', 'update'], parentId: 'group:administration' },
     { id: 'settings', label: 'Réglages Système', icon: 'Settings', availableActions: ['read', 'update'], parentId: 'group:administration' },
@@ -102,6 +108,8 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, ResourcePermissions> = {
         fuel: ALL_CRUD, indemnities: ALL_CRUD, heritage: ALL_CRUD,
         'us-et-coutumes': ALL_CRUD, villages: ALL_CRUD,
         'organization-chart': ALL_READ, intranet: ALL_READ,
+        'report-disa': ALL_READ, 'report-nominative': ALL_READ,
+        'report-territory': ALL_READ, 'report-it-technical': ALL_READ,
     }),
     'mediation': buildDefault({
         dashboard: ALL_READ, conflicts: ALL_CRUD, chiefs: ALL_CRUD,
@@ -124,6 +132,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, ResourcePermissions> = {
         dashboard: ALL_READ, payroll: ALL_CRUD, budget: ALL_CRUD,
         repository: READ_CREATE, tickets: ALL_READ, assistant: ALL_READ,
         intranet: ALL_READ, indemnities: READ_UPDATE,
+        'report-disa': ALL_READ, 'report-nominative': ALL_READ,
     }),
     'dirigeant-president': buildDefault({
         dashboard: ALL_READ, employees: ALL_READ, payroll: ALL_READ,

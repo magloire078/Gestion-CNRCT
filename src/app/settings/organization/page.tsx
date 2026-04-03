@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { PermissionGuard } from "@/components/auth/permission-guard";
 import { Button } from "@/components/ui/button";
 import {
     Card,
@@ -31,6 +32,14 @@ interface FileState {
 }
 
 export default function OrganizationSettingsPage() {
+    return (
+        <PermissionGuard permission="page:admin:view">
+            <OrganizationSettingsContent />
+        </PermissionGuard>
+    );
+}
+
+function OrganizationSettingsContent() {
     const { toast } = useToast();
 
     const [name, setName] = useState("");

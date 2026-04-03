@@ -4,77 +4,19 @@ import { collection, getDocs, addDoc, deleteDoc, doc, onSnapshot, Unsubscribe, q
 import type { Role } from '@/lib/data';
 import { db } from '@/lib/firebase';
 import { allPermissions } from '@/lib/permissions';
+import { ENTERPRISE_ROLES } from '@/types/permissions';
 
 const rolesCollection = collection(db, 'roles');
 
-const defaultRoles: Omit<Role, 'id'>[] = [
+/** 
+ * Legacy roles list replaced by the modern enterprise roles config
+ */
+const legacyDefaultRoles: Omit<Role, 'id'>[] = [
     {
         name: 'Super Administrateur',
         permissions: Object.values(allPermissions)
-    },
-    {
-        name: 'Dirigeant (Président)',
-        permissions: Object.values(allPermissions)
-    },
-    {
-        name: 'Cadre Supérieur (Directeur)',
-        permissions: [
-            allPermissions["Accès au Tableau de Bord"],
-            allPermissions["Accès à Mon Espace"],
-            allPermissions["Gestion des Employés"],
-            allPermissions["Gestion des Rois & Chefs"],
-            allPermissions["Accès à la Cartographie"],
-            allPermissions["Gestion de la Paie"],
-            allPermissions["Gestion des Congés"],
-            allPermissions["Gestion des Évaluations"],
-            allPermissions["Gestion des Indemnités"],
-            allPermissions["Gestion des Missions"],
-            allPermissions["Gestion du Budget"],
-            allPermissions["Gestion des Conflits"],
-            allPermissions["Gestion des Fournitures"],
-            allPermissions["Gestion des Actifs TI"],
-            allPermissions["Gestion de la Flotte"],
-            allPermissions["Gestion des Documents"],
-            allPermissions["Gestion du Référentiel"],
-            allPermissions["Accès à l'Assistant IA"],
-            allPermissions["Voir l'Organigramme"],
-            allPermissions["Voir le groupe Personnel"],
-            allPermissions["Voir le groupe Organisation"],
-            allPermissions["Voir le groupe Opérations"],
-            allPermissions["Voir le groupe Rapports"],
-            allPermissions["Voir le rapport DISA"],
-            allPermissions["Voir le rapport Nominatif"],
-        ]
-    },
-    {
-        name: 'Cadre Intermédiaire (Chef de service)',
-        permissions: [
-            allPermissions["Accès au Tableau de Bord"],
-            allPermissions["Accès à Mon Espace"],
-            allPermissions["Gestion des Employés"],
-            allPermissions["Gestion des Congés"],
-            allPermissions["Gestion des Missions"],
-            allPermissions["Gestion des Fournitures"],
-            allPermissions["Accès à l'Assistant IA"],
-            allPermissions["Voir l'Organigramme"],
-            allPermissions["Voir le groupe Personnel"],
-            allPermissions["Voir le groupe Opérations"],
-        ]
-    },
-    {
-        name: 'Employé Opérationnel',
-        permissions: [
-            allPermissions["Accès au Tableau de Bord"],
-            allPermissions["Accès à Mon Espace"],
-            allPermissions["Accès à l'Assistant IA"],
-        ]
-    },
-    {
-        name: 'Stagiaire / Apprenti',
-        permissions: [
-            allPermissions["Accès à Mon Espace"],
-        ]
     }
+    // ... rest of legacy roles are replaced by ENTERPRISE_ROLES
 ];
 
 export async function initializeDefaultRoles() {
@@ -90,22 +32,24 @@ export async function initializeDefaultRoles() {
  */
 export async function syncDefaultRoles() {
     const batch = writeBatch(db);
-    const roleIds = [
-        'LHcHyfBzile3r0vyFOFb', // Super Administrateur ID
-        'dirigeant-president',
-        'cadre-superieur-directeur',
-        'cadre-intermediaire-chef-service',
-        'employe-operationnel',
-        'stagiaire-apprenti'
-    ];
 
-    defaultRoles.forEach((role, index) => {
-        const roleRef = doc(db, 'roles', roleIds[index]);
-        batch.set(roleRef, { 
-            name: role.name, 
-            permissions: role.permissions,
-            updatedAt: new Date().toISOString() 
-        });
+    ENTERPRISE_ROLES.forEach((roleConfig) => {
+        const roleRef = doc(db, 'roles', roleConfig.id);
+        
+        // Prepare doc data
+        const data: any = {
+            name: roleConfig.label,
+            resourcePermissions: roleConfig.defaultPermissions,
+            updatedAt: new Date().toISOString()
+        };
+
+        // For some core roles, we also keep the flat permissions list for backward compatibility with older UI components
+        if (roleConfig.id === 'LHcHyfBzile3r0vyFOFb' || roleConfig.id === 'administrateur') {
+            data.permissions = Object.values(allPermissions);
+        }
+
+        // Use merge: true to avoid deleting custom fields if any
+        batch.set(roleRef, data, { merge: true });
     });
 
     await batch.commit();

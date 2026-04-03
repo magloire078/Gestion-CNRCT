@@ -50,6 +50,7 @@ import {
 } from "@/components/ui/popover";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PermissionGuard } from "@/components/auth/permission-guard";
 
 
 type CalculationType = "retraite" | "licenciement";
@@ -167,7 +168,8 @@ export default function IndemnityCalculatorPage() {
   };
 
   return (
-    <div className="flex flex-col gap-8 pb-20">
+    <PermissionGuard permission="page:indemnities:view">
+      <div className="flex flex-col gap-8 pb-20">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
                 <h1 className="text-3xl font-extrabold tracking-tight">Simulateur d'Indemnités</h1>
@@ -411,6 +413,7 @@ export default function IndemnityCalculatorPage() {
                 </Card>
             </div>
         </div>
-    </div>
+      </div>
+    </PermissionGuard>
   );
 }

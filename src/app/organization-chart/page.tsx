@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/accordion";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Users, Building, Globe, Briefcase } from "lucide-react";
+import { PermissionGuard } from "@/components/auth/permission-guard";
 
 interface OrganizationalData {
   departments: Department[];
@@ -61,64 +62,66 @@ export default function OrganizationChartPage() {
 
   const { departments, directions, services, employees } = data;
 
-  const employeesByService = (serviceId: string) => employees.filter(e => e.serviceId === serviceId);
-  const employeesByDirection = (directionId: string) => employees.filter(e => e.directionId === directionId && !e.serviceId);
-  const employeesByDepartment = (departmentId: string) => employees.filter(e => e.departmentId === departmentId && !e.directionId && !e.serviceId);
+  const employeesByService = (serviceId: string) => employees.filter((e: Employe) => e.serviceId === serviceId);
+  const employeesByDirection = (directionId: string) => employees.filter((e: Employe) => e.directionId === directionId && !e.serviceId);
+  const employeesByDepartment = (departmentId: string) => employees.filter((e: Employe) => e.departmentId === departmentId && !e.directionId && !e.serviceId);
   
-  const servicesInDirection = (directionId: string) => services.filter(s => s.directionId === directionId);
-  const servicesInDepartment = (departmentId: string) => services.filter(s => s.departmentId === departmentId && !s.directionId);
-  const directionsInDepartment = (departmentId: string) => directions.filter(d => d.departmentId === departmentId);
+  const servicesInDirection = (directionId: string) => services.filter((s: Service) => s.directionId === directionId);
+  const servicesInDepartment = (departmentId: string) => services.filter((s: Service) => s.departmentId === departmentId && !s.directionId);
+  const directionsInDepartment = (departmentId: string) => directions.filter((d: Direction) => d.departmentId === departmentId);
   
 
   return (
-    <div className="flex flex-col gap-6">
-      <h1 className="text-3xl font-bold tracking-tight">Organigramme de l'Entreprise</h1>
+    <PermissionGuard permission="organization-chart">
+      <div className="flex flex-col gap-6">
+        <h1 className="text-3xl font-bold tracking-tight">Organigramme de l'Entreprise</h1>
 
-      <Card>
-        <CardHeader>
-            <CardTitle>Structure Organisationnelle</CardTitle>
-        </CardHeader>
-        <CardContent>
-            <Accordion type="multiple" className="w-full">
-                {departments.map(dept => (
-                    <AccordionItem value={dept.id} key={dept.id}>
-                        <AccordionTrigger className="text-lg font-semibold hover:no-underline">
-                            <div className="flex items-center gap-3">
-                                <Building className="h-6 w-6 text-primary" />
-                                {dept.name}
-                            </div>
-                        </AccordionTrigger>
-                        <AccordionContent className="pl-8 space-y-4">
-                            <EmployeeList employees={employeesByDepartment(dept.id)} />
-                            {servicesInDepartment(dept.id).map(svc => (
-                                <ServiceNode key={svc.id} service={svc} employees={employeesByService(svc.id)} />
-                            ))}
+        <Card>
+          <CardHeader>
+              <CardTitle>Structure Organisationnelle</CardTitle>
+          </CardHeader>
+          <CardContent>
+              <Accordion type="multiple" className="w-full">
+                  {departments.map((dept: Department) => (
+                      <AccordionItem value={dept.id} key={dept.id}>
+                          <AccordionTrigger className="text-lg font-semibold hover:no-underline">
+                              <div className="flex items-center gap-3">
+                                  <Building className="h-6 w-6 text-primary" />
+                                  {dept.name}
+                              </div>
+                          </AccordionTrigger>
+                          <AccordionContent className="pl-8 space-y-4">
+                              <EmployeeList employees={employeesByDepartment(dept.id)} />
+                              {servicesInDepartment(dept.id).map((svc: Service) => (
+                                  <ServiceNode key={svc.id} service={svc} employees={employeesByService(svc.id)} />
+                              ))}
 
-                            {directionsInDepartment(dept.id).map(dir => (
-                                <Accordion type="multiple" className="w-full" key={dir.id}>
-                                    <AccordionItem value={dir.id}>
-                                        <AccordionTrigger className="text-md font-medium hover:no-underline">
-                                             <div className="flex items-center gap-3">
-                                                <Globe className="h-5 w-5 text-secondary-foreground" />
-                                                {dir.name}
-                                            </div>
-                                        </AccordionTrigger>
-                                        <AccordionContent className="pl-6 space-y-4">
-                                            <EmployeeList employees={employeesByDirection(dir.id)} />
-                                            {servicesInDirection(dir.id).map(svc => (
-                                                 <ServiceNode key={svc.id} service={svc} employees={employeesByService(svc.id)} />
-                                            ))}
-                                        </AccordionContent>
-                                    </AccordionItem>
-                                </Accordion>
-                            ))}
-                        </AccordionContent>
-                    </AccordionItem>
-                ))}
-            </Accordion>
-        </CardContent>
-      </Card>
-    </div>
+                              {directionsInDepartment(dept.id).map((dir: Direction) => (
+                                  <Accordion type="multiple" className="w-full" key={dir.id}>
+                                      <AccordionItem value={dir.id}>
+                                          <AccordionTrigger className="text-md font-medium hover:no-underline">
+                                              <div className="flex items-center gap-3">
+                                                  <Globe className="h-5 w-5 text-secondary-foreground" />
+                                                  {dir.name}
+                                              </div>
+                                          </AccordionTrigger>
+                                          <AccordionContent className="pl-6 space-y-4">
+                                              <EmployeeList employees={employeesByDirection(dir.id)} />
+                                              {servicesInDirection(dir.id).map((svc: Service) => (
+                                                  <ServiceNode key={svc.id} service={svc} employees={employeesByService(svc.id)} />
+                                              ))}
+                                          </AccordionContent>
+                                      </AccordionItem>
+                                  </Accordion>
+                              ))}
+                          </AccordionContent>
+                      </AccordionItem>
+                  ))}
+              </Accordion>
+          </CardContent>
+        </Card>
+      </div>
+    </PermissionGuard>
   );
 }
 

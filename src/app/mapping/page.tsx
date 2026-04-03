@@ -266,6 +266,5 @@ export default function MappingPage() {
         </Card>
       </div>
     </PermissionGuard>
-  );/div>
   );
 }

@@ -3,7 +3,7 @@
 
 import { useState, useMemo, useEffect, useTransition } from "react";
 import Link from 'next/link';
-import { PlusCircle, Check, X, Search, Loader2, FileText, Pencil, Hash } from "lucide-react";
+import { PlusCircle, Check, X, Search, Loader2, FileText, Pencil, Hash, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -29,7 +29,7 @@ import { AddLeaveRequestSheet } from "@/components/leave/add-leave-request-sheet
 import { EditLeaveRequestSheet } from "@/components/leave/edit-leave-request-sheet";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { subscribeToLeaves, addLeave, updateLeaveStatus, updateLeave } from "@/services/leave-service";
+import { subscribeToLeaves, addLeave, updateLeaveStatus, updateLeave, deleteLeave } from "@/services/leave-service";
 import { getEmployees } from "@/services/employee-service";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
@@ -39,7 +39,7 @@ import { fr } from 'date-fns/locale';
 import { PaginationControls } from "@/components/common/pagination-controls";
 import { useAuth } from "@/hooks/use-auth";
 import { useRouter } from "next/navigation";
-
+import { PermissionGuard } from "@/components/auth/permission-guard";
 
 type Status = "Approuvé" | "En attente" | "Rejeté";
 
@@ -72,6 +72,8 @@ export default function LeavePage() {
   const [activeTab, setActiveTab] = useState("list");
   const [isPending, startTransition] = useTransition();
   const { user, hasPermission } = useAuth();
+  const canManageLeaves = hasPermission('leaves:update');
+  const canDeleteLeaves = hasPermission('leaves:delete');
   const router = useRouter();
 
   const formatDate = (dateString: string) => {
@@ -82,17 +84,7 @@ export default function LeavePage() {
     }
   };
 
-  // Secondary permission check - allow access if user has permission OR has a linked employee ID
-  useEffect(() => {
-    if (!loading && !hasPermission('page:leaves:view') && !user?.employeeId) {
-      router.replace('/intranet');
-      toast({
-        variant: "destructive",
-        title: "Accès refusé",
-        description: "Vous n'avez pas les permissions pour accéder à cette page."
-      });
-    }
-  }, [loading, hasPermission, user, router, toast]);
+  // Redirection is now handled by PermissionGuard wrapper
 
   const calculateWorkingDays = (startDate: string, endDate: string): number => {
     try {
@@ -171,6 +163,26 @@ export default function LeavePage() {
     }
   };
 
+  const handleDeleteLeave = async (id: string) => {
+    if (!window.confirm("Êtes-vous sûr de vouloir supprimer cette demande de congé ? Cette action est irréversible.")) {
+      return;
+    }
+
+    try {
+      await deleteLeave(id);
+      toast({
+        title: "Demande supprimée",
+        description: "La demande de congé a été supprimée avec succès.",
+      });
+    } catch (err) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer la demande de congé.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const openEditSheet = (leave: Leave) => {
     startTransition(() => {
       setSelectedLeave(leave);
@@ -224,7 +236,8 @@ export default function LeavePage() {
   const approvedCount = useMemo(() => leaves.filter((l) => l.status === "Approuvé").length, [leaves]);
 
   return (
-    <div className="flex flex-col gap-6">
+    <PermissionGuard permission="page:leaves:view">
+      <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight">
           Gestion des Congés
@@ -374,10 +387,20 @@ export default function LeavePage() {
                                   size="icon"
                                   className="h-8 w-8"
                                   onClick={() => openEditSheet(leave)}
-                                  disabled={leave.status !== "En attente"}
+                                  disabled={leave.status !== "En attente" && !canManageLeaves}
                                 >
                                   <Pencil className="h-4 w-4" />
                                   <span className="sr-only">Modifier</span>
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                                  onClick={() => handleDeleteLeave(leave.id)}
+                                  disabled={leave.status !== "En attente" && !canDeleteLeaves}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                  <span className="sr-only">Supprimer</span>
                                 </Button>
                                 {hasPermission('page:leaves:view') && (
                                   <>
@@ -385,7 +408,7 @@ export default function LeavePage() {
                                       variant="outline"
                                       size="icon"
                                       className="h-8 w-8"
-                                      disabled={leave.status !== "En attente"}
+                                      disabled={leave.status !== "En attente" && !canManageLeaves}
                                       onClick={() =>
                                         handleLeaveStatusChange(leave.id, "Approuvé")
                                       }
@@ -397,7 +420,7 @@ export default function LeavePage() {
                                       variant="outline"
                                       size="icon"
                                       className="h-8 w-8"
-                                      disabled={leave.status !== "En attente"}
+                                      disabled={leave.status !== "En attente" && !canManageLeaves}
                                       onClick={() =>
                                         handleLeaveStatusChange(leave.id, "Rejeté")
                                       }
@@ -454,16 +477,28 @@ export default function LeavePage() {
                               size="icon"
                               className="h-8 w-8"
                               onClick={() => openEditSheet(leave)}
+                              disabled={leave.status !== "En attente" && !canManageLeaves}
                             >
                               <Pencil className="h-4 w-4" />
                               <span className="sr-only">Modifier</span>
                             </Button>
-                            {leave.status === 'En attente' && (
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                              onClick={() => handleDeleteLeave(leave.id)}
+                              disabled={leave.status !== "En attente" && !canDeleteLeaves}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                              <span className="sr-only">Supprimer</span>
+                            </Button>
+                            {(leave.status === 'En attente' || canManageLeaves) && (
                               <>
                                 <Button
                                   variant="outline"
                                   size="icon"
                                   className="h-8 w-8"
+                                  disabled={leave.status !== "En attente" && !canManageLeaves}
                                   onClick={() => handleLeaveStatusChange(leave.id, "Approuvé")}
                                 >
                                   <Check className="h-4 w-4" />
@@ -473,6 +508,7 @@ export default function LeavePage() {
                                   variant="outline"
                                   size="icon"
                                   className="h-8 w-8"
+                                  disabled={leave.status !== "En attente" && !canManageLeaves}
                                   onClick={() => handleLeaveStatusChange(leave.id, "Rejeté")}
                                 >
                                   <X className="h-4 w-4" />
@@ -536,6 +572,7 @@ export default function LeavePage() {
         leaveRequest={selectedLeave}
       />
     </div>
+    </PermissionGuard>
   );
 }
 

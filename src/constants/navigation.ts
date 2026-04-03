@@ -58,7 +58,7 @@ export interface MenuItem {
 }
 
 export const ALL_MENU_ITEMS: MenuItem[] = [
-  { href: "/intranet", label: "Accueil", icon: LayoutDashboard, permission: "page:dashboard:view" },
+  { href: "/intranet", label: "Accueil", icon: LayoutDashboard, permission: "page:intranet:view" },
   { href: "/helpdesk", label: "Assistance IT", icon: LifeBuoy, permission: "page:tickets:view" },
   { href: "/management", label: "Gestion", icon: Zap, permission: "page:supplies:view" },
   { href: "/dashboard", label: "Tableau de Bord RH", icon: ShieldCheck, permission: "page:dashboard:view" },
@@ -145,6 +145,7 @@ export const ALL_MENU_ITEMS: MenuItem[] = [
       { href: "/fleet", label: "Flotte de Véhicules", icon: Car, permission: "page:fleet:view" },
       { href: "/fleet/fuel", label: "Cartes de carburant", icon: Fuel, permission: "page:fuel:view" },
       { href: "/supplies", label: "Fournitures", icon: Package, permission: "page:supplies:view" },
+      { href: "/mgp", label: "Gestion des Plaintes", icon: MessageSquare, permission: "page:mgp:view" },
       { href: "/repository", label: "Référentiel", icon: Archive, permission: "page:repository:view" },
     ]
   },
@@ -173,7 +174,7 @@ export const ALL_MENU_ITEMS: MenuItem[] = [
     icon: Shield,
     permission: "page:admin:view",
     subItems: [
-      { href: "/admin/news", label: "Actualités", icon: MessageSquare, permission: "page:admin:view" },
+      { href: "/admin/news", label: "Actualités", icon: MessageSquare, permission: "page:news:view" },
       { href: "/employees?filter=garde-republicaine", label: "Garde Républicaine", icon: ShieldHalf, permission: "page:employees:view" },
       { href: "/employees?filter=gendarme", label: "Gendarmes", icon: ShieldHalf, permission: "page:employees:view" },
       { href: "/it-assets", label: "Actifs TI", icon: Laptop, permission: "page:it-assets:view" },

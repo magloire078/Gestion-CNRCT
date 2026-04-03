@@ -138,17 +138,7 @@ export default function EmployeesPage() {
     setPersonnelTypeFilter(initialFilter || 'all');
   }, [initialFilter]);
 
-  // Secondary permission check
-  useEffect(() => {
-    if (!authLoading && !hasPermission('page:employees:view')) {
-      router.replace('/intranet');
-      toast({
-        variant: "destructive",
-        title: "Accès refusé",
-        description: "Vous n'avez pas les permissions pour accéder à cette page."
-      });
-    }
-  }, [authLoading, hasPermission, router, toast]);
+  // Redirection is now handled by PermissionGuard wrapper
 
   useEffect(() => {
     if (personnelTypeFilter === 'directoire' || personnelTypeFilter === 'all-geo' || personnelTypeFilter === 'regional') {
@@ -160,7 +150,7 @@ export default function EmployeesPage() {
 // Handled by DebouncedInput components directly
 
   useEffect(() => {
-    if (!user || authLoading || !hasPermission('page:employees:view')) return;
+    if (!user || authLoading) return;
 
     const unsubEmployees = subscribeToEmployees((fetchedEmployees) => {
       setEmployees(fetchedEmployees);

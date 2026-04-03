@@ -16,7 +16,7 @@ import { db } from '@/lib/firebase';
 import type { FuelProvider, FuelCard, FuelTransaction } from '@/types/fuel';
 
 const providersCollection = collection(db, 'fuel_providers');
-const cardsCollection = collection(db, 'fuel_cards');
+const cardsCollection = collection(db, 'fuelCards');
 const transactionsCollection = collection(db, 'fuel_transactions');
 
 // --- Providers ---

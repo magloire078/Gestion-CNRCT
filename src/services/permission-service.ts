@@ -162,10 +162,11 @@ export function mapPermissionToCrud(permission: string): { resourceId: string, a
     // Cas particuliers ou anciens
     if (permission === 'feature:payroll:view-sensitive') return { resourceId: 'payroll', action: 'read' };
     
-    const resourceId = parts[1];
-    const actionStr = parts[2] || 'view'; // Par défaut "view" si absent
-    
-    let action: CrudAction = 'read';
+  // Logic: "page:users:read" or "users:read" or "feature:payroll:view"
+  const resourceId = parts.length >= 3 ? parts[1] : parts[0];
+  const actionStr = parts.length >= 3 ? parts[2] : parts[1];
+  
+  let action: CrudAction = 'read';
     
     switch (actionStr) {
         case 'view':

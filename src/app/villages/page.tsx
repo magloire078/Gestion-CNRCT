@@ -82,6 +82,7 @@ export default function VillagesPage() {
     const [selectedCommune, setSelectedCommune] = useState<string>("all");
     const [seatStatus, setSeatStatus] = useState<SeatStatus>("all");
     const [printDate, setPrintDate] = useState("");
+    const [isPrinting, setIsPrinting] = useState(false);
     const [isPending, startTransition] = useTransition();
 
     // Fetch Data with Real-time Sync
@@ -113,6 +114,12 @@ export default function VillagesPage() {
 
     useEffect(() => {
         setPrintDate(format(new Date(), "dd/MM/yyyy"));
+    }, []);
+
+    useEffect(() => {
+        const handleAfterPrint = () => setIsPrinting(false);
+        window.addEventListener('afterprint', handleAfterPrint);
+        return () => window.removeEventListener('afterprint', handleAfterPrint);
     }, []);
 
     // Derived Data: Merge Villages and Chiefs
@@ -210,22 +217,22 @@ export default function VillagesPage() {
     };
 
     const handlePrint = () => {
-        setTimeout(() => {
-            window.print();
-        }, 1500);
+        setIsPrinting(true);
     };
 
     return (
-        <PermissionGuard permission="villages">
+        <PermissionGuard permission="page:villages:view">
             <div className="min-h-screen bg-slate-50/50">
-            {/* Print View Component (Hidden by default, shown during print) */}
-            <div className="hidden print:block">
-                <PrintVillagesList 
-                    villages={filteredVillages} 
-                    organizationSettings={orgSettings} 
-                    subtitle={printSubtitle}
-                />
-            </div>
+            {/* Print View Component (Only mounted during print) */}
+            {isPrinting && (
+                <div className="hidden print:block">
+                    <PrintVillagesList 
+                        villages={filteredVillages} 
+                        organizationSettings={orgSettings} 
+                        subtitle={printSubtitle}
+                    />
+                </div>
+            )}
 
             {/* Villages Header Section */}
             <div className="relative overflow-hidden bg-slate-900 py-12 print:hidden">

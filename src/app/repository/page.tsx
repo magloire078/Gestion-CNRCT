@@ -25,6 +25,7 @@ import { useDropzone } from 'react-dropzone';
 import { format, parseISO } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { PermissionGuard } from "@/components/auth/permission-guard";
 
 
 function formatBytes(bytes: number, decimals = 2) {
@@ -135,7 +136,8 @@ export default function RepositoryPage() {
 
 
   return (
-    <div className="flex flex-col gap-6">
+    <PermissionGuard permission="page:repository:view">
+      <div className="flex flex-col gap-6">
       <h1 className="text-3xl font-bold tracking-tight">Référentiel Documentaire</h1>
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-1">
@@ -257,5 +259,6 @@ export default function RepositoryPage() {
         </div>
       </div>
     </div>
+    </PermissionGuard>
   );
 }

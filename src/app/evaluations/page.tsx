@@ -34,6 +34,7 @@ import { AddEvaluationSheet } from "@/components/evaluations/add-evaluation-shee
 import { useRouter } from "next/navigation";
 import { PaginationControls } from "@/components/common/pagination-controls";
 import { cn } from "@/lib/utils";
+import { PermissionGuard } from "@/components/auth/permission-guard";
 
 type Status = "Draft" | "Pending Manager Review" | "Pending Employee Sign-off" | "Completed";
 
@@ -112,7 +113,8 @@ export default function EvaluationsPage() {
   }, [evaluations]);
 
   return (
-    <div className="flex flex-col gap-8 pb-20">
+    <PermissionGuard permission="page:evaluations:view">
+      <div className="flex flex-col gap-8 pb-20">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -294,6 +296,7 @@ export default function EvaluationsPage() {
         onAddEvaluation={handleAddEvaluation}
       />
     </div>
+    </PermissionGuard>
   );
 }
 

@@ -11,6 +11,7 @@ import {
     Zap
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PermissionGuard } from "@/components/auth/permission-guard";
 import {
   Card,
   CardContent,
@@ -34,6 +35,14 @@ type ActionButton = {
 };
 
 export default function ManagementHub() {
+    return (
+        <PermissionGuard permission="page:supplies:view">
+            <ManagementHubContent />
+        </PermissionGuard>
+    );
+}
+
+function ManagementHubContent() {
     const [stats, setStats] = useState({
         lowStock: 0,
         itRepair: 0,
@@ -45,17 +54,22 @@ export default function ManagementHub() {
     useEffect(() => {
         const loadData = async () => {
             try {
-                const [supplyStats, assetStats, activity] = await Promise.all([
+                // Use allSettled to prevent failures in one service from blocking the whole dashboard
+                const results = await Promise.allSettled([
                     getSupplySummary(),
                     getAssetStatusCounts(),
                     getSupplyRecentActivity(6)
                 ]);
 
+                const supplyStats = results[0].status === 'fulfilled' ? results[0].value : { lowStock: 0 };
+                const assetStats = results[1].status === 'fulfilled' ? results[1].value : {};
+                const activity = results[2].status === 'fulfilled' ? results[2].value : [];
+
                 setStats({
-                    lowStock: supplyStats.lowStock,
-                    itRepair: assetStats['En réparation'] || 0,
+                    lowStock: (supplyStats as any).lowStock || 0,
+                    itRepair: (assetStats as any)['En réparation'] || 0,
                     fleetIssues: 2,
-                    recentActivity: activity
+                    recentActivity: activity as any[]
                 });
             } catch (err) {
                 console.error("Management Hub data load error:", err);

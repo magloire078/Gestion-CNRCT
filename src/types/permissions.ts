@@ -41,6 +41,7 @@ export const RESOURCES_CONFIG: ResourceConfig[] = [
 
     // --- MODULES (ENFANTS) ---
     { id: 'dashboard', label: 'Tableau de bord', icon: 'LayoutDashboard', availableActions: ['read'], parentId: 'group:institution' },
+    { id: 'intranet', label: 'Accueil / Intranet', icon: 'Home', availableActions: ['read'], parentId: 'group:institution' },
     { id: 'organization-chart', label: 'Organigramme', icon: 'Network', availableActions: ['read'], parentId: 'group:institution' },
     
     { id: 'employees', label: 'Employés', icon: 'Users', availableActions: ['read', 'create', 'update', 'delete'], parentId: 'group:personnel' },
@@ -57,6 +58,7 @@ export const RESOURCES_CONFIG: ResourceConfig[] = [
     { id: 'fuel', label: 'Gestion de carburant', icon: 'Fuel', availableActions: ['read', 'create', 'update', 'delete'], parentId: 'group:operations' },
     { id: 'budget', label: 'Budget', icon: 'PieChart', availableActions: ['read', 'create', 'update', 'delete'], parentId: 'group:operations' },
     { id: 'repository', label: 'Référentiel Documents', icon: 'FolderOpen', availableActions: ['read', 'create', 'update', 'delete'], parentId: 'group:operations' },
+    { id: 'mgp', label: 'Gestion des Plaintes', icon: 'MessageCircle', availableActions: ['read', 'create', 'update', 'delete'], parentId: 'group:operations' },
 
     { id: 'chiefs', label: 'Chefs Coutumiers', icon: 'Crown', availableActions: ['read', 'create', 'update', 'delete'], parentId: 'group:localities' },
     { id: 'villages', label: 'Villages', icon: 'MapPinned', availableActions: ['read', 'create', 'update', 'delete'], parentId: 'group:localities' },
@@ -71,6 +73,8 @@ export const RESOURCES_CONFIG: ResourceConfig[] = [
     { id: 'report-it-technical', label: 'Point Technique', icon: 'Wrench', availableActions: ['read'], parentId: 'group:reports' },
 
     { id: 'admin', label: 'Paramètres Accès', icon: 'ShieldCheck', availableActions: ['read', 'update'], parentId: 'group:administration' },
+    { id: 'news', label: 'Actualités', icon: 'Newspaper', availableActions: ['read', 'create', 'update', 'delete'], parentId: 'group:administration' },
+    { id: 'backup', label: 'Sauvegarde & Restauration', icon: 'Database', availableActions: ['read', 'create'], parentId: 'group:administration' },
     { id: 'settings', label: 'Réglages Système', icon: 'Settings', availableActions: ['read', 'update'], parentId: 'group:administration' },
     { id: 'audit-log', label: "Journal d'Audit", icon: 'ScrollText', availableActions: ['read'], parentId: 'group:administration' },
     { id: 'tickets', label: 'Assistant IA & Support', icon: 'Bot', availableActions: ['read'], parentId: 'group:administration' },

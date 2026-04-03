@@ -27,6 +27,7 @@ import type { NewsItem } from "@/types/common";
 import { format, parseISO } from "date-fns";
 import { fr } from "date-fns/locale";
 import { EditNewsSheet } from "@/components/news/edit-news-sheet";
+import { PermissionGuard } from "@/components/auth/permission-guard";
 
 export default function AdminNewsPage() {
     const [news, setNews] = useState<NewsItem[]>([]);
@@ -91,7 +92,8 @@ export default function AdminNewsPage() {
     };
 
     return (
-        <div className="flex flex-col gap-6">
+        <PermissionGuard permission="page:news:view">
+            <div className="flex flex-col gap-6">
             <div className="flex items-center justify-between">
                 <h1 className="text-3xl font-bold tracking-tight">Gestion des Actualités</h1>
                 <Button onClick={handleCreate} className="gap-2">
@@ -193,5 +195,6 @@ export default function AdminNewsPage() {
                 newsItem={selectedNews}
             />
         </div>
+        </PermissionGuard>
     );
 }

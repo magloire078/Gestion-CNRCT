@@ -1,6 +1,6 @@
 
 
-import { collection, getDocs, addDoc, doc, updateDoc, onSnapshot, Unsubscribe, query, orderBy, getDoc, where } from '@/lib/firebase';
+import { collection, getDocs, addDoc, doc, updateDoc, onSnapshot, Unsubscribe, query, orderBy, getDoc, where, deleteDoc } from '@/lib/firebase';
 import type { Leave, User, Employe } from '@/lib/data';
 import { db } from '@/lib/firebase';
 import { leaveSchema } from '@/lib/schemas/leave-schema';
@@ -175,6 +175,18 @@ export async function updateLeave(id: string, dataToUpdate: Partial<Omit<Leave, 
     } catch (error: any) {
         if (error.code === 'permission-denied') {
             throw new FirestorePermissionError(`Vous n'avez pas la permission de modifier cette demande de congé.`, { operation: 'update', path: `leaves/${id}` });
+        }
+        throw error;
+    }
+}
+
+export async function deleteLeave(id: string): Promise<void> {
+    const leaveDocRef = doc(db, 'leaves', id);
+    try {
+        await deleteDoc(leaveDocRef);
+    } catch (error: any) {
+        if (error.code === 'permission-denied') {
+            throw new FirestorePermissionError(`Vous n'avez pas la permission de supprimer cette demande de congé.`, { operation: 'delete', path: `leaves/${id}` });
         }
         throw error;
     }

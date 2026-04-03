@@ -55,6 +55,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { PaginationControls } from "@/components/common/pagination-controls";
 import { ConfirmationDialog } from "@/components/common/confirmation-dialog";
 import { cn } from "@/lib/utils";
+import { PermissionGuard } from "@/components/auth/permission-guard";
 
 export default function ChiefsPage() {
   const [chiefs, setChiefs] = useState<Chief[]>([]);
@@ -179,7 +180,8 @@ export default function ChiefsPage() {
   };
 
   return (
-    <div className="flex flex-col gap-8 pb-20">
+    <PermissionGuard permission="page:chiefs:view">
+      <div className="flex flex-col gap-8 pb-20">
       {/* Dynamic Hero Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
@@ -190,12 +192,12 @@ export default function ChiefsPage() {
           {canExport && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="rounded-xl h-12 shadow-sm border-slate-200 font-bold">
+                <Button variant="outline" className="rounded-lg h-10 shadow-sm border-slate-200 font-bold">
                   <Download className="mr-2 h-4 w-4 text-slate-400" />
                   Exporter
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48 rounded-xl shadow-2xl">
+              <DropdownMenuContent align="end" className="w-48 rounded-lg shadow-2xl">
                 <DropdownMenuLabel className="text-[10px] uppercase font-black text-slate-400">Format d'export</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleExportCsv} className="gap-2 cursor-pointer rounded-lg">
@@ -210,7 +212,7 @@ export default function ChiefsPage() {
               </DropdownMenuContent>
             </DropdownMenu>
           )}
-          <Button onClick={() => setIsSheetOpen(true)} className="bg-slate-900 hover:bg-slate-800 rounded-xl h-12 px-6 font-bold shadow-xl shadow-slate-200">
+          <Button onClick={() => setIsSheetOpen(true)} className="bg-slate-900 hover:bg-slate-800 rounded-lg h-10 px-6 font-bold shadow-xl shadow-slate-200">
             <PlusCircle className="mr-2 h-5 w-5" />
             Ajouter un Chef
           </Button>
@@ -219,10 +221,10 @@ export default function ChiefsPage() {
 
       {/* Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <Card className="border-none shadow-xl shadow-slate-200/50 rounded-3xl overflow-hidden group hover:scale-[1.02] transition-all">
-              <CardContent className="p-6">
+          <Card className="border-none shadow-xl shadow-slate-200/50 rounded-xl overflow-hidden group hover:scale-[1.02] transition-all">
+              <CardContent className="p-4">
                   <div className="flex items-center justify-between mb-4">
-                      <div className="h-12 w-12 rounded-2xl bg-slate-900 flex items-center justify-center">
+                      <div className="h-10 w-10 rounded-lg bg-slate-900 flex items-center justify-center">
                           <Crown className="h-6 w-6 text-white" />
                       </div>
                       <Badge variant="secondary" className="bg-slate-50 text-slate-900 border-none font-bold">CNRCT</Badge>
@@ -232,10 +234,10 @@ export default function ChiefsPage() {
               </CardContent>
           </Card>
 
-          <Card className="border-none shadow-xl shadow-slate-200/50 rounded-3xl overflow-hidden group hover:scale-[1.02] transition-all">
-              <CardContent className="p-6">
+          <Card className="border-none shadow-xl shadow-slate-200/50 rounded-xl overflow-hidden group hover:scale-[1.02] transition-all">
+              <CardContent className="p-4">
                   <div className="flex items-center justify-between mb-4">
-                      <div className="h-12 w-12 rounded-2xl bg-amber-500/10 flex items-center justify-center">
+                      <div className="h-10 w-10 rounded-lg bg-amber-500/10 flex items-center justify-center">
                           <ShieldCheck className="h-6 w-6 text-amber-600" />
                       </div>
                       <Badge variant="secondary" className="bg-amber-50 text-amber-700 border-none font-bold">Souverains</Badge>
@@ -245,10 +247,10 @@ export default function ChiefsPage() {
               </CardContent>
           </Card>
 
-          <Card className="border-none shadow-xl shadow-slate-200/50 rounded-3xl overflow-hidden group hover:scale-[1.02] transition-all">
-              <CardContent className="p-6">
+          <Card className="border-none shadow-xl shadow-slate-200/50 rounded-xl overflow-hidden group hover:scale-[1.02] transition-all">
+              <CardContent className="p-4">
                   <div className="flex items-center justify-between mb-4">
-                      <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center">
+                      <div className="h-10 w-10 rounded-lg bg-emerald-500/10 flex items-center justify-center">
                           <MapPin className="h-6 w-6 text-emerald-600" />
                       </div>
                       <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 border-none font-bold">Rayonnement</Badge>
@@ -258,10 +260,10 @@ export default function ChiefsPage() {
               </CardContent>
           </Card>
 
-          <Card className="border-none shadow-xl shadow-slate-200/50 rounded-3xl overflow-hidden group hover:scale-[1.02] transition-all">
-              <CardContent className="p-6">
+          <Card className="border-none shadow-xl shadow-slate-200/50 rounded-xl overflow-hidden group hover:scale-[1.02] transition-all">
+              <CardContent className="p-4">
                   <div className="flex items-center justify-between mb-4">
-                      <div className="h-12 w-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center">
+                      <div className="h-10 w-10 rounded-lg bg-indigo-500/10 flex items-center justify-center">
                           <UserCheck className="h-6 w-6 text-indigo-600" />
                       </div>
                       <Badge variant="secondary" className="bg-indigo-50 text-indigo-700 border-none font-bold">Actifs</Badge>
@@ -273,11 +275,11 @@ export default function ChiefsPage() {
       </div>
 
 
-      <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden">
-        <CardHeader className="bg-slate-50/50 border-b border-slate-100 p-8">
+      <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-2xl overflow-hidden">
+        <CardHeader className="bg-slate-50/50 border-b border-slate-100 p-5">
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                 <div className="flex items-center gap-4">
-                    <div className="h-12 w-12 rounded-2xl bg-slate-900 flex items-center justify-center shadow-lg">
+                    <div className="h-10 w-10 rounded-lg bg-slate-900 flex items-center justify-center shadow-lg">
                         <UserCheck className="h-6 w-6 text-white" />
                     </div>
                     <div>
@@ -289,10 +291,10 @@ export default function ChiefsPage() {
                 <div className="flex flex-col xl:flex-row items-center gap-4 w-full lg:w-auto">
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full xl:w-auto print:hidden">
                         <Select value={selectedRole} onValueChange={setSelectedRole}>
-                            <SelectTrigger className="w-full sm:w-[150px] h-10 rounded-xl bg-white border-slate-200">
+                            <SelectTrigger className="w-full sm:w-[150px] h-10 rounded-lg bg-white border-slate-200">
                                 <SelectValue placeholder="Tous les Rôles" />
                             </SelectTrigger>
-                            <SelectContent className="rounded-xl">
+                            <SelectContent className="rounded-lg">
                                 <SelectItem value="all">Tous les Rôles</SelectItem>
                                 <SelectItem value="Roi">Rois</SelectItem>
                                 <SelectItem value="Chef de province">Provinces</SelectItem>
@@ -303,10 +305,10 @@ export default function ChiefsPage() {
                         </Select>
 
                         <Select value={selectedRegion} onValueChange={setSelectedRegion}>
-                            <SelectTrigger className="w-full sm:w-[150px] h-10 rounded-xl bg-white border-slate-200">
+                            <SelectTrigger className="w-full sm:w-[150px] h-10 rounded-lg bg-white border-slate-200">
                                 <SelectValue placeholder="Toutes Régions" />
                             </SelectTrigger>
-                            <SelectContent className="rounded-xl">
+                            <SelectContent className="rounded-lg">
                                 <SelectItem value="all">Toutes Régions</SelectItem>
                                 {IVORIAN_REGIONS.map(r => (
                                     <SelectItem key={r} value={r}>{r}</SelectItem>
@@ -315,10 +317,10 @@ export default function ChiefsPage() {
                         </Select>
 
                         <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-                            <SelectTrigger className="w-full sm:w-[130px] h-10 rounded-xl bg-white border-slate-200">
+                            <SelectTrigger className="w-full sm:w-[130px] h-10 rounded-lg bg-white border-slate-200">
                                 <SelectValue placeholder="Tous Statuts" />
                             </SelectTrigger>
-                            <SelectContent className="rounded-xl">
+                            <SelectContent className="rounded-lg">
                                 <SelectItem value="all">Tous Statuts</SelectItem>
                                 <SelectItem value="actif">En Exercice</SelectItem>
                                 <SelectItem value="a_vie">À Vie</SelectItem>
@@ -332,16 +334,16 @@ export default function ChiefsPage() {
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
                             <Input
                                 placeholder="Rechercher..."
-                                className="pl-11 h-10 rounded-xl border-none bg-white shadow-inner focus:ring-slate-900"
+                                className="pl-11 h-10 rounded-lg border-none bg-white shadow-inner focus:ring-slate-900"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
                         </div>
-                        <div className="flex items-center p-1 bg-white rounded-xl shadow-inner border border-slate-100 shrink-0">
+                        <div className="flex items-center p-1 bg-white rounded-lg shadow-inner border border-slate-100 shrink-0">
                         <Button 
                             variant={viewMode === 'grid' ? 'default' : 'ghost'} 
                             size="icon" 
-                            className={cn("h-9 w-9 rounded-xl transition-all", viewMode === 'grid' ? "bg-slate-900 shadow-md" : "text-slate-400")}
+                            className={cn("h-9 w-9 rounded-lg transition-all", viewMode === 'grid' ? "bg-slate-900 shadow-md" : "text-slate-400")}
                             onClick={() => setViewMode('grid')}
                         >
                             <Grid2X2 className="h-4 w-4" />
@@ -349,7 +351,7 @@ export default function ChiefsPage() {
                         <Button 
                             variant={viewMode === 'table' ? 'default' : 'ghost'} 
                             size="icon" 
-                            className={cn("h-9 w-9 rounded-xl transition-all", viewMode === 'table' ? "bg-slate-900 shadow-md" : "text-slate-400")}
+                            className={cn("h-9 w-9 rounded-lg transition-all", viewMode === 'table' ? "bg-slate-900 shadow-md" : "text-slate-400")}
                             onClick={() => setViewMode('table')}
                         >
                             <List className="h-4 w-4" />
@@ -360,19 +362,19 @@ export default function ChiefsPage() {
         </div>
     </CardHeader>
 
-        <CardContent className="p-8">
+        <CardContent className="p-5">
           {error && <div className="p-12 text-center text-red-500 font-black uppercase tracking-widest">{error}</div>}
 
           {viewMode === 'grid' ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                   {loading ? (
                       Array.from({ length: 8 }).map((_, i) => (
-                          <div key={i} className="h-[380px] rounded-[2rem] bg-slate-50 animate-pulse border border-slate-100" />
+                          <div key={i} className="h-[320px] rounded-xl bg-slate-50 animate-pulse border border-slate-100" />
                       ))
                   ) : paginatedChiefs.map((chief) => (
                       <Link key={chief.id} href={`/chiefs/${chief.id}`} className="group">
-                          <Card className="h-full border-none shadow-lg shadow-slate-100 rounded-[2rem] overflow-hidden hover:shadow-2xl hover:shadow-slate-200 transition-all duration-500 flex flex-col relative group">
-                              <div className="h-40 bg-slate-900 relative overflow-hidden flex items-center justify-center">
+                          <Card className="h-full border-none shadow-lg shadow-slate-100 rounded-xl overflow-hidden hover:shadow-2xl hover:shadow-slate-200 transition-all duration-500 flex flex-col relative group">
+                              <div className="h-32 bg-slate-900 relative overflow-hidden flex items-center justify-center">
                                   <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-20" />
                                   <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent" />
                                   <div className="relative z-10 p-4 w-full flex flex-col items-center">
@@ -394,7 +396,7 @@ export default function ChiefsPage() {
                               <CardContent className="px-6 pb-8 flex-grow">
                                   <div className="flex flex-col gap-3 pt-4 border-t border-slate-50">
                                       <div className="flex items-center gap-3 text-slate-500">
-                                          <div className="h-8 w-8 rounded-xl bg-slate-50 flex items-center justify-center shrink-0">
+                                          <div className="h-8 w-8 rounded-lg bg-slate-50 flex items-center justify-center shrink-0">
                                               <MapPin className="h-4 w-4 text-slate-300" />
                                           </div>
                                           <div className="flex flex-col min-w-0">
@@ -403,7 +405,7 @@ export default function ChiefsPage() {
                                           </div>
                                       </div>
                                       <div className="flex items-center gap-3 text-slate-500">
-                                          <div className="h-8 w-8 rounded-xl bg-slate-50 flex items-center justify-center shrink-0">
+                                          <div className="h-8 w-8 rounded-lg bg-slate-50 flex items-center justify-center shrink-0">
                                               <ShieldCheck className="h-4 w-4 text-slate-300" />
                                           </div>
                                           <div className="flex flex-col min-w-0">
@@ -419,7 +421,7 @@ export default function ChiefsPage() {
                   ))}
               </div>
           ) : (
-             <div className="overflow-x-auto rounded-3xl border border-slate-100 shadow-inner">
+             <div className="overflow-x-auto rounded-xl border border-slate-100 shadow-inner">
                 <Table>
                     <TableHeader className="bg-slate-50/50">
                         <TableRow className="border-slate-100 hover:bg-transparent">
@@ -483,7 +485,7 @@ export default function ChiefsPage() {
                                                 <MoreHorizontal className="h-4 w-4" />
                                             </Button>
                                         </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end" className="w-48 rounded-xl shadow-2xl border-slate-100">
+                                        <DropdownMenuContent align="end" className="w-48 rounded-lg shadow-2xl border-slate-100">
                                             <DropdownMenuLabel className="text-[10px] font-black text-slate-400 uppercase px-3 py-2">Commanderies</DropdownMenuLabel>
                                             <DropdownMenuSeparator />
                                             <DropdownMenuItem asChild className="rounded-lg m-1 cursor-pointer">
@@ -511,7 +513,7 @@ export default function ChiefsPage() {
           )}
 
           {!loading && paginatedChiefs.length === 0 && (
-            <div className="py-32 text-center rounded-[3rem] bg-slate-50 border-2 border-dashed border-slate-200">
+            <div className="py-16 text-center rounded-2xl bg-slate-50 border-2 border-dashed border-slate-200">
                 <div className="h-20 w-20 bg-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl">
                     <UserCircle2 className="h-10 w-10 text-slate-200" />
                 </div>
@@ -547,6 +549,7 @@ export default function ChiefsPage() {
         title={`Radiation du Registre ?`}
         description={`Confirmez-vous le retrait définitif de Sa Majesté ${deleteTarget?.name} des archives officielles de la CNRCT ? Cette action est irréversible.`}
       />
-    </div>
+      </div>
+    </PermissionGuard>
   );
 }

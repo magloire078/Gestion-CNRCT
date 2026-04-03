@@ -29,8 +29,17 @@ import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { IVORIAN_REGIONS } from "@/constants/regions";
+import { PermissionGuard } from "@/components/auth/permission-guard";
 
 export default function UsEtCoutumesPage() {
+    return (
+        <PermissionGuard permission="page:us-et-coutumes:view">
+            <UsEtCoutumesContent />
+        </PermissionGuard>
+    );
+}
+
+function UsEtCoutumesContent() {
   const [customs, setCustoms] = useState<Custom[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -100,7 +109,7 @@ export default function UsEtCoutumesPage() {
   }, [customs, searchTerm, regionFilter]);
 
   return (
-    <div className="flex flex-col gap-10 pb-20">
+      <div className="flex flex-col gap-10 pb-20">
       {/* Customs Hero Header */}
       <div className="relative h-[200px] rounded-2xl overflow-hidden bg-slate-900 flex flex-col justify-end p-6 md:p-8 mb-2 group">
          <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1523805081730-61444927f07a?auto=format&fit=crop&q=80')] opacity-20 bg-cover bg-center transition-transform duration-1000 group-hover:scale-105" />

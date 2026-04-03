@@ -28,6 +28,7 @@ export function useDashboardData(user: User | null) {
     const [personalStats, setPersonalStats] = useState({
         leaveBalance: null as number | null,
         latestEvaluation: null as Evaluation | null,
+        latestLeave: null as Leave | null,
         upcomingMissions: 0,
     });
     const [summary, setSummary] = useState<string | null>(null);
@@ -43,6 +44,16 @@ export function useDashboardData(user: User | null) {
     const [selectedAnniversaryMonth, setSelectedAnniversaryMonth] = useState<string>((new Date().getMonth()).toString());
     const [selectedAnniversaryYear, setSelectedAnniversaryYear] = useState<string>(new Date().getFullYear().toString());
     const [selectedRetirementYear, setSelectedRetirementYear] = useState<string>(new Date().getFullYear().toString());
+
+    const hasPermission = (resourceId: string, action: 'read' | 'create' | 'update' | 'delete' = 'read') => {
+        if (!user || !user.roleId) return false;
+        if (user.roleId === 'super-admin' || user.roleId === 'LHcHyfBzile3r0vyFOFb') return true;
+        const rolePerms = DEFAULT_ROLE_PERMISSIONS[user.roleId];
+        if (!rolePerms) return false;
+        const resourcePerm = rolePerms[resourceId];
+        if (!resourcePerm) return false;
+        return resourcePerm[action];
+    };
 
     useEffect(() => {
         setLoading(true);
@@ -68,7 +79,7 @@ export function useDashboardData(user: User | null) {
             }
 
             // --- Global Data (initialized with delays) ---
-            const canReadAllEmployees = user?.roleId && ['administrateur', 'dirigeant-president', 'manager-rh', 'LHcHyfBzile3r0vyFOFb', 'super-admin'].includes(user.roleId);
+            const canReadAllEmployees = hasPermission('employees', 'read');
 
             if (canReadAllEmployees) {
                 unsubscribers.push(subscribeToEmployees(employees => {
@@ -136,7 +147,7 @@ export function useDashboardData(user: User | null) {
             await new Promise(resolve => setTimeout(resolve, 50));
             if (!isMounted) return;
 
-            const canReadConflicts = user?.roleId && ['administrateur', 'LHcHyfBzile3r0vyFOFb', 'cadre-superieur-directeur'].includes(user.roleId);
+            const canReadConflicts = hasPermission('conflicts', 'read');
             if (canReadConflicts) {
                 unsubscribers.push(subscribeToConflicts(conflicts => {
                     if (!isMounted) return;
@@ -145,7 +156,7 @@ export function useDashboardData(user: User | null) {
             }
 
             // --- Leaves Tracking (Global) ---
-            const canReadGlobalLeaves = user?.roleId && ['administrateur', 'dirigeant-president', 'manager-rh', 'LHcHyfBzile3r0vyFOFb', 'super-admin'].includes(user.roleId);
+            const canReadGlobalLeaves = hasPermission('leaves', 'read');
             
             if (canReadGlobalLeaves) {
                 unsubscribers.push(subscribeToLeaves(allLeaves => {
@@ -188,6 +199,9 @@ export function useDashboardData(user: User | null) {
                     unsubscribers.push(subscribeToUserLeaves(user.employeeId, allLeaves => {
                         if (!isMounted) return;
                         // allLeaves are already filtered by employeeId in this new subscription
+                        const latest = allLeaves.length > 0 ? allLeaves.sort((a,b) => parseISO(b.startDate).getTime() - parseISO(a.startDate).getTime())[0] : null;
+                        setPersonalStats(prev => ({ ...prev, latestLeave: latest }));
+                        
                         calculateLeaveBalance(allLeaves).then(balance => {
                             if (isMounted) setPersonalStats(prev => ({ ...prev, leaveBalance: balance }));
                         });

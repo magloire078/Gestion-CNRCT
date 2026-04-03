@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { Employe, Leave, Department, Chief } from '@/lib/data';
+import { Badge } from "@/components/ui/badge";
 import { Skeleton } from '@/components/ui/skeleton';
 import { differenceInYears, parseISO, format } from 'date-fns';
 import { ALL_MENU_ITEMS, MenuItem, SubMenuItem } from "@/constants/navigation";
@@ -258,6 +259,37 @@ function IntranetContent() {
                             </div>
                         </div>
                     </Card>
+
+                    {/* Personal Leave Status - New Dynamic Widget */}
+                    {personalStats.latestLeave && (
+                        <Card className="border-none shadow-xl shadow-emerald-100/50 rounded-2xl bg-white overflow-hidden border border-emerald-50">
+                            <div className="p-5 space-y-4">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <Palmtree className="h-4 w-4 text-emerald-500" />
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-900">Mon Prochain Congé</span>
+                                    </div>
+                                    <Badge 
+                                        variant={personalStats.latestLeave.status === 'Approuvé' ? 'default' : personalStats.latestLeave.status === 'Rejeté' ? 'destructive' : 'secondary'}
+                                        className="text-[9px] font-black px-2 py-0"
+                                    >
+                                        {personalStats.latestLeave.status}
+                                    </Badge>
+                                </div>
+                                <div className="space-y-1">
+                                    <div className="text-xs font-bold text-slate-900">{personalStats.latestLeave.type}</div>
+                                    <div className="text-[10px] text-slate-500 font-medium italic">
+                                        Du {formatDate(personalStats.latestLeave.startDate)} au {formatDate(personalStats.latestLeave.endDate)}
+                                    </div>
+                                    {personalStats.latestLeave.num_decision && (
+                                        <div className="text-[9px] text-emerald-600 font-bold mt-2 bg-emerald-50 w-fit px-1.5 rounded">
+                                            Réf: {personalStats.latestLeave.num_decision}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </Card>
+                    )}
 
                     {/* Celebrations & Attendance - Enlarged Content */}
                     <Card className="border-none shadow-xl shadow-slate-200/50 rounded-2xl overflow-hidden">

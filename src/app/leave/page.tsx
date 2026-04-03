@@ -397,7 +397,7 @@ export default function LeavePage() {
                                   size="icon"
                                   className="h-8 w-8 text-destructive hover:bg-destructive/10"
                                   onClick={() => handleDeleteLeave(leave.id)}
-                                  disabled={leave.status !== "En attente" && !canDeleteLeaves}
+                                  disabled={leave.status !== "En attente"}
                                 >
                                   <Trash2 className="h-4 w-4" />
                                   <span className="sr-only">Supprimer</span>
@@ -408,7 +408,7 @@ export default function LeavePage() {
                                       variant="outline"
                                       size="icon"
                                       className="h-8 w-8"
-                                      disabled={leave.status !== "En attente" && !canManageLeaves}
+                                      disabled={leave.status !== "En attente"}
                                       onClick={() =>
                                         handleLeaveStatusChange(leave.id, "Approuvé")
                                       }
@@ -420,7 +420,7 @@ export default function LeavePage() {
                                       variant="outline"
                                       size="icon"
                                       className="h-8 w-8"
-                                      disabled={leave.status !== "En attente" && !canManageLeaves}
+                                      disabled={leave.status !== "En attente"}
                                       onClick={() =>
                                         handleLeaveStatusChange(leave.id, "Rejeté")
                                       }
@@ -487,7 +487,7 @@ export default function LeavePage() {
                               size="icon"
                               className="h-8 w-8 text-destructive hover:bg-destructive/10"
                               onClick={() => handleDeleteLeave(leave.id)}
-                              disabled={leave.status !== "En attente" && !canDeleteLeaves}
+                              disabled={leave.status !== "En attente"}
                             >
                               <Trash2 className="h-4 w-4" />
                               <span className="sr-only">Supprimer</span>

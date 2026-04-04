@@ -10,15 +10,15 @@ interface PrintDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onPrint: (selectedColumns: ColumnKeys[]) => void;
-  allColumns: Record<ColumnKeys, string>;
+  allColumns: Partial<Record<ColumnKeys, string>>;
 }
 
 export function PrintDialog({ isOpen, onClose, onPrint, allColumns }: PrintDialogProps) {
-  const [selectedColumns, setSelectedColumns] = useState<Record<ColumnKeys, boolean>>(
+  const [selectedColumns, setSelectedColumns] = useState<Partial<Record<ColumnKeys, boolean>>>(
     () => Object.keys(allColumns).reduce((acc, key) => {
       acc[key as ColumnKeys] = true;
       return acc;
-    }, {} as Record<ColumnKeys, boolean>)
+    }, {} as Partial<Record<ColumnKeys, boolean>>)
   );
 
   const [columnOrder, setColumnOrder] = useState<ColumnKeys[]>(
@@ -26,7 +26,7 @@ export function PrintDialog({ isOpen, onClose, onPrint, allColumns }: PrintDialo
   );
 
   const handleCheckboxChange = (key: ColumnKeys) => {
-    setSelectedColumns((prev: Record<ColumnKeys, boolean>) => ({ ...prev, [key]: !prev[key] }));
+    setSelectedColumns((prev: Partial<Record<ColumnKeys, boolean>>) => ({ ...prev, [key]: !prev[key] }));
   };
 
   const moveColumn = (index: number, direction: 'up' | 'down') => {
@@ -43,7 +43,7 @@ export function PrintDialog({ isOpen, onClose, onPrint, allColumns }: PrintDialo
       Object.keys(allColumns).reduce((acc, key) => {
         acc[key as ColumnKeys] = checked;
         return acc;
-      }, {} as Record<ColumnKeys, boolean>)
+      }, {} as Partial<Record<ColumnKeys, boolean>>)
     )
   }
 

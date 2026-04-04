@@ -6,8 +6,9 @@ import {
     MapPin, Globe, History, Sparkles,
     Search, Camera, Landmark
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { heritageCategoryLabels, HeritageCategory, HeritageItem } from "@/types/heritage";

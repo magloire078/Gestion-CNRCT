@@ -880,7 +880,7 @@ export default function EmployeesPage() {
             const isTextColumn = ['name', 'poste', 'department', 'Lieu_Naissance', 'email', 'Region', 'Departement', 'subPrefecture', 'Village', 'Num_Decision'].includes(key);
 
             return {
-              header: (isGeoTab ? chiefColumns : allColumns)[key],
+              header: ((isGeoTab ? chiefColumns : allColumns) as any)[key],
               key,
               align: ['index', 'matricule', 'sexe', 'Date_Naissance', 'dateEmbauche', 'Date_Depart', 'CNPS', 'status', 'age'].includes(key) ? 'center' : 'left',
               className: `${widthMap[key] || ''} ${isTextColumn ? 'whitespace-normal' : 'whitespace-nowrap'} overflow-hidden`,

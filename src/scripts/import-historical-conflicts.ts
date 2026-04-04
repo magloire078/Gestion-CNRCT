@@ -23,7 +23,7 @@ const historicalConflicts: Omit<Conflict, 'id'>[] = [
         description: "Du conflit foncier à la contestation de la chefferie",
         parties: "Chef du village contre équipe chef de terre",
         reportedDate: "2016-09-22",
-        status: "En cours",
+        status: "Ouvert",
         impact: "-Socio-politique : Désorganisation socio-politique du pouvoir traditionnel, menace sur la cohésion sociale - Economique : Ralentissement de l’activité agricole, baisse de la production agricole"
     },
     {
@@ -56,7 +56,7 @@ const historicalConflicts: Omit<Conflict, 'id'>[] = [
         description: "Succession à la chefferie",
         parties: "Chef du village et sa famille",
         reportedDate: "2016-07-18",
-        status: "En cours",
+        status: "Ouvert",
         impact: "-Socio-politique : Désorganisation socio-politique du pouvoir traditionnel, menace sur la cohésion sociale"
     },
     {
@@ -89,7 +89,7 @@ const historicalConflicts: Omit<Conflict, 'id'>[] = [
         description: "Conflit pour désignation chef cantonal",
         parties: "Deux chefs traditionnelles",
         reportedDate: "2016-01-05",
-        status: "En cours",
+        status: "Ouvert",
         impact: "-Socio-politique : Désorganisation socio-politique du pouvoir traditionnel, menace sur la cohésion sociale"
     }
 ];

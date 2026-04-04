@@ -78,7 +78,7 @@ export function AddConflictSheet({
   const [village, setVillage] = useState("");
   const [description, setDescription] = useState("");
   const [conflictType, setConflictType] = useState<string>("Autre");
-  const [status, setStatus] = useState<Conflict['status']>('En cours');
+  const [status, setStatus] = useState<Conflict['status']>('Ouvert');
   const [latitude, setLatitude] = useState<string>('');
   const [longitude, setLongitude] = useState<string>('');
   const [reportedDate, setReportedDate] = useState<string>(new Date().toISOString().split('T')[0]);
@@ -121,7 +121,7 @@ export function AddConflictSheet({
     setVillage("");
     setDescription("");
     setConflictType("Autre");
-    setStatus("En cours");
+    setStatus("Ouvert");
     setLatitude('');
     setLongitude('');
     setMediatorName(undefined);

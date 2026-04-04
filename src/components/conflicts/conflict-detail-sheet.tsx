@@ -53,7 +53,7 @@ export function ConflictDetailSheet({ conflict, open, onOpenChange }: ConflictDe
         setIsSubmitting(true);
         try {
             await addConflictComment(conflict.id, {
-                author: user.displayName || user.email || "Utilisateur",
+                author: user.name || user.email || "Utilisateur",
                 content: newComment,
                 date: new Date().toISOString(),
                 type: 'Note'
@@ -74,7 +74,7 @@ export function ConflictDetailSheet({ conflict, open, onOpenChange }: ConflictDe
             await updateConflictStatus(
                 conflict.id, 
                 status, 
-                user.displayName || user.email || "Utilisateur",
+                user.name || user.email || "Utilisateur",
                 status === 'Résolu' ? "Dossier marqué comme résolu par le médiateur." : undefined
             );
             toast({ title: "Statut mis à jour", description: `Le dossier est désormais: ${status}` });

@@ -13,6 +13,7 @@ import { subscribeToDepartments } from "@/services/department-service";
 import { subscribeToConflicts } from "@/services/conflict-service";
 import type { Conflict } from "@/types/common";
 import { parseISO, differenceInYears, isAfter, isBefore, isWithinInterval, startOfDay } from 'date-fns';
+import { DEFAULT_ROLE_PERMISSIONS } from "@/types/permissions";
 
 export function useDashboardData(user: User | null) {
     const [globalStats, setGlobalStats] = useState({

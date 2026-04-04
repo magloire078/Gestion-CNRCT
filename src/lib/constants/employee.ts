@@ -27,4 +27,4 @@ export const chiefColumns = {
     Num_Decision: "REFERENCE",
 } as const;
 
-export type ColumnKeys = keyof typeof allColumns;
+export type ColumnKeys = keyof typeof allColumns | keyof typeof chiefColumns;

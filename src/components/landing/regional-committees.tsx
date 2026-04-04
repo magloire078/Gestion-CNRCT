@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button";
 import { MapPin, Search, Loader2, Users, ArrowRight, ShieldCheck } from "lucide-react";
 import type { RegionalCommittee } from "@/services/employee-service";
 import { getInitials, cleanRegionName } from "./landing-utils";
+import { cn } from "@/lib/utils";
+import { usePermissions } from "@/hooks/use-permissions";
 
 interface RegionalCommitteesProps {
   loading: boolean;
@@ -29,6 +31,8 @@ export function RegionalCommittees({
   selectedRegionIndex,
   setSelectedRegionIndex
 }: RegionalCommitteesProps) {
+  const { canSeeGovernanceStatus } = usePermissions();
+  const showStatus = canSeeGovernanceStatus();
   
   const filteredCommittees = regionalCommittees.filter(c => 
     c.region.toLowerCase().includes(searchQuery.toLowerCase())
@@ -141,6 +145,16 @@ export function RegionalCommittees({
                               <p className="text-[#006039] font-bold text-sm mt-1 uppercase tracking-wider">
                                 {selected.president?.poste || 'Point Focal Régional'}
                               </p>
+                              {showStatus && (
+                                <Badge 
+                                  className={cn(
+                                    "mt-2 border-none rounded-full px-3 py-0.5 text-[9px] font-black uppercase tracking-widest",
+                                    selected.president?.status === 'Actif' ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"
+                                  )}
+                                >
+                                  {selected.president?.status || 'Actif'}
+                                </Badge>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -194,6 +208,17 @@ export function RegionalCommittees({
                                         <span className="w-1 h-1 rounded-full bg-muted-foreground/30" />
                                         <p className="text-[10px] text-[#006039] font-bold truncate uppercase tracking-tighter">{member.Departement}</p>
                                       </>
+                                    )}
+                                    <span className="w-1 h-1 rounded-full bg-muted-foreground/30" />
+                                    {showStatus && (
+                                      <Badge 
+                                        className={cn(
+                                          "bg-transparent border-none p-0 text-[8px] font-black uppercase tracking-widest leading-none shadow-none hover:bg-transparent",
+                                          member.status === 'Actif' ? "text-emerald-600" : "text-slate-400"
+                                        )}
+                                      >
+                                        {member.status || 'Actif'}
+                                      </Badge>
                                     )}
                                   </div>
                                 </div>

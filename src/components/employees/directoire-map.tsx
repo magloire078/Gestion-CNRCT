@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { cn } from "@/lib/utils";
 import { Loader2, Crown, Navigation } from 'lucide-react';
+import { usePermissions } from "@/hooks/use-permissions";
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 if (typeof window !== 'undefined') {
@@ -90,6 +91,8 @@ export const DirectoireMap: React.FC<DirectoireMapProps> = ({
     title = "Cartographie du Directoire",
     subtitle = "Localisation géographique des membres et autorités"
 }) => {
+    const { canSeeGovernanceStatus } = usePermissions();
+    const showStatus = canSeeGovernanceStatus();
     const mapContainerRef = useRef<HTMLDivElement>(null);
     const mapInstanceRef = useRef<L.Map | null>(null);
     const markerClusterGroupRef = useRef<L.MarkerClusterGroup | null>(null);
@@ -209,7 +212,7 @@ export const DirectoireMap: React.FC<DirectoireMapProps> = ({
                                     ? `<img src="${member.photo}" class="w-full h-full object-cover" />`
                                     : `<div class="w-full h-full flex items-center justify-center bg-slate-100"><span class="text-xs font-black text-slate-400 capitalize">${(member.name || "?")[0]}</span></div>`
                                 }
-                                ${member.isActive 
+                                ${showStatus && member.isActive 
                                     ? `<div class="absolute bottom-1 right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full shadow-lg"></div>` 
                                     : ''
                                 }

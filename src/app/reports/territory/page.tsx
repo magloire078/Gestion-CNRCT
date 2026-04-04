@@ -141,123 +141,129 @@ export default function TerritoryReportPage() {
         <PermissionGuard permission="page:reports:view">
             <div className="flex flex-col gap-8 pb-20">
                 {/* Header Area */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                    <div className="space-y-1">
-                        <div className="flex items-center gap-2 text-amber-600 font-bold uppercase tracking-widest text-[10px]">
-                            <Globe className="h-3 w-3" />
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 print:hidden">
+                    <div className="space-y-4">
+                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-50 border border-amber-100 text-amber-600 font-black uppercase tracking-[0.2em] text-[10px] shadow-sm">
+                            <Globe className="h-3.5 w-3.5" />
                             Diagnostic Territorial
                         </div>
-                        <h1 className="text-4xl font-black tracking-tight text-slate-900">Observatoire <span className="text-amber-600">Territorial</span></h1>
-                        <p className="text-slate-500 font-medium">Analyse et suivi des infrastructures de base en milieu rural.</p>
+                        <h1 className="text-5xl font-black tracking-tighter text-slate-900 md:text-6xl leading-none">
+                            Observatoire <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-600 to-orange-600">Territorial</span>
+                        </h1>
+                        <p className="text-slate-500 font-medium max-w-xl text-lg leading-relaxed">
+                            Analyse structurelle et suivi multi-critères des infrastructures de base en milieu rural pour le pilotage du développement.
+                        </p>
                     </div>
                     <div className="flex items-center gap-3">
-                        <Button variant="outline" onClick={handleExportCsv} className="rounded-xl h-12 border-slate-200">
-                            <Download className="mr-2 h-4 w-4" /> CSV
+                        <Button variant="outline" onClick={handleExportCsv} className="rounded-2xl h-14 px-6 border-slate-200 bg-white/50 backdrop-blur-sm shadow-xl shadow-slate-200/20 font-black text-slate-600 hover:bg-white transition-all text-sm">
+                            <Download className="mr-2 h-4 w-4 text-amber-500" /> 
+                            Exporter CSV
                         </Button>
-                        <Button onClick={() => setIsPrinting(true)} className="rounded-xl h-12 bg-slate-900 border-none shadow-xl shadow-slate-200">
-                            <Printer className="mr-2 h-4 w-4" /> Imprimer le Diagnostic
+                        <Button onClick={() => setIsPrinting(true)} className="bg-slate-900 hover:bg-slate-800 rounded-2xl h-14 px-8 font-black text-white shadow-xl shadow-slate-200 hover:scale-[1.02] transition-all text-sm">
+                            <Printer className="mr-2 h-4 w-4" /> 
+                            Imprimer le Diagnostic
                         </Button>
                     </div>
                 </div>
 
                 {/* KPI Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <Card className="border-none shadow-sm bg-slate-900 text-white overflow-hidden relative group">
-                        <div className="absolute -right-4 -top-4 bg-white/5 p-8 rounded-full group-hover:scale-110 transition-transform">
-                            <MapPin className="h-12 w-12 text-white/10" />
-                        </div>
-                        <CardHeader className="pb-2">
-                            <CardDescription className="text-slate-400 font-bold text-[10px] uppercase tracking-widest">Localités Couvertes</CardDescription>
-                            <CardTitle className="text-3xl font-black">{stats.total}</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-[10px] text-slate-400 uppercase font-bold tracking-tighter">
+                    <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden bg-slate-900 text-white group hover:scale-[1.02] transition-all duration-500">
+                        <CardContent className="p-8">
+                            <div className="flex items-center justify-between mb-6">
+                                <div className="h-14 w-14 rounded-2xl bg-white/10 flex items-center justify-center backdrop-blur-md group-hover:rotate-6 transition-transform">
+                                    <MapPin className="h-7 w-7 text-amber-400" />
+                                </div>
+                                <Badge variant="secondary" className="bg-white/5 text-slate-400 border-none font-black text-[10px] px-3 py-1 uppercase tracking-widest">Localités</Badge>
+                            </div>
+                            <h3 className="text-4xl font-black tracking-tighter leading-none">{stats.total}</h3>
+                            <p className="text-xs text-slate-400 font-black uppercase tracking-[0.1em] mt-2">Localités Couvertes</p>
+                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tighter mt-6">
                                 {new Set(filteredVillages.map(v => v.region)).size} Régions représentées
                             </p>
                         </CardContent>
                     </Card>
 
-                    <Card className="border-none shadow-sm bg-blue-600 text-white overflow-hidden relative group">
-                        <div className="absolute -right-4 -top-4 bg-white/5 p-8 rounded-full group-hover:scale-110 transition-transform">
-                            <Users className="h-12 w-12 text-white/10" />
-                        </div>
-                        <CardHeader className="pb-2">
-                            <CardDescription className="text-blue-100 font-bold text-[10px] uppercase tracking-widest">Population Totale</CardDescription>
-                            <CardTitle className="text-3xl font-black">{stats.population.toLocaleString()}</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-[10px] text-blue-100 uppercase font-bold tracking-tighter">
-                                Estimation basée sur les derniers recensements
-                            </p>
+                    <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden bg-white group hover:scale-[1.02] transition-all duration-500">
+                        <CardContent className="p-8">
+                            <div className="flex items-center justify-between mb-6">
+                                <div className="h-14 w-14 rounded-2xl bg-blue-500 flex items-center justify-center shadow-xl shadow-blue-200 group-hover:rotate-6 transition-transform">
+                                    <Users className="h-7 w-7 text-white" />
+                                </div>
+                                <Badge variant="secondary" className="bg-slate-50 text-slate-400 border-none font-black text-[10px] px-3 py-1 uppercase tracking-widest">Démographie</Badge>
+                            </div>
+                            <h3 className="text-4xl font-black text-slate-900 tracking-tighter leading-none">{stats.population.toLocaleString()}</h3>
+                            <p className="text-xs text-slate-400 font-black uppercase tracking-[0.1em] mt-2">Population Totale</p>
+                            <Progress value={100} className="h-1.5 w-full bg-slate-50 mt-6" />
                         </CardContent>
                     </Card>
 
-                    <Card className="border-none shadow-sm bg-emerald-600 text-white overflow-hidden relative group">
-                        <div className="absolute -right-4 -top-4 bg-white/5 p-8 rounded-full group-hover:scale-110 transition-transform">
-                            <Zap className="h-12 w-12 text-white/10" />
-                        </div>
-                        <CardHeader className="pb-2">
-                            <CardDescription className="text-emerald-100 font-bold text-[10px] uppercase tracking-widest">Électrification</CardDescription>
-                            <CardTitle className="text-3xl font-black">{stats.electricity.toFixed(1)}%</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="flex items-center gap-2">
-                                <Progress value={stats.electricity} className="h-1.5 bg-white/20" indicatorClassName="bg-white" />
+                    <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden bg-white group hover:scale-[1.02] transition-all duration-500">
+                        <CardContent className="p-8">
+                            <div className="flex items-center justify-between mb-6">
+                                <div className="h-14 w-14 rounded-2xl bg-amber-500 flex items-center justify-center shadow-xl shadow-amber-200 group-hover:rotate-6 transition-transform">
+                                    <Zap className="h-7 w-7 text-white" />
+                                </div>
+                                <Badge variant="secondary" className="bg-slate-50 text-slate-400 border-none font-black text-[10px] px-3 py-1 uppercase tracking-widest">Énergie</Badge>
                             </div>
+                            <h3 className="text-4xl font-black text-slate-900 tracking-tighter leading-none">{stats.electricity.toFixed(1)}%</h3>
+                            <p className="text-xs text-slate-400 font-black uppercase tracking-[0.1em] mt-2">Électrification</p>
+                            <Progress value={stats.electricity} className="h-1.5 w-full bg-slate-50 mt-6" />
                         </CardContent>
                     </Card>
 
-                    <Card className="border-none shadow-sm bg-amber-500 text-white overflow-hidden relative group">
-                        <div className="absolute -right-4 -top-4 bg-white/5 p-8 rounded-full group-hover:scale-110 transition-transform">
-                            <Droplets className="h-12 w-12 text-white/10" />
-                        </div>
-                        <CardHeader className="pb-2">
-                            <CardDescription className="text-amber-500 font-bold text-[10px] uppercase tracking-widest text-white">Accès Eau Potable</CardDescription>
-                            <CardTitle className="text-3xl font-black">{stats.water.toFixed(1)}%</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="flex items-center gap-2">
-                                <Progress value={stats.water} className="h-1.5 bg-white/20" indicatorClassName="bg-white" />
+                    <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden bg-white group hover:scale-[1.02] transition-all duration-500">
+                        <CardContent className="p-8">
+                            <div className="flex items-center justify-between mb-6">
+                                <div className="h-14 w-14 rounded-2xl bg-cyan-500 flex items-center justify-center shadow-xl shadow-cyan-200 group-hover:rotate-6 transition-transform">
+                                    <Droplets className="h-7 w-7 text-white" />
+                                </div>
+                                <Badge variant="secondary" className="bg-slate-50 text-slate-400 border-none font-black text-[10px] px-3 py-1 uppercase tracking-widest">Hydraulique</Badge>
                             </div>
+                            <h3 className="text-4xl font-black text-slate-900 tracking-tighter leading-none">{stats.water.toFixed(1)}%</h3>
+                            <p className="text-xs text-slate-400 font-black uppercase tracking-[0.1em] mt-2">Accès Eau Potable</p>
+                            <Progress value={stats.water} className="h-1.5 w-full bg-slate-50 mt-6" />
                         </CardContent>
                     </Card>
                 </div>
 
                 {/* Quick Secondary Stats */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <Card className="border-none shadow-sm bg-white/50 backdrop-blur-sm border border-slate-100">
-                        <CardContent className="pt-6 flex justify-between items-center">
-                            <div className="flex items-center gap-4">
-                                <div className="p-3 bg-rose-50 rounded-2xl">
-                                    <Activity className="h-6 w-6 text-rose-500" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-slate-900">
+                    <Card className="border-none shadow-2xl shadow-slate-200/30 rounded-[2.5rem] bg-white overflow-hidden group">
+                        <CardContent className="p-8 flex justify-between items-center relative">
+                            <div className="absolute top-0 right-0 h-32 w-32 -mr-16 -mt-16 bg-rose-500/5 rounded-full blur-3xl group-hover:bg-rose-500/10 transition-all" />
+                            <div className="flex items-center gap-6 relative z-10">
+                                <div className="h-16 w-16 bg-rose-50 rounded-2xl flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform">
+                                    <Activity className="h-8 w-8 text-rose-500" />
                                 </div>
-                                <div>
+                                <div className="space-y-1">
                                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Couverture Santé</p>
-                                    <p className="text-2xl font-black text-slate-900">{stats.health.toFixed(1)}%</p>
+                                    <p className="text-4xl font-black tracking-tighter">{stats.health.toFixed(1)}%</p>
                                 </div>
                             </div>
-                            <div className="text-right">
-                               <Badge className="bg-rose-50 text-rose-600 border-none px-3 py-1 font-bold">
-                                   {filteredVillages.filter(v => v.hasHealthCenter).length} centres
+                            <div className="text-right relative z-10">
+                               <Badge className="bg-rose-50 text-rose-600 border-none px-4 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest">
+                                   {filteredVillages.filter(v => v.hasHealthCenter).length} centres actifs
                                </Badge>
                             </div>
                         </CardContent>
                     </Card>
 
-                    <Card className="border-none shadow-sm bg-white/50 backdrop-blur-sm border border-slate-100">
-                        <CardContent className="pt-6 flex justify-between items-center">
-                            <div className="flex items-center gap-4">
-                                <div className="p-3 bg-indigo-50 rounded-2xl">
-                                    <School className="h-6 w-6 text-indigo-500" />
+                    <Card className="border-none shadow-2xl shadow-slate-200/30 rounded-[2.5rem] bg-white overflow-hidden group">
+                        <CardContent className="p-8 flex justify-between items-center relative">
+                            <div className="absolute top-0 right-0 h-32 w-32 -mr-16 -mt-16 bg-indigo-500/5 rounded-full blur-3xl group-hover:bg-indigo-500/10 transition-all" />
+                            <div className="flex items-center gap-6 relative z-10">
+                                <div className="h-16 w-16 bg-indigo-50 rounded-2xl flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform">
+                                    <School className="h-8 w-8 text-indigo-500" />
                                 </div>
-                                <div>
+                                <div className="space-y-1">
                                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Éducation Primaire</p>
-                                    <p className="text-2xl font-black text-slate-900">{stats.school.toFixed(1)}%</p>
+                                    <p className="text-4xl font-black tracking-tighter">{stats.school.toFixed(1)}%</p>
                                 </div>
                             </div>
-                            <div className="text-right">
-                               <Badge className="bg-indigo-50 text-indigo-600 border-none px-3 py-1 font-bold">
-                                   {filteredVillages.filter(v => v.hasSchool).length} écoles
+                            <div className="text-right relative z-10">
+                               <Badge className="bg-indigo-50 text-indigo-600 border-none px-4 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest">
+                                   {filteredVillages.filter(v => v.hasSchool).length} établissements
                                </Badge>
                             </div>
                         </CardContent>
@@ -265,30 +271,37 @@ export default function TerritoryReportPage() {
                 </div>
 
                 {/* Filters and Table */}
-                <Card className="border-none shadow-sm overflow-hidden rounded-[2rem] bg-white border border-slate-100">
-                    <CardHeader className="border-b border-slate-50 p-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                        <div>
-                            <CardTitle className="text-xl font-black">État Diagnostic des Localités</CardTitle>
-                            <CardDescription>Détail complet des infrastructures par village répertorié.</CardDescription>
+                <Card className="border-none shadow-2xl shadow-slate-200/40 rounded-[3rem] overflow-hidden bg-white">
+                    <CardHeader className="border-b border-slate-50 p-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
+                        <div className="flex items-center gap-6">
+                            <div className="h-16 w-16 rounded-[1.5rem] bg-slate-900 flex items-center justify-center shadow-xl shadow-slate-900/20">
+                                <Map className="h-8 w-8 text-amber-400" />
+                            </div>
+                            <div>
+                                <CardTitle className="text-3xl font-black text-slate-900 tracking-tight leading-none mb-2">État Diagnostic des Localités</CardTitle>
+                                <CardDescription className="font-bold text-slate-400 uppercase text-[10px] tracking-[0.2em] leading-none">Inventaire exhaustif du patrimoine et des services de base</CardDescription>
+                            </div>
                         </div>
-                        <div className="flex items-center gap-4">
-                            <div className="relative">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                        <div className="flex flex-col sm:flex-row items-center gap-4 print:hidden">
+                            <div className="relative group">
+                                <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-amber-600 transition-colors" />
                                 <Input 
                                     placeholder="Rechercher un village..." 
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="pl-10 h-12 w-64 rounded-xl border-slate-200 bg-slate-50 focus:bg-white transition-all"
+                                    className="pl-14 h-16 w-[320px] rounded-2xl border-slate-100 bg-slate-50/50 shadow-inner focus:bg-white focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-slate-700"
                                 />
                             </div>
-                            <div className="flex items-center bg-slate-100/50 p-1 rounded-xl border border-slate-100">
+                            <div className="flex items-center bg-slate-50 p-1.5 rounded-2xl border border-slate-100 shadow-inner">
                                 {regions.slice(0, 4).map(reg => (
                                     <button
                                         key={reg}
                                         onClick={() => setRegionFilter(reg)}
                                         className={cn(
-                                            "px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all",
-                                            regionFilter === reg ? "bg-white text-slate-900 shadow-sm" : "text-slate-400 hover:text-slate-600"
+                                            "px-5 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all",
+                                            regionFilter === reg 
+                                                ? "bg-white text-slate-900 shadow-md ring-1 ring-slate-100" 
+                                                : "text-slate-400 hover:text-slate-600 hover:bg-slate-100/50"
                                         )}
                                     >
                                         {reg === "all" ? "TOUS" : reg}
@@ -299,58 +312,73 @@ export default function TerritoryReportPage() {
                     </CardHeader>
                     <CardContent className="p-0">
                         <Table>
-                            <TableHeader className="bg-slate-50/50">
+                            <TableHeader className="bg-slate-50/50 backdrop-blur-md sticky top-0 z-10">
                                 <TableRow className="hover:bg-transparent border-slate-100">
-                                    <TableHead className="font-bold text-slate-900 h-14 pl-8 uppercase text-[10px] tracking-widest">Village</TableHead>
-                                    <TableHead className="font-bold text-slate-900 h-14 uppercase text-[10px] tracking-widest">Administration</TableHead>
-                                    <TableHead className="font-bold text-slate-900 h-14 text-center uppercase text-[10px] tracking-widest">Pop.</TableHead>
-                                    <TableHead className="font-bold text-slate-900 h-14 text-center uppercase text-[10px] tracking-widest">Electricité</TableHead>
-                                    <TableHead className="font-bold text-slate-900 h-14 text-center uppercase text-[10px] tracking-widest">Eau</TableHead>
-                                    <TableHead className="font-bold text-slate-900 h-14 text-center uppercase text-[10px] tracking-widest">Santé</TableHead>
-                                    <TableHead className="font-bold text-slate-900 h-14 text-center uppercase text-[10px] tracking-widest pr-8">Ecole</TableHead>
+                                    <TableHead className="py-8 pl-10 text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">Village</TableHead>
+                                    <TableHead className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">Administration</TableHead>
+                                    <TableHead className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] text-center">Pop.</TableHead>
+                                    <TableHead className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] text-center">Electricité</TableHead>
+                                    <TableHead className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] text-center">Eau</TableHead>
+                                    <TableHead className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] text-center">Santé</TableHead>
+                                    <TableHead className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] text-center pr-10">Ecole</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {filteredVillages.map((village) => (
-                                    <TableRow key={village.id} className="group hover:bg-slate-50/50 border-slate-50 transition-colors">
-                                        <TableCell className="pl-8 py-4">
-                                            <div className="flex flex-col">
-                                                <span className="font-black text-slate-900">{village.name}</span>
-                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Code: {village.codeINS || '—'}</span>
+                                    <TableRow key={village.id} className="group hover:bg-slate-50/80 transition-all duration-300 border-b border-slate-50 last:border-0 hover:shadow-inner">
+                                        <TableCell className="pl-10 py-6">
+                                            <div className="flex flex-col gap-1">
+                                                <span className="font-black text-slate-900 text-lg tracking-tight leading-none group-hover:text-amber-600 transition-colors uppercase">{village.name}</span>
+                                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">INS REF: {village.codeINS || 'CONSULTATION'}</span>
                                             </div>
                                         </TableCell>
-                                        <TableCell className="py-4">
-                                            <div className="flex flex-col">
-                                                <span className="text-xs font-bold text-slate-700">{village.region}</span>
-                                                <span className="text-[10px] font-medium text-slate-500">{village.subPrefecture}</span>
+                                        <TableCell>
+                                            <div className="space-y-1.5 font-bold uppercase tracking-tighter">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="h-2 w-2 rounded-full bg-slate-200" />
+                                                    <span className="text-xs text-slate-900">{village.region}</span>
+                                                </div>
+                                                <div className="flex items-center gap-2 pl-4">
+                                                    <span className="text-[10px] text-slate-400">{village.subPrefecture}</span>
+                                                </div>
                                             </div>
                                         </TableCell>
-                                        <TableCell className="text-center py-4">
-                                            <span className="font-mono text-xs text-slate-600">{(village.population || 0).toLocaleString()}</span>
+                                        <TableCell className="text-center">
+                                            <Badge variant="outline" className="rounded-xl border-slate-200 font-black text-slate-900 shadow-sm px-3 tabular-nums">
+                                                {(village.population || 0).toLocaleString()}
+                                            </Badge>
                                         </TableCell>
-                                        <TableCell className="text-center py-4">
-                                            {village.hasElectricity ? 
-                                                <div className="inline-flex p-1.5 bg-emerald-50 rounded-full"><Zap className="h-3.5 w-3.5 text-emerald-600 fill-emerald-600" /></div> :
-                                                <div className="inline-flex p-1.5 bg-slate-50 rounded-full"><Zap className="h-3.5 w-3.5 text-slate-300" /></div>
-                                            }
+                                        <TableCell className="text-center">
+                                            <div className={cn(
+                                                "inline-flex h-10 w-10 items-center justify-center rounded-xl transition-all shadow-sm group-hover:scale-110",
+                                                village.hasElectricity ? "bg-amber-500 text-white shadow-amber-200 rotate-6" : "bg-slate-50 text-slate-200 border border-slate-100"
+                                            )}>
+                                                <Zap className={cn("h-5 w-5", village.hasElectricity ? "fill-white" : "")} />
+                                            </div>
                                         </TableCell>
-                                        <TableCell className="text-center py-4">
-                                            {village.hasWater ? 
-                                                <div className="inline-flex p-1.5 bg-blue-50 rounded-full"><Droplets className="h-3.5 w-3.5 text-blue-600" /></div> :
-                                                <div className="inline-flex p-1.5 bg-slate-50 rounded-full"><Droplets className="h-3.5 w-3.5 text-slate-300" /></div>
-                                            }
+                                        <TableCell className="text-center">
+                                            <div className={cn(
+                                                "inline-flex h-10 w-10 items-center justify-center rounded-xl transition-all shadow-sm group-hover:scale-110",
+                                                village.hasWater ? "bg-cyan-500 text-white shadow-cyan-200 -rotate-6" : "bg-slate-50 text-slate-200 border border-slate-100"
+                                            )}>
+                                                <Droplets className="h-5 w-5" />
+                                            </div>
                                         </TableCell>
-                                        <TableCell className="text-center py-4">
-                                            {village.hasHealthCenter ? 
-                                                <div className="inline-flex p-1.5 bg-rose-50 rounded-full"><Activity className="h-3.5 w-3.5 text-rose-600" /></div> :
-                                                <div className="inline-flex p-1.5 bg-slate-50 rounded-full"><Activity className="h-3.5 w-3.5 text-slate-300" /></div>
-                                            }
+                                        <TableCell className="text-center">
+                                            <div className={cn(
+                                                "inline-flex h-10 w-10 items-center justify-center rounded-xl transition-all shadow-sm group-hover:scale-110",
+                                                village.hasHealthCenter ? "bg-rose-500 text-white shadow-rose-200 rotate-12" : "bg-slate-50 text-slate-200 border border-slate-100"
+                                            )}>
+                                                <Activity className="h-5 w-5" />
+                                            </div>
                                         </TableCell>
-                                        <TableCell className="text-center py-4 pr-8">
-                                            {village.hasSchool ? 
-                                                <div className="inline-flex p-1.5 bg-indigo-50 rounded-full"><School className="h-3.5 w-3.5 text-indigo-600" /></div> :
-                                                <div className="inline-flex p-1.5 bg-slate-50 rounded-full"><School className="h-3.5 w-3.5 text-slate-300" /></div>
-                                            }
+                                        <TableCell className="text-center pr-10">
+                                            <div className={cn(
+                                                "inline-flex h-10 w-10 items-center justify-center rounded-xl transition-all shadow-sm group-hover:scale-110",
+                                                village.hasSchool ? "bg-indigo-500 text-white shadow-indigo-200 -rotate-12" : "bg-slate-50 text-slate-200 border border-slate-100"
+                                            )}>
+                                                <School className="h-5 w-5" />
+                                            </div>
                                         </TableCell>
                                     </TableRow>
                                 ))}

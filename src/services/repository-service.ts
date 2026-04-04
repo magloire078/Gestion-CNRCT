@@ -10,9 +10,14 @@ const documentsCollection = collection(db, 'repository');
  * Uploads a document to Firebase Storage and creates a corresponding entry in Firestore.
  * @param file The file to upload.
  * @param uploaderId The ID of the user uploading the file.
+ * @param metadata Optional metadata for categorization and localization.
  * @returns A promise that resolves with the new Document object.
  */
-export async function uploadDocument(file: File, uploaderId: string): Promise<Document> {
+export async function uploadDocument(
+    file: File, 
+    uploaderId: string, 
+    metadata?: { category?: Document['category'], region?: string }
+): Promise<Document> {
     // Upload file to Cloudinary
     const downloadURL = await uploadToCloudinary(file);
 
@@ -23,6 +28,8 @@ export async function uploadDocument(file: File, uploaderId: string): Promise<Do
         fileType: file.type,
         uploadDate: new Date().toISOString(),
         storageUrl: downloadURL,
+        category: metadata?.category,
+        region: metadata?.region,
     };
 
     const docRef = await addDoc(documentsCollection, docData);
@@ -58,4 +65,25 @@ export function subscribeToDocuments(
     );
 
     return unsubscribe;
+}
+
+/**
+ * Deletes a document from the repository.
+ * @param id The ID of the document to delete.
+ */
+export async function deleteDocument(id: string): Promise<void> {
+    const { doc, deleteDoc } = await import('@/lib/firebase');
+    const docRef = doc(db, 'repository', id);
+    await deleteDoc(docRef);
+}
+
+/**
+ * Updates a document's metadata in the repository.
+ * @param id The ID of the document to update.
+ * @param data The partial document data to update.
+ */
+export async function updateDocument(id: string, data: Partial<Document>): Promise<void> {
+    const { doc, updateDoc } = await import('@/lib/firebase');
+    const docRef = doc(db, 'repository', id);
+    await updateDoc(docRef, data);
 }

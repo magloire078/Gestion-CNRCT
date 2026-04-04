@@ -17,6 +17,13 @@ export type HeritageItem = {
     historicalContext?: string;
     significance?: string;
     tags?: string[];
+    galleryUrls?: string[];
+    audioUrl?: string;
+    symbolism?: string;
+    usage?: string;
+    fabrication?: string;
+    dating?: string;
+    guardians?: string[];
     createdAt?: string;
     updatedAt?: string;
 };

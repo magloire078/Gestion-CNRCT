@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Sparkles } from "lucide-react";
 import {
     Sheet,
     SheetContent,
@@ -185,8 +186,53 @@ export function AddHeritageItemSheet({ isOpen, onCloseAction, onAddItemAction, c
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="imageUrl">URL de l'image (Optionnel)</Label>
-                                    <Input id="imageUrl" name="imageUrl" value={formData.imageUrl || ''} onChange={handleInputChange} />
+                                    <Label htmlFor="imageUrl">URL de l'image principale</Label>
+                                    <Input id="imageUrl" name="imageUrl" value={formData.imageUrl || ''} onChange={handleInputChange} placeholder="https://..." />
+                                </div>
+
+                                <div className="pt-6 border-t border-slate-100 space-y-6">
+                                    <div className="flex items-center gap-2">
+                                        <div className="h-8 w-8 rounded-lg bg-amber-500/10 flex items-center justify-center">
+                                            <Sparkles className="h-4 w-4 text-amber-600" />
+                                        </div>
+                                        <Label className="text-base font-black uppercase tracking-tight">Détails Anthropologiques</Label>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="dating">Datation / Époque</Label>
+                                            <Input id="dating" name="dating" value={formData.dating || ''} onChange={handleInputChange} placeholder="Ex: XIXème siècle" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="audioUrl">URL du récit audio (MP3)</Label>
+                                            <Input id="audioUrl" name="audioUrl" value={formData.audioUrl || ''} onChange={handleInputChange} placeholder="URL vers enregistrement oral" />
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label htmlFor="symbolism">Symbolisme & Signification</Label>
+                                        <Textarea id="symbolism" name="symbolism" value={formData.symbolism || ''} onChange={handleInputChange} rows={3} placeholder="Signification profonde de l'objet ou de la pratique..." />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label htmlFor="usage">Usage & Fonction</Label>
+                                        <Textarea id="usage" name="usage" value={formData.usage || ''} onChange={handleInputChange} rows={3} placeholder="Comment et quand cet élément est-il utilisé ?" />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label htmlFor="fabrication">Processus de Fabrication / Transmission</Label>
+                                        <Textarea id="fabrication" name="fabrication" value={formData.fabrication || ''} onChange={handleInputChange} rows={3} placeholder="Techniques artisanales ou mode de transmission..." />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label htmlFor="guardians">Détenteurs du savoir (Noms séparés par des virgules)</Label>
+                                        <Input id="guardians" name="guardians" value={formData.guardians?.join(', ') || ''} onChange={(e) => setFormData(prev => ({ ...prev, guardians: e.target.value.split(',').map(s => s.trim()).filter(Boolean) }))} placeholder="Chefs de terre, Maîtres initiés..." />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label htmlFor="galleryUrls">Galerie (URLs d'images séparées par des virgules)</Label>
+                                        <Textarea id="galleryUrls" name="galleryUrls" value={formData.galleryUrls?.join(', ') || ''} onChange={(e) => setFormData(prev => ({ ...prev, galleryUrls: e.target.value.split(',').map(s => s.trim()).filter(Boolean) }))} placeholder="https://url1.jpg, https://url2.jpg..." />
+                                    </div>
                                 </div>
 
                                 {error && <p className="text-sm text-destructive text-center">{error}</p>}

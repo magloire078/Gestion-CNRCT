@@ -179,6 +179,27 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, ResourcePermissions> = {
         dashboard: ALL_READ, fuel: ALL_CRUD, repository: READ_CREATE,
         tickets: ALL_READ, assistant: ALL_READ,
     }),
+    'directoire-central': buildDefault({
+        dashboard: ALL_READ,
+        intranet: ALL_READ,
+        'organization-chart': ALL_READ,
+        chiefs: ALL_READ,
+        villages: ALL_READ,
+        mapping: ALL_READ,
+        heritage: ALL_READ,
+        'us-et-coutumes': ALL_READ,
+        'report-territory': ALL_READ,
+        repository: ALL_READ,
+        news: ALL_READ,
+    }),
+    'comite-regional': buildDefault({
+        intranet: ALL_READ,
+        chiefs: ALL_READ,
+        villages: ALL_READ,
+        mapping: ALL_READ,
+        conflicts: ALL_READ,
+        repository: ALL_READ,
+    }),
 };
 
 export const ENTERPRISE_ROLES: RoleConfig[] = [
@@ -194,6 +215,8 @@ export const ENTERPRISE_ROLES: RoleConfig[] = [
     { id: 'gestionnaire-stock', label: 'Gestionnaire de Stock et fournitures', isSystem: false, defaultPermissions: DEFAULT_ROLE_PERMISSIONS['gestionnaire-stock'] },
     { id: 'gestionnaire-carburant', label: 'Gestionnaire de carburant', isSystem: false, defaultPermissions: DEFAULT_ROLE_PERMISSIONS['gestionnaire-carburant'] },
     { id: 'auditeur', label: 'Auditeur / CAC', isSystem: false, defaultPermissions: DEFAULT_ROLE_PERMISSIONS['auditeur'] },
+    { id: 'directoire-central', label: 'Membre du Directoire Central', isSystem: false, defaultPermissions: DEFAULT_ROLE_PERMISSIONS['directoire-central'] },
+    { id: 'comite-regional', label: 'Membre de Comité Régional', isSystem: false, defaultPermissions: DEFAULT_ROLE_PERMISSIONS['comite-regional'] },
     { id: 'employe', label: 'Employé Opérationnel', isSystem: false, defaultPermissions: DEFAULT_ROLE_PERMISSIONS['employe'] },
     { id: 'stagiaire', label: 'Stagiaire / Apprenti', isSystem: false, defaultPermissions: DEFAULT_ROLE_PERMISSIONS['stagiaire'] },
 ];

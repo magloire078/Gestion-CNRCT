@@ -5,6 +5,9 @@ import Image from "next/image";
 import { Loader2 } from "lucide-react";
 import type { Employe } from "@/lib/data";
 import { getInitials, cleanRegionName } from "./landing-utils";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+import { usePermissions } from "@/hooks/use-permissions";
 
 interface BureauDirectoireProps {
   loading: boolean;
@@ -12,6 +15,8 @@ interface BureauDirectoireProps {
 }
 
 export function BureauDirectoire({ loading, members }: BureauDirectoireProps) {
+  const { canSeeGovernanceStatus } = usePermissions();
+  const showStatus = canSeeGovernanceStatus();
   const president = members.find(m => m.poste?.toLowerCase().includes('president') && !m.poste?.toLowerCase().includes('vice'));
   const vicePresidents = members.filter(m => m.poste?.toLowerCase().includes('vice-president'));
 
@@ -65,9 +70,16 @@ export function BureauDirectoire({ loading, members }: BureauDirectoireProps) {
                         </>
                       )}
                     </div>
-                    <p className="text-[10px] uppercase tracking-widest font-bold text-[#D4AF37] text-center leading-tight mb-2">Président</p>
-                    <h4 className="font-bold text-2xl text-[#1a1a1a] text-center mb-1">{president.name}</h4>
-                    {president.Region && <p className="text-xs font-medium text-[#006039]">{cleanRegionName(president.Region)}</p>}
+                    {showStatus && (
+                      <Badge 
+                        className={cn(
+                          "mt-2 border-none rounded-full px-3 py-0.5 text-[9px] font-black uppercase tracking-widest",
+                          president.status === 'Actif' ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"
+                        )}
+                      >
+                        {president.status || 'Actif'}
+                      </Badge>
+                    )}
                   </div>
                 </div>
               </div>
@@ -93,6 +105,16 @@ export function BureauDirectoire({ loading, members }: BureauDirectoireProps) {
                       <p className="text-[10px] uppercase tracking-widest font-bold text-[#D4AF37] text-center leading-tight mb-2">Vice-Président</p>
                       <h4 className="font-semibold text-base text-[#1a1a1a] text-center leading-tight mb-1">{vp.name}</h4>
                       {vp.Region && <p className="text-[10px] text-[#006039] font-bold uppercase tracking-tighter">{cleanRegionName(vp.Region)}</p>}
+                      {showStatus && (
+                        <Badge 
+                          className={cn(
+                            "mt-2 border-none rounded-full px-2 py-0 text-[8px] font-black uppercase tracking-widest",
+                            vp.status === 'Actif' ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"
+                          )}
+                        >
+                          {vp.status || 'Actif'}
+                        </Badge>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -120,6 +142,16 @@ export function BureauDirectoire({ loading, members }: BureauDirectoireProps) {
                         <p className="text-[9px] uppercase tracking-widest font-bold text-[#D4AF37] text-center leading-tight mb-1">{member.poste || 'Membre du Bureau'}</p>
                         <h4 className="font-bold text-xs text-[#1a1a1a] text-center">{member.name}</h4>
                         {member.Region && <p className="text-[8px] text-[#006039] font-bold uppercase mt-1">{cleanRegionName(member.Region)}</p>}
+                        {showStatus && (
+                          <Badge 
+                            className={cn(
+                              "mt-2 border-none rounded-full px-2 py-0 text-[7px] font-black uppercase tracking-widest",
+                              member.status === 'Actif' ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"
+                            )}
+                          >
+                            {member.status || 'Actif'}
+                          </Badge>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -148,6 +180,16 @@ export function BureauDirectoire({ loading, members }: BureauDirectoireProps) {
                         <p className="text-[10px] uppercase tracking-widest font-bold text-[#006039] text-center leading-tight mb-1">{member.poste}</p>
                         <h4 className="font-bold text-lg text-[#1a1a1a] text-center">{member.name}</h4>
                         {member.Region && <p className="text-[10px] text-[#006039] font-bold uppercase mt-1">{cleanRegionName(member.Region)}</p>}
+                        {showStatus && (
+                          <Badge 
+                            className={cn(
+                              "mt-2 border-none rounded-full px-2 py-0 text-[8px] font-black uppercase tracking-widest",
+                              member.status === 'Actif' ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"
+                            )}
+                          >
+                            {member.status || 'Actif'}
+                          </Badge>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -176,6 +218,16 @@ export function BureauDirectoire({ loading, members }: BureauDirectoireProps) {
                         <p className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground text-center leading-tight mb-1">{member.poste}</p>
                         <h4 className="font-bold text-sm text-[#1a1a1a] text-center">{member.name}</h4>
                         {member.Region && <p className="text-[9px] text-[#006039] font-bold uppercase mt-1">{cleanRegionName(member.Region)}</p>}
+                        {showStatus && (
+                          <Badge 
+                            className={cn(
+                              "mt-2 border-none rounded-full px-2 py-0 text-[7px] font-black uppercase tracking-widest",
+                              member.status === 'Actif' ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"
+                            )}
+                          >
+                            {member.status || 'Actif'}
+                          </Badge>
+                        )}
                       </div>
                     </div>
                   ))}

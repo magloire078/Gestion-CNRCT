@@ -15,4 +15,16 @@ export const allColumns = {
     age: "Âge",
 } as const;
 
+export const chiefColumns = {
+    index: "N°",
+    matricule: "N° MAT",
+    name: "NOM ET PRENOMS",
+    poste: "TITRE / FONCTION",
+    Region: "REGION",
+    Departement: "DEPARTEMENT",
+    subPrefecture: "SOUS-PREFECTURE",
+    Village: "VILLAGE",
+    Num_Decision: "REFERENCE",
+} as const;
+
 export type ColumnKeys = keyof typeof allColumns;

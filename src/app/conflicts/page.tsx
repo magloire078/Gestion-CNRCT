@@ -41,7 +41,7 @@ import {
 import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
-import type { Conflict, Chief, ConflictType, ConflictTypeData } from "@/lib/data";
+import type { Conflict, Chief, ConflictType, ConflictTypeData, ConflictStatus } from "@/lib/data";
 import { conflictTypeVariantMap, conflictTypes, conflictStatuses } from "@/lib/data";
 import { subscribeToConflictTypes, addConflictType, deleteConflictType } from "@/services/conflict-type-service";
 import { AddConflictSheet } from "@/components/conflicts/add-conflict-sheet";
@@ -61,6 +61,9 @@ import { PrintConflictsList, PrintConflictDetail } from "@/components/conflicts/
 import { cn } from "@/lib/utils";
 import dynamic from 'next/dynamic';
 import { PermissionGuard } from "@/components/auth/permission-guard";
+import { getEmployee } from "@/services/employee-service";
+import { ConflictStatsCards } from "@/components/conflicts/conflict-stats-cards";
+import { ConflictDetailSheet } from "@/components/conflicts/conflict-detail-sheet";
 
 const GISMap = dynamic(() => import('@/components/common/gis-map-v3').then(m => m.GISMap), {
     ssr: false,
@@ -68,12 +71,13 @@ const GISMap = dynamic(() => import('@/components/common/gis-map-v3').then(m => 
 });
 
 
-type Status = "En cours" | "Résolu" | "En médiation";
+type Status = ConflictStatus;
 
-const statusVariantMap: Record<Status, "destructive" | "default" | "secondary"> = {
-    "En cours": "destructive",
-    "Résolu": "default",
-    "En médiation": "secondary",
+const statusVariantMap: Record<Status, string> = {
+    "Ouvert": "bg-slate-100 text-slate-700 hover:bg-slate-100",
+    "En médiation": "bg-blue-100 text-blue-700 hover:bg-blue-100",
+    "Résolu": "bg-emerald-100 text-emerald-700 hover:bg-emerald-100",
+    "Classé sans suite": "bg-red-100 text-red-700 hover:bg-red-100",
 };
 
 export default function ConflictsPage() {
@@ -109,6 +113,10 @@ export default function ConflictsPage() {
     // Printing States
     const [isPrintingList, setIsPrintingList] = useState(false);
     const [printingConflict, setPrintingConflict] = useState<Conflict | null>(null);
+
+    // Details State
+    const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+    const [selectedConflictForDetails, setSelectedConflictForDetails] = useState<Conflict | null>(null);
 
     const canDelete = hasPermission('page:admin:view') || hasPermission('feature:conflicts:delete');
     const canEdit = hasPermission('page:conflicts:view') || hasPermission('feature:conflicts:edit');
@@ -148,6 +156,15 @@ export default function ConflictsPage() {
             (types) => setDynamicConflictTypes(types),
             (err) => console.error("Error loading conflict types:", err)
         );
+
+        // Regional Auto-Filter for COMITE REGIONAL
+        if (user?.employeeId && user?.role?.name?.toLowerCase().includes('régional')) {
+            getEmployee(user.employeeId).then(emp => {
+                if (emp?.Region) {
+                    setSelectedRegion(emp.Region);
+                }
+            });
+        }
 
         return () => {
             if (unsubscribe) unsubscribe();
@@ -254,6 +271,11 @@ export default function ConflictsPage() {
         }, 3000);
     };
 
+    const handleViewDetails = (conflict: Conflict) => {
+        setSelectedConflictForDetails(conflict);
+        setIsDetailsOpen(true);
+    };
+
     const filteredConflicts = useMemo(() => {
         if (!conflicts) return [];
         const filtered = conflicts.filter(conflict => {
@@ -339,6 +361,7 @@ export default function ConflictsPage() {
                 </div>
             </div>
 
+            {!loading && conflicts && <ConflictStatsCards conflicts={conflicts} />}
 
             <Tabs defaultValue="list">
                 <TabsList className="grid w-full grid-cols-2 sm:w-[400px] mb-6">
@@ -452,19 +475,24 @@ export default function ConflictsPage() {
                                                         ) : '-'}
                                                     </TableCell>
                                                     <TableCell>
-                                                        <Badge variant={statusVariantMap[conflict.status] || 'default'}>{conflict.status}</Badge>
+                                                        <Badge variant="outline" className={cn("text-[10px] uppercase font-bold border-none", statusVariantMap[conflict.status || 'Ouvert'])}>
+                                                            {conflict.status || 'Ouvert'}
+                                                        </Badge>
                                                     </TableCell>
                                                     <TableCell>
                                                         <DropdownMenu>
                                                             <DropdownMenuTrigger asChild>
                                                                 <Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button>
                                                             </DropdownMenuTrigger>
-                                                            <DropdownMenuContent align="end">
-                                                                {canEdit && (
-                                                                    <DropdownMenuItem onSelect={() => handleEditClick(conflict)}>
-                                                                        <Pencil className="mr-2 h-4 w-4" /> Modifier
-                                                                    </DropdownMenuItem>
-                                                                )}
+                                                                    <DropdownMenuContent align="end">
+                                                                        <DropdownMenuItem onSelect={() => handleViewDetails(conflict)}>
+                                                                            <Eye className="mr-2 h-4 w-4" /> Détails & Médiation
+                                                                        </DropdownMenuItem>
+                                                                        {canEdit && (
+                                                                            <DropdownMenuItem onSelect={() => handleEditClick(conflict)}>
+                                                                                <Pencil className="mr-2 h-4 w-4" /> Modifier
+                                                                            </DropdownMenuItem>
+                                                                        )}
                                                                  <DropdownMenuItem onSelect={() => handlePrintIndividual(conflict)}>
                                                                      <Printer className="mr-2 h-4 w-4" /> Imprimer Fiche du Conflit
                                                                  </DropdownMenuItem>
@@ -513,7 +541,9 @@ export default function ConflictsPage() {
                                             </CardHeader>
                                             <CardContent className="p-4 pt-0 space-y-3">
                                                 <div className="flex flex-wrap gap-2">
-                                                    <Badge variant={statusVariantMap[conflict.status] || 'default'}>{conflict.status}</Badge>
+                                                    <Badge variant="outline" className={cn("text-[10px] uppercase font-bold border-none", statusVariantMap[conflict.status || 'Ouvert'])}>
+                                                        {conflict.status || 'Ouvert'}
+                                                    </Badge>
                                                 </div>
                                                 
                                                 <div className="space-y-1">
@@ -619,6 +649,13 @@ export default function ConflictsPage() {
                     </Card>
                 </TabsContent>
             </Tabs>
+
+            <ConflictDetailSheet 
+                open={isDetailsOpen}
+                conflict={selectedConflictForDetails}
+                onOpenChange={setIsDetailsOpen}
+            />
+
             <AddConflictSheet
                 isOpen={isAddSheetOpen}
                 onCloseAction={() => setIsAddSheetOpen(false)}

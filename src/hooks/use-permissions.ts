@@ -11,6 +11,7 @@ interface UsePermissionsReturn {
     permissions: ResourcePermissions;
     loading: boolean;
     can: (resource: string, action: CrudAction) => boolean;
+    canSeeGovernanceStatus: () => boolean;
     refresh: () => void;
 }
 
@@ -53,5 +54,20 @@ export function usePermissions(): UsePermissionsReturn {
         return perm[action] === true;
     }, [permissions, user?.roleId]);
 
-    return { permissions, loading, can, refresh: loadPermissions };
+    const canSeeGovernanceStatus = useCallback((): boolean => {
+        if (!user?.roleId) return false;
+        const allowedRoles = [
+            'LHcHyfBzile3r0vyFOFb',
+            'super-admin',
+            'administrateur',
+            'dirigeant-president',
+            'manager-rh',
+            'directoire-central',
+            'comite-regional',
+            'auditeur'
+        ];
+        return allowedRoles.includes(user.roleId);
+    }, [user?.roleId]);
+
+    return { permissions, loading, can, canSeeGovernanceStatus, refresh: loadPermissions };
 }

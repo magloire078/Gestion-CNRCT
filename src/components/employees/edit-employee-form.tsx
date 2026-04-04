@@ -300,6 +300,14 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                       </Select>
                     </div>
                     <div className="space-y-2">
+                      <Label htmlFor="Departement">Département</Label>
+                      <Input id="Departement" value={formData.Departement || ''} onChange={handleInputChange} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="subPrefecture">Sous-Préfecture</Label>
+                      <Input id="subPrefecture" value={formData.subPrefecture || ''} onChange={handleInputChange} />
+                    </div>
+                    <div className="space-y-2">
                       <Label htmlFor="Village">Village</Label>
                       <Input id="Village" value={formData.Village || ''} onChange={handleInputChange} />
                     </div>
@@ -326,6 +334,10 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                     <div className="space-y-2">
                       <Label htmlFor="Date_Depart">Date de départ / Retraite</Label>
                       <Input id="Date_Depart" type="date" value={formData.Date_Depart || ''} onChange={handleInputChange} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="Num_Decision">Référence (Décision)</Label>
+                      <Input id="Num_Decision" value={formData.Num_Decision || ''} onChange={handleInputChange} />
                     </div>
                   </CardContent>
                 </Card>

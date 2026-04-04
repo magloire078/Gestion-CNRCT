@@ -329,7 +329,12 @@ function IntranetContent() {
                                                             <AvatarFallback className="bg-emerald-100 text-emerald-600 text-sm font-black">{emp.lastName?.charAt(0)}</AvatarFallback>
                                                         </Avatar>
                                                         <div className="flex flex-col overflow-hidden">
-                                                            <span className="text-sm font-black text-slate-900 truncate leading-tight">{emp.name}</span>
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-sm font-black text-slate-900 truncate leading-tight">{emp.name}</span>
+                                                                {emp.Region && (
+                                                                    <span className="text-[9px] font-bold text-slate-400 border border-slate-200 px-1 rounded uppercase tracking-tighter shrink-0">{emp.Region}</span>
+                                                                )}
+                                                            </div>
                                                             <div className="flex items-center gap-1.5 flex-wrap">
                                                                 <span className="text-[9px] text-emerald-600 font-bold uppercase bg-emerald-50 px-1 rounded tracking-tighter">{emp.leaveType}</span>
                                                                 <span className="text-[9px] text-slate-400 font-medium">Retour : {formatDate(emp.returnDate)}</span>

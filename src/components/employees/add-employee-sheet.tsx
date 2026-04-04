@@ -74,7 +74,10 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
   const [dateDepart, setDateDepart] = useState("");
 
   const [region, setRegion] = useState("");
+  const [departement, setDepartement] = useState("");
+  const [subPrefecture, setSubPrefecture] = useState("");
   const [village, setVillage] = useState("");
+  const [numDecision, setNumDecision] = useState("");
   const [cnps, setCnps] = useState(true);
   const [dateCessationCNPS, setDateCessationCNPS] = useState("");
 
@@ -143,7 +146,10 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
     setError("");
     setDateDepart("");
     setRegion("");
+    setDepartement("");
+    setSubPrefecture("");
     setVillage("");
+    setNumDecision("");
     setCnps(true);
     setDateCessationCNPS("");
     if (fileInputRef.current) {
@@ -195,7 +201,10 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
         sexe: sexe as Employe['sexe'],
         Date_Depart: dateDepart,
         Region: region,
+        Departement: departement,
+        subPrefecture: subPrefecture,
         Village: village,
+        Num_Decision: numDecision,
         CNPS: cnps,
         Date_Cessation_CNPS: cnps ? dateCessationCNPS : undefined,
         photoUrl: '', // This will be set by the service after upload
@@ -251,7 +260,10 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
                     <div><Label htmlFor="serviceId">Service</Label><Select value={serviceId} onValueChange={setServiceId} disabled={!departmentId || filteredServices.length === 0}><SelectTrigger><SelectValue placeholder="Sélectionnez..." /></SelectTrigger><SelectContent>{filteredServices.map(svc => (<SelectItem key={svc.id} value={svc.id}>{svc.name}</SelectItem>))}</SelectContent></Select></div>
 
                     <div><Label htmlFor="region">Région</Label><Select value={region} onValueChange={setRegion}><SelectTrigger><SelectValue placeholder="Sélectionnez une région..." /></SelectTrigger><SelectContent>{IVORIAN_REGIONS.map(r => (<SelectItem key={r} value={r}>{r}</SelectItem>))}</SelectContent></Select></div>
+                    <div><Label htmlFor="departement">Département</Label><DebouncedInput id="departement" value={departement} onChange={(val) => setDepartement(val as string)} /></div>
+                    <div><Label htmlFor="subPrefecture">Sous-Préfecture</Label><DebouncedInput id="subPrefecture" value={subPrefecture} onChange={(val) => setSubPrefecture(val as string)} /></div>
                     <div><Label htmlFor="village">Village</Label><DebouncedInput id="village" value={village} onChange={(val) => setVillage(val as string)} /></div>
+                    <div><Label htmlFor="numDecision">Référence (Décision)</Label><DebouncedInput id="numDecision" value={numDecision} onChange={(val) => setNumDecision(val as string)} /></div>
 
                     <div><Label htmlFor="status">Statut</Label><Select value={status} onValueChange={(value: Employe['status']) => setStatus(value)} required><SelectTrigger><SelectValue placeholder="Sélectionnez un statut" /></SelectTrigger><SelectContent><SelectItem value="Actif">Actif</SelectItem><SelectItem value="En congé">En congé</SelectItem><SelectItem value="Licencié">Licencié</SelectItem><SelectItem value="Retraité">Retraité</SelectItem><SelectItem value="Décédé">Décédé</SelectItem></SelectContent></Select></div>
                     <div><Label htmlFor="dateDepart">Date de Départ</Label><Input id="dateDepart" type="date" value={dateDepart} onChange={(e) => setDateDepart(e.target.value)} /></div>

@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
@@ -42,6 +41,8 @@ import { divisions } from "@/lib/ivory-coast-divisions";
 import dynamic from 'next/dynamic';
 import { useTransition } from "react";
 import { PermissionGuard } from "@/components/auth/permission-guard";
+import { cn } from "@/lib/utils";
+
 const DirectoireMap = dynamic<{ members: any[]; className?: string }>(() => import('@/components/employees/directoire-map').then(m => m.DirectoireMap), {
   ssr: false,
   loading: () => <Skeleton className="h-[400px] w-full rounded-xl" />,
@@ -57,10 +58,8 @@ const statusVariantMap: Record<Status, "default" | "secondary" | "destructive" |
   'Décédé': 'outline',
 };
 
-import { allColumns, type ColumnKeys } from "@/lib/constants/employee";
+import { allColumns, chiefColumns, type ColumnKeys } from "@/lib/constants/employee";
 import { DebouncedInput } from "@/components/ui/debounced-input";
-
-// Simplified debounced input to keep typing local and fast
 
 export default function EmployeesPage() {
   const [employees, setEmployees] = useState<Employe[]>([]);
@@ -133,12 +132,9 @@ export default function EmployeesPage() {
     setPrintDate(format(new Date(), 'dd/MM/yyyy HH:mm'));
   }, []);
 
-  // Handle initial filter from URL
   useEffect(() => {
     setPersonnelTypeFilter(initialFilter || 'all');
   }, [initialFilter]);
-
-  // Redirection is now handled by PermissionGuard wrapper
 
   useEffect(() => {
     if (personnelTypeFilter === 'directoire' || personnelTypeFilter === 'all-geo' || personnelTypeFilter === 'regional') {
@@ -146,8 +142,6 @@ export default function EmployeesPage() {
       return () => clearTimeout(timer);
     }
   }, [personnelTypeFilter]);
-
-// Handled by DebouncedInput components directly
 
   useEffect(() => {
     if (!user || authLoading) return;
@@ -176,7 +170,6 @@ export default function EmployeesPage() {
     getOrganizationSettings().then(setOrganizationLogos);
     fetchOrgData();
 
-    // Cleanup subscription on component unmount
     return () => unsubEmployees();
   }, [user, authLoading]);
 
@@ -201,7 +194,6 @@ export default function EmployeesPage() {
   const handleAddEmployee = async (newEmployeeData: Omit<Employe, 'id'>, photoFile: File | null) => {
     try {
       await addEmployee(newEmployeeData, photoFile);
-      // No need to update state here, onSnapshot will do it
       setIsAddSheetOpen(false);
       toast({
         title: "Employé ajouté",
@@ -209,7 +201,7 @@ export default function EmployeesPage() {
       });
     } catch (err) {
       console.error("Failed to add employee:", err);
-      throw err; // Re-throw to be caught in the sheet
+      throw err;
     }
   };
 
@@ -258,7 +250,6 @@ export default function EmployeesPage() {
              matchesRegion && matchesGeoDept && matchesSubPref && matchesVillageFiltered;
     });
 
-    // Apply sorting
     const sorted = [...filtered].sort((a, b) => {
       let comparison = 0;
       if (sortBy === 'name') {
@@ -275,14 +266,12 @@ export default function EmployeesPage() {
                      (a.firstName || '').localeCompare(b.firstName || '') ||
                      (a.matricule || '').localeCompare(b.matricule || '');
       } else {
-        // Default to matricule
         comparison = (a.matricule || '').localeCompare(b.matricule || '') ||
                      (a.lastName || '').localeCompare(b.lastName || '');
       }
       return sortOrder === 'asc' ? comparison : -comparison;
     });
 
-    // Reset page to 1 if filters change and current page is out of bounds
     if (currentPage > Math.ceil(sorted.length / itemsPerPage)) {
       setCurrentPage(1);
     }
@@ -347,7 +336,7 @@ export default function EmployeesPage() {
 
     const escapeSql = (str: string | undefined | null) => {
       if (str === null || str === undefined) return 'NULL';
-      return `'\'\'\'${String(str).replace(/'/g, "''")}\'\'\''`;
+      return `'${String(str).replace(/'/g, "''")}'`;
     };
 
     const tableName = 'employees';
@@ -408,9 +397,8 @@ export default function EmployeesPage() {
   const handleTabChange = (value: string) => {
     startTransition(() => {
       setPersonnelTypeFilter(value);
-      setCurrentPage(1); // Reset to first page on tab change
+      setCurrentPage(1);
 
-      // Defer the map rendering to improve INP on tab switch
       if (value === 'directoire') {
         setShowDirectoireMap(false);
         setTimeout(() => setShowDirectoireMap(true), 300);
@@ -418,7 +406,6 @@ export default function EmployeesPage() {
         setShowDirectoireMap(false);
       }
 
-      // Reset geo filters when switching tabs
       setRegionFilter('all');
       setGeoDepartementFilter('all');
       setSubPrefectureFilter('all');
@@ -479,14 +466,27 @@ export default function EmployeesPage() {
           </div>
 
           <Tabs value={personnelTypeFilter} onValueChange={handleTabChange}>
-            <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-7 mb-6">
-              <TabsTrigger value="all">Effectif Global</TabsTrigger>
-              <TabsTrigger value="directoire">Directoire</TabsTrigger>
-              <TabsTrigger value="personnel-siege">Personnel Siège</TabsTrigger>
-              <TabsTrigger value="chauffeur-directoire">Chauffeur Directoire</TabsTrigger>
-              <TabsTrigger value="regional">Comités Régionaux</TabsTrigger>
-              <TabsTrigger value="garde-republicaine">Garde Républicaine</TabsTrigger>
-              <TabsTrigger value="gendarme">Gendarmes</TabsTrigger>
+            <TabsList className={cn(
+              "grid w-full mb-6",
+              isGeoTab ? "grid-cols-3" : "grid-cols-2 md:grid-cols-3 lg:grid-cols-7"
+            )}>
+              {isGeoTab ? (
+                <>
+                  <TabsTrigger value="all-geo">Membres Géo-localisés</TabsTrigger>
+                  <TabsTrigger value="directoire">Directoire</TabsTrigger>
+                  <TabsTrigger value="regional">Comités Régionaux</TabsTrigger>
+                </>
+              ) : (
+                <>
+                  <TabsTrigger value="all">Effectif Global</TabsTrigger>
+                  <TabsTrigger value="directoire">Directoire</TabsTrigger>
+                  <TabsTrigger value="personnel-siege">Personnel Siège</TabsTrigger>
+                  <TabsTrigger value="chauffeur-directoire">Chauffeur Directoire</TabsTrigger>
+                  <TabsTrigger value="regional">Comités Régionaux</TabsTrigger>
+                  <TabsTrigger value="garde-republicaine">Garde Républicaine</TabsTrigger>
+                  <TabsTrigger value="gendarme">Gendarmes</TabsTrigger>
+                </>
+              )}
             </TabsList>
           </Tabs>
 
@@ -625,19 +625,21 @@ export default function EmployeesPage() {
                     <SelectItem value="Décédé">Décédé</SelectItem>
                   </SelectContent>
                 </Select>
-                <Select value={String(cnpsFilter)} onValueChange={(val) => startTransition(() => {
-                  setCnpsFilter(val === 'all' ? 'all' : val === 'true');
-                  setCurrentPage(1);
-                })}>
-                  <SelectTrigger className="flex-1 min-w-[150px]">
-                    <SelectValue placeholder="Filter par CNPS" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Tous (CNPS)</SelectItem>
-                    <SelectItem value="true">Déclaré</SelectItem>
-                    <SelectItem value="false">Non Déclaré</SelectItem>
-                  </SelectContent>
-                </Select>
+                {!isGeoTab && (
+                  <Select value={String(cnpsFilter)} onValueChange={(val) => startTransition(() => {
+                    setCnpsFilter(val === 'all' ? 'all' : val === 'true');
+                    setCurrentPage(1);
+                  })}>
+                    <SelectTrigger className="flex-1 min-w-[150px]">
+                      <SelectValue placeholder="Filter par CNPS" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Tous (CNPS)</SelectItem>
+                      <SelectItem value="true">Déclaré</SelectItem>
+                      <SelectItem value="false">Non Déclaré</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
                   <Select value={sexeFilter} onValueChange={(val) => startTransition(() => {
                     setSexeFilter(val);
                     setCurrentPage(1);
@@ -681,13 +683,27 @@ export default function EmployeesPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      {isGeoTab && <TableHead className="w-[50px]">N°</TableHead>}
                       <TableHead className="w-[80px]">Photo</TableHead>
-                      <TableHead>NOM &amp; Prénoms</TableHead>
-                      <TableHead>Matricule</TableHead>
-                      <TableHead>Poste</TableHead>
-                      <TableHead>Service</TableHead>
-                      <TableHead>Statut</TableHead>
-                      <TableHead>CNPS</TableHead>
+                      <TableHead>{isGeoTab ? 'Nom et prénoms' : 'NOM & Prénoms'}</TableHead>
+                      <TableHead>{isGeoTab ? 'N° MAT' : 'Matricule'}</TableHead>
+                      {isGeoTab ? (
+                        <>
+                          <TableHead>Titre / Fonction</TableHead>
+                          <TableHead>Région</TableHead>
+                          <TableHead>Département</TableHead>
+                          <TableHead>Sous-Préfecture</TableHead>
+                          <TableHead>Village</TableHead>
+                          <TableHead>Référence</TableHead>
+                        </>
+                      ) : (
+                        <>
+                          <TableHead>Poste</TableHead>
+                          <TableHead>Service</TableHead>
+                          <TableHead>Statut</TableHead>
+                          <TableHead>CNPS</TableHead>
+                        </>
+                      )}
                       <TableHead className="w-[100px] text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -695,6 +711,7 @@ export default function EmployeesPage() {
                     {loading ? (
                       Array.from({ length: 5 }).map((_, i) => (
                         <TableRow key={i}>
+                          {isGeoTab && <TableCell><Skeleton className="h-4 w-4" /></TableCell>}
                           <TableCell><Skeleton className="h-10 w-10 rounded-full" /></TableCell>
                           <TableCell><Skeleton className="h-4 w-32" /></TableCell>
                           <TableCell><Skeleton className="h-4 w-20" /></TableCell>
@@ -706,8 +723,9 @@ export default function EmployeesPage() {
                         </TableRow>
                       ))
                     ) : (
-                      paginatedEmployees.map((employee) => (
+                      paginatedEmployees.map((employee, index) => (
                         <TableRow key={employee.id}>
+                          {isGeoTab && <TableCell className="text-muted-foreground">{(currentPage - 1) * itemsPerPage + index + 1}</TableCell>}
                           <TableCell>
                             <Avatar>
                               <AvatarImage src={employee.photoUrl || ''} alt={employee.name} data-ai-hint="employee photo" />
@@ -720,21 +738,36 @@ export default function EmployeesPage() {
                             <div className="font-medium">{`${employee.lastName || ''} ${employee.firstName || ''}`.trim()}</div>
                           </TableCell>
                           <TableCell>{employee.matricule}</TableCell>
-                          <TableCell>{employee.poste}</TableCell>
-                          <TableCell>{getEmployeeOrgUnit(employee)}</TableCell>
-                          <TableCell>
-                            <div>
-                              <Badge variant={statusVariantMap[employee.status as Status] || 'default'}>{employee.status}</Badge>
-                              {employee.status === 'Actif' && employee.dateEmbauche && (
-                                <div className="text-xs text-muted-foreground">
-                                  depuis le {format(parseISO(employee.dateEmbauche), 'dd/MM/yyyy')}
+                          
+                          {isGeoTab ? (
+                            <>
+                              <TableCell>{employee.poste}</TableCell>
+                              <TableCell>{employee.Region}</TableCell>
+                              <TableCell>{employee.Departement}</TableCell>
+                              <TableCell>{employee.subPrefecture}</TableCell>
+                              <TableCell>{employee.Village}</TableCell>
+                              <TableCell>{employee.Num_Decision}</TableCell>
+                            </>
+                          ) : (
+                            <>
+                              <TableCell>{employee.poste}</TableCell>
+                              <TableCell>{getEmployeeOrgUnit(employee)}</TableCell>
+                              <TableCell>
+                                <div>
+                                  <Badge variant={statusVariantMap[employee.status as Status] || 'default'}>{employee.status}</Badge>
+                                  {employee.status === 'Actif' && employee.dateEmbauche && (
+                                    <div className="text-xs text-muted-foreground">
+                                      depuis le {format(parseISO(employee.dateEmbauche), 'dd/MM/yyyy')}
+                                    </div>
+                                  )}
                                 </div>
-                              )}
-                            </div>
-                          </TableCell>
-                          <TableCell className="text-center">
-                            {employee.CNPS && <ShieldCheck className="h-5 w-5 text-green-600" />}
-                          </TableCell>
+                              </TableCell>
+                              <TableCell className="text-center">
+                                {employee.CNPS && <ShieldCheck className="h-5 w-5 text-green-600" />}
+                              </TableCell>
+                            </>
+                          )}
+                          
                           <TableCell className="text-right">
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
@@ -804,7 +837,7 @@ export default function EmployeesPage() {
             isOpen={isPrintDialogOpen}
             onClose={() => setIsPrintDialogOpen(false)}
             onPrint={handlePrint}
-            allColumns={allColumns}
+            allColumns={isGeoTab ? chiefColumns : allColumns}
           />
           <ConfirmationDialog
             isOpen={!!deleteTarget}
@@ -837,12 +870,17 @@ export default function EmployeesPage() {
               CNPS: 'w-[4%]',
               dateEmbauche: 'w-[10%]',
               Date_Depart: 'w-[7%]',
+              Region: 'w-[10%]',
+              Departement: 'w-[10%]',
+              subPrefecture: 'w-[10%]',
+              Village: 'w-[10%]',
+              Num_Decision: 'w-[10%]',
             };
 
-            const isTextColumn = ['name', 'poste', 'department', 'Lieu_Naissance', 'email'].includes(key);
+            const isTextColumn = ['name', 'poste', 'department', 'Lieu_Naissance', 'email', 'Region', 'Departement', 'subPrefecture', 'Village', 'Num_Decision'].includes(key);
 
             return {
-              header: allColumns[key],
+              header: (isGeoTab ? chiefColumns : allColumns)[key],
               key,
               align: ['index', 'matricule', 'sexe', 'Date_Naissance', 'dateEmbauche', 'Date_Depart', 'CNPS', 'status', 'age'].includes(key) ? 'center' : 'left',
               className: `${widthMap[key] || ''} ${isTextColumn ? 'whitespace-normal' : 'whitespace-nowrap'} overflow-hidden`,
@@ -885,7 +923,7 @@ export default function EmployeesPage() {
               } else if (key === 'CNPS') {
                 row[key] = employee.CNPS ? 'Oui' : 'Non';
               } else {
-                row[key] = employee[key as keyof Employe] || '';
+                row[key] = (employee as any)[key] || '';
               }
             });
             return row;

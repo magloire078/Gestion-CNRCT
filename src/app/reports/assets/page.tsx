@@ -38,6 +38,7 @@ import { getAssets } from "@/services/asset-service";
 import { getAllHeritageItems } from "@/services/heritage-service";
 import type { Asset } from "@/lib/data";
 import type { HeritageItem } from "@/types/heritage";
+import { Progress } from "@/components/ui/progress";
 import Papa from "papaparse";
 import { cn } from "@/lib/utils";
 import { PermissionGuard } from "@/components/auth/permission-guard";
@@ -162,12 +163,20 @@ export default function AssetReportsPage() {
 
     return (
         <PermissionGuard permission="page:it-assets:view">
-            <div className="flex flex-col gap-8 pb-20 animate-in fade-in duration-700">
+            <div className="flex flex-col gap-10 pb-20 animate-in fade-in duration-1000">
                 {/* Header */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 print:hidden">
-                    <div>
-                        <h1 className="text-4xl font-black tracking-tight text-slate-900">Registre du Patrimoine</h1>
-                        <p className="text-muted-foreground mt-2 font-medium">Audit et inventaire global des actifs IT et du patrimoine.</p>
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 print:hidden">
+                    <div className="space-y-4">
+                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-600 font-black uppercase tracking-[0.2em] text-[10px] shadow-sm">
+                            <Monitor className="h-3.5 w-3.5" />
+                            Gestion des Actifs
+                        </div>
+                        <h1 className="text-5xl font-black tracking-tighter text-slate-900 md:text-6xl leading-none">
+                            Patrimoine <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-amber-600">Inventory</span>
+                        </h1>
+                        <p className="text-slate-500 font-medium max-w-xl text-lg leading-relaxed">
+                            Audit et inventaire global des actifs technologiques et du patrimoine mobilier de la CNS.
+                        </p>
                     </div>
                     <div className="flex items-center gap-3">
                         <Button onClick={() => window.print()} variant="outline" className="rounded-xl h-12 shadow-sm border-slate-200 font-bold">
@@ -197,162 +206,181 @@ export default function AssetReportsPage() {
 
                 {/* Stats Overview */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-3xl overflow-hidden group hover:scale-[1.02] transition-transform">
-                        <CardContent className="p-6">
-                            <div className="flex items-center justify-between mb-4">
-                                <div className="h-12 w-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center">
-                                    <Layers className="h-6 w-6 text-indigo-600" />
+                    <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden group hover:scale-[1.02] transition-all duration-500 bg-white">
+                        <CardContent className="p-8">
+                            <div className="flex items-center justify-between mb-6">
+                                <div className="h-14 w-14 rounded-2xl bg-indigo-500 flex items-center justify-center shadow-xl shadow-indigo-200 group-hover:rotate-6 transition-transform">
+                                    <Layers className="h-7 w-7 text-white" />
                                 </div>
-                                <Badge variant="secondary" className="bg-indigo-50 text-indigo-700 border-none font-bold">Volume</Badge>
+                                <Badge variant="secondary" className="bg-indigo-50 text-indigo-700 border-none font-black text-[10px] px-3 py-1 uppercase tracking-widest">Volume</Badge>
                             </div>
-                            <h3 className="text-3xl font-black text-slate-900">{stats.total}</h3>
-                            <p className="text-sm text-slate-500 font-bold uppercase tracking-wider mt-1">Éléments enregistrés</p>
+                            <h3 className="text-4xl font-black text-slate-900 tracking-tighter">{stats.total}</h3>
+                            <p className="text-xs text-slate-400 font-black uppercase tracking-[0.1em] mt-2">Éléments enregistrés</p>
+                            <div className="h-1.5 w-full bg-slate-50 rounded-full mt-6 overflow-hidden">
+                                <div className="h-full bg-indigo-500 rounded-full w-[85%]" />
+                            </div>
                         </CardContent>
                     </Card>
 
-                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-3xl overflow-hidden group hover:scale-[1.02] transition-transform">
-                        <CardContent className="p-6">
-                            <div className="flex items-center justify-between mb-4">
-                                <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center">
-                                    <ShieldCheck className="h-6 w-6 text-emerald-600" />
+                    <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden group hover:scale-[1.02] transition-all duration-500 bg-white">
+                        <CardContent className="p-8">
+                            <div className="flex items-center justify-between mb-6">
+                                <div className="h-14 w-14 rounded-2xl bg-emerald-500 flex items-center justify-center shadow-xl shadow-emerald-200 group-hover:rotate-6 transition-transform">
+                                    <ShieldCheck className="h-7 w-7 text-white" />
                                 </div>
-                                <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 border-none font-bold">Santé</Badge>
+                                <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 border-none font-black text-[10px] px-3 py-1 uppercase tracking-widest">Santé</Badge>
                             </div>
-                            <h3 className="text-3xl font-black text-slate-900">{stats.operational}</h3>
-                            <p className="text-sm text-slate-500 font-bold uppercase tracking-wider mt-1">En bon état (Opérationnel)</p>
+                            <h3 className="text-4xl font-black text-slate-900 tracking-tighter">{stats.operational}</h3>
+                            <p className="text-xs text-slate-400 font-black uppercase tracking-[0.1em] mt-2">Actifs Opérationnels</p>
+                            <div className="h-1.5 w-full bg-slate-50 rounded-full mt-6 overflow-hidden">
+                                <div className="h-full bg-emerald-500 rounded-full w-[92%]" />
+                            </div>
                         </CardContent>
                     </Card>
 
-                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-3xl overflow-hidden group hover:scale-[1.02] transition-transform">
-                        <CardContent className="p-6">
-                            <div className="flex items-center justify-between mb-4">
-                                <div className="h-12 w-12 rounded-2xl bg-amber-500/10 flex items-center justify-center">
-                                    <Wrench className="h-6 w-6 text-amber-600" />
+                    <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden group hover:scale-[1.02] transition-all duration-500 bg-white">
+                        <CardContent className="p-8">
+                            <div className="flex items-center justify-between mb-6">
+                                <div className="h-14 w-14 rounded-2xl bg-amber-500 flex items-center justify-center shadow-xl shadow-amber-200 group-hover:rotate-6 transition-transform">
+                                    <Wrench className="h-7 w-7 text-white" />
                                 </div>
-                                <Badge variant="secondary" className="bg-amber-50 text-amber-700 border-none font-bold">Suivi</Badge>
+                                <Badge variant="secondary" className="bg-amber-50 text-amber-700 border-none font-black text-[10px] px-3 py-1 uppercase tracking-widest">Alerte</Badge>
                             </div>
-                            <h3 className="text-3xl font-black text-slate-900">{stats.maintenance}</h3>
-                            <p className="text-sm text-slate-500 font-bold uppercase tracking-wider mt-1">En intervention / Panne</p>
+                            <h3 className="text-4xl font-black text-slate-900 tracking-tighter">{stats.maintenance}</h3>
+                            <p className="text-xs text-slate-400 font-black uppercase tracking-[0.1em] mt-2">En Maintenance / Panne</p>
+                            <Progress value={(stats.maintenance / stats.total) * 100} className="h-1.5 w-full bg-slate-50 mt-6" />
                         </CardContent>
                     </Card>
 
-                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-3xl overflow-hidden group hover:scale-[1.02] transition-transform">
-                        <CardContent className="p-6">
-                            <div className="flex items-center justify-between mb-4">
-                                <div className="h-12 w-12 rounded-2xl bg-slate-900/5 flex items-center justify-center">
-                                    <Activity className="h-6 w-6 text-slate-900" />
+                    <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden group hover:scale-[1.02] transition-all duration-500 bg-slate-900">
+                        <CardContent className="p-8">
+                            <div className="flex items-center justify-between mb-6">
+                                <div className="h-14 w-14 rounded-2xl bg-white/10 flex items-center justify-center">
+                                    <Activity className="h-7 w-7 text-white" />
                                 </div>
-                                <Badge variant="secondary" className="bg-slate-100 text-slate-700 border-none font-bold">Répartition</Badge>
+                                <Badge variant="secondary" className="bg-white/10 text-white border-none font-black text-[10px] px-3 py-1 uppercase tracking-widest">Mix</Badge>
                             </div>
-                            <div className="flex items-end gap-2">
-                                <h3 className="text-3xl font-black text-slate-900">{stats.itCount}</h3>
-                                <span className="text-xs font-bold text-slate-400 mb-1">IT</span>
-                                <span className="text-slate-200 mx-1">|</span>
-                                <h3 className="text-3xl font-black text-slate-600">{stats.heritageCount}</h3>
-                                <span className="text-xs font-bold text-slate-400 mb-1 text-slate-400">Patri.</span>
+                            <div className="flex flex-col gap-1">
+                                <div className="flex items-end gap-3">
+                                    <h3 className="text-4xl font-black text-white tracking-tighter">{stats.itCount}</h3>
+                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Matériel IT</span>
+                                </div>
+                                <div className="flex items-end gap-3">
+                                    <h3 className="text-3xl font-black text-slate-400 tracking-tighter">{stats.heritageCount}</h3>
+                                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Mobilier & Autres</span>
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
                 </div>
 
                 {/* Main Content */}
-                <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden">
-                    <CardHeader className="bg-slate-50/50 border-b border-slate-100 p-8">
-                        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-                            <div className="flex items-center gap-4">
-                                <div className="h-12 w-12 rounded-2xl bg-slate-900 flex items-center justify-center shadow-lg">
-                                    <Monitor className="h-6 w-6 text-white" />
+                <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-[3rem] overflow-hidden bg-white group transition-all duration-500">
+                    <CardHeader className="p-10 border-b border-slate-50">
+                        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+                            <div className="flex items-center gap-6">
+                                <div className="h-16 w-16 rounded-[1.5rem] bg-slate-900 flex items-center justify-center shadow-2xl shadow-slate-900/20 group-hover:rotate-6 transition-transform">
+                                    <Monitor className="h-8 w-8 text-indigo-400" />
                                 </div>
                                 <div>
-                                    <CardTitle className="text-2xl font-black text-slate-900">Inventaire Détaillé</CardTitle>
-                                    <CardDescription className="font-bold text-slate-500 uppercase text-[10px] tracking-widest leading-none mt-1">Récapitulatif technique et physique des biens</CardDescription>
+                                    <CardTitle className="text-3xl font-black text-slate-900 tracking-tight">Inventaire Détaillé</CardTitle>
+                                    <CardDescription className="font-bold text-slate-400 uppercase text-[10px] tracking-widest leading-none mt-1">Récapitulatif technique et physique des biens</CardDescription>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-3 print:hidden">
+                            <div className="flex items-center gap-4 print:hidden">
                                 <div className="relative">
-                                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                                    <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
                                     <Input 
                                         placeholder="Désignation, tag ou lieu..." 
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
-                                        className="pl-12 w-[300px] h-12 rounded-2xl border-slate-200 bg-white shadow-sm"
+                                        className="pl-14 w-[350px] h-16 rounded-2xl border-slate-100 bg-slate-50/50 shadow-inner focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-bold text-slate-700"
                                     />
                                 </div>
-                                <Button variant="outline" className="rounded-xl h-12 w-12 p-0 border-slate-200 shadow-sm">
-                                    <Filter className="h-4 w-4 text-slate-600" />
+                                <Button variant="outline" className="rounded-2xl h-16 w-16 p-0 border-slate-100 bg-slate-50/50 hover:bg-white shadow-sm flex items-center justify-center transition-all">
+                                    <Filter className="h-6 w-6 text-slate-600" />
                                 </Button>
                             </div>
                         </div>
                     </CardHeader>
                     <CardContent className="p-0">
-                        <Table>
-                            <TableHeader>
-                                <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 border-b border-slate-100">
-                                    <TableHead className="py-6 pl-8 text-[10px] font-black uppercase text-slate-400 tracking-widest">Désignation</TableHead>
-                                    <TableHead className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Type / Catégorie</TableHead>
-                                    <TableHead className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Localisation</TableHead>
-                                    <TableHead className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Status</TableHead>
-                                    <TableHead className="text-[10px] font-black uppercase text-slate-400 tracking-widest text-right pr-8">Identification</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {filteredData.map((a) => {
-                                    const isOperational = a.status === 'En utilisation' || a.status === 'En stock' || a.status === 'Protégé';
-                                    return (
-                                        <TableRow key={a.id} className="group hover:bg-slate-50/50 transition-colors border-b border-slate-50">
-                                            <TableCell className="py-5 pl-8">
-                                                <div className="flex items-center gap-4">
-                                                    <div className="h-10 w-10 rounded-xl bg-slate-100 flex items-center justify-center">
-                                                        {a.type === 'IT' ? <Monitor className="h-4 w-4 text-indigo-500" /> : <HardDrive className="h-4 w-4 text-amber-500" />}
+                        <div className="overflow-x-auto">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow className="bg-slate-50/80 hover:bg-slate-50/80 border-b border-slate-100">
+                                        <TableHead className="py-8 pl-10 text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">Actif / Désignation</TableHead>
+                                        <TableHead className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">Catégorie</TableHead>
+                                        <TableHead className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">Affectation</TableHead>
+                                        <TableHead className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">Statut Opérationnel</TableHead>
+                                        <TableHead className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] text-right pr-10">Identification</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {filteredData.map((a) => {
+                                        const isOperational = a.status === 'En utilisation' || a.status === 'En stock' || a.status === 'Protégé';
+                                        return (
+                                            <TableRow key={a.id} className="group hover:bg-slate-50/50 transition-all duration-300 border-b border-slate-50">
+                                                <TableCell className="py-6 pl-10">
+                                                    <div className="flex items-center gap-5">
+                                                        <div className={cn(
+                                                            "h-14 w-14 rounded-2xl flex items-center justify-center transition-all duration-500 group-hover:scale-110 shadow-lg shadow-slate-100",
+                                                            a.type === 'IT' ? "bg-indigo-50 text-indigo-600" : "bg-amber-50 text-amber-600"
+                                                        )}>
+                                                            {a.type === 'IT' ? <Monitor className="h-6 w-6 transition-transform group-hover:rotate-12" /> : <HardDrive className="h-6 w-6 transition-transform group-hover:rotate-12" />}
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-black text-slate-900 text-base tracking-tight">{a.name}</p>
+                                                            <div className="flex items-center gap-2 mt-1.5 font-black uppercase text-[8px] tracking-[0.2em] text-slate-400">
+                                                                <span className={cn("px-2 py-0.5 rounded-full border", a.type === 'IT' ? "bg-indigo-50/50 border-indigo-100" : "bg-amber-50/50 border-amber-100")}>
+                                                                    Patrimoine {a.type}
+                                                                </span>
+                                                            </div>
+                                                        </div>
                                                     </div>
-                                                    <div>
-                                                        <p className="font-black text-slate-900 leading-none">{a.name}</p>
-                                                        <p className="text-[10px] text-slate-500 font-bold uppercase mt-1">Patrimoine {a.type}</p>
-                                                    </div>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <div className="flex items-center gap-2">
-                                                    <Badge variant="outline" className="rounded-lg px-2 py-0.5 text-[9px] font-bold uppercase border-slate-200 text-slate-500">
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Badge variant="outline" className="rounded-xl px-4 py-1 text-[9px] font-black uppercase tracking-widest border-slate-100 bg-white text-slate-500 shadow-sm">
                                                         {a.category}
                                                     </Badge>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <div className="flex items-center gap-2">
-                                                    <MapPin className="h-3 w-3 text-slate-400" />
-                                                    <span className="text-sm font-bold text-slate-700">{a.location || 'Non défini'}</span>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <div className="flex items-center gap-2">
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="flex items-center gap-2.5">
+                                                        <div className="h-8 w-8 rounded-full bg-slate-50 flex items-center justify-center">
+                                                            <MapPin className="h-3.5 w-3.5 text-slate-400" />
+                                                        </div>
+                                                        <span className="text-sm font-black text-slate-700 tracking-tight">{a.location || 'N/A'}</span>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>
                                                     {isOperational ? (
-                                                        <div className="flex items-center gap-1.5 text-emerald-600">
-                                                            <ShieldCheck className="h-3.5 w-3.5" />
-                                                            <span className="text-[10px] font-black uppercase">En Service</span>
+                                                        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border border-emerald-100 bg-emerald-50 text-emerald-600 shadow-sm shadow-emerald-100/50">
+                                                            <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                                            <span className="text-[10px] font-black uppercase tracking-widest">En Service</span>
                                                         </div>
                                                     ) : (
-                                                        <div className="flex items-center gap-1.5 text-amber-600">
-                                                            <AlertCircle className="h-3.5 w-3.5" />
-                                                            <span className="text-[10px] font-black uppercase">{a.status}</span>
+                                                        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border border-amber-100 bg-amber-50 text-amber-600 shadow-sm shadow-amber-100/50">
+                                                            <div className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                                                            <span className="text-[10px] font-black uppercase tracking-widest">{a.status}</span>
                                                         </div>
                                                     )}
-                                                </div>
-                                            </TableCell>
-                                            <TableCell className="text-right pr-8">
-                                                <div className="flex flex-col items-end gap-1">
-                                                    <div className="flex items-center gap-1.5">
-                                                        <Tag className="h-3 w-3 text-slate-400" />
-                                                        <span className="text-xs font-black text-slate-900">{a.tag || 'SANS TAG'}</span>
+                                                </TableCell>
+                                                <TableCell className="text-right pr-10">
+                                                    <div className="flex flex-col items-end gap-1.5">
+                                                        <div className="px-3 py-1 bg-slate-900 rounded-lg shadow-xl shadow-slate-200">
+                                                            <span className="text-xs font-mono font-black text-white">{a.tag || 'SANS TAG'}</span>
+                                                        </div>
+                                                        <div className="flex items-center gap-1.5 text-[9px] text-slate-400 font-bold uppercase tracking-widest">
+                                                            <Activity className="h-2.5 w-2.5" />
+                                                            {a.dateAcquisition ? new Date(a.dateAcquisition).toLocaleDateString('fr-FR', { year: 'numeric', month: 'short' }) : 'Inconnue'}
+                                                        </div>
                                                     </div>
-                                                    <span className="text-[9px] text-slate-400 font-bold uppercase">{a.dateAcquisition || 'Inconnue'}</span>
-                                                </div>
-                                            </TableCell>
-                                        </TableRow>
-                                    );
-                                })}
-                            </TableBody>
-                        </Table>
+                                                </TableCell>
+                                            </TableRow>
+                                        );
+                                    })}
+                                </TableBody>
+                            </Table>
+                        </div>
                     </CardContent>
                 </Card>
             </div>

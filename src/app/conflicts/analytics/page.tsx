@@ -151,7 +151,7 @@ export default function ConflictAnalyticsPage() {
         if (filteredConflicts.length === 0 && !allConflicts) return null;
         const total = filteredConflicts.length;
         const resolved = filteredConflicts.filter(c => c.status === "Résolu").length;
-        const inProgress = filteredConflicts.filter(c => c.status === "En cours").length;
+        const inProgress = filteredConflicts.filter(c => c.status === "Ouvert").length;
         const inMediation = filteredConflicts.filter(c => c.status === "En médiation").length;
         
         const resolutionRate = total > 0 ? Math.round((resolved / total) * 100) : 0;

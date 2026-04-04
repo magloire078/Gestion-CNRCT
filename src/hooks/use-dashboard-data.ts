@@ -35,7 +35,7 @@ export function useDashboardData(user: User | null) {
     const [organizationLogos, setOrganizationLogos] = useState<OrganizationSettings | null>(null);
     const [seniorityAnniversaries, setSeniorityAnniversaries] = useState<Employe[]>([]);
     const [birthdayAnniversaries, setBirthdayAnniversaries] = useState<Employe[]>([]);
-    const [employeesOnLeave, setEmployeesOnLeave] = useState<(Employe & { leaveType: string, returnDate: string })[]>([]);
+    const [allRawLeaves, setAllRawLeaves] = useState<Leave[]>([]);
     const [upcomingRetirements, setUpcomingRetirements] = useState<(Employe & { calculatedRetirementDate: Date })[]>([]);
 
     const [loading, setLoading] = useState(true);
@@ -161,30 +161,7 @@ export function useDashboardData(user: User | null) {
             if (canReadGlobalLeaves) {
                 unsubscribers.push(subscribeToLeaves(allLeaves => {
                     if (!isMounted) return;
-                    
-                    const today = startOfDay(new Date());
-                    
-                    const activeLeaves = allLeaves.filter(l => {
-                        if (l.status !== 'Approuvé') return false;
-                        try {
-                            const start = parseISO(l.startDate);
-                            const end = parseISO(l.endDate);
-                            return isWithinInterval(today, { start, end });
-                        } catch { return false; }
-                    });
-
-                    // Map leaves to actual employee objects found in globalStats.employees
-                    const onLeave = activeLeaves.map(leave => {
-                        const employee = globalStats.employees.find(e => e.id === leave.employeeId);
-                        if (!employee) return null;
-                        return {
-                            ...employee,
-                            leaveType: leave.type as string,
-                            returnDate: leave.endDate
-                        };
-                    }).filter((e): e is (Employe & { leaveType: string, returnDate: string }) => e !== null);
-
-                    setEmployeesOnLeave(onLeave);
+                    setAllRawLeaves(allLeaves);
                 }, console.error));
             }
 
@@ -274,6 +251,30 @@ export function useDashboardData(user: User | null) {
         setUpcomingRetirements(retirements);
 
     }, [globalStats.employees, selectedAnniversaryMonth, selectedAnniversaryYear, selectedRetirementYear]);
+    
+    const employeesOnLeave = useMemo(() => {
+        const today = startOfDay(new Date());
+        
+        const activeLeaves = allRawLeaves.filter(l => {
+            if (l.status !== 'Approuvé') return false;
+            try {
+                const start = parseISO(l.startDate);
+                const end = parseISO(l.endDate);
+                return isWithinInterval(today, { start, end });
+            } catch { return false; }
+        });
+
+        // Map leaves to actual employee objects found in globalStats.employees
+        return activeLeaves.map(leave => {
+            const employee = globalStats.employees.find(e => e.id === leave.employeeId);
+            if (!employee) return null;
+            return {
+                ...employee,
+                leaveType: leave.type as string,
+                returnDate: leave.endDate
+            };
+        }).filter((e): e is (Employe & { leaveType: string, returnDate: string }) => e !== null);
+    }, [allRawLeaves, globalStats.employees]);
 
 
     return {

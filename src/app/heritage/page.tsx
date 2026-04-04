@@ -8,10 +8,12 @@ import {
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { heritageCategoryLabels, HeritageCategory } from "@/types/heritage";
+import { heritageCategoryLabels, HeritageCategory, HeritageItem } from "@/types/heritage";
+import { getAllHeritageItems } from "@/services/heritage-service";
 import { PermissionGuard } from "@/components/auth/permission-guard";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const categories = [
     { 
@@ -65,6 +67,41 @@ const categories = [
 ];
 
 export default function HeritageHubPage() {
+    const [stats, setStats] = useState({
+        total: 0,
+        regions: 0,
+        ethnies: 0,
+        loading: true
+    });
+    const [recentItems, setRecentItems] = useState<HeritageItem[]>([]);
+
+    useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                const items = await getAllHeritageItems();
+                const regions = new Set(items.map(i => i.region).filter(Boolean));
+                const ethnies = new Set(items.map(i => i.ethnicGroup).filter(Boolean));
+                
+                setStats({
+                    total: items.length,
+                    regions: regions.size,
+                    ethnies: ethnies.size,
+                    loading: false
+                });
+
+                // Get 3 recent items
+                const sorted = [...items].sort((a, b) => 
+                    new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
+                ).slice(0, 3);
+                setRecentItems(sorted);
+            } catch (error) {
+                console.error("Error fetching heritage stats:", error);
+                setStats(s => ({ ...s, loading: false }));
+            }
+        };
+        fetchStats();
+    }, []);
+
     return (
         <PermissionGuard permission="page:heritage:view">
             <div className="flex flex-col gap-12 pb-20">
@@ -87,20 +124,36 @@ export default function HeritageHubPage() {
                     </div>
 
                     <div className="flex flex-wrap gap-6 mt-4">
-                        <div className="flex items-center gap-3 bg-white/5 backdrop-blur-xl border border-white/10 rounded-lg px-6 py-4">
-                            <History className="h-6 w-6 text-amber-500" />
-                            <div className="flex flex-col">
-                                <span className="text-white font-black text-lg leading-tight">Archives 2025</span>
-                                <span className="text-slate-400 text-[10px] font-black uppercase tracking-widest">Mise à jour</span>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-3 bg-white/5 backdrop-blur-xl border border-white/10 rounded-lg px-6 py-4">
-                            <Globe className="h-6 w-6 text-blue-400" />
-                            <div className="flex flex-col">
-                                <span className="text-white font-black text-lg leading-tight">31 Régions</span>
-                                <span className="text-slate-400 text-[10px] font-black uppercase tracking-widest">Couverture</span>
-                            </div>
-                        </div>
+                        {stats.loading ? (
+                            <>
+                                <Skeleton className="h-16 w-40 bg-white/10 rounded-lg" />
+                                <Skeleton className="h-16 w-40 bg-white/10 rounded-lg" />
+                            </>
+                        ) : (
+                            <>
+                                <div className="flex items-center gap-3 bg-white/5 backdrop-blur-xl border border-white/10 rounded-lg px-6 py-4 hover:bg-white/10 transition-colors cursor-default">
+                                    <History className="h-6 w-6 text-amber-500" />
+                                    <div className="flex flex-col">
+                                        <span className="text-white font-black text-lg leading-tight">{stats.total} Archives</span>
+                                        <span className="text-slate-400 text-[10px] font-black uppercase tracking-widest italic">Inventaire National</span>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-3 bg-white/5 backdrop-blur-xl border border-white/10 rounded-lg px-6 py-4 hover:bg-white/10 transition-colors cursor-default">
+                                    <Globe className="h-6 w-6 text-blue-400" />
+                                    <div className="flex flex-col">
+                                        <span className="text-white font-black text-lg leading-tight">{stats.regions} Régions</span>
+                                        <span className="text-slate-400 text-[10px] font-black uppercase tracking-widest italic">Couverture SIG</span>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-3 bg-white/5 backdrop-blur-xl border border-white/10 rounded-lg px-6 py-4 hover:bg-white/10 transition-colors cursor-default">
+                                    <Users2 className="h-6 w-6 text-emerald-400" />
+                                    <div className="flex flex-col">
+                                        <span className="text-white font-black text-lg leading-tight">{stats.ethnies} Ethnies</span>
+                                        <span className="text-slate-400 text-[10px] font-black uppercase tracking-widest italic">Diversité Culturelle</span>
+                                    </div>
+                                </div>
+                            </>
+                        )}
                     </div>
                 </div>
 
@@ -114,18 +167,54 @@ export default function HeritageHubPage() {
             </div>
 
             {/* Introduction Quote */}
-            <div className="container mx-auto px-8 max-w-5xl">
-                <blockquote className="relative">
-                    <Sparkles className="absolute -top-12 -left-12 h-24 w-24 text-amber-500/10" />
-                    <p className="text-3xl md:text-4xl font-black text-slate-900 leading-tight tracking-tight text-center italic">
-                        "La culture est ce qui reste quand on a tout oublié. Elle est le socle de notre stabilité sociale et le garant de notre identité commune."
+            <div className="container mx-auto px-8 max-w-5xl relative">
+                <div className="absolute inset-0 bg-amber-500/5 blur-[100px] rounded-full" />
+                <blockquote className="relative space-y-8">
+                    <Sparkles className="absolute -top-12 -left-12 h-24 w-24 text-amber-500/10 animate-pulse" />
+                    <p className="text-3xl md:text-5xl font-black text-slate-900 leading-tight tracking-tighter text-center uppercase italic">
+                        "La culture est ce qui reste quand on a tout oublié. Elle est le socle de notre <span className="text-amber-500">stabilité sociale</span> et le garant de notre identité commune."
                     </p>
-                    <footer className="mt-8 text-center">
-                        <div className="h-1 w-20 bg-amber-500 mx-auto mb-4 rounded-full" />
-                        <p className="text-xs font-black uppercase tracking-[0.3em] text-slate-400">Direction Générale du CNRCT</p>
+                    <footer className="flex flex-col items-center gap-4">
+                        <div className="h-1.5 w-24 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full" />
+                        <p className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-400">Direction Générale du CNRCT</p>
                     </footer>
                 </blockquote>
             </div>
+
+            {/* Latest Discoveries */}
+            {!stats.loading && recentItems.length > 0 && (
+                <div className="container mx-auto px-8 space-y-8">
+                    <div className="flex items-center justify-between">
+                        <div className="space-y-1">
+                            <h2 className="text-3xl font-black text-slate-900 uppercase tracking-tighter">Dernières Acquisitions</h2>
+                            <p className="text-slate-400 font-medium text-sm italic">Les trésors récemment documentés par nos équipes sur le terrain.</p>
+                        </div>
+                        <Link href="/heritage/explorer">
+                            <Button variant="ghost" className="rounded-xl font-black text-[10px] uppercase tracking-widest text-slate-400 hover:text-slate-900">
+                                Voir tout l'inventaire <ChevronRight className="ml-2 h-4 w-4" />
+                            </Button>
+                        </Link>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {recentItems.map((item) => (
+                            <Link key={item.id} href={`/heritage/${item.category}/${item.id}`} className="group">
+                                <div className="p-4 rounded-[2rem] bg-slate-50 border border-slate-100/50 hover:bg-white hover:shadow-2xl hover:shadow-slate-200 transition-all duration-500 flex gap-4 items-center">
+                                    <div className="h-16 w-16 rounded-2xl overflow-hidden shrink-0 shadow-lg">
+                                        <img src={item.imageUrl} alt="" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" />
+                                    </div>
+                                    <div className="min-w-0">
+                                        <p className="text-[9px] font-black uppercase tracking-[0.2em] text-amber-500 mb-0.5">{heritageCategoryLabels[item.category as HeritageCategory]}</p>
+                                        <h4 className="font-black text-slate-900 truncate uppercase tracking-tight">{item.name}</h4>
+                                        <div className="flex items-center gap-1 text-[9px] font-bold text-slate-400 uppercase mt-1">
+                                            <MapPin className="h-3 w-3" /> {item.region}
+                                        </div>
+                                    </div>
+                                </div>
+                            </Link>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             {/* Categories Grid */}
             <div className="container mx-auto px-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">

@@ -92,46 +92,64 @@ const PermissionRow = React.memo(function PermissionRow({
     isEven 
 }: PermissionRowProps) {
     const Icon = ICON_MAP[resource.icon] ?? LayoutDashboard;
+    const isGroup = resource.id.startsWith('group:');
     
     const handleToggleRow = () => {
-        if (isSystem) return;
-        const allChecked = resource.availableActions.every(a => permissions[a]);
-        resource.availableActions.forEach(a => onToggle(resource.id, a, !allChecked));
+        if (isSystem || isGroup) return;
+        const availableActions = resource.availableActions.filter(a => CRUD_ACTIONS.includes(a));
+        const allChecked = availableActions.every(a => permissions[a]);
+        availableActions.forEach(a => onToggle(resource.id, a, !allChecked));
     };
+
+    if (isGroup) {
+        return (
+            <TableRow className="bg-slate-900 border-y border-slate-800 hover:bg-slate-900/95 sticky z-10">
+                <TableCell colSpan={5} className="py-4 pl-4">
+                    <div className="flex items-center gap-3">
+                        <div className="h-8 w-8 rounded-lg bg-indigo-500/20 flex items-center justify-center border border-indigo-500/30">
+                            <Icon className="h-4 w-4 text-indigo-400" />
+                        </div>
+                        <span className="text-[11px] font-black uppercase tracking-[0.2em] text-white">
+                            {resource.label}
+                        </span>
+                    </div>
+                </TableCell>
+            </TableRow>
+        );
+    }
 
     return (
         <TableRow className={cn(
-            isEven ? 'bg-background' : 'bg-muted/10',
-            resource.id.startsWith('group:') ? 'bg-slate-50/80 border-t-2 border-slate-100' : ''
+            "group/row transition-colors",
+            isEven ? 'bg-white' : 'bg-slate-50/50',
+            "hover:bg-indigo-50/30"
         )}>
             <TableCell className={cn(
-                "py-3",
-                resource.parentId ? "pl-10" : "pl-4",
-                resource.id.startsWith('group:') ? "bg-slate-50/50" : ""
+                "py-4 transition-all duration-300",
+                resource.parentId ? "pl-12" : "pl-6"
             )}>
                 <div className="flex items-center justify-between gap-2">
-                    <div className={cn(
-                        "flex items-center gap-2",
-                        resource.id.startsWith('group:') ? "font-black text-slate-900 text-[11px] uppercase tracking-widest" : "font-medium text-sm text-slate-700"
-                    )}>
-                        {resource.parentId && <span className="text-slate-300 font-mono">↳</span>}
-                        <Icon className={cn("h-4 w-4 shrink-0", resource.id.startsWith('group:') ? "text-slate-900" : "text-slate-400")} />
-                        <span>{resource.label}</span>
+                    <div className="flex items-center gap-3">
+                        {resource.parentId && (
+                            <div className="w-4 h-4 border-l-2 border-b-2 border-slate-200 rounded-bl-lg -mt-2 mr-1" />
+                        )}
+                        <div className={cn(
+                            "h-7 w-7 rounded-lg flex items-center justify-center transition-all group-hover/row:scale-110",
+                            isEven ? "bg-slate-100" : "bg-white"
+                        )}>
+                            <Icon className="h-3.5 w-3.5 text-slate-500 group-hover/row:text-indigo-600" />
+                        </div>
+                        <span className="font-bold text-sm text-slate-700 tracking-tight">{resource.label}</span>
                     </div>
-                    {!isSystem && !resource.id.startsWith('group:') && (
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button 
-                                    variant="ghost" 
-                                    size="icon" 
-                                    className="h-6 w-6 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity" 
-                                    onClick={handleToggleRow}
-                                >
-                                    <CheckCircle2 className="h-3 w-3 text-muted-foreground" />
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent className="text-[10px] font-bold">Tout cocher / décocher pour cette ligne</TooltipContent>
-                        </Tooltip>
+                    {!isSystem && (
+                        <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-6 w-6 opacity-0 group-hover/row:opacity-100 focus:opacity-100 transition-all rounded-lg hover:bg-indigo-100/50" 
+                            onClick={handleToggleRow}
+                        >
+                            <CheckCircle2 className="h-3 w-3 text-indigo-600" />
+                        </Button>
                     )}
                 </div>
             </TableCell>
@@ -142,32 +160,23 @@ const PermissionRow = React.memo(function PermissionRow({
                     <TableCell key={action} className="text-center py-2">
                         {isAvailable ? (
                             <div className="flex justify-center">
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <div>
-                                            <Switch
-                                                checked={isChecked}
-                                                onCheckedChange={v => onToggle(resource.id, action, v)}
-                                                disabled={isSystem}
-                                                className={cn(
-                                                    "scale-75 origin-center",
-                                                    isChecked
-                                                        ? action === 'delete' ? 'data-[state=checked]:bg-red-500'
-                                                            : action === 'create' ? 'data-[state=checked]:bg-green-500'
-                                                                : action === 'update' ? 'data-[state=checked]:bg-amber-500'
-                                                                    : 'data-[state=checked]:bg-blue-500'
-                                                        : ''
-                                                )}
-                                            />
-                                        </div>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                        {ACTION_LABELS[action].label} — {resource.label}
-                                    </TooltipContent>
-                                </Tooltip>
+                                <Switch
+                                    checked={isChecked}
+                                    onCheckedChange={v => onToggle(resource.id, action, v)}
+                                    disabled={isSystem}
+                                    className={cn(
+                                        "scale-90 transition-all duration-300",
+                                        isChecked && {
+                                            'data-[state=checked]:bg-blue-600 shadow-[0_0_10px_rgba(37,99,235,0.2)]': action === 'read',
+                                            'data-[state=checked]:bg-emerald-600 shadow-[0_0_10px_rgba(5,150,105,0.2)]': action === 'create',
+                                            'data-[state=checked]:bg-amber-600 shadow-[0_0_10px_rgba(217,119,6,0.2)]': action === 'update',
+                                            'data-[state=checked]:bg-rose-600 shadow-[0_0_10px_rgba(225,29,72,0.2)]': action === 'delete',
+                                        }
+                                    )}
+                                />
                             </div>
                         ) : (
-                            <span className="text-muted-foreground/40 text-xs">—</span>
+                            <span className="text-slate-200 text-xs font-black select-none">✕</span>
                         )}
                     </TableCell>
                 );
@@ -300,92 +309,89 @@ export function PermissionsEditor({ targetId, targetType, isSystem, onSave }: Pe
 
     return (
         <div className="space-y-4">
-            <div className="flex flex-col gap-3">
-                <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-card px-4 py-2">
-                    <div className="flex items-center gap-3">
-                        <Badge variant={hasNoSpecificPerms ? 'outline' : accessLevel.variant}>
+            <div className="flex flex-col gap-4">
+                <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-[2rem] bg-indigo-50/50 border border-indigo-100/50 backdrop-blur-sm">
+                    <div className="flex items-center gap-2">
+                        <div className={cn(
+                            "px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all shadow-sm",
+                            hasNoSpecificPerms 
+                                ? "bg-slate-100 text-slate-500 border-slate-200" 
+                                : accessLevel.variant === 'default' 
+                                    ? "bg-emerald-500 text-white border-emerald-400"
+                                    : accessLevel.variant === 'secondary'
+                                        ? "bg-amber-500 text-white border-amber-400"
+                                        : "bg-rose-500 text-white border-rose-400"
+                        )}>
                             {hasNoSpecificPerms ? 'Héritage Groupe' : accessLevel.label}
-                        </Badge>
+                        </div>
                         {isSystem && (
-                            <Badge variant="secondary" className="gap-1 font-normal opacity-80">
-                                <ShieldCheck className="h-3 w-3" /> Système
-                            </Badge>
+                            <div className="px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-slate-900 text-white border border-slate-800 gap-1.5 flex items-center">
+                                <ShieldCheck className="h-3 w-3 text-indigo-400" /> Système
+                            </div>
                         )}
                         {targetType === 'user' && !hasNoSpecificPerms && (
-                            <Badge variant="secondary" className="bg-amber-100 text-amber-800 border-amber-200">
-                            Droits personnalisés
-                            </Badge>
+                            <div className="px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-indigo-600 text-white border border-indigo-500">
+                                Exception Individuelle
+                            </div>
                         )}
                     </div>
                     <div className="flex items-center gap-2">
-                        {targetType === 'user' ? (
+                        {targetType === 'user' && (
                             <AlertDialog>
                                 <AlertDialogTrigger asChild>
                                     <Button 
-                                        variant="ghost" 
+                                        variant="outline" 
                                         size="sm" 
-                                        className="h-8 gap-2 border border-dashed hover:bg-amber-50 hover:text-amber-700"
+                                        className="h-9 px-4 rounded-xl gap-2 border-slate-200 bg-white hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition-all font-bold text-xs"
                                         disabled={saving}
                                     >
-                                        <RefreshCw className={`h-4 w-4 ${saving ? 'animate-spin' : ''}`} />
-                                        <span className="text-xs">Rétablir le groupe</span>
+                                        <Undo2 className={`h-3.5 w-3.5 ${saving ? 'animate-spin' : ''}`} />
+                                        Rétablir le groupe
                                     </Button>
                                 </AlertDialogTrigger>
-                                <AlertDialogContent>
+                                <AlertDialogContent className="rounded-[2rem] border-none shadow-2xl">
                                     <AlertDialogHeader>
-                                        <AlertDialogTitle className="flex items-center gap-2">
+                                        <AlertDialogTitle className="flex items-center gap-2 text-xl font-black">
                                             <AlertTriangleIcon className="h-5 w-5 text-amber-600" />
                                             Confirmer la réinitialisation
                                         </AlertDialogTitle>
-                                        <AlertDialogDescription>
+                                        <AlertDialogDescription className="font-medium text-slate-500">
                                             Attention : Cela supprimera toutes les exceptions de permissions pour cet utilisateur. Il héritera à nouveau des droits de son groupe.
                                             Cette action est irréversible.
                                         </AlertDialogDescription>
                                     </AlertDialogHeader>
                                     <AlertDialogFooter>
-                                        <AlertDialogCancel>Annuler</AlertDialogCancel>
+                                        <AlertDialogCancel className="rounded-xl font-bold">Annuler</AlertDialogCancel>
                                         <AlertDialogAction 
                                             onClick={handleReset}
-                                            className="bg-amber-600 hover:bg-amber-700 text-white"
+                                            className="rounded-xl font-black bg-rose-600 hover:bg-rose-700 text-white shadow-lg shadow-rose-200"
                                         >
                                             Confirmer
                                         </AlertDialogAction>
                                     </AlertDialogFooter>
                                 </AlertDialogContent>
                             </AlertDialog>
-                        ) : (
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <Button 
-                                        variant="ghost" 
-                                        size="icon" 
-                                        className="h-8 w-8" 
-                                        onClick={loadPerms} 
-                                        disabled={saving}
-                                    >
-                                        <RefreshCw className={`h-4 w-4 ${saving ? 'animate-spin' : ''}`} />
-                                    </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                    Actualiser depuis la base de données
-                                </TooltipContent>
-                            </Tooltip>
                         )}
                         
                         {!isSystem && (
-                            <Button onClick={handleSave} disabled={!dirty || saving} size="sm" className="h-8 gap-2">
-                                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                            <Button 
+                                onClick={handleSave} 
+                                disabled={!dirty || saving} 
+                                size="sm" 
+                                className="h-9 px-6 rounded-xl gap-2 font-black text-xs bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-200"
+                            >
+                                {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
                                 Enregistrer
                             </Button>
                         )}
                     </div>
                 </div>
 
-                <div className="relative">
-                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <div className="relative group">
+                    <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-600 transition-colors" />
                     <Input 
-                        placeholder="Rechercher une ressource (ex: Congés, Paie...)" 
-                        className="pl-9 bg-muted/20 border-none shadow-none focus-visible:ring-1 focus-visible:ring-primary/20"
+                        placeholder="Rechercher une ressource par nom ou identifiant..." 
+                        className="pl-11 h-12 rounded-2xl bg-white border-slate-200 shadow-sm focus-visible:ring-indigo-500/20 focus-visible:border-indigo-500 font-medium"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
@@ -400,13 +406,19 @@ export function PermissionsEditor({ targetId, targetType, isSystem, onSave }: Pe
             )}
 
             {/* Matrix table */}
-            <div className="overflow-auto rounded-lg border group/table">
-                <Table>
-                    <TableHeader>
-                        <TableRow className="bg-muted/40">
-                            <TableHead className="w-52 font-semibold">Ressource</TableHead>
+            <div className="max-h-[60vh] overflow-auto rounded-[2.5rem] border border-slate-100 shadow-2xl shadow-slate-200/50 group/table bg-white ring-1 ring-slate-900/[0.05]">
+                <Table className="relative">
+                    <TableHeader className="sticky top-0 z-20">
+                        <TableRow className="bg-slate-900 border-none hover:bg-slate-900 transition-none">
+                            <TableHead className="w-52 py-6 pl-8 font-black text-[10px] uppercase tracking-widest text-slate-400">Objet de Droits</TableHead>
                             {CRUD_ACTIONS.map(action => (
-                                <TableHead key={action} className={`text-center w-28 font-semibold ${ACTION_LABELS[action].color}`}>
+                                <TableHead key={action} className={cn(
+                                    "text-center w-32 py-6 font-black text-[10px] uppercase tracking-widest transition-colors",
+                                    action === 'read' ? 'text-blue-400' :
+                                    action === 'create' ? 'text-emerald-400' :
+                                    action === 'update' ? 'text-amber-400' :
+                                    'text-rose-400'
+                                )}>
                                     {ACTION_LABELS[action].label}
                                 </TableHead>
                             ))}
@@ -415,8 +427,11 @@ export function PermissionsEditor({ targetId, targetType, isSystem, onSave }: Pe
                     <TableBody>
                         {filteredResources.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={5} className="h-24 text-center text-muted-foreground italic">
-                                    Aucune ressource ne correspond à votre recherche.
+                                <TableCell colSpan={5} className="h-48 text-center transition-all">
+                                    <div className="flex flex-col items-center justify-center gap-3 opacity-50">
+                                        <Search className="h-8 w-8 text-slate-300" />
+                                        <p className="text-sm font-bold text-slate-400 italic">Aucune ressource trouvée pour &quot;{searchQuery}&quot;</p>
+                                    </div>
                                 </TableCell>
                             </TableRow>
                         ) : (

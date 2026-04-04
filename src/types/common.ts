@@ -42,7 +42,7 @@ export type ConflictTypeData = {
     name: string;
 };
 
-export const conflictStatuses = ["En cours", "Résolu", "En médiation"] as const;
+export const conflictStatuses = ["Ouvert", "En médiation", "Résolu", "Classé sans suite"] as const;
 export type ConflictStatus = typeof conflictStatuses[number];
 
 export const conflictTypeVariantMap: Record<ConflictType, "default" | "secondary" | "outline" | "destructive"> = {
@@ -59,6 +59,7 @@ export type ConflictComment = {
     date: string;
     author: string;
     content: string;
+    type?: 'Note' | 'Réunion' | 'Document' | 'Résolution' | 'Autre';
 };
 
 export type Conflict = {
@@ -110,7 +111,8 @@ export type Document = {
     uploadDate: string;
     storageUrl: string;
     relatedEmployeeId?: string;
-    category?: string;
+    category?: 'Actes Royaux' | 'Procès-Verbaux' | 'Rapports d\'Activité' | 'Courriers' | 'Communication' | 'Autres';
+    region?: string;
 }
 
 export type Goal = {

@@ -144,27 +144,27 @@ export default function ReportingDashboard() {
         <PermissionGuard permission="page:reports:view">
             <div className="flex flex-col gap-10 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-1000">
                 {/* Header Section */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                    <div className="space-y-2">
-                        <div className="flex items-center gap-2 text-indigo-600 font-bold uppercase tracking-[0.2em] text-[10px]">
-                            <Database className="h-3 w-3" />
-                            Intelligence & Rapports
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+                    <div className="space-y-4">
+                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-600 font-black uppercase tracking-[0.2em] text-[10px] shadow-sm">
+                            <Database className="h-3.5 w-3.5" />
+                            Intelligence Systémique
                         </div>
-                        <h1 className="text-4xl font-black tracking-tighter text-slate-900 md:text-5xl">
-                            Reporting <span className="text-indigo-600">Dashboard</span>
+                        <h1 className="text-5xl font-black tracking-tighter text-slate-900 md:text-7xl leading-none">
+                            Reporting <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600">Vault</span>
                         </h1>
-                        <p className="text-slate-500 font-medium max-w-xl text-lg">
-                            Centre de pilotage stratégique de la CNRCT. Visualisez et exportez les données clés de tous les services.
+                        <p className="text-slate-500 font-medium max-w-2xl text-xl leading-relaxed">
+                            Accédez aux indicateurs de performance stratégiques et générez des rapports institutionnels de haute précision.
                         </p>
                     </div>
                     <div className="flex items-center gap-3">
-                        <Button variant="outline" className="rounded-xl h-12 px-6 border-slate-200 shadow-sm font-bold text-slate-600 hover:bg-slate-50 transition-all">
-                            <Calendar className="mr-2 h-4 w-4" />
-                            Période: Mars 2024
-                        </Button>
-                        <Button className="rounded-xl h-12 px-6 bg-slate-900 border-none shadow-xl shadow-slate-200 hover:scale-[1.02] transition-all font-bold">
-                            <Download className="mr-2 h-4 w-4" />
-                            Export Global
+                        <div className="hidden lg:flex flex-col text-right mr-4">
+                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Dernière Sync</span>
+                            <span className="text-sm font-bold text-slate-900">Aujourd'hui, 11:52</span>
+                        </div>
+                        <Button variant="outline" className="rounded-2xl h-14 px-6 border-slate-200 bg-white/50 backdrop-blur-sm shadow-xl shadow-slate-200/20 font-black text-slate-600 hover:bg-white transition-all text-sm">
+                            <Calendar className="mr-2 h-4 w-4 text-indigo-500" />
+                            Mars 2024
                         </Button>
                     </div>
                 </div>
@@ -172,27 +172,29 @@ export default function ReportingDashboard() {
                 {/* Quick KPIs Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     {[
-                        { label: "Personnel Actif", value: stats.activeEmployees, trend: "+2.4%", icon: Users, color: "text-indigo-600", bg: "bg-indigo-50" },
-                        { label: "Village Cover", value: stats.villages, trend: "Stable", icon: MapPin, color: "text-rose-600", bg: "bg-rose-50" },
-                        { label: "IT Health", value: `${Math.round(((stats.assets - stats.itRepair) / (stats.assets || 1)) * 100)}%`, trend: "Opérationnel", icon: Laptop, color: "text-emerald-600", bg: "bg-emerald-50" },
-                        { label: "Alertes Supply", value: stats.lowStock, trend: "-5", icon: Package, color: "text-amber-600", bg: "bg-amber-50" }
+                        { label: "Personnel Actif", value: stats.activeEmployees, trend: "+2.4%", icon: Users, color: "text-indigo-600", bg: "from-indigo-500/20 to-indigo-500/5", border: "border-indigo-100" },
+                        { label: "Village Cover", value: stats.villages, trend: "Stable", icon: MapPin, color: "text-rose-600", bg: "from-rose-500/20 to-rose-500/5", border: "border-rose-100" },
+                        { label: "IT Health", value: `${Math.round(((stats.assets - stats.itRepair) / (stats.assets || 1)) * 100)}%`, trend: "Opérationnel", icon: Laptop, color: "text-emerald-600", bg: "from-emerald-500/20 to-emerald-500/5", border: "border-emerald-100" },
+                        { label: "Alertes Supply", value: stats.lowStock, trend: "-5", icon: Package, color: "text-amber-600", bg: "from-amber-500/20 to-amber-500/5", border: "border-amber-100" }
                     ].map((kpi, i) => (
-                        <Card key={i} className="border-none shadow-xl shadow-slate-200/50 rounded-xl overflow-hidden group hover:shadow-2xl transition-all duration-500">
-                            <CardContent className="p-8">
-                                <div className="flex items-center justify-between mb-6">
-                                    <div className={cn("h-14 w-14 rounded-xl flex items-center justify-center transition-transform group-hover:rotate-12 duration-500", kpi.bg)}>
-                                        <kpi.icon className={cn("h-7 w-7", kpi.color)} />
+                        <Card key={i} className="border-none shadow-2xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden group hover:shadow-indigo-200/30 transition-all duration-700 bg-white">
+                            <CardContent className="p-10 relative">
+                                <div className={cn("absolute top-0 right-0 h-40 w-40 -mr-20 -mt-20 rounded-full blur-[80px] opacity-10 bg-gradient-to-br", kpi.bg)} />
+                                <div className="flex flex-col gap-6 relative z-10">
+                                    <div className={cn("h-16 w-16 rounded-2xl flex items-center justify-center transition-all group-hover:scale-110 group-hover:-rotate-6 duration-700 bg-white border shadow-sm", kpi.border)}>
+                                        <kpi.icon className={cn("h-8 w-8", kpi.color)} />
                                     </div>
-                                    <div className="text-right">
-                                        <Badge variant="outline" className="border-slate-100 font-bold bg-white/50 text-[10px] text-slate-400">STATUS</Badge>
+                                    <div className="space-y-1">
+                                        <div className="flex items-center justify-between">
+                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{kpi.label}</p>
+                                            {kpi.trend !== "Stable" && (
+                                                <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100">
+                                                    {kpi.trend}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <h3 className="text-5xl font-black text-slate-900 tracking-tighter transition-all group-hover:translate-x-1 duration-700">{kpi.value}</h3>
                                     </div>
-                                </div>
-                                <div className="space-y-1">
-                                    <div className="flex items-baseline gap-2">
-                                        <h3 className="text-4xl font-black text-slate-950 tracking-tighter">{kpi.value}</h3>
-                                        {kpi.trend !== "Stable" && <span className="text-[10px] font-black text-emerald-500 bg-emerald-50 px-1.5 py-0.5 rounded-full">{kpi.trend}</span>}
-                                    </div>
-                                    <p className="text-xs font-black text-slate-400 uppercase tracking-widest">{kpi.label}</p>
                                 </div>
                             </CardContent>
                         </Card>
@@ -200,31 +202,31 @@ export default function ReportingDashboard() {
                 </div>
 
                 {/* Reports Grid Section */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {reportCards.map((card, i) => (
-                        <Link href={card.href} key={i}>
-                            <Card className="h-full border-none shadow-lg shadow-slate-200/40 rounded-2xl overflow-hidden group hover:shadow-2xl hover:scale-[1.03] active:scale-[0.98] transition-all duration-500 cursor-pointer bg-white relative">
-                                <div className={cn("absolute top-0 right-0 h-32 w-32 -mr-16 -mt-16 rounded-full blur-3xl opacity-10 group-hover:opacity-20 transition-opacity", card.color)} />
-                                <CardHeader className="p-8 pb-4">
-                                    <div className={cn("h-16 w-16 rounded-xl flex items-center justify-center shadow-lg mb-6 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500", card.color)}>
+                        <Link href={card.href} key={i} className="h-full">
+                            <Card className="h-full border border-slate-100 shadow-2xl shadow-slate-200/30 rounded-[2.5rem] overflow-hidden group hover:shadow-indigo-300/20 hover:scale-[1.02] active:scale-[0.98] transition-all duration-700 bg-white relative flex flex-col">
+                                <div className={cn("absolute top-0 right-0 h-40 w-40 -mr-20 -mt-20 rounded-full blur-[60px] opacity-10 group-hover:opacity-30 transition-all duration-700", card.color)} />
+                                <CardHeader className="p-10 pb-4 relative z-10 flex-1">
+                                    <div className={cn("h-16 w-16 rounded-[1.25rem] flex items-center justify-center shadow-xl mb-8 group-hover:scale-110 group-hover:rotate-12 transition-all duration-700", card.color)}>
                                         <card.icon className="h-8 w-8 text-white" />
                                     </div>
-                                    <CardTitle className="text-2xl font-black text-slate-900 group-hover:text-indigo-600 transition-colors">{card.title}</CardTitle>
-                                    <CardDescription className="text-slate-500 font-medium text-sm leading-relaxed mt-2 line-clamp-2">
+                                    <CardTitle className="text-2xl font-black text-slate-950 group-hover:text-indigo-600 transition-colors leading-[1.1]">{card.title}</CardTitle>
+                                    <CardDescription className="text-slate-500 font-medium text-base leading-relaxed mt-4">
                                         {card.description}
                                     </CardDescription>
                                 </CardHeader>
-                                <CardContent className="p-8 pt-4">
-                                    <div className="flex flex-wrap gap-2 mb-8">
+                                <CardContent className="p-10 pt-4 mt-auto relative z-10">
+                                    <div className="flex flex-wrap gap-2 mb-10">
                                         {card.metrics.map((m, j) => (
-                                            <Badge key={j} variant="secondary" className="bg-slate-50 text-slate-600 font-bold border-none px-3 py-1 text-[10px]">
+                                            <div key={j} className="bg-slate-50 text-slate-600 font-black border border-slate-100 px-3 py-1.5 rounded-full text-[9px] uppercase tracking-wider">
                                                 {m}
-                                            </Badge>
+                                            </div>
                                         ))}
                                     </div>
-                                    <div className="flex items-center justify-between pt-4 border-t border-slate-50 mt-auto">
-                                        <span className="text-sm font-black text-slate-900 uppercase tracking-widest group-hover:tracking-[0.2em] transition-all">Consulter l'état</span>
-                                        <div className="h-10 w-10 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-all text-slate-400">
+                                    <div className="flex items-center justify-between pt-6 border-t border-slate-50">
+                                        <span className="text-[10px] font-black text-slate-900 uppercase tracking-[0.2em] group-hover:text-indigo-600 transition-all">Consulter l'état</span>
+                                        <div className="h-12 w-12 rounded-2xl bg-slate-50 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-all duration-500 text-slate-400 group-hover:rotate-[360deg]">
                                             <ChevronRight className="h-5 w-5" />
                                         </div>
                                     </div>

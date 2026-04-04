@@ -40,8 +40,11 @@ import type { Chief } from "@/lib/data";
 import Papa from "papaparse";
 import { cn } from "@/lib/utils";
 import { PermissionGuard } from "@/components/auth/permission-guard";
+import { usePermissions } from "@/hooks/use-permissions";
 
 export default function ChiefsReportsPage() {
+    const { canSeeGovernanceStatus } = usePermissions();
+    const showStatus = canSeeGovernanceStatus();
     const [chiefs, setChiefs] = useState<Chief[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
@@ -97,7 +100,8 @@ export default function ChiefsReportsPage() {
             Sous_Préfecture: c.subPrefecture,
             Village: c.village,
             Téléphone: c.phone || c.contact,
-            Email: c.email
+            Email: c.email,
+            Statut: c.status || 'actif'
         })));
         
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -280,6 +284,7 @@ export default function ChiefsReportsPage() {
                                             <TableHead className="py-6 pl-8 text-[10px] font-black uppercase text-slate-400 tracking-widest">Autorité</TableHead>
                                             <TableHead className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Titre / Rôle</TableHead>
                                             <TableHead className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Circonscription</TableHead>
+                                            <TableHead className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Statut</TableHead>
                                             <TableHead className="text-[10px] font-black uppercase text-slate-400 tracking-widest text-right pr-8">Localisation</TableHead>
                                         </TableRow>
                                     </TableHeader>
@@ -314,6 +319,22 @@ export default function ChiefsReportsPage() {
                                                         </div>
                                                         <span className="text-[10px] text-slate-400 font-medium ml-4.5">{chief.department}</span>
                                                     </div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    {showStatus && (
+                                                        <Badge 
+                                                            className={cn(
+                                                                "border-none rounded-lg px-2.5 py-1 text-[10px] font-black uppercase tracking-tight",
+                                                                chief.status === 'archive' 
+                                                                    ? "bg-slate-100 text-slate-500" 
+                                                                    : chief.status === 'a_vie'
+                                                                        ? "bg-indigo-50 text-indigo-700"
+                                                                        : "bg-emerald-50 text-emerald-700"
+                                                            )}
+                                                        >
+                                                            {chief.status === 'a_vie' ? 'À Vie' : chief.status || 'Actif'}
+                                                        </Badge>
+                                                    )}
                                                 </TableCell>
                                                 <TableCell className="text-right pr-8">
                                                     <div className="flex flex-col items-end gap-1">

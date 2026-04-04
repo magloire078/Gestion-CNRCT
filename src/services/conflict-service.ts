@@ -1,7 +1,7 @@
 
 
 import { collection, getDocs, addDoc, onSnapshot, Unsubscribe, query, orderBy, doc, updateDoc, getDoc, deleteDoc } from '@/lib/firebase';
-import type { Conflict } from '@/lib/data';
+import type { Conflict, ConflictComment, ConflictStatus } from '@/lib/data';
 import { db } from '@/lib/firebase';
 
 const conflictsCollection = collection(db, 'conflicts');
@@ -82,6 +82,19 @@ export async function deleteConflict(id: string): Promise<void> {
     await deleteDoc(conflictDocRef);
 }
 
+export async function addConflictComment(conflictId: string, comment: Omit<ConflictComment, 'id'>): Promise<void> {
+    const { arrayUnion } = await import('@/lib/firebase');
+    const conflictDocRef = doc(db, 'conflicts', conflictId);
+    const newComment = {
+        id: Math.random().toString(36).substring(2, 9),
+        ...comment,
+        date: comment.date || new Date().toISOString()
+    };
+    await updateDoc(conflictDocRef, {
+        comments: arrayUnion(newComment)
+    });
+}
+
 export async function batchAddConflicts(conflicts: Omit<Conflict, 'id'>[]): Promise<number> {
     const { writeBatch, doc } = await import('@/lib/firebase');
     const batch = writeBatch(db);
@@ -96,4 +109,31 @@ export async function batchAddConflicts(conflicts: Omit<Conflict, 'id'>[]): Prom
     
     await batch.commit();
     return conflicts.length;
+}
+
+/**
+ * Updates the status of a conflict and adds a system comment.
+ */
+export async function updateConflictStatus(id: string, status: ConflictStatus, author: string, resolutionDetails?: string): Promise<void> {
+    const { arrayUnion } = await import('@/lib/firebase');
+    const conflictDocRef = doc(db, 'conflicts', id);
+    
+    const updateData: any = { status };
+    if (resolutionDetails) {
+        updateData.resolutionDetails = resolutionDetails;
+        updateData.resolutionDate = new Date().toISOString();
+    }
+
+    const systemComment: ConflictComment = {
+        id: Math.random().toString(36).substring(2, 9),
+        date: new Date().toISOString(),
+        author: "Système",
+        content: `Statut modifié en : ${status}. ${author ? `Par : ${author}` : ''}`,
+        type: 'Résolution'
+    };
+
+    await updateDoc(conflictDocRef, {
+        ...updateData,
+        comments: arrayUnion(systemComment)
+    });
 }

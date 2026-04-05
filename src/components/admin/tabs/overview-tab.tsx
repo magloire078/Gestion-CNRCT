@@ -7,6 +7,7 @@ import { ImportVillagesCard } from "../import-villages-card";
 import { AdminStats } from "../admin-stats";
 import { ConnectedUsersCard } from "../connected-users-card";
 import { SyncRolesCard } from "../sync-roles-card";
+import { ThesisCard } from "../thesis-card";
 import type { User, Role, Department } from "@/lib/data";
 
 interface OverviewTabProps {
@@ -36,6 +37,11 @@ export const OverviewTab = memo(function OverviewTab({ users, roles, departments
       <SyncRolesCard />
 
       <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+        {/* Thesis Support - New prominent position */}
+        <div className="xl:col-span-1">
+          <ThesisCard />
+        </div>
+
         {/* Real-time activity */}
         <div className="xl:col-span-1">
           <ConnectedUsersCard users={users} />

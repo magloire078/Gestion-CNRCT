@@ -1,16 +1,30 @@
 
 import * as admin from 'firebase-admin';
 
-// Le SDK Admin utilisera automatiquement les GOOGLE_APPLICATION_CREDENTIALS
-// si cette variable d'environnement est définie dans votre environnement de production/déploiement.
+// Support pour Vercel : On essaye de charger la clé depuis une variable d'environnement
+// sinon on retombe sur applicationDefault()
+let credential;
+
+try {
+  if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
+    credential = admin.credential.cert(serviceAccount);
+  } else {
+    credential = admin.credential.applicationDefault();
+  }
+} catch (e) {
+  console.warn("Could not parse FIREBASE_SERVICE_ACCOUNT_KEY, falling back to applicationDefault()");
+  credential = admin.credential.applicationDefault();
+}
+
 if (!admin.apps.length) {
   try {
     admin.initializeApp({
-      credential: admin.credential.applicationDefault(),
+      credential: credential,
     });
     console.log("Firebase Admin SDK initialized successfully.");
   } catch (error: any) {
-    console.error("Firebase Admin SDK initialization error. Ensure GOOGLE_APPLICATION_CREDENTIALS is set in your environment.", error.message);
+    console.error("Firebase Admin SDK initialization error. Ensure credentials are set.", error.message);
   }
 }
 

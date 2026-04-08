@@ -26,7 +26,7 @@ export type Supply = {
     name: string;
     code?: string; // Standardized code (e.g. XX-YY-NNN)
     supplierReference?: string; // Legacy/Supplier code
-    category: "Papeterie" | "Cartouches d'encre" | "Matériel de nettoyage" | "Fournitures de bureau" | "Consommables Informatiques" | "Archives" | "Outils" | "Autre";
+    category: "Petits matériels, fourniture de bureau et documentation" | "Fourniture et consommables pour le materiel informatique" | "Cartouches d'encre" | "Matériel de nettoyage" | "Archives" | "Outils" | "Autre";
     inkType?: string; // e.g., 'HP 651', 'Toner 12A'
     quantity: number;
     reorderLevel: number;

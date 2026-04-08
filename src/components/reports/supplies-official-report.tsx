@@ -82,13 +82,13 @@ export function SuppliesOfficialReport({
                     </div>
                     
                     <div className="space-y-4">
-                        <h2 className="text-xl font-bold text-slate-600 bg-slate-50 px-10 py-6 rounded-3xl border border-slate-100 italic inline-block">
+                        <h2 className="text-xl font-bold text-slate-600 bg-slate-50 px-10 py-6 rounded-xl border border-slate-100 italic inline-block">
                              Direction des Affaires Financières et du Patrimoine (DAFP)
                         </h2>
                         <p className="text-slate-400 font-black uppercase text-xs tracking-[0.3em]">Service de l'Intendance et de la Logistique</p>
                     </div>
 
-                    <div className="mt-16 p-10 border-[6px] border-double border-slate-200 rounded-[2.5rem] bg-slate-50/30">
+                    <div className="mt-16 p-10 border-[6px] border-double border-slate-200 rounded-xl bg-slate-50/30">
                         <p className="text-2xl font-black uppercase underline decoration-slate-300 decoration-4 underline-offset-8">
                             SITUATION AU : {format(new Date(), 'dd MMMM yyyy', { locale: fr })}
                         </p>
@@ -117,7 +117,7 @@ export function SuppliesOfficialReport({
 
                 {/* --- KPI Block in Official Style --- */}
                 <div className="grid grid-cols-4 gap-4 mb-10">
-                    <div className="border border-slate-200 p-4 rounded-2xl bg-slate-50/50">
+                    <div className="border border-slate-200 p-4 rounded-xl bg-slate-50/50">
                         <div className="flex items-center gap-2 text-slate-400 mb-2">
                             <Package className="h-3.5 w-3.5" />
                             <span className="text-[10px] font-black uppercase tracking-wider">Total Articles</span>
@@ -221,7 +221,7 @@ export function SuppliesOfficialReport({
                 <div className="mt-12 grid grid-cols-2 gap-12 pt-8 border-t border-slate-100">
                     <div className="space-y-4">
                         <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest italic underline underline-offset-4">Visa Technique (Logistique)</p>
-                        <div className="h-32 w-56 border-2 border-dashed border-slate-100 rounded-[2rem] flex flex-col items-center justify-center p-6 text-center">
+                        <div className="h-32 w-56 border-2 border-dashed border-slate-100 rounded-xl flex flex-col items-center justify-center p-6 text-center">
                             <span className="text-[9px] text-slate-300 font-bold uppercase tracking-[0.2em] leading-tight">Réservé au Chef de Service<br />Patrimoine & Maintenance</span>
                         </div>
                     </div>

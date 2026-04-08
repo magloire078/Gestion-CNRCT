@@ -48,18 +48,21 @@ const db = initializeFirestore(app, {});
 const auth = getAuth(app);
 const storage = getStorage(app);
 
-// Enable offline persistence for Firestore in the browser
+// Enable offline persistence for Firestore in the browser (safely)
 if (typeof window !== 'undefined' && isConfigValid) {
-  enableMultiTabIndexedDbPersistence(db).catch((err) => {
-      if (err.code === 'failed-precondition') {
-          // Multiple tabs open, persistence can only be enabled in one tab at a time.
-          // Note: with enableMultiTabIndexedDbPersistence, this shouldn't happen unless some tabs are NOT multi-tab.
-          console.warn('[Firestore] Persistence failed: Multiple tabs open');
-      } else if (err.code === 'unimplemented') {
-          // The current browser does not support all of the features required to enable persistence
-          console.warn('[Firestore] Persistence unimplemented for this browser');
-      }
-  });
+  try {
+    enableMultiTabIndexedDbPersistence(db).catch((err) => {
+        if (err.code === 'failed-precondition') {
+            console.warn('[Firestore] Persistence failed: Multiple tabs open');
+        } else if (err.code === 'unimplemented' || err.code === 'unauthorized') {
+            console.warn('[Firestore] Persistence unimplemented/restricted for this browser');
+        } else {
+            console.warn('[Firestore] Persistence initialization failed (harmless):', err.message);
+        }
+    });
+  } catch (e) {
+    console.warn('[Firestore] Critical error during persistence setup:', e);
+  }
 }
 
 if (isConfigValid && typeof window !== 'undefined') {

@@ -251,6 +251,23 @@ export async function getEmployees(): Promise<Employe[]> {
     });
 }
 
+/**
+ * Récupère un annuaire simplifié des employés via une API sécurisée.
+ * Cette version ne contient pas de données sensibles (salaires, etc.)
+ */
+export async function getEmployeeDirectory(): Promise<Employe[]> {
+    try {
+        const response = await fetch('/api/employees/directory');
+        if (!response.ok) {
+            throw new Error('Erreur lors de la récupération de l\'annuaire');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('[EmployeeService] Failed to fetch employee directory:', error);
+        throw error;
+    }
+}
+
 export async function getEmployee(id: string): Promise<Employe | null> {
     if (!id) return null;
 

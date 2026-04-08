@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SearchableSelect, SearchableSelectItem } from "@/components/ui/searchable-select";
 import { useToast } from "@/hooks/use-toast";
-import { getEmployees } from "@/services/employee-service";
+import { getEmployeeDirectory } from "@/services/employee-service";
 import { logSupplyTransaction } from "@/services/supply-service";
 import type { Supply, Employe } from "@/lib/data";
 import { Package, User, Hash, Calendar } from "lucide-react";
@@ -39,7 +39,7 @@ export function DistributeSupplyDialog({ isOpen, onCloseAction, supply }: Distri
             const fetchEmployees = async () => {
                 setLoading(true);
                 try {
-                    const data = await getEmployees();
+                    const data = await getEmployeeDirectory();
                     setEmployees(data);
                 } catch (error) {
                     console.error("Failed to fetch employees:", error);
@@ -120,7 +120,7 @@ export function DistributeSupplyDialog({ isOpen, onCloseAction, supply }: Distri
 
     return (
         <Dialog open={isOpen} onOpenChange={onCloseAction}>
-            <DialogContent className="sm:max-w-[450px] rounded-2xl">
+            <DialogContent className="sm:max-w-[450px] rounded-xl">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2 text-xl font-black">
                         <Package className="h-5 w-5 text-slate-400" />
@@ -158,7 +158,7 @@ export function DistributeSupplyDialog({ isOpen, onCloseAction, supply }: Distri
                                     max={supply.quantity}
                                     value={quantity}
                                     onChange={(e) => setQuantity(parseInt(e.target.value))}
-                                    className="rounded-xl border-slate-200 focus:ring-slate-900" 
+                                    className="rounded-lg border-slate-200 focus:ring-slate-900" 
                                 />
                                 <p className="text-[10px] text-slate-400 font-medium">
                                     Stock disponible: <span className="font-bold text-slate-900">{supply.quantity}</span>
@@ -173,17 +173,17 @@ export function DistributeSupplyDialog({ isOpen, onCloseAction, supply }: Distri
                                     type="date" 
                                     value={date}
                                     onChange={(e) => setDate(e.target.value)}
-                                    className="rounded-xl border-slate-200 focus:ring-slate-900" 
+                                    className="rounded-lg border-slate-200 focus:ring-slate-900" 
                                 />
                             </div>
                         </div>
                     </div>
 
                     <DialogFooter className="pt-4">
-                        <Button type="button" variant="ghost" onClick={onCloseAction} disabled={submitting} className="rounded-xl">
+                        <Button type="button" variant="ghost" onClick={onCloseAction} disabled={submitting} className="rounded-lg">
                             Annuler
                         </Button>
-                        <Button type="submit" disabled={submitting || supply.quantity <= 0} className="bg-slate-900 rounded-xl px-8">
+                        <Button type="submit" disabled={submitting || supply.quantity <= 0} className="bg-slate-900 rounded-lg px-8">
                             {submitting ? "Traitement..." : "Valider la Sortie"}
                         </Button>
                     </DialogFooter>

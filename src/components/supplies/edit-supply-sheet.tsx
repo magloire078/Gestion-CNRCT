@@ -22,11 +22,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { Supply, Asset } from "@/lib/data";
-import { supplyCategories } from "@/lib/constants/supply";
 import { getAssets } from "@/services/asset-service";
 import { useToast } from "@/hooks/use-toast";
 import { X, Image as ImageIcon, AlertCircle } from "lucide-react";
 import { SYSCOHADA_SUPPLIES_CATALOG, type SyscohadaItem } from "@/services/syscohada-service";
+import { SupplyCategory, subscribeToCategories } from "@/services/supply-category-service";
 
 interface EditSupplySheetProps {
   isOpen: boolean;
@@ -55,15 +55,36 @@ export function EditSupplySheet({
   const [suggestions, setSuggestions] = useState<SyscohadaItem[]>([]);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [availableCategories, setAvailableCategories] = useState<SupplyCategory[]>([]);
   const { toast } = useToast();
 
   useEffect(() => {
-    if (!code && category) {
-      if (category === 'Papeterie') setCode('602-');
-      else if (category === 'Cartouches d\'encre' || category === 'Matériel de nettoyage') setCode('606-');
-      else setCode('606-');
+    if (isOpen) {
+      const unsubscribe = subscribeToCategories(
+        (data) => setAvailableCategories(data),
+        (err) => console.error("Error fetching categories:", err)
+      );
+      return () => unsubscribe();
     }
-  }, [category, code]);
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!code && category) {
+      const selectedCat = availableCategories.find(c => c.name === category);
+      if (selectedCat?.syscohadaAccount) {
+        // Only set prefix if not already set or different
+        const prefix = `${selectedCat.syscohadaAccount}-`;
+        if (!code.startsWith(prefix)) {
+          setCode(prefix);
+        }
+      } else {
+        // Fallback for known legacy categories
+        if (category === 'Petits matériels, fourniture de bureau et documentation') setCode('6211-');
+        else if (category === 'Cartouches d\'encre' || category === 'Matériel de nettoyage') setCode('606-');
+        else if (category === 'Fourniture et consommables pour le materiel informatique') setCode('6214-');
+      }
+    }
+  }, [category, code, availableCategories]);
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -217,7 +238,12 @@ export function EditSupplySheet({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {supplyCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
+                  {availableCategories.map(cat => (
+                    <SelectItem key={cat.id} value={cat.name}>{cat.name}</SelectItem>
+                  ))}
+                  {availableCategories.length === 0 && (
+                     <SelectItem value="none" disabled>Chargement...</SelectItem>
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -250,19 +276,19 @@ export function EditSupplySheet({
               <div className="col-span-3 flex flex-col gap-2">
                 <div className="flex items-center gap-4">
                   {photoPreview ? (
-                    <div className="relative w-16 h-16 rounded-lg overflow-hidden border border-slate-200 shadow-sm transition-all hover:scale-105 group">
+                    <div className="relative w-16 h-16 rounded-md overflow-hidden border border-slate-200 shadow-sm transition-all hover:scale-105 group">
                       <img src={photoPreview} alt="Preview" className="w-full h-full object-cover" />
                       <button 
                         type="button" 
                         onClick={() => { setPhotoFile(null); setPhotoPreview(null); }}
-                        className="absolute top-0 right-0 bg-red-500 text-white rounded-bl-lg p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 shadow-sm"
+                        className="absolute top-0 right-0 bg-red-500 text-white rounded-bl-md p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 shadow-sm"
                         title="Supprimer la photo"
                       >
                         <X className="h-3 w-3" />
                       </button>
                     </div>
                   ) : (
-                    <div className="w-16 h-16 rounded-lg bg-slate-50 border-2 border-dashed border-slate-200 flex flex-col items-center justify-center transition-colors hover:bg-slate-100 hover:border-slate-300 pointer-events-none">
+                    <div className="w-16 h-16 rounded-md bg-slate-50 border-2 border-dashed border-slate-200 flex flex-col items-center justify-center transition-colors hover:bg-slate-100 hover:border-slate-300 pointer-events-none">
                       <ImageIcon className="h-6 w-6 text-slate-300" />
                       <span className="text-[8px] text-slate-400 mt-1 uppercase font-bold">Photo</span>
                     </div>
@@ -296,7 +322,7 @@ export function EditSupplySheet({
               <Input id="reorderLevel-edit" type="number" value={reorderLevel} onChange={(e) => setReorderLevel(Number(e.target.value))} className="col-span-3" />
             </div>
             {error && (
-              <div className="col-span-4 flex items-center justify-center gap-2 p-3 rounded-lg bg-red-50 text-red-600 border border-red-100 animate-in fade-in zoom-in duration-300">
+              <div className="col-span-4 flex items-center justify-center gap-2 p-3 rounded-md bg-red-50 text-red-600 border border-red-100 animate-in fade-in zoom-in duration-300">
                 <AlertCircle className="h-4 w-4" />
                 <p className="text-xs font-bold leading-tight">{error}</p>
               </div>

@@ -229,9 +229,9 @@ export const DirectoireMap: React.FC<DirectoireMapProps> = ({
             });
 
             const popupContent = `
-                <div class="p-4 min-w-[200px] bg-slate-900 text-white rounded-2xl">
+                <div class="p-4 min-w-[200px] bg-slate-900 text-white rounded-xl">
                     <div class="flex items-center gap-3 mb-3 border-b border-white/10 pb-3">
-                        <div class="w-12 h-12 rounded-xl overflow-hidden border border-[#D4AF37]/50 shadow-lg">
+                        <div class="w-12 h-12 rounded-lg overflow-hidden border border-[#D4AF37]/50 shadow-lg">
                             <img src="${member.photo || 'https://api.dicebear.com/7.x/initials/svg?seed=' + member.name}" class="w-full h-full object-cover" />
                         </div>
                         <div>
@@ -241,13 +241,13 @@ export const DirectoireMap: React.FC<DirectoireMapProps> = ({
                     </div>
                     <div class="space-y-2">
                         <div class="flex items-center gap-2">
-                            <div class="w-5 h-5 rounded-lg bg-white/5 flex items-center justify-center">
+                            <div class="w-5 h-5 rounded-md bg-white/5 flex items-center justify-center">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path><circle cx="12" cy="10" r="3"></circle></svg>
                             </div>
                             <p class="text-[9px] font-bold text-slate-300 uppercase letter-wider">${member.region}</p>
                         </div>
                         <div class="flex items-center gap-2">
-                            <div class="w-5 h-5 rounded-lg bg-white/5 flex items-center justify-center">
+                            <div class="w-5 h-5 rounded-md bg-white/5 flex items-center justify-center">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
                             </div>
                             <p class="text-xs font-medium text-slate-100">${member.locality}</p>
@@ -275,7 +275,7 @@ export const DirectoireMap: React.FC<DirectoireMapProps> = ({
     }, [mapReady, validMembers]);
 
     if (!isClient) {
-        return <div className={cn("bg-muted rounded-2xl flex items-center justify-center min-h-[600px]", className)}>
+        return <div className={cn("bg-muted rounded-xl flex items-center justify-center min-h-[600px]", className)}>
             <Loader2 className="h-10 w-10 animate-spin text-muted-foreground" />
         </div>;
     }
@@ -283,13 +283,13 @@ export const DirectoireMap: React.FC<DirectoireMapProps> = ({
     return (
         <div 
             id="map-visualization"
-            className={cn("relative rounded-2xl overflow-hidden shadow-2xl border-2 border-[#D4AF37]/20 bg-white min-h-[600px]", className)} 
+            className={cn("relative rounded-xl overflow-hidden shadow-2xl border-2 border-[#D4AF37]/20 bg-white min-h-[600px]", className)} 
         >
             <div ref={mapContainerRef} className="absolute inset-0 z-0" />
             
             {/* Elegant Header Overlay */}
             <div className="absolute top-4 left-0 right-0 z-[1000] flex justify-center pointer-events-none">
-                <div className="bg-slate-900/80 backdrop-blur-xl border border-white/10 rounded-2xl p-3 shadow-2xl inline-block pointer-events-auto">
+                <div className="bg-slate-900/80 backdrop-blur-xl border border-white/10 rounded-xl p-3 shadow-2xl inline-block pointer-events-auto">
                     <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-lg bg-[#D4AF37] flex items-center justify-center shadow-lg shadow-[#D4AF37]/20">
                             <Crown className="w-4 h-4 text-white stroke-[2.5]" />
@@ -317,7 +317,7 @@ export const DirectoireMap: React.FC<DirectoireMapProps> = ({
                         }
                     }}
                     title="Recentrer"
-                    className="p-3 bg-white/90 backdrop-blur-md rounded-2xl shadow-xl hover:bg-white transition-all group border border-slate-200"
+                    className="p-3 bg-white/90 backdrop-blur-md rounded-lg shadow-xl hover:bg-white transition-all group border border-slate-200"
                 >
                     <Navigation className="w-5 h-5 text-slate-600 group-hover:text-[#D4AF37]" />
                 </button>

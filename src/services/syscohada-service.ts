@@ -2,20 +2,20 @@
 export interface SyscohadaItem {
     code: string;
     name: string;
-    category: "Papeterie" | "Cartouches d'encre" | "Matériel de nettoyage" | "Autre";
+    category: "Petits matériels, fourniture de bureau et documentation" | "Fourniture et consommables pour le materiel informatique" | "Cartouches d'encre" | "Matériel de nettoyage" | "Archives" | "Outils" | "Autre";
 }
 
 export const SYSCOHADA_SUPPLIES_CATALOG: SyscohadaItem[] = [
     // CHAPITRE 60 : ACHATS DE BIENS
     // ARTICLE 602 : FOURNITURES CONSOMMABLES (Papeterie, Bureau)
-    { code: "602101", name: "Rames de papier A4 (80g)", category: "Papeterie" },
-    { code: "602102", name: "Stylos à bille (Bleu / Noir / Rouge)", category: "Papeterie" },
-    { code: "602103", name: "Enveloppes (A4 / A5 / DL)", category: "Papeterie" },
-    { code: "602104", name: "Cahiers et Blocs-notes", category: "Papeterie" },
-    { code: "602105", name: "Classeurs et Chemises", category: "Papeterie" },
-    { code: "602106", name: "Agrafeuses et Agrafes", category: "Papeterie" },
-    { code: "602107", name: "Trombones et Punaises", category: "Papeterie" },
-    { code: "602108", name: "Marqueurs et Surligneurs", category: "Papeterie" },
+    { code: "602101", name: "Rames de papier A4 (80g)", category: "Petits matériels, fourniture de bureau et documentation" },
+    { code: "602102", name: "Stylos à bille (Bleu / Noir / Rouge)", category: "Petits matériels, fourniture de bureau et documentation" },
+    { code: "602103", name: "Enveloppes (A4 / A5 / DL)", category: "Petits matériels, fourniture de bureau et documentation" },
+    { code: "602104", name: "Cahiers et Blocs-notes", category: "Petits matériels, fourniture de bureau et documentation" },
+    { code: "602105", name: "Classeurs et Chemises", category: "Petits matériels, fourniture de bureau et documentation" },
+    { code: "602106", name: "Agrafeuses et Agrafes", category: "Petits matériels, fourniture de bureau et documentation" },
+    { code: "602107", name: "Trombones et Punaises", category: "Petits matériels, fourniture de bureau et documentation" },
+    { code: "602108", name: "Marqueurs et Surligneurs", category: "Petits matériels, fourniture de bureau et documentation" },
 
     // ARTICLE 606 : ACHATS DE MATIÈRES ET FOURNITURES (Informatique, Entretien)
     { code: "606101", name: "Cartouches d'encre Noir", category: "Cartouches d'encre" },
@@ -36,6 +36,11 @@ export const SYSCOHADA_SUPPLIES_CATALOG: SyscohadaItem[] = [
     { code: "606901", name: "Piles (AA / AAA)", category: "Autre" },
     { code: "606902", name: "Ampoules et Tubes néons", category: "Autre" },
     { code: "606903", name: "Petit outillage de bureau", category: "Autre" },
+
+    // ARTICLE 6211 : FOURNITURES DE BUREAU, MATÉRIEL INFORMATIQUE ET DOCUMENTATION
+    { code: "621101", name: "Papeterie et fournitures de bureau", category: "Petits matériels, fourniture de bureau et documentation" },
+    { code: "621102", name: "Livres, revues et documentation technique", category: "Petits matériels, fourniture de bureau et documentation" },
+    { code: "621103", name: "Fournitures informatiques non stockables", category: "Petits matériels, fourniture de bureau et documentation" },
 ];
 
 /**

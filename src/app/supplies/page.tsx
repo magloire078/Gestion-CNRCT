@@ -1,37 +1,42 @@
 "use client";
 
-import { useState, useMemo, useEffect, useTransition, useDeferredValue, memo, useCallback } from "react";
+import React, { useState, useEffect, useTransition, useMemo, useCallback, useDeferredValue, memo } from "react";
 import { 
-    PlusCircle, Search, Package, MoreHorizontal, 
-    Pencil, Trash2, LayoutGrid, List,
-    Archive, AlertTriangle, CheckCircle2,
-    TrendingDown, BarChart3, Filter,
-    Download, ShoppingCart, Info, ChevronRight,
-    Printer, Zap
+  Package, 
+  PlusCircle, 
+  Search, 
+  Filter, 
+  MoreHorizontal, 
+  Trash2, 
+  Pencil, 
+  ShoppingCart, 
+  AlertTriangle, 
+  CheckCircle2, 
+  Archive, 
+  BarChart3, 
+  TrendingUp, 
+  FileText,
+  Printer,
+  LayoutGrid,
+  List,
+  Zap,
+  Info,
+  ChevronRight,
+  ExternalLink,
+  Settings,
+  Database,
+  RefreshCw
 } from "lucide-react";
-import { InstitutionalHeader } from "@/components/reports/institutional-header";
-import { InstitutionalFooter } from "@/components/reports/institutional-footer";
-import { InstitutionalReportWrapper } from "@/components/reports/institutional-report-wrapper";
-import { SuppliesOfficialReport } from "@/components/reports/supplies-official-report";
-import { PrintSuppliesDialog, type PrintOptions } from "@/components/supplies/print-supplies-dialog";
-import { bulkImportSupplies } from "@/scripts/import-supplies";
+
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  CardFooter,
-} from "@/components/ui/card";
-import { DebouncedInput } from "@/components/ui/debounced-input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+import { Input } from "@/components/ui/input";
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
 } from "@/components/ui/table";
 import {
   DropdownMenu,
@@ -40,42 +45,57 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import { ConfirmationDialog } from "@/components/common/confirmation-dialog";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { 
-    subscribeToSupplies, addSupply, updateSupply, deleteSupply,
-    subscribeToSupplyTransactions, deleteSupplyTransaction
-} from "@/services/supply-service";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { Progress } from "@/components/ui/progress";
-import { PaginationControls } from "@/components/common/pagination-controls";
-import { cn } from "@/lib/utils";
+
 import { 
-    Tabs, 
-    TabsContent, 
-    TabsList, 
-    TabsTrigger 
-} from "@/components/ui/tabs";
-import type { Supply, SupplyTransaction } from "@/lib/data";
-import { SupplyTransactionList } from "@/components/supplies/supply-transaction-list";
-import { useAuth } from "@/hooks/use-auth";
-import { PermissionGuard } from "@/components/auth/permission-guard";
+  Supply, 
+  SupplyTransaction, 
+} from "@/types/asset";
+import { SupplyCategory, subscribeToCategories } from "@/services/supply-category-service";
+import { 
+  subscribeToSupplies, 
+  subscribeToSupplyTransactions,
+  addSupply, 
+  updateSupply, 
+  deleteSupply,
+  deleteSupplyTransaction,
+} from "@/services/supply-service";
 
 
-import { supplyCategories } from "@/lib/constants/supply";
 import { AddSupplySheet } from "@/components/supplies/add-supply-sheet";
 import { EditSupplySheet } from "@/components/supplies/edit-supply-sheet";
 import { DistributeSupplyDialog } from "@/components/supplies/distribute-supply-dialog";
 import { RestockSupplyDialog } from "@/components/supplies/restock-supply-dialog";
+import { SupplyTransactionList } from "@/components/supplies/supply-transaction-list";
+import { ManageCategoriesDialog } from "@/components/supplies/manage-categories-dialog";
+import { ConfirmationDialog } from "@/components/common/confirmation-dialog";
+import { PaginationControls } from "@/components/common/pagination-controls";
+import { PrintSuppliesDialog, PrintOptions } from "@/components/supplies/print-supplies-dialog";
+import { InstitutionalHeader } from "@/components/reports/institutional-header";
+import { InstitutionalFooter } from "@/components/reports/institutional-footer";
+import { InstitutionalReportWrapper } from "@/components/reports/institutional-report-wrapper";
+import { SuppliesOfficialReport } from "@/components/reports/supplies-official-report";
+import { PermissionGuard } from "@/components/auth/permission-guard";
+import { useAuth } from "@/hooks/use-auth";
+import { cn } from "@/lib/utils";
 
+// Helper component for debounced search
+const DebouncedInput = ({ value: initialValue, onChange, debounce = 300, ...props }: any) => {
+    const [value, setValue] = useState(initialValue);
+    useEffect(() => { setValue(initialValue); }, [initialValue]);
+    useEffect(() => {
+        const timeout = setTimeout(() => onChange(value), debounce);
+        return () => clearTimeout(timeout);
+    }, [value]);
+    return <Input {...props} value={value} onChange={e => setValue(e.target.value)} />;
+};
+
+// Stock Health Status Logic
 const getStockStatus = (quantity: number, reorderLevel: number) => {
     if (quantity <= 0) return { text: "Rupture", color: "destructive", variant: "destructive" as any, value: 5, className: "bg-red-500", icon: AlertTriangle };
     if (quantity <= reorderLevel) return { text: "Stock Bas", color: "warning", variant: "secondary" as any, value: (quantity / (reorderLevel * 2)) * 100, className: "bg-amber-500", icon: AlertTriangle };
@@ -174,6 +194,105 @@ const SupplyRow = memo(({
     );
 });
 
+// Memoized Card component for Grid view
+const SupplyCard = memo(({ 
+  supply, 
+  status, 
+  openDistributeDialog, 
+  openEditSheet, 
+  setDeleteTarget 
+}: {
+  supply: Supply;
+  status: any;
+  openDistributeDialog: (s: Supply) => void;
+  openEditSheet: (s: Supply) => void;
+  setDeleteTarget: (s: Supply) => void;
+}) => {
+  return (
+    <Card key={supply.id} className="group overflow-hidden rounded-2xl border-slate-100 hover:shadow-lg hover:shadow-slate-200/50 transition-all border-none bg-slate-50 relative">
+        <div className={cn("h-1 w-full", status.className)} />
+        <CardHeader className="pb-3">
+            <div className="flex justify-between items-start">
+                <Badge variant="outline" className="bg-white border-slate-200 rounded-lg text-[10px] font-bold mb-2">
+                    {supply.category}
+                </Badge>
+                {supply.code && (
+                    <Badge variant="secondary" className="bg-slate-100 text-slate-600 border-none rounded-lg text-[10px] font-bold mb-2 ml-2">
+                        {supply.code}
+                    </Badge>
+                )}
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg"><MoreHorizontal className="h-4 w-4" /></Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="rounded-xl border-slate-100 shadow-xl">
+                        <DropdownMenuItem onClick={() => openEditSheet(supply)}><Pencil className="mr-2 h-4 w-4" /> Modifier</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setDeleteTarget(supply)} className="text-red-600"><Trash2 className="mr-2 h-4 w-4" /> Supprimer</DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </div>
+            <CardTitle className="text-lg font-black text-slate-800">{supply.name}</CardTitle>
+        </CardHeader>
+        <div className="px-6 pb-2">
+            <div className="w-full aspect-[4/3] rounded-xl bg-slate-100/50 border border-slate-200/50 overflow-hidden flex items-center justify-center relative group shadow-inner">
+                {supply.photoUrl ? (
+                    <img src={supply.photoUrl} alt={supply.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                ) : (
+                    <div className="flex flex-col items-center gap-2">
+                        <Package className="h-10 w-10 text-slate-200" />
+                        <span className="text-[10px] text-slate-300 font-bold uppercase tracking-wider">Aucune Photo</span>
+                    </div>
+                )}
+                {supply.quantity <= supply.reorderLevel && (
+                    <div className="absolute top-2 left-2 px-2 py-0.5 bg-red-500 text-white text-[8px] font-black uppercase rounded-full shadow-md z-10">Stock Bas</div>
+                )}
+            </div>
+        </div>
+        <CardContent className="pb-6">
+            <div className="space-y-4">
+                <div className="flex justify-between items-end">
+                    <div className="space-y-0.5">
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">En Stock</p>
+                        <p className="text-2xl font-black text-slate-900">{supply.quantity}</p>
+                    </div>
+                    <div className="text-right space-y-0.5">
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Seuil</p>
+                        <p className="text-xs font-bold text-slate-600">{supply.reorderLevel}</p>
+                    </div>
+                </div>
+                <div className="space-y-1.5">
+                     <div className="flex justify-between text-[10px] font-bold uppercase tracking-tight">
+                        <span className={cn(
+                            status.color === 'destructive' ? "text-red-500" :
+                            status.color === 'warning' ? "text-amber-500" : "text-emerald-500"
+                        )}>{status.text}</span>
+                        <span className="text-slate-400">{Math.round(status.value)}%</span>
+                    </div>
+                    <Progress value={status.value} className="h-1.5 rounded-full bg-white border border-slate-100" indicatorClassName={cn("transition-all duration-1000", status.className)} />
+                </div>
+                <div className="pt-2">
+                    <Button 
+                        onClick={() => openDistributeDialog(supply)} 
+                        disabled={supply.quantity <= 0}
+                        className="w-full bg-slate-900 rounded-xl h-9 text-xs font-bold"
+                    >
+                        <ShoppingCart className="mr-2 h-3.5 w-3.5" /> Donner à...
+                    </Button>
+                </div>
+            </div>
+        </CardContent>
+        <CardFooter className="bg-white/50 py-3 border-t border-slate-100 flex justify-between items-center px-6">
+            <div className="flex items-center gap-1 text-[10px] text-slate-400 font-medium italic">
+                <Info className="h-3 w-3" /> MAJ: {supply.lastRestockDate || 'N/A'}
+            </div>
+            <Button variant="ghost" size="sm" onClick={() => openEditSheet(supply)} className="h-7 text-[10px] uppercase font-black tracking-widest text-slate-400 hover:text-slate-900 p-0 hover:bg-transparent">
+                Détails <ChevronRight className="ml-1 h-3 w-3" />
+            </Button>
+        </CardFooter>
+    </Card>
+  );
+});
+
 export default function SuppliesPage() {
   const [isPending, startTransition] = useTransition();
   const [supplies, setSupplies] = useState<Supply[]>([]);
@@ -188,6 +307,9 @@ export default function SuppliesPage() {
   const [isPrintDialogOpen, setIsPrintDialogOpen] = useState(false);
   const [printOptions, setPrintOptions] = useState<PrintOptions | null>(null);
   const [isPrinting, setIsPrinting] = useState(false);
+  const [availableCategories, setAvailableCategories] = useState<SupplyCategory[]>([]);
+  const [isManageCategoriesOpen, setIsManageCategoriesOpen] = useState(false);
+
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -201,6 +323,73 @@ export default function SuppliesPage() {
   const [historyPage, setHistoryPage] = useState(1);
   const [historyItemsPerPage, setHistoryItemsPerPage] = useState(10);
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
+
+  const [isPendingAction, setIsPendingAction] = useState(false);
+
+  // Valeurs par défaut mémorisées
+  const defaultArray = useMemo(() => [], []);
+
+  // Handlers mémorisés pour la navigation et les modals
+  const toggleViewMode = useCallback((mode: 'table' | 'grid') => setViewMode(mode), []);
+  const handleTabChange = useCallback((v: string) => setActiveTab(v), []);
+  
+  const handleOpenAddSheet = useCallback(() => {
+    startTransition(() => {
+      setIsAddSheetOpen(true);
+    });
+  }, []);
+
+  const closeAddSheet = useCallback(() => setIsAddSheetOpen(false), []);
+
+  const openEditSheet = useCallback((supply: Supply) => {
+    startTransition(() => {
+      setSelectedSupply(supply);
+      setIsEditSheetOpen(true);
+    });
+  }, []);
+
+  const closeEditSheet = useCallback(() => setIsEditSheetOpen(false), []);
+
+  const openDistributeDialog = useCallback((supply: Supply) => {
+    startTransition(() => {
+      setSelectedSupply(supply);
+      setIsDistributeDialogOpen(true);
+    });
+  }, []);
+
+  const closeDistributeDialog = useCallback(() => setIsDistributeDialogOpen(false), []);
+
+  const openRestockDialog = useCallback((supply: Supply) => {
+    startTransition(() => {
+      setSelectedSupply(supply);
+      setIsRestockDialogOpen(true);
+    });
+  }, []);
+
+  const closeRestockDialog = useCallback(() => setIsRestockDialogOpen(false), []);
+
+  const handleSetDeleteTarget = useCallback((s: Supply | null) => setDeleteTarget(s), []);
+
+  const openPrintDialog = useCallback(() => {
+    startTransition(() => {
+      setIsPrintDialogOpen(true);
+    });
+  }, []);
+
+  const handleClosePrintDialog = useCallback(() => setIsPrintDialogOpen(false), []);
+
+  const handleSearchChange = useCallback((val: string | number) => {
+    startTransition(() => {
+      setSearchTerm(String(val));
+    });
+  }, []);
+
+  const handleCategoryFilterChange = (value: string) => {
+    startTransition(() => {
+        setCategoryFilter(value);
+        setCurrentPage(1);
+    });
+  };
 
   useEffect(() => {
     const unsubscribeSupplies = subscribeToSupplies(
@@ -218,18 +407,24 @@ export default function SuppliesPage() {
 
     const unsubscribeTransactions = subscribeToSupplyTransactions(
       (fetchedTransactions) => {
-        setTransactions(fetchedTransactions);
+        setTransactions(fetchedTransactions || defaultArray);
       },
       (err) => {
         console.error("Failed to load transactions", err);
       }
     );
 
+    const unsubscribeCategories = subscribeToCategories(
+      (data) => setAvailableCategories(data),
+      (err) => console.error("Failed to load categories", err)
+    );
+
     return () => {
         unsubscribeSupplies();
         unsubscribeTransactions();
+        unsubscribeCategories();
     };
-  }, []);
+  }, [defaultArray]);
 
   const handleAddSupply = async (newSupplyData: Omit<Supply, "id">, photoFile?: File | null) => {
     try {
@@ -297,8 +492,6 @@ export default function SuppliesPage() {
     }
   };
 
-  const [isPendingAction, setIsPendingAction] = useState(false);
-
   const handleCleanDuplicates = async () => {
     if (!confirm("Cette opération va supprimer tous les articles d'inventaire dont l'identifiant n'est pas synchronisé. Continuer ?")) return;
     
@@ -331,32 +524,6 @@ export default function SuppliesPage() {
         setIsPendingAction(false);
     }
   };
-
-  const openEditSheet = useCallback((supply: Supply) => {
-    startTransition(() => {
-      setSelectedSupply(supply);
-      setIsEditSheetOpen(true);
-    });
-  }, []);
-
-  const openDistributeDialog = useCallback((supply: Supply) => {
-    startTransition(() => {
-      setSelectedSupply(supply);
-      setIsDistributeDialogOpen(true);
-    });
-  }, []);
-
-  const openRestockDialog = useCallback((supply: Supply) => {
-    startTransition(() => {
-      setSelectedSupply(supply);
-      setIsRestockDialogOpen(true);
-    });
-  }, []);
-
-  const closeDistributeDialog = useCallback(() => setIsDistributeDialogOpen(false), []);
-  const closeEditSheet = useCallback(() => setIsEditSheetOpen(false), []);
-  const closeAddSheet = useCallback(() => setIsAddSheetOpen(false), []);
-  const handleSetDeleteTarget = useCallback((s: Supply | null) => setDeleteTarget(s), []);
 
   const deferredSearchTerm = useDeferredValue(searchTerm);
 
@@ -416,10 +583,6 @@ export default function SuppliesPage() {
     setSupplies(sorted); // Note: this affects the UI too, which is fine for printing
     setIsPrinting(true);
   }, [filteredSupplies]);
-
-  const handleClosePrintDialog = useCallback(() => {
-    setIsPrintDialogOpen(false);
-  }, []);
 
   const printableSupplies = useMemo(() => {
     if (!printOptions) return [];
@@ -482,12 +645,13 @@ export default function SuppliesPage() {
             >
               <Printer className="mr-2 h-4 w-4" /> Imprimer Rapport
             </Button>
+
             <Button 
-                onClick={bulkImportSupplies}
+                onClick={() => setIsManageCategoriesOpen(true)}
                 variant="outline" 
-                className="rounded-xl border-emerald-200 bg-emerald-50 text-emerald-700 font-bold shadow-sm hover:bg-emerald-100"
+                className="rounded-xl border-slate-200 font-bold shadow-sm"
             >
-              <Zap className="mr-2 h-4 w-4" /> Synchroniser Listes
+              <Settings className="mr-2 h-4 w-4" /> Gérer Catégories
             </Button>
             <Button onClick={() => setIsAddSheetOpen(true)} className="bg-slate-900 rounded-xl h-11 font-bold">
                 <PlusCircle className="mr-2 h-4 w-4" />
@@ -497,7 +661,7 @@ export default function SuppliesPage() {
       </div>
 
       {/* Global Card */}
-      <Tabs defaultValue="inventory" className="w-full" onValueChange={(v) => setActiveTab(v as any)}>
+      <Tabs defaultValue="inventory" className="w-full" onValueChange={handleTabChange}>
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
             <TabsList className="bg-muted/50 p-1">
                 <TabsTrigger value="inventory" className="gap-2">
@@ -591,17 +755,17 @@ export default function SuppliesPage() {
                   placeholder="Filtrer..."
                   className="pl-9 h-10 w-full md:w-[250px] rounded-xl border-slate-200 focus:ring-slate-900"
                   value={searchTerm}
-                  onChange={(val) => startTransition(() => setSearchTerm(String(val)))}
+                  onChange={handleSearchChange}
                 />
               </div>
-              <Select value={categoryFilter} onValueChange={(v) => startTransition(() => setCategoryFilter(v))}>
+              <Select value={categoryFilter} onValueChange={handleCategoryFilterChange}>
                 <SelectTrigger className="w-full sm:w-[200px] h-10 rounded-xl border-slate-200 text-slate-900 font-bold">
                     <Filter className="mr-2 h-3.5 w-3.5 text-slate-400" />
                     <SelectValue placeholder="Catégorie" />
                 </SelectTrigger>
                 <SelectContent className="rounded-xl">
                   <SelectItem value="all">Toutes les catégories</SelectItem>
-                  {supplyCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
+                  {availableCategories.map(cat => <SelectItem key={cat.id} value={cat.name}>{cat.name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
@@ -615,9 +779,9 @@ export default function SuppliesPage() {
                     <Table>
                         <TableHeader className="bg-slate-50/80">
                         <TableRow className="border-slate-100 hover:bg-transparent">
-                            <TableHead className="py-4 pl-6 font-bold text-slate-700 uppercase tracking-wider text-[11px]">Code</TableHead>
+                            <TableHead className="py-4 pl-6 font-bold text-slate-700 uppercase tracking-wider text-[11px]">Ordre</TableHead>
+                            <TableHead className="py-4 font-bold text-slate-700 uppercase tracking-wider text-[11px]">Code</TableHead>
                             <TableHead className="py-4 font-bold text-slate-700 uppercase tracking-wider text-[11px]">Désignation</TableHead>
-                            <TableHead className="py-4 font-bold text-slate-700 uppercase tracking-wider text-[11px]">Réf. Fournisseur</TableHead>
                             <TableHead className="py-4 font-bold text-slate-700 uppercase tracking-wider text-[11px]">Catégorie</TableHead>
                             <TableHead className="text-center text-[10px] font-bold uppercase tracking-widest text-slate-400">Stock</TableHead>
                             <TableHead className="text-center text-[10px] font-bold uppercase tracking-widest text-slate-400">Seuil Alerte</TableHead>
@@ -630,8 +794,8 @@ export default function SuppliesPage() {
                             Array.from({ length: 5 }).map((_, i) => (
                             <TableRow key={i}>
                                 <TableCell><Skeleton className="h-4 w-4 mx-auto" /></TableCell>
+                                <TableCell><Skeleton className="h-4 w-12" /></TableCell>
                                 <TableCell><Skeleton className="h-4 w-48" /></TableCell>
-                                <TableCell><Skeleton className="h-4 w-32" /></TableCell>
                                 <TableCell><Skeleton className="h-4 w-12 mx-auto" /></TableCell>
                                 <TableCell><Skeleton className="h-4 w-12 mx-auto" /></TableCell>
                                 <TableCell><Skeleton className="h-3 w-full rounded-full" /></TableCell>
@@ -660,92 +824,16 @@ export default function SuppliesPage() {
                         Array.from({ length: 6 }).map((_, i) => (
                             <Card key={i} className="rounded-2xl border-slate-100"><CardContent className="p-6"><Skeleton className="h-40 w-full rounded-xl" /></CardContent></Card>
                         ))
-                    ) : paginatedSupplies.map((supply) => {
-                        const status = getStockStatus(supply.quantity, supply.reorderLevel);
-                        return (
-                            <Card key={supply.id} className="group overflow-hidden rounded-2xl border-slate-100 hover:shadow-lg hover:shadow-slate-200/50 transition-all border-none bg-slate-50 relative">
-                                <div className={cn("h-1 w-full", status.className)} />
-                                <CardHeader className="pb-3">
-                                    <div className="flex justify-between items-start">
-                                        <Badge variant="outline" className="bg-white border-slate-200 rounded-lg text-[10px] font-bold mb-2">
-                                            {supply.category}
-                                        </Badge>
-                                        {supply.code && (
-                                            <Badge variant="secondary" className="bg-slate-100 text-slate-600 border-none rounded-lg text-[10px] font-bold mb-2 ml-2">
-                                                {supply.code}
-                                            </Badge>
-                                        )}
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg"><MoreHorizontal className="h-4 w-4" /></Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end" className="rounded-xl border-slate-100 shadow-xl">
-                                                <DropdownMenuItem onClick={() => openEditSheet(supply)}><Pencil className="mr-2 h-4 w-4" /> Modifier</DropdownMenuItem>
-                                                <DropdownMenuItem onClick={() => setDeleteTarget(supply)} className="text-red-600"><Trash2 className="mr-2 h-4 w-4" /> Supprimer</DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                    </div>
-                                    <CardTitle className="text-lg font-black text-slate-800">{supply.name}</CardTitle>
-                                </CardHeader>
-                                <div className="px-6 pb-2">
-                                    <div className="w-full aspect-[4/3] rounded-xl bg-slate-100/50 border border-slate-200/50 overflow-hidden flex items-center justify-center relative group shadow-inner">
-                                        {supply.photoUrl ? (
-                                            <img src={supply.photoUrl} alt={supply.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-                                        ) : (
-                                            <div className="flex flex-col items-center gap-2">
-                                                <Package className="h-10 w-10 text-slate-200" />
-                                                <span className="text-[10px] text-slate-300 font-bold uppercase tracking-wider">Aucune Photo</span>
-                                            </div>
-                                        )}
-                                        {supply.quantity <= supply.reorderLevel && (
-                                            <div className="absolute top-2 left-2 px-2 py-0.5 bg-red-500 text-white text-[8px] font-black uppercase rounded-full shadow-md z-10">Stock Bas</div>
-                                        )}
-                                    </div>
-                                </div>
-                                <CardContent className="pb-6">
-                                    <div className="space-y-4">
-                                        <div className="flex justify-between items-end">
-                                            <div className="space-y-0.5">
-                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">En Stock</p>
-                                                <p className="text-2xl font-black text-slate-900">{supply.quantity}</p>
-                                            </div>
-                                            <div className="text-right space-y-0.5">
-                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Seuil</p>
-                                                <p className="text-xs font-bold text-slate-600">{supply.reorderLevel}</p>
-                                            </div>
-                                        </div>
-                                        <div className="space-y-1.5">
-                                             <div className="flex justify-between text-[10px] font-bold uppercase tracking-tight">
-                                                <span className={cn(
-                                                    status.color === 'destructive' ? "text-red-500" :
-                                                    status.color === 'warning' ? "text-amber-500" : "text-emerald-500"
-                                                )}>{status.text}</span>
-                                                <span className="text-slate-400">{Math.round(status.value)}%</span>
-                                            </div>
-                                            <Progress value={status.value} className="h-1.5 rounded-full bg-white border border-slate-100" indicatorClassName={cn("transition-all duration-1000", status.className)} />
-                                        </div>
-                                        <div className="pt-2">
-                                            <Button 
-                                                onClick={() => openDistributeDialog(supply)} 
-                                                disabled={supply.quantity <= 0}
-                                                className="w-full bg-slate-900 rounded-xl h-9 text-xs font-bold"
-                                            >
-                                                <ShoppingCart className="mr-2 h-3.5 w-3.5" /> Donner à...
-                                            </Button>
-                                        </div>
-                                    </div>
-                                </CardContent>
-                                <CardFooter className="bg-white/50 py-3 border-t border-slate-100 flex justify-between items-center px-6">
-                                    <div className="flex items-center gap-1 text-[10px] text-slate-400 font-medium italic">
-                                        <Info className="h-3 w-3" /> MAJ: {supply.lastRestockDate || 'N/A'}
-                                    </div>
-                                    <Button variant="ghost" size="sm" onClick={() => openEditSheet(supply)} className="h-7 text-[10px] uppercase font-black tracking-widest text-slate-400 hover:text-slate-900 p-0 hover:bg-transparent">
-                                        Détails <ChevronRight className="ml-1 h-3 w-3" />
-                                    </Button>
-                                </CardFooter>
-                            </Card>
-                        )
-                    })}
+                    ) : paginatedSupplies.map((supply) => (
+                        <SupplyCard 
+                            key={supply.id}
+                            supply={supply}
+                            status={getStockStatus(supply.quantity, supply.reorderLevel)}
+                            openDistributeDialog={openDistributeDialog}
+                            openEditSheet={openEditSheet}
+                            setDeleteTarget={handleSetDeleteTarget}
+                        />
+                    ))}
                 </div>
             )}
 
@@ -828,7 +916,7 @@ export default function SuppliesPage() {
           />
           <RestockSupplyDialog
             isOpen={isRestockDialogOpen}
-            onCloseAction={() => setIsRestockDialogOpen(false)}
+            onCloseAction={closeRestockDialog}
             supply={selectedSupply}
           />
         </>
@@ -842,6 +930,13 @@ export default function SuppliesPage() {
         description="Êtes-vous sûr de vouloir supprimer cet article de l'inventaire ? Cette action est irréversible."
       />
 
+
+
+      <ManageCategoriesDialog 
+        isOpen={isManageCategoriesOpen} 
+        onCloseAction={() => setIsManageCategoriesOpen(false)} 
+      />
+
       {isPrintDialogOpen && (
           <PrintSuppliesDialog 
             isOpen={isPrintDialogOpen} 
@@ -850,7 +945,7 @@ export default function SuppliesPage() {
           />
       )}
 
-      {/* --- OFFICIAL REPORT RENDER (Style Conflits) --- */}
+      {/* --- OFFICIAL REPORT RENDER --- */}
       {isPrinting && printOptions?.reportTemplate === 'official' && (
           <SuppliesOfficialReport 
             logos={settings || { mainLogoUrl: '', secondaryLogoUrl: '', name: 'CNRCT', id: 'default' } as any}
@@ -869,7 +964,6 @@ export default function SuppliesPage() {
         isPrinting={isPrinting && printOptions?.reportTemplate !== 'official'} 
         onAfterPrint={() => setIsPrinting(false)}
       >
-        {/* Hidden Printable Report Container - Only rendered when printing starts and template is standard */}
         {isPrinting && printOptions?.reportTemplate !== 'official' && (
             <div id="printable-report" className="bg-white p-10 min-h-screen text-black">
               <InstitutionalHeader 
@@ -877,7 +971,6 @@ export default function SuppliesPage() {
                 period={`Situation au ${new Date().toLocaleDateString('fr-FR')}`}
               />
                 
-              {/* --- Statistical Summary in PDF --- */}
               <div className="grid grid-cols-4 gap-6 my-8 pb-8 border-b border-slate-100">
                   <div className="flex items-start gap-3">
                       <div className="h-8 w-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400">
@@ -886,7 +979,6 @@ export default function SuppliesPage() {
                       <div className="flex flex-col">
                           <span className="text-[9px] font-black uppercase text-slate-400 mb-0.5">Nombre d'Articles</span>
                           <span className="text-xl font-black text-slate-900 leading-tight">{stats.total}</span>
-                          <span className="text-[8px] text-slate-300">Périmètre : {categoryFilter === 'all' ? 'Tous' : categoryFilter}</span>
                       </div>
                   </div>
                   <div className="flex items-start gap-3">
@@ -897,11 +989,10 @@ export default function SuppliesPage() {
                           <AlertTriangle className="h-4 w-4" />
                       </div>
                       <div className="flex flex-col">
-                          <span className={cn("text-[9px] font-black uppercase mb-0.5", stats.outOfStock > 0 ? "text-red-500" : "text-slate-400")}>Ruptures de stock</span>
+                          <span className={cn("text-[9px] font-black uppercase mb-0.5", stats.outOfStock > 0 ? "text-red-500" : "text-slate-400")}>Ruptures</span>
                           <span className={cn("text-xl font-black leading-tight", stats.outOfStock > 0 ? "text-red-600" : "text-slate-900")}>
                                 {stats.outOfStock}
                           </span>
-                          <span className="text-[8px] text-slate-300">Nécessite réappro.</span>
                       </div>
                   </div>
                   <div className="flex items-start gap-3">
@@ -912,11 +1003,10 @@ export default function SuppliesPage() {
                           <Zap className="h-4 w-4" />
                       </div>
                       <div className="flex flex-col">
-                          <span className={cn("text-[9px] font-black uppercase mb-0.5", stats.lowStock > 0 ? "text-amber-500" : "text-slate-400")}>Flux Critiques</span>
+                          <span className={cn("text-[9px] font-black uppercase mb-0.5", stats.lowStock > 0 ? "text-amber-500" : "text-slate-400")}>Critiques</span>
                           <span className={cn("text-xl font-black leading-tight", stats.lowStock > 0 ? "text-amber-600" : "text-slate-900")}>
                                 {stats.lowStock}
                           </span>
-                          <span className="text-[8px] text-slate-300">Sous le seuil d'alerte</span>
                       </div>
                   </div>
                   <div className="flex items-start gap-3">
@@ -924,9 +1014,8 @@ export default function SuppliesPage() {
                           <BarChart3 className="h-4 w-4" />
                       </div>
                       <div className="flex flex-col">
-                          <span className="text-[9px] font-black uppercase text-emerald-500 mb-0.5">Santé du stock</span>
+                          <span className="text-[9px] font-black uppercase text-emerald-500 mb-0.5">Santé</span>
                           <span className="text-xl font-black text-emerald-600 leading-tight">{Math.round(stats.avgHealth)}%</span>
-                          <span className="text-[8px] text-slate-300">Disponibilité moyenne</span>
                       </div>
                   </div>
               </div>
@@ -977,11 +1066,7 @@ export default function SuppliesPage() {
                                                         )}>{status.text}</span>
                                                         <span className="text-slate-300">{Math.round(status.value)}%</span>
                                                     </div>
-                                                    <Progress 
-                                                        value={status.value} 
-                                                        className="h-1 w-full bg-slate-50 rounded-full overflow-hidden border border-slate-100" 
-                                                        indicatorClassName={cn("transition-all", status.className)} 
-                                                    />
+                                                    <Progress value={status.value} className="h-1 rounded-full overflow-hidden" indicatorClassName={cn("transition-all", status.className)} />
                                                 </div>
                                             </TableCell>
                                         )}
@@ -989,18 +1074,18 @@ export default function SuppliesPage() {
                                 );
                             })}
                         </TableBody>
-                      </Table>
-                  </div>
+                    </Table>
                 </div>
-  
-                <InstitutionalFooter 
-                  signatoryName="COULIBALY Hamadou"
-                  signatoryTitle="Contrôleur Interne et Qualité, CNRCT"
-                />
               </div>
-          )}
-        </InstitutionalReportWrapper>
-      </div>
+  
+              <InstitutionalFooter 
+                signatoryName="COULIBALY Hamadou"
+                signatoryTitle="Contrôleur Interne et Qualité, CNRCT"
+              />
+            </div>
+        )}
+      </InstitutionalReportWrapper>
+    </div>
     </PermissionGuard>
   );
 }

@@ -19,7 +19,7 @@ interface SupplyTransactionListProps {
 export const SupplyTransactionList = React.memo(({ transactions, onDelete }: SupplyTransactionListProps) => {
     if (transactions.length === 0) {
         return (
-            <div className="text-center py-20 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
+            <div className="text-center py-20 bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
                 <div className="h-16 w-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-200 shadow-inner">
                     <Calendar className="h-8 w-8 text-slate-300" />
                 </div>
@@ -55,11 +55,11 @@ export const SupplyTransactionList = React.memo(({ transactions, onDelete }: Sup
                             <TableCell>
                                 <div className="flex items-center gap-2">
                                     {t.type === 'restock' ? (
-                                        <Badge variant="outline" className="text-emerald-600 border-emerald-500 bg-emerald-50/50 gap-1 rounded-lg text-[10px] font-bold py-0.5">
+                                        <Badge variant="outline" className="text-emerald-600 border-emerald-500 bg-emerald-50/50 gap-1 rounded-md text-[10px] font-bold py-0.5">
                                             <ArrowUpCircle className="h-3 w-3" /> Réappro.
                                         </Badge>
                                     ) : (
-                                        <Badge variant="outline" className="text-blue-600 border-blue-500 bg-blue-50/50 gap-1 rounded-lg text-[10px] font-bold py-0.5">
+                                        <Badge variant="outline" className="text-blue-600 border-blue-500 bg-blue-50/50 gap-1 rounded-md text-[10px] font-bold py-0.5">
                                             <ArrowDownCircle className="h-3 w-3" /> Sortie
                                         </Badge>
                                     )}
@@ -90,7 +90,7 @@ export const SupplyTransactionList = React.memo(({ transactions, onDelete }: Sup
                                             <MoreHorizontal className="h-4 w-4" />
                                         </Button>
                                     </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end" className="rounded-xl shadow-xl border-slate-100">
+                                    <DropdownMenuContent align="end" className="rounded-lg shadow-xl border-slate-100">
                                         <DropdownMenuItem className="text-red-600 focus:text-red-600 font-bold" onClick={() => onDelete?.(t.id!)}>
                                             <Trash2 className="mr-2 h-4 w-4" /> Supprimer Trace
                                         </DropdownMenuItem>

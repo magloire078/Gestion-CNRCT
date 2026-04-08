@@ -1,10 +1,18 @@
-import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, Table, TableRow, TableCell, WidthType, BorderStyle } from "docx";
+import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, Table, TableRow, TableCell, WidthType, BorderStyle, PageBreak } from "docx";
 import { getConflicts } from "./conflict-service";
 
+export interface ThesisOptions {
+  studentName: string;
+  supervisorName: string;
+  universityName: string;
+  academicYear: string;
+  title?: string;
+}
+
 /**
- * Service pour la génération du document Word (Mémoire) enrichi
+ * Service pour la génération du document Word (Mémoire de Soutenance) complet
  */
-export async function generateThesisWordDocument(): Promise<Blob> {
+export async function generateThesisWordDocument(options: ThesisOptions): Promise<Blob> {
   const conflicts = await getConflicts();
   
   // STATISTIQUES DYNAMIQUES
@@ -26,62 +34,211 @@ export async function generateThesisWordDocument(): Promise<Blob> {
     ? ((resolvedConflicts.length / totalConflicts) * 100).toFixed(1) 
     : "0";
 
+  const defaultTitle = "LA TRANSFORMATION NUMÉRIQUE DE LA GESTION DES CONFLITS COUTUMIERS : CAS DU SYSTÈME D'ALERTE PRÉCOCE (SAP-GC)";
+
   // DOCUMENT WORD
   const doc = new Document({
     sections: [
       {
         properties: {},
         children: [
-          // page de titre / en-tête
+          // ==========================================
+          // PAGE DE GARDE
+          // ==========================================
           new Paragraph({
-            text: "SYSTÈME D'ALERTE PRÉCOCE ET DE GESTION DES CONFLITS (SAP-GC)",
+            text: options.universityName.toUpperCase(),
+            heading: HeadingLevel.HEADING_1,
+            alignment: AlignmentType.CENTER,
+            spacing: { before: 200, after: 200 },
+          }),
+          new Paragraph({
+            text: "--------------------------------------------------",
+            alignment: AlignmentType.CENTER,
+          }),
+          new Paragraph({
+            text: "CHAMBRE NATIONALE DES ROIS ET CHEFS TRADITIONNELS (CNRCT)",
+            alignment: AlignmentType.CENTER,
+            spacing: { before: 200, after: 800 },
+          }),
+          
+          new Paragraph({
+            text: "MÉMOIRE DE FIN DE CYCLE",
             heading: HeadingLevel.TITLE,
             alignment: AlignmentType.CENTER,
             spacing: { after: 400 },
           }),
           new Paragraph({
-            text: "RAPPORT DYNAMIQUE GÉNÉRÉ POUR LE MÉMOIRE DE FIN D'ÉTUDE",
+            text: "Pour l'obtention du diplôme de fin d'étude",
+            alignment: AlignmentType.CENTER,
+            spacing: { after: 600 },
+          }),
+
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: options.title || defaultTitle,
+                bold: true,
+                size: 32,
+              }),
+            ],
+            alignment: AlignmentType.CENTER,
+            spacing: { before: 400, after: 1200 },
+          }),
+
+          new Paragraph({
+            children: [
+              new TextRun({ text: "Présenté par : ",italics: true }),
+              new TextRun({ text: options.studentName, bold: true }),
+            ],
+            alignment: AlignmentType.RIGHT,
+            spacing: { after: 200 },
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({ text: "Sous la direction de : ", italics: true }),
+              new TextRun({ text: options.supervisorName, bold: true }),
+            ],
+            alignment: AlignmentType.RIGHT,
+            spacing: { after: 800 },
+          }),
+
+          new Paragraph({
+            text: `Année Académique : ${options.academicYear}`,
+            alignment: AlignmentType.CENTER,
+            spacing: { before: 1000 },
+          }),
+
+          new Paragraph({ children: [new PageBreak()] }),
+
+          // ==========================================
+          // DÉDICACES ET REMERCIEMENTS
+          // ==========================================
+          new Paragraph({
+            text: "DÉDICACES",
+            heading: HeadingLevel.HEADING_1,
+            alignment: AlignmentType.CENTER,
+            spacing: { before: 400, after: 400 },
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "[Insérez vos dédicaces ici. Exemple : À mes parents, pour leur soutien indéfectible...]",
+                italics: true,
+              }),
+            ],
             alignment: AlignmentType.CENTER,
             spacing: { after: 800 },
           }),
 
-          // Section 1 : Introduction
+          new Paragraph({ children: [new PageBreak()] }),
+
           new Paragraph({
-            text: "1. Introduction et Objectifs",
+            text: "REMERCIEMENTS",
             heading: HeadingLevel.HEADING_1,
-            spacing: { before: 400, after: 200 },
+            alignment: AlignmentType.CENTER,
+            spacing: { before: 400, after: 400 },
           }),
           new Paragraph({
-            children: [
-              new TextRun("Le présent document synthétise les données opérationnelles issues de la plateforme de gestion du CNRCT. Ce module vise à faciliter la "),
-              new TextRun({ text: "prévention", bold: true }),
-              new TextRun(" et la "),
-              new TextRun({ text: "résolution pacifique", bold: true }),
-              new TextRun(" des litiges fonciers et communautaires en Côte d'Ivoire."),
-            ],
+            text: "Je tiens à remercier tout particulièrement :",
+            spacing: { after: 200 },
+          }),
+          new Paragraph({
+            text: "• La Chambre Nationale des Rois et Chefs Traditionnels (CNRCT) pour m'avoir accueilli au sein de son institution.",
+            bullet: { level: 0 },
+            spacing: { after: 150 },
+          }),
+          new Paragraph({
+            text: `• Mon maître de stage, ${options.supervisorName}, pour ses précieux conseils et son encadrement.`,
+            bullet: { level: 0 },
+            spacing: { after: 150 },
+          }),
+          new Paragraph({
+            text: "• L'ensemble de l'équipe technique du projet SAP-GC pour leur collaboration.",
+            bullet: { level: 0 },
           }),
 
-          // Section 2 : Analyse Statistique
+          new Paragraph({ children: [new PageBreak()] }),
+
+          // ==========================================
+          // SOMMAIRE (Placeholder)
+          // ==========================================
           new Paragraph({
-            text: "2. Analyse des Données Réelles",
+            text: "SOMMAIRE",
             heading: HeadingLevel.HEADING_1,
-            spacing: { before: 400, after: 200 },
+            alignment: AlignmentType.CENTER,
+            spacing: { before: 400, after: 400 },
+          }),
+          new Paragraph({ text: "INTRODUCTION GÉNÉRALE ..................................................... 1" }),
+          new Paragraph({ text: "CHAPITRE 1 : CADRE INSTITUTIONNEL ..................................... 5" }),
+          new Paragraph({ text: "CHAPITRE 2 : ANALYSE DES DONNÉES (SAP-GC) ........................ 15" }),
+          new Paragraph({ text: "CHAPITRE 3 : RECOMMANDATIONS ........................................... 30" }),
+          new Paragraph({ text: "CONCLUSION GÉNÉRALE ......................................................... 45" }),
+
+          new Paragraph({ children: [new PageBreak()] }),
+
+          // ==========================================
+          // INTRODUCTION GÉNÉRALE
+          // ==========================================
+          new Paragraph({
+            text: "INTRODUCTION GÉNÉRALE",
+            heading: HeadingLevel.HEADING_1,
+            spacing: { before: 400, after: 400 },
           }),
           new Paragraph({
             children: [
-              new TextRun("À date de génération, le système dénombre "),
+              new TextRun("Dans un contexte de modernisation de l'administration ivoirienne, la gestion des conflits communautaires et fonciers représente un défi majeur pour la cohésion sociale. Ce mémoire se propose d'étudier comment l'outil numérique "),
+              new TextRun({ text: "SAP-GC (Système d'Alerte Précoce et de Gestion des Conflits)", bold: true }),
+              new TextRun(" développé pour la CNRCT permet de transformer une gestion traditionnelle en une gouvernance axée sur les données."),
+            ],
+            alignment: AlignmentType.JUSTIFIED,
+            spacing: { after: 200 },
+          }),
+
+          new Paragraph({ children: [new PageBreak()] }),
+
+          // ==========================================
+          // CHAPITRE 1 : CADRE INSTITUTIONNEL
+          // ==========================================
+          new Paragraph({
+            text: "CHAPITRE 1 : CADRE INSTITUTIONNEL (CNRCT)",
+            heading: HeadingLevel.HEADING_1,
+            spacing: { before: 400, after: 400 },
+          }),
+          new Paragraph({
+            text: "1.1 Statut et Missions de la CNRCT",
+            heading: HeadingLevel.HEADING_2,
+            spacing: { before: 200, after: 100 },
+          }),
+          new Paragraph({
+            text: "La Chambre Nationale des Rois et Chefs Traditionnels est l'institution qui regroupe toutes les autorités traditionnelles de Côte d'Ivoire. Elle a pour mission de valoriser nos us et coutumes et de participer à la résolution des conflits au plus près des populations.",
+            alignment: AlignmentType.JUSTIFIED,
+          }),
+
+          new Paragraph({ children: [new PageBreak()] }),
+
+          // ==========================================
+          // CHAPITRE 2 : ANALYSE DES DONNÉES (DYNAMIQUE)
+          // ==========================================
+          new Paragraph({
+            text: "CHAPITRE 2 : ANALYSE DES DONNÉES ET RÉSULTATS DU SAP-GC",
+            heading: HeadingLevel.HEADING_1,
+            spacing: { before: 400, after: 400 },
+          }),
+          new Paragraph({
+            children: [
+              new TextRun("À date de génération de ce document, le système SAP-GC a permis d'enregistrer "),
               new TextRun({ text: `${totalConflicts} signalements`, bold: true, color: "1A237E" }),
-              new TextRun(" enregistrés avec un taux de résolution global de "),
+              new TextRun(" avec un taux de résolution global de "),
               new TextRun({ text: `${resolutionRate}%`, bold: true, color: "2E7D32" }),
               new TextRun("."),
             ],
+            spacing: { after: 400 },
           }),
 
-          // 2.1 Répartition par Typologie
           new Paragraph({
             text: "2.1 Répartition par Typologie de Conflit",
             heading: HeadingLevel.HEADING_2,
-            spacing: { before: 200, after: 100 },
+            spacing: { before: 200, after: 200 },
           }),
           new Table({
             width: { size: 100, type: WidthType.PERCENTAGE },
@@ -103,11 +260,10 @@ export async function generateThesisWordDocument(): Promise<Blob> {
             ],
           }),
 
-          // 2.2 Analyse Géographique
           new Paragraph({
-            text: "2.2 Concentration Géographique par Région",
+            text: "2.2 Concentration Géographique",
             heading: HeadingLevel.HEADING_2,
-            spacing: { before: 400, after: 100 },
+            spacing: { before: 400, after: 200 },
           }),
           new Table({
             width: { size: 100, type: WidthType.PERCENTAGE },
@@ -129,16 +285,11 @@ export async function generateThesisWordDocument(): Promise<Blob> {
             ],
           }),
 
-          // Section 3 : Mécanisme de Résolution
           new Paragraph({
-            text: "3. Analyse Qualitative des Résolutions",
-            heading: HeadingLevel.HEADING_1,
+            text: "2.3 Échantillonnage des Résolutions Récentes",
+            heading: HeadingLevel.HEADING_2,
             spacing: { before: 400, after: 200 },
           }),
-          new Paragraph({
-            text: "L'efficacité de la médiation repose sur la documentation systématique des accords conclus. Voici un échantillon des résolutions récentes documentées dans le système :",
-          }),
-
           ...resolvedConflicts.slice(0, 5).map(c => [
             new Paragraph({
                 text: `• Conflit ${c.trackingId || c.id.substring(0, 8)} (${c.type})`,
@@ -147,31 +298,55 @@ export async function generateThesisWordDocument(): Promise<Blob> {
             }),
             new Paragraph({
                 children: [
-                    new TextRun({ text: "Détails de résolution : ", italics: true }),
-                    new TextRun(c.resolutionDetails || "Accord à l'amiable non détaillé.")
+                    new TextRun({ text: "Résolution : ", italics: true }),
+                    new TextRun(c.resolutionDetails || "Accord documenté dans le système.")
                 ],
                 indent: { left: 720 }
             })
           ]).flat(),
 
-          // Section 4 : Traçabilité et Preuve
+          new Paragraph({ children: [new PageBreak()] }),
+
+          // ==========================================
+          // CHAPITRE 3 : RECOMMANDATIONS
+          // ==========================================
           new Paragraph({
-            text: "4. Traçabilité Numérique (Logs de Médiation)",
+            text: "CHAPITRE 3 : ANALYSE CRITIQUE ET RECOMMANDATIONS",
             heading: HeadingLevel.HEADING_1,
-            spacing: { before: 400, after: 200 },
+            spacing: { before: 400, after: 400 },
           }),
           new Paragraph({
-            text: "Chaque interaction, visite sur le terrain ou réunion est consignée dans un journal de bord horodaté. Cette rigueur garantit qu'aucune étape du processus de paix ne soit ignorée, constituant une archive juridique et historique pour le CNRCT.",
+            text: "Afin de rendre le système encore plus performant, nous recommandons :",
+            spacing: { after: 200 },
+          }),
+          new Paragraph({
+            text: "1. L'intégration de notifications SMS automatiques pour les chefs de village.",
+            bullet: { level: 0 },
+            spacing: { after: 150 },
+          }),
+          new Paragraph({
+            text: "2. Le renforcement de la formation des délégués régionaux sur l'utilisation du SAP-GC.",
+            bullet: { level: 0 },
+            spacing: { after: 150 },
+          }),
+          new Paragraph({
+            text: "3. La mise en place d'un système de cartographie en temps réel plus précis (GIS).",
+            bullet: { level: 0 },
           }),
 
-          // Conclusion
+          new Paragraph({ children: [new PageBreak()] }),
+
+          // ==========================================
+          // CONCLUSION GÉNÉRALE
+          // ==========================================
           new Paragraph({
-            text: "Conclusion Générale",
+            text: "CONCLUSION GÉNÉRALE",
             heading: HeadingLevel.HEADING_1,
-            spacing: { before: 600, after: 200 },
+            spacing: { before: 400, after: 400 },
           }),
           new Paragraph({
-            text: "L'intégration de la gestion des conflits au sein de la base de données du CNRCT transforme une gestion artisanale en une administration moderne, capable de fournir des indicateurs de performance précis pour l'élaboration de politiques publiques de cohésion sociale.",
+            text: "Le passage d'une gestion physique des dossiers à une base de données centralisée à la CNRCT marque un tournant historique. Au-delà de l'aspect technologique, c'est un outil de paix sociale durable qui permet d'anticiper les crises avant qu'elles ne s'aggravent.",
+            alignment: AlignmentType.JUSTIFIED,
           }),
         ],
       },
@@ -180,3 +355,4 @@ export async function generateThesisWordDocument(): Promise<Blob> {
 
   return await Packer.toBlob(doc);
 }
+

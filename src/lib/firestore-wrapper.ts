@@ -30,10 +30,10 @@ function ensureAuthListener() {
     // Créer la Promise maintenant avec un timeout de secours (4s)
     authReady = new Promise<void>((resolve) => {
         const timeoutId = setTimeout(() => {
-            console.warn('[firestore-wrapper] Auth initialization timed out (4s) - proceeding with local cache');
+            console.warn('[firestore-wrapper] Auth initialization timed out (10s) - proceeding with local cache');
             resolve();
             authReadyResolve = null;
-        }, 4000);
+        }, 10000);
 
         authReadyResolve = () => {
             clearTimeout(timeoutId);

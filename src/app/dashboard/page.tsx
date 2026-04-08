@@ -74,12 +74,12 @@ const StatCard = ({ title, value, icon: Icon, description, href, loading, color 
     };
 
     const cardContent = (
-        <Card className="group relative overflow-hidden border-none shadow-xl shadow-slate-200/50 hover:shadow-2xl hover:shadow-slate-300/50 transition-all duration-500 rounded-[2rem]">
+        <Card className="group relative overflow-hidden border-none shadow-xl shadow-slate-200/50 hover:shadow-2xl hover:shadow-slate-300/50 transition-all duration-500 rounded-xl">
             <div className={cn("absolute top-0 right-0 p-6 opacity-5 transition-transform group-hover:scale-125 duration-700")}>
                 <Icon className="h-24 w-24" />
             </div>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <div className={cn("p-2 rounded-xl border shrink-0", colorClasses[color])}>
+                <div className={cn("p-2 rounded-lg border shrink-0", colorClasses[color])}>
                     <Icon className="h-5 w-5" />
                 </div>
                 {trend && (
@@ -132,7 +132,7 @@ const LatestRecruitsCard = ({ employees, loading, departments }: { employees: Em
         .sort(([groupA], [groupB]) => (categoryLabels[groupA as EmployeeGroup] || groupA).localeCompare(categoryLabels[groupB as EmployeeGroup] || groupB));
 
     return (
-        <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden">
+        <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-xl overflow-hidden">
             <CardHeader className="bg-slate-50/50 border-b border-slate-100 p-8">
                 <CardTitle className="text-xl flex items-center gap-2">
                     <Activity className="h-5 w-5 text-slate-400" />
@@ -144,9 +144,9 @@ const LatestRecruitsCard = ({ employees, loading, departments }: { employees: Em
                 {loading ? <Skeleton className="h-64 w-full" /> : (
                     categoriesWithRecruits.length > 0 ? (
                         <Tabs defaultValue={categoriesWithRecruits[0][0]} className="space-y-6">
-                            <TabsList className="flex flex-wrap h-auto bg-slate-50 p-1.5 rounded-2xl border border-slate-100">
+                            <TabsList className="flex flex-wrap h-auto bg-slate-50 p-1.5 rounded-xl border border-slate-100">
                                 {categoriesWithRecruits.map(([group, _]) => (
-                                    <TabsTrigger key={group} value={group} className="rounded-xl px-4 py-2 text-[10px] font-black uppercase tracking-wider data-[state=active]:bg-white data-[state=active]:shadow-sm">
+                                    <TabsTrigger key={group} value={group} className="rounded-lg px-4 py-2 text-[10px] font-black uppercase tracking-wider data-[state=active]:bg-white data-[state=active]:shadow-sm">
                                         {categoryLabels[group as EmployeeGroup] || group}
                                     </TabsTrigger>
                                 ))}
@@ -155,7 +155,7 @@ const LatestRecruitsCard = ({ employees, loading, departments }: { employees: Em
                                 <TabsContent key={group} value={group} className="focus-visible:outline-none">
                                     <div className="space-y-4">
                                         {recruits.slice(0, 4).map(emp => (
-                                            <div key={emp.id} className="flex items-center gap-4 group p-1 hover:bg-slate-50 rounded-2xl transition-all">
+                                            <div key={emp.id} className="flex items-center gap-4 group p-1 hover:bg-slate-50 rounded-xl transition-all">
                                                 <Avatar className="h-12 w-12 border-2 border-white shadow-md">
                                                     <AvatarImage src={emp.photoUrl} alt={emp.name} />
                                                     <AvatarFallback className="bg-slate-100 font-bold text-slate-400">{emp.lastName?.charAt(0)}</AvatarFallback>
@@ -238,11 +238,11 @@ export default function DashboardPage() {
                             </div>
                         </div>
                         <div className="flex items-center gap-4">
-                            <Button variant="outline" className="h-14 rounded-2xl px-6 border-slate-200 font-bold bg-white text-slate-600 shadow-xl shadow-slate-100 hover:bg-slate-50 transition-all">
+                            <Button variant="outline" className="h-14 rounded-xl px-6 border-slate-200 font-bold bg-white text-slate-600 shadow-xl shadow-slate-100 hover:bg-slate-50 transition-all">
                                 <Download className="h-5 w-5 mr-3 text-slate-300" />
                                 Rapport Mensuel
                             </Button>
-                            <Button className="h-14 rounded-2xl px-8 bg-slate-900 font-bold shadow-2xl shadow-slate-200 hover:shadow-slate-300 transition-all">
+                            <Button className="h-14 rounded-xl px-8 bg-slate-900 font-bold shadow-2xl shadow-slate-200 hover:shadow-slate-300 transition-all">
                                 <Sparkles className="h-5 w-5 mr-3 text-amber-400" />
                                 Analyses IA
                             </Button>
@@ -284,7 +284,7 @@ export default function DashboardPage() {
 
                             {/* Charts Section */}
                             <div className="grid gap-8 lg:grid-cols-7">
-                                <Card className="lg:col-span-4 border-none shadow-2xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden">
+                                <Card className="lg:col-span-4 border-none shadow-2xl shadow-slate-200/50 rounded-xl overflow-hidden">
                                     <CardHeader className="p-8 pb-4">
                                         <CardTitle className="text-xl flex items-center gap-2">
                                             <TrendingUp className="h-5 w-5 text-slate-400" />
@@ -303,7 +303,7 @@ export default function DashboardPage() {
 
                             {/* Secondary Stats */}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                                <Card className="border-none shadow-xl shadow-slate-200/50 rounded-[2rem] bg-slate-900 text-white overflow-hidden relative group">
+                                <Card className="border-none shadow-xl shadow-slate-200/50 rounded-xl bg-slate-900 text-white overflow-hidden relative group">
                                      <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20" />
                                      <CardHeader className="relative z-10">
                                          <CardTitle className="text-lg flex items-center gap-2">
@@ -315,13 +315,13 @@ export default function DashboardPage() {
                                             <div className="text-4xl font-black">{globalStats.employees.filter(e => getEmployeeGroup(e, globalStats.departments) === 'regional').length}</div>
                                             <div className="text-xs text-slate-400 font-medium">Représentants territoriaux actifs dans 31 régions.</div>
                                          </div>
-                                         <Button variant="outline" className="w-full border-slate-700 bg-white/5 hover:bg-white/10 text-white font-bold h-11 rounded-xl transition-all" asChild>
+                                         <Button variant="outline" className="w-full border-slate-700 bg-white/5 hover:bg-white/10 text-white font-bold h-11 rounded-lg transition-all" asChild>
                                              <Link href="/mapping">Explorer la carte <MapIcon className="ml-2 h-4 w-4" /></Link>
                                          </Button>
                                      </CardContent>
                                 </Card>
 
-                                <Card className="border-none shadow-xl shadow-slate-200/50 rounded-[2rem] bg-emerald-50 overflow-hidden relative group">
+                                <Card className="border-none shadow-xl shadow-slate-200/50 rounded-xl bg-emerald-50 overflow-hidden relative group">
                                      <CardHeader>
                                          <CardTitle className="text-lg text-emerald-900 flex items-center gap-2">
                                              <FilePlus2 className="h-5 w-5 text-emerald-600" /> Support & Maintenance
@@ -332,13 +332,13 @@ export default function DashboardPage() {
                                             <div className="text-4xl font-black text-emerald-900">98%</div>
                                             <div className="text-xs text-emerald-700 font-medium italic">Taux de résolution des incidents Helpdesk à J+1.</div>
                                          </div>
-                                         <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold h-11 rounded-xl shadow-lg shadow-emerald-200" asChild>
+                                         <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold h-11 rounded-lg shadow-lg shadow-emerald-200" asChild>
                                              <Link href="/helpdesk">Accéder au Support <HelpCircle className="ml-2 h-4 w-4" /></Link>
                                          </Button>
                                      </CardContent>
                                 </Card>
 
-                                <Card className="border-none shadow-xl shadow-slate-200/50 rounded-[2rem] bg-blue-50 overflow-hidden relative">
+                                <Card className="border-none shadow-xl shadow-slate-200/50 rounded-xl bg-blue-50 overflow-hidden relative">
                                      <CardHeader>
                                          <CardTitle className="text-lg text-blue-900 flex items-center gap-2">
                                              <Briefcase className="h-5 w-5 text-blue-600" /> Missions & Logistique
@@ -349,7 +349,7 @@ export default function DashboardPage() {
                                             <div className="text-4xl font-black text-blue-900">12</div>
                                             <div className="text-xs text-blue-700 font-medium italic">Missions diplomatiques ou territoriales prévues ce mois.</div>
                                          </div>
-                                         <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold h-11 rounded-xl shadow-lg shadow-blue-200" asChild>
+                                         <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold h-11 rounded-lg shadow-lg shadow-blue-200" asChild>
                                              <Link href="/missions">Planning des Missions <ChevronRight className="ml-2 h-4 w-4" /></Link>
                                          </Button>
                                      </CardContent>
@@ -359,7 +359,7 @@ export default function DashboardPage() {
 
                         <TabsContent value="alerts" className="space-y-10 focus-visible:outline-none focus-visible:ring-0">
                             <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-2">
-                                <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden">
+                                <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-xl overflow-hidden">
                                     <CardHeader className="p-8 border-b border-slate-50 flex flex-row items-center justify-between">
                                         <div className="space-y-1">
                                             <CardTitle className="text-xl flex items-center gap-2">
@@ -369,32 +369,32 @@ export default function DashboardPage() {
                                         </div>
                                         <div className="flex items-center gap-3">
                                             <Select value={selectedAnniversaryMonth} onValueChange={setSelectedAnniversaryMonth}>
-                                                <SelectTrigger className="h-10 rounded-xl border-slate-100 bg-slate-50 w-[120px] font-bold text-xs"><SelectValue /></SelectTrigger>
-                                                <SelectContent className="rounded-xl">{monthsForSelect.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent>
+                                                <SelectTrigger className="h-10 rounded-lg border-slate-100 bg-slate-50 w-[120px] font-bold text-xs"><SelectValue /></SelectTrigger>
+                                                <SelectContent className="rounded-lg">{monthsForSelect.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent>
                                             </Select>
-                                            <Button variant="outline" size="icon" className="h-10 w-10 rounded-xl border-slate-100 shadow-sm hover:bg-slate-50 transition-all" onClick={() => setIsPrintingAnniversaries(true)}>
+                                            <Button variant="outline" size="icon" className="h-10 w-10 rounded-lg border-slate-100 shadow-sm hover:bg-slate-50 transition-all" onClick={() => setIsPrintingAnniversaries(true)}>
                                                 <Printer className="h-4 w-4 text-slate-400" />
                                             </Button>
                                         </div>
                                     </CardHeader>
                                     <CardContent className="p-8">
                                         <Tabs defaultValue="seniority" className="w-full">
-                                            <TabsList className="grid w-full grid-cols-2 bg-slate-50 mb-6 rounded-xl p-1">
-                                                <TabsTrigger value="seniority" className="text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:text-blue-600 transition-all rounded-lg">
+                                            <TabsList className="grid w-full grid-cols-2 bg-slate-50 mb-6 rounded-lg p-1">
+                                                <TabsTrigger value="seniority" className="text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:text-blue-600 transition-all rounded-md">
                                                     <Award className="h-3.5 w-3.5 mr-2" /> Ancienneté
                                                 </TabsTrigger>
-                                                <TabsTrigger value="birthdays" className="text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:text-rose-600 transition-all rounded-lg">
+                                                <TabsTrigger value="birthdays" className="text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:text-rose-600 transition-all rounded-md">
                                                     <Cake className="h-3.5 w-3.5 mr-2" /> Naissances
                                                 </TabsTrigger>
                                             </TabsList>
 
-                                            {loading ? <Skeleton className="h-[300px] w-full rounded-2xl" /> : (
+                                            {loading ? <Skeleton className="h-[300px] w-full rounded-xl" /> : (
                                                 <>
                                                     <TabsContent value="seniority" className="space-y-6 focus-visible:outline-none">
                                                         {seniorityAnniversaries.length > 0 ? seniorityAnniversaries.map(emp => {
                                                             const years = emp.dateEmbauche ? differenceInYears(new Date(parseInt(selectedAnniversaryYear), parseInt(selectedAnniversaryMonth)), parseISO(emp.dateEmbauche)) : 0;
                                                             return (
-                                                                <div key={`senior-${emp.id}`} className="flex items-center justify-between group p-3 hover:bg-blue-50/50 rounded-2xl transition-all border border-transparent hover:border-blue-100">
+                                                                <div key={`senior-${emp.id}`} className="flex items-center justify-between group p-3 hover:bg-blue-50/50 rounded-xl transition-all border border-transparent hover:border-blue-100">
                                                                     <div className="flex items-center gap-4">
                                                                         <Avatar className="h-12 w-12 border-2 border-white shadow-md">
                                                                             <AvatarImage src={emp.photoUrl} alt={emp.name} />
@@ -406,7 +406,7 @@ export default function DashboardPage() {
                                                                         </div>
                                                                     </div>
                                                                     <div className="flex flex-col items-end gap-1">
-                                                                        <Badge className="bg-blue-100 text-blue-600 hover:bg-blue-100 border-none font-black px-3 py-1 rounded-lg">{years} ans</Badge>
+                                                                        <Badge className="bg-blue-100 text-blue-600 hover:bg-blue-100 border-none font-black px-3 py-1 rounded-md">{years} ans</Badge>
                                                                         <span className="text-[10px] text-slate-300 font-bold italic">Ancienneté</span>
                                                                     </div>
                                                                 </div>
@@ -423,7 +423,7 @@ export default function DashboardPage() {
 
                                                     <TabsContent value="birthdays" className="space-y-6 focus-visible:outline-none">
                                                         {birthdayAnniversaries.length > 0 ? birthdayAnniversaries.map(emp => (
-                                                            <div key={`birth-${emp.id}`} className="flex items-center justify-between group p-3 hover:bg-rose-50/50 rounded-2xl transition-all border border-transparent hover:border-rose-100">
+                                                            <div key={`birth-${emp.id}`} className="flex items-center justify-between group p-3 hover:bg-rose-50/50 rounded-xl transition-all border border-transparent hover:border-rose-100">
                                                                 <div className="flex items-center gap-4">
                                                                     <Avatar className="h-12 w-12 border-2 border-white shadow-md">
                                                                         <AvatarImage src={emp.photoUrl} alt={emp.name} />
@@ -435,7 +435,7 @@ export default function DashboardPage() {
                                                                     </div>
                                                                 </div>
                                                                 <div className="flex flex-col items-end gap-1">
-                                                                    <Badge className="bg-rose-100 text-rose-600 hover:bg-rose-100 border-none font-black px-3 py-1 rounded-lg">
+                                                                    <Badge className="bg-rose-100 text-rose-600 hover:bg-rose-100 border-none font-black px-3 py-1 rounded-md">
                                                                         {emp.Date_Naissance ? format(parseISO(emp.Date_Naissance), 'dd MMMM', { locale: fr }) : '-'}
                                                                     </Badge>
                                                                     <span className="text-[10px] text-slate-300 font-bold italic">Anniversaire</span>
@@ -456,7 +456,7 @@ export default function DashboardPage() {
                                     </CardContent>
                                 </Card>
 
-                                <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden">
+                                <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-xl overflow-hidden">
                                      <CardHeader className="p-8 border-b border-slate-50 flex flex-row items-center justify-between">
                                         <div className="space-y-1">
                                             <CardTitle className="text-xl flex items-center gap-2">
@@ -466,10 +466,10 @@ export default function DashboardPage() {
                                         </div>
                                         <div className="flex items-center gap-3">
                                             <Select value={selectedRetirementYear} onValueChange={setSelectedRetirementYear}>
-                                                <SelectTrigger className="h-10 rounded-xl border-slate-100 bg-slate-50 w-[100px] font-bold text-xs"><SelectValue /></SelectTrigger>
-                                                <SelectContent className="rounded-xl">{retirementYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent>
+                                                <SelectTrigger className="h-10 rounded-lg border-slate-100 bg-slate-50 w-[100px] font-bold text-xs"><SelectValue /></SelectTrigger>
+                                                <SelectContent className="rounded-lg">{retirementYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent>
                                             </Select>
-                                            <Button variant="outline" size="icon" className="h-10 w-10 rounded-xl border-slate-100 shadow-sm hover:bg-slate-50 transition-all" onClick={() => setIsPrintingRetirements(true)}>
+                                            <Button variant="outline" size="icon" className="h-10 w-10 rounded-lg border-slate-100 shadow-sm hover:bg-slate-50 transition-all" onClick={() => setIsPrintingRetirements(true)}>
                                                 <Printer className="h-4 w-4 text-slate-400" />
                                             </Button>
                                         </div>
@@ -478,7 +478,7 @@ export default function DashboardPage() {
                                         {loading ? <Skeleton className="h-[300px] w-full" /> : (
                                             <div className="space-y-6">
                                                 {upcomingRetirements.length > 0 ? upcomingRetirements.map(emp => (
-                                                    <div key={emp.id} className="flex items-center justify-between group p-3 hover:bg-amber-50/50 rounded-2xl transition-all border border-transparent hover:border-amber-100">
+                                                    <div key={emp.id} className="flex items-center justify-between group p-3 hover:bg-amber-50/50 rounded-xl transition-all border border-transparent hover:border-amber-100">
                                                         <div className="flex items-center gap-4">
                                                             <Avatar className="h-12 w-12 border-2 border-white shadow-md">
                                                                 <AvatarImage src={emp.photoUrl} alt={emp.name} />
@@ -490,7 +490,7 @@ export default function DashboardPage() {
                                                             </div>
                                                         </div>
                                                         <div className="flex flex-col items-end gap-1">
-                                                            <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-none font-black px-3 py-1 rounded-lg">
+                                                            <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-none font-black px-3 py-1 rounded-md">
                                                                 {emp.calculatedRetirementDate && format(new Date(emp.calculatedRetirementDate), 'MMM yyyy', { locale: fr })}
                                                             </Badge>
                                                             <span className="text-[10px] text-slate-300 font-bold italic">Passage Relais</span>
@@ -518,7 +518,7 @@ export default function DashboardPage() {
                                     <ConflictHeatmap conflicts={globalStats.conflicts} className="h-full border-2 border-slate-100" />
                                 </div>
                                 <div className="space-y-8">
-                                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-[2.5rem] bg-slate-900 text-white overflow-hidden p-8">
+                                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-xl bg-slate-900 text-white overflow-hidden p-8">
                                         <h3 className="text-sm font-black uppercase tracking-widest text-blue-400 mb-6 flex items-center gap-2">
                                             <ShieldCheck className="h-4 w-4" /> Analyse de Sûreté
                                         </h3>
@@ -545,17 +545,17 @@ export default function DashboardPage() {
                                                 <Badge className="bg-rose-500/20 text-rose-400 border-none font-black text-[10px]">Critique</Badge>
                                             </div>
                                         </div>
-                                        <Button className="w-full mt-8 bg-blue-600 hover:bg-blue-700 h-12 rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-blue-500/30" asChild>
+                                        <Button className="w-full mt-8 bg-blue-600 hover:bg-blue-700 h-12 rounded-lg font-black text-xs uppercase tracking-widest shadow-lg shadow-blue-500/30" asChild>
                                             <Link href="/conflicts/analytics">Rapport Complet <TrendingUp className="ml-2 h-4 w-4" /></Link>
                                         </Button>
                                     </Card>
 
-                                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-[2.5rem] bg-white p-8">
+                                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-xl bg-white p-8">
                                         <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-6">Dernières Alertes SIG</h3>
                                         <div className="space-y-4">
                                             {globalStats.conflicts.slice(0, 3).map(c => (
-                                                <div key={c.id} className="flex gap-4 p-3 rounded-2xl hover:bg-slate-50 transition-all group">
-                                                    <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center shrink-0", c.status === 'Résolu' ? "bg-emerald-50 text-emerald-500" : "bg-rose-50 text-rose-500")}>
+                                                <div key={c.id} className="flex gap-4 p-3 rounded-xl hover:bg-slate-50 transition-all group">
+                                                    <div className={cn("h-10 w-10 rounded-lg flex items-center justify-center shrink-0", c.status === 'Résolu' ? "bg-emerald-50 text-emerald-500" : "bg-rose-50 text-rose-500")}>
                                                         <AlertTriangle className="h-5 w-5" />
                                                     </div>
                                                     <div className="min-w-0">

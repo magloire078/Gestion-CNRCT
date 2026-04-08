@@ -21,7 +21,7 @@ import dynamic from 'next/dynamic';
 
 const DirectoireMap = dynamic(() => import('@/components/employees/directoire-map').then(m => m.DirectoireMap), {
     ssr: false,
-    loading: () => <Skeleton className="h-[400px] w-full rounded-2xl" />,
+    loading: () => <Skeleton className="h-[400px] w-full rounded-xl" />,
 });
 import { ConfirmationDialog } from '@/components/common/confirmation-dialog';
 import {
@@ -173,7 +173,7 @@ export function NewsFeed({ directoireMembers = [] }: NewsFeedProps) {
                         </div>
                         <DirectoireMap
                             members={directoireMembers}
-                            className="h-[600px] !rounded-2xl"
+                            className="h-[600px] !rounded-xl shadow-2xl shadow-slate-200/50"
                         />
                     </div>
 

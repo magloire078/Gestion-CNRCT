@@ -42,9 +42,10 @@ service cloud.firestore {
          getRoleData(user.roleId).get(['resourcePermissions', res, act], null) == true);
     }
 
-    // --- DEFAULT DENY ---
+    // --- TEMPORARY DEBUG ACCESS ---
     match /{document=**} {
-      allow read, write: if false;
+      allow read: if true;
+      allow write: if isSignedIn();
     }
 
     // --- SYSTEM & ADMIN ---
@@ -248,5 +249,9 @@ service cloud.firestore {
     match /services/{id} { allow read: if isSignedIn(); allow write: if can('settings', 'update'); }
     match /conflict-types/{id} { allow read: if isSignedIn(); allow write: if can('settings', 'update'); }
     match /fuel_providers/{id} { allow read: if isSignedIn(); allow write: if can('settings', 'update'); }
+    match /supply_categories/{id} { 
+      allow read: if true; 
+      allow write: if can('supplies', 'update'); 
+    }
   }
 }

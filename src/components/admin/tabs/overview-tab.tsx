@@ -60,7 +60,7 @@ export const OverviewTab = memo(function OverviewTab({ users, roles, departments
             <CardDescription>Paramètres globaux et apparence.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-1 px-4 pb-4">
-            <Link href="/settings/organization" className="flex items-center justify-between p-3 rounded-xl hover:bg-muted/50 transition-all group border border-transparent hover:border-border/50">
+            <Link href="/settings/organization" className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 transition-all group border border-transparent hover:border-border/50">
               <div className="flex items-center gap-4">
                 <div className="p-2.5 rounded-lg bg-blue-500/10 group-hover:bg-blue-500/20 transition-colors">
                   <Building className="h-5 w-5 text-blue-600" />
@@ -73,7 +73,7 @@ export const OverviewTab = memo(function OverviewTab({ users, roles, departments
               <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
             </Link>
             
-            <Link href="/settings" className="flex items-center justify-between p-3 rounded-xl hover:bg-muted/50 transition-all group border border-transparent hover:border-border/50">
+            <Link href="/settings" className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 transition-all group border border-transparent hover:border-border/50">
               <div className="flex items-center gap-4">
                 <div className="p-2.5 rounded-lg bg-slate-500/10 group-hover:bg-slate-500/20 transition-colors">
                   <Settings className="h-5 w-5 text-slate-600" />

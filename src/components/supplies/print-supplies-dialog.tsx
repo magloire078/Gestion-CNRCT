@@ -45,13 +45,13 @@ export const PrintSuppliesDialog = memo(function PrintSuppliesDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onCloseAction}>
-      <DialogContent className="sm:max-w-[480px] rounded-[2rem] border-none shadow-2xl p-0 overflow-hidden">
+      <DialogContent className="sm:max-w-[480px] rounded-xl border-none shadow-2xl p-0 overflow-hidden">
         <div className="bg-slate-900 p-8 text-white relative">
           <div className="absolute top-0 right-0 p-8 opacity-10">
              <Printer size={120} strokeWidth={1} />
           </div>
           <DialogHeader>
-            <div className="h-12 w-12 rounded-2xl bg-white/10 flex items-center justify-center mb-4 backdrop-blur-xl border border-white/10">
+            <div className="h-12 w-12 rounded-xl bg-white/10 flex items-center justify-center mb-4 backdrop-blur-xl border border-white/10">
                <LayoutList className="h-6 w-6 text-white" />
             </div>
             <DialogTitle className="text-2xl font-black tracking-tight uppercase">Options d'impression</DialogTitle>
@@ -69,10 +69,10 @@ export const PrintSuppliesDialog = memo(function PrintSuppliesDialog({
                  <Label className="text-[10px] font-black uppercase tracking-widest">Modèle de Rapport</Label>
               </div>
               <Select value={options.reportTemplate} onValueChange={(v: any) => setOptions(prev => ({ ...prev, reportTemplate: v }))}>
-                <SelectTrigger className="h-14 rounded-2xl border-slate-200 bg-slate-50/50 font-bold text-slate-900 focus:ring-slate-900 transition-all hover:bg-slate-100/50">
+                <SelectTrigger className="h-14 rounded-xl border-slate-200 bg-slate-50/50 font-bold text-slate-900 focus:ring-slate-900 transition-all hover:bg-slate-100/50">
                   <SelectValue placeholder="Standard (Tableau)" />
                 </SelectTrigger>
-                <SelectContent className="rounded-2xl border-slate-100 shadow-2xl">
+                <SelectContent className="rounded-xl border-slate-100 shadow-2xl">
                   <SelectItem value="standard" className="py-3 px-4">
                       <div className="flex flex-col gap-0.5">
                           <span className="font-bold underline">📋 Modèle Standard</span>
@@ -91,7 +91,7 @@ export const PrintSuppliesDialog = memo(function PrintSuppliesDialog({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Include Photos */}
-              <div className="flex flex-col gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100 transition-all hover:bg-slate-100/50">
+              <div className="flex flex-col gap-3 p-4 bg-slate-50 rounded-xl border border-slate-100 transition-all hover:bg-slate-100/50">
                 <div className="flex items-center justify-between">
                     <Label htmlFor="photos" className="text-xs font-black text-slate-900 uppercase">Photos</Label>
                     <Switch 
@@ -105,7 +105,7 @@ export const PrintSuppliesDialog = memo(function PrintSuppliesDialog({
               </div>
 
               {/* Show Health Status */}
-              <div className="flex flex-col gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100 transition-all hover:bg-slate-100/50">
+              <div className="flex flex-col gap-3 p-4 bg-slate-50 rounded-xl border border-slate-100 transition-all hover:bg-slate-100/50">
                 <div className="flex items-center justify-between">
                     <Label htmlFor="health" className="text-xs font-black text-slate-900 uppercase">Santé Stock</Label>
                     <Switch 
@@ -119,7 +119,7 @@ export const PrintSuppliesDialog = memo(function PrintSuppliesDialog({
               </div>
           </div>
 
-          <div className="flex items-center justify-between p-4 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
+          <div className="flex items-center justify-between p-4 bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
             <div className="flex flex-col gap-0.5">
               <Label htmlFor="stock" className="text-sm font-black text-slate-900">Articles en rupture</Label>
               <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest italic leading-none">Inclure les stocks à 0</span>
@@ -174,7 +174,7 @@ export const PrintSuppliesDialog = memo(function PrintSuppliesDialog({
           <Button variant="ghost" onClick={onCloseAction} className="rounded-xl font-bold text-slate-500 h-14 px-6 overflow-hidden transition-all hover:bg-slate-100">
             Annuler
           </Button>
-          <Button onClick={handlePrint} className="bg-slate-900 text-white rounded-[1.25rem] font-black h-14 px-8 shadow-xl hover:bg-stone-800 transition-all border-none uppercase tracking-[0.15em] text-[10px] gap-3">
+          <Button onClick={handlePrint} className="bg-slate-900 text-white rounded-xl font-black h-14 px-8 shadow-xl hover:bg-stone-800 transition-all border-none uppercase tracking-[0.15em] text-[10px] gap-3">
             <CheckCircle2 className="h-4 w-4" /> Générer le Rapport
           </Button>
         </DialogFooter>

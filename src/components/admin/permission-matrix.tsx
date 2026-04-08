@@ -286,12 +286,14 @@ export function PermissionsEditor({ targetId, targetType, isSystem, onSave }: Pe
         return [...result, ...orphans];
     }, []);
 
-    const filteredResources = searchQuery.trim() === ''
-        ? orderedResources
-        : orderedResources.filter(r => 
-            r.label.toLowerCase().includes(searchQuery.toLowerCase()) || 
-            r.id.toLowerCase().includes(searchQuery.toLowerCase())
-          );
+    const filteredResources = React.useMemo(() => {
+        const q = searchQuery.toLowerCase().trim();
+        if (!q) return orderedResources;
+        return orderedResources.filter(r => 
+            r.label.toLowerCase().includes(q) || 
+            r.id.toLowerCase().includes(q)
+        );
+    }, [orderedResources, searchQuery]);
 
     const accessLevel = getAccessLevel(permissions);
 

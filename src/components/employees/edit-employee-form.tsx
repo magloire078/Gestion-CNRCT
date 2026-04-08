@@ -195,11 +195,11 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
             <CardContent className="pt-6 space-y-6">
               <div className="flex flex-col items-center gap-4">
                 <div className="relative group">
-                  <Avatar className="h-40 w-40 rounded-2xl border-4 border-white shadow-xl">
+                  <Avatar className="h-40 w-40 rounded-xl border-4 border-white shadow-xl">
                     <AvatarImage src={photoPreview} alt={employee.name} className="object-cover" />
                     <AvatarFallback className="text-3xl bg-slate-100">{employee.lastName?.charAt(0)}</AvatarFallback>
                   </Avatar>
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl cursor-pointer" onClick={() => fileInputRef.current?.click()}>
                     <Upload className="text-white h-8 w-8" />
                   </div>
                 </div>
@@ -246,10 +246,10 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
         {/* Colonne Détails (Tabs) */}
         <div className="md:col-span-2">
           <Tabs defaultValue="identity" className="w-full">
-            <TabsList className="grid w-full grid-cols-3 mb-6 bg-slate-100/50 p-1 rounded-xl">
-              <TabsTrigger value="identity" className="rounded-lg font-bold text-xs uppercase tracking-widest">Identité</TabsTrigger>
-              <TabsTrigger value="job" className="rounded-lg font-bold text-xs uppercase tracking-widest">Poste & Structure</TabsTrigger>
-              <TabsTrigger value="finance" className="rounded-lg font-bold text-xs uppercase tracking-widest">Finance & Social</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-3 mb-6 bg-slate-100/50 p-1 rounded-lg">
+              <TabsTrigger value="identity" className="rounded-md font-bold text-xs uppercase tracking-widest">Identité</TabsTrigger>
+              <TabsTrigger value="job" className="rounded-md font-bold text-xs uppercase tracking-widest">Poste & Structure</TabsTrigger>
+              <TabsTrigger value="finance" className="rounded-md font-bold text-xs uppercase tracking-widest">Finance & Social</TabsTrigger>
             </TabsList>
 
             <ScrollArea className="h-[600px] pr-4">

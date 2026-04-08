@@ -176,10 +176,10 @@ export default function EmployeeDetailPage() {
     if (loading) {
         return (
             <div className="space-y-8 animate-pulse">
-                <div className="h-48 bg-slate-100 rounded-3xl" />
+                <div className="h-48 bg-slate-100 rounded-xl" />
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    <div className="h-96 bg-slate-50 rounded-2xl" />
-                    <div className="lg:col-span-2 h-96 bg-slate-50 rounded-2xl" />
+                    <div className="h-96 bg-slate-50 rounded-xl" />
+                    <div className="lg:col-span-2 h-96 bg-slate-50 rounded-xl" />
                 </div>
             </div>
         );
@@ -210,7 +210,7 @@ export default function EmployeeDetailPage() {
     return (
         <div className="flex flex-col gap-8 pb-20">
             {/* Header / Hero Section */}
-            <div className="relative overflow-hidden bg-slate-900 rounded-3xl p-8 md:p-12 shadow-2xl">
+            <div className="relative overflow-hidden bg-slate-900 rounded-xl p-8 md:p-12 shadow-2xl">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_50%,rgba(59,130,246,0.1),transparent)]" />
                 <div className="relative z-10 flex flex-col md:flex-row items-center gap-8 md:gap-12">
                     <div className="relative">
@@ -244,10 +244,10 @@ export default function EmployeeDetailPage() {
                         <p className="text-lg md:text-xl text-slate-400 font-bold uppercase tracking-wide">{employee.poste}</p>
                         
                         <div className="flex flex-wrap justify-center md:justify-start gap-4 pt-2">
-                            <div className="flex items-center gap-2 text-slate-400 text-sm font-medium bg-white/5 px-4 py-2 rounded-2xl border border-white/5">
+                            <div className="flex items-center gap-2 text-slate-400 text-sm font-medium bg-white/5 px-4 py-2 rounded-xl border border-white/5">
                                 <Building2 className="h-4 w-4 text-slate-500" /> {deptName || "—"}
                             </div>
-                            <div className="flex items-center gap-2 text-slate-400 text-sm font-medium bg-white/5 px-4 py-2 rounded-2xl border border-white/5">
+                            <div className="flex items-center gap-2 text-slate-400 text-sm font-medium bg-white/5 px-4 py-2 rounded-xl border border-white/5">
                                 <ShieldCheck className={cn("h-4 w-4", employee.CNPS ? "text-emerald-500" : "text-slate-600")} />
                                 {employee.CNPS ? "Affilié CNPS" : "Non Affilié"}
                             </div>
@@ -256,7 +256,7 @@ export default function EmployeeDetailPage() {
 
                     <div className="flex flex-col sm:flex-row gap-3 shrink-0 self-start md:self-center">
                         {canEdit && (
-                            <Button asChild className="bg-white text-slate-900 hover:bg-slate-100 rounded-2xl h-12 px-6 font-bold shadow-xl shadow-black/10">
+                            <Button asChild className="bg-white text-slate-900 hover:bg-slate-100 rounded-xl h-12 px-6 font-bold shadow-xl shadow-black/10">
                                 <Link href={`/employees/${employee.id}/edit`}>
                                     <Pencil className="mr-2 h-4 w-4" /> Modifier
                                 </Link>
@@ -264,11 +264,11 @@ export default function EmployeeDetailPage() {
                         )}
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="outline" size="icon" className="h-12 w-12 rounded-2xl border-white/10 bg-white/5 text-white hover:bg-white/10 shadow-lg">
+                                <Button variant="outline" size="icon" className="h-12 w-12 rounded-xl border-white/10 bg-white/5 text-white hover:bg-white/10 shadow-lg">
                                     <MoreVertical className="h-5 w-5" />
                                 </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-56 rounded-2xl shadow-2xl border-slate-100 mt-2">
+                            <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-2xl border-slate-100 mt-2">
                                 <DropdownMenuLabel className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-3 py-2">
                                     Commandes Système
                                 </DropdownMenuLabel>
@@ -303,26 +303,26 @@ export default function EmployeeDetailPage() {
                 onValueChange={(v) => startTransition(() => setActiveTab(v))}
                 className="space-y-8"
             >
-                <TabsList className="bg-white border border-slate-100 p-1.5 rounded-3xl shadow-xl shadow-slate-200/50 flex flex-wrap h-auto gap-2">
-                    <TabsTrigger value="info" className="rounded-2xl px-8 py-3 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-[10px] transition-all">
+                <TabsList className="bg-white border border-slate-100 p-1.5 rounded-xl shadow-xl shadow-slate-200/50 flex flex-wrap h-auto gap-2">
+                    <TabsTrigger value="info" className="rounded-lg px-8 py-3 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-[10px] transition-all">
                         <UserCircle2 className="mr-2 h-4 w-4" /> Identité
                     </TabsTrigger>
-                    <TabsTrigger value="career" className="rounded-2xl px-8 py-3 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-[10px] transition-all">
+                    <TabsTrigger value="career" className="rounded-lg px-8 py-3 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-[10px] transition-all">
                         <Briefcase className="mr-2 h-4 w-4" /> Carrière
                     </TabsTrigger>
                     {canViewSalary && (
-                        <TabsTrigger value="salary" className="rounded-2xl px-8 py-3 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-[10px] transition-all">
+                        <TabsTrigger value="salary" className="rounded-lg px-8 py-3 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-[10px] transition-all">
                             <Banknote className="mr-2 h-4 w-4" /> Rémunération
                         </TabsTrigger>
                     )}
-                    <TabsTrigger value="history" className="rounded-2xl px-8 py-3 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-[10px] transition-all">
+                    <TabsTrigger value="history" className="rounded-lg px-8 py-3 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-[10px] transition-all">
                         <History className="mr-2 h-4 w-4" /> Événements
                     </TabsTrigger>
                 </TabsList>
 
                 {/* Identity Tab */}
                 <TabsContent value="info" className="grid grid-cols-1 lg:grid-cols-3 gap-8 focus-visible:outline-none">
-                    <Card className="lg:col-span-2 border-none shadow-xl shadow-slate-200/50 rounded-2xl overflow-hidden">
+                    <Card className="lg:col-span-2 border-none shadow-xl shadow-slate-200/50 rounded-xl overflow-hidden">
                         <CardHeader className="p-8 pb-4">
                             <CardTitle className="text-xl flex items-center gap-3">
                                 <CheckCircle2 className="h-5 w-5 text-emerald-500" /> État Civil & Identité
@@ -372,7 +372,7 @@ export default function EmployeeDetailPage() {
                         </CardContent>
                     </Card>
 
-                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-2xl bg-slate-50 overflow-hidden self-start">
+                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-xl bg-slate-50 overflow-hidden self-start">
                         <CardHeader className="p-8 pb-4">
                             <CardTitle className="text-xl flex items-center gap-3">
                                 <Award className="h-5 w-5 text-amber-500" /> Qualifications
@@ -381,7 +381,7 @@ export default function EmployeeDetailPage() {
                         <CardContent className="p-8 pt-4 space-y-6">
                             <div className="space-y-1">
                                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Catégorie</span>
-                                <Badge variant="outline" className="text-xs font-bold bg-white text-slate-700 border-slate-200 h-8 px-4 rounded-xl">
+                                <Badge variant="outline" className="text-xs font-bold bg-white text-slate-700 border-slate-200 h-8 px-4 rounded-lg">
                                     {employee.categorie || "Non renseigné"}
                                 </Badge>
                             </div>
@@ -391,7 +391,7 @@ export default function EmployeeDetailPage() {
 
                 {/* Career Tab */}
                 <TabsContent value="career" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 focus-visible:outline-none">
-                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-2xl overflow-hidden">
+                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-xl overflow-hidden">
                         <CardHeader className="p-8 pb-4 bg-slate-900 text-white">
                             <div className="flex items-center gap-3">
                                 <Building2 className="h-5 w-5 text-blue-400" />
@@ -414,7 +414,7 @@ export default function EmployeeDetailPage() {
                         </CardContent>
                     </Card>
 
-                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-2xl overflow-hidden">
+                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-xl overflow-hidden">
                         <CardHeader className="p-8 pb-4 bg-blue-600 text-white">
                              <div className="flex items-center gap-3">
                                 <Calendar className="h-5 w-5 text-blue-200" />
@@ -439,7 +439,7 @@ export default function EmployeeDetailPage() {
                         </CardContent>
                     </Card>
 
-                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-2xl overflow-hidden lg:col-span-1">
+                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-xl overflow-hidden lg:col-span-1">
                         <CardHeader className="p-8 pb-4 bg-emerald-600 text-white">
                             <div className="flex items-center gap-3">
                                 <ShieldCheck className="h-5 w-5 text-emerald-200" />
@@ -449,7 +449,7 @@ export default function EmployeeDetailPage() {
                         <CardContent className="p-8 space-y-8">
                             <div className="space-y-1">
                                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Affiliation CNPS</span>
-                                <p className="text-base font-bold font-mono text-slate-900 bg-slate-50 p-3 rounded-xl border border-dotted border-slate-200">
+                                <p className="text-base font-bold font-mono text-slate-900 bg-slate-50 p-3 rounded-lg border border-dotted border-slate-200">
                                     {employee.CNPS ? "Déclaré & Actif" : "Non immatriculé"}
                                 </p>
                             </div>
@@ -466,7 +466,7 @@ export default function EmployeeDetailPage() {
                 {/* Salary Tab */}
                 {canViewSalary && (
                     <TabsContent value="salary" className="grid grid-cols-1 lg:grid-cols-2 gap-8 focus-visible:outline-none">
-                        <Card className="border-none shadow-xl shadow-slate-200/50 rounded-2xl overflow-hidden relative">
+                        <Card className="border-none shadow-xl shadow-slate-200/50 rounded-xl overflow-hidden relative">
                              <div className="absolute top-0 right-0 p-8 opacity-5">
                                 <Banknote className="h-32 w-32" />
                              </div>
@@ -476,7 +476,7 @@ export default function EmployeeDetailPage() {
                                 </CardTitle>
                              </CardHeader>
                              <CardContent className="p-8 pt-4 space-y-6">
-                                <div className="flex justify-between items-center p-4 rounded-xl bg-emerald-50 border border-emerald-100">
+                                <div className="flex justify-between items-center p-4 rounded-lg bg-emerald-50 border border-emerald-100">
                                     <span className="text-sm font-black text-emerald-900 uppercase tracking-widest">Salaire Brut Total</span>
                                     <span className="text-2xl font-black text-emerald-600">{formatCurrency(displayBrut)}</span>
                                 </div>
@@ -500,7 +500,7 @@ export default function EmployeeDetailPage() {
                                     </div>
                                 </div>
 
-                                <div className="p-4 rounded-xl bg-slate-900 text-white flex justify-between items-center group overflow-hidden relative">
+                                <div className="p-4 rounded-lg bg-slate-900 text-white flex justify-between items-center group overflow-hidden relative">
                                     <div className="absolute inset-0 bg-blue-500 w-0 group-hover:w-full transition-all duration-700 opacity-20" />
                                     <span className="text-sm font-black uppercase tracking-[0.2em] relative z-10">Net à Payer</span>
                                     <span className="text-3xl font-black text-blue-400 relative z-10">{formatCurrency(displayNet)}</span>
@@ -521,11 +521,11 @@ export default function EmployeeDetailPage() {
                                 </div>
                                 <div className="space-y-1">
                                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">N° de Compte</span>
-                                    <p className="text-lg font-mono font-bold text-slate-600 bg-white p-4 rounded-2xl border border-slate-100 shadow-inner">
+                                    <p className="text-lg font-mono font-bold text-slate-600 bg-white p-4 rounded-xl border border-slate-100 shadow-inner">
                                         {employee.numeroCompte || "—"}
                                     </p>
                                 </div>
-                                <div className="flex items-center gap-3 p-4 bg-blue-50/50 rounded-2xl border border-blue-100">
+                                <div className="flex items-center gap-3 p-4 bg-blue-50/50 rounded-xl border border-blue-100">
                                     <ShieldCheck className="h-5 w-5 text-blue-500" />
                                     <p className="text-xs font-medium text-blue-600">Ces informations sont cryptées et restreintes au personnel RH habilité.</p>
                                 </div>
@@ -536,7 +536,7 @@ export default function EmployeeDetailPage() {
 
                 {/* History Tab */}
                 <TabsContent value="history" className="focus-visible:outline-none">
-                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-2xl overflow-hidden">
+                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-xl overflow-hidden">
                         <CardHeader className="p-8 pb-4 flex flex-row items-center justify-between">
                             <CardTitle className="text-xl flex items-center gap-3">
                                 <History className="h-5 w-5 text-blue-500" /> Historique de Carrière

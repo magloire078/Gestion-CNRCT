@@ -72,7 +72,7 @@ export function RestockSupplyDialog({ isOpen, onCloseAction, supply }: RestockSu
 
     return (
         <Dialog open={isOpen} onOpenChange={onCloseAction}>
-            <DialogContent className="sm:max-w-[450px] rounded-2xl">
+            <DialogContent className="sm:max-w-[450px] rounded-xl">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2 text-xl font-black">
                         <Package className="h-5 w-5 text-slate-400" />
@@ -93,7 +93,7 @@ export function RestockSupplyDialog({ isOpen, onCloseAction, supply }: RestockSu
                                 value={sourceName}
                                 onChange={(e) => setSourceName(e.target.value)}
                                 placeholder="Nom du fournisseur ou origine..."
-                                className="rounded-xl border-slate-200 focus:ring-emerald-600" 
+                                className="rounded-lg border-slate-200 focus:ring-emerald-600" 
                             />
                         </div>
 
@@ -107,7 +107,7 @@ export function RestockSupplyDialog({ isOpen, onCloseAction, supply }: RestockSu
                                     min={1} 
                                     value={quantity}
                                     onChange={(e) => setQuantity(parseInt(e.target.value))}
-                                    className="rounded-xl border-slate-200 focus:ring-emerald-600" 
+                                    className="rounded-lg border-slate-200 focus:ring-emerald-600" 
                                 />
                                 <p className="text-[10px] text-slate-400 font-medium">
                                     Stock actuel: <span className="font-bold text-slate-900">{supply.quantity}</span>
@@ -122,17 +122,17 @@ export function RestockSupplyDialog({ isOpen, onCloseAction, supply }: RestockSu
                                     type="date" 
                                     value={date}
                                     onChange={(e) => setDate(e.target.value)}
-                                    className="rounded-xl border-slate-200 focus:ring-emerald-600" 
+                                    className="rounded-lg border-slate-200 focus:ring-emerald-600" 
                                 />
                             </div>
                         </div>
                     </div>
 
                     <DialogFooter className="pt-4">
-                        <Button type="button" variant="ghost" onClick={onCloseAction} disabled={submitting} className="rounded-xl">
+                        <Button type="button" variant="ghost" onClick={onCloseAction} disabled={submitting} className="rounded-lg">
                             Annuler
                         </Button>
-                        <Button type="submit" disabled={submitting} className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl px-8">
+                        <Button type="submit" disabled={submitting} className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg px-8">
                             {submitting ? "Traitement..." : "Enregistrer l'Entrée"}
                         </Button>
                     </DialogFooter>

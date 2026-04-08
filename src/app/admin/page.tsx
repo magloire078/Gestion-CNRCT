@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback, memo } from "react";
+import { useState, useMemo, useCallback, memo, useTransition } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
@@ -88,6 +88,7 @@ export default function AdminPage() {
 
   const { user } = useAuth();
   const { toast } = useToast();
+  const [isPending, startTransition] = useTransition();
 
   // États regroupés par catégorie
   const [dialogs, setDialogs] = useState({
@@ -128,13 +129,17 @@ export default function AdminPage() {
     [roles]
   );
 
-  // Gestionnaires centralisés pour les dialogues
+  // Gestionnaires centralisés pour les dialogues avec transition pour la fluidité (INP)
   const openDialog = useCallback((name: keyof typeof dialogs) => {
-    setDialogs(prev => ({ ...prev, [name]: true }));
+    startTransition(() => {
+      setDialogs(prev => ({ ...prev, [name]: true }));
+    });
   }, []);
 
   const closeDialog = useCallback((name: keyof typeof dialogs) => {
-    setDialogs(prev => ({ ...prev, [name]: false }));
+    startTransition(() => {
+      setDialogs(prev => ({ ...prev, [name]: false }));
+    });
   }, []);
 
   // Handlers CRUD optimisés
@@ -286,6 +291,90 @@ export default function AdminPage() {
     setDeleteTarget({ id, type, name });
   }, []);
 
+  // Handlers mémoïsés pour UsersTab
+  const handleOpenAddUser = useCallback(() => openDialog('addUser'), [openDialog]);
+  
+  const handleLinkUserAction = useCallback((u: User) => {
+    startTransition(() => {
+      setEditingItems(prev => ({ ...prev, linkingUser: u }));
+      openDialog('linkUser');
+    });
+  }, [openDialog]);
+
+  const handleEditRoleAction = useCallback((u: User) => {
+    startTransition(() => {
+      setEditingItems(prev => ({ ...prev, user: u }));
+      openDialog('editUser');
+    });
+  }, [openDialog]);
+
+  const handleEditPermissionsAction = useCallback((u: User) => {
+    startTransition(() => {
+      setEditingItems(prev => ({ ...prev, permissionsUser: u }));
+      openDialog('permissions');
+    });
+  }, [openDialog]);
+
+  const handleDeleteUserAction = useCallback((id: string, name: string) => 
+    handleDeleteRequest(id, 'user', name), [handleDeleteRequest]);
+
+  // Handlers mémoïsés pour SecurityTab
+  const handleOpenAddRole = useCallback(() => openDialog('addRole'), [openDialog]);
+  const handleDeleteRoleAction = useCallback((id: string, name: string) => 
+    handleDeleteRequest(id, 'role', name), [handleDeleteRequest]);
+
+  // Handlers mémoïsés pour OrgTab
+  const handleAddDept = useCallback(() => {
+    startTransition(() => {
+      setEditingItems(prev => ({ ...prev, department: null }));
+      openDialog('department');
+    });
+  }, [openDialog]);
+
+  const handleEditDept = useCallback((d: Department) => {
+    startTransition(() => {
+      setEditingItems(prev => ({ ...prev, department: d }));
+      openDialog('department');
+    });
+  }, [openDialog]);
+
+  const handleDeleteDept = useCallback((id: string, name: string) => 
+    handleDeleteRequest(id, 'department', name), [handleDeleteRequest]);
+
+  const handleAddDir = useCallback(() => {
+    startTransition(() => {
+      setEditingItems(prev => ({ ...prev, direction: null }));
+      openDialog('direction');
+    });
+  }, [openDialog]);
+
+  const handleEditDir = useCallback((dir: Direction) => {
+    startTransition(() => {
+      setEditingItems(prev => ({ ...prev, direction: dir }));
+      openDialog('direction');
+    });
+  }, [openDialog]);
+
+  const handleDeleteDir = useCallback((id: string, name: string) => 
+    handleDeleteRequest(id, 'direction', name), [handleDeleteRequest]);
+
+  const handleAddSvc = useCallback(() => {
+    startTransition(() => {
+      setEditingItems(prev => ({ ...prev, service: null }));
+      openDialog('service');
+    });
+  }, [openDialog]);
+
+  const handleEditSvc = useCallback((svc: Service) => {
+    startTransition(() => {
+      setEditingItems(prev => ({ ...prev, service: svc }));
+      openDialog('service');
+    });
+  }, [openDialog]);
+
+  const handleDeleteSvc = useCallback((id: string, name: string) => 
+    handleDeleteRequest(id, 'service', name), [handleDeleteRequest]);
+
   // Valeurs par défaut pour éviter les vérifications null répétées
   const defaultArray = useMemo(() => [], []);
   const safeUsers = users ?? defaultArray;
@@ -301,7 +390,7 @@ export default function AdminPage() {
           <AdminHeader user={user} />
 
           {error && (
-            <div className="p-4 rounded-2xl bg-destructive/10 border border-destructive/20 text-destructive text-center font-semibold">
+            <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-center font-semibold">
               {error}
             </div>
           )}
@@ -309,12 +398,12 @@ export default function AdminPage() {
           <PermissionLock userEmail={user?.email ?? ''}>
             <Tabs defaultValue="overview" className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
               <div className="overflow-x-auto pb-2 -mx-2 px-2 scrollbar-none">
-                <TabsList className="bg-muted/40 p-1.5 border border-border/50 backdrop-blur-md rounded-2xl shadow-sm inline-flex gap-1">
+                <TabsList className="bg-muted/40 p-1.5 border border-border/50 backdrop-blur-md rounded-xl shadow-sm inline-flex gap-1">
                   {TAB_CONFIG.map(({ value, label, icon: Icon }) => (
                     <TabsTrigger 
                       key={value}
                       value={value} 
-                      className="gap-2 px-6 py-2.5 rounded-xl data-[state=active]:bg-background data-[state=active]:shadow-lg active:scale-95 transition-all text-sm font-bold"
+                      className="gap-2 px-6 py-2.5 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-lg active:scale-95 transition-all text-sm font-bold"
                     >
                       <Icon className="h-4.5 w-4.5" />
                       {label}
@@ -337,22 +426,11 @@ export default function AdminPage() {
                   users={safeUsers} 
                   loading={loading}
                   employeeMap={employeeMap}
-                  onAddUserAction={() => openDialog('addUser')}
-                  onLinkUserAction={(u: User) => {
-                    setEditingItems(prev => ({ ...prev, linkingUser: u }));
-                    openDialog('linkUser');
-                  }}
-                  onEditRoleAction={(u: User) => {
-                    setEditingItems(prev => ({ ...prev, user: u }));
-                    openDialog('editUser');
-                  }}
-                  onEditPermissionsAction={(u: User) => {
-                    setEditingItems(prev => ({ ...prev, permissionsUser: u }));
-                    openDialog('permissions');
-                  }}
-                  onDeleteUserAction={(id: string, name: string) => 
-                    handleDeleteRequest(id, 'user', name)
-                  }
+                  onAddUserAction={handleOpenAddUser}
+                  onLinkUserAction={handleLinkUserAction}
+                  onEditRoleAction={handleEditRoleAction}
+                  onEditPermissionsAction={handleEditPermissionsAction}
+                  onDeleteUserAction={handleDeleteUserAction}
                 />
               </TabsContent>
 
@@ -361,10 +439,8 @@ export default function AdminPage() {
                   roles={safeRoles}
                   loading={loading}
                   currentUser={user}
-                  onAddRoleAction={() => openDialog('addRole')}
-                  onDeleteRoleAction={(id: string, name: string) => 
-                    handleDeleteRequest(id, 'role', name)
-                  }
+                  onAddRoleAction={handleOpenAddRole}
+                  onDeleteRoleAction={handleDeleteRoleAction}
                   mappedRolesForMatrix={mappedRolesForMatrix}
                 />
               </TabsContent>
@@ -375,39 +451,15 @@ export default function AdminPage() {
                   directions={safeDirections}
                   services={safeServices}
                   loading={loading}
-                  onAddDeptAction={() => {
-                    setEditingItems(prev => ({ ...prev, department: null }));
-                    openDialog('department');
-                  }}
-                  onEditDeptAction={(d: Department) => {
-                    setEditingItems(prev => ({ ...prev, department: d }));
-                    openDialog('department');
-                  }}
-                  onDeleteDeptAction={(id: string, name: string) => 
-                    handleDeleteRequest(id, 'department', name)
-                  }
-                  onAddDirAction={() => {
-                    setEditingItems(prev => ({ ...prev, direction: null }));
-                    openDialog('direction');
-                  }}
-                  onEditDirAction={(dir: Direction) => {
-                    setEditingItems(prev => ({ ...prev, direction: dir }));
-                    openDialog('direction');
-                  }}
-                  onDeleteDirAction={(id: string, name: string) => 
-                    handleDeleteRequest(id, 'direction', name)
-                  }
-                  onAddSvcAction={() => {
-                    setEditingItems(prev => ({ ...prev, service: null }));
-                    openDialog('service');
-                  }}
-                  onEditSvcAction={(svc: Service) => {
-                    setEditingItems(prev => ({ ...prev, service: svc }));
-                    openDialog('service');
-                  }}
-                  onDeleteSvcAction={(id: string, name: string) => 
-                    handleDeleteRequest(id, 'service', name)
-                  }
+                  onAddDeptAction={handleAddDept}
+                  onEditDeptAction={handleEditDept}
+                  onDeleteDeptAction={handleDeleteDept}
+                  onAddDirAction={handleAddDir}
+                  onEditDirAction={handleEditDir}
+                  onDeleteDirAction={handleDeleteDir}
+                  onAddSvcAction={handleAddSvc}
+                  onEditSvcAction={handleEditSvc}
+                  onDeleteSvcAction={handleDeleteSvc}
                 />
               </TabsContent>
             </Tabs>

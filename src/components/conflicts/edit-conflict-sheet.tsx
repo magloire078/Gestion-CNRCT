@@ -4,7 +4,7 @@
 import { useState, useEffect } from "react";
 import type { Conflict, Employe, ConflictType } from "@/lib/data";
 import { conflictTypes, conflictStatuses } from "@/lib/data";
-import { getEmployees } from "@/services/employee-service";
+import { getEmployeeDirectory } from "@/services/employee-service";
 import { IVORIAN_REGIONS } from "@/constants/regions";
 
 import { Button } from "@/components/ui/button";
@@ -60,7 +60,7 @@ export function EditConflictSheet({ isOpen, onCloseAction, onUpdateConflictActio
         async function fetchEmployees() {
             if (!canAssignMediator) return;
             try {
-                const employeesData = await getEmployees();
+                const employeesData = await getEmployeeDirectory();
                 setEmployees(employeesData.filter(e => e.status === 'Actif'));
             } catch (error) {
                 console.error("Failed to fetch employees", error);

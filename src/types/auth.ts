@@ -11,6 +11,9 @@ export type User = {
     permissions: string[]; // The resolved permissions for the user's role (legacy)
     resourcePermissions?: ResourcePermissions; // Matrix permissions (new)
     employeeId?: string; // ID de l'employé lié
+    departmentId?: string; // ID du département (depuis l'employé lié)
+    directionId?: string; // ID de la direction (depuis l'employé lié)
+    serviceId?: string; // ID du service (depuis l'employé lié)
     lastActive?: Timestamp; // Dernière activité de l'utilisateur
     isOnline?: boolean; // Statut en ligne
 }

@@ -144,7 +144,8 @@ export const ALL_MENU_ITEMS: MenuItem[] = [
       { href: "/budget", label: "Budget", icon: Wallet, permission: "page:budget:view" },
       { href: "/fleet", label: "Flotte de Véhicules", icon: Car, permission: "page:fleet:view" },
       { href: "/fleet/fuel", label: "Cartes de carburant", icon: Fuel, permission: "page:fuel:view" },
-      { href: "/supplies", label: "Fournitures", icon: Package, permission: "page:supplies:view" },
+      { href: "/supplies", label: "Stock Fournitures", icon: Package, permission: "page:supplies:view" },
+      { href: "/management/supplies", label: "Validation Fournitures", icon: ShieldCheck, permission: "management:supplies:validate" },
       { href: "/mgp", label: "Gestion des Plaintes", icon: MessageSquare, permission: "page:mgp:view" },
       { href: "/repository", label: "Référentiel", icon: Archive, permission: "page:repository:view" },
     ]

@@ -55,7 +55,7 @@ import { useToast } from "@/hooks/use-toast";
 import { 
   Supply, 
   SupplyTransaction, 
-} from "@/types/asset";
+} from "@/types/supply";
 import { SupplyCategory, subscribeToCategories } from "@/services/supply-category-service";
 import { 
   subscribeToSupplies, 
@@ -83,17 +83,9 @@ import { SuppliesOfficialReport } from "@/components/reports/supplies-official-r
 import { PermissionGuard } from "@/components/auth/permission-guard";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
-
-// Helper component for debounced search
-const DebouncedInput = ({ value: initialValue, onChange, debounce = 300, ...props }: any) => {
-    const [value, setValue] = useState(initialValue);
-    useEffect(() => { setValue(initialValue); }, [initialValue]);
-    useEffect(() => {
-        const timeout = setTimeout(() => onChange(value), debounce);
-        return () => clearTimeout(timeout);
-    }, [value]);
-    return <Input {...props} value={value} onChange={e => setValue(e.target.value)} />;
-};
+import { PendingRequestsManager } from "@/components/supplies/pending-requests-manager";
+import { InventoryTab } from "@/components/supplies/inventory-tab";
+import { HistoryTab } from "@/components/supplies/history-tab";
 
 // Stock Health Status Logic
 const getStockStatus = (quantity: number, reorderLevel: number) => {
@@ -384,12 +376,12 @@ export default function SuppliesPage() {
     });
   }, []);
 
-  const handleCategoryFilterChange = (value: string) => {
+  const handleCategoryFilterChange = useCallback((value: string) => {
     startTransition(() => {
         setCategoryFilter(value);
         setCurrentPage(1);
     });
-  };
+  }, []);
 
   useEffect(() => {
     const unsubscribeSupplies = subscribeToSupplies(
@@ -667,227 +659,72 @@ export default function SuppliesPage() {
                 <TabsTrigger value="inventory" className="gap-2">
                     <Package className="h-4 w-4" /> Inventaire
                 </TabsTrigger>
+                <TabsTrigger value="requests" className="gap-2">
+                    <ShoppingCart className="h-4 w-4" /> Demandes
+                </TabsTrigger>
                 <TabsTrigger value="history" className="gap-2">
                     <Archive className="h-4 w-4" /> Historique
                 </TabsTrigger>
             </TabsList>
         </div>
 
-        {/* --- Statistical Dashboard --- */}
-        {activeTab === 'inventory' && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                <Card className="bg-white shadow-sm border-slate-100 hover:border-primary/20 transition-all group">
-                    <CardContent className="p-4 flex items-center gap-4">
-                        <div className="h-10 w-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
-                            <Package className="h-5 w-5" />
-                        </div>
-                        <div className="flex flex-col">
-                            <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Total Articles</span>
-                            <span className="text-xl font-black text-slate-900">{stats.total}</span>
-                        </div>
-                    </CardContent>
-                </Card>
-                
-                <Card className="bg-white shadow-sm border-slate-100 hover:border-red-100 transition-all group">
-                    <CardContent className="p-4 flex items-center gap-4">
-                        <div className={cn(
-                            "h-10 w-10 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110",
-                            stats.outOfStock > 0 ? "bg-red-50 text-red-600" : "bg-slate-50 text-slate-300"
-                        )}>
-                            <AlertTriangle className="h-5 w-5" />
-                        </div>
-                        <div className="flex flex-col">
-                            <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Rupture de Stock</span>
-                            <span className={cn("text-xl font-black", stats.outOfStock > 0 ? "text-red-600" : "text-slate-900")}>
-                                {stats.outOfStock}
-                            </span>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <Card className="bg-white shadow-sm border-slate-100 hover:border-amber-100 transition-all group">
-                    <CardContent className="p-4 flex items-center gap-4">
-                        <div className={cn(
-                            "h-10 w-10 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110",
-                            stats.lowStock > 0 ? "bg-amber-50 text-amber-600" : "bg-slate-50 text-slate-300"
-                        )}>
-                            <Zap className="h-5 w-5" />
-                        </div>
-                        <div className="flex flex-col">
-                            <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Stock Critique</span>
-                            <span className={cn("text-xl font-black", stats.lowStock > 0 ? "text-amber-600" : "text-slate-900")}>
-                                {stats.lowStock}
-                            </span>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <Card className="bg-white shadow-sm border-slate-100 hover:border-emerald-100 transition-all group">
-                    <CardContent className="p-4 flex items-center gap-4">
-                        <div className="h-10 w-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform">
-                            <BarChart3 className="h-5 w-5" />
-                        </div>
-                        <div className="flex flex-col">
-                            <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Santé Globale</span>
-                            <span className="text-xl font-black text-emerald-600">{Math.round(stats.avgHealth)}%</span>
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
-        )}
-
       <TabsContent value="inventory" className="mt-0">
-        <Card className="border-none shadow-none bg-transparent">
-          <CardHeader className="px-0 pt-0 pb-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="space-y-1">
-                    <CardTitle className="text-xl font-bold flex items-center gap-2">
-                        {categoryFilter !== 'all' ? categoryFilter : 'Inventaire Complet'}
-                    </CardTitle>
-                    <CardDescription>
-                        {filteredSupplies.length} article(s) trouvé(s)
-                    </CardDescription>
-                </div>
-            <div className="flex flex-col sm:flex-row items-center gap-3">
-               <div className="relative group w-full sm:w-auto">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
-                <DebouncedInput
-                  placeholder="Filtrer..."
-                  className="pl-9 h-10 w-full md:w-[250px] rounded-xl border-slate-200 focus:ring-slate-900"
-                  value={searchTerm}
-                  onChange={handleSearchChange}
+          <InventoryTab 
+            loading={loading}
+            error={error}
+            filteredSupplies={filteredSupplies}
+            paginatedSupplies={paginatedSupplies}
+            stats={stats}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            itemsPerPage={itemsPerPage}
+            categoryFilter={categoryFilter}
+            searchTerm={searchTerm}
+            viewMode={viewMode}
+            availableCategories={availableCategories}
+            isPending={isPending}
+            onPageChange={(page) => startTransition(() => setCurrentPage(page))}
+            onItemsPerPageChange={setItemsPerPage}
+            onCategoryFilterChange={handleCategoryFilterChange}
+            onSearchChange={handleSearchChange}
+            renderSupplyRow={(item, index) => (
+                <SupplyRow 
+                    key={item.id}
+                    supply={item}
+                    index={(currentPage - 1) * itemsPerPage + index}
+                    openDistributeDialog={openDistributeDialog}
+                    openRestockDialog={openRestockDialog}
+                    openEditSheet={openEditSheet}
+                    setDeleteTarget={handleSetDeleteTarget}
                 />
-              </div>
-              <Select value={categoryFilter} onValueChange={handleCategoryFilterChange}>
-                <SelectTrigger className="w-full sm:w-[200px] h-10 rounded-xl border-slate-200 text-slate-900 font-bold">
-                    <Filter className="mr-2 h-3.5 w-3.5 text-slate-400" />
-                    <SelectValue placeholder="Catégorie" />
-                </SelectTrigger>
-                <SelectContent className="rounded-xl">
-                  <SelectItem value="all">Toutes les catégories</SelectItem>
-                  {availableCategories.map(cat => <SelectItem key={cat.id} value={cat.name}>{cat.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="pt-6">
-            {error && <div className="p-8 text-center text-red-500 font-bold">{error}</div>}
-            
-            {viewMode === 'table' ? (
-                <div className="rounded-xl border border-slate-100 overflow-hidden">
-                    <Table>
-                        <TableHeader className="bg-slate-50/80">
-                        <TableRow className="border-slate-100 hover:bg-transparent">
-                            <TableHead className="py-4 pl-6 font-bold text-slate-700 uppercase tracking-wider text-[11px]">Ordre</TableHead>
-                            <TableHead className="py-4 font-bold text-slate-700 uppercase tracking-wider text-[11px]">Code</TableHead>
-                            <TableHead className="py-4 font-bold text-slate-700 uppercase tracking-wider text-[11px]">Désignation</TableHead>
-                            <TableHead className="py-4 font-bold text-slate-700 uppercase tracking-wider text-[11px]">Catégorie</TableHead>
-                            <TableHead className="text-center text-[10px] font-bold uppercase tracking-widest text-slate-400">Stock</TableHead>
-                            <TableHead className="text-center text-[10px] font-bold uppercase tracking-widest text-slate-400">Seuil Alerte</TableHead>
-                            <TableHead className="w-[180px] text-[10px] font-bold uppercase tracking-widest text-slate-400">Santé du Stock</TableHead>
-                            <TableHead className="w-12"></TableHead>
-                        </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                        {loading ? (
-                            Array.from({ length: 5 }).map((_, i) => (
-                            <TableRow key={i}>
-                                <TableCell><Skeleton className="h-4 w-4 mx-auto" /></TableCell>
-                                <TableCell><Skeleton className="h-4 w-12" /></TableCell>
-                                <TableCell><Skeleton className="h-4 w-48" /></TableCell>
-                                <TableCell><Skeleton className="h-4 w-12 mx-auto" /></TableCell>
-                                <TableCell><Skeleton className="h-4 w-12 mx-auto" /></TableCell>
-                                <TableCell><Skeleton className="h-3 w-full rounded-full" /></TableCell>
-                                <TableCell><Skeleton className="h-8 w-8 ml-auto" /></TableCell>
-                            </TableRow>
-                            ))
-                        ) : paginatedSupplies.length > 0 ? (
-                            paginatedSupplies.map((item, index) => (
-                                <SupplyRow 
-                                    key={item.id}
-                                    supply={item}
-                                    index={(currentPage - 1) * itemsPerPage + index}
-                                    openDistributeDialog={openDistributeDialog}
-                                    openRestockDialog={openRestockDialog}
-                                    openEditSheet={openEditSheet}
-                                    setDeleteTarget={handleSetDeleteTarget}
-                                />
-                            ))
-                        ) : null}
-                        </TableBody>
-                    </Table>
-                </div>
-            ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {loading ? (
-                        Array.from({ length: 6 }).map((_, i) => (
-                            <Card key={i} className="rounded-2xl border-slate-100"><CardContent className="p-6"><Skeleton className="h-40 w-full rounded-xl" /></CardContent></Card>
-                        ))
-                    ) : paginatedSupplies.map((supply) => (
-                        <SupplyCard 
-                            key={supply.id}
-                            supply={supply}
-                            status={getStockStatus(supply.quantity, supply.reorderLevel)}
-                            openDistributeDialog={openDistributeDialog}
-                            openEditSheet={openEditSheet}
-                            setDeleteTarget={handleSetDeleteTarget}
-                        />
-                    ))}
-                </div>
             )}
+            renderSupplyCard={(supply) => (
+                <SupplyCard 
+                    key={supply.id}
+                    supply={supply}
+                    status={getStockStatus(supply.quantity, supply.reorderLevel)}
+                    openDistributeDialog={openDistributeDialog}
+                    openEditSheet={openEditSheet}
+                    setDeleteTarget={handleSetDeleteTarget}
+                />
+            )}
+          />
+      </TabsContent>
 
-            {!loading && filteredSupplies.length === 0 && (
-                <div className="text-center py-32 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
-                    <div className="h-20 w-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-200 shadow-inner">
-                        <Archive className="h-10 w-10 text-slate-300" />
-                    </div>
-                    <p className="font-black text-slate-500 uppercase tracking-widest">Aucun article trouvé</p>
-                    <p className="text-sm text-slate-400 max-w-[300px] mx-auto mt-2 italic">Ajustez vos filtres ou effectuez une recherche plus précise.</p>
-                </div>
-            )}
-        </CardContent>
-        {totalPages > 1 && (
-            <CardFooter className="bg-slate-50/50 border-t border-slate-100 px-6 py-4">
-              <PaginationControls
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={setCurrentPage}
-                itemsPerPage={itemsPerPage}
-                onItemsPerPageChange={setItemsPerPage}
-                totalItems={filteredSupplies.length}
-              />
-            </CardFooter>
-          )}
-      </Card>
+      <TabsContent value="requests" className="mt-0">
+          <PendingRequestsManager mode="stock" />
       </TabsContent>
 
       <TabsContent value="history" className="mt-0">
-        <Card className="border-none shadow-xl shadow-slate-200/50 overflow-hidden">
-            <div className="h-1.5 bg-blue-600 w-full" />
-            <CardHeader className="bg-slate-50/50">
-                <CardTitle>Journal des Mouvements</CardTitle>
-                <CardDescription>Suivi détaillé des distributions et réapprovisionnements.</CardDescription>
-            </CardHeader>
-            <CardContent className="pt-6">
-                <SupplyTransactionList 
-                    transactions={paginatedTransactions} 
-                    onDelete={handleDeleteTransaction}
-                />
-            </CardContent>
-            {historyTotalPages > 1 && (
-                <CardFooter className="bg-slate-50/50 border-t border-slate-100 px-6 py-4">
-                    <PaginationControls
-                        currentPage={historyPage}
-                        totalPages={historyTotalPages}
-                        onPageChange={setHistoryPage}
-                        itemsPerPage={historyItemsPerPage}
-                        onItemsPerPageChange={setHistoryItemsPerPage}
-                        totalItems={transactions.length}
-                    />
-                </CardFooter>
-            )}
-        </Card>
+          <HistoryTab 
+            transactions={paginatedTransactions}
+            currentPage={historyPage}
+            totalPages={historyTotalPages}
+            itemsPerPage={historyItemsPerPage}
+            isPending={isPending}
+            onPageChange={(page) => startTransition(() => setHistoryPage(page))}
+            onItemsPerPageChange={setHistoryItemsPerPage}
+          />
       </TabsContent>
       </Tabs>
 

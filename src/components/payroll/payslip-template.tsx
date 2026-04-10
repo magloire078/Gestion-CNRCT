@@ -78,11 +78,11 @@ export function PayslipTemplate({ payslipDetails }: { payslipDetails: PayslipDet
                 <table className="w-full border-collapse border border-gray-400 rounded-lg mt-2 text-[10px] no-zebra">
                     <thead className="bg-slate-200 text-slate-900 border-b-2 border-slate-700 font-bold text-center">
                         <tr>
-                            <td className="p-1 border-r border-gray-400">EMPLOI</td>
-                            <td className="p-1 border-r border-gray-400">CATEGORIE</td>
-                            <td className="p-1 border-r border-gray-400">ANCIENNETE</td>
-                            <td className="p-1 border-r border-gray-400">NBRE DE PARTS</td>
-                            <td className="p-1">DATE D'EMBAUCHE</td>
+                            <td className="p-1 border border-gray-400">EMPLOI</td>
+                            <td className="p-1 border border-gray-400">CATEGORIE</td>
+                            <td className="p-1 border border-gray-400">ANCIENNETE</td>
+                            <td className="p-1 border border-gray-400">NBRE DE PARTS</td>
+                            <td className="p-1 border border-gray-400">DATE D'EMBAUCHE</td>
                         </tr>
                     </thead>
                     <tbody className="text-center">
@@ -102,9 +102,9 @@ export function PayslipTemplate({ payslipDetails }: { payslipDetails: PayslipDet
                     <table className="w-full border-collapse no-zebra">
                         <thead className="bg-slate-200 text-slate-900 border-b-2 border-slate-700 font-bold">
                             <tr>
-                                <th className="p-1 text-left w-[50%]">ELEMENTS</th>
-                                <th className="p-1 text-center w-[25%] border-l border-gray-400">GAINS</th>
-                                <th className="p-1 text-center w-[25%] border-l border-gray-400">RETENUES</th>
+                                <th className="p-1 text-left w-[50%] border border-gray-400">ELEMENTS</th>
+                                <th className="p-1 text-center w-[25%] border border-gray-400">GAINS</th>
+                                <th className="p-1 text-center w-[25%] border border-gray-400">RETENUES</th>
                             </tr>
                         </thead>
                         <tbody>

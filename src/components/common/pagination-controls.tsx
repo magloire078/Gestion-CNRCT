@@ -11,6 +11,7 @@ interface PaginationControlsProps {
   itemsPerPage: number;
   onItemsPerPageChange: (value: number) => void;
   totalItems: number;
+  isPending?: boolean;
 }
 
 export function PaginationControls({
@@ -19,7 +20,8 @@ export function PaginationControls({
   onPageChange,
   itemsPerPage,
   onItemsPerPageChange,
-  totalItems
+  totalItems,
+  isPending
 }: PaginationControlsProps) {
 
   const startItem = (currentPage - 1) * itemsPerPage + 1;
@@ -60,7 +62,7 @@ export function PaginationControls({
             variant="outline"
             className="hidden h-8 w-8 p-0 lg:flex"
             onClick={() => onPageChange(1)}
-            disabled={currentPage === 1}
+            disabled={currentPage === 1 || isPending}
           >
             <span className="sr-only">Aller à la première page</span>
             <ChevronsLeft className="h-4 w-4" />
@@ -69,7 +71,7 @@ export function PaginationControls({
             variant="outline"
             className="h-8 w-8 p-0"
             onClick={() => onPageChange(currentPage - 1)}
-            disabled={currentPage === 1}
+            disabled={currentPage === 1 || isPending}
           >
             <span className="sr-only">Aller à la page précédente</span>
             <ChevronLeft className="h-4 w-4" />
@@ -78,7 +80,7 @@ export function PaginationControls({
             variant="outline"
             className="h-8 w-8 p-0"
             onClick={() => onPageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
+            disabled={currentPage === totalPages || isPending}
           >
             <span className="sr-only">Aller à la page suivante</span>
             <ChevronRight className="h-4 w-4" />
@@ -87,7 +89,7 @@ export function PaginationControls({
             variant="outline"
             className="hidden h-8 w-8 p-0 lg:flex"
             onClick={() => onPageChange(totalPages)}
-            disabled={currentPage === totalPages}
+            disabled={currentPage === totalPages || isPending}
           >
             <span className="sr-only">Aller à la dernière page</span>
             <ChevronsRight className="h-4 w-4" />

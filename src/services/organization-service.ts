@@ -36,22 +36,9 @@ export async function getOrganizationSettings(): Promise<OrganizationSettings> {
         }
     } catch (e) {
         // Silently handle permission errors - this is expected when not authenticated
-        // The default settings will be returned and created if needed
     }
 
     // Return default settings if doc doesn't exist or on error
-    // Try to create the default settings document (will fail silently if no permissions)
-    try {
-        await setDoc(settingsDocRef, {
-            organizationName: 'La Chambre des Rois et des Chefs Traditionnels de Côte d’Ivoire',
-            mainLogoUrl: defaultMainLogoUrl,
-            secondaryLogoUrl: defaultSecondaryLogoUrl,
-            faviconUrl: defaultMainLogoUrl // Use main logo as default favicon
-        }, { merge: true });
-    } catch (e) {
-        // Silently ignore - user may not have write permissions yet
-    }
-
     return {
         organizationName: 'La Chambre des Rois et des Chefs Traditionnels de Côte d’Ivoire',
         mainLogoUrl: defaultMainLogoUrl,

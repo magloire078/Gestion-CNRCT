@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/select";
 import type { Asset, Employe } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
-import { getEmployees } from "@/services/employee-service";
+import { getEmployeeDirectory } from "@/services/employee-service";
 
 interface AddAssetSheetProps {
   isOpen: boolean;
@@ -62,7 +62,7 @@ export function AddAssetSheet({ isOpen, onClose, onAddAsset, initialTag }: AddAs
     if (isOpen) {
       async function fetchEmployees() {
         try {
-          const fetchedEmployees = await getEmployees();
+          const fetchedEmployees = await getEmployeeDirectory();
           setEmployees(fetchedEmployees);
         } catch (err) {
           console.error("Failed to fetch employees", err);

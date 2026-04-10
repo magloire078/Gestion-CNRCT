@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useTransition } from "react";
 import { 
     PlusCircle, Search, Eye, 
     FileText, User, Calendar as CalendarIcon,
@@ -56,6 +56,7 @@ export default function EvaluationsPage() {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
     const unsubscribe = subscribeToEvaluations(
@@ -281,10 +282,11 @@ export default function EvaluationsPage() {
             <PaginationControls
               currentPage={currentPage}
               totalPages={totalPages}
-              onPageChange={setCurrentPage}
+              onPageChange={(page) => startTransition(() => setCurrentPage(page))}
               itemsPerPage={itemsPerPage}
               onItemsPerPageChange={setItemsPerPage}
               totalItems={filteredEvaluations.length}
+              isPending={isPending}
             />
           </CardFooter>
         )}

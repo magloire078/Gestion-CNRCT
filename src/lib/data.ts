@@ -8,3 +8,4 @@ export * from "../types/regency";
 export * from "../types/common";
 export * from "../types/helpdesk";
 export * from "../types/fuel";
+export * from "../types/supply";

@@ -80,7 +80,7 @@ export function EditSupplySheet({
       } else {
         // Fallback for known legacy categories
         if (category === 'Petits matériels, fourniture de bureau et documentation') setCode('6211-');
-        else if (category === 'Cartouches d\'encre' || category === 'Matériel de nettoyage') setCode('606-');
+        else if (category === 'Cartouches d\'encre' || category === 'Matériel et fournitures d\'entretien') setCode('606-');
         else if (category === 'Fourniture et consommables pour le materiel informatique') setCode('6214-');
       }
     }

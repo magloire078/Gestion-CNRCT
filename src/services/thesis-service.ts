@@ -1,4 +1,5 @@
-import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, Table, TableRow, TableCell, WidthType, BorderStyle, PageBreak } from "docx";
+"use server";
+
 import { getConflicts } from "./conflict-service";
 
 export interface ThesisOptions {
@@ -11,8 +12,10 @@ export interface ThesisOptions {
 
 /**
  * Service pour la génération du document Word (Mémoire de Soutenance) complet
+ * Retourne le document en format Base64 pour être utilisé dans un composant client
  */
-export async function generateThesisWordDocument(options: ThesisOptions): Promise<Blob> {
+export async function generateThesisWordDocument(options: ThesisOptions): Promise<string> {
+  const { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, Table, TableRow, TableCell, WidthType, BorderStyle, PageBreak } = await import("docx");
   const conflicts = await getConflicts();
   
   // STATISTIQUES DYNAMIQUES
@@ -353,6 +356,7 @@ export async function generateThesisWordDocument(options: ThesisOptions): Promis
     ],
   });
 
-  return await Packer.toBlob(doc);
+  const buffer = await Packer.toBuffer(doc);
+  return buffer.toString('base64');
 }
 

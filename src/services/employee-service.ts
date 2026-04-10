@@ -259,12 +259,20 @@ export async function getEmployeeDirectory(): Promise<Employe[]> {
     try {
         const response = await fetch('/api/employees/directory');
         if (!response.ok) {
-            throw new Error('Erreur lors de la récupération de l\'annuaire');
+            // Log the error but fall back to client-side getEmployees
+            console.warn('[EmployeeService] Directory API failed, falling back to client-side fetch');
+            return await getEmployees();
         }
         return await response.json();
     } catch (error) {
-        console.error('[EmployeeService] Failed to fetch employee directory:', error);
-        throw error;
+        console.error('[EmployeeService] Failed to fetch employee directory API, falling back to client-side fetch:', error);
+        // Fallback to the regular getEmployees which uses the client SDK
+        try {
+            return await getEmployees();
+        } catch (fallbackError) {
+            console.error('[EmployeeService] Fallback to getEmployees also failed:', fallbackError);
+            throw error;
+        }
     }
 }
 

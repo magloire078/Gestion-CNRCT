@@ -40,7 +40,7 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  serverExternalPackages: ['genkit', '@genkit-ai', 'google-auth-library', 'xlsx'],
+  serverExternalPackages: ['genkit', '@genkit-ai', 'google-auth-library', 'xlsx', 'firebase-admin', 'docx'],
 };
 
 export default nextConfig;

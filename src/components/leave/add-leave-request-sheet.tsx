@@ -31,7 +31,7 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import type { Leave, Employe } from "@/lib/data";
-import { getEmployees } from "@/services/employee-service";
+import { getEmployeeDirectory } from "@/services/employee-service";
 import { Textarea } from "../ui/textarea";
 import { Command, CommandEmpty, CommandInput, CommandGroup, CommandItem, CommandList } from "@/components/ui/command";
 import { useAuth } from "@/hooks/use-auth";
@@ -67,7 +67,7 @@ export function AddLeaveRequestSheet({
       }
       async function fetchEmployees() {
         try {
-          const fetchedEmployees = await getEmployees();
+          const fetchedEmployees = await getEmployeeDirectory();
           setEmployees(fetchedEmployees.filter(e => e.status === 'Actif'));
         } catch (error) {
           console.error("Failed to fetch employees for leave request form", error);

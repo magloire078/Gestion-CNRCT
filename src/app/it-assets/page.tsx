@@ -533,10 +533,11 @@ export default function ItAssetsPage() {
               <PaginationControls
                 currentPage={currentPage}
                 totalPages={totalPages}
-                onPageChange={setCurrentPage}
+                onPageChange={(page) => startTransition(() => setCurrentPage(page))}
                 itemsPerPage={itemsPerPage}
                 onItemsPerPageChange={setItemsPerPage}
                 totalItems={filteredAssets.length}
+                isPending={isPending}
               />
             </CardFooter>
           )}

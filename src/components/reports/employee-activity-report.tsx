@@ -18,7 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "../ui/label";
-import { getEmployees } from "@/services/employee-service";
+import { getEmployeeDirectory } from "@/services/employee-service";
 import { getLeaves } from "@/services/leave-service";
 import { getMissions } from "@/services/mission-service";
 import type { Employe, Leave, Mission } from "@/lib/data";
@@ -52,7 +52,7 @@ export function EmployeeActivityReport() {
 
     try {
       const [employees, leaves, missions] = await Promise.all([
-        getEmployees(),
+        getEmployeeDirectory(),
         getLeaves(),
         getMissions(),
       ]);

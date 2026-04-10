@@ -105,11 +105,18 @@ export const DirectoireMap: React.FC<DirectoireMapProps> = ({
         import('leaflet.markercluster');
     }, []);
 
+    // Helper to normalize region names (handles curvy vs straight apostrophes)
+    const normalizeRegionName = (name: string): string => {
+        if (!name) return "";
+        return name.replace(/’/g, "'").trim();
+    };
+
     // Helper to extract common fields
     const getMemberData = (member: MapMember) => {
         const name = member.name || `${member.lastName || ''} ${member.firstName || ''}`.trim();
         const photo = member.photoUrl || member.Photo;
-        const region = member.region || member.Region || "Inconnue";
+        const rawRegion = member.region || member.Region || "Inconnue";
+        const region = normalizeRegionName(rawRegion);
         const locality = member.village || member.Village || member.department || member.Departement || "";
         const role = member.role || member.title || member.poste || "Membre";
         const isActive = member.status === 'Actif' || member.bActif === true;

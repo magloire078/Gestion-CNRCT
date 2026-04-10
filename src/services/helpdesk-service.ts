@@ -83,6 +83,10 @@ export function subscribeToTicketMessages(
 
 export async function addTicket(ticketData: Omit<Ticket, 'id' | 'createdAt' | 'updatedAt' | 'status'>): Promise<Ticket> {
     const now = new Date().toISOString();
+    
+    // Priority assignment logic (GLPI style: Impact x Urgency)
+    // For now, we take the provided priority if it exists, otherwise Default to Basse
+    
     const newTicketData = {
         ...ticketData,
         status: 'Ouvert' as TicketStatus,
@@ -93,13 +97,34 @@ export async function addTicket(ticketData: Omit<Ticket, 'id' | 'createdAt' | 'u
     
     // Notify helpdesk agents
     await createNotification({
-        userId: 'manager', // This special ID targets roles like admin/manager
-        title: `Nouveau Ticket: ${ticketData.title}`,
-        description: `Un nouveau ticket a été créé par ${ticketData.createdByName}.`,
+        userId: 'manager', 
+        title: `Nouveau Ticket #${docRef.id.slice(0, 5)}: ${ticketData.title}`,
+        description: `Un nouveau ticket [${ticketData.category}] a été créé par ${ticketData.createdByName}.`,
         href: `/helpdesk/${docRef.id}`
     });
 
-    return { id: docRef.id, ...newTicketData };
+    return { id: docRef.id, ...newTicketData } as Ticket;
+}
+
+export async function resolveTicket(ticketId: string, solution: string, agentName: string): Promise<void> {
+    const now = new Date().toISOString();
+    const ticketDocRef = doc(db, 'tickets', ticketId);
+    
+    await updateDoc(ticketDocRef, {
+        status: 'Résolu',
+        solution,
+        updatedAt: now
+    });
+
+    const ticket = await getTicket(ticketId);
+    if (ticket) {
+        await createNotification({
+            userId: ticket.createdBy,
+            title: `Ticket Résolu #${ticketId.slice(0, 5)}`,
+            description: `${agentName} a apporté une solution à votre ticket : "${ticket.title}".`,
+            href: `/helpdesk/${ticketId}`
+        });
+    }
 }
 
 export async function addMessageToTicket(ticketId: string, messageData: Omit<TicketMessage, 'id' | 'createdAt' | 'ticketId'>): Promise<TicketMessage> {
@@ -149,6 +174,16 @@ export async function updateTicket(ticketId: string, dataToUpdate: Partial<Ticke
     const ticketDocRef = doc(db, 'tickets', ticketId);
     const updatePayload = { ...dataToUpdate, updatedAt: new Date().toISOString() };
     await updateDoc(ticketDocRef, updatePayload);
+
+    // If assignedTo changed, notify the agent
+    if (dataToUpdate.assignedTo) {
+        await createNotification({
+            userId: dataToUpdate.assignedTo,
+            title: `Nouveau ticket attribué`,
+            description: `Le ticket #${ticketId.slice(0, 5)} vous a été attribué.`,
+            href: `/helpdesk/${ticketId}`
+        });
+    }
 }
 
 

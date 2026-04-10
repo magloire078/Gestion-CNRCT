@@ -2,7 +2,7 @@
 export interface SyscohadaItem {
     code: string;
     name: string;
-    category: "Petits matériels, fourniture de bureau et documentation" | "Fourniture et consommables pour le materiel informatique" | "Cartouches d'encre" | "Matériel de nettoyage" | "Archives" | "Outils" | "Autre";
+    category: "Petits matériels, fourniture de bureau et documentation" | "Fourniture et consommables pour le materiel informatique" | "Cartouches d'encre" | "Matériel et fournitures d'entretien" | "Archives" | "Outils" | "Autre";
 }
 
 export const SYSCOHADA_SUPPLIES_CATALOG: SyscohadaItem[] = [
@@ -26,11 +26,11 @@ export const SYSCOHADA_SUPPLIES_CATALOG: SyscohadaItem[] = [
     { code: "606203", name: "Souris et Claviers de rechange", category: "Autre" },
 
     // ARTICLE 606 (Suite) : Entretien et Nettoyage
-    { code: "606301", name: "Papier hygiénique", category: "Matériel de nettoyage" },
-    { code: "606302", name: "Savon liquide et Gel hydroalcoolique", category: "Matériel de nettoyage" },
-    { code: "606303", name: "Désinfectants et Détergents", category: "Matériel de nettoyage" },
-    { code: "606304", name: "Sacs poubelle", category: "Matériel de nettoyage" },
-    { code: "606305", name: "Essuie-tout et Mouchoirs", category: "Matériel de nettoyage" },
+    { code: "606301", name: "Papier hygiénique", category: "Matériel et fournitures d'entretien" },
+    { code: "606302", name: "Savon liquide et Gel hydroalcoolique", category: "Matériel et fournitures d'entretien" },
+    { code: "606303", name: "Désinfectants et Détergents", category: "Matériel et fournitures d'entretien" },
+    { code: "606304", name: "Sacs poubelle", category: "Matériel et fournitures d'entretien" },
+    { code: "606305", name: "Essuie-tout et Mouchoirs", category: "Matériel et fournitures d'entretien" },
 
     // ARTICLE 606 (Divers)
     { code: "606901", name: "Piles (AA / AAA)", category: "Autre" },

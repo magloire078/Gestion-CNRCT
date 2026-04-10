@@ -177,7 +177,7 @@ export function SuppliesOfficialReport({
                                     <td className="border border-slate-900 p-2 text-center">
                                         <div className="h-8 w-8 rounded bg-slate-50 border border-slate-100 flex items-center justify-center overflow-hidden mx-auto">
                                             {item.photoUrl ? (
-                                                <img src={item.photoUrl} alt="" className="w-full h-full object-cover" />
+                                                <img src={item.photoUrl} alt="" crossOrigin="anonymous" className="w-full h-full object-cover" />
                                             ) : (
                                                 <Package className="h-3 w-3 text-slate-200" />
                                             )}

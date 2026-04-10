@@ -820,10 +820,11 @@ export default function EmployeesPage() {
                 <PaginationControls
                   currentPage={currentPage}
                   totalPages={totalPages}
-                  onPageChange={setCurrentPage}
+                  onPageChange={(page) => startTransition(() => setCurrentPage(page))}
                   itemsPerPage={itemsPerPage}
                   onItemsPerPageChange={setItemsPerPage}
                   totalItems={filteredEmployees.length}
+                  isPending={isPending}
                 />
               </CardFooter>
             )}

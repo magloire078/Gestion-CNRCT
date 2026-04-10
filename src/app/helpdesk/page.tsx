@@ -5,7 +5,7 @@ import {
     PlusCircle, Search, Eye, ListFilter, 
     MessageSquare, AlertCircle, CheckCircle2, 
     Clock, Tag, User, ChevronRight,
-    LifeBuoy, BarChart3, Filter,
+    LifeBuoy, BarChart3, Filter, Save,
     Layers, Zap, Shield
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -52,7 +52,8 @@ import { PermissionGuard } from "@/components/auth/permission-guard";
 const statusVariantMap: Record<TicketStatus, { label: string, color: string, icon: any, bg: string }> = {
   'Ouvert': { label: 'Ouvert', color: 'text-blue-600', icon: MessageSquare, bg: 'bg-blue-50' },
   'En cours': { label: 'En cours', color: 'text-amber-600', icon: Clock, bg: 'bg-amber-50' },
-  'Fermé': { label: 'Résolu', color: 'text-emerald-600', icon: CheckCircle2, bg: 'bg-emerald-50' },
+  'Résolu': { label: 'Résolu', color: 'text-emerald-600', icon: CheckCircle2, bg: 'bg-emerald-50' },
+  'Fermé': { label: 'Clos', color: 'text-slate-600', icon: Save, bg: 'bg-slate-50' },
 };
 
 const priorityVariantMap: Record<TicketPriority, { label: string, color: string, variant: any }> = {
@@ -61,9 +62,9 @@ const priorityVariantMap: Record<TicketPriority, { label: string, color: string,
   'Basse': { label: 'Basse', color: 'text-slate-400', variant: 'secondary' },
 };
 
-const ticketCategories: TicketCategory[] = ['Technique', 'Facturation', 'Général'];
+const ticketCategories: TicketCategory[] = ['Matériel', 'Logiciel', 'Réseau', 'Accès/Comptes', 'Foncier', 'Autre'];
 const ticketPriorities: TicketPriority[] = ['Basse', 'Moyenne', 'Haute'];
-const ticketStatuses: TicketStatus[] = ['Ouvert', 'En cours', 'Fermé'];
+const ticketStatuses: TicketStatus[] = ['Ouvert', 'En cours', 'Résolu', 'Fermé'];
 
 export default function HelpdeskPage() {
     return (

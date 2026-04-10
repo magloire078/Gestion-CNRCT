@@ -27,7 +27,7 @@ import type { Conflict, Chief, ConflictType, Employe } from "@/lib/data";
 import { conflictTypes, conflictStatuses } from "@/lib/data";
 import { IVORIAN_REGIONS } from "@/constants/regions";
 import { getChiefs } from "@/services/chief-service";
-import { getEmployees } from "@/services/employee-service";
+import { getEmployeeDirectory } from "@/services/employee-service";
 import {
   Popover,
   PopoverContent,
@@ -99,7 +99,7 @@ export function AddConflictSheet({
         try {
           setLoadingInitialData(true);
           const chiefsPromise = getChiefs();
-          const employeesPromise = canAssignMediator ? getEmployees() : Promise.resolve([]);
+          const employeesPromise = canAssignMediator ? getEmployeeDirectory() : Promise.resolve([]);
           
           const [chiefs, employees] = await Promise.all([chiefsPromise, employeesPromise]);
           setAllChiefs(chiefs);

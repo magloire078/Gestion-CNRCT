@@ -1,4 +1,4 @@
-
+import 'server-only';
 import * as admin from 'firebase-admin';
 
 // Support pour Vercel : On essaye de charger la clé depuis une variable d'environnement

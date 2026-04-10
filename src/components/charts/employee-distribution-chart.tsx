@@ -11,7 +11,7 @@ import {
   ChartLegendContent,
   type ChartConfig,
 } from "@/components/ui/chart"
-import { getEmployees } from "@/services/employee-service"
+import { getEmployeeDirectory } from "@/services/employee-service"
 import { getDepartments } from "@/services/department-service"
 import { getDirections } from "@/services/direction-service"
 import { getServices } from "@/services/service-service"
@@ -65,7 +65,7 @@ export function EmployeeDistributionChart() {
     async function fetchData() {
       try {
         const [employeeData, departmentData, directionData, serviceData] = await Promise.all([
-          getEmployees(),
+          getEmployeeDirectory(),
           getDepartments(),
           getDirections(),
           getServices(),

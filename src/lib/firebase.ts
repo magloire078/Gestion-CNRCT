@@ -12,7 +12,12 @@ if (typeof window === 'undefined') {
 }
 
 import { initializeApp, getApps, getApp, type FirebaseOptions, type FirebaseApp } from "firebase/app";
-import { initializeFirestore, Firestore, enableMultiTabIndexedDbPersistence } from "firebase/firestore";
+import { 
+  initializeFirestore, 
+  Firestore, 
+  persistentLocalCache, 
+  persistentMultipleTabManager 
+} from "firebase/firestore";
 import { getAuth, Auth } from "firebase/auth";
 import { getStorage, FirebaseStorage } from "firebase/storage";
 import { getAnalytics } from "firebase/analytics";
@@ -44,26 +49,16 @@ const finalConfig = isConfigValid ? firebaseConfig : {
 };
 
 const app = getApps().length === 0 ? initializeApp(finalConfig) : getApp();
-const db = initializeFirestore(app, {});
+
+// Modern persistence settings (replaces deprecated enableMultiTabIndexedDbPersistence)
+const db = initializeFirestore(app, {
+  localCache: persistentLocalCache({
+    tabManager: persistentMultipleTabManager()
+  })
+});
+
 const auth = getAuth(app);
 const storage = getStorage(app);
-
-// Enable offline persistence for Firestore in the browser (safely)
-if (typeof window !== 'undefined' && isConfigValid) {
-  try {
-    enableMultiTabIndexedDbPersistence(db).catch((err) => {
-        if (err.code === 'failed-precondition') {
-            console.warn('[Firestore] Persistence failed: Multiple tabs open');
-        } else if (err.code === 'unimplemented' || err.code === 'unauthorized') {
-            console.warn('[Firestore] Persistence unimplemented/restricted for this browser');
-        } else {
-            console.warn('[Firestore] Persistence initialization failed (harmless):', err.message);
-        }
-    });
-  } catch (e) {
-    console.warn('[Firestore] Critical error during persistence setup:', e);
-  }
-}
 
 if (isConfigValid && typeof window !== 'undefined') {
   try {

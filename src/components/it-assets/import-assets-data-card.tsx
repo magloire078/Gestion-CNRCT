@@ -3,7 +3,8 @@
 
 import { useState, useRef } from "react";
 import Papa from "papaparse";
-import * as XLSX from 'xlsx';
+// Dynamic import for XLSX to avoid build errors related to 'fs'
+// import * as XLSX from 'xlsx';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -154,6 +155,7 @@ export function ImportAssetsDataCard() {
       const reader = new FileReader();
       reader.onload = async (e) => {
         try {
+          const XLSX = await import("xlsx");
           const data = new Uint8Array(e.target?.result as ArrayBuffer);
           const workbook = XLSX.read(data, { type: 'array' });
           const firstSheetName = workbook.SheetNames[0];

@@ -533,15 +533,16 @@ export default function LeavePage() {
             </CardContent>
             {totalPages > 1 && (
               <CardFooter>
-                <PaginationControls
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={setCurrentPage}
-                  itemsPerPage={itemsPerPage}
-                  onItemsPerPageChange={setItemsPerPage}
-                  totalItems={filteredLeaves.length}
-                />
-              </CardFooter>
+              <PaginationControls
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={(page) => startTransition(() => setCurrentPage(page))}
+                itemsPerPage={itemsPerPage}
+                onItemsPerPageChange={setItemsPerPage}
+                totalItems={filteredLeaves.length}
+                isPending={isPending}
+              />
+            </CardFooter>
             )}
           </Card>
         </TabsContent>

@@ -1,7 +1,9 @@
 // Helpdesk Types
-export type TicketStatus = 'Ouvert' | 'En cours' | 'Fermé';
+export type TicketStatus = 'Ouvert' | 'En cours' | 'Résolu' | 'Fermé';
 export type TicketPriority = 'Basse' | 'Moyenne' | 'Haute';
-export type TicketCategory = 'Technique' | 'Facturation' | 'Général';
+export type TicketUrgency = 'Basse' | 'Moyenne' | 'Haute';
+export type TicketImpact = 'Bas' | 'Moyen' | 'Élevé';
+export type TicketCategory = 'Matériel' | 'Logiciel' | 'Réseau' | 'Accès/Comptes' | 'Foncier' | 'Autre';
 
 export type Ticket = {
     id: string;
@@ -9,6 +11,8 @@ export type Ticket = {
     description: string;
     status: TicketStatus;
     priority: TicketPriority;
+    urgency: TicketUrgency;
+    impact: TicketImpact;
     category: TicketCategory;
     createdBy: string; // userId
     createdByName: string; // denormalized name
@@ -16,6 +20,7 @@ export type Ticket = {
     assignedTo?: string; // agent userId
     assignedToName?: string; // denormalized agent name
     updatedAt: string; // ISO Date string
+    solution?: string; // The final resolution
     messages: TicketMessage[];
 };
 

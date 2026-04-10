@@ -22,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { Ticket, TicketCategory, TicketPriority } from "@/lib/data";
+import type { Ticket, TicketCategory, TicketPriority, TicketUrgency, TicketImpact } from "@/lib/data";
 
 interface AddTicketSheetProps {
   isOpen: boolean;
@@ -31,22 +31,28 @@ interface AddTicketSheetProps {
   currentUser: { id: string; name: string };
 }
 
-const ticketCategories: TicketCategory[] = ['Technique', 'Facturation', 'Général'];
+const ticketCategories: TicketCategory[] = ['Matériel', 'Logiciel', 'Réseau', 'Accès/Comptes', 'Foncier', 'Autre'];
+const ticketUrgencies: TicketUrgency[] = ['Basse', 'Moyenne', 'Haute'];
+const ticketImpacts: TicketImpact[] = ['Bas', 'Moyen', 'Élevé'];
 const ticketPriorities: TicketPriority[] = ['Basse', 'Moyenne', 'Haute'];
 
 export function AddTicketSheet({ isOpen, onClose, onAddTicket, currentUser }: AddTicketSheetProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [category, setCategory] = useState<TicketCategory>("Général");
-  const [priority, setPriority] = useState<TicketPriority>("Basse");
+  const [category, setCategory] = useState<TicketCategory>("Autre");
+  const [urgency, setUrgency] = useState<TicketUrgency>("Moyenne");
+  const [impact, setImpact] = useState<TicketImpact>("Moyen");
+  const [priority, setPriority] = useState<TicketPriority>("Moyenne");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const resetForm = () => {
     setTitle("");
     setDescription("");
-    setCategory("Général");
-    setPriority("Basse");
+    setCategory("Autre");
+    setUrgency("Moyenne");
+    setImpact("Moyen");
+    setPriority("Moyenne");
     setError("");
   };
 
@@ -71,6 +77,8 @@ export function AddTicketSheet({ isOpen, onClose, onAddTicket, currentUser }: Ad
         description,
         category,
         priority,
+        urgency,
+        impact,
         createdBy: currentUser.id,
         createdByName: currentUser.name,
         messages: []
@@ -121,7 +129,27 @@ export function AddTicketSheet({ isOpen, onClose, onAddTicket, currentUser }: Ad
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="priority">Priorité</Label>
+                <Label htmlFor="urgency">Urgence</Label>
+                <Select value={urgency} onValueChange={(value: TicketUrgency) => setUrgency(value)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {ticketUrgencies.map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="impact">Impact</Label>
+                <Select value={impact} onValueChange={(value: TicketImpact) => setImpact(value)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {ticketImpacts.map(i => <SelectItem key={i} value={i}>{i}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="priority">Priorité souhaitée</Label>
                 <Select value={priority} onValueChange={(value: TicketPriority) => setPriority(value)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>

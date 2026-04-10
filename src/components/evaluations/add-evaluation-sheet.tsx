@@ -22,7 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { Evaluation, Employe } from "@/lib/data";
-import { getEmployees } from "@/services/employee-service";
+import { getEmployeeDirectory } from "@/services/employee-service";
 import { Loader2 } from "lucide-react";
 import { ScrollArea } from "../ui/scroll-area";
 
@@ -52,7 +52,7 @@ export function AddEvaluationSheet({
         async function fetchEmployees() {
             setLoadingEmployees(true);
             try {
-                const fetchedEmployees = await getEmployees();
+                const fetchedEmployees = await getEmployeeDirectory();
                 setAllEmployees(fetchedEmployees);
             } catch(err) {
                 console.error(err);

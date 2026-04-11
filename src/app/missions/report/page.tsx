@@ -105,96 +105,153 @@ export default function MissionReportPage() {
   }
 
   return (
-    <>
-    <div className={`flex flex-col gap-6 ${isPrinting ? 'print-hidden' : ''}`}>
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">Rapport des Missions</h1>
-      </div>
-      <Card>
-        <CardHeader>
-          <CardTitle>Générateur de Rapport</CardTitle>
-          <CardDescription>
-            Filtrez et générez un rapport détaillé sur les missions et leurs coûts pour une période spécifique.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col sm:flex-row gap-4 items-end mb-6 p-4 border rounded-lg max-w-md">
-            <div className="grid gap-2 flex-1 w-full">
-              <Label htmlFor="year">Année</Label>
-              <Select value={year} onValueChange={setYear}>
-                <SelectTrigger id="year"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {years.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid gap-2 flex-1 w-full">
-              <Label htmlFor="month">Mois</Label>
-              <Select value={month} onValueChange={setMonth}>
-                <SelectTrigger id="month"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {months.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <Button onClick={generateReport} disabled={loading} className="w-full sm:w-auto">
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Générer le rapport
-            </Button>
-          </div>
-          
-          {error && (
-            <Alert variant="destructive">
-              <AlertTitle>Erreur</AlertTitle>
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-        </CardContent>
-      </Card>
-      
-      {reportData && (
-        <Card>
-            <CardHeader>
-                <div className="flex justify-between items-center">
-                    <div>
-                        <CardTitle>Rapport pour {selectedPeriodText}</CardTitle>
-                        <CardDescription>
-                            Total de {reportData.missions.length} mission(s) pour un coût global de {formatCurrency(reportData.totalCost)}.
-                        </CardDescription>
-                    </div>
-                    <Button variant="outline" onClick={handlePrint}>
-                        <Printer className="mr-2 h-4 w-4" />
-                        Imprimer
-                    </Button>
+    <div className="min-h-screen bg-transparent pb-24">
+      {/* Header Institutionnel Glass */}
+      <div className={`sticky top-0 z-30 w-full bg-white/40 backdrop-blur-xl border-b border-white/10 pb-6 pt-8 ${isPrinting ? 'hidden' : ''}`}>
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div>
+              <h1 className="text-4xl font-black uppercase tracking-tighter text-slate-900 leading-none">
+                Rapports Opérationnels
+              </h1>
+              <div className="flex items-center gap-4 mt-3">
+                <div className="flex items-center gap-2 bg-slate-900 text-white px-3 py-1 rounded-lg shadow-lg shadow-slate-900/10">
+                  <FileText className="h-3.5 w-3.5" />
+                  <span className="text-[11px] font-black uppercase tracking-wider">Missions & Mobilité</span>
                 </div>
+                <span className="h-4 w-px bg-slate-200" />
+                <span className="text-slate-500 font-bold uppercase text-[11px] tracking-widest flex items-center gap-2">
+                  <Printer className="h-3.5 w-3.5" /> Centre d'Impression
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className={`container mx-auto px-4 py-8 space-y-8 ${isPrinting ? 'p-0' : ''}`}>
+        {/* Filtres Premium */}
+        <div className={isPrinting ? 'hidden' : ''}>
+          <Card className="border-none bg-white/40 backdrop-blur-md rounded-[2.5rem] shadow-xl border border-white/20 overflow-hidden">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Configuration du Rapport</CardTitle>
             </CardHeader>
             <CardContent>
+              <div className="flex flex-col md:flex-row gap-6 items-end">
+                <div className="grid gap-3 flex-1 w-full">
+                  <Label htmlFor="year" className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Année Fiscale</Label>
+                  <Select value={year} onValueChange={setYear}>
+                    <SelectTrigger id="year" className="h-12 rounded-2xl border-slate-200 bg-white/50 shadow-sm focus:ring-2 focus:ring-slate-900 transition-all font-bold">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-2xl border-slate-100 shadow-2xl">
+                      {years.map(y => <SelectItem key={y} value={y} className="focus:bg-slate-900 focus:text-white rounded-xl mx-1 my-0.5">{y}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid gap-3 flex-1 w-full">
+                  <Label htmlFor="month" className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Période Mensuelle</Label>
+                  <Select value={month} onValueChange={setMonth}>
+                    <SelectTrigger id="month" className="h-12 rounded-2xl border-slate-200 bg-white/50 shadow-sm focus:ring-2 focus:ring-slate-900 transition-all font-bold">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-2xl border-slate-100 shadow-2xl">
+                      {months.map(m => <SelectItem key={m.value} value={m.value} className="focus:bg-slate-900 focus:text-white rounded-xl mx-1 my-0.5 uppercase text-[10px] font-black tracking-widest">{m.label}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button 
+                  onClick={generateReport} 
+                  disabled={loading} 
+                  className="h-12 px-8 rounded-2xl bg-slate-900 text-white font-black uppercase tracking-widest text-[10px] hover:bg-black transition-all shadow-xl shadow-slate-900/20 active:scale-95 disabled:opacity-50"
+                >
+                  {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin text-blue-400" /> : <FileText className="mr-2 h-4 w-4 text-emerald-400" />}
+                  Générer Rapport
+                </Button>
+              </div>
+              
+              {error && (
+                <Alert variant="destructive" className="mt-6 rounded-2xl border-rose-100 bg-rose-50/50">
+                  <AlertTitle className="font-black uppercase text-[10px] tracking-widest">Erreur Système</AlertTitle>
+                  <AlertDescription className="text-xs font-medium">{error}</AlertDescription>
+                </Alert>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+        
+        {reportData && (
+          <Card className={`border-none bg-white rounded-[2.5rem] shadow-2xl overflow-hidden ${isPrinting ? 'shadow-none' : ''}`}>
+            <CardHeader className="p-8 border-b border-slate-50">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                    <div>
+                        <div className="flex items-center gap-3 mb-2">
+                          <div className="h-8 w-8 rounded-lg bg-slate-900 flex items-center justify-center text-white">
+                            <FileText className="h-4 w-4" />
+                          </div>
+                          <CardTitle className="text-2xl font-black uppercase tracking-tighter text-slate-900">Synthèse Globale - {selectedPeriodText}</CardTitle>
+                        </div>
+                        <CardDescription className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                            {reportData.missions.length} mission(s) identifiée(s) pour cette période administrative.
+                        </CardDescription>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <div className="flex flex-col items-end mr-4">
+                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Impact Budgétaire</span>
+                        <span className="text-2xl font-black text-slate-900 tracking-tighter leading-none">{formatCurrency(reportData.totalCost)}</span>
+                      </div>
+                      {!isPrinting && (
+                        <Button 
+                          variant="outline" 
+                          onClick={handlePrint}
+                          className="h-12 px-6 rounded-2xl border-slate-200 bg-white shadow-sm font-black uppercase tracking-widest text-[10px] hover:bg-slate-50 transition-all"
+                        >
+                            <Printer className="mr-2 h-4 w-4 text-blue-500" /> Imprimer
+                        </Button>
+                      )}
+                    </div>
+                </div>
+            </CardHeader>
+            <CardContent className="p-0">
                 <div className="overflow-x-auto">
                     <Table>
-                        <TableHeader>
-                        <TableRow>
-                            <TableHead>N° Mission</TableHead>
-                            <TableHead>Titre</TableHead>
-                            <TableHead>Période</TableHead>
-                            <TableHead className="text-center">Participants</TableHead>
-                            <TableHead className="text-right">Coût Total</TableHead>
-                        </TableRow>
+                        <TableHeader className="bg-slate-50/50">
+                          <TableRow className="border-b border-slate-100 hover:bg-transparent">
+                              <TableHead className="py-5 px-8 font-black uppercase tracking-widest text-[9px] text-slate-500">N° Mission</TableHead>
+                              <TableHead className="py-5 px-8 font-black uppercase tracking-widest text-[9px] text-slate-500">Désignation</TableHead>
+                              <TableHead className="py-5 px-8 font-black uppercase tracking-widest text-[9px] text-slate-500 text-center">Période</TableHead>
+                              <TableHead className="py-5 px-8 font-black uppercase tracking-widest text-[9px] text-slate-500 text-center">Agents</TableHead>
+                              <TableHead className="py-5 px-8 font-black uppercase tracking-widest text-[9px] text-slate-500 text-right">Coût Previsionnel</TableHead>
+                          </TableRow>
                         </TableHeader>
                         <TableBody>
                         {reportData.missions.length > 0 ? (
                             reportData.missions.map(mission => (
-                                <TableRow key={mission.id}>
-                                    <TableCell className="font-mono">{mission.numeroMission}</TableCell>
-                                    <TableCell className="font-medium">{mission.title}</TableCell>
-                                    <TableCell>{format(parseISO(mission.startDate), 'dd/MM/yyyy')} - {format(parseISO(mission.endDate), 'dd/MM/yyyy')}</TableCell>
-                                    <TableCell className="text-center">{mission.participants.length}</TableCell>
-                                    <TableCell className="text-right font-mono">{formatCurrency(calculateMissionCost(mission))}</TableCell>
+                                <TableRow key={mission.id} className="border-b border-slate-50 hover:bg-slate-50 transition-colors group">
+                                    <TableCell className="py-5 px-8 font-black text-xs text-slate-900">{mission.numeroMission}</TableCell>
+                                    <TableCell className="py-5 px-8">
+                                      <div className="flex flex-col">
+                                        <span className="font-bold text-sm text-slate-700 uppercase tracking-tight">{mission.title}</span>
+                                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{mission.lieuMission || "National"}</span>
+                                      </div>
+                                    </TableCell>
+                                    <TableCell className="py-5 px-8 text-center">
+                                      <div className="inline-flex items-center gap-2 bg-slate-100 px-3 py-1 rounded-full text-[10px] font-bold text-slate-600 uppercase tracking-tight">
+                                        <Calendar className="h-3 w-3" />
+                                        {format(parseISO(mission.startDate), 'dd/MM/yy')} - {format(parseISO(mission.endDate), 'dd/MM/yy')}
+                                      </div>
+                                    </TableCell>
+                                    <TableCell className="py-5 px-8 text-center text-sm font-black text-slate-900">{mission.participants.length}</TableCell>
+                                    <TableCell className="py-5 px-8 text-right font-black text-slate-900">{formatCurrency(calculateMissionCost(mission))}</TableCell>
                                 </TableRow>
                             ))
                         ) : (
                             <TableRow>
-                            <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
-                                Aucune mission pour la période sélectionnée.
+                            <TableCell colSpan={5} className="text-center text-muted-foreground py-20 bg-slate-50/30">
+                                <div className="flex flex-col items-center gap-2">
+                                  <FileText className="h-10 w-10 text-slate-200" />
+                                  <p className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em]">Aucun enregistrement pour cette période.</p>
+                                </div>
                             </TableCell>
                             </TableRow>
                         )}
@@ -202,57 +259,101 @@ export default function MissionReportPage() {
                     </Table>
                 </div>
             </CardContent>
-        </Card>
-      )}
+          </Card>
+        )}
 
-      {!reportData && !loading && (
-        <Card className="flex items-center justify-center h-64">
-            <div className="text-center text-muted-foreground">
-                <FileText className="mx-auto h-12 w-12" />
-                <p className="mt-4">Veuillez sélectionner une période et générer un rapport.</p>
-            </div>
-        </Card>
+        {!reportData && !loading && !isPrinting && (
+          <div className="bg-white/40 backdrop-blur-md rounded-[3rem] border-2 border-dashed border-slate-200 h-96 flex flex-col items-center justify-center animate-in fade-in zoom-in-95 duration-700">
+              <div className="h-20 w-20 bg-white rounded-3xl shadow-xl flex items-center justify-center text-slate-200 mb-6 group-hover:scale-110 transition-transform">
+                  <FileText className="h-10 w-10" />
+              </div>
+              <p className="text-xs font-black uppercase tracking-[0.3em] text-slate-400 max-w-[240px] text-center leading-loose">
+                  Sélectionnez une période et <br /> lancez la génération du rapport
+              </p>
+          </div>
+        )}
+      </div>
+      
+      {isPrinting && reportData && (
+          <div id="print-section" className="bg-white text-black p-12 font-sans min-h-screen">
+               <div className="flex justify-between items-start mb-12 border-b-2 border-black pb-8">
+                  <div className="space-y-1">
+                    <h1 className="text-2xl font-black uppercase tracking-tight">CNRCT - ADMINISTRATION</h1>
+                    <p className="text-xs font-bold uppercase tracking-widest">République de Côte d'Ivoire</p>
+                  </div>
+                  <div className="text-right">
+                    <h2 className="text-xl font-black uppercase tracking-tighter">Rapport Mensuel des Missions</h2>
+                    <p className="text-sm font-bold uppercase tracking-widest text-slate-500">EXERCICE {year}</p>
+                  </div>
+              </div>
+
+              <div className="mb-8 p-4 bg-slate-50 border border-slate-200 rounded-lg">
+                <p className="text-sm font-bold uppercase tracking-widest">Période : <span className="text-slate-900 font-black">{selectedPeriodText}</span></p>
+              </div>
+
+              <table className="w-full text-[10px] border-collapse border border-slate-900">
+                  <thead className="bg-slate-100">
+                      <tr>
+                          <th className="border border-slate-900 p-3 text-left font-black uppercase tracking-widest">N° Mission</th>
+                          <th className="border border-slate-900 p-3 text-left font-black uppercase tracking-widest">Désignation</th>
+                          <th className="border border-slate-900 p-3 text-left font-black uppercase tracking-widest">Période d'exécution</th>
+                          <th className="border border-slate-900 p-3 text-center font-black uppercase tracking-widest">Effectif</th>
+                          <th className="border border-slate-900 p-3 text-right font-black uppercase tracking-widest">Montant Total</th>
+                      </tr>
+                  </thead>
+                  <tbody>
+                      {reportData.missions.map(mission => (
+                          <tr key={mission.id}>
+                              <td className="border border-slate-900 p-3 font-bold">{mission.numeroMission}</td>
+                              <td className="border border-slate-900 p-3 font-black uppercase leading-tight">{mission.title}</td>
+                              <td className="border border-slate-900 p-3">{format(parseISO(mission.startDate), 'dd/MM/yy')} - {format(parseISO(mission.endDate), 'dd/MM/yy')}</td>
+                              <td className="border border-slate-900 p-3 text-center font-bold">{mission.participants.length}</td>
+                              <td className="border border-slate-900 p-3 text-right font-black">{formatCurrency(calculateMissionCost(mission))}</td>
+                          </tr>
+                      ))}
+                      <tr className="font-black bg-slate-900 text-white">
+                          <td colSpan={4} className="text-right p-4 border border-slate-900 uppercase tracking-widest">TOTAL GÉNÉRAL :</td>
+                          <td className="text-right p-4 border border-slate-900 text-lg tracking-tighter">{formatCurrency(reportData.totalCost)}</td>
+                      </tr>
+                  </tbody>
+              </table>
+
+              <div className="mt-20 flex justify-between">
+                <div className="text-center w-64 space-y-12">
+                  <p className="text-xs font-black uppercase tracking-widest underline underline-offset-4">Établi par</p>
+                  <div className="h-px w-full bg-slate-200" />
+                </div>
+                <div className="text-center w-64 space-y-12">
+                  <p className="text-xs font-black uppercase tracking-widest underline underline-offset-4">Approuvé par</p>
+                  <div className="h-px w-full bg-slate-200" />
+                </div>
+              </div>
+
+              <footer className="fixed bottom-12 left-0 right-0 text-center text-[9px] text-slate-400 font-bold uppercase tracking-[0.3em]">
+                  Document généré automatiquement le {format(new Date(), 'dd/MM/yyyy HH:mm')} • CNRCT Gestion V2.0
+              </footer>
+          </div>
       )}
     </div>
-    
-    {isPrinting && reportData && (
-        <div id="print-section" className="bg-white text-black p-8 font-sans">
-             <div className="text-center mb-8">
-                <h1 className="text-xl font-bold">RAPPORT MENSUEL DES MISSIONS</h1>
-                <h2 className="text-lg">Période de {selectedPeriodText}</h2>
-            </div>
-            <table className="w-full text-xs border-collapse border border-black">
-                <thead className="bg-gray-200">
-                    <tr>
-                        <th className="border border-black p-2 text-left">N° Mission</th>
-                        <th className="border border-black p-2 text-left">Titre</th>
-                        <th className="border border-black p-2 text-left">Période</th>
-                        <th className="border border-black p-2 text-center">Participants</th>
-                        <th className="border border-black p-2 text-right">Coût Total</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {reportData.missions.map(mission => (
-                        <tr key={mission.id}>
-                            <td className="border border-black p-1">{mission.numeroMission}</td>
-                            <td className="border border-black p-1">{mission.title}</td>
-                            <td className="border border-black p-1">{format(parseISO(mission.startDate), 'dd/MM/yy')} - {format(parseISO(mission.endDate), 'dd/MM/yy')}</td>
-                            <td className="border border-black p-1 text-center">{mission.participants.length}</td>
-                            <td className="border border-black p-1 text-right">{formatCurrency(calculateMissionCost(mission))}</td>
-                        </tr>
-                    ))}
-                    <tr className="font-bold bg-gray-100">
-                        <td colSpan={4} className="text-right p-2 border border-black">TOTAL GÉNÉRAL :</td>
-                        <td className="text-right p-2 border border-black">{formatCurrency(reportData.totalCost)}</td>
-                    </tr>
-                </tbody>
-            </table>
-            <footer className="mt-12 text-center text-xs text-gray-500">
-                <p>Rapport généré le {format(new Date(), 'dd/MM/yyyy HH:mm')}</p>
-                 <div className="mt-4"><p className="page-number"></p></div>
-            </footer>
-        </div>
-    )}
-    </>
   );
+}
+
+function Calendar({ className }: { className?: string }) {
+    return (
+        <svg 
+            xmlns="http://www.w3.org/2000/svg" 
+            viewBox="0 0 24 24" 
+            fill="none" 
+            stroke="currentColor" 
+            strokeWidth="2" 
+            strokeLinecap="round" 
+            strokeLinejoin="round" 
+            className={className}
+        >
+            <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/>
+            <line x1="16" x2="16" y1="2" y2="6"/>
+            <line x1="8" x2="8" y1="2" y2="6"/>
+            <line x1="3" x2="21" y1="10" y2="10"/>
+        </svg>
+    );
 }

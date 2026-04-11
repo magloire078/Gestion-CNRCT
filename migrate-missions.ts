@@ -1,5 +1,18 @@
-import { db } from './src/lib/firebase';
-import { collection, getDocs, writeBatch } from 'firebase/firestore';
+import { initializeApp } from 'firebase/app';
+import { getFirestore, collection, getDocs, writeBatch } from 'firebase/firestore';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBuMgqk-I_mngDw4SYuNhOOLcF6JNchXhw",
+  authDomain: "gestion-cnrct.firebaseapp.com",
+  projectId: "gestion-cnrct",
+  storageBucket: "gestion-cnrct.appspot.com",
+  messagingSenderId: "126727792063",
+  appId: "1:126727792063:web:55513c7e21531a87286d0a",
+  measurementId: "G-TDXM581DZ5"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
 async function migrateMissions() {
     console.log("Starting migration...");

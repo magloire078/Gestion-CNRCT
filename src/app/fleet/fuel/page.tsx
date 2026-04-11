@@ -189,127 +189,131 @@ export default function FuelManagementPage() {
 
     return (
         <PermissionGuard permission="page:fuel:view">
-        <div className="flex flex-col gap-6 p-6">
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Gestion des Cartes Carburant</h1>
-                    <p className="text-muted-foreground mt-1">
-                        Suivi des prestataires, dotations budgétaires et consommation de la flotte.
-                    </p>
+        <div className="flex flex-col gap-10 pb-12">
+            {/* Institutional Header */}
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 px-1">
+                <div className="space-y-4">
+                    <div className="flex items-center gap-3">
+                        <div className="h-14 w-1 flex-shrink-0 bg-slate-900 rounded-full" />
+                        <div>
+                            <h1 className="text-5xl font-black uppercase tracking-tighter text-slate-900">
+                                Gestion Carburant
+                            </h1>
+                            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mt-1 pl-1">
+                                Surveillance des Flux Énergétiques et Dotations
+                            </p>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2 pl-4">
+                        <div className="h-2 w-2 rounded-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)] animate-pulse" />
+                        <span className="text-[9px] font-black uppercase tracking-widest text-slate-500">Flux financiers en temps réel</span>
+                    </div>
                 </div>
             </div>
 
-            <Tabs defaultValue="overview" className="space-y-6">
-                <TabsList className="bg-muted p-1">
-                    <TabsTrigger value="overview" className="gap-2">
-                        <LayoutDashboard className="h-4 w-4" /> Vue d&apos;ensemble
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <Card className="border-white/10 shadow-2xl bg-slate-900 text-white overflow-hidden relative group transition-all duration-500 hover:scale-[1.02] rounded-[2.5rem]">
+                    <CardHeader className="p-8 relative z-10">
+                        <CardDescription className="text-slate-400 font-black uppercase text-[9px] tracking-[0.2em]">Budget Recharge Cumulé</CardDescription>
+                        <CardTitle className="text-4xl font-black mt-2">{stats.totalBudget.toLocaleString()} <span className="text-sm font-bold text-slate-400">FCFA</span></CardTitle>
+                    </CardHeader>
+                    <div className="absolute -bottom-6 -right-6 opacity-10 group-hover:opacity-20 transition-all duration-700 pointer-events-none group-hover:rotate-0 group-hover:scale-110">
+                        <PlusCircle className="h-32 w-32 -rotate-12" />
+                    </div>
+                </Card>
+
+                <Card className="border-white/10 shadow-xl bg-card/40 backdrop-blur-md overflow-hidden relative group transition-all duration-500 hover:scale-[1.02] rounded-[2.5rem]">
+                    <CardHeader className="p-8 relative z-10">
+                        <CardDescription className="text-slate-500 font-black uppercase text-[9px] tracking-[0.2em]">Solde Disponible (Cartes)</CardDescription>
+                        <CardTitle className="text-4xl font-black mt-2 text-slate-900">{stats.currentBalance.toLocaleString()} <span className="text-sm font-bold text-slate-400">FCFA</span></CardTitle>
+                    </CardHeader>
+                    <div className="absolute -bottom-6 -right-6 opacity-[0.03] group-hover:opacity-[0.08] transition-all duration-700 pointer-events-none">
+                        <CreditCard className="h-32 w-32" />
+                    </div>
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent" />
+                </Card>
+
+                <Card className="border-white/10 shadow-xl bg-card/40 backdrop-blur-md overflow-hidden relative group transition-all duration-500 hover:scale-[1.02] rounded-[2.5rem]">
+                    <CardHeader className="p-8 relative z-10">
+                        <CardDescription className="text-slate-500 font-black uppercase text-[9px] tracking-[0.2em]">Consommation Totale</CardDescription>
+                        <CardTitle className="text-4xl font-black mt-2 text-blue-600">{stats.totalSpent.toLocaleString()} <span className="text-sm font-bold text-slate-400">FCFA</span></CardTitle>
+                    </CardHeader>
+                    <div className="absolute -bottom-6 -right-6 opacity-[0.03] group-hover:opacity-[0.08] transition-all duration-700 pointer-events-none">
+                        <Fuel className="h-32 w-32" />
+                    </div>
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500/50 to-transparent" />
+                </Card>
+            </div>
+
+            <Tabs defaultValue="overview" className="space-y-8">
+                <TabsList className="bg-transparent border-b border-border/50 rounded-none w-full justify-start h-auto p-0 gap-8">
+                    <TabsTrigger value="overview" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-slate-900 data-[state=active]:shadow-none rounded-none py-4 px-0 h-auto font-black uppercase text-[11px] tracking-widest text-slate-400 data-[state=active]:text-slate-900 transition-all">
+                        <LayoutDashboard className="h-4 w-4 mr-2" /> Vue d&apos;ensemble
                     </TabsTrigger>
-                    <TabsTrigger value="providers" className="gap-2">
-                        <Building2 className="h-4 w-4" /> Prestataires
+                    <TabsTrigger value="providers" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-slate-900 data-[state=active]:shadow-none rounded-none py-4 px-0 h-auto font-black uppercase text-[11px] tracking-widest text-slate-400 data-[state=active]:text-slate-900 transition-all">
+                        <Building2 className="h-4 w-4 mr-2" /> Prestataires
                     </TabsTrigger>
-                    <TabsTrigger value="cards" className="gap-2">
-                        <CreditCard className="h-4 w-4" /> Cartes
+                    <TabsTrigger value="cards" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-slate-900 data-[state=active]:shadow-none rounded-none py-4 px-0 h-auto font-black uppercase text-[11px] tracking-widest text-slate-400 data-[state=active]:text-slate-900 transition-all">
+                        <CreditCard className="h-4 w-4 mr-2" /> Cartes
                     </TabsTrigger>
-                    <TabsTrigger value="history" className="gap-2">
-                        <History className="h-4 w-4" /> Transactions
+                    <TabsTrigger value="history" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-slate-900 data-[state=active]:shadow-none rounded-none py-4 px-0 h-auto font-black uppercase text-[11px] tracking-widest text-slate-400 data-[state=active]:text-slate-900 transition-all">
+                        <History className="h-4 w-4 mr-2" /> Transactions
                     </TabsTrigger>
                 </TabsList>
 
-                {/* OVERVIEW TAB */}
-                <TabsContent value="overview" className="space-y-6 outline-none">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <Card className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 border-blue-100 dark:border-blue-900/20">
-                            <CardHeader className="pb-2">
-                                <CardDescription className="text-blue-600 font-medium">Budget Recharge Cumulé</CardDescription>
-                                <CardTitle className="text-3xl font-bold">{stats.totalBudget.toLocaleString()} FCFA</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="flex items-center gap-2 text-xs text-blue-600/80">
-                                    <PlusCircle className="h-3 w-3" />
-                                    <span>Total des dotations reçues</span>
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        <Card className="bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 border-emerald-100 dark:border-emerald-900/20">
-                            <CardHeader className="pb-2">
-                                <CardDescription className="text-emerald-600 font-medium">Solde Disponible (Cartes)</CardDescription>
-                                <CardTitle className="text-3xl font-bold">{stats.currentBalance.toLocaleString()} FCFA</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="flex items-center gap-2 text-xs text-emerald-600/80">
-                                    <CreditCard className="h-3 w-3" />
-                                    <span>Encours total sur les cartes</span>
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        <Card className="bg-gradient-to-br from-amber-500/10 to-amber-600/5 border-amber-100 dark:border-amber-900/20">
-                            <CardHeader className="pb-2">
-                                <CardDescription className="text-amber-600 font-medium">Consommation Totale</CardDescription>
-                                <CardTitle className="text-3xl font-bold">{stats.totalSpent.toLocaleString()} FCFA</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="flex items-center gap-2 text-xs text-amber-600/80">
-                                    <Fuel className="h-3 w-3" />
-                                    <span>Total dépensé par les utilisateurs</span>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </div>
-
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Activités Récentes</CardTitle>
-                            <CardDescription>Flux financiers et consommation des 30 derniers jours.</CardDescription>
+                <TabsContent value="overview" className="space-y-8 outline-none">
+                    <Card className="border-white/10 shadow-2xl bg-card/40 backdrop-blur-md overflow-hidden rounded-[2.5rem] px-2">
+                        <CardHeader className="border-b border-border/50 bg-primary/5 py-8 px-8 flex flex-row items-center justify-between">
+                            <div>
+                                <CardTitle className="text-2xl font-black uppercase tracking-tight text-slate-900">Activités Récentes</CardTitle>
+                                <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mt-1">Flux financiers et consommation des 30 derniers jours</CardDescription>
+                            </div>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="p-0">
                             <FuelTransactionList transactions={transactions.slice(0, 10)} cards={cards} onDelete={canDelete ? handleDeleteTransaction : undefined} />
                         </CardContent>
                     </Card>
                 </TabsContent>
 
-                {/* PROVIDERS TAB */}
                 <TabsContent value="providers" className="outline-none">
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0">
+                    <Card className="border-white/10 shadow-2xl bg-card/40 backdrop-blur-md overflow-hidden rounded-[2.5rem] px-2">
+                        <CardHeader className="border-b border-border/50 bg-primary/5 py-8 px-8 flex flex-row items-center justify-between">
                             <div>
-                                <CardTitle>Liste des Prestataires</CardTitle>
-                                <CardDescription>Entreprises fournissant les services de carburant (Total: {providers.length})</CardDescription>
+                                <CardTitle className="text-2xl font-black uppercase tracking-tight text-slate-900">Registre des Prestataires</CardTitle>
+                                <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mt-1">Total: {providers.length} entités certifiées</CardDescription>
                             </div>
                             {canCreate && (
-                                <Button className="gap-2" onClick={() => {
+                                <Button className="h-12 px-6 rounded-xl bg-slate-900 shadow-lg shadow-slate-900/20 font-black uppercase tracking-widest text-[10px] hover:bg-black transition-all text-white" onClick={() => {
                                     setSelectedProvider(null);
                                     setIsProviderDialogOpen(true);
                                 }}>
-                                    <Plus className="h-4 w-4" /> Nouveau Prestataire
+                                    <Plus className="h-4 w-4 mr-2 text-emerald-400" /> Nouveau Prestataire
                                 </Button>
                             )}
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="p-0">
                             <FuelProviderList providers={providers} onDelete={canDelete ? handleDeleteProvider : undefined} onEdit={canUpdate ? handleEditProvider : undefined} />
                         </CardContent>
                     </Card>
                 </TabsContent>
 
-                {/* CARDS TAB */}
                 <TabsContent value="cards" className="outline-none">
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0">
+                    <Card className="border-white/10 shadow-2xl bg-card/40 backdrop-blur-md overflow-hidden rounded-[2.5rem] px-2">
+                        <CardHeader className="border-b border-border/50 bg-primary/5 py-8 px-8 flex flex-row items-center justify-between">
                             <div>
-                                <CardTitle>Gestion des Cartes Carburant</CardTitle>
-                                <CardDescription>Cartes affectées aux véhicules ou au personnel.</CardDescription>
+                                <CardTitle className="text-2xl font-black uppercase tracking-tight text-slate-900">Gestion des Dotations</CardTitle>
+                                <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mt-1">Cartes affectées aux véhicules ou au personnel</CardDescription>
                             </div>
                             {canCreate && (
-                                <Button className="gap-2" onClick={() => {
+                                <Button className="h-12 px-6 rounded-xl bg-slate-900 shadow-lg shadow-slate-900/20 font-black uppercase tracking-widest text-[10px] hover:bg-black transition-all text-white" onClick={() => {
                                     setSelectedCardForEdit(null);
                                     setIsCardDialogOpen(true);
                                 }}>
-                                    <Plus className="h-4 w-4" /> Nouvelle Carte
+                                    <Plus className="h-4 w-4 mr-2 text-emerald-400" /> Nouvelle Carte
                                 </Button>
                             )}
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="p-0">
                             <FuelCardList
                                 cards={cards}
                                 providers={providers}
@@ -330,28 +334,27 @@ export default function FuelManagementPage() {
                     </Card>
                 </TabsContent>
 
-                {/* HISTORY TAB */}
                 <TabsContent value="history" className="outline-none">
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0">
+                    <Card className="border-white/10 shadow-2xl bg-card/40 backdrop-blur-md overflow-hidden rounded-[2.5rem] px-2">
+                        <CardHeader className="border-b border-border/50 bg-primary/5 py-8 px-8 flex flex-row items-center justify-between">
                             <div>
-                                <CardTitle>Historique Complet</CardTitle>
-                                <CardDescription>Toutes les transactions de rechargement et de consommation.</CardDescription>
+                                <CardTitle className="text-2xl font-black uppercase tracking-tight text-slate-900">Historique Transactionnel</CardTitle>
+                                <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mt-1">Rechargements et consommations consolidés</CardDescription>
                             </div>
-                            <div className="flex gap-2">
+                            <div className="flex gap-3">
                                 {canCreate && (
                                     <>
-                                        <Button variant="outline" className="gap-2 border-emerald-500 text-emerald-600 hover:bg-emerald-50" onClick={() => setIsRechargeDialogOpen(true)}>
-                                            <PlusCircle className="h-4 w-4" /> Recharger
+                                        <Button variant="outline" className="h-12 px-6 rounded-xl border-emerald-200 bg-emerald-50/50 backdrop-blur-md font-black uppercase tracking-widest text-[10px] text-emerald-700 hover:bg-emerald-50 transition-all" onClick={() => setIsRechargeDialogOpen(true)}>
+                                            <PlusCircle className="h-4 w-4 mr-2" /> Recharger
                                         </Button>
-                                        <Button className="gap-2" onClick={() => setIsExpenseDialogOpen(true)}>
-                                            <Plus className="h-4 w-4" /> Enregistrer un plein
+                                        <Button className="h-12 px-6 rounded-xl bg-slate-900 shadow-lg shadow-slate-900/20 font-black uppercase tracking-widest text-[10px] hover:bg-black transition-all text-white" onClick={() => setIsExpenseDialogOpen(true)}>
+                                            <Plus className="h-4 w-4 mr-2 text-blue-400" /> Enregistrer un plein
                                         </Button>
                                     </>
                                 )}
                             </div>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="p-0">
                             <FuelTransactionList transactions={transactions} cards={cards} onDelete={canDelete ? handleDeleteTransaction : undefined} />
                         </CardContent>
                     </Card>

@@ -90,39 +90,50 @@ export function LinkUserEmployeeDialog({ isOpen, onCloseAction, onConfirmAction,
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="sm:max-w-md">
-        <form onSubmit={handleSubmit}>
-          <DialogHeader>
-            <DialogTitle>Lier un Utilisateur à un Employé</DialogTitle>
-            <DialogDescription>
-              Associez le compte de <span className="font-semibold">{user.name}</span> à un profil employé existant.
-            </DialogDescription>
+      <DialogContent className="sm:max-w-lg border-white/20 p-0 overflow-hidden bg-white/40 backdrop-blur-3xl shadow-3xl rounded-[3rem]">
+        <form onSubmit={handleSubmit} className="flex flex-col relative">
+          <DialogHeader className="bg-slate-900 p-10 text-white text-left relative overflow-hidden">
+            {/* Institutional Pattern */}
+            <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:24px_24px]" />
+            <div className="relative z-10 space-y-2">
+                <DialogTitle className="text-3xl font-black uppercase tracking-tighter">Référencement</DialogTitle>
+                <div className="h-1 w-12 bg-amber-500 rounded-full" />
+                <DialogDescription className="text-slate-400 font-bold uppercase tracking-widest text-[9px] mt-2 opacity-80 leading-loose">
+                    Liaison sécurisée du compte digital à un matricule de la base de données RH institutionnelle.
+                </DialogDescription>
+            </div>
           </DialogHeader>
-          <div className="py-4 space-y-4">
-             <div>
-                <Label>Compte Utilisateur</Label>
-                <p className="text-sm text-muted-foreground">{user.name} ({user.email})</p>
+          <div className="p-10 space-y-8 flex-1">
+             <div className="space-y-3 p-6 rounded-[2rem] bg-slate-900/10 border border-white/40 shadow-xl backdrop-blur-sm relative overflow-hidden group">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-150 duration-700" />
+                <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Compte Digital</Label>
+                <div className="space-y-1 relative z-10">
+                    <p className="text-sm font-black text-slate-900 uppercase tracking-tighter">{user.name}</p>
+                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest opacity-70">{user.email}</p>
+                </div>
              </div>
-             <div>
-                <Label htmlFor="employee">Profil Employé</Label>
+             <div className="space-y-3">
+                <Label htmlFor="employee" className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Collaborateur Titulaire</Label>
                  <Popover open={isComboboxOpen} onOpenChange={setIsComboboxOpen}>
                     <PopoverTrigger asChild>
                         <Button
                             variant="outline"
                             role="combobox"
                             aria-expanded={isComboboxOpen}
-                            className="w-full justify-between font-normal mt-1"
+                            className="w-full justify-between h-14 px-6 rounded-2xl bg-white/60 border-white/40 shadow-sm font-black uppercase tracking-[0.2em] text-[11px] text-slate-900 transition-all duration-300"
                         >
-                            {getDisplayName(employees.find(e => e.id === selectedEmployeeId))}
+                            <span className="truncate">
+                                {getDisplayName(employees.find(e => e.id === selectedEmployeeId))}
+                            </span>
                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                         </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-[300px] p-0">
+                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0 border-white/20 shadow-3xl bg-white/95 backdrop-blur-xl rounded-2xl overflow-hidden mt-2">
                         <Command>
-                            <CommandInput placeholder="Rechercher un employé..." />
-                            <CommandList>
-                                <CommandEmpty>Aucun employé trouvé.</CommandEmpty>
-                                <CommandGroup>
+                            <CommandInput placeholder="RECHERCHER PAR NOM OU MATRICULE..." className="h-14 border-none font-black uppercase tracking-widest text-[10px]" />
+                            <CommandList className="custom-scrollbar">
+                                <CommandEmpty className="py-6 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">Aucun collaborateur identifié.</CommandEmpty>
+                                <CommandGroup className="p-2">
                                     {employees.map((emp) => (
                                         <CommandItem
                                             key={emp.id}
@@ -131,13 +142,11 @@ export function LinkUserEmployeeDialog({ isOpen, onCloseAction, onConfirmAction,
                                                 setSelectedEmployeeId(emp.id);
                                                 setIsComboboxOpen(false);
                                             }}
+                                            className="py-4 font-black uppercase tracking-[0.2em] text-[9px] flex items-center gap-3 rounded-xl focus:bg-slate-900 focus:text-white transition-colors animate-in fade-in duration-300"
                                         >
-                                            <Check
-                                                className={cn(
-                                                    "mr-2 h-4 w-4",
-                                                    selectedEmployeeId === emp.id ? "opacity-100" : "opacity-0"
-                                                )}
-                                            />
+                                            <div className={cn("h-4 w-4 rounded-full border border-amber-500/30 flex items-center justify-center transition-all", selectedEmployeeId === emp.id ? "bg-amber-500/10 border-amber-500" : "opacity-30")}>
+                                                <Check className={cn("h-2.5 w-2.5 text-amber-600", selectedEmployeeId === emp.id ? "opacity-100" : "opacity-0")} />
+                                            </div>
                                             {getDisplayName(emp)}
                                         </CommandItem>
                                     ))}
@@ -147,12 +156,22 @@ export function LinkUserEmployeeDialog({ isOpen, onCloseAction, onConfirmAction,
                     </PopoverContent>
                 </Popover>
              </div>
-            {error && <p className="text-sm text-destructive mt-2">{error}</p>}
+            {error && (
+                <div className="p-5 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-600 text-[10px] font-black uppercase tracking-widest text-center shadow-inner">
+                    {error}
+                </div>
+            )}
           </div>
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={handleClose}>Annuler</Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Enregistrement..." : "Lier le compte"}
+          <DialogFooter className="p-10 bg-white/20 backdrop-blur-md border-t border-white/40 flex-row gap-4">
+            <Button type="button" variant="ghost" onClick={handleClose} className="h-14 px-8 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] text-slate-400 hover:text-slate-900 transition-all">
+                Annuler
+            </Button>
+            <Button 
+                type="submit" 
+                disabled={isSubmitting}
+                className="bg-slate-900 hover:bg-black text-white px-10 h-14 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] shadow-3xl shadow-slate-900/40 active:scale-95 transition-all flex-1"
+            >
+              {isSubmitting ? "LIAISON..." : "CONFIRMER L'AFFILIATION"}
             </Button>
           </DialogFooter>
         </form>

@@ -116,53 +116,70 @@ export function ServiceDialog({ isOpen, onCloseAction, onConfirmAction, service,
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="sm:max-w-md">
-        <form onSubmit={handleSubmit}>
-          <DialogHeader>
-            <DialogTitle>{isEditMode ? 'Modifier le service' : 'Ajouter un service'}</DialogTitle>
-            <DialogDescription>
-              {isEditMode ? 'Modifiez les informations de ce service.' : 'Ajoutez un nouveau service.'}
-            </DialogDescription>
+      <DialogContent className="sm:max-w-lg border-white/20 p-0 overflow-hidden bg-white/40 backdrop-blur-3xl shadow-3xl rounded-[3rem]">
+        <form onSubmit={handleSubmit} className="flex flex-col relative">
+          <DialogHeader className="bg-slate-900 p-10 text-white text-left relative overflow-hidden">
+            {/* Institutional Pattern */}
+            <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:24px_24px]" />
+            <div className="relative z-10 space-y-2">
+                <DialogTitle className="text-3xl font-black uppercase tracking-tighter">
+                    {isEditMode ? 'Rectification' : 'Architecture'}
+                </DialogTitle>
+                <div className="h-1 w-12 bg-sky-500 rounded-full" />
+                <DialogDescription className="text-slate-400 font-bold uppercase tracking-widest text-[9px] mt-2 opacity-80 leading-loose">
+                  {isEditMode 
+                    ? 'Ajustement des paramètres de l\'unité d\'exécution pour garantir la précision opérationnelle.' 
+                    : 'Création d\'un service rattaché à une direction ou à un pôle stratégique du directoire.'}
+                </DialogDescription>
+            </div>
           </DialogHeader>
-          <div className="py-4 space-y-4">
-            <div>
-              <Label htmlFor="name">Nom du service</Label>
+          <div className="p-10 space-y-8 flex-1 overflow-auto custom-scrollbar">
+            <div className="space-y-3">
+              <Label htmlFor="name" className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Libellé du Service</Label>
               <Input
                 id="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Nom du service"
-                className="mt-1"
+                placeholder="EX: SERVICE COMPTABILITÉ"
+                className="h-14 rounded-2xl bg-white/60 border-white/40 shadow-sm focus:ring-slate-900 font-black uppercase tracking-[0.2em] text-[11px] transition-all duration-300 placeholder:text-slate-300"
               />
             </div>
-             <div>
-                <Label>Dépend de</Label>
-                <RadioGroup value={parentType} onValueChange={handleParentTypeChange} className="flex gap-4 mt-2">
-                    <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="direction" id="r-direction" disabled={directions.length === 0} />
-                        <Label htmlFor="r-direction">Direction</Label>
+             <div className="space-y-4">
+                <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Structure de Rattachement</Label>
+                <RadioGroup value={parentType} onValueChange={handleParentTypeChange} className="grid grid-cols-2 gap-4 p-2 rounded-[2rem] bg-slate-900/5 border border-white/40 shadow-inner">
+                    <div className="flex items-center">
+                        <RadioGroupItem value="direction" id="r-direction" disabled={directions.length === 0} className="peer sr-only" />
+                        <Label htmlFor="r-direction" className="flex-1 text-[9px] font-black uppercase tracking-widest text-center py-4 rounded-xl cursor-pointer transition-all peer-data-[state=checked]:bg-white peer-data-[state=checked]:text-slate-900 peer-data-[state=checked]:shadow-md text-slate-400 hover:text-slate-600">
+                            Direction
+                        </Label>
                     </div>
-                    <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="department" id="r-department" disabled={departments.length === 0} />
-                        <Label htmlFor="r-department">Département</Label>
+                    <div className="flex items-center">
+                        <RadioGroupItem value="department" id="r-department" disabled={departments.length === 0} className="peer sr-only" />
+                        <Label htmlFor="r-department" className="flex-1 text-[9px] font-black uppercase tracking-widest text-center py-4 rounded-xl cursor-pointer transition-all peer-data-[state=checked]:bg-white peer-data-[state=checked]:text-slate-900 peer-data-[state=checked]:shadow-md text-slate-400 hover:text-slate-600">
+                            Pôle
+                        </Label>
                     </div>
                 </RadioGroup>
             </div>
-            <div>
-                <Label htmlFor="parentId">{parentType === 'direction' ? 'Direction' : 'Département'}</Label>
+            <div className="space-y-3">
+                <Label htmlFor="parentId" className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">
+                    {parentType === 'direction' ? 'Direction Titulaire' : 'Pôle Titulaire'}
+                </Label>
                 <Popover open={isComboboxOpen} onOpenChange={setIsComboboxOpen}>
                     <PopoverTrigger asChild>
-                        <Button variant="outline" role="combobox" aria-expanded={isComboboxOpen} className="w-full justify-between font-normal mt-1">
-                            {selectedParent ? selectedParent.name : `Sélectionnez ${parentType === 'direction' ? 'une direction' : 'un département'}...`}
+                        <Button variant="outline" role="combobox" aria-expanded={isComboboxOpen} className="w-full justify-between h-14 px-6 rounded-2xl bg-white/60 border-white/40 shadow-sm font-black uppercase tracking-[0.2em] text-[11px] text-slate-900 transition-all duration-300">
+                            <span className="truncate">
+                                {selectedParent ? selectedParent.name : `SÉLECTIONNER...`}
+                            </span>
                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                         </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0 border-white/20 shadow-3xl bg-white/95 backdrop-blur-xl rounded-2xl overflow-hidden mt-2">
                         <Command>
-                            <CommandInput placeholder="Rechercher..." />
-                            <CommandList>
-                                <CommandEmpty>Aucun résultat.</CommandEmpty>
-                                <CommandGroup>
+                            <CommandInput placeholder="RECHERCHER..." className="h-14 border-none font-black uppercase tracking-widest text-[10px]" />
+                            <CommandList className="custom-scrollbar">
+                                <CommandEmpty className="py-6 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">Aucun résultat trouvé.</CommandEmpty>
+                                <CommandGroup className="p-2">
                                     {parentOptions.map((opt) => (
                                         <CommandItem
                                             key={opt.id}
@@ -171,8 +188,11 @@ export function ServiceDialog({ isOpen, onCloseAction, onConfirmAction, service,
                                                 setParentId(opt.id);
                                                 setIsComboboxOpen(false);
                                             }}
+                                            className="py-4 font-black uppercase tracking-[0.2em] text-[9px] flex items-center gap-3 rounded-xl focus:bg-slate-900 focus:text-white transition-colors animate-in fade-in duration-300"
                                         >
-                                            <Check className={cn("mr-2 h-4 w-4", parentId === opt.id ? "opacity-100" : "opacity-0")} />
+                                            <div className={cn("h-4 w-4 rounded-full border border-sky-500/30 flex items-center justify-center transition-all", parentId === opt.id ? "bg-sky-500/10 border-sky-500" : "opacity-30")}>
+                                                <Check className={cn("h-2.5 w-2.5 text-sky-600", parentId === opt.id ? "opacity-100" : "opacity-0")} />
+                                            </div>
                                             {opt.name}
                                         </CommandItem>
                                     ))}
@@ -182,12 +202,22 @@ export function ServiceDialog({ isOpen, onCloseAction, onConfirmAction, service,
                     </PopoverContent>
                 </Popover>
             </div>
-            {error && <p className="text-sm text-destructive mt-2">{error}</p>}
+            {error && (
+                <div className="p-5 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-600 text-[10px] font-black uppercase tracking-widest text-center shadow-inner">
+                    {error}
+                </div>
+            )}
           </div>
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={handleClose}>Annuler</Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Enregistrement..." : "Enregistrer"}
+          <DialogFooter className="p-10 bg-white/20 backdrop-blur-md border-t border-white/40 flex-row gap-4">
+            <Button type="button" variant="ghost" onClick={handleClose} className="h-14 px-8 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] text-slate-400 hover:text-slate-900 transition-all">
+                Annuler
+            </Button>
+            <Button 
+                type="submit" 
+                disabled={isSubmitting}
+                className="bg-slate-900 hover:bg-black text-white px-10 h-14 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] shadow-3xl shadow-slate-900/40 active:scale-95 transition-all flex-1"
+            >
+              {isSubmitting ? "TRAITEMENT..." : "CONFIRMER LE SERVICE"}
             </Button>
           </DialogFooter>
         </form>

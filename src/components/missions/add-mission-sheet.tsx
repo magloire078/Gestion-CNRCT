@@ -124,98 +124,146 @@ export function AddMissionSheet({
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <SheetContent className="sm:max-w-lg">
-        <form onSubmit={handleSubmit}>
-          <SheetHeader>
-            <SheetTitle>Ajouter une nouvelle mission</SheetTitle>
-            <SheetDescription>
-              Remplissez les détails pour planifier une nouvelle mission. Les participants seront ajoutés à l'étape suivante.
-            </SheetDescription>
+      <SheetContent className="sm:max-w-lg border-l-white/10 bg-slate-50/95 backdrop-blur-2xl p-0 overflow-hidden rounded-l-[2rem]">
+        <form onSubmit={handleSubmit} className="flex flex-col h-full">
+          <SheetHeader className="p-8 bg-slate-900 text-white space-y-2 relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
+              <LogOut className="h-24 w-24 rotate-180" />
+            </div>
+            <div className="relative z-10">
+              <SheetTitle className="text-2xl font-black uppercase tracking-tight text-white flex items-center gap-2">
+                <PlusCircle className="h-6 w-6 text-emerald-400" />
+                Planification Mission
+              </SheetTitle>
+              <SheetDescription className="text-slate-400 font-bold uppercase text-[10px] tracking-widest mt-1">
+                Ouverture d'un nouveau dossier d'ordre de mission
+              </SheetDescription>
+            </div>
           </SheetHeader>
 
-          <div className="py-4 h-[calc(100vh-150px)]">
-            <ScrollArea className="h-full w-full pr-6">
+          <div className="flex-1 overflow-hidden px-8 py-6">
+            <ScrollArea className="h-full w-full pr-4">
               {loadingInitial ? (
-                <div className="flex items-center justify-center h-full">
-                  <Loader2 className="h-8 w-8 animate-spin" />
+                <div className="flex flex-col items-center justify-center h-64 gap-4">
+                  <div className="h-12 w-12 rounded-full border-4 border-slate-200 border-t-blue-600 animate-spin" />
+                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Génération du numéro de dossier...</p>
                 </div>
               ) : (
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="numeroMission">N° Dossier Mission</Label>
-                    <Input id="numeroMission" value={numeroMission} className="bg-muted" readOnly />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="title">Titre</Label>
-                    <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="description">Description</Label>
-                    <Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} rows={3} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="lieuMission">Lieu</Label>
-                    <Input id="lieuMission" value={lieuMission} onChange={(e) => setLieuMission(e.target.value)} placeholder="Ville ou lieu de la mission" />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="startDate">Date de début</Label>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button id="startDate" variant={"outline"} className={cn("w-full justify-start text-left font-normal", !startDate && "text-muted-foreground")}>
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {startDate ? format(startDate, "PPP") : <span>Choisissez une date</span>}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0">
-                          <Calendar mode="single" selected={startDate} onSelect={setStartDate} initialFocus />
-                        </PopoverContent>
-                      </Popover>
+                <div className="space-y-8">
+                  {/* Status & ID Header */}
+                  <div className="flex items-center justify-between bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                    <div className="space-y-1">
+                      <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">N° Dossier</Label>
+                      <p className="font-black text-slate-900 tracking-tighter">ORD-{numeroMission}</p>
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="endDate">Date de fin</Label>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button id="endDate" variant={"outline"} className={cn("w-full justify-start text-left font-normal", !endDate && "text-muted-foreground")}>
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {endDate ? format(endDate, "PPP") : <span>Choisissez une date</span>}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0">
-                          <Calendar mode="single" selected={endDate} onSelect={setEndDate} initialFocus />
-                        </PopoverContent>
-                      </Popover>
+                    <div className="bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">
+                      Nouveau
                     </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="status">Statut</Label>
-                    <Select value={status} onValueChange={(value: Mission['status']) => setStatus(value)}>
-                      <SelectTrigger id="status">
-                        <SelectValue placeholder="Sélectionnez un statut" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Planifiée">Planifiée</SelectItem>
-                        <SelectItem value="En cours">En cours</SelectItem>
-                        <SelectItem value="Terminée">Terminée</SelectItem>
-                        <SelectItem value="Annulée">Annulée</SelectItem>
-                      </SelectContent>
-                    </Select>
                   </div>
 
-                  {error && (
-                    <p className="text-center text-sm text-destructive">{error}</p>
-                  )}
+                  <div className="space-y-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="title" className="text-[11px] font-black uppercase tracking-widest text-slate-500 pl-1">Désignation de la Mission</Label>
+                      <Input 
+                        id="title" 
+                        value={title} 
+                        onChange={(e) => setTitle(e.target.value)} 
+                        placeholder="Ex: Mission d'inspection technique..."
+                        className="h-12 rounded-xl border-slate-200 bg-white font-bold text-sm focus:ring-2 focus:ring-blue-500/20 transition-all"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="lieuMission" className="text-[11px] font-black uppercase tracking-widest text-slate-500 pl-1">Localité de Déploiement</Label>
+                      <Input 
+                        id="lieuMission" 
+                        value={lieuMission} 
+                        onChange={(e) => setLieuMission(e.target.value)} 
+                        placeholder="Ville ou district cible"
+                        className="h-12 rounded-xl border-slate-200 bg-white font-bold text-sm focus:ring-2 focus:ring-blue-500/20 transition-all"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="startDate" className="text-[11px] font-black uppercase tracking-widest text-slate-500 pl-1">Date de Départ</Label>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button id="startDate" variant={"outline"} className={cn("h-12 w-full justify-start text-left font-bold rounded-xl border-slate-200 bg-white", !startDate && "text-slate-400")}>
+                              <CalendarIcon className="mr-2 h-4 w-4 text-blue-600" />
+                              {startDate ? format(startDate, "dd MMM yyyy") : <span>Départ</span>}
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0 border-none shadow-2xl rounded-2xl">
+                            <Calendar mode="single" selected={startDate} onSelect={setStartDate} initialFocus className="rounded-2xl" />
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="endDate" className="text-[11px] font-black uppercase tracking-widest text-slate-500 pl-1">Date de Retour</Label>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button id="endDate" variant={"outline"} className={cn("h-12 w-full justify-start text-left font-bold rounded-xl border-slate-200 bg-white", !endDate && "text-slate-400")}>
+                              <CalendarIcon className="mr-2 h-4 w-4 text-blue-600" />
+                              {endDate ? format(endDate, "dd MMM yyyy") : <span>Retour</span>}
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0 border-none shadow-2xl rounded-2xl">
+                            <Calendar mode="single" selected={endDate} onSelect={setEndDate} initialFocus className="rounded-2xl" />
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="description" className="text-[11px] font-black uppercase tracking-widest text-slate-500 pl-1">Synthèse Opérationnelle</Label>
+                      <Textarea 
+                        id="description" 
+                        value={description} 
+                        onChange={(e) => setDescription(e.target.value)} 
+                        rows={3} 
+                        placeholder="Détails complémentaires sur les objectifs de la mission..."
+                        className="rounded-xl border-slate-200 bg-white font-medium text-sm focus:ring-2 focus:ring-blue-500/20 transition-all"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="status" className="text-[11px] font-black uppercase tracking-widest text-slate-500 pl-1">Priorité de Traitement</Label>
+                      <Select value={status} onValueChange={(value: Mission['status']) => setStatus(value)}>
+                        <SelectTrigger id="status" className="h-12 rounded-xl border-slate-200 bg-white font-bold text-sm">
+                          <SelectValue placeholder="Sélectionnez un statut" />
+                        </SelectTrigger>
+                        <SelectContent className="rounded-xl border-slate-100 shadow-2xl">
+                          <SelectItem value="Planifiée" className="font-bold py-3">Planifiée (Standard)</SelectItem>
+                          <SelectItem value="En cours" className="font-bold py-3">Départ Immédiat</SelectItem>
+                          <SelectItem value="Terminée" className="font-bold py-3">Terminée</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {error && (
+                      <div className="p-4 rounded-xl bg-rose-50 border border-rose-100 text-rose-600 text-[11px] font-black uppercase text-center tracking-widest">
+                        {error}
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
             </ScrollArea>
           </div>
 
-          <SheetFooter>
+          <SheetFooter className="p-8 bg-white border-t border-slate-100 sm:flex-row gap-3">
             <SheetClose asChild>
-              <Button type="button" variant="outline" onClick={handleClose}>Annuler</Button>
+              <Button type="button" variant="ghost" onClick={handleClose} className="flex-1 h-12 rounded-xl font-black uppercase tracking-widest text-[11px] text-slate-500 hover:bg-slate-50">
+                Annuler
+              </Button>
             </SheetClose>
-            <Button type="submit" disabled={isSubmitting || loadingInitial}>
-              {isSubmitting ? "Enregistrement..." : "Créer et continuer"}
+            <Button 
+                type="submit" 
+                disabled={isSubmitting || loadingInitial}
+                className="flex-[2] h-12 rounded-xl bg-slate-900 shadow-xl shadow-slate-900/20 font-black uppercase tracking-widest text-[11px] hover:bg-black active:scale-95 transition-all text-white"
+            >
+              {isSubmitting ? "Initialisation..." : "Créer et Programmer l'Équipage"}
             </Button>
           </SheetFooter>
         </form>

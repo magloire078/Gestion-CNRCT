@@ -59,6 +59,16 @@
     --chart-3: 338, 78%, 59%;
     --chart-4: 46, 65%, 52%;
     --chart-5: 45, 93%, 47%;
+
+    /* Sidebar Variables */
+    --sidebar-width: 16rem;
+    --sidebar-width-icon: 3rem;
+  }
+
+  @media (max-width: 767px) {
+    :root {
+      --sidebar-width: 18rem;
+    }
   }
 
   .dark {

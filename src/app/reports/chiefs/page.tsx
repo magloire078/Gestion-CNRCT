@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useTransition } from "react";
 import { 
     Crown, Map as MapIcon, Users, Building2,
     Download, Printer, Search, Filter,
@@ -34,13 +34,21 @@ import {
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { DirectoireMap } from "@/components/employees/directoire-map";
+import dynamic from 'next/dynamic';
 import { subscribeToChiefs } from "@/services/chief-service";
 import type { Chief } from "@/lib/data";
 import Papa from "papaparse";
 import { cn } from "@/lib/utils";
 import { PermissionGuard } from "@/components/auth/permission-guard";
 import { usePermissions } from "@/hooks/use-permissions";
+
+const DirectoireMap = dynamic<{ members: any[]; className?: string }>(
+  () => import('@/components/employees/directoire-map').then(m => m.DirectoireMap),
+  { 
+    ssr: false,
+    loading: () => <Skeleton className="h-[600px] w-full rounded-[2.5rem]" />
+  }
+);
 
 export default function ChiefsReportsPage() {
     const { canSeeGovernanceStatus } = usePermissions();
@@ -49,6 +57,7 @@ export default function ChiefsReportsPage() {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
     const [viewMode, setViewMode] = useState<"list" | "map">("map");
+    const [isPending, startTransition] = useTransition();
 
     useEffect(() => {
         const unsubscribe = subscribeToChiefs(
@@ -137,14 +146,16 @@ export default function ChiefsReportsPage() {
                             <Button 
                                 variant={viewMode === "map" ? "default" : "ghost"}
                                 className={cn("rounded-xl h-10 px-4 font-bold transition-all", viewMode === "map" ? "bg-slate-900 shadow-lg text-white" : "text-slate-500 hover:bg-white")}
-                                onClick={() => setViewMode("map")}
+                                onClick={() => startTransition(() => setViewMode("map"))}
+                                disabled={isPending}
                             >
                                 <MapIcon className="mr-2 h-4 w-4" /> Carte
                             </Button>
                             <Button 
                                 variant={viewMode === "list" ? "default" : "ghost"}
                                 className={cn("rounded-xl h-10 px-4 font-bold transition-all", viewMode === "list" ? "bg-slate-900 shadow-lg text-white" : "text-slate-500 hover:bg-white")}
-                                onClick={() => setViewMode("list")}
+                                onClick={() => startTransition(() => setViewMode("list"))}
+                                disabled={isPending}
                             >
                                 <Users className="mr-2 h-4 w-4" /> Liste
                             </Button>

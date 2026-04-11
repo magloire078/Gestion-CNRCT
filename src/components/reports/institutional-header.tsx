@@ -18,7 +18,7 @@ export function InstitutionalHeader({ title, period, showDAFP = true }: Institut
   }, []);
 
   return (
-    <div className="flex justify-between items-start border-b-2 border-slate-100 pb-8 mb-10">
+    <div className="flex justify-between items-start border-b-2 border-slate-900 pb-8 mb-12 relative break-inside-avoid">
       {/* Left Column: Local Institution Details */}
       <div className="flex flex-col gap-1 text-slate-800 font-black uppercase text-[10px] leading-tight tracking-tighter">
         <span className="text-sm">Chambre Nationale des Rois</span>

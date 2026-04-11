@@ -49,25 +49,46 @@ const TAB_CONFIG = [
 
 // Composant d'en-tête mémoïsé
 const AdminHeader = memo(({ user }: { user: User | null }) => (
-  <div className="flex items-center justify-between">
-    <div className="flex items-center gap-5">
-      <div className="relative group">
-        <Avatar className="h-16 w-16 border-[3px] border-background shadow-2xl transition-transform group-hover:scale-105">
+  <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 p-8 rounded-[3rem] bg-card/40 backdrop-blur-md border border-white/10 shadow-2xl relative overflow-hidden group">
+    {/* Subtle Institutional Background */}
+    <div className="absolute top-0 right-0 p-12 opacity-[0.03] group-hover:opacity-[0.05] transition-opacity duration-700 pointer-events-none">
+        <ShieldCheck className="h-64 w-64 rotate-12" />
+    </div>
+
+    <div className="flex items-center gap-6 relative z-10">
+      <div className="relative">
+        <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full scale-0 group-hover:scale-100 transition-transform duration-700" />
+        <Avatar className="h-20 w-20 border-[3px] border-white shadow-2xl transition-all duration-500 group-hover:scale-105 group-hover:rotate-3 relative z-10">
           <AvatarImage src={user?.photoUrl || undefined} alt={user?.name || ''} />
-          <AvatarFallback className="bg-gradient-to-br from-primary/10 to-primary/30 font-black text-primary text-xl">
+          <AvatarFallback className="bg-slate-900 font-black text-white text-2xl uppercase tracking-tighter">
             {user?.name?.charAt(0) || 'A'}
           </AvatarFallback>
         </Avatar>
-        <div className="absolute -bottom-1 -right-1 h-5 w-5 rounded-full border-4 border-background bg-green-500 shadow-sm" />
+        <div className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full border-4 border-white bg-emerald-500 shadow-lg z-20" />
       </div>
-      <div className="space-y-1">
-        <h1 className="text-4xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
-          Administration
-        </h1>
-        <p className="text-muted-foreground font-medium text-sm">
-          Gérez l&apos;accès, la sécurité et la structure organisationnelle.
+      <div className="space-y-1.5">
+        <div className="flex items-center gap-3">
+          <h1 className="text-4xl font-black tracking-tight text-slate-900 uppercase">
+            Habilitations
+          </h1>
+          <div className="px-3 py-1 rounded-full bg-slate-900 text-[10px] font-black uppercase tracking-widest text-white shadow-lg">
+            Admin
+          </div>
+        </div>
+        <p className="text-slate-500 font-bold text-[11px] uppercase tracking-widest opacity-70">
+          Contrôle d'Accès & Gouvernance de la Structure
         </p>
       </div>
+    </div>
+
+    <div className="flex items-center gap-4 relative z-10">
+        <div className="hidden lg:flex flex-col items-end gap-1 px-6 border-r border-slate-900/10">
+            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Statut Système</span>
+            <span className="text-xs font-black text-emerald-600 uppercase tracking-tight flex items-center gap-1.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                Opérationnel
+            </span>
+        </div>
     </div>
   </div>
 ));
@@ -398,12 +419,12 @@ export default function AdminPage() {
           <PermissionLock userEmail={user?.email ?? ''}>
             <Tabs defaultValue="overview" className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
               <div className="overflow-x-auto pb-2 -mx-2 px-2 scrollbar-none">
-                <TabsList className="bg-muted/40 p-1.5 border border-border/50 backdrop-blur-md rounded-xl shadow-sm inline-flex gap-1">
+                <TabsList className="bg-card/40 p-1.5 border border-white/10 backdrop-blur-md rounded-2xl shadow-xl inline-flex gap-1.5 h-14">
                   {TAB_CONFIG.map(({ value, label, icon: Icon }) => (
                     <TabsTrigger 
                       key={value}
                       value={value} 
-                      className="gap-2 px-6 py-2.5 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-lg active:scale-95 transition-all text-sm font-bold"
+                      className="gap-2.5 px-8 py-3 rounded-xl data-[state=active]:bg-slate-900 data-[state=active]:text-white data-[state=active]:shadow-2xl active:scale-95 transition-all text-xs font-black uppercase tracking-widest"
                     >
                       <Icon className="h-4.5 w-4.5" />
                       {label}

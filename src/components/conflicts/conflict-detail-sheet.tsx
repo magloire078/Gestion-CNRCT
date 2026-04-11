@@ -1,7 +1,5 @@
-"use client";
-
 import { useState } from "react";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
@@ -15,7 +13,11 @@ import {
     Loader2, 
     AlertTriangle,
     History,
-    FileText
+    FileText,
+    Printer,
+    ArrowRight,
+    Gavel,
+    ShieldCheck
 } from "lucide-react";
 import type { Conflict, ConflictComment, ConflictStatus } from "@/lib/data";
 import { format, parseISO } from "date-fns";
@@ -26,6 +28,7 @@ import { addConflictComment, updateConflictStatus } from "@/services/conflict-se
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
+import { PrintConflictDetail } from "./conflict-print-templates";
 
 interface ConflictDetailSheetProps {
     conflict: Conflict | null;
@@ -33,18 +36,19 @@ interface ConflictDetailSheetProps {
     onOpenChange: (open: boolean) => void;
 }
 
-const STATUS_OPTIONS: { label: string; value: ConflictStatus; color: string }[] = [
-    { label: "Ouvert", value: "Ouvert", color: "bg-slate-100 text-slate-700" },
-    { label: "En Médiation", value: "En médiation", color: "bg-blue-100 text-blue-700" },
-    { label: "Résolu", value: "Résolu", color: "bg-emerald-100 text-emerald-700" },
-    { label: "Classé sans suite", value: "Classé sans suite", color: "bg-red-100 text-red-700" },
+const STATUS_OPTIONS: { label: string; value: ConflictStatus; color: string; icon: any }[] = [
+    { label: "Ouvert", value: "Ouvert", color: "bg-slate-100 text-slate-700", icon: Clock },
+    { label: "En Médiation", value: "En médiation", color: "bg-blue-100 text-blue-700", icon: MessageSquare },
+    { label: "Résolu", value: "Résolu", color: "bg-emerald-100 text-emerald-700", icon: ShieldCheck },
+    { label: "Classé sans suite", value: "Classé sans suite", color: "bg-red-100 text-red-700", icon: AlertTriangle },
 ];
 
 export function ConflictDetailSheet({ conflict, open, onOpenChange }: ConflictDetailSheetProps) {
     const { toast } = useToast();
-    const { user } = useAuth();
+    const { user, settings } = useAuth();
     const [newComment, setNewComment] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isPrinting, setIsPrinting] = useState(false);
 
     if (!conflict) return null;
 
@@ -85,137 +89,209 @@ export function ConflictDetailSheet({ conflict, open, onOpenChange }: ConflictDe
         }
     };
 
+    const handlePrint = () => {
+        setIsPrinting(true);
+        setTimeout(() => setIsPrinting(false), 3000);
+    };
+
     const sortedComments = [...(conflict.comments || [])].sort((a, b) => 
         new Date(b.date).getTime() - new Date(a.date).getTime()
     );
 
     return (
         <Sheet open={open} onOpenChange={onOpenChange}>
-            <SheetContent className="sm:max-w-xl p-0 h-full flex flex-col gap-0 border-l border-slate-200">
-                <SheetHeader className="p-6 bg-slate-50 border-b shrink-0 text-left">
-                    <div className="flex items-center gap-2 mb-2">
-                        <Badge variant="outline" className="text-[10px] font-bold bg-white">{conflict.trackingId || "ID-EN-COURS"}</Badge>
-                        <Badge className={cn("text-[10px] uppercase font-black", 
-                            conflict.status === 'Résolu' ? "bg-emerald-500 hover:bg-emerald-600" :
-                            conflict.status === 'En médiation' ? "bg-blue-500 hover:bg-blue-600" :
-                            conflict.status === 'Classé sans suite' ? "bg-red-500 hover:bg-red-600" : "bg-slate-500 hover:bg-slate-600"
-                        )}>
-                            {conflict.status || 'Ouvert'}
-                        </Badge>
+            <SheetContent className="sm:max-w-2xl p-0 h-full flex flex-col gap-0 border-l border-slate-200">
+                <SheetHeader className="p-8 bg-slate-900 text-white shrink-0 text-left relative overflow-hidden">
+                    <div className="absolute top-0 right-0 p-8 opacity-10 rotate-12">
+                        <Gavel className="h-32 w-32" />
                     </div>
-                    <SheetTitle className="text-xl font-bold tracking-tight">{conflict.description.substring(0, 80)}...</SheetTitle>
-                    <SheetDescription className="flex items-center gap-4 mt-1">
-                        <span className="flex items-center gap-1.5"><MapPin className="h-3 w-3" /> {conflict.village}, {conflict.region}</span>
-                        <span className="flex items-center gap-1.5"><Calendar className="h-3 w-3" /> {format(parseISO(conflict.reportedDate), 'dd MMM yyyy', { locale: fr })}</span>
-                    </SheetDescription>
+                    
+                    <div className="relative z-10">
+                        <div className="flex items-center gap-3 mb-4">
+                            <Badge variant="outline" className="text-[10px] font-black tracking-widest bg-white/10 text-white border-white/20 px-3 py-1">
+                                {conflict.trackingId || "CONF-PENDING"}
+                            </Badge>
+                            <Badge className={cn("text-[10px] uppercase font-black px-3 py-1", 
+                                conflict.status === 'Résolu' ? "bg-emerald-500 text-white" :
+                                conflict.status === 'En médiation' ? "bg-blue-500 text-white" :
+                                conflict.status === 'Classé sans suite' ? "bg-red-500 text-white" : "bg-white/20 text-white"
+                            )}>
+                                {conflict.status || 'Ouvert'}
+                            </Badge>
+                        </div>
+                        <SheetTitle className="text-2xl font-black text-white leading-tight uppercase tracking-tight">
+                            {conflict.village}
+                        </SheetTitle>
+                        <SheetDescription className="text-slate-400 font-medium flex flex-wrap items-center gap-x-6 gap-y-2 mt-3">
+                            <span className="flex items-center gap-2"><MapPin className="h-4 w-4 text-primary" /> {conflict.region || 'Secteur Non Défini'}</span>
+                            <span className="flex items-center gap-2"><Calendar className="h-4 w-4 text-primary" /> Signalé le {format(parseISO(conflict.reportedDate), 'dd MMMM yyyy', { locale: fr })}</span>
+                        </SheetDescription>
+                    </div>
                 </SheetHeader>
 
-                <ScrollArea className="flex-1">
-                    <div className="p-6 space-y-8 pb-32">
-                        {/* Section Details */}
-                        <section className="space-y-4">
-                            <div className="flex items-center gap-2 text-slate-900">
-                                <FileText className="h-4 w-4 text-slate-500" />
-                                <h3 className="text-xs font-bold uppercase tracking-wider">Informations Générales</h3>
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-100">
-                                <div>
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase">Parties en conflit</label>
-                                    <p className="text-sm font-medium mt-1">{conflict.parties || "Non spécifiées"}</p>
-                                </div>
-                                <div>
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase">Type de conflit</label>
-                                    <p className="text-sm font-medium mt-1">{conflict.type}</p>
-                                </div>
-                                <div className="md:col-span-2">
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase">Description complète</label>
-                                    <p className="text-sm text-slate-600 mt-2 leading-relaxed">{conflict.description}</p>
-                                </div>
-                            </div>
-                        </section>
+                <div className="grid grid-cols-2 border-b border-slate-100">
+                    <Button 
+                        variant="ghost" 
+                        onClick={handlePrint}
+                        className="h-14 rounded-none border-r border-slate-100 font-bold text-slate-600 hover:text-primary hover:bg-slate-50 transition-all"
+                    >
+                        <Printer className="mr-2 h-4 w-4" /> Impression MGP
+                    </Button>
+                    <Button 
+                        variant="ghost" 
+                        onClick={() => onOpenChange(false)}
+                        className="h-14 rounded-none font-bold text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-all"
+                    >
+                        Fermer le volet
+                    </Button>
+                </div>
 
-                        {/* Status Management */}
-                        <section className="space-y-4">
-                            <div className="flex items-center gap-2 text-slate-900">
-                                <History className="h-4 w-4 text-slate-500" />
-                                <h3 className="text-xs font-bold uppercase tracking-wider">Action Médiateur</h3>
-                            </div>
-                            <div className="flex flex-wrap gap-2">
-                                {STATUS_OPTIONS.map((opt) => (
-                                    <Button
-                                        key={opt.value}
-                                        variant="outline"
-                                        size="sm"
-                                        className={cn(
-                                            "h-9 px-4 rounded-full text-xs font-bold transition-all",
-                                            conflict.status === opt.value ? opt.color + " border-transparent ring-2 ring-slate-200" : "hover:bg-slate-50"
-                                        )}
-                                        onClick={() => handleStatusUpdate(opt.value)}
-                                        disabled={isSubmitting || conflict.status === opt.value}
-                                    >
-                                        {opt.label}
-                                    </Button>
-                                ))}
-                            </div>
-                        </section>
-
-                        {/* Journal de Bord */}
-                        <section className="space-y-4">
-                            <div className="flex items-center gap-2 text-slate-900">
-                                <MessageSquare className="h-4 w-4 text-slate-500" />
-                                <h3 className="text-xs font-bold uppercase tracking-wider">Journal de Bord</h3>
+                <ScrollArea className="flex-1 bg-slate-50/30">
+                    <div className="p-8 space-y-10 pb-32">
+                        {/* Section Details - Upgraded */}
+                        <section className="space-y-6">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2 text-slate-900">
+                                    <div className="p-1.5 bg-slate-100 rounded-lg">
+                                        <FileText className="h-4 w-4 text-slate-600" />
+                                    </div>
+                                    <h3 className="text-xs font-black uppercase tracking-widest text-slate-500">Nature du Dossier</h3>
+                                </div>
+                                <Badge variant="outline" className="font-bold text-[10px] border-slate-200 text-slate-400 uppercase">{conflict.type}</Badge>
                             </div>
                             
-                            {/* Comment Input */}
-                            <div className="bg-white border rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-blue-100 transition-all">
+                            <div className="bg-white p-6 rounded-[1.5rem] border border-slate-100 shadow-sm space-y-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-6 border-b border-slate-50">
+                                    <div>
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Parties Prenantes</label>
+                                        <p className="text-sm font-bold text-slate-800 leading-relaxed">{conflict.parties || "Non spécifiées"}</p>
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Médiateur Référent</label>
+                                        <div className="flex items-center gap-2">
+                                            <div className="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center font-black text-[10px] text-slate-500 border border-slate-200">
+                                                {conflict.mediatorName ? conflict.mediatorName.substring(0, 2).toUpperCase() : "M"}
+                                            </div>
+                                            <p className="text-sm font-bold text-slate-800">{conflict.mediatorName || "Non assigné"}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Exposé des Faits</label>
+                                    <p className="text-sm text-slate-600 leading-relaxed italic">"{conflict.description}"</p>
+                                    {conflict.impact && (
+                                        <div className="mt-4 p-4 bg-amber-50 rounded-xl border border-amber-100/50 flex gap-3">
+                                            <AlertTriangle className="h-5 w-5 text-amber-500 shrink-0" />
+                                            <div>
+                                                <p className="text-[10px] font-black text-amber-800 uppercase tracking-widest mb-1">Impact & Risques</p>
+                                                <p className="text-xs text-amber-900/70 font-medium leading-relaxed">{conflict.impact}</p>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* Status Management - Action Focus */}
+                        <section className="space-y-4">
+                            <div className="flex items-center gap-2 text-slate-900">
+                                <div className="p-1.5 bg-primary/10 rounded-lg text-primary">
+                                    <ArrowRight className="h-4 w-4" />
+                                </div>
+                                <h3 className="text-xs font-black uppercase tracking-widest text-slate-500">Mise à jour de l'état</h3>
+                            </div>
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                                {STATUS_OPTIONS.map((opt) => {
+                                    const Icon = opt.icon;
+                                    const isActive = conflict.status === opt.value;
+                                    return (
+                                        <Button
+                                            key={opt.value}
+                                            variant="outline"
+                                            onClick={() => handleStatusUpdate(opt.value)}
+                                            disabled={isSubmitting || isActive}
+                                            className={cn(
+                                                "h-auto py-3 px-2 flex flex-col gap-2 rounded-2xl font-bold transition-all border-slate-200",
+                                                isActive ? "bg-slate-900 text-white border-slate-900 ring-4 ring-slate-100 shadow-lg" : "hover:bg-white hover:border-primary/20 bg-white/50"
+                                            )}
+                                        >
+                                            <Icon className={cn("h-5 w-5", isActive ? "text-primary" : "text-slate-400")} />
+                                            <span className="text-[10px] uppercase tracking-tighter text-center">{opt.label}</span>
+                                        </Button>
+                                    );
+                                })}
+                            </div>
+                        </section>
+
+                        {/* Journal de Bord - Timeline Focus */}
+                        <section className="space-y-6">
+                            <div className="flex items-center gap-2 text-slate-900">
+                                <div className="p-1.5 bg-slate-100 rounded-lg">
+                                    <History className="h-4 w-4 text-slate-600" />
+                                </div>
+                                <h3 className="text-xs font-black uppercase tracking-widest text-slate-500">Parcours de Médiation</h3>
+                            </div>
+                            
+                            {/* Comment Input Upgraded */}
+                            <div className="bg-white border border-slate-100 shadow-sm rounded-[1.5rem] overflow-hidden focus-within:ring-4 focus-within:ring-primary/5 transition-all">
                                 <Textarea 
-                                    className="border-none focus-visible:ring-0 resize-none min-h-[100px] text-sm p-4"
-                                    placeholder="Ajouter une note importante, un compte-rendu de médiation..."
+                                    className="border-none focus-visible:ring-0 resize-none min-h-[120px] text-sm p-6 font-medium placeholder:text-slate-400 placeholder:italic"
+                                    placeholder="Décrivez l'avancée de la médiation, les engagements pris par les parties..."
                                     value={newComment}
                                     onChange={(e) => setNewComment(e.target.value)}
                                 />
-                                <div className="bg-slate-50 p-2 flex justify-end">
+                                <div className="bg-slate-50/50 p-4 flex justify-between items-center border-t border-slate-50">
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-2">Note Officielle</p>
                                     <Button 
                                         size="sm" 
-                                        className="h-8 bg-blue-600 hover:bg-blue-700" 
+                                        className="rounded-xl px-6 font-black h-10 shadow-lg shadow-primary/20" 
                                         onClick={handleAddComment}
                                         disabled={!newComment.trim() || isSubmitting}
                                     >
                                         {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-3.5 w-3.5 mr-2" />}
-                                        Enregistrer la note
+                                        Enregistrer
                                     </Button>
                                 </div>
                             </div>
 
-                            {/* Timeline Items */}
-                            <div className="space-y-4 pt-4">
+                            {/* Timeline Items - Enhanced Premium */}
+                            <div className="space-y-8 pt-4">
                                 {sortedComments.length > 0 ? (
-                                    sortedComments.map((comment) => (
-                                        <div key={comment.id} className="relative pl-6 pb-6 border-l border-slate-100 last:pb-0">
+                                    sortedComments.map((comment, idx) => (
+                                        <div key={comment.id} className="relative pl-8 pb-8 border-l-2 border-slate-100 last:pb-0 group">
                                             <div className={cn(
-                                                "absolute -left-[5px] top-1 h-2.5 w-2.5 rounded-full",
-                                                comment.type === 'Résolution' ? "bg-emerald-500 shadow-[0_0_0_4px_rgba(16,185,129,0.1)]" : "bg-slate-300"
+                                                "absolute -left-[9px] top-0 h-4 w-4 rounded-full border-2 border-white transition-all transform group-hover:scale-125",
+                                                idx === 0 ? "bg-primary shadow-[0_0_0_4px_rgba(var(--primary),0.1)] scale-110" : "bg-slate-300"
                                             )} />
-                                            <div className="flex items-center justify-between gap-4 mb-1">
-                                                <span className="text-[11px] font-bold text-slate-900 flex items-center gap-1.5">
-                                                    <User className="h-3 w-3 text-slate-400" /> {comment.author}
-                                                </span>
-                                                <span className="text-[10px] text-slate-400 font-medium tracking-tighter uppercase tabular-nums">
-                                                    {format(parseISO(comment.date), 'dd/MM/yyyy HH:mm', { locale: fr })}
+                                            
+                                            <div className="flex items-center justify-between gap-4 mb-3">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-[11px] font-black text-slate-900 uppercase tracking-widest italic flex items-center gap-1.5">
+                                                        <User className="h-3 w-3 text-slate-400" /> {comment.author}
+                                                    </span>
+                                                    {comment.type === 'Statut' && (
+                                                        <Badge className="bg-slate-900 text-white text-[9px] font-black uppercase px-2 py-0">Mise à jour</Badge>
+                                                    )}
+                                                </div>
+                                                <span className="text-[10px] text-slate-400 font-bold tabular-nums bg-slate-100 px-2 py-0.5 rounded-lg border border-slate-200/50">
+                                                    {format(parseISO(comment.date), 'dd MMM yyyy • HH:mm', { locale: fr })}
                                                 </span>
                                             </div>
+                                            
                                             <div className={cn(
-                                                "text-sm leading-relaxed p-3 rounded-lg border",
-                                                comment.type === 'Résolution' ? "bg-emerald-50 border-emerald-100 text-emerald-800" : "bg-slate-50 border-slate-100 text-slate-600"
+                                                "text-sm leading-relaxed p-5 rounded-[1.25rem] border transition-all",
+                                                comment.type === 'Statut' ? "bg-slate-50 border-slate-200 text-slate-700 font-bold" : "bg-white border-slate-100 text-slate-600 shadow-sm group-hover:border-slate-200"
                                             )}>
                                                 {comment.content}
                                             </div>
                                         </div>
                                     ))
                                 ) : (
-                                    <div className="flex flex-col items-center justify-center py-10 text-slate-400">
-                                        <History className="h-8 w-8 mb-2 opacity-10" />
-                                        <p className="text-xs font-medium">Aucun historique pour le moment.</p>
+                                    <div className="flex flex-col items-center justify-center py-16 bg-white rounded-[2rem] border border-dashed border-slate-200">
+                                        <div className="h-16 w-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
+                                            <History className="h-8 w-8 text-slate-200" />
+                                        </div>
+                                        <p className="text-xs font-black uppercase tracking-widest text-slate-300">Aucun historique de médiation</p>
                                     </div>
                                 )}
                             </div>
@@ -223,10 +299,16 @@ export function ConflictDetailSheet({ conflict, open, onOpenChange }: ConflictDe
                     </div>
                 </ScrollArea>
 
-                <SheetFooter className="p-4 bg-slate-50 border-t shrink-0">
-                    <Button variant="ghost" onClick={() => onOpenChange(false)} className="w-full">Fermer les détails</Button>
-                </SheetFooter>
-            </SheetContent>
+                {/* Print Template Overlay */}
+                {isPrinting && (
+                    <div className="hidden">
+                        <PrintConflictDetail 
+                            conflict={conflict} 
+                            organizationSettings={settings} 
+                        />
+                    </div>
+                )}
+            </div>
         </Sheet>
     );
 }

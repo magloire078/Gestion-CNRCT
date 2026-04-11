@@ -124,7 +124,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [user, loading, pathname, router]);
 
-    const hasPermission = (permission: string) => {
+    const hasPermission = React.useCallback((permission: string) => {
     if (loading || !user) return false;
     
     // Super-admins/Dirigeants have all permissions (bypass by ID or by specific email for safety)
@@ -157,9 +157,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     return false;
-  }
+  }, [loading, user]);
 
-  const value = { user, loading, hasPermission, settings };
+  const value = React.useMemo(() => ({ 
+    user, 
+    loading, 
+    hasPermission, 
+    settings 
+  }), [user, loading, hasPermission, settings]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

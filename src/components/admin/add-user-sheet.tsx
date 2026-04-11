@@ -76,44 +76,74 @@ export function AddUserSheet({ isOpen, onCloseAction, onAddUserAction, roles }: 
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <SheetContent>
-        <form onSubmit={handleSubmit}>
-          <SheetHeader>
-            <SheetTitle>Ajouter un nouvel utilisateur</SheetTitle>
-            <SheetDescription>
-              Remplissez les détails pour ajouter un nouvel utilisateur au système. L'utilisateur devra ensuite s'inscrire avec le même email pour se connecter.
-            </SheetDescription>
+      <SheetContent className="sm:max-w-lg border-white/20 p-0 overflow-hidden bg-white/40 backdrop-blur-3xl shadow-3xl rounded-l-[3rem]">
+        <form onSubmit={handleSubmit} className="flex flex-col h-full relative">
+          <SheetHeader className="bg-slate-900 p-10 text-white text-left relative overflow-hidden">
+            {/* Institutional Pattern */}
+            <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:24px_24px]" />
+            <div className="relative z-10 space-y-2">
+                <SheetTitle className="text-3xl font-black uppercase tracking-tighter">Accréditation</SheetTitle>
+                <div className="h-1 w-12 bg-blue-500 rounded-full" />
+                <SheetDescription className="text-slate-400 font-bold uppercase tracking-widest text-[9px] mt-2 opacity-80 leading-loose">
+                    Renseignement des accès institutionnels pour un nouveau collaborateur du CNRCT.
+                </SheetDescription>
+            </div>
           </SheetHeader>
-          <div className="grid gap-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Nom</Label>
-              <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
+          <div className="grid gap-8 p-10 flex-1 overflow-auto custom-scrollbar">
+            <div className="space-y-3">
+              <Label htmlFor="name" className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Identité Complète</Label>
+              <Input 
+                id="name" 
+                value={name} 
+                onChange={(e) => setName(e.target.value)} 
+                placeholder="EX: M. JEAN-BAPTISTE KOUAMÉ"
+                className="h-14 rounded-2xl bg-white/60 border-white/40 shadow-sm focus:ring-slate-900 font-black uppercase tracking-widest text-[11px] transition-all duration-300 placeholder:text-slate-300 placeholder:font-bold"
+              />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+            <div className="space-y-3">
+              <Label htmlFor="email" className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Courriel Institutionnel</Label>
+              <Input 
+                id="email" 
+                type="email" 
+                value={email} 
+                onChange={(e) => setEmail(e.target.value)} 
+                placeholder="COLLABORATEUR@CNR-CT.CI"
+                className="h-14 rounded-2xl bg-white/60 border-white/40 shadow-sm focus:ring-slate-900 font-black uppercase tracking-widest text-[11px] transition-all duration-300 placeholder:text-slate-300"
+              />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="role">Rôle</Label>
+            <div className="space-y-3">
+              <Label htmlFor="role" className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Assignation du Grade d'Accès</Label>
               <Select value={roleId} onValueChange={setRoleId}>
-                <SelectTrigger id="role">
-                  <SelectValue placeholder="Sélectionnez un rôle" />
+                <SelectTrigger id="role" className="h-14 rounded-2xl bg-white/60 border-white/40 shadow-sm focus:ring-slate-900 font-black uppercase tracking-widest text-[11px] transition-all duration-300">
+                  <SelectValue placeholder="SÉLECTIONNER UN PROFIL" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="rounded-2xl border-white/20 shadow-3xl bg-white/95 backdrop-blur-xl p-2">
                   {roles.map(role => (
-                    <SelectItem key={role.id} value={role.id}>{role.name}</SelectItem>
+                    <SelectItem key={role.id} value={role.id} className="font-black py-4 uppercase tracking-[0.2em] text-[9px] rounded-xl focus:bg-slate-900 focus:text-white transition-colors">
+                        {role.name}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
-            {error && <p className="text-sm text-destructive text-center">{error}</p>}
+            {error && (
+                <div className="p-5 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-600 text-[10px] font-black uppercase tracking-widest text-center shadow-inner">
+                    {error}
+                </div>
+            )}
           </div>
-          <SheetFooter>
+          <SheetFooter className="p-10 bg-white/20 backdrop-blur-md border-t border-white/40 flex-row gap-4">
             <SheetClose asChild>
-              <Button type="button" variant="outline">Annuler</Button>
+              <Button type="button" variant="ghost" className="h-14 px-8 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] text-slate-400 hover:text-slate-900 transition-all">
+                  Annuler
+              </Button>
             </SheetClose>
-            <Button type="submit" disabled={isSubmitting || roles.length === 0}>
-              {isSubmitting ? "Enregistrement..." : "Enregistrer"}
+            <Button 
+                type="submit" 
+                disabled={isSubmitting || roles.length === 0}
+                className="bg-slate-900 hover:bg-black text-white px-10 h-14 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] shadow-3xl shadow-slate-900/40 active:scale-95 transition-all flex-1"
+            >
+              {isSubmitting ? "ACCRÉDITATION..." : "ACTIVER LE COMPTE"}
             </Button>
           </SheetFooter>
         </form>

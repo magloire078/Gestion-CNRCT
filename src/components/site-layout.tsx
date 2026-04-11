@@ -155,14 +155,15 @@ function MobileBottomNav() {
   const pathname = usePathname();
   const { hasPermission } = useAuth();
 
-  const navItems = [
-    { href: "/intranet", label: "Accueil", icon: LayoutDashboard, permission: "page:dashboard:view" },
-    { href: "/employees", label: "Personnel", icon: Users, permission: "page:employees:view" },
-    { href: "/missions", label: "Missions", icon: Briefcase, permission: "page:missions:view" },
-    { href: "/organization-chart", label: "Organisation", icon: Building, permission: "page:organization-chart:view" },
-  ];
-
-  const visibleNavItems = navItems.filter(item => !item.permission || hasPermission(item.permission));
+  const visibleNavItems = React.useMemo(() => {
+    const navItems = [
+      { href: "/intranet", label: "Accueil", icon: LayoutDashboard, permission: "page:dashboard:view" },
+      { href: "/employees", label: "Personnel", icon: Users, permission: "page:employees:view" },
+      { href: "/missions", label: "Missions", icon: Briefcase, permission: "page:missions:view" },
+      { href: "/organization-chart", label: "Organisation", icon: Building, permission: "page:organization-chart:view" },
+    ];
+    return navItems.filter(item => !item.permission || hasPermission(item.permission));
+  }, [hasPermission]);
 
   return (
     <div className="fixed bottom-0 left-0 z-50 w-full h-16 bg-background border-t border-border md:hidden print:hidden">
@@ -198,6 +199,84 @@ function MobileBottomNav() {
   );
 }
 
+// Memoized MenuItem component to prevent re-rendering the whole sidebar when one item changes
+const SidebarMenuItemComponent = React.memo(({ 
+  item, 
+  pathname, 
+  hasPermission, 
+  user 
+}: { 
+  item: MenuItem; 
+  pathname: string; 
+  hasPermission: (p: string) => boolean; 
+  user: any;
+}) => {
+  const isSubItemActive = React.useMemo(() => {
+    if (!item.subItems) return false;
+    return item.subItems.some(sub => pathname.startsWith(sub.href.split('?')[0]));
+  }, [item.subItems, pathname]);
+
+  const isActive = !item.isCollapsible && pathname === item.href;
+
+  if (item.isCollapsible) {
+    return (
+      <Collapsible asChild defaultOpen={isSubItemActive}>
+        <SidebarMenuItem>
+          <CollapsibleTrigger asChild>
+            <SidebarMenuButton
+              isActive={isSubItemActive}
+              className="w-full justify-start hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+            >
+              <div className="flex items-center w-full">
+                <item.icon className="mr-2 h-4 w-4" />
+                {item.label}
+                <ChevronDown className="ml-auto h-4 w-4 transition-transform [&[data-state=open]]:rotate-180" />
+              </div>
+            </SidebarMenuButton>
+          </CollapsibleTrigger>
+          <CollapsibleContent asChild>
+            <SidebarMenuSub>
+              {item.subItems?.filter((sub: SubMenuItem) =>
+                !sub.permission ||
+                hasPermission(sub.permission) ||
+                (['/payroll', '/leave', '/missions'].includes(sub.href.split('?')[0]) && !!user?.employeeId)
+              ).map((subItem: SubMenuItem) => (
+                <SidebarMenuSubItem key={subItem.href}>
+                  <SidebarMenuSubButton asChild isActive={pathname === subItem.href}>
+                    <Link href={subItem.href!} className="relative flex items-center w-full">
+                      {pathname === subItem.href && <div className="sidebar-active-indicator opacity-100" />}
+                      <subItem.icon className="mr-2 h-4 w-4" />
+                      <span>{subItem.label}</span>
+                    </Link>
+                  </SidebarMenuSubButton>
+                </SidebarMenuSubItem>
+              ))}
+            </SidebarMenuSub>
+          </CollapsibleContent>
+        </SidebarMenuItem>
+      </Collapsible>
+    );
+  }
+
+  return (
+    <SidebarMenuItem>
+      <SidebarMenuButton
+        asChild
+        isActive={isActive}
+        className="w-full justify-start hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+      >
+        <Link href={item.href!} className="relative flex items-center w-full">
+          {isActive && <div className="sidebar-active-indicator opacity-100" />}
+          <item.icon className="mr-2 h-4 w-4" />
+          {item.label}
+        </Link>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
+  );
+});
+
+SidebarMenuItemComponent.displayName = "SidebarMenuItemComponent";
+
 function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -218,32 +297,30 @@ function AppLayout({ children }: { children: React.ReactNode }) {
     }
   }, [settings]);
 
-  const handleLogout = async () => {
+  const handleLogout = React.useCallback(async () => {
     await signOut();
     router.push("/login");
-  };
-
-  const currentPath = pathname;
+  }, [router]);
 
   const menuItems = React.useMemo(() => {
-    if (!hasPermission) return [];
+    if (!hasPermission || !user) return [];
 
     const items = ALL_MENU_ITEMS.filter((item: MenuItem) => {
       if (item.isCollapsible) {
-        return item.subItems?.some((sub: SubMenuItem) => !sub.permission || (hasPermission && hasPermission(sub.permission)));
+        return item.subItems?.some((sub: SubMenuItem) => !sub.permission || hasPermission(sub.permission));
       }
-      return !item.permission || (hasPermission && hasPermission(item.permission));
+      return !item.permission || hasPermission(item.permission);
     });
 
-    if (user?.employeeId) {
+    if (user.employeeId) {
       const monEspaceItem = {
         isCollapsible: true,
         label: "Mon Espace",
         icon: UserSquareIcon,
         subItems: [
-          { href: "/payroll", label: "Ma Paie", icon: Landmark },
-          { href: "/leave", label: "Mes Congés", icon: CalendarOff },
-          { href: "/missions", label: "Mes Missions", icon: Briefcase },
+          { href: "/payroll", label: "Ma Paie", icon: Landmark, permission: "" },
+          { href: "/leave", label: "Mes Congés", icon: CalendarOff, permission: "" },
+          { href: "/missions", label: "Mes Missions", icon: Briefcase, permission: "" },
         ]
       };
 
@@ -257,11 +334,6 @@ function AppLayout({ children }: { children: React.ReactNode }) {
 
     return items;
   }, [hasPermission, user]);
-
-  const isSubItemActive = (subItems: any[] | undefined) => {
-    if (!subItems) return false;
-    return subItems.some(item => pathname.startsWith(item.href.split('?')[0]));
-  };
 
   if (loading) {
     return (
@@ -289,70 +361,27 @@ function AppLayout({ children }: { children: React.ReactNode }) {
     <SidebarProvider>
       <Sidebar className="print:hidden">
         <SidebarHeader>
-          <div className="flex items-center gap-3">
-            <Avatar className="h-12 w-12 rounded-md">
+          <div className="flex items-center gap-3 px-2">
+            <Avatar className="h-10 w-10 rounded-md">
               <AvatarImage src={settings?.mainLogoUrl} alt={settings?.organizationName} />
               <AvatarFallback><Building2 className="size-6" /></AvatarFallback>
             </Avatar>
-            <span className="text-lg font-semibold tracking-tight">
-              Gestion CNRCT
-            </span>
+            <div className="flex flex-col overflow-hidden">
+              <span className="text-sm font-bold tracking-tight truncate">Gestion CNRCT</span>
+              <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Plateforme Interne</span>
+            </div>
           </div>
         </SidebarHeader>
-        <SidebarContent className="p-2">
+        <SidebarContent className="p-2 pt-4">
           <SidebarMenu>
             {menuItems.map((item: MenuItem, index: number) => (
-              item.isCollapsible ? (
-                <Collapsible key={index} asChild defaultOpen={isSubItemActive(item.subItems)}>
-                  <SidebarMenuItem>
-                    <CollapsibleTrigger asChild>
-                      <SidebarMenuButton
-                        isActive={isSubItemActive(item.subItems)}
-                        className="w-full justify-start hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                      >
-                        <div className="flex items-center w-full">
-                          <item.icon className="mr-2 h-4 w-4" />
-                          {item.label}
-                          <ChevronDown className="ml-auto h-4 w-4 transition-transform [&[data-state=open]]:rotate-180" />
-                        </div>
-                      </SidebarMenuButton>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent asChild>
-                      <SidebarMenuSub>
-                        {item.subItems?.filter((sub: SubMenuItem) =>
-                          !sub.permission ||
-                          hasPermission!(sub.permission) ||
-                          (['/payroll', '/leave', '/missions'].includes(sub.href.split('?')[0]) && !!user?.employeeId)
-                        ).map((subItem: SubMenuItem) => (
-                          <SidebarMenuSubItem key={subItem.href}>
-                            <SidebarMenuSubButton asChild isActive={currentPath === subItem.href}>
-                              <Link href={subItem.href!} className="relative flex items-center w-full">
-                                {currentPath === subItem.href && <div className="sidebar-active-indicator opacity-100" />}
-                                <subItem.icon className="mr-2 h-4 w-4" />
-                                <span>{subItem.label}</span>
-                              </Link>
-                            </SidebarMenuSubButton>
-                          </SidebarMenuSubItem>
-                        ))}
-                      </SidebarMenuSub>
-                    </CollapsibleContent>
-                  </SidebarMenuItem>
-                </Collapsible>
-              ) : (
-                <SidebarMenuItem key={item.href}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={currentPath === item.href}
-                    className="w-full justify-start hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                  >
-                    <Link href={item.href!} className="relative flex items-center w-full">
-                      {currentPath === item.href && <div className="sidebar-active-indicator opacity-100" />}
-                      <item.icon className="mr-2 h-4 w-4" />
-                      {item.label}
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              )
+              <SidebarMenuItemComponent 
+                key={`${item.label}-${index}`}
+                item={item}
+                pathname={pathname}
+                hasPermission={hasPermission}
+                user={user}
+              />
             ))}
           </SidebarMenu>
         </SidebarContent>

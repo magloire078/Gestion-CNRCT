@@ -51,7 +51,13 @@ export function InstitutionalReportWrapper({ children, isPrinting, onAfterPrint 
           @media print {
             @page {
               size: A4;
-              margin: 10mm;
+              margin: 15mm;
+              @bottom-right {
+                content: "Page " counter(page) " sur " counter(pages);
+                font-family: var(--font-inter);
+                font-size: 8pt;
+                color: #94a3b8;
+              }
             }
             body > *:not(.printable-portal-root) {
               display: none !important;
@@ -65,10 +71,80 @@ export function InstitutionalReportWrapper({ children, isPrinting, onAfterPrint 
               width: 100% !important;
               height: auto !important;
             }
+            /* Enhanced Page Numbering for browsers not supporting @bottom-right */
+            .page-number:after {
+              content: counter(page);
+            }
+            .total-pages:after {
+              content: counter(pages);
+            }
+            
+            /* Professional Watermark */
+            .printable-portal-root::before {
+              content: "CNRCT - DOCUMENT OFFICIEL - GÈRE-ÉCOLE";
+              position: fixed;
+              top: 50%;
+              left: 50%;
+              transform: translate(-50%, -50%) rotate(-45deg);
+              font-size: 5rem;
+              font-weight: 900;
+              color: rgba(0, 96, 57, 0.03);
+              white-space: nowrap;
+              pointer-events: none;
+              z-index: -1;
+            }
+
+            /* Force Background and Colors */
+            * {
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+
             .bg-slate-900 {
               background-color: #0f172a !important;
-              -webkit-print-color-adjust: exact;
-              print-color-adjust: exact;
+              color: white !important;
+            }
+            .bg-[#006039] {
+              background-color: #006039 !important;
+              color: white !important;
+            }
+            
+            /* Enhanced Table Borders (Grid/Cadriage) */
+            table {
+                width: 100% !important;
+                border-collapse: collapse !important;
+                border: 2px solid #000 !important;
+                margin-bottom: 20px !important;
+            }
+            
+            th, td {
+                border: 1px solid #334155 !important; /* slate-700 equivalent for print */
+                padding: 8px !important;
+            }
+            
+            thead tr {
+                background-color: #0f172a !important;
+                border-bottom: 2px solid #000 !important;
+            }
+
+            thead th {
+                color: white !important;
+                font-weight: 900 !important;
+            }
+
+            /* Avoid breaking elements */
+            .break-inside-avoid {
+              break-inside: avoid !important;
+              page-break-inside: avoid !important;
+            }
+            
+            tr {
+                break-inside: avoid !important;
+                page-break-inside: avoid !important;
+            }
+            
+            thead {
+                display: table-header-group !important;
             }
           }
         `}</style>

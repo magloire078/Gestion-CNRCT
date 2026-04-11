@@ -84,112 +84,128 @@ export function ThesisCard() {
   };
 
   return (
-    <Card className="border-border/50 shadow-sm transition-all hover:shadow-md bg-card/50 backdrop-blur-sm overflow-hidden group">
-      <CardHeader className="relative">
-        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-          <GraduationCap className="h-24 w-24 text-blue-600 rotate-12 translate-x-8 -translate-y-4" />
+    <Card className="border-white/20 shadow-3xl transition-all hover:border-blue-500/40 bg-white/40 backdrop-blur-xl overflow-hidden rounded-[2.5rem] group relative">
+      {/* Background Institutional Seal (Subtle) */}
+      <div className="absolute -top-12 -right-12 opacity-[0.03] group-hover:opacity-[0.1] transition-all duration-1000 pointer-events-none">
+          <GraduationCap className="h-64 w-64 rotate-12 group-hover:rotate-0 transition-transform duration-1000" />
+      </div>
+
+      <CardHeader className="p-10 pb-6 relative z-10">
+        <div className="flex items-center gap-5">
+            <div className="p-4 rounded-[1.5rem] bg-blue-500/10 border border-blue-500/20 shadow-2xl group-hover:scale-110 group-hover:rotate-6 transition-all duration-700">
+                <Sparkles className="h-7 w-7 text-blue-600 fill-blue-600/10 animate-pulse" />
+            </div>
+            <div className="space-y-1">
+                <CardTitle className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 group-hover:text-slate-900 transition-colors">Excellence Académique</CardTitle>
+                <CardDescription className="text-xl font-black uppercase tracking-tighter text-slate-900">Génération de Mémoire</CardDescription>
+            </div>
         </div>
-        
-        <CardTitle className="text-xl font-bold flex items-center gap-2">
-          <Sparkles className="h-5 w-5 text-amber-500 fill-amber-500 animate-pulse" />
-          Mémoire de Soutenance
-        </CardTitle>
-        <CardDescription>
-          Générez un canevas complet de 40+ pages incluant la structure académique, les graphiques et vos informations personnelles.
-        </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="rounded-xl border border-blue-200 bg-blue-50/50 p-3 text-xs text-blue-800 leading-relaxed font-medium">
-          Format académique : Introduction, Cadre institutionnel (CNRCT), Méthodologie, Analyse des données et Recommandations.
+      <CardContent className="px-10 pb-10 space-y-8 relative z-10">
+        <div className="p-6 rounded-2xl bg-white/30 border border-white/40 shadow-inner backdrop-blur-sm">
+            <p className="text-xs font-bold text-slate-600 leading-relaxed uppercase tracking-wide opacity-80">
+                Structure de 40+ pages incluant Introduction, Cadre CNRCT, Méthodologie et Analyse Automatisée au standard LMD.
+            </p>
         </div>
         
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button 
               className={cn(
-                "w-full h-12 gap-3 text-base font-bold transition-all shadow-lg active:scale-95 bg-blue-600 hover:bg-blue-700 text-white"
+                "w-full h-14 rounded-2xl bg-slate-900 hover:bg-black text-white px-8 font-black uppercase tracking-[0.2em] text-xs shadow-2xl shadow-slate-900/40 active:scale-95 transition-all gap-4"
               )}
             >
-              <FileText className="h-5 w-5" />
-              Personnaliser mon Mémoire (.docx)
+              <FileText className="h-5 w-5 text-blue-400 group-hover:scale-110 transition-transform" />
+              Initialiser mon Manuscrit (.docx)
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[500px]">
-            <form onSubmit={handleExport}>
-              <DialogHeader>
-                <DialogTitle>Informations du Mémoire</DialogTitle>
-                <DialogDescription>
-                  Ces détails seront intégrés automatiquement dans la page de garde et les remerciements de votre document.
+          <DialogContent className="sm:max-w-[550px] border-white/10 p-0 overflow-hidden bg-white/90 backdrop-blur-2xl rounded-[3rem] shadow-2xl">
+            <form onSubmit={handleExport} className="flex flex-col">
+              <DialogHeader className="bg-slate-900 p-8 text-white text-left">
+                <DialogTitle className="text-2xl font-black uppercase tracking-tighter flex items-center gap-3">
+                    <GraduationCap className="h-7 w-7 text-blue-400" />
+                    Manuscrit Académique
+                </DialogTitle>
+                <DialogDescription className="text-slate-300 font-medium pl-10">
+                  Définition des paramètres institutionnels pour l'édition de votre mémoire final.
                 </DialogDescription>
               </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="title">Titre du Mémoire (Optionnel)</Label>
+              <div className="p-8 space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="title" className="text-[10px] font-black uppercase tracking-widest text-slate-400">Intitulé Officiel du Mémoire</Label>
                   <Input 
                     id="title" 
-                    placeholder="La transformation numérique de..." 
+                    placeholder="Sujet de soutenance..." 
                     value={formData.title}
                     onChange={(e) => setFormData({...formData, title: e.target.value})}
+                    className="h-11 rounded-xl border-slate-200 focus:ring-slate-900 font-bold"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="student">Votre Nom Complet</Label>
+                  <div className="space-y-2">
+                    <Label htmlFor="student" className="text-[10px] font-black uppercase tracking-widest text-slate-400">Étudiant / Candidat</Label>
                     <Input 
                       id="student" 
                       placeholder="Jean Dupont" 
                       required
                       value={formData.studentName}
                       onChange={(e) => setFormData({...formData, studentName: e.target.value})}
+                      className="h-11 rounded-xl border-slate-200 focus:ring-slate-900 font-bold"
                     />
                   </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="supervisor">Maître de Stage / Encadrant</Label>
+                  <div className="space-y-2">
+                    <Label htmlFor="supervisor" className="text-[10px] font-black uppercase tracking-widest text-slate-400">Maître de Stage</Label>
                     <Input 
                       id="supervisor" 
-                      placeholder="Dr. Kouassi" 
+                      placeholder="Expert CNRCT" 
                       required
                       value={formData.supervisorName}
                       onChange={(e) => setFormData({...formData, supervisorName: e.target.value})}
+                      className="h-11 rounded-xl border-slate-200 focus:ring-slate-900 font-bold"
                     />
                   </div>
                 </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="university">Université / Institut</Label>
-                  <Input 
-                    id="university" 
-                    placeholder="Université Félix Houphouët-Boigny" 
-                    required
-                    value={formData.universityName}
-                    onChange={(e) => setFormData({...formData, universityName: e.target.value})}
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="year">Année Académique</Label>
-                  <Input 
-                    id="year" 
-                    placeholder="2023-2024" 
-                    required
-                    value={formData.academicYear}
-                    onChange={(e) => setFormData({...formData, academicYear: e.target.value})}
-                  />
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="university" className="text-[10px] font-black uppercase tracking-widest text-slate-400">Établissement</Label>
+                        <Input 
+                            id="university" 
+                            placeholder="UFHB, INPHB..." 
+                            required
+                            value={formData.universityName}
+                            onChange={(e) => setFormData({...formData, universityName: e.target.value})}
+                            className="h-11 rounded-xl border-slate-200 focus:ring-slate-900 font-bold"
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="year" className="text-[10px] font-black uppercase tracking-widest text-slate-400">Année Académique</Label>
+                        <Input 
+                            id="year" 
+                            placeholder="2023-2024" 
+                            required
+                            value={formData.academicYear}
+                            onChange={(e) => setFormData({...formData, academicYear: e.target.value})}
+                            className="h-11 rounded-xl border-slate-200 focus:ring-slate-900 font-bold"
+                        />
+                    </div>
                 </div>
               </div>
-              <DialogFooter>
+              <DialogFooter className="p-8 bg-slate-50 border-t border-slate-100 sm:flex-row flex-col gap-3">
+                <Button variant="ghost" onClick={() => setOpen(false)} className="rounded-xl font-bold uppercase tracking-widest text-[10px] h-11">Fermer</Button>
                 <Button 
                     type="submit" 
                     disabled={exporting}
-                    className="w-full bg-green-600 hover:bg-green-700"
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 h-11 rounded-xl font-black uppercase tracking-widest text-[11px] shadow-lg shadow-emerald-500/20 active:scale-95 transition-all gap-2"
                 >
                   {exporting ? (
                     <>
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                      Génération du document complexe...
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Génération...
                     </>
                   ) : (
                     <>
-                      <Download className="h-4 w-4 mr-2" />
-                      Générer le Mémoire Final
+                      <Download className="h-4 w-4" />
+                      Générer le Manuscrit (.docx)
                     </>
                   )}
                 </Button>
@@ -198,8 +214,8 @@ export function ThesisCard() {
           </DialogContent>
         </Dialog>
         
-        <p className="text-[10px] text-center text-muted-foreground uppercase font-black tracking-widest opacity-60 italic">
-          Généré selon les standards académiques LMD
+        <p className="text-[8px] text-center text-slate-400 uppercase font-black tracking-[0.3em] opacity-60">
+          Validation Instituée • Standard LMD
         </p>
       </CardContent>
     </Card>

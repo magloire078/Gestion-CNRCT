@@ -11,6 +11,9 @@ import { getVillageByLocation, addVillage } from "@/services/village-service";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import type { Village } from "@/lib/data";
 
+import { Progress } from "@/components/ui/progress";
+import { cn } from "@/lib/utils";
+
 type VillageCsvRow = { [key: string]: string | number | undefined | null };
 
 export function ImportVillagesCard() {
@@ -149,68 +152,86 @@ export function ImportVillagesCard() {
     };
 
     return (
-        <Card className="border-primary/20 shadow-sm transition-all hover:shadow-md">
-            <CardHeader className="bg-primary/5 pb-4">
-                <CardTitle className="text-xl flex items-center gap-2">
-                    <MapPin className="h-5 w-5 text-primary" />
-                    Importer des Villages
-                </CardTitle>
-                <CardDescription>
-                    Importez une liste de villages (.csv). Le système ignorera les doublons (Nom + Région + Dép + SP).
-                </CardDescription>
-            </CardHeader>
-            <CardContent className="pt-6">
-                <div className="flex flex-col gap-4">
+    <Card className="border-white/20 shadow-3xl overflow-hidden bg-white/40 backdrop-blur-xl rounded-[2.5rem] group transition-all duration-700 hover:border-white/40 hover:-translate-y-2 relative">
+        <CardHeader className="bg-slate-900 p-10 text-white relative overflow-hidden">
+            {/* Decorative Map Pattern */}
+            <div className="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:24px_24px]" />
+            
+            <div className="flex items-center gap-5 relative z-10">
+                <div className="p-4 rounded-[1.5rem] bg-white/10 border border-white/20 shadow-2xl group-hover:scale-110 group-hover:rotate-6 transition-all duration-700">
+                    <MapPin className="h-7 w-7 text-emerald-400" />
+                </div>
+                <div className="space-y-1">
+                    <CardTitle className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-400/80">Flux Géo-Spatial</CardTitle>
+                    <CardDescription className="text-2xl font-black uppercase tracking-tighter text-white">
+                        Cartographie
+                    </CardDescription>
+                </div>
+            </div>
+        </CardHeader>
+        <CardContent className="p-10 space-y-8 relative z-10">
+            <div className="flex flex-col gap-6">
+                <div className="relative group/input">
+                    <div className="absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent scale-x-0 group-hover/input:scale-x-100 transition-transform duration-700" />
                     <Input
                         type="file"
                         accept=".csv"
                         onChange={handleFileChange}
                         ref={inputRef}
                         disabled={isImporting}
+                        className="h-24 border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50/50 hover:bg-white hover:border-emerald-500/50 transition-all cursor-pointer flex items-center justify-center text-center font-bold px-10 pt-8 shadow-inner"
                     />
-                    <div className="text-xs text-muted-foreground bg-muted p-3 rounded-md">
-                        <strong>Format attendu (colonnes) :</strong>
-                        <ul className="list-disc pl-4 mt-1 space-y-0.5">
-                            <li><code>nom</code> ou <code>village</code> (Obligatoire)</li>
-                            <li><code>region</code>, <code>departement</code>, <code>sous_prefecture</code></li>
-                            <li><code>latitude</code>, <code>longitude</code> (Optionnel, pour la carte)</li>
-                            <li><code>population</code> (Optionnel)</li>
-                        </ul>
+                    <div className="absolute top-5 left-1/2 -translate-x-1/2 pointer-events-none flex items-center gap-2.5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 group-hover/input:text-emerald-600 transition-colors">
+                        <Upload className="h-3.5 w-3.5" /> Fichier des Localités (.csv)
                     </div>
                 </div>
-
-                {isImporting && progress > 0 && (
-                    <div className="mt-4 space-y-1">
-                        <div className="flex justify-between text-xs text-muted-foreground">
-                            <span>Importation en cours...</span>
-                            <span>{progress}%</span>
-                        </div>
-                        <div className="w-full bg-secondary h-2 rounded-full overflow-hidden">
-                            <div
-                                className="bg-primary h-full transition-all duration-300"
-                                style={{ width: `${progress}%` }}
-                            />
-                        </div>
-                        <p className="text-xs text-center text-muted-foreground mt-1">
-                            {successCount} village(s) ajouté(s)...
-                        </p>
+                
+                <div className="p-6 rounded-2xl bg-white/30 border border-white/40 shadow-inner backdrop-blur-sm space-y-3">
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Structure Requise :</p>
+                    <div className="flex flex-wrap gap-2.5">
+                        {["Nom", "Région", "Département", "SP"].map((tag) => (
+                            <span key={tag} className="px-3 py-1 rounded-xl bg-slate-900/5 border border-slate-900/10 text-[9px] font-black text-slate-700 uppercase tracking-widest shadow-sm">
+                                {tag}
+                            </span>
+                        ))}
                     </div>
-                )}
+                </div>
+            </div>
 
-                {error && (
-                    <Alert variant="destructive" className="mt-4">
-                        <AlertCircle className="h-4 w-4" />
-                        <AlertTitle>Erreur d'importation</AlertTitle>
-                        <AlertDescription>{error}</AlertDescription>
-                    </Alert>
+            {isImporting && progress > 0 && (
+                <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-500">
+                    <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 px-1">
+                        <span className="flex items-center gap-2">
+                            <Loader2 className="h-3 w-3 animate-spin text-emerald-500" />
+                            Indexation Géo-Spatiale
+                        </span>
+                        <span className="text-emerald-600">{progress}%</span>
+                    </div>
+                    <Progress value={progress} className="h-2.5 rounded-full overflow-hidden bg-slate-100 shadow-inner" />
+                </div>
+            )}
+
+            {error && (
+                <Alert variant="destructive" className="bg-rose-50 border-rose-100 rounded-[1.5rem] animate-in zoom-in-95 duration-500 shadow-xl shadow-rose-500/5">
+                    <AlertCircle className="h-5 w-5 text-rose-600" />
+                    <AlertTitle className="text-[11px] font-black uppercase tracking-[0.2em] text-rose-600">Incident Géographique</AlertTitle>
+                    <AlertDescription className="text-[10px] font-bold text-rose-500 leading-relaxed uppercase opacity-80 tracking-wide">{error}</AlertDescription>
+                </Alert>
+            )}
+        </CardContent>
+        <CardFooter className="p-10 pt-0 relative z-10">
+            <Button 
+                onClick={handleImport} 
+                disabled={isImporting || !file} 
+                className={cn(
+                    "w-full h-14 rounded-2xl font-black uppercase tracking-[0.3em] text-xs transition-all transform active:scale-95 shadow-2xl",
+                    isImporting ? "bg-slate-100 text-slate-400" : "bg-slate-900 border-slate-900 text-white hover:bg-black shadow-slate-900/40"
                 )}
-            </CardContent>
-            <CardFooter>
-                <Button onClick={handleImport} disabled={isImporting || !file} className="w-full">
-                    {isImporting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
-                    {isImporting ? "Traitement..." : "Importer le fichier CSV"}
-                </Button>
-            </CardFooter>
-        </Card>
+            >
+                {isImporting ? <Loader2 className="mr-3 h-5 w-5 animate-spin" /> : <Upload className="mr-3 h-5 w-5" />}
+                {isImporting ? `Indexation...` : "Importer les Localités"}
+            </Button>
+        </CardFooter>
+    </Card>
     );
 }

@@ -20,7 +20,7 @@ export function AdminStats({ stats }: AdminStatsProps) {
       color: "text-blue-600", 
       bg: "bg-blue-500/10",
       border: "border-blue-500/20",
-      gradient: "from-blue-500/5 to-transparent" 
+      glow: "bg-blue-500" 
     },
     { 
       label: "En Ligne", 
@@ -29,7 +29,7 @@ export function AdminStats({ stats }: AdminStatsProps) {
       color: "text-emerald-600", 
       bg: "bg-emerald-500/10",
       border: "border-emerald-500/20",
-      gradient: "from-emerald-500/5 to-transparent" 
+      glow: "bg-emerald-500" 
     },
     { 
       label: "Rôles & Profils", 
@@ -38,7 +38,7 @@ export function AdminStats({ stats }: AdminStatsProps) {
       color: "text-violet-600", 
       bg: "bg-violet-500/10",
       border: "border-violet-500/20",
-      gradient: "from-violet-500/5 to-transparent" 
+      glow: "bg-violet-500" 
     },
     { 
       label: "Unités Org.", 
@@ -47,41 +47,52 @@ export function AdminStats({ stats }: AdminStatsProps) {
       color: "text-amber-600", 
       bg: "bg-amber-500/10",
       border: "border-amber-500/20",
-      gradient: "from-amber-500/5 to-transparent" 
+      glow: "bg-amber-500" 
     },
   ];
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
       {items.map((item) => (
         <Card 
           key={item.label} 
           className={cn(
-            "relative overflow-hidden border-border/40 shadow-sm transition-all duration-300",
-            "hover:shadow-md hover:border-primary/20 hover:-translate-y-0.5 group",
-            "bg-card/50 backdrop-blur-sm"
+            "relative overflow-hidden border-white/20 shadow-3xl transition-all duration-700 group",
+            "hover:border-white/40 hover:-translate-y-3 hover:shadow-cyan-500/5",
+            "bg-white/40 backdrop-blur-xl rounded-[2.5rem]"
           )}
         >
-          {/* Background Gradient */}
-          <div className={cn("absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-100 transition-opacity duration-500", item.gradient)} />
+          {/* Enhanced Subtle Glow */}
+          <div className={cn(
+            "absolute -right-8 -top-8 w-32 h-32 rounded-full blur-[80px] opacity-0 group-hover:opacity-30 transition-all duration-1000",
+            item.glow
+          )} />
           
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
-            <CardTitle className="text-xs font-bold uppercase tracking-wider text-muted-foreground group-hover:text-foreground transition-colors">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 p-8 relative z-10">
+            <CardTitle className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-500 group-hover:text-slate-900 transition-colors">
               {item.label}
             </CardTitle>
-            <div className={cn("p-2 rounded-xl transition-all duration-300 group-hover:rotate-6", item.bg, item.border, "border shadow-sm")}>
-              <item.icon className={cn("h-4 w-4", item.color)} />
+            <div className={cn(
+                "p-4 rounded-[1.5rem] transition-all duration-700 group-hover:scale-110 group-hover:rotate-6 shadow-2xl", 
+                item.bg, 
+                item.border, 
+                "border shadow-inner"
+            )}>
+              <item.icon className={cn("h-6 w-6", item.color)} />
             </div>
           </CardHeader>
-          <CardContent className="relative z-10">
-            <div className="flex items-baseline justify-between">
-              <div className="text-3xl font-black tracking-tighter tabular-nums">
-                {item.value}
+          <CardContent className="p-8 pt-0 relative z-10">
+            <div className="flex items-end justify-between">
+              <div className="text-5xl font-black tracking-tighter tabular-nums text-slate-900 group-hover:scale-105 transition-transform duration-700 origin-left">
+                {item.value.toString().padStart(2, '0')}
               </div>
-              <div className="flex items-center text-[10px] font-medium text-muted-foreground bg-muted/30 px-1.5 py-0.5 rounded-full">
-                Total <ArrowUpRight className="ml-0.5 h-3 w-3" />
+              <div className="flex items-center text-[9px] font-black uppercase tracking-widest text-slate-400 bg-slate-900/5 px-3 py-1.5 rounded-xl border border-slate-900/5 group-hover:bg-slate-900 group-hover:text-white transition-all duration-500">
+                Gouvernance <ArrowUpRight className="ml-1.5 h-3.5 w-3.5 opacity-50 group-hover:opacity-100 transition-opacity" />
               </div>
             </div>
+            
+            {/* Progress indicator decoration */}
+                 <div className={cn("h-full rounded-full transition-all duration-1000 delay-300 w-0 group-hover:w-full shadow-[0_0_15px_rgba(0,0,0,0.1)]", item.glow)} />
           </CardContent>
         </Card>
       ))}

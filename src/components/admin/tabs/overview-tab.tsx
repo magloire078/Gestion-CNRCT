@@ -29,61 +29,75 @@ export const OverviewTab = memo(function OverviewTab({ users, roles, departments
   };
 
   return (
-    <div className="space-y-6">
-      {/* KPI Stats */}
+    <div className="space-y-12 pb-12">
+      {/* KPI Stats - Primary Visual Layer */}
       <AdminStats stats={stats} />
 
-      {/* Security Actions - Full Width at top */}
-      <SyncRolesCard />
+      {/* Security Actions - Full Width Gate */}
+      <div className="px-1">
+        <SyncRolesCard />
+      </div>
 
-      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-        {/* Thesis Support - New prominent position */}
-        <div className="xl:col-span-1">
+      <div className="grid gap-10 lg:grid-cols-2 xl:grid-cols-3">
+        {/* Thesis Support */}
+        <div className="xl:col-span-1 h-full">
           <ThesisCard />
         </div>
 
         {/* Real-time activity */}
-        <div className="xl:col-span-1">
+        <div className="xl:col-span-1 h-full">
           <ConnectedUsersCard users={users} />
         </div>
 
         {/* Import actions */}
-        <div className="space-y-6 xl:col-span-1">
+        <div className="space-y-10 xl:col-span-1 h-full">
           <ImportDataCard />
           <ImportVillagesCard />
         </div>
 
-        {/* Quick Settings */}
-        <Card className="border-border/50 shadow-sm transition-all hover:shadow-md bg-card/50 backdrop-blur-sm">
-          <CardHeader>
-            <CardTitle className="text-xl font-bold">Configuration Système</CardTitle>
-            <CardDescription>Paramètres globaux et apparence.</CardDescription>
+        {/* Quick Settings - Institutional Configuration */}
+        <Card className="border-white/20 shadow-3xl transition-all hover:border-blue-500/40 bg-white/40 backdrop-blur-xl rounded-[3rem] overflow-hidden group xl:col-span-3 relative">
+          {/* Decorative Institutional Seal */}
+          <div className="absolute -bottom-20 -left-20 opacity-[0.03] group-hover:opacity-[0.08] transition-all duration-1000 pointer-events-none">
+              <Settings className="h-80 w-80 -rotate-12 group-hover:rotate-0 transition-transform duration-1000" />
+          </div>
+
+          <CardHeader className="p-10 pb-6 relative z-10">
+            <div className="flex items-center gap-5">
+                <div className="p-4 rounded-[1.5rem] bg-blue-500/10 border border-blue-500/20 shadow-2xl group-hover:scale-110 group-hover:rotate-6 transition-all duration-700">
+                    <Settings className="h-7 w-7 text-blue-600 animate-[spin_10s_linear_infinite]" />
+                </div>
+                <div className="space-y-1">
+                    <CardTitle className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 group-hover:text-slate-900 transition-colors">Configuration Instituée</CardTitle>
+                    <CardDescription className="text-2xl font-black uppercase tracking-tighter text-slate-900">Paramètres de Gouvernance</CardDescription>
+                </div>
+            </div>
           </CardHeader>
-          <CardContent className="space-y-1 px-4 pb-4">
-            <Link href="/settings/organization" className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 transition-all group border border-transparent hover:border-border/50">
-              <div className="flex items-center gap-4">
-                <div className="p-2.5 rounded-lg bg-blue-500/10 group-hover:bg-blue-500/20 transition-colors">
-                  <Building className="h-5 w-5 text-blue-600" />
+          <CardContent className="px-10 pb-10 grid md:grid-cols-2 gap-6 relative z-10">
+            <Link href="/settings/organization" className="flex items-center justify-between p-6 rounded-[2rem] bg-white/30 border border-white/40 hover:bg-white hover:border-blue-500/30 transition-all duration-500 group/link shadow-sm hover:shadow-2xl hover:-translate-y-1">
+              <div className="flex items-center gap-5">
+                <div className="p-3.5 rounded-2xl bg-blue-500/5 group-hover/link:bg-blue-500/10 transition-colors shadow-inner">
+                  <Building className="h-6 w-6 text-blue-600" />
                 </div>
                 <div>
-                  <p className="font-bold text-sm">Organisation</p>
-                  <p className="text-xs text-muted-foreground">Profil et identité visuelle.</p>
+                  <p className="font-black text-xs uppercase tracking-[0.15em] text-slate-900">Organisation</p>
+                  <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tight mt-1 opacity-70 group-hover/link:opacity-100 transition-opacity">Profil et emblèmes de l&apos;institution.</p>
                 </div>
               </div>
-              <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
+              <ChevronRight className="h-5 w-5 text-slate-300 group-hover/link:text-blue-500 group-hover/link:translate-x-1 transition-all" />
             </Link>
             
-            <Link href="/settings" className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 transition-all group border border-transparent hover:border-border/50">
-              <div className="flex items-center gap-4">
-                <div className="p-2.5 rounded-lg bg-slate-500/10 group-hover:bg-slate-500/20 transition-colors">
-                  <Settings className="h-5 w-5 text-slate-600" />
+            <Link href="/settings" className="flex items-center justify-between p-6 rounded-[2rem] bg-white/30 border border-white/40 hover:bg-white hover:border-slate-900/30 transition-all duration-500 group/link shadow-sm hover:shadow-2xl hover:-translate-y-1">
+              <div className="flex items-center gap-5">
+                <div className="p-3.5 rounded-2xl bg-slate-900/5 group-hover/link:bg-slate-900/10 transition-colors shadow-inner">
+                  <Settings className="h-6 w-6 text-slate-700" />
                 </div>
                 <div>
-                  <p className="font-bold text-sm">Paramètres globaux</p>
-                  <p className="text-xs text-muted-foreground">Préférences et maintenance.</p>
+                  <p className="font-black text-xs uppercase tracking-[0.15em] text-slate-900">Paramètres Globaux</p>
+                  <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tight mt-1 opacity-70 group-hover/link:opacity-100 transition-opacity">Préférences système et maintenance.</p>
                 </div>
               </div>
-              <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
+              <ChevronRight className="h-5 w-5 text-slate-300 group-hover/link:text-slate-900 group-hover/link:translate-x-1 transition-all" />
             </Link>
           </CardContent>
         </Card>

@@ -59,6 +59,7 @@ import html2canvas from "html2canvas";
 import { logPrintAction, getPrintStatsForPeriod } from "@/services/print-tracking-service";
 import { useTransition } from "react";
 import { PermissionGuard } from "@/components/auth/permission-guard";
+import { cn } from "@/lib/utils";
 
 // Simplified debounced input to keep typing local and fast
 function DebouncedInput({ 
@@ -434,33 +435,37 @@ export default function PayrollPage() {
 
           {canViewSalaries && (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-              <Card>
+              <Card className="border-white/10 shadow-xl bg-gradient-to-br from-slate-900 to-slate-800 text-white overflow-hidden relative group transition-all hover:shadow-2xl hover:-translate-y-1">
+                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <Landmark className="h-16 w-16 rotate-12" />
+                </div>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Masse Salariale (Filtrée)</CardTitle>
-                  <Landmark className="h-4 w-4 text-muted-foreground" />
+                  <CardTitle className="text-[10px] font-black uppercase tracking-widest text-slate-400">Masse Salariale (Filtrée)</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {loading ? <Skeleton className="h-8 w-32" /> : (
-                    <div className="text-2xl font-bold">{formatCurrency(totalPayroll)}</div>
+                  {loading ? <Skeleton className="h-8 w-32 bg-slate-700" /> : (
+                    <div className="text-2xl font-black">{formatCurrency(totalPayroll)}</div>
                   )}
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-[10px] text-slate-500 font-bold mt-1">
                     Basé sur les {filteredEmployees.length} employés affichés
                   </p>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="border-white/10 shadow-xl bg-card/40 backdrop-blur-md overflow-hidden relative group transition-all hover:shadow-2xl hover:-translate-y-1">
+                <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                    <Printer className="h-16 w-16 -rotate-12" />
+                </div>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Bulletins Imprimés ({months.find(m => m.value === month)?.label})</CardTitle>
-                  <Printer className="h-4 w-4 text-muted-foreground" />
+                  <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Bulletins ({months.find(m => m.value === month)?.label})</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{printStats.total}</div>
+                  <div className="text-2xl font-black">{printStats.total}</div>
                   <div className="flex gap-4 mt-1">
-                    <p className="text-[10px] text-muted-foreground uppercase font-bold">
+                    <p className="text-[10px] text-muted-foreground uppercase font-black">
                       <span className="text-blue-500">{printStats.print}</span> Papier
                     </p>
-                    <p className="text-[10px] text-muted-foreground uppercase font-bold">
+                    <p className="text-[10px] text-muted-foreground uppercase font-black">
                       <span className="text-indigo-500">{printStats.pdf}</span> PDF
                     </p>
                   </div>
@@ -470,10 +475,10 @@ export default function PayrollPage() {
           )}
 
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Employés sur la Paie</CardTitle>
-              <CardDescription>
+          <Card className="border-white/10 shadow-xl bg-card/40 backdrop-blur-md overflow-hidden">
+            <CardHeader className="border-b border-border/50 bg-primary/5">
+              <CardTitle className="text-xl font-bold">Employés sur la Paie</CardTitle>
+              <CardDescription className="text-xs font-medium">
                 Gérez le salaire et les informations financières de tous les employés actifs.
               </CardDescription>
             </CardHeader>
@@ -519,21 +524,21 @@ export default function PayrollPage() {
               {error && <p className="text-destructive text-center py-4">{error}</p>}
               <div className="hidden md:block">
                 <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>N°</TableHead>
-                      <TableHead>Employé</TableHead>
-                      <TableHead>Poste</TableHead>
-                      <TableHead>Date d'embauche</TableHead>
-                      {canViewSalaries && <TableHead className="text-right">Salaire Net</TableHead>}
-                      <TableHead><span className="sr-only">Actions</span></TableHead>
+                  <TableHeader className="bg-muted/50">
+                    <TableRow className="border-border/50">
+                      <TableHead className="w-[50px] font-black uppercase text-[10px] tracking-wider text-center">N°</TableHead>
+                      <TableHead className="font-black uppercase text-[10px] tracking-wider">Employé</TableHead>
+                      <TableHead className="font-black uppercase text-[10px] tracking-wider">Poste</TableHead>
+                      <TableHead className="font-black uppercase text-[10px] tracking-wider">Date d'embauche</TableHead>
+                      {canViewSalaries && <TableHead className="text-right font-black uppercase text-[10px] tracking-wider">Salaire Net</TableHead>}
+                      <TableHead className="sr-only">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {loading ? (
                       Array.from({ length: 5 }).map((_, i) => (
-                        <TableRow key={i}>
-                          <TableCell><Skeleton className="h-4 w-4" /></TableCell>
+                        <TableRow key={i} className="border-border/40">
+                          <TableCell><Skeleton className="h-4 w-4 mx-auto" /></TableCell>
                           <TableCell><Skeleton className="h-4 w-32" /></TableCell>
                           <TableCell><Skeleton className="h-4 w-32" /></TableCell>
                           <TableCell><Skeleton className="h-4 w-24" /></TableCell>
@@ -543,31 +548,34 @@ export default function PayrollPage() {
                       ))
                     ) : paginatedEmployees.length > 0 ? (
                       paginatedEmployees.map((employee, index) => (
-                        <TableRow key={employee.id}>
-                          <TableCell>{(currentPage - 1) * itemsPerPage + index + 1}</TableCell>
-                          <TableCell className="font-medium">{`${employee.lastName || ''} ${employee.firstName || ''}`.trim()}</TableCell>
-                          <TableCell>{employee.poste}</TableCell>
-                          <TableCell>{employee.dateEmbauche ? format(parseISO(employee.dateEmbauche), 'dd/MM/yyyy') : 'N/A'}</TableCell>
-                          {canViewSalaries && <TableCell className="text-right font-mono whitespace-nowrap">{formatCurrency(employee.netSalary)}</TableCell>}
+                        <TableRow key={employee.id} className="border-border/40 hover:bg-primary/5 transition-colors group">
+                          <TableCell className="text-center font-bold text-muted-foreground">{(currentPage - 1) * itemsPerPage + index + 1}</TableCell>
+                          <TableCell>
+                            <div className="font-bold text-foreground">{`${employee.lastName || ''} ${employee.firstName || ''}`.trim()}</div>
+                            <div className="text-[10px] text-muted-foreground font-mono">{employee.matricule}</div>
+                          </TableCell>
+                          <TableCell className="font-medium text-muted-foreground">{employee.poste}</TableCell>
+                          <TableCell className="text-sm">{employee.dateEmbauche ? format(parseISO(employee.dateEmbauche), 'dd/MM/yyyy') : 'N/A'}</TableCell>
+                          {canViewSalaries && <TableCell className="text-right font-mono font-bold text-primary">{formatCurrency(employee.netSalary)}</TableCell>}
                           <TableCell className="text-right">
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
-                                <Button aria-haspopup="true" size="icon" variant="ghost">
+                                <Button aria-haspopup="true" size="icon" variant="ghost" className="h-8 w-8 rounded-full">
                                   <MoreHorizontal className="h-4 w-4" />
                                   <span className="sr-only">Toggle menu</span>
                                 </Button>
                               </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                              <DropdownMenuContent align="end" className="w-48">
+                                <DropdownMenuLabel className="font-black uppercase text-[10px] tracking-widest opacity-50">Actions</DropdownMenuLabel>
                                 {canViewSalaries && (
-                                  <DropdownMenuItem onSelect={() => openEditSheet(employee)}>
+                                  <DropdownMenuItem onSelect={() => openEditSheet(employee)} className="font-bold">
                                     <Pencil className="mr-2 h-4 w-4" />
-                                    Modifier les infos de paie
+                                    Modifier la paie
                                   </DropdownMenuItem>
                                 )}
-                                <DropdownMenuItem onSelect={() => openDateDialog(employee)}>
+                                <DropdownMenuItem onSelect={() => openDateDialog(employee)} className="font-bold">
                                   <Eye className="mr-2 h-4 w-4" />
-                                  Afficher le bulletin
+                                  Voir le bulletin
                                 </DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>

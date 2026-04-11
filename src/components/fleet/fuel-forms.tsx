@@ -135,67 +135,109 @@ export function FuelProviderDialog({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChangeAction}>
-            <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                    <DialogTitle>{provider ? "Modifier le Prestataire" : "Nouveau Prestataire"}</DialogTitle>
-                    <DialogDescription>{provider ? "Mettre à jour les informations du prestataire." : "Ajouter une compagnie pétrolière ou un fournisseur de cartes."}</DialogDescription>
-                </DialogHeader>
-                <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                        <FormField
-                            control={form.control}
-                            name="name"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Nom du Prestataire</FormLabel>
-                                    <FormControl><Input placeholder="ex: TotalEnergies, Shell..." {...field} /></FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <div className="grid grid-cols-2 gap-4">
-                            <FormField
-                                control={form.control}
-                                name="contactPerson"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Contact</FormLabel>
-                                        <FormControl><Input placeholder="Nom du contact" {...field} /></FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="phoneNumber"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Téléphone</FormLabel>
-                                        <FormControl><Input placeholder="xx xx xx xx" {...field} /></FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+            <DialogContent className="sm:max-w-[425px] p-0 overflow-hidden border-white/10 bg-slate-50/95 backdrop-blur-2xl rounded-[1.5rem] shadow-2xl">
+                <DialogHeader className="p-8 bg-slate-900 text-white space-y-2 relative">
+                    <div className="relative z-10 flex items-center gap-3">
+                        <div className="h-8 w-8 rounded-lg bg-white/10 flex items-center justify-center">
+                            <Building2 className="h-4 w-4 text-emerald-400" />
                         </div>
-                        <FormField
-                            control={form.control}
-                            name="contractNumber"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Numéro de Contrat</FormLabel>
-                                    <FormControl><Input placeholder="CNRCT-2024-..." {...field} /></FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <DialogFooter>
-                            <Button type="submit" disabled={loading} className="w-full">
-                                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                Enregistrer
-                            </Button>
-                        </DialogFooter>
-                    </form>
-                </Form>
+                        <DialogTitle className="text-xl font-black uppercase tracking-tight text-white">
+                            {provider ? "Régulation Prestataire" : "Accrédiation Prestataire"}
+                        </DialogTitle>
+                    </div>
+                    <DialogDescription className="text-slate-400 font-bold uppercase text-[10px] tracking-widest pl-11">
+                        Identification et conventionnement fournisseur
+                    </DialogDescription>
+                </DialogHeader>
+
+                <div className="p-8">
+                    <Form {...form}>
+                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                            <FormField
+                                control={form.control}
+                                name="name"
+                                render={({ field }) => (
+                                    <FormItem className="space-y-1.5">
+                                        <FormLabel className="text-[11px] font-black uppercase tracking-widest text-slate-500 pl-1">Identité Corporative</FormLabel>
+                                        <FormControl>
+                                            <Input 
+                                                placeholder="ex: TotalEnergies, Shell..." 
+                                                className="h-12 rounded-xl border-slate-200 bg-white font-bold text-sm focus:ring-2 focus:ring-blue-500/20 transition-all"
+                                                {...field} 
+                                            />
+                                        </FormControl>
+                                        <FormMessage className="text-[10px] uppercase font-bold" />
+                                    </FormItem>
+                                )}
+                            />
+                            
+                            <div className="grid grid-cols-2 gap-4">
+                                <FormField
+                                    control={form.control}
+                                    name="contactPerson"
+                                    render={({ field }) => (
+                                        <FormItem className="space-y-1.5">
+                                            <FormLabel className="text-[11px] font-black uppercase tracking-widest text-slate-500 pl-1">Référent</FormLabel>
+                                            <FormControl>
+                                                <Input 
+                                                    placeholder="Prénoms & Nom" 
+                                                    className="h-12 rounded-xl border-slate-200 bg-white font-bold text-sm focus:ring-2 focus:ring-blue-500/20 transition-all"
+                                                    {...field} 
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="phoneNumber"
+                                    render={({ field }) => (
+                                        <FormItem className="space-y-1.5">
+                                            <FormLabel className="text-[11px] font-black uppercase tracking-widest text-slate-500 pl-1">Ligne Directe</FormLabel>
+                                            <FormControl>
+                                                <Input 
+                                                    placeholder="xx xx xx xx" 
+                                                    className="h-12 rounded-xl border-slate-200 bg-white font-bold text-sm focus:ring-2 focus:ring-blue-500/20 transition-all font-mono"
+                                                    {...field} 
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+
+                            <FormField
+                                control={form.control}
+                                name="contractNumber"
+                                render={({ field }) => (
+                                    <FormItem className="space-y-1.5">
+                                        <FormLabel className="text-[11px] font-black uppercase tracking-widest text-slate-500 pl-1">N° Convention cadre</FormLabel>
+                                        <FormControl>
+                                            <Input 
+                                                placeholder="CNRCT-FUE-2024-XXX" 
+                                                className="h-12 rounded-xl border-slate-200 bg-white font-bold text-sm focus:ring-2 focus:ring-blue-500/20 transition-all font-mono uppercase"
+                                                {...field} 
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <div className="pt-2">
+                                <Button type="submit" disabled={loading} className="w-full h-12 rounded-xl bg-slate-900 shadow-xl shadow-slate-900/20 font-black uppercase tracking-widest text-[11px] hover:bg-black active:scale-95 transition-all text-white">
+                                    {loading ? (
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    ) : (
+                                        provider ? "Valider les Rectifications" : "Certifier le Prestataire"
+                                    )}
+                                </Button>
+                            </div>
+                        </form>
+                    </Form>
+                </div>
             </DialogContent>
         </Dialog>
     );
@@ -269,156 +311,190 @@ export function FuelCardDialog({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChangeAction}>
-            <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                    <DialogTitle>{card ? "Modifier la Carte" : "Nouvelle Carte Carburant"}</DialogTitle>
-                    <DialogDescription>{card ? "Modifier l'affectation ou le numéro de la carte." : "Enregistrer une nouvelle carte et définir son affectation."}</DialogDescription>
+            <DialogContent className="sm:max-w-[450px] p-0 overflow-hidden border-white/10 bg-slate-50/95 backdrop-blur-2xl rounded-[1.5rem] shadow-2xl">
+                <DialogHeader className="p-8 bg-slate-900 text-white space-y-2 relative">
+                    <div className="relative z-10 flex items-center gap-3">
+                        <div className="h-8 w-8 rounded-lg bg-white/10 flex items-center justify-center">
+                            <CreditCard className="h-4 w-4 text-blue-400" />
+                        </div>
+                        <DialogTitle className="text-xl font-black uppercase tracking-tight text-white">
+                            {card ? "Paramétrage Carte" : "Initialisation Carte"}
+                        </DialogTitle>
+                    </div>
+                    <DialogDescription className="text-slate-400 font-bold uppercase text-[10px] tracking-widest pl-11">
+                        Dotation et affectation de moyen de paiement
+                    </DialogDescription>
                 </DialogHeader>
-                <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                        <FormField
-                            control={form.control}
-                            name="cardNumber"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Numéro de Carte</FormLabel>
-                                    <FormControl><Input placeholder="0000 0000 0000 0000" {...field} /></FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="label"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Libellé de la carte (Optionnel)</FormLabel>
-                                    <FormControl><Input placeholder="ex: CARTE MISSION 2" {...field} /></FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="providerId"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Prestataire</FormLabel>
-                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+
+                <div className="p-8">
+                    <Form {...form}>
+                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <FormField
+                                    control={form.control}
+                                    name="cardNumber"
+                                    render={({ field }) => (
+                                        <FormItem className="space-y-1.5">
+                                            <FormLabel className="text-[11px] font-black uppercase tracking-widest text-slate-500 pl-1">Identifiant Carte</FormLabel>
+                                            <FormControl>
+                                                <Input 
+                                                    placeholder="0000 0000..." 
+                                                    className="h-12 rounded-xl border-slate-200 bg-white font-bold text-sm focus:ring-2 focus:ring-blue-500/20 transition-all font-mono"
+                                                    {...field} 
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="providerId"
+                                    render={({ field }) => (
+                                        <FormItem className="space-y-1.5">
+                                            <FormLabel className="text-[11px] font-black uppercase tracking-widest text-slate-500 pl-1">Réseau Pétrolier</FormLabel>
+                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                <FormControl>
+                                                    <SelectTrigger className="h-12 rounded-xl border-slate-200 bg-white font-bold text-sm">
+                                                        <SelectValue placeholder="Choisir" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent className="rounded-xl border-slate-100 shadow-2xl">
+                                                    {providers.map(p => (
+                                                        <SelectItem key={p.id} value={p.id} className="font-bold py-3">{p.name}</SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+
+                            <FormField
+                                control={form.control}
+                                name="label"
+                                render={({ field }) => (
+                                    <FormItem className="space-y-1.5">
+                                        <FormLabel className="text-[11px] font-black uppercase tracking-widest text-slate-500 pl-1">Désignation Interne (Optionnel)</FormLabel>
                                         <FormControl>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Sélectionner un prestataire" />
-                                            </SelectTrigger>
+                                            <Input 
+                                                placeholder="ex: CARTE POOL MISSION" 
+                                                className="h-12 rounded-xl border-slate-200 bg-white font-bold text-sm focus:ring-2 focus:ring-blue-500/20 transition-all uppercase"
+                                                {...field} 
+                                            />
                                         </FormControl>
-                                        <SelectContent>
-                                            {providers.map(p => (
-                                                <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    <FormMessage />
-                                </FormItem>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <FormField
+                                control={form.control}
+                                name="assignmentType"
+                                render={({ field }) => (
+                                    <FormItem className="space-y-1.5">
+                                        <FormLabel className="text-[11px] font-black uppercase tracking-widest text-slate-500 pl-1">Typologie d'Affectation</FormLabel>
+                                        <Select
+                                            onValueChange={(val) => {
+                                                field.onChange(val);
+                                                form.setValue("assignmentId", "");
+                                            }}
+                                            defaultValue={field.value}
+                                        >
+                                            <FormControl>
+                                                <SelectTrigger className="h-12 rounded-xl border-slate-200 bg-white font-bold text-sm">
+                                                    <SelectValue placeholder="Définir l'usage" />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent className="rounded-xl border-slate-100 shadow-2xl">
+                                                <SelectItem value="vehicle" className="font-bold py-3">Unité Mobile (Véhicule)</SelectItem>
+                                                <SelectItem value="employee" className="font-bold py-3">Agent Individuel</SelectItem>
+                                                <SelectItem value="generic" className="font-bold py-3">Usage Mutualisé (Pool)</SelectItem>
+                                                <SelectItem value="unassigned" className="font-bold py-3">Réserve / Stock</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            {assignmentType === 'employee' && (
+                                <FormField
+                                    control={form.control}
+                                    name="assignmentId"
+                                    render={({ field }) => (
+                                        <FormItem className="space-y-1.5">
+                                            <FormLabel className="text-[11px] font-black uppercase tracking-widest text-slate-500 pl-1">Agent Bénéficiaire</FormLabel>
+                                            <SearchableSelect
+                                                items={employees.map(e => ({
+                                                    value: e.id,
+                                                    label: e.name,
+                                                    searchTerms: `${e.name} ${e.matricule || ''}`
+                                                }))}
+                                                value={field.value}
+                                                onValueChange={field.onChange}
+                                                placeholder="Rechercher un agent..."
+                                                className="h-12 rounded-xl border-slate-200 bg-white font-bold text-sm"
+                                            />
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
                             )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="assignmentType"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Type d'affectation</FormLabel>
-                                    <Select
-                                        onValueChange={(val) => {
-                                            field.onChange(val);
-                                            form.setValue("assignmentId", ""); // Reset ID when type changes
-                                        }}
-                                        defaultValue={field.value}
-                                    >
-                                        <FormControl>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Choisir le type" />
-                                            </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent>
-                                            <SelectItem value="vehicle">Véhicule spécifique</SelectItem>
-                                            <SelectItem value="employee">Employé spécifique</SelectItem>
-                                            <SelectItem value="generic">Usage Général (Pool / Multiples)</SelectItem>
-                                            <SelectItem value="unassigned">Non assignée (Stock / Réserve)</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                    <FormMessage />
-                                </FormItem>
+
+                            {assignmentType === 'vehicle' && (
+                                <FormField
+                                    control={form.control}
+                                    name="assignmentId"
+                                    render={({ field }) => (
+                                        <FormItem className="space-y-1.5">
+                                            <FormLabel className="text-[11px] font-black uppercase tracking-widest text-slate-500 pl-1">Unité Mobile Cible</FormLabel>
+                                            <SearchableSelect
+                                                items={vehicles.map(v => ({
+                                                    value: v.plate,
+                                                    label: `${v.makeModel} (${v.plate})`,
+                                                    searchTerms: `${v.makeModel} ${v.plate}`
+                                                }))}
+                                                value={field.value}
+                                                onValueChange={field.onChange}
+                                                placeholder="Sélectionner le véhicule..."
+                                                className="h-12 rounded-xl border-slate-200 bg-white font-bold text-sm"
+                                            />
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
                             )}
-                        />
 
-                        {assignmentType === 'employee' && (
-                            <FormField
-                                control={form.control}
-                                name="assignmentId"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Employé</FormLabel>
-                                        <SearchableSelect
-                                            items={employees.map(e => ({
-                                                value: e.id,
-                                                label: e.name,
-                                                searchTerms: `${e.name} ${e.matricule || ''} ${e.lastName || ''} ${e.firstName || ''}`
-                                            }))}
-                                            value={field.value}
-                                            onValueChange={field.onChange}
-                                            placeholder="Sélectionner l'employé"
-                                            searchPlaceholder="Rechercher par nom ou matricule..."
-                                        />
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        )}
+                            {assignmentType === 'generic' && (
+                                <FormField
+                                    control={form.control}
+                                    name="assignmentId"
+                                    render={({ field }) => (
+                                        <FormItem className="space-y-1.5">
+                                            <FormLabel className="text-[11px] font-black uppercase tracking-widest text-slate-500 pl-1">Précision de l'usage</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="ex: Groupe électrogène B, Maintenance..." className="h-12 rounded-xl border-slate-200 bg-white font-bold text-sm focus:ring-2 focus:ring-blue-500/20 transition-all" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            )}
 
-                        {assignmentType === 'vehicle' && (
-                            <FormField
-                                control={form.control}
-                                name="assignmentId"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Véhicule</FormLabel>
-                                        <SearchableSelect
-                                            items={vehicles.map(v => ({
-                                                value: v.plate,
-                                                label: `${v.makeModel} (${v.plate})`,
-                                                searchTerms: `${v.makeModel} ${v.plate}`
-                                            }))}
-                                            value={field.value}
-                                            onValueChange={field.onChange}
-                                            placeholder="Sélectionner le véhicule"
-                                            searchPlaceholder="Rechercher par plaque ou modèle..."
-                                        />
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        )}
-
-                        {assignmentType === 'generic' && (
-                            <FormField
-                                control={form.control}
-                                name="assignmentId"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Description de l'usage</FormLabel>
-                                        <FormControl><Input placeholder="ex: Groupe électrogène, Entretien jardin..." {...field} /></FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        )}
-                        <DialogFooter>
-                            <Button type="submit" disabled={loading} className="w-full">
-                                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                {card ? "Mettre à jour" : "Créer la Carte"}
-                            </Button>
-                        </DialogFooter>
-                    </form>
-                </Form>
+                            <div className="pt-4">
+                                <Button type="submit" disabled={loading} className="w-full h-12 rounded-xl bg-slate-900 shadow-xl shadow-slate-900/20 font-black uppercase tracking-widest text-[11px] hover:bg-black active:scale-95 transition-all text-white">
+                                    {loading ? (
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    ) : (
+                                        card ? "Appliquer les Modifications" : "Engager la Carte"
+                                    )}
+                                </Button>
+                            </div>
+                        </form>
+                    </Form>
+                </div>
             </DialogContent>
         </Dialog>
     );
@@ -468,78 +544,116 @@ export function FuelRechargeDialog({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChangeAction}>
-            <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                    <DialogTitle>Recharger une Carte</DialogTitle>
-                    <DialogDescription>Ajouter du crédit sur une carte carburant.</DialogDescription>
-                </DialogHeader>
-                <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                        <FormField
-                            control={form.control}
-                            name="cardId"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Carte à recharger</FormLabel>
-                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                        <FormControl>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Sélectionner la carte" />
-                                            </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent>
-                                            {cards.map(c => (
-                                                <SelectItem key={c.id} value={c.id}>{c.cardNumber} ({c.currentBalance.toLocaleString()} F)</SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <div className="grid grid-cols-2 gap-4">
-                            <FormField
-                                control={form.control}
-                                name="amount"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Montant (FCFA)</FormLabel>
-                                        <FormControl><Input type="number" {...field} /></FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="date"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Date</FormLabel>
-                                        <FormControl><Input type="date" {...field} /></FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+            <DialogContent className="sm:max-w-[425px] p-0 overflow-hidden border-white/10 bg-slate-50/95 backdrop-blur-2xl rounded-[1.5rem] shadow-2xl">
+                <DialogHeader className="p-8 bg-slate-900 text-white space-y-2 relative">
+                    <div className="relative z-10 flex items-center gap-3">
+                        <div className="h-8 w-8 rounded-lg bg-white/10 flex items-center justify-center">
+                            <PlusCircle className="h-4 w-4 text-emerald-400" />
                         </div>
-                        <FormField
-                            control={form.control}
-                            name="notes"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Notes / Référence</FormLabel>
-                                    <FormControl><Input placeholder="ex: Dotation Mars 2024" {...field} /></FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <DialogFooter>
-                            <Button type="submit" disabled={loading} className="w-full bg-emerald-600 hover:bg-emerald-700">
-                                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                Confirmer le Rechargement
-                            </Button>
-                        </DialogFooter>
-                    </form>
-                </Form>
+                        <DialogTitle className="text-xl font-black uppercase tracking-tight text-white">
+                            Alimentation de Compte
+                        </DialogTitle>
+                    </div>
+                    <DialogDescription className="text-slate-400 font-bold uppercase text-[10px] tracking-widest pl-11">
+                        Créditer une carte de paiement carburant
+                    </DialogDescription>
+                </DialogHeader>
+
+                <div className="p-8">
+                    <Form {...form}>
+                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                            <FormField
+                                control={form.control}
+                                name="cardId"
+                                render={({ field }) => (
+                                    <FormItem className="space-y-1.5">
+                                        <FormLabel className="text-[11px] font-black uppercase tracking-widest text-slate-500 pl-1">Moyen de paiement cible</FormLabel>
+                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                            <FormControl>
+                                                <SelectTrigger className="h-12 rounded-xl border-slate-200 bg-white font-bold text-sm">
+                                                    <SelectValue placeholder="Choisir la carte" />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent className="rounded-xl border-slate-100 shadow-2xl">
+                                                {cards.map(c => (
+                                                    <SelectItem key={c.id} value={c.id} className="font-bold py-3">
+                                                        {c.cardNumber} — {c.currentBalance.toLocaleString()} <span className="text-[10px] opacity-60">FCFA</span>
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            
+                            <div className="grid grid-cols-2 gap-4">
+                                <FormField
+                                    control={form.control}
+                                    name="amount"
+                                    render={({ field }) => (
+                                        <FormItem className="space-y-1.5">
+                                            <FormLabel className="text-[11px] font-black uppercase tracking-widest text-slate-500 pl-1">Valeur Nominale (F)</FormLabel>
+                                            <FormControl>
+                                                <Input 
+                                                    type="number" 
+                                                    className="h-12 rounded-xl border-slate-200 bg-white font-black text-lg focus:ring-2 focus:ring-emerald-500/20 transition-all text-emerald-600"
+                                                    {...field} 
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="date"
+                                    render={({ field }) => (
+                                        <FormItem className="space-y-1.5">
+                                            <FormLabel className="text-[11px] font-black uppercase tracking-widest text-slate-500 pl-1">Date d'effet</FormLabel>
+                                            <FormControl>
+                                                <Input 
+                                                    type="date" 
+                                                    className="h-12 rounded-xl border-slate-200 bg-white font-bold text-sm focus:ring-2 focus:ring-blue-500/20 transition-all"
+                                                    {...field} 
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+
+                            <FormField
+                                control={form.control}
+                                name="notes"
+                                render={({ field }) => (
+                                    <FormItem className="space-y-1.5">
+                                        <FormLabel className="text-[11px] font-black uppercase tracking-widest text-slate-500 pl-1">Justificatif / Observations</FormLabel>
+                                        <FormControl>
+                                            <Input 
+                                                placeholder="ex: Dotation trimestrielle, Rectification..." 
+                                                className="h-12 rounded-xl border-slate-200 bg-white font-bold text-sm focus:ring-2 focus:ring-blue-500/20 transition-all"
+                                                {...field} 
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <div className="pt-2">
+                                <Button type="submit" disabled={loading} className="w-full h-12 rounded-xl bg-emerald-600 shadow-xl shadow-emerald-600/20 font-black uppercase tracking-widest text-[11px] hover:bg-emerald-700 active:scale-95 transition-all text-white">
+                                    {loading ? (
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    ) : (
+                                        "Validation du Versement"
+                                    )}
+                                </Button>
+                            </div>
+                        </form>
+                    </Form>
+                </div>
             </DialogContent>
         </Dialog>
     );
@@ -590,233 +704,224 @@ export function FuelExpenseDialog({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChangeAction}>
-            <DialogContent className="sm:max-w-[500px]">
-                <DialogHeader>
-                    <DialogTitle>Enregistrer une Consommation</DialogTitle>
-                    <DialogDescription>Saisir les détails d'un plein effectué avec une carte.</DialogDescription>
+            <DialogContent className="sm:max-w-[650px] p-0 overflow-hidden border-white/10 bg-slate-50/95 backdrop-blur-2xl rounded-[1.5rem] shadow-2xl">
+                <DialogHeader className="p-8 bg-slate-900 text-white space-y-2 relative">
+                    <div className="relative z-10 flex items-center gap-3">
+                        <div className="h-8 w-8 rounded-lg bg-white/10 flex items-center justify-center">
+                            <Fuel className="h-4 w-4 text-orange-400" />
+                        </div>
+                        <DialogTitle className="text-xl font-black uppercase tracking-tight text-white">
+                            Déclaration Consommation
+                        </DialogTitle>
+                    </div>
+                    <DialogDescription className="text-slate-400 font-bold uppercase text-[10px] tracking-widest pl-11">
+                        Saisie des détails de transaction carburant
+                    </DialogDescription>
                 </DialogHeader>
-                <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                        <FormField
-                            control={form.control}
-                            name="cardId"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Carte Utilisée</FormLabel>
-                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                        <FormControl>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Sélectionner la carte" />
-                                            </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent>
-                                            {cards.filter(c => c.currentBalance > 0).map(c => (
-                                                <SelectItem key={c.id} value={c.id}>{c.cardNumber} (Solde: {c.currentBalance.toLocaleString()} F)</SelectItem>
-                                            ))}
-                                            {cards.filter(c => c.currentBalance <= 0).length > 0 && (
-                                                <SelectItem value="none" disabled>--- Solde épuisé ---</SelectItem>
+
+                <div className="p-8 max-h-[70vh] overflow-y-auto custom-scrollbar">
+                    <Form {...form}>
+                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {/* Section Source */}
+                                <div className="space-y-4">
+                                    <div className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600/70 mb-2">Moyen de Paiement</div>
+                                    <FormField
+                                        control={form.control}
+                                        name="cardId"
+                                        render={({ field }) => (
+                                            <FormItem className="space-y-1.5">
+                                                <FormLabel className="text-[11px] font-black uppercase tracking-widest text-slate-500 pl-1">Carte Utilisée</FormLabel>
+                                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                    <FormControl>
+                                                        <SelectTrigger className="h-12 rounded-xl border-slate-200 bg-white font-bold text-sm">
+                                                            <SelectValue placeholder="Choisir la carte" />
+                                                        </SelectTrigger>
+                                                    </FormControl>
+                                                    <SelectContent className="rounded-xl border-slate-100 shadow-2xl">
+                                                        {cards.filter(c => c.currentBalance > 0).map(c => (
+                                                            <SelectItem key={c.id} value={c.id} className="font-bold py-3">
+                                                                {c.cardNumber} ({c.currentBalance.toLocaleString()} F)
+                                                            </SelectItem>
+                                                        ))}
+                                                        {cards.filter(c => c.currentBalance <= 0).length > 0 && (
+                                                            <SelectItem value="none" disabled className="text-[10px] uppercase font-bold text-rose-500 bg-rose-50 py-2">--- Solde insuffisant ---</SelectItem>
+                                                        )}
+                                                    </SelectContent>
+                                                </Select>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <FormField
+                                            control={form.control}
+                                            name="date"
+                                            render={({ field }) => (
+                                                <FormItem className="space-y-1.5">
+                                                    <FormLabel className="text-[11px] font-black uppercase tracking-widest text-slate-500 pl-1">Date</FormLabel>
+                                                    <FormControl>
+                                                        <Input type="date" className="h-12 rounded-xl border-slate-200 bg-white font-bold text-sm" {...field} />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
                                             )}
-                                        </SelectContent>
-                                    </Select>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <div className="grid grid-cols-2 gap-4">
-                            <FormField
-                                control={form.control}
-                                name="date"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Date</FormLabel>
-                                        <FormControl><Input type="date" {...field} /></FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="receiptNumber"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>N° de Ticket / Reçu</FormLabel>
-                                        <FormControl><Input placeholder="00123" {...field} /></FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                            <FormField
-                                control={form.control}
-                                name="vehiclePlate"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Véhicule</FormLabel>
-                                        <SearchableSelect
-                                            items={vehicles.map(v => ({
-                                                value: v.plate,
-                                                label: `${v.makeModel} (${v.plate})`,
-                                                searchTerms: `${v.makeModel} ${v.plate}`
-                                            }))}
-                                            value={field.value}
-                                            onValueChange={field.onChange}
-                                            placeholder="Sélectionner"
-                                            searchPlaceholder="Rechercher..."
                                         />
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="driverName"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Conducteur</FormLabel>
-                                        <SearchableSelect
-                                            items={employees.map(e => ({
-                                                value: e.name,
-                                                label: e.name,
-                                                searchTerms: `${e.name} ${e.matricule || ''}`
-                                            }))}
-                                            value={field.value}
-                                            onValueChange={field.onChange}
-                                            placeholder="Sélectionner"
-                                            searchPlaceholder="Rechercher..."
+                                        <FormField
+                                            control={form.control}
+                                            name="receiptNumber"
+                                            render={({ field }) => (
+                                                <FormItem className="space-y-1.5">
+                                                    <FormLabel className="text-[11px] font-black uppercase tracking-widest text-slate-500 pl-1">N° Ticket</FormLabel>
+                                                    <FormControl>
+                                                        <Input placeholder="00123" className="h-12 rounded-xl border-slate-200 bg-white font-bold text-sm" {...field} />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
                                         />
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                            <FormField
-                                control={form.control}
-                                name="amount"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Montant du plein (F)</FormLabel>
-                                        <FormControl><Input type="number" {...field} /></FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="liters"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Litrage (L)</FormLabel>
-                                        <FormControl><Input type="number" step="0.01" {...field} /></FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
-                        <div className="grid grid-cols-1">
-                            <FormField
-                                control={form.control}
-                                name="missionNumber"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>N° de Mission</FormLabel>
-                                        <FormControl><Input placeholder="ex: MISSION-001" {...field} /></FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                            <FormField
-                                control={form.control}
-                                name="missionRoute"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Trajet de la mission</FormLabel>
-                                        <FormControl><Input placeholder="ex: Yakro - Abj - Yakro" {...field} /></FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="missionDuration"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Durée de la mission</FormLabel>
-                                        <FormControl><Input placeholder="ex: Du 02 au 04 Déc" {...field} /></FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                            <FormField
-                                control={form.control}
-                                name="missionHead"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Chef de la mission</FormLabel>
-                                        <SearchableSelect
-                                            items={employees.map(e => ({
-                                                value: e.name,
-                                                label: e.name,
-                                                searchTerms: `${e.name}`
-                                            }))}
-                                            value={field.value}
-                                            onValueChange={field.onChange}
-                                            placeholder="Sélectionner"
-                                            searchPlaceholder="Rechercher..."
-                                        />
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="service"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Service</FormLabel>
-                                        <FormControl><Input placeholder="ex: DAFP, DAS..." {...field} /></FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                            <FormField
-                                control={form.control}
-                                name="unitPrice"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Prix du litre (Optionnel)</FormLabel>
-                                        <FormControl><Input type="number" placeholder="600" {...field} /></FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="odometer"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Index Kilométrique (KM)</FormLabel>
-                                        <FormControl><Input type="number" placeholder="125000" {...field} /></FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
-                        <DialogFooter>
-                            <Button type="submit" disabled={loading} className="w-full">
-                                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                Valider la dépense
-                            </Button>
-                        </DialogFooter>
-                    </form>
-                </Form>
+                                    </div>
+                                </div>
+
+                                {/* Section Mobilité */}
+                                <div className="space-y-4">
+                                    <div className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600/70 mb-2">Affectation Mobilité</div>
+                                    <FormField
+                                        control={form.control}
+                                        name="vehiclePlate"
+                                        render={({ field }) => (
+                                            <FormItem className="space-y-1.5">
+                                                <FormLabel className="text-[11px] font-black uppercase tracking-widest text-slate-500 pl-1">Unité (Véhicule)</FormLabel>
+                                                <SearchableSelect
+                                                    items={vehicles.map(v => ({
+                                                        value: v.plate,
+                                                        label: `${v.makeModel} (${v.plate})`,
+                                                        searchTerms: `${v.makeModel} ${v.plate}`
+                                                    }))}
+                                                    value={field.value}
+                                                    onValueChange={field.onChange}
+                                                    placeholder="Plaque ou Modèle"
+                                                    className="h-12 rounded-xl border-slate-200 bg-white font-bold text-sm"
+                                                />
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name="driverName"
+                                        render={({ field }) => (
+                                            <FormItem className="space-y-1.5">
+                                                <FormLabel className="text-[11px] font-black uppercase tracking-widest text-slate-500 pl-1">Conducteur / Déposant</FormLabel>
+                                                <SearchableSelect
+                                                    items={employees.map(e => ({
+                                                        value: e.name,
+                                                        label: e.name,
+                                                        searchTerms: `${e.name} ${e.matricule || ''}`
+                                                    }))}
+                                                    value={field.value}
+                                                    onValueChange={field.onChange}
+                                                    placeholder="Rechercher..."
+                                                    className="h-12 rounded-xl border-slate-200 bg-white font-bold text-sm"
+                                                />
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Section Financière & Technique */}
+                            <div className="p-5 bg-slate-100/50 rounded-2xl space-y-4 border border-slate-200/50">
+                                <div className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-2 text-center">Données Quantitatives & Financières</div>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <FormField
+                                        control={form.control}
+                                        name="amount"
+                                        render={({ field }) => (
+                                            <FormItem className="space-y-1.5">
+                                                <FormLabel className="text-[11px] font-black uppercase tracking-widest text-slate-500 pl-1 text-center block w-full">Montant (F)</FormLabel>
+                                                <FormControl>
+                                                    <Input type="number" className="h-14 rounded-xl border-slate-200 bg-white font-black text-xl text-center focus:ring-2 focus:ring-orange-500/20 text-slate-900 shadow-inner" {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name="liters"
+                                        render={({ field }) => (
+                                            <FormItem className="space-y-1.5">
+                                                <FormLabel className="text-[11px] font-black uppercase tracking-widest text-slate-500 pl-1 text-center block w-full">Volume (Litres)</FormLabel>
+                                                <FormControl>
+                                                    <Input type="number" step="0.01" className="h-14 rounded-xl border-slate-200 bg-white font-black text-xl text-center focus:ring-2 focus:ring-blue-500/20 text-blue-600 shadow-inner" {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name="odometer"
+                                        render={({ field }) => (
+                                            <FormItem className="space-y-1.5">
+                                                <FormLabel className="text-[11px] font-black uppercase tracking-widest text-slate-500 pl-1 text-center block w-full">Odomètre (KM)</FormLabel>
+                                                <FormControl>
+                                                    <Input type="number" className="h-14 rounded-xl border-slate-200 bg-white font-black text-base text-center focus:ring-2 focus:ring-slate-500/20 text-slate-600 shadow-inner" {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Section Administrative (Mission) */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                                <FormField
+                                    control={form.control}
+                                    name="missionNumber"
+                                    render={({ field }) => (
+                                        <FormItem className="space-y-1.5">
+                                            <FormLabel className="text-[11px] font-black uppercase tracking-widest text-slate-500 pl-1">Référence Mission (Si applicable)</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="N° Ordre de Mission" className="h-12 rounded-xl border-slate-200 bg-white font-bold text-sm uppercase" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="service"
+                                    render={({ field }) => (
+                                        <FormItem className="space-y-1.5">
+                                            <FormLabel className="text-[11px] font-black uppercase tracking-widest text-slate-500 pl-1">Entité / Service</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="ex: DAFP, DAS..." className="h-12 rounded-xl border-slate-200 bg-white font-bold text-sm uppercase" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+
+                            <div className="pt-4">
+                                <Button type="submit" disabled={loading} className="w-full h-14 rounded-xl bg-slate-900 shadow-xl shadow-slate-900/40 font-black uppercase tracking-widest text-xs hover:bg-black active:scale-95 transition-all text-white flex items-center justify-center gap-2">
+                                    {loading ? (
+                                        <Loader2 className="h-5 w-5 animate-spin" />
+                                    ) : (
+                                        <>
+                                            <CheckCircle2 className="h-5 w-5 text-emerald-400" />
+                                            Confirmer l'inscription comptable
+                                        </>
+                                    )}
+                                </Button>
+                            </div>
+                        </form>
+                    </Form>
+                </div>
             </DialogContent>
         </Dialog>
     );

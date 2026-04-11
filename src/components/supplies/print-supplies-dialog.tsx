@@ -16,6 +16,8 @@ export interface PrintOptions {
   category: string;
   sortBy: 'name' | 'quantity' | 'category';
   reportTemplate: 'standard' | 'official';
+  periodMonth: number;
+  periodYear: number;
 }
 
 interface PrintSuppliesDialogProps {
@@ -29,6 +31,7 @@ export const PrintSuppliesDialog = memo(function PrintSuppliesDialog({
   onCloseAction, 
   onPrintAction 
 }: PrintSuppliesDialogProps) {
+  const now = new Date();
   const [options, setOptions] = useState<PrintOptions>({
     includeOutOfStock: true,
     includePhotos: false,
@@ -36,6 +39,8 @@ export const PrintSuppliesDialog = memo(function PrintSuppliesDialog({
     category: 'all',
     sortBy: 'name',
     reportTemplate: 'standard',
+    periodMonth: now.getMonth(),
+    periodYear: now.getFullYear(),
   });
 
   const handlePrint = () => {
@@ -164,6 +169,44 @@ export const PrintSuppliesDialog = memo(function PrintSuppliesDialog({
                   <SelectItem value="name">Désignation</SelectItem>
                   <SelectItem value="quantity">Quantité</SelectItem>
                   <SelectItem value="category">Catégorie</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4 border-t border-slate-100">
+             {/* Month Selection */}
+            <div className="space-y-3">
+              <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Mois du Rapport</Label>
+              <Select 
+                value={options.periodMonth.toString()} 
+                onValueChange={(v) => setOptions(prev => ({ ...prev, periodMonth: parseInt(v) }))}
+              >
+                <SelectTrigger className="h-10 rounded-xl border-slate-200 bg-slate-50/50 font-bold text-slate-900">
+                  <SelectValue placeholder="Mois" />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl">
+                  {["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"].map((m, i) => (
+                    <SelectItem key={i} value={i.toString()}>{m}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Year Selection */}
+            <div className="space-y-3">
+              <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Année du Rapport</Label>
+              <Select 
+                value={options.periodYear.toString()} 
+                onValueChange={(v) => setOptions(prev => ({ ...prev, periodYear: parseInt(v) }))}
+              >
+                <SelectTrigger className="h-10 rounded-xl border-slate-200 bg-slate-50/50 font-bold text-slate-900">
+                  <SelectValue placeholder="Année" />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl">
+                  {[2024, 2025, 2026].map(y => (
+                    <SelectItem key={y} value={y.toString()}>{y}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

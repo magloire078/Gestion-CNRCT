@@ -23,23 +23,23 @@ export const InventoryFilters = memo(({
     return (
         <div className="flex flex-col sm:flex-row items-center gap-3">
             <div className="relative group w-full sm:w-auto">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-foreground transition-colors" />
                 <input
-                    placeholder="Filtrer par nom ou code..."
-                    className="pl-9 h-10 w-full md:w-[250px] rounded-xl border border-slate-200 focus:ring-slate-900 outline-none px-3 text-sm focus:border-slate-900 bg-white"
+                    placeholder="Rechercher un article..."
+                    className="pl-9 h-11 w-full md:w-[280px] rounded-2xl border border-white/10 focus:ring-slate-900 outline-none px-3 text-sm focus:border-slate-900 bg-card/40 backdrop-blur-md font-medium shadow-sm transition-all"
                     value={searchTerm}
                     onChange={e => onSearchChange(e.target.value)}
                 />
             </div>
             <Select value={categoryFilter} onValueChange={onCategoryFilterChange}>
-                <SelectTrigger className="w-full sm:w-[200px] h-10 rounded-xl border-slate-200 text-slate-900 font-bold">
-                    <Filter className="mr-2 h-3.5 w-3.5 text-slate-400" />
+                <SelectTrigger className="w-full sm:w-[220px] h-11 rounded-2xl border-white/10 bg-card/40 backdrop-blur-md text-foreground font-black uppercase tracking-widest text-[10px] shadow-sm">
+                    <Filter className="mr-2 h-4 w-4 text-muted-foreground" />
                     <SelectValue placeholder="Catégorie" />
                 </SelectTrigger>
-                <SelectContent className="rounded-xl">
-                    <SelectItem value="all">Toutes les catégories</SelectItem>
+                <SelectContent className="rounded-2xl border-white/10 bg-card/90 backdrop-blur-xl">
+                    <SelectItem value="all" className="font-bold">Toutes les dotations</SelectItem>
                     {availableCategories.map(cat => (
-                        <SelectItem key={cat.id} value={cat.name}>
+                        <SelectItem key={cat.id} value={cat.name} className="font-bold uppercase tracking-widest text-[10px]">
                             {cat.name}
                         </SelectItem>
                     ))}

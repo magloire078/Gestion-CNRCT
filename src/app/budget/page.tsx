@@ -399,43 +399,48 @@ export default function BudgetPage() {
             </div>
           </div>
 
-          {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card className="border-none shadow-sm bg-slate-900 text-white overflow-hidden relative">
+            <Card className="border-white/10 shadow-xl bg-gradient-to-br from-slate-900 to-slate-800 text-white overflow-hidden relative group transition-all hover:shadow-2xl hover:-translate-y-1">
               <CardHeader className="pb-2">
-                <CardDescription className="text-slate-400 font-medium uppercase text-[10px] tracking-widest">TOTAL EMPLOIS</CardDescription>
-                <CardTitle className="text-2xl font-bold">
+                <CardDescription className="text-slate-400 font-black uppercase text-[10px] tracking-widest">TOTAL EMPLOIS</CardDescription>
+                <CardTitle className="text-2xl font-black">
                     {loading ? <Skeleton className="h-9 w-48 bg-slate-800" /> : formatCurrency(stats.totalEmplois)}
                 </CardTitle>
               </CardHeader>
+              <div className="absolute bottom-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                <ArrowUpRight className="h-12 w-12" />
+              </div>
             </Card>
 
-            <Card className="border-none shadow-sm bg-emerald-600 text-white overflow-hidden relative">
+            <Card className="border-white/10 shadow-xl bg-emerald-600 text-white overflow-hidden relative group transition-all hover:shadow-2xl hover:-translate-y-1">
               <CardHeader className="pb-2">
-                <CardDescription className="text-emerald-100 font-medium opacity-80 uppercase text-[10px] tracking-widest">TOTAL RESSOURCES</CardDescription>
-                <CardTitle className="text-2xl font-bold">
+                <CardDescription className="text-emerald-100 font-black opacity-80 uppercase text-[10px] tracking-widest">TOTAL RESSOURCES</CardDescription>
+                <CardTitle className="text-2xl font-black">
                     {loading ? <Skeleton className="h-9 w-48 bg-emerald-500" /> : formatCurrency(stats.totalRessources)}
                 </CardTitle>
               </CardHeader>
+              <div className="absolute bottom-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                <ArrowDownRight className="h-12 w-12" />
+              </div>
             </Card>
 
             <Card className={cn(
-                "border-none shadow-sm overflow-hidden relative",
+                "border-white/10 shadow-xl overflow-hidden relative group transition-all hover:shadow-2xl hover:-translate-y-1",
                 stats.isBalanced ? "bg-blue-600 text-white" : "bg-orange-500 text-white"
             )}>
               <CardHeader className="pb-2">
-                <CardDescription className="text-white font-medium opacity-80 uppercase text-[10px] tracking-widest">SOLDE / ÉQUILIBRE</CardDescription>
-                <CardTitle className="text-2xl font-bold flex items-center gap-2">
+                <CardDescription className="text-white font-black opacity-80 uppercase text-[10px] tracking-widest">SOLDE / ÉQUILIBRE</CardDescription>
+                <CardTitle className="text-2xl font-black flex items-center gap-2">
                     {loading ? <Skeleton className="h-9 w-48 bg-blue-500" /> : formatCurrency(stats.balance)}
                     {stats.isBalanced && <CheckCircle2 className="h-6 w-6 text-emerald-300" />}
                 </CardTitle>
               </CardHeader>
             </Card>
 
-            <Card className="border-none shadow-sm bg-slate-50 border border-slate-100">
+            <Card className="border-white/10 shadow-xl bg-card/40 backdrop-blur-md transition-all hover:shadow-2xl hover:-translate-y-1 group">
               <CardHeader className="pb-2">
-                <CardDescription className="text-slate-500 font-bold uppercase text-[10px] tracking-widest">NOMBRE DE LIGNES</CardDescription>
-                <CardTitle className="text-2xl font-extrabold text-slate-900">
+                <CardDescription className="text-muted-foreground font-black uppercase text-[10px] tracking-widest">NOMBRE DE LIGNES</CardDescription>
+                <CardTitle className="text-2xl font-black text-foreground">
                     {loading ? <Skeleton className="h-8 w-24" /> : filteredLines.length}
                 </CardTitle>
               </CardHeader>
@@ -444,12 +449,12 @@ export default function BudgetPage() {
 
           {/* Charts Section */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <Card className="border-none shadow-sm">
+            <Card className="border-white/10 shadow-xl bg-card/40 backdrop-blur-md">
               <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
+                <CardTitle className="text-lg font-bold flex items-center gap-2">
                     <BarIcon className="h-5 w-5 text-primary" /> Évolution des Dépenses
                 </CardTitle>
-                <CardDescription>Montants des emplois par exercice.</CardDescription>
+                <CardDescription className="text-xs font-medium">Montants des emplois par exercice.</CardDescription>
               </CardHeader>
               <CardContent className="h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
@@ -468,12 +473,12 @@ export default function BudgetPage() {
               </CardContent>
             </Card>
 
-            <Card className="border-none shadow-sm">
+            <Card className="border-white/10 shadow-xl bg-card/40 backdrop-blur-md">
               <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
+                <CardTitle className="text-lg font-bold flex items-center gap-2">
                     <PieIcon className="h-5 w-5 text-primary" /> Répartition des Emplois
                 </CardTitle>
-                <CardDescription>Postes les plus importants de l'année.</CardDescription>
+                <CardDescription className="text-xs font-medium">Postes les plus importants de l'année.</CardDescription>
               </CardHeader>
               <CardContent className="h-[300px] flex items-center justify-center">
                 {chartData.topLines.length > 0 ? (
@@ -540,16 +545,16 @@ export default function BudgetPage() {
                 </div>
             </div>
 
-            <Card className="border-none shadow-xl shadow-slate-200/50 overflow-hidden">
-                <CardHeader className="bg-slate-50/50 border-b border-slate-100">
+            <Card className="border-white/10 shadow-xl bg-card/40 backdrop-blur-md overflow-hidden">
+                <CardHeader className="bg-primary/5 border-b border-border/50">
                     <div className="flex items-center justify-between">
                         <div>
-                            <CardTitle className="text-sm font-bold uppercase tracking-wider text-slate-600">
+                            <CardTitle className="text-sm font-black uppercase tracking-widest text-muted-foreground">
                                 Récapitulatif de l'Annexe {yearFilter === "all" ? "" : yearFilter}
                             </CardTitle>
-                            <CardDescription>Comptes du Budget Général - Côte d'Ivoire</CardDescription>
+                            <CardDescription className="text-[10px] font-bold">Comptes du Budget Général - Côte d'Ivoire</CardDescription>
                         </div>
-                        <div className="text-xs font-bold text-slate-400">EN F CFA</div>
+                        <div className="text-[10px] font-black text-primary bg-primary/10 px-2 py-1 rounded-full uppercase tracking-widest">EN F CFA</div>
                     </div>
                 </CardHeader>
                 <CardContent className="pt-0 px-0">
@@ -567,7 +572,7 @@ export default function BudgetPage() {
                         <TableBody>
                             {loading ? (
                                 Array.from({ length: 5 }).map((_, i) => (
-                                    <TableRow key={i}>
+                                    <TableRow key={i} className="border-border/40">
                                         <TableCell><Skeleton className="h-4 w-12 mx-auto" /></TableCell>
                                         <TableCell><Skeleton className="h-4 w-12 mx-auto" /></TableCell>
                                         <TableCell><Skeleton className="h-4 w-64" /></TableCell>
@@ -578,26 +583,27 @@ export default function BudgetPage() {
                                 ))
                             ) : paginatedLines.length > 0 ? (
                                 paginatedLines.map((line) => (
-                                    <TableRow key={line.id} className="hover:bg-slate-50 transition-colors border-slate-100">
-                                        <TableCell className="text-center font-bold text-slate-700 bg-slate-50/30">{line.paragraphe || '-'}</TableCell>
-                                        <TableCell className="text-center font-mono text-xs text-slate-500">{line.code || '-'}</TableCell>
-                                        <TableCell className="font-medium text-slate-700">{line.name}</TableCell>
-                                        <TableCell className="text-right font-mono text-slate-400">
+                                    <TableRow key={line.id} className="hover:bg-primary/5 transition-colors border-border/40 group">
+                                        <TableCell className="text-center font-black text-muted-foreground bg-primary/5 tracking-tighter text-xs">{line.paragraphe || '-'}</TableCell>
+                                        <TableCell className="text-center font-mono text-[10px] font-bold text-muted-foreground">{line.code || '-'}</TableCell>
+                                        <TableCell className="font-bold text-foreground text-sm">{line.name}</TableCell>
+                                        <TableCell className="text-right font-mono text-xs text-muted-foreground opacity-70">
                                             {formatCurrency(line.previousAmount || 0)}
                                         </TableCell>
-                                        <TableCell className="text-right font-mono font-bold text-slate-900 bg-slate-50/50">
+                                        <TableCell className="text-right font-mono font-bold text-primary bg-primary/5">
                                             {formatCurrency(line.allocatedAmount)}
                                         </TableCell>
                                         <TableCell className="text-right">
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full"><MoreHorizontal className="h-4 w-4" /></Button>
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-primary/10"><MoreHorizontal className="h-4 w-4" /></Button>
                                                 </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end">
-                                                    <DropdownMenuItem onClick={() => openEditSheet(line)}>
+                                                <DropdownMenuContent align="end" className="w-40">
+                                                    <DropdownMenuLabel className="font-black uppercase text-[10px] tracking-widest opacity-50 text-center">Gestion</DropdownMenuLabel>
+                                                    <DropdownMenuItem onClick={() => openEditSheet(line)} className="font-bold">
                                                         <Pencil className="mr-2 h-4 w-4" /> Modifier
                                                     </DropdownMenuItem>
-                                                    <DropdownMenuItem onClick={() => setDeleteTarget(line)} className="text-destructive">
+                                                    <DropdownMenuItem onClick={() => setDeleteTarget(line)} className="text-destructive font-bold">
                                                         <Trash2 className="mr-2 h-4 w-4" /> Supprimer
                                                     </DropdownMenuItem>
                                                 </DropdownMenuContent>

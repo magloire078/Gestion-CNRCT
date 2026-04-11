@@ -167,13 +167,13 @@ export const DirectoireMap: React.FC<DirectoireMapProps> = ({
             iconCreateFunction: (cluster) => {
                 const count = cluster.getChildCount();
                 return L.divIcon({
-                    html: `<div class="flex items-center justify-center w-12 h-12 rounded-full bg-white border-2 border-[#D4AF37] shadow-xl">
-                             <div class="flex items-center justify-center w-10 h-10 rounded-full bg-[#D4AF37] text-white font-black text-xs">
+                    html: `<div class="flex items-center justify-center w-14 h-14 rounded-[1.5rem] bg-white/80 backdrop-blur-xl border border-white shadow-2xl">
+                             <div class="flex items-center justify-center w-11 h-11 rounded-[1.2rem] bg-slate-900 text-white font-black text-xs shadow-lg">
                                ${count}
                              </div>
                            </div>`,
                     className: 'custom-cluster-icon',
-                    iconSize: [48, 48]
+                    iconSize: [56, 56]
                 });
             }
         });
@@ -214,50 +214,71 @@ export const DirectoireMap: React.FC<DirectoireMapProps> = ({
                 icon: L.divIcon({
                     html: `
                         <div class="flex flex-col items-center group cursor-pointer">
-                            <div class="relative w-12 h-12 rounded-full border-2 border-white shadow-2xl overflow-hidden bg-slate-200 transform transition-all duration-300 group-hover:scale-125 group-hover:-translate-y-2">
+                            <div class="relative w-14 h-14 rounded-2xl border-4 border-white shadow-[0_20px_40px_-10px_rgba(0,0,0,0.3)] overflow-hidden bg-slate-200 transform transition-all duration-500 group-hover:scale-125 group-hover:-translate-y-4 group-hover:rotate-3 group-hover:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)]">
                                 ${member.photo 
                                     ? `<img src="${member.photo}" class="w-full h-full object-cover" />`
-                                    : `<div class="w-full h-full flex items-center justify-center bg-slate-100"><span class="text-xs font-black text-slate-400 capitalize">${(member.name || "?")[0]}</span></div>`
+                                    : `<div class="w-full h-full flex items-center justify-center bg-slate-900 text-white"><span class="text-xs font-black capitalize">${(member.name || "?")[0]}</span></div>`
                                 }
                                 ${showStatus && member.isActive 
-                                    ? `<div class="absolute bottom-1 right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full shadow-lg"></div>` 
+                                    ? `<div class="absolute bottom-1 right-1 w-4 h-4 bg-emerald-500 border-2 border-white rounded-full shadow-lg"></div>` 
                                     : ''
                                 }
                             </div>
-                            <div class="mt-1 px-2 py-0.5 bg-[#006039] text-white text-[8px] font-black rounded shadow-lg whitespace-nowrap uppercase tracking-tighter opacity-90 group-hover:opacity-100 transition-opacity">
+                            <div class="mt-2 px-3 py-1 bg-slate-900 text-white text-[9px] font-black rounded-xl shadow-2xl whitespace-nowrap uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:translate-y-0 translate-y-2">
                                 ${member.name}
                             </div>
                         </div>
                     `,
                     className: 'custom-marker',
-                    iconSize: [60, 60],
-                    iconAnchor: [30, 60]
+                    iconSize: [80, 80],
+                    iconAnchor: [40, 80]
                 })
             });
 
             const popupContent = `
-                <div class="p-4 min-w-[200px] bg-slate-900 text-white rounded-xl">
-                    <div class="flex items-center gap-3 mb-3 border-b border-white/10 pb-3">
-                        <div class="w-12 h-12 rounded-lg overflow-hidden border border-[#D4AF37]/50 shadow-lg">
-                            <img src="${member.photo || 'https://api.dicebear.com/7.x/initials/svg?seed=' + member.name}" class="w-full h-full object-cover" />
-                        </div>
-                        <div>
-                            <h4 class="text-xs font-black text-[#D4AF37] uppercase tracking-wider">${member.name}</h4>
-                            <p class="text-[9px] text-slate-400 font-bold uppercase">${member.role}</p>
+                <div class="p-0 overflow-hidden bg-slate-900 text-white rounded-[2rem] shadow-3xl border border-white/10 animate-in fade-in zoom-in duration-300">
+                    <div class="h-20 bg-gradient-to-br from-slate-800 to-slate-900 relative">
+                        <div class="absolute -bottom-10 left-6">
+                            <div class="w-20 h-20 rounded-2xl overflow-hidden border-4 border-slate-900 shadow-2xl bg-slate-800">
+                                <img src="${member.photo || 'https://api.dicebear.com/7.x/initials/svg?seed=' + member.name}" class="w-full h-full object-cover" />
+                            </div>
                         </div>
                     </div>
-                    <div class="space-y-2">
-                        <div class="flex items-center gap-2">
-                            <div class="w-5 h-5 rounded-md bg-white/5 flex items-center justify-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                    <div class="pt-12 p-8 space-y-5">
+                        <div class="border-b border-white/5 pb-4">
+                            <h4 class="text-sm font-black text-white uppercase tracking-tighter">${member.name}</h4>
+                            <div class="flex items-center gap-2 mt-1">
+                                <div class="h-1 w-1 rounded-full bg-blue-500"></div>
+                                <p class="text-[9px] text-blue-400 font-black uppercase tracking-widest">${member.role}</p>
                             </div>
-                            <p class="text-[9px] font-bold text-slate-300 uppercase letter-wider">${member.region}</p>
                         </div>
-                        <div class="flex items-center gap-2">
-                            <div class="w-5 h-5 rounded-md bg-white/5 flex items-center justify-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                        
+                        <div class="space-y-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center border border-white/10">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.5"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                                </div>
+                                <div>
+                                    <p class="text-[8px] font-black text-slate-500 uppercase tracking-widest leading-none">Région Administrative</p>
+                                    <p class="text-[10px] font-black text-slate-200 uppercase tracking-tight mt-1">${member.region}</p>
+                                </div>
                             </div>
-                            <p class="text-xs font-medium text-slate-100">${member.locality}</p>
+                            
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center border border-white/10">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.5"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                                </div>
+                                <div>
+                                    <p class="text-[8px] font-black text-slate-500 uppercase tracking-widest leading-none">Localité / Siège</p>
+                                    <p class="text-[10px] font-bold text-slate-300 uppercase tracking-tight mt-1">${member.locality}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pt-2">
+                             <div class="w-full py-3 bg-white/10 rounded-xl text-center text-[9px] font-black uppercase tracking-[0.2em] hover:bg-white/20 transition-colors cursor-pointer border border-white/10">
+                                Consulter Dossier
+                             </div>
                         </div>
                     </div>
                 </div>
@@ -295,20 +316,24 @@ export const DirectoireMap: React.FC<DirectoireMapProps> = ({
             <div ref={mapContainerRef} className="absolute inset-0 z-0" />
             
             {/* Elegant Header Overlay */}
-            <div className="absolute top-4 left-0 right-0 z-[1000] flex justify-center pointer-events-none">
-                <div className="bg-slate-900/80 backdrop-blur-xl border border-white/10 rounded-xl p-3 shadow-2xl inline-block pointer-events-auto">
-                    <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-[#D4AF37] flex items-center justify-center shadow-lg shadow-[#D4AF37]/20">
-                            <Crown className="w-4 h-4 text-white stroke-[2.5]" />
+            <div className="absolute top-6 left-0 right-0 z-[1000] flex justify-center pointer-events-none px-6">
+                <div className="bg-white/40 backdrop-blur-2xl border border-white/40 rounded-[2.5rem] p-5 shadow-[0_32px_64px_-15px_rgba(0,0,0,0.2)] inline-block pointer-events-auto max-w-full">
+                    <div className="flex items-center gap-6">
+                        <div className="w-14 h-14 rounded-3xl bg-slate-900 flex items-center justify-center shadow-2xl shadow-slate-900/40">
+                            <Crown className="w-7 h-7 text-white stroke-[2.5]" />
                         </div>
-                        <div>
-                            <h2 className="text-sm font-black text-white uppercase tracking-tighter leading-tight">{title}</h2>
-                            <p className="text-[8px] font-black text-[#D4AF37] uppercase tracking-widest leading-none mt-0.5">{subtitle}</p>
+                        <div className="pr-8 border-r border-slate-200">
+                            <h2 className="text-xl font-black text-slate-900 uppercase tracking-tighter leading-tight">{title}</h2>
+                            <p className="text-[9px] font-black text-blue-600 uppercase tracking-[0.2em] leading-none mt-1">{subtitle}</p>
                         </div>
-                        <div className="ml-4 pl-4 border-l border-white/10 flex items-center gap-4">
-                            <div className="text-center">
-                                <span className="block text-lg font-black text-white leading-none">{members.length}</span>
-                                <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none">Membres</span>
+                        <div className="flex items-center gap-6">
+                            <div className="text-left">
+                                <span className="block text-2xl font-black text-slate-900 leading-none">{members.length}</span>
+                                <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none">Effectif Déployé</span>
+                            </div>
+                            <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 rounded-full border border-emerald-100">
+                                <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                                <span className="text-[9px] font-black text-emerald-700 uppercase tracking-widest">Surveillance Active</span>
                             </div>
                         </div>
                     </div>

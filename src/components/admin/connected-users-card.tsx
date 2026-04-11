@@ -19,49 +19,57 @@ export function ConnectedUsersCard({ users }: ConnectedUsersCardProps) {
   });
 
   return (
-    <Card className="border-border/50 shadow-sm flex flex-col h-full bg-card/50 backdrop-blur-sm">
-      <CardHeader className="pb-3 border-b border-border/10">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg font-bold">Employés en ligne</CardTitle>
-          <Badge variant="secondary" className="bg-green-500/10 text-green-600 border-green-500/20 gap-1.5 py-0.5 px-2 font-semibold">
+    <Card className="border-white/20 shadow-3xl flex flex-col h-full bg-white/40 backdrop-blur-xl overflow-hidden rounded-[2.5rem] group transition-all duration-700 hover:border-white/40 hover:-translate-y-2">
+      <CardHeader className="p-8 pb-4">
+        <div className="flex items-center justify-between mb-4">
+          <div className="space-y-1">
+            <CardTitle className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 group-hover:text-slate-900 transition-colors">Sessions Actives</CardTitle>
+            <CardDescription className="text-xl font-black uppercase tracking-tighter text-slate-900">Surveillance Live</CardDescription>
+          </div>
+          <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 gap-2.5 py-1.5 px-4 font-black uppercase tracking-widest text-[9px] shadow-2xl animate-in zoom-in-95 backdrop-blur-sm">
             <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
             </span>
-            {onlineUsers.length}
+            {onlineUsers.length} en ligne
           </Badge>
         </div>
-        <CardDescription>Utilisateurs actifs au cours des 5 dernières minutes.</CardDescription>
       </CardHeader>
       <CardContent className="p-0 flex-1">
-        <ScrollArea className="h-[250px]">
-          <div className="p-4 space-y-4">
+        <ScrollArea className="h-[300px] px-8 pb-8 custom-scrollbar">
+          <div className="space-y-3 pt-6">
             {onlineUsers.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-8 text-center text-muted-foreground opacity-50 italic">
-                <p className="text-sm">Aucun utilisateur en ligne actuellement.</p>
+              <div className="flex flex-col items-center justify-center py-16 text-center animate-in fade-in zoom-in-95 duration-700">
+                <div className="h-16 w-16 rounded-[1.5rem] bg-slate-900/5 border border-slate-900/10 flex items-center justify-center mb-5">
+                    <span className="text-2xl opacity-50">💤</span>
+                </div>
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 italic">Aucune activité institutionnelle détectée</p>
               </div>
             ) : (
-              onlineUsers.map((user) => (
-                <div key={user.id} className="flex items-center justify-between group p-2 rounded-lg hover:bg-muted/50 transition-colors">
-                  <div className="flex items-center gap-3">
+              onlineUsers.map((user, idx) => (
+                <div 
+                    key={user.id} 
+                    className="flex items-center justify-between group/user p-4 rounded-2xl bg-white/30 border border-white/40 hover:bg-white hover:border-blue-500/30 transition-all duration-500 shadow-sm hover:shadow-xl hover:-translate-y-1 animate-in slide-in-from-right-4"
+                >
+                  <div className="flex items-center gap-4">
                     <div className="relative">
-                      <Avatar className="h-9 w-9 border border-border/50 shadow-sm transition-transform group-hover:scale-105">
+                      <Avatar className="h-12 w-12 border-2 border-white shadow-2xl transition-all duration-500 group-hover/user:scale-110 group-hover/user:rotate-3">
                         <AvatarImage src={user.photoUrl} alt={user.name} />
-                        <AvatarFallback className="text-xs bg-primary/5 text-primary font-bold">
+                        <AvatarFallback className="text-xs bg-slate-900 text-white font-black uppercase tracking-tighter">
                           {user.name?.charAt(0) || '?'}
                         </AvatarFallback>
                       </Avatar>
-                      <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-background bg-green-500 shadow-sm" />
+                      <div className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-white bg-emerald-500 shadow-lg z-10" />
                     </div>
                     <div>
-                      <p className="text-sm font-semibold leading-none">{user.name}</p>
-                      <p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-wider font-bold opacity-70">
-                        {user.role?.name || 'Collaborateur'}
+                      <p className="text-sm font-black uppercase tracking-tight text-slate-900 group-hover/user:text-blue-600 transition-colors">{user.name}</p>
+                      <p className="text-[9px] text-slate-500 mt-1 uppercase tracking-[0.15em] font-black opacity-60">
+                        {user.role?.name || 'Officier de Liaison'}
                       </p>
                     </div>
                   </div>
-                  <div className="text-[10px] text-muted-foreground font-medium bg-muted/30 px-2 py-0.5 rounded-full opacity-60 group-hover:opacity-100 transition-opacity">
-                    Actif
+                  <div className="text-[8px] font-black uppercase tracking-[0.25em] text-slate-400 bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200 transition-all duration-500 group-hover/user:bg-blue-600 group-hover/user:text-white group-hover/user:border-blue-700 group-hover/user:shadow-lg group-hover/user:shadow-blue-500/20">
+                    Online
                   </div>
                 </div>
               ))

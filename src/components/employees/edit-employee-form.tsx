@@ -26,7 +26,8 @@ import { getDirections } from "@/services/direction-service";
 import { getServices } from "@/services/service-service";
 import { updateEmployee } from "@/services/employee-service";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Upload, Loader2, Save, X, Trash2 } from "lucide-react";
+import { Upload, Loader2, Save, X, Trash2, UserCircle2, Briefcase } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -185,56 +186,63 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {/* Colonne Photo & Statut */}
-        <div className="space-y-6">
-          <Card className="overflow-hidden border-none shadow-sm">
-            <CardHeader className="bg-slate-50/50 border-b">
-              <CardTitle className="text-sm font-bold uppercase tracking-widest text-slate-500">Avatar & Statut</CardTitle>
+    <div className="space-y-10">
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-4 gap-10">
+        {/* --- LEFT SIDEBAR: PROFILE & STATUS --- */}
+        <div className="lg:col-span-1 space-y-6">
+          <Card className="border-none bg-white/40 backdrop-blur-xl rounded-[2.5rem] shadow-3xl shadow-slate-200/50 border border-white/20 overflow-hidden sticky top-8">
+            <CardHeader className="bg-slate-900 text-white p-8">
+              <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Profil & État</CardTitle>
             </CardHeader>
-            <CardContent className="pt-6 space-y-6">
-              <div className="flex flex-col items-center gap-4">
+            <CardContent className="p-8 space-y-8">
+              <div className="flex flex-col items-center gap-6">
                 <div className="relative group">
-                  <Avatar className="h-40 w-40 rounded-xl border-4 border-white shadow-xl">
+                  <div className="absolute -inset-2 bg-blue-500 rounded-[2.5rem] blur-xl opacity-20 group-hover:opacity-40 transition-all duration-700" />
+                  <Avatar className="h-44 w-44 rounded-[2rem] border-4 border-white shadow-2xl relative z-10">
                     <AvatarImage src={photoPreview} alt={employee.name} className="object-cover" />
-                    <AvatarFallback className="text-3xl bg-slate-100">{employee.lastName?.charAt(0)}</AvatarFallback>
+                    <AvatarFallback className="text-4xl font-black bg-slate-100 text-slate-400 uppercase">{employee.lastName?.charAt(0)}</AvatarFallback>
                   </Avatar>
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl cursor-pointer" onClick={() => fileInputRef.current?.click()}>
-                    <Upload className="text-white h-8 w-8" />
-                  </div>
-                </div>
-                <div className="flex gap-2 w-full">
-                  <Button type="button" variant="outline" size="sm" className="flex-1" onClick={() => fileInputRef.current?.click()}>
-                    <Upload className="mr-2 h-4 w-4" /> Photo
-                  </Button>
-                  <Button type="button" variant="outline" size="sm" className="flex-1 invisible">
+                  <Button 
+                    type="button" 
+                    size="icon" 
+                    className="absolute -bottom-2 -right-2 h-12 w-12 rounded-2xl bg-slate-900 border-4 border-white shadow-2xl relative z-20 hover:scale-110 transition-transform" 
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <Upload className="h-5 w-5 text-white" />
                   </Button>
                 </div>
-                <input ref={fileInputRef} type="file" className="hidden" accept="image/*" onChange={handlePhotoChange} title="Choisir une photo" />
+                <div className="text-center">
+                   <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-1 leading-none">Matricule</p>
+                   <p className="text-xl font-black text-slate-900 tracking-widest leading-none">{formData.matricule}</p>
+                </div>
+                <input ref={fileInputRef} type="file" className="hidden" accept="image/*" onChange={handlePhotoChange} title="Sélectionner une photo de profil" />
               </div>
 
-              <div className="space-y-4 pt-4 border-t">
-                <div className="space-y-2">
-                  <Label htmlFor="status">Statut de l'employé</Label>
+              <div className="space-y-6 pt-6 border-t border-slate-100">
+                <div className="space-y-3">
+                  <Label htmlFor="status" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Statut Administratif</Label>
                   <Select value={formData.status} onValueChange={(v: Employe['status']) => handleSelectChange('status', v)}>
-                    <SelectTrigger id="status"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Actif">Actif</SelectItem>
-                      <SelectItem value="En congé">En congé</SelectItem>
-                      <SelectItem value="Licencié">Licencié</SelectItem>
-                      <SelectItem value="Retraité">Retraité</SelectItem>
-                      <SelectItem value="Décédé">Décédé</SelectItem>
+                    <SelectTrigger id="status" className={cn("h-12 rounded-xl border-slate-200 font-black uppercase text-[10px] tracking-widest shadow-sm", formData.status === 'Actif' ? 'text-emerald-600 bg-emerald-50/30 border-emerald-100' : 'text-slate-600')}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-xl border-slate-100 shadow-3xl">
+                      <SelectItem value="Actif" className="font-bold py-3 uppercase text-[9px] tracking-widest text-emerald-600">Actif</SelectItem>
+                      <SelectItem value="En congé" className="font-bold py-3 uppercase text-[9px] tracking-widest text-blue-600">En congé</SelectItem>
+                      <SelectItem value="Licencié" className="font-bold py-3 uppercase text-[9px] tracking-widest text-rose-600">Licencié</SelectItem>
+                      <SelectItem value="Retraité" className="font-bold py-3 uppercase text-[9px] tracking-widest text-slate-500">Retraité</SelectItem>
+                      <SelectItem value="Décédé" className="font-bold py-3 uppercase text-[9px] tracking-widest">Décédé</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="sexe">Sexe</Label>
+                <div className="space-y-3">
+                  <Label htmlFor="sexe" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Sexe / Genre</Label>
                   <Select value={formData.sexe} onValueChange={(v) => handleSelectChange('sexe', v)}>
-                    <SelectTrigger id="sexe"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Homme">Homme</SelectItem>
-                      <SelectItem value="Femme">Femme</SelectItem>
-                      <SelectItem value="Autre">Autre</SelectItem>
+                    <SelectTrigger id="sexe" className="h-12 rounded-xl border-slate-200 bg-white font-bold text-slate-900 shadow-sm">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-xl border-slate-100 shadow-3xl">
+                      <SelectItem value="Homme" className="font-bold py-3 uppercase text-[9px] tracking-widest">Homme</SelectItem>
+                      <SelectItem value="Femme" className="font-bold py-3 uppercase text-[9px] tracking-widest">Femme</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -243,190 +251,199 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
           </Card>
         </div>
 
-        {/* Colonne Détails (Tabs) */}
-        <div className="md:col-span-2">
-          <Tabs defaultValue="identity" className="w-full">
-            <TabsList className="grid w-full grid-cols-3 mb-6 bg-slate-100/50 p-1 rounded-lg">
-              <TabsTrigger value="identity" className="rounded-md font-bold text-xs uppercase tracking-widest">Identité</TabsTrigger>
-              <TabsTrigger value="job" className="rounded-md font-bold text-xs uppercase tracking-widest">Poste & Structure</TabsTrigger>
-              <TabsTrigger value="finance" className="rounded-md font-bold text-xs uppercase tracking-widest">Finance & Social</TabsTrigger>
+        {/* --- MAIN CONTENT: DETAILS TABS --- */}
+        <div className="lg:col-span-3">
+          <Tabs defaultValue="identity" className="w-full space-y-8">
+            <TabsList className="flex bg-white/40 backdrop-blur-xl border border-white/20 p-2 rounded-[2rem] shadow-2xl shadow-slate-200/40 w-fit h-auto gap-2">
+              <TabsTrigger value="identity" className="rounded-3xl px-8 py-4 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-[9px] transition-all">
+                <UserCircle2 className="mr-2 h-4 w-4" /> État Civil
+              </TabsTrigger>
+              <TabsTrigger value="job" className="rounded-3xl px-8 py-4 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-[9px] transition-all">
+                <Briefcase className="mr-2 h-4 w-4" /> Poste & Structure
+              </TabsTrigger>
+              <TabsTrigger value="finance" className="rounded-3xl px-8 py-4 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-[9px] transition-all">
+                <Save className="mr-2 h-4 w-4" /> Social & Finance
+              </TabsTrigger>
             </TabsList>
 
             <ScrollArea className="h-[600px] pr-4">
-              <TabsContent value="identity" className="space-y-6 m-0">
-                <Card className="border-none shadow-sm">
-                  <CardHeader><CardTitle className="text-lg">Informations Personnelles</CardTitle></CardHeader>
-                  <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="lastName">Nom de famille</Label>
-                      <DebouncedInput id="lastName" value={formData.lastName || ''} onChange={(val) => handleValueChange('lastName', val as string)} />
+              <TabsContent value="identity" className="space-y-8 m-0 focus-visible:outline-none">
+                <Card className="border-none bg-white/40 backdrop-blur-xl rounded-[2.5rem] shadow-3xl shadow-slate-200/50 border border-white/20 overflow-hidden">
+                  <CardHeader className="p-10 pb-4 border-b border-white/10 bg-slate-50/50"><CardTitle className="text-xl font-black uppercase tracking-tight text-slate-800">Données Individuelles</CardTitle></CardHeader>
+                  <CardContent className="p-10 grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="space-y-3">
+                      <Label htmlFor="lastName" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Nom de famille</Label>
+                      <DebouncedInput id="lastName" value={formData.lastName || ''} onChange={(val) => handleValueChange('lastName', val as string)} className="h-12 rounded-xl border-slate-200 bg-white shadow-sm font-bold uppercase" />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="firstName">Prénom(s)</Label>
-                      <DebouncedInput id="firstName" value={formData.firstName || ''} onChange={(val) => handleValueChange('firstName', val as string)} />
+                    <div className="space-y-3">
+                      <Label htmlFor="firstName" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Prénom(s)</Label>
+                      <DebouncedInput id="firstName" value={formData.firstName || ''} onChange={(val) => handleValueChange('firstName', val as string)} className="h-12 rounded-xl border-slate-200 bg-white shadow-sm font-bold" />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email professionnel</Label>
-                      <DebouncedInput id="email" type="email" value={formData.email || ''} onChange={(val) => handleValueChange('email', val as string)} />
+                    <div className="space-y-3">
+                      <Label htmlFor="email" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Canal Email</Label>
+                      <DebouncedInput id="email" type="email" value={formData.email || ''} onChange={(val) => handleValueChange('email', val as string)} className="h-12 rounded-xl border-slate-200 bg-white shadow-sm italic" />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="mobile">Contact mobile</Label>
-                      <DebouncedInput id="mobile" value={formData.mobile || ''} onChange={(val) => handleValueChange('mobile', val as string)} />
+                    <div className="space-y-3">
+                      <Label htmlFor="mobile" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Téléphone Mobile</Label>
+                      <DebouncedInput id="mobile" value={formData.mobile || ''} onChange={(val) => handleValueChange('mobile', val as string)} className="h-12 rounded-xl border-slate-200 bg-white shadow-sm font-bold" />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="Date_Naissance">Date de naissance</Label>
-                      <Input id="Date_Naissance" type="date" value={formData.Date_Naissance || ''} onChange={handleInputChange} />
+                    <div className="space-y-3">
+                      <Label htmlFor="Date_Naissance" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Date de naissance</Label>
+                      <Input id="Date_Naissance" type="date" value={formData.Date_Naissance || ''} onChange={handleInputChange} className="h-12 rounded-xl border-slate-200 bg-white shadow-sm font-bold" />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="Lieu_Naissance">Lieu de naissance</Label>
-                      <Input id="Lieu_Naissance" value={formData.Lieu_Naissance || ''} onChange={handleInputChange} />
+                    <div className="space-y-3">
+                      <Label htmlFor="Lieu_Naissance" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Lieu de naissance</Label>
+                      <Input id="Lieu_Naissance" value={formData.Lieu_Naissance || ''} onChange={handleInputChange} className="h-12 rounded-xl border-slate-200 bg-white shadow-sm font-bold" />
                     </div>
                   </CardContent>
                 </Card>
 
-                <Card className="border-none shadow-sm">
-                  <CardHeader><CardTitle className="text-lg">Origine & Résidence</CardTitle></CardHeader>
-                  <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="Region">Région</Label>
+                <Card className="border-none bg-white/40 backdrop-blur-xl rounded-[2.5rem] shadow-3xl shadow-slate-200/50 border border-white/20 overflow-hidden">
+                  <CardHeader className="p-10 pb-4 border-b border-white/10 bg-slate-50/50"><CardTitle className="text-xl font-black uppercase tracking-tight text-slate-800">Origine & Résidence</CardTitle></CardHeader>
+                  <CardContent className="p-10 grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="space-y-3">
+                      <Label htmlFor="Region" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Région Administrative</Label>
                       <Select 
                         value={formData.Region || ''} 
                         onValueChange={(v) => handleSelectChange('Region', v)}
                       >
-                        <SelectTrigger id="Region"><SelectValue placeholder="Sélectionnez une région..." /></SelectTrigger>
-                        <SelectContent>
-                          {IVORIAN_REGIONS.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                        <SelectTrigger id="Region" className="h-12 rounded-xl border-slate-200 bg-white shadow-sm font-bold">
+                          <SelectValue placeholder="Choisir une région..." />
+                        </SelectTrigger>
+                        <SelectContent className="rounded-xl border-slate-100 shadow-3xl max-h-[300px]">
+                          {IVORIAN_REGIONS.map(r => <SelectItem key={r} value={r} className="font-bold py-3 uppercase text-[9px] tracking-widest">{r}</SelectItem>)}
                         </SelectContent>
                       </Select>
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="Departement">Département</Label>
-                      <Input id="Departement" value={formData.Departement || ''} onChange={handleInputChange} />
+                    <div className="space-y-3">
+                      <Label htmlFor="Departement" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Département de résidence</Label>
+                      <Input id="Departement" value={formData.Departement || ''} onChange={handleInputChange} className="h-12 rounded-xl border-slate-200 bg-white shadow-sm font-bold" />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="subPrefecture">Sous-Préfecture</Label>
-                      <Input id="subPrefecture" value={formData.subPrefecture || ''} onChange={handleInputChange} />
+                    <div className="space-y-3">
+                      <Label htmlFor="subPrefecture" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Sous-Préfecture</Label>
+                      <Input id="subPrefecture" value={formData.subPrefecture || ''} onChange={handleInputChange} className="h-12 rounded-xl border-slate-200 bg-white shadow-sm font-bold" />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="Village">Village</Label>
-                      <Input id="Village" value={formData.Village || ''} onChange={handleInputChange} />
+                    <div className="space-y-3">
+                      <Label htmlFor="Village" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Village / Quartier</Label>
+                      <Input id="Village" value={formData.Village || ''} onChange={handleInputChange} className="h-12 rounded-xl border-slate-200 bg-white shadow-sm font-bold" />
                     </div>
                   </CardContent>
                 </Card>
               </TabsContent>
 
-              <TabsContent value="job" className="space-y-6 m-0">
-                <Card className="border-none shadow-sm">
-                  <CardHeader><CardTitle className="text-lg">Détails du Poste</CardTitle></CardHeader>
-                  <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="matricule">Matricule</Label>
-                      <DebouncedInput id="matricule" value={formData.matricule || ''} onChange={(val) => handleValueChange('matricule', val as string)} className="bg-slate-50" />
+              <TabsContent value="job" className="space-y-8 m-0 focus-visible:outline-none">
+                <Card className="border-none bg-white/40 backdrop-blur-xl rounded-[2.5rem] shadow-3xl shadow-slate-200/50 border border-white/20 overflow-hidden">
+                  <CardHeader className="p-10 pb-4 border-b border-white/10 bg-slate-50/50"><CardTitle className="text-xl font-black uppercase tracking-tight text-slate-800">Assignation & Temporalité</CardTitle></CardHeader>
+                  <CardContent className="p-10 grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="space-y-3">
+                      <Label htmlFor="poste" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Intitulé du Poste</Label>
+                      <DebouncedInput id="poste" value={formData.poste || ''} onChange={(val) => handleValueChange('poste', val as string)} className="h-12 rounded-xl border-slate-200 bg-white font-black uppercase text-blue-600 shadow-sm" />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="poste">Poste actuel</Label>
-                      <DebouncedInput id="poste" value={formData.poste || ''} onChange={(val) => handleValueChange('poste', val as string)} />
+                    <div className="space-y-3">
+                      <Label htmlFor="dateEmbauche" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Date d'engagement</Label>
+                      <Input id="dateEmbauche" type="date" value={formData.dateEmbauche || ''} onChange={handleInputChange} className="h-12 rounded-xl border-slate-200 bg-white font-bold" />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="dateEmbauche">Date d'embauche</Label>
-                      <Input id="dateEmbauche" type="date" value={formData.dateEmbauche || ''} onChange={handleInputChange} />
+                    <div className="space-y-3">
+                      <Label htmlFor="Date_Depart" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Date de départ (Prévue)</Label>
+                      <Input id="Date_Depart" type="date" value={formData.Date_Depart || ''} onChange={handleInputChange} className="h-12 rounded-xl border-slate-200 bg-white font-bold text-rose-500" />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="Date_Depart">Date de départ / Retraite</Label>
-                      <Input id="Date_Depart" type="date" value={formData.Date_Depart || ''} onChange={handleInputChange} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="Num_Decision">Référence (Décision)</Label>
-                      <Input id="Num_Decision" value={formData.Num_Decision || ''} onChange={handleInputChange} />
+                    <div className="space-y-3">
+                      <Label htmlFor="Num_Decision" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Référence Acte Administratif</Label>
+                      <Input id="Num_Decision" value={formData.Num_Decision || ''} onChange={handleInputChange} className="h-12 rounded-xl border-slate-200 bg-white font-mono font-bold" placeholder="DEC-..." />
                     </div>
                   </CardContent>
                 </Card>
 
-                <Card className="border-none shadow-sm">
-                  <CardHeader><CardTitle className="text-lg">Structure Organisationnelle</CardTitle></CardHeader>
-                  <CardContent className="space-y-4">
+                <Card className="border-none bg-white/40 backdrop-blur-xl rounded-[2.5rem] shadow-3xl shadow-slate-200/50 border border-white/20 overflow-hidden">
+                  <CardHeader className="p-10 pb-4 border-b border-white/10 bg-slate-50/50"><CardTitle className="text-xl font-black uppercase tracking-tight text-slate-800">Arborescence Structurelle</CardTitle></CardHeader>
+                  <CardContent className="p-10 space-y-6">
                     <div className="space-y-2">
-                      <Label>Département / Groupe</Label>
+                      <Label htmlFor="departmentId" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Département Parent</Label>
                       <Select value={formData.departmentId} onValueChange={(v) => handleSelectChange('departmentId', v)}>
-                        <SelectTrigger><SelectValue placeholder="Sélectionner..." /></SelectTrigger>
-                        <SelectContent>
-                          {departmentList.map(d => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}
+                        <SelectTrigger id="departmentId" className="h-12 rounded-xl border-slate-200 bg-white font-bold"><SelectValue placeholder="Sélectionner..." /></SelectTrigger>
+                        <SelectContent className="rounded-xl border-slate-100 shadow-3xl">
+                          {departmentList.map(d => <SelectItem key={d.id} value={d.id} className="font-bold py-3 uppercase text-[9px] tracking-widest">{d.name}</SelectItem>)}
                         </SelectContent>
                       </Select>
                     </div>
-                    <div className="space-y-2">
-                      <Label>Direction</Label>
-                      <Select value={formData.directionId} onValueChange={(v) => handleSelectChange('directionId', v)} disabled={filteredDirections.length === 0}>
-                        <SelectTrigger><SelectValue placeholder="Sélectionner..." /></SelectTrigger>
-                        <SelectContent>
-                          {filteredDirections.map(d => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Service</Label>
-                      <Select value={formData.serviceId} onValueChange={(v) => handleSelectChange('serviceId', v)} disabled={filteredServices.length === 0}>
-                        <SelectTrigger><SelectValue placeholder="Sélectionner..." /></SelectTrigger>
-                        <SelectContent>
-                          {filteredServices.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
+                    <div className="grid grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <Label htmlFor="directionId" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Direction</Label>
+                        <Select value={formData.directionId} onValueChange={(v) => handleSelectChange('directionId', v)} disabled={filteredDirections.length === 0}>
+                          <SelectTrigger id="directionId" className="h-12 rounded-xl border-slate-200 bg-white font-bold"><SelectValue placeholder="—" /></SelectTrigger>
+                          <SelectContent className="rounded-xl border-slate-100 shadow-3xl">
+                            {filteredDirections.map(d => <SelectItem key={d.id} value={d.id} className="font-bold py-3 uppercase text-[8px] tracking-widest">{d.name}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="serviceId" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Unité / Service</Label>
+                        <Select value={formData.serviceId} onValueChange={(v) => handleSelectChange('serviceId', v)} disabled={filteredServices.length === 0}>
+                          <SelectTrigger id="serviceId" className="h-12 rounded-xl border-slate-200 bg-white font-bold"><SelectValue placeholder="—" /></SelectTrigger>
+                          <SelectContent className="rounded-xl border-slate-100 shadow-3xl">
+                            {filteredServices.map(s => <SelectItem key={s.id} value={s.id} className="font-bold py-3 uppercase text-[8px] tracking-widest">{s.name}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
               </TabsContent>
 
-              <TabsContent value="finance" className="space-y-6 m-0">
-                <Card className="border-none shadow-sm">
-                  <CardHeader><CardTitle className="text-lg">Détails Bancaires</CardTitle></CardHeader>
-                  <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="banque">Nom de la banque</Label>
-                      <Input id="banque" value={formData.banque || ''} onChange={handleInputChange} />
+              <TabsContent value="finance" className="space-y-8 m-0 focus-visible:outline-none">
+                <Card className="border-none bg-white/40 backdrop-blur-xl rounded-[2.5rem] shadow-3xl shadow-slate-200/50 border border-white/20 overflow-hidden">
+                  <CardHeader className="p-10 pb-4 border-b border-white/10 bg-slate-50/50"><CardTitle className="text-xl font-black uppercase tracking-tight text-slate-800">Données Financières</CardTitle></CardHeader>
+                  <CardContent className="p-10 grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="space-y-3">
+                      <Label htmlFor="banque" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Établissement Bancaire</Label>
+                      <Input id="banque" value={formData.banque || ''} onChange={handleInputChange} className="h-12 rounded-xl border-slate-200 bg-white font-black italic tracking-widest" />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="numeroCompte">Numéro de compte</Label>
-                      <Input id="numeroCompte" value={formData.numeroCompte || ''} onChange={handleInputChange} />
+                    <div className="space-y-3">
+                      <Label htmlFor="numeroCompte" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Numéro de Compte (RIP)</Label>
+                      <Input id="numeroCompte" value={formData.numeroCompte || ''} onChange={handleInputChange} className="h-12 rounded-xl border-slate-200 bg-white font-mono font-black tracking-widest" />
                     </div>
                   </CardContent>
                 </Card>
 
-                <Card className="border-none shadow-sm">
-                  <CardHeader><CardTitle className="text-lg">Informations Sociales</CardTitle></CardHeader>
-                  <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                     <div className="flex items-center space-x-2 pt-8">
-                        <Checkbox 
-                        id="CNPS" 
-                        checked={!!formData.CNPS} 
-                        onCheckedChange={(checked) => setFormData(prev => ({ ...prev, CNPS: !!checked }))}
-                        className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-                        title="Déclaré à la CNPS"
-                      />
-                       <Label htmlFor="CNPS">Déclaré à la CNPS</Label>
+                <Card className="border-none bg-white/40 backdrop-blur-xl rounded-[2.5rem] shadow-3xl shadow-slate-200/50 border border-white/20 overflow-hidden">
+                  <CardHeader className="p-10 pb-4 border-b border-white/10 bg-slate-50/50"><CardTitle className="text-xl font-black uppercase tracking-tight text-slate-800">Protection Sociale & Aptitudes</CardTitle></CardHeader>
+                  <CardContent className="p-10 space-y-8">
+                     <div className="p-8 bg-blue-50/50 rounded-[2rem] border border-blue-100 flex flex-col md:flex-row gap-8 items-start md:items-center">
+                        <div className="flex items-center space-x-4">
+                          <Checkbox 
+                            id="CNPS" 
+                            checked={!!formData.CNPS} 
+                            onCheckedChange={(checked) => setFormData(prev => ({ ...prev, CNPS: !!checked }))}
+                            className="h-8 w-8 rounded-xl border-blue-200 bg-white data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 shadow-xl transition-all"
+                          />
+                          <Label htmlFor="CNPS" className="text-[11px] font-black uppercase tracking-widest text-slate-700 cursor-pointer">Immatriculation CNPS Active</Label>
+                        </div>
+                        <div className="flex-1 space-y-2 w-full">
+                          <Label htmlFor="Date_Cessation_CNPS" className="text-[9px] font-black uppercase tracking-widest text-blue-600 ml-1">Date d'effet immatriculation</Label>
+                          <Input 
+                            id="Date_Cessation_CNPS" 
+                            type="date" 
+                            value={formData.Date_Cessation_CNPS || ''} 
+                            onChange={handleInputChange} 
+                            disabled={!formData.CNPS}
+                            className="h-12 rounded-2xl border-blue-200 bg-white/60 font-bold"
+                          />
+                        </div>
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="Date_Cessation_CNPS">Date de cessation CNPS</Label>
-                      <Input 
-                        id="Date_Cessation_CNPS" 
-                        type="date" 
-                        value={formData.Date_Cessation_CNPS || ''} 
-                        onChange={handleInputChange} 
-                        disabled={!formData.CNPS}
-                      />
-                      <p className="text-[10px] text-muted-foreground italic">Laissez vide si toujours actif.</p>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="enfants">Nombre d'enfants</Label>
-                      <Input id="enfants" type="number" value={formData.enfants || 0} onChange={(e) => setFormData(prev => ({ ...prev, enfants: parseInt(e.target.value) || 0 }))} />
-                    </div>
-                    <div className="md:col-span-2 space-y-2">
-                      <Label htmlFor="skills">Compétences (séparées par des virgules)</Label>
-                      <Textarea 
-                        id="skills" 
-                        value={Array.isArray(formData.skills) ? formData.skills.join(', ') : (formData.skills || '')} 
-                        onChange={handleInputChange} 
-                        rows={3}
-                      />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <div className="space-y-3">
+                        <Label htmlFor="enfants" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Nombre d'enfants à charge</Label>
+                        <Input id="enfants" type="number" value={formData.enfants || 0} onChange={(e) => setFormData(prev => ({ ...prev, enfants: parseInt(e.target.value) || 0 }))} className="h-12 rounded-xl border-slate-200 bg-white font-black" />
+                      </div>
+                      <div className="space-y-3">
+                        <Label htmlFor="skills" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Expertises Clefs (Séparées par ,)</Label>
+                        <Textarea 
+                          id="skills" 
+                          value={Array.isArray(formData.skills) ? formData.skills.join(', ') : (formData.skills || '')} 
+                          onChange={handleInputChange} 
+                          className="rounded-2xl border-slate-200 bg-white/60 min-h-[100px] p-6 text-sm font-medium focus-visible:ring-blue-500/50 shadow-inner" 
+                        />
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -435,6 +452,33 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
           </Tabs>
         </div>
       </form>
+
+      {/* --- STICKY ACTIONS FOOTER --- */}
+      <div className="sticky bottom-8 left-0 right-0 z-50 px-4 md:px-0">
+        <div className="max-w-5xl mx-auto bg-white/40 backdrop-blur-2xl border border-white/30 p-4 rounded-[2.5rem] shadow-3xl flex gap-4">
+           <Button 
+            variant="outline" 
+            onClick={() => router.back()} 
+            disabled={isSubmitting}
+            className="h-16 flex-1 rounded-[1.8rem] border-slate-200 bg-white font-black uppercase tracking-widest text-[10px] hover:bg-slate-50 shadow-xl"
+          >
+            <X className="mr-3 h-5 w-5 text-slate-400" /> Annuler les modifications
+          </Button>
+          <Button 
+            onClick={handleSubmit} 
+            disabled={isSubmitting}
+            className="h-16 flex-[2] rounded-[1.8rem] bg-slate-900 text-white font-black uppercase tracking-widest text-[11px] hover:bg-black shadow-2xl shadow-black/20 group transition-all"
+          >
+            {isSubmitting ? (
+              <Loader2 className="mr-3 h-5 w-5 animate-spin" />
+            ) : (
+              <Save className="mr-3 h-6 w-6 text-emerald-400 group-hover:scale-110 transition-transform" />
+            )}
+            {isSubmitting ? "Synchronisation en cours..." : "Sauvegarder le dossier agent"}
+          </Button>
+        </div>
+      </div>
+    </div>
 
     </div>
   );

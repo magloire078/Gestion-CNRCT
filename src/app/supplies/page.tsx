@@ -27,6 +27,8 @@ import {
   Database,
   RefreshCw
 } from "lucide-react";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -80,6 +82,7 @@ import { InstitutionalHeader } from "@/components/reports/institutional-header";
 import { InstitutionalFooter } from "@/components/reports/institutional-footer";
 import { InstitutionalReportWrapper } from "@/components/reports/institutional-report-wrapper";
 import { SuppliesOfficialReport } from "@/components/reports/supplies-official-report";
+import { SupplyAnalytics } from "@/components/supplies/supply-analytics";
 import { PermissionGuard } from "@/components/auth/permission-guard";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
@@ -102,7 +105,8 @@ const SupplyRow = memo(({
     openDistributeDialog, 
     openRestockDialog,
     openEditSheet, 
-    setDeleteTarget 
+    setDeleteTarget,
+    transactions
 }: {
     supply: Supply;
     index: number;
@@ -110,74 +114,93 @@ const SupplyRow = memo(({
     openRestockDialog: (s: Supply) => void;
     openEditSheet: (s: Supply) => void;
     setDeleteTarget: (s: Supply) => void;
+    transactions?: SupplyTransaction[];
 }) => {
     const status = getStockStatus(supply.quantity, supply.reorderLevel);
     const Icon = status.icon;
 
+    // Check for movements in current month for activity marker
+    const hasRecentActivity = useMemo(() => {
+        if (!transactions) return false;
+        const now = new Date();
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        return transactions.some(t => t.supplyId === supply.id && new Date(t.date) >= startOfMonth);
+    }, [transactions, supply.id]);
+
     return (
-        <TableRow key={supply.id} className="group hover:bg-slate-50/50 transition-colors border-slate-100">
-            <TableCell className="text-center text-slate-300 font-mono text-xs">
+        <TableRow key={supply.id} className={cn(
+            "group hover:bg-primary/5 transition-all border-border/40",
+            hasRecentActivity && "bg-blue-50/10"
+        )}>
+            <TableCell className="text-center font-bold text-muted-foreground opacity-50">
                 {index + 1}
             </TableCell>
-            <TableCell className="font-mono text-xs font-bold text-slate-400">
-                {supply.code || '---'}
-            </TableCell>
-            <TableCell className="font-bold text-slate-700">
-                <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-md bg-slate-50 border border-slate-100 flex items-center justify-center overflow-hidden flex-shrink-0">
-                        {supply.photoUrl ? (
-                            <img src={supply.photoUrl} alt={supply.name} className="w-full h-full object-cover" />
-                        ) : (
-                            <Package className="h-4 w-4 text-slate-300" />
-                        )}
-                    </div>
-                    <span>{supply.name}</span>
+            <TableCell className="font-mono text-[10px] font-black text-muted-foreground">
+                <div className="flex flex-col gap-1 items-start">
+                    <span className="bg-muted px-1.5 py-0.5 rounded text-foreground/70">{supply.code || 'NO-CODE'}</span>
+                    {hasRecentActivity && (
+                        <Badge variant="secondary" className="bg-blue-100 text-blue-700 text-[8px] px-1 py-0 border-none uppercase font-black w-fit">
+                            Actif
+                        </Badge>
+                    )}
                 </div>
             </TableCell>
-            <TableCell>
-                <Badge variant="outline" className="rounded-md bg-white border-slate-200 text-slate-500 font-medium px-2 py-0">
-                    {supply.category}
-                </Badge>
+            <TableCell className="font-bold text-foreground">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-card/40 backdrop-blur-md border border-white/10 flex items-center justify-center overflow-hidden flex-shrink-0 shadow-sm relative group">
+                        {supply.photoUrl ? (
+                            <img src={supply.photoUrl} alt={supply.name} className="w-full h-full object-cover transition-transform group-hover:scale-110" />
+                        ) : (
+                            <Package className="h-5 w-5 text-slate-400" />
+                        )}
+                        <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
+                    <div className="flex flex-col">
+                        <span className="text-sm font-bold tracking-tight">{supply.name}</span>
+                        <span className="text-[10px] text-muted-foreground uppercase font-black tracking-widest leading-none mt-1">{supply.category}</span>
+                    </div>
+                </div>
             </TableCell>
-            <TableCell className="text-center font-black text-slate-900">{supply.quantity}</TableCell>
-            <TableCell className="text-center text-slate-400 italic text-xs">{supply.reorderLevel}</TableCell>
+            <TableCell className="text-center font-black text-foreground text-lg">{supply.quantity}</TableCell>
+            <TableCell className="text-center text-muted-foreground font-bold text-[10px] uppercase tracking-widest">{supply.reorderLevel}</TableCell>
             <TableCell>
                 <div className="flex flex-col gap-1.5 min-w-[120px]">
-                    <div className="flex items-center justify-between text-[10px] font-bold">
+                    <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest">
                         <span className={cn(
                             status.color === 'destructive' ? "text-red-500" :
                             status.color === 'warning' ? "text-amber-500" : "text-emerald-500"
                         )}>
                             {status.text}
                         </span>
-                        <Icon className="h-3 w-3 opacity-40" />
+                        <Icon className={cn("h-3 w-3", status.className.replace('bg-', 'text-'))} />
                     </div>
                     <Progress 
                         value={status.value} 
-                        className="h-2 rounded-full bg-slate-100 overflow-hidden" 
-                        indicatorClassName={cn("transition-all duration-700", status.className)} 
+                        className="h-1.5 rounded-full bg-muted overflow-hidden border border-border/50" 
+                        indicatorClassName={cn("transition-all duration-1000", status.className)} 
                     />
                 </div>
             </TableCell>
             <TableCell className="text-right">
                 <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full border border-slate-100 shadow-sm hover:bg-slate-100">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-primary/10 transition-colors">
                         <MoreHorizontal className="h-4 w-4" />
                     </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="rounded-xl shadow-xl border-slate-100">
-                    <DropdownMenuItem onClick={() => openDistributeDialog(supply)} className="cursor-pointer font-bold text-slate-900 border-b border-slate-50">
-                        <ShoppingCart className="mr-2 h-4 w-4 text-blue-600" /> Donner à...
+                <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-2xl border-white/10 bg-card/90 backdrop-blur-xl">
+                    <DropdownMenuLabel className="font-black uppercase text-[10px] tracking-widest opacity-50 px-2 py-1.5">Gestion d'Inventaire</DropdownMenuLabel>
+                    <DropdownMenuItem onClick={() => openDistributeDialog(supply)} className="cursor-pointer font-bold text-foreground focus:bg-primary/10 rounded-lg mx-1 my-0.5">
+                        <ShoppingCart className="mr-2 h-4 w-4 text-blue-600" /> Distribuer Article
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => openRestockDialog(supply)} className="cursor-pointer font-bold text-emerald-700 bg-emerald-50/50">
+                    <DropdownMenuItem onClick={() => openRestockDialog(supply)} className="cursor-pointer font-bold text-emerald-600 focus:bg-emerald-50 rounded-lg mx-1 my-0.5">
                         <PlusCircle className="mr-2 h-4 w-4" /> Réapprovisionner
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => openEditSheet(supply)} className="cursor-pointer">
-                        <Pencil className="mr-2 h-4 w-4" /> Modifier
+                    <DropdownMenuItem onClick={() => openEditSheet(supply)} className="cursor-pointer font-bold mx-1 my-0.5 rounded-lg">
+                        <Settings className="mr-2 h-4 w-4 text-slate-400" /> Paramètres Article
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setDeleteTarget(supply)} className="text-red-600 focus:text-red-600 cursor-pointer">
-                        <Trash2 className="mr-2 h-4 w-4" /> Supprimer
+                    <DropdownMenuItem onClick={() => setDeleteTarget(supply)} className="text-destructive font-bold focus:bg-destructive/10 cursor-pointer mx-1 my-0.5 rounded-lg">
+                        <Trash2 className="mr-2 h-4 w-4" /> Supprimer Définitivement
                     </DropdownMenuItem>
                 </DropdownMenuContent>
                 </DropdownMenu>
@@ -201,84 +224,92 @@ const SupplyCard = memo(({
   setDeleteTarget: (s: Supply) => void;
 }) => {
   return (
-    <Card key={supply.id} className="group overflow-hidden rounded-2xl border-slate-100 hover:shadow-lg hover:shadow-slate-200/50 transition-all border-none bg-slate-50 relative">
-        <div className={cn("h-1 w-full", status.className)} />
+    <Card key={supply.id} className="group overflow-hidden rounded-2xl border-white/10 shadow-xl bg-card/40 backdrop-blur-md transition-all hover:shadow-2xl hover:-translate-y-1 relative">
+        <div className={cn("h-1.5 w-full", status.className)} />
         <CardHeader className="pb-3">
             <div className="flex justify-between items-start">
-                <Badge variant="outline" className="bg-white border-slate-200 rounded-lg text-[10px] font-bold mb-2">
+                <Badge variant="outline" className="bg-card/60 backdrop-blur-sm border-white/10 rounded-lg text-[10px] font-black uppercase tracking-widest mb-2 px-2 py-0.5">
                     {supply.category}
                 </Badge>
                 {supply.code && (
-                    <Badge variant="secondary" className="bg-slate-100 text-slate-600 border-none rounded-lg text-[10px] font-bold mb-2 ml-2">
+                    <Badge variant="secondary" className="bg-slate-900/10 text-slate-600 border-none rounded-lg text-[10px] font-black mb-2 ml-2">
                         {supply.code}
                     </Badge>
                 )}
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg"><MoreHorizontal className="h-4 w-4" /></Button>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg hover:bg-primary/10 transition-colors"><MoreHorizontal className="h-4 w-4" /></Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="rounded-xl border-slate-100 shadow-xl">
-                        <DropdownMenuItem onClick={() => openEditSheet(supply)}><Pencil className="mr-2 h-4 w-4" /> Modifier</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setDeleteTarget(supply)} className="text-red-600"><Trash2 className="mr-2 h-4 w-4" /> Supprimer</DropdownMenuItem>
+                    <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-2xl border-white/10 bg-card/90 backdrop-blur-xl">
+                        <DropdownMenuLabel className="font-black uppercase text-[10px] tracking-widest opacity-50 px-2 py-1.5">Options Article</DropdownMenuLabel>
+                        <DropdownMenuItem onClick={() => openEditSheet(supply)} className="font-bold rounded-lg mx-1 my-0.5"><Settings className="mr-2 h-4 w-4 text-slate-400" /> Modifier Détails</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setDeleteTarget(supply)} className="text-destructive font-bold focus:bg-destructive/10 rounded-lg mx-1 my-0.5"><Trash2 className="mr-2 h-4 w-4" /> Supprimer</DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>
-            <CardTitle className="text-lg font-black text-slate-800">{supply.name}</CardTitle>
+            <CardTitle className="text-lg font-black text-slate-900 tracking-tight leading-tight">{supply.name}</CardTitle>
         </CardHeader>
-        <div className="px-6 pb-2">
-            <div className="w-full aspect-[4/3] rounded-xl bg-slate-100/50 border border-slate-200/50 overflow-hidden flex items-center justify-center relative group shadow-inner">
+        <div className="px-5 pb-2">
+            <div className="w-full aspect-[4/3] rounded-2xl bg-card/40 backdrop-blur-md border border-white/10 overflow-hidden flex items-center justify-center relative group shadow-inner">
                 {supply.photoUrl ? (
-                    <img src={supply.photoUrl} alt={supply.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                    <img src={supply.photoUrl} alt={supply.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                 ) : (
                     <div className="flex flex-col items-center gap-2">
-                        <Package className="h-10 w-10 text-slate-200" />
-                        <span className="text-[10px] text-slate-300 font-bold uppercase tracking-wider">Aucune Photo</span>
+                        <Package className="h-10 w-10 text-slate-300" />
+                        <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Institutionnel</span>
                     </div>
                 )}
                 {supply.quantity <= supply.reorderLevel && (
-                    <div className="absolute top-2 left-2 px-2 py-0.5 bg-red-500 text-white text-[8px] font-black uppercase rounded-full shadow-md z-10">Stock Bas</div>
+                    <div className="absolute top-3 left-3 px-2 py-1 bg-red-600 text-white text-[9px] font-black uppercase rounded-lg shadow-xl z-10 animate-pulse border border-white/20">
+                        Stock Bas
+                    </div>
                 )}
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/20 to-transparent h-1/3 opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>
         </div>
         <CardContent className="pb-6">
             <div className="space-y-4">
                 <div className="flex justify-between items-end">
-                    <div className="space-y-0.5">
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">En Stock</p>
+                    <div className="space-y-0.5 transition-all group-hover:translate-x-1">
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">En Stock</p>
                         <p className="text-2xl font-black text-slate-900">{supply.quantity}</p>
                     </div>
-                    <div className="text-right space-y-0.5">
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Seuil</p>
-                        <p className="text-xs font-bold text-slate-600">{supply.reorderLevel}</p>
+                    <div className="text-right space-y-0.5 transition-all group-hover:-translate-x-1">
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Seuil</p>
+                        <p className="text-xs font-black text-slate-600 bg-muted px-1.5 py-0.5 rounded-md inline-block">{supply.reorderLevel}</p>
                     </div>
                 </div>
-                <div className="space-y-1.5">
-                     <div className="flex justify-between text-[10px] font-bold uppercase tracking-tight">
+                <div className="space-y-2">
+                     <div className="flex justify-between text-[10px] font-black uppercase tracking-widest">
                         <span className={cn(
+                            "flex items-center gap-1",
                             status.color === 'destructive' ? "text-red-500" :
                             status.color === 'warning' ? "text-amber-500" : "text-emerald-500"
-                        )}>{status.text}</span>
+                        )}>
+                            <div className={cn("h-1.5 w-1.5 rounded-full", status.className)} />
+                            {status.text}
+                        </span>
                         <span className="text-slate-400">{Math.round(status.value)}%</span>
                     </div>
-                    <Progress value={status.value} className="h-1.5 rounded-full bg-white border border-slate-100" indicatorClassName={cn("transition-all duration-1000", status.className)} />
+                    <Progress value={status.value} className="h-1.5 rounded-full bg-muted border border-border/20 overflow-hidden" indicatorClassName={cn("transition-all duration-1000", status.className)} />
                 </div>
                 <div className="pt-2">
                     <Button 
                         onClick={() => openDistributeDialog(supply)} 
                         disabled={supply.quantity <= 0}
-                        className="w-full bg-slate-900 rounded-xl h-9 text-xs font-bold"
+                        className="w-full bg-slate-900 rounded-xl h-10 text-xs font-black uppercase tracking-widest shadow-lg hover:shadow-2xl transition-all active:scale-95"
                     >
-                        <ShoppingCart className="mr-2 h-3.5 w-3.5" /> Donner à...
+                        <ShoppingCart className="mr-2 h-4 w-4" /> Distribuer
                     </Button>
                 </div>
             </div>
         </CardContent>
-        <CardFooter className="bg-white/50 py-3 border-t border-slate-100 flex justify-between items-center px-6">
-            <div className="flex items-center gap-1 text-[10px] text-slate-400 font-medium italic">
-                <Info className="h-3 w-3" /> MAJ: {supply.lastRestockDate || 'N/A'}
+        <CardFooter className="bg-card/20 py-3 border-t border-white/5 flex justify-between items-center px-6">
+            <div className="flex items-center gap-1.5 text-[9px] text-slate-400 font-black uppercase tracking-tighter">
+                <TrendingUp className="h-3 w-3 text-primary/50" /> {supply.lastRestockDate ? `MAJ: ${supply.lastRestockDate}` : 'Aucun mouvement'}
             </div>
-            <Button variant="ghost" size="sm" onClick={() => openEditSheet(supply)} className="h-7 text-[10px] uppercase font-black tracking-widest text-slate-400 hover:text-slate-900 p-0 hover:bg-transparent">
-                Détails <ChevronRight className="ml-1 h-3 w-3" />
+            <Button variant="ghost" size="sm" onClick={() => openEditSheet(supply)} className="h-7 text-[10px] uppercase font-black tracking-widest text-slate-400 hover:text-slate-900 p-0 hover:bg-transparent transition-colors">
+                Gérer <ChevronRight className="ml-1 h-3 w-3" />
             </Button>
         </CardFooter>
     </Card>
@@ -578,6 +609,7 @@ export default function SuppliesPage() {
 
   const printableSupplies = useMemo(() => {
     if (!printOptions) return [];
+    
     let items = supplies;
     if (!printOptions.includeOutOfStock) {
         items = items.filter(s => s.quantity > 0);
@@ -586,14 +618,59 @@ export default function SuppliesPage() {
         items = items.filter(s => s.category === printOptions.category);
     }
     
-    return [...items].sort((a, b) => {
+    const enrichedItems = items.map(supply => {
+        const periodTransactions = transactions.filter(t => {
+            if (t.supplyId !== supply.id) return false;
+            const tDate = new Date(t.date);
+            return tDate.getMonth() === printOptions.periodMonth && 
+                   tDate.getFullYear() === printOptions.periodYear;
+        });
+        
+        const postPeriodTransactions = transactions.filter(t => {
+            if (t.supplyId !== supply.id) return false;
+            const tDate = new Date(t.date);
+            const periodEnd = new Date(printOptions.periodYear, printOptions.periodMonth + 1, 1);
+            return tDate >= periodEnd;
+        });
+
+        const qteEntree = periodTransactions
+            .filter(t => t.type === 'restock')
+            .reduce((sum, t) => sum + t.quantity, 0);
+            
+        const qteSortie = periodTransactions
+            .filter(t => t.type === 'distribution')
+            .reduce((sum, t) => sum + t.quantity, 0);
+
+        const variationPostPeriod = postPeriodTransactions.reduce((acc, t) => {
+            return acc + (t.type === 'restock' ? t.quantity : -t.quantity);
+        }, 0);
+        
+        const qteStockFin = supply.quantity - variationPostPeriod;
+        const qteInventaire = qteStockFin - (qteEntree - qteSortie);
+
+        return {
+            ...supply,
+            qteInventaire,
+            qteEntree,
+            qteSortie,
+            qteStock: qteStockFin,
+            isModified: (qteEntree > 0 || qteSortie > 0)
+        };
+    });
+
+    return enrichedItems.sort((a, b) => {
         if (printOptions.sortBy === 'name') return a.name.localeCompare(b.name);
         if (printOptions.sortBy === 'quantity') return b.quantity - a.quantity;
         if (printOptions.sortBy === 'category') return (a.category || '').localeCompare(b.category || '');
         return 0;
     });
-  }, [supplies, printOptions]);
+  }, [supplies, transactions, printOptions]);
 
+  const periodLabel = useMemo(() => {
+    if (!printOptions) return "";
+    const months = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
+    return `${months[printOptions.periodMonth]} ${printOptions.periodYear}`;
+  }, [printOptions]);
 
   return (
     <PermissionGuard permission="page:supplies:view">
@@ -601,22 +678,23 @@ export default function SuppliesPage() {
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight">
+          <h1 className="text-3xl font-black tracking-tight flex items-center gap-3">
+            <Package className="h-8 w-8 text-slate-900" />
             Gestion des Fournitures
             {categoryFilter !== 'all' && (
-              <span className="ml-2 px-3 py-1 bg-slate-100 text-slate-500 rounded-lg text-lg align-middle border border-slate-200">
+              <Badge variant="outline" className="ml-2 px-3 py-1 bg-card/40 backdrop-blur-md text-slate-500 rounded-lg text-lg align-middle border border-white/10 uppercase font-black tracking-widest text-xs">
                 {categoryFilter}
-              </span>
+              </Badge>
             )}
           </h1>
-          <p className="text-muted-foreground mt-1 text-sm">Contrôle de l'inventaire et suivi des réapprovisionnements.</p>
+          <p className="text-muted-foreground mt-1 text-sm font-medium">Contrôle de l'inventaire et suivi des réapprovisionnements institutionnels.</p>
         </div>
         <div className="flex items-center gap-3">
-             <div className="p-1 bg-slate-100 rounded-xl flex items-center shadow-sm">
+             <div className="p-1 bg-card/40 backdrop-blur-md border border-white/10 rounded-xl flex items-center shadow-lg">
                 <Button 
                     variant={viewMode === 'table' ? 'default' : 'ghost'} 
                     size="icon" 
-                    className={cn("h-8 w-8 rounded-lg", viewMode === 'table' && "bg-white shadow-sm text-slate-900")} 
+                    className={cn("h-8 w-8 rounded-lg", viewMode === 'table' && "bg-slate-900 shadow-sm text-white hover:bg-slate-800")} 
                     onClick={() => setViewMode('table')}
                 >
                     <List className="h-4 w-4" />
@@ -624,7 +702,7 @@ export default function SuppliesPage() {
                 <Button 
                     variant={viewMode === 'grid' ? 'default' : 'ghost'} 
                     size="icon" 
-                    className={cn("h-8 w-8 rounded-lg", viewMode === 'grid' && "bg-white shadow-sm text-slate-900")} 
+                    className={cn("h-8 w-8 rounded-lg", viewMode === 'grid' && "bg-slate-900 shadow-sm text-white hover:bg-slate-800")} 
                     onClick={() => setViewMode('grid')}
                 >
                     <LayoutGrid className="h-4 w-4" />
@@ -633,20 +711,13 @@ export default function SuppliesPage() {
             <Button 
                 onClick={() => startTransition(() => setIsPrintDialogOpen(true))} 
                 variant="outline" 
-                className="rounded-xl border-slate-200 font-bold shadow-sm"
+                className="rounded-xl border-white/10 bg-card/40 backdrop-blur-md font-bold shadow-lg transition-all hover:bg-card/60"
             >
-              <Printer className="mr-2 h-4 w-4" /> Imprimer Rapport
+              <Printer className="mr-2 h-4 w-4" /> Rapport
             </Button>
 
-            <Button 
-                onClick={() => setIsManageCategoriesOpen(true)}
-                variant="outline" 
-                className="rounded-xl border-slate-200 font-bold shadow-sm"
-            >
-              <Settings className="mr-2 h-4 w-4" /> Gérer Catégories
-            </Button>
-            <Button onClick={() => setIsAddSheetOpen(true)} className="bg-slate-900 rounded-xl h-11 font-bold">
-                <PlusCircle className="mr-2 h-4 w-4" />
+            <Button onClick={() => setIsAddSheetOpen(true)} className="rounded-xl bg-slate-900 h-11 font-black px-6 shadow-xl hover:shadow-2xl transition-all">
+                <PlusCircle className="mr-2 h-5 w-5" />
                 Nouvel Article
             </Button>
         </div>
@@ -662,11 +733,21 @@ export default function SuppliesPage() {
                 <TabsTrigger value="requests" className="gap-2">
                     <ShoppingCart className="h-4 w-4" /> Demandes
                 </TabsTrigger>
+                <TabsTrigger value="analytics" className="gap-2">
+                    <BarChart3 className="h-4 w-4" /> Analyses
+                </TabsTrigger>
                 <TabsTrigger value="history" className="gap-2">
                     <Archive className="h-4 w-4" /> Historique
                 </TabsTrigger>
             </TabsList>
         </div>
+
+      <TabsContent value="analytics" className="mt-0">
+          <SupplyAnalytics 
+            supplies={filteredSupplies}
+            transactions={transactions}
+          />
+      </TabsContent>
 
       <TabsContent value="inventory" className="mt-0">
           <InventoryTab 
@@ -696,6 +777,7 @@ export default function SuppliesPage() {
                     openRestockDialog={openRestockDialog}
                     openEditSheet={openEditSheet}
                     setDeleteTarget={handleSetDeleteTarget}
+                    transactions={transactions}
                 />
             )}
             renderSupplyCard={(supply) => (
@@ -788,6 +870,7 @@ export default function SuppliesPage() {
             logos={settings || { mainLogoUrl: '', secondaryLogoUrl: '', name: 'CNRCT', id: 'default' } as any}
             supplies={printableSupplies}
             categoryLabel={categoryFilter}
+            periodLabel={periodLabel}
             stats={stats}
             options={{
                 includePhotos: printOptions.includePhotos,
@@ -805,7 +888,7 @@ export default function SuppliesPage() {
             <div id="printable-report" className="bg-white p-10 min-h-screen text-black">
               <InstitutionalHeader 
                 title={categoryFilter !== 'all' ? `État des Stocks : ${categoryFilter}` : "État de Gestion des Fournitures et Consommables"} 
-                period={`Situation au ${new Date().toLocaleDateString('fr-FR')}`}
+                period={`Période : ${periodLabel || format(new Date(), 'MMMM yyyy', { locale: fr })}`}
               />
                 
               <div className="grid grid-cols-4 gap-6 my-8 pb-8 border-b border-slate-100">

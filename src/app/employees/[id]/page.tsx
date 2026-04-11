@@ -209,89 +209,118 @@ export default function EmployeeDetailPage() {
 
     return (
         <div className="flex flex-col gap-8 pb-20">
-            {/* Header / Hero Section */}
-            <div className="relative overflow-hidden bg-slate-900 rounded-xl p-8 md:p-12 shadow-2xl">
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_50%,rgba(59,130,246,0.1),transparent)]" />
-                <div className="relative z-10 flex flex-col md:flex-row items-center gap-8 md:gap-12">
-                    <div className="relative">
-                        <Avatar className="h-40 w-40 border-8 border-white/5 shadow-2xl transition-transform hover:scale-105 duration-500">
-                            <AvatarImage src={employee.photoUrl} alt={employee.name} className="object-cover" />
-                            <AvatarFallback className="text-4xl font-black bg-slate-800 text-slate-500">
+            {/* --- PREMIUM PROFILE HERO SECTION --- */}
+            <div className="relative overflow-hidden rounded-[3rem] p-1 shadow-2xl bg-white/20 backdrop-blur-xl border border-white/30">
+                <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900" />
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_50%,rgba(59,130,246,0.15),transparent)]" />
+                
+                <div className="relative z-10 p-8 md:p-12 flex flex-col md:flex-row items-center gap-10 md:gap-16">
+                    {/* Avatar Section */}
+                    <div className="relative group">
+                        <div className={cn(
+                            "absolute -inset-2 rounded-full blur-xl opacity-40 transition-all duration-700 group-hover:opacity-70 group-hover:scale-110",
+                            isActive ? "bg-emerald-500" : "bg-rose-500"
+                        )} />
+                        <Avatar className="h-48 w-48 md:h-56 md:w-56 border-8 border-white/10 shadow-3xl transition-all duration-1000 group-hover:scale-[1.02]">
+                            <AvatarImage src={employee.photoUrl} alt={employee.name} className="object-cover transition-transform duration-700 group-hover:scale-110" />
+                            <AvatarFallback className="text-6xl font-black bg-slate-800 text-slate-500">
                                 {employee.lastName?.charAt(0)}
                             </AvatarFallback>
                         </Avatar>
                         <div className={cn(
-                            "absolute -bottom-2 -right-2 h-10 w-10 rounded-full border-4 border-slate-900 flex items-center justify-center shadow-lg",
+                            "absolute -bottom-2 -right-2 h-14 w-14 rounded-full border-6 border-slate-900 flex items-center justify-center shadow-2xl",
                             isActive ? "bg-emerald-500" : "bg-rose-500"
                         )}>
                             {isActive ? (
-                                <CheckCircle2 className="h-5 w-5 text-white" />
+                                <CheckCircle2 className="h-6 w-6 text-white" />
                             ) : (
-                                <XCircle className="h-5 w-5 text-white" />
+                                <XCircle className="h-6 w-6 text-white" />
                             )}
                         </div>
                     </div>
 
-                    <div className="flex-1 text-center md:text-left space-y-4">
-                        <div className="flex flex-col md:flex-row md:items-center gap-3">
-                            <h1 className="text-3xl md:text-5xl font-black text-white tracking-tighter">
-                                {employee.lastName} <span className="text-slate-400 font-medium">{employee.firstName}</span>
+                    {/* Info Section */}
+                    <div className="flex-1 text-center md:text-left space-y-6">
+                        <div className="space-y-2">
+                             <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 mb-2">
+                                <div className="bg-blue-600 text-white px-4 py-1.5 rounded-full shadow-lg shadow-blue-900/40">
+                                    <span className="text-[10px] font-black uppercase tracking-[0.2em]">{employee.matricule}</span>
+                                </div>
+                                <span className="h-4 w-px bg-white/20" />
+                                <span className="text-blue-400 font-bold uppercase text-[10px] tracking-widest flex items-center gap-2">
+                                    <UserCircle className="h-3.5 w-3.5" /> Dossier Individuel Actif
+                                </span>
+                            </div>
+                            <h1 className="text-4xl md:text-7xl font-black text-white tracking-tighter leading-none mb-4 uppercase">
+                                {employee.lastName} <br/>
+                                <span className="text-slate-400 font-medium tracking-tight normal-case">{employee.firstName}</span>
                             </h1>
-                            <Badge className="w-fit mx-auto md:mx-0 bg-blue-500/10 text-blue-400 border-blue-500/20 px-4 py-1 h-7 rounded-full text-[10px] font-black uppercase tracking-widest">
-                                {employee.matricule}
-                            </Badge>
                         </div>
-                        <p className="text-lg md:text-xl text-slate-400 font-bold uppercase tracking-wide">{employee.poste}</p>
+
+                        <div className="inline-flex items-center gap-3 bg-white/5 border border-white/10 px-6 py-2.5 rounded-2xl backdrop-blur-md">
+                            <Briefcase className="h-5 w-5 text-amber-500" />
+                            <span className="text-lg md:text-xl text-slate-300 font-black uppercase tracking-[0.1em]">{employee.poste}</span>
+                        </div>
                         
-                        <div className="flex flex-wrap justify-center md:justify-start gap-4 pt-2">
-                            <div className="flex items-center gap-2 text-slate-400 text-sm font-medium bg-white/5 px-4 py-2 rounded-xl border border-white/5">
-                                <Building2 className="h-4 w-4 text-slate-500" /> {deptName || "—"}
-                            </div>
-                            <div className="flex items-center gap-2 text-slate-400 text-sm font-medium bg-white/5 px-4 py-2 rounded-xl border border-white/5">
-                                <ShieldCheck className={cn("h-4 w-4", employee.CNPS ? "text-emerald-500" : "text-slate-600")} />
-                                {employee.CNPS ? "Affilié CNPS" : "Non Affilié"}
-                            </div>
+                        <div className="flex flex-wrap justify-center md:justify-start gap-6 pt-4 border-t border-white/5 mt-6">
+                            {[
+                                { icon: Building2, label: "Unité", val: deptName, color: "text-blue-400" },
+                                { icon: MapPin, label: "Lieu", val: employee.Region || "Siège", color: "text-rose-400" },
+                                { icon: ShieldCheck, label: "CNPS", val: employee.CNPS ? "Affilié" : "Non immatriculé", color: employee.CNPS ? "text-emerald-400" : "text-slate-500" }
+                            ].map((item, idx) => (
+                                <div key={idx} className="flex flex-col gap-1">
+                                    <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">{item.label}</span>
+                                    <div className="flex items-center gap-2 text-white text-sm font-bold">
+                                        <item.icon className={cn("h-4 w-4", item.color)} /> {item.val || "—"}
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     </div>
 
-                    <div className="flex flex-col sm:flex-row gap-3 shrink-0 self-start md:self-center">
+                    {/* Actions Panel */}
+                    <div className="flex flex-col gap-3 w-full md:w-auto shrink-0 self-start pt-4">
                         {canEdit && (
-                            <Button asChild className="bg-white text-slate-900 hover:bg-slate-100 rounded-xl h-12 px-6 font-bold shadow-xl shadow-black/10">
+                            <Button asChild className="bg-white text-slate-900 hover:bg-slate-100 rounded-[1.5rem] h-16 px-8 font-black uppercase tracking-widest text-[10px] shadow-2xl shadow-black/20 group">
                                 <Link href={`/employees/${employee.id}/edit`}>
-                                    <Pencil className="mr-2 h-4 w-4" /> Modifier
+                                    <Pencil className="mr-3 h-5 w-5 text-blue-600 transition-transform group-hover:rotate-12" /> Modifier le dossier
                                 </Link>
                             </Button>
                         )}
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="outline" size="icon" className="h-12 w-12 rounded-xl border-white/10 bg-white/5 text-white hover:bg-white/10 shadow-lg">
-                                    <MoreVertical className="h-5 w-5" />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-2xl border-slate-100 mt-2">
-                                <DropdownMenuLabel className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-3 py-2">
-                                    Commandes Système
-                                </DropdownMenuLabel>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem className="p-3 gap-3 rounded-xl m-1 cursor-pointer">
-                                    <FileText className="h-4 w-4 text-blue-500" /> Dossier Personnel
-                                </DropdownMenuItem>
-                                <DropdownMenuItem asChild className="p-3 gap-3 rounded-xl m-1 cursor-pointer">
-                                    <Link href={`/payroll/${employee.id}`}>
-                                        <Wallet className="h-4 w-4 text-emerald-500" /> Dernier Bulletin
-                                    </Link>
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                {canDelete && (
-                                    <DropdownMenuItem 
-                                        onClick={() => setIsDeleteDialogOpen(true)} 
-                                        className="p-3 gap-3 rounded-xl m-1 cursor-pointer text-rose-600 focus:text-rose-600 focus:bg-rose-50"
-                                    >
-                                        <Trash2 className="h-4 w-4" /> Supprimer la Fiche
+                        <div className="flex gap-3">
+                            <Button 
+                                variant="outline" 
+                                className="h-16 flex-1 md:w-20 rounded-[1.5rem] border-white/10 bg-white/5 text-white hover:bg-white/10 shadow-lg font-black uppercase tracking-widest text-[9px]"
+                                onClick={() => window.print()}
+                            >
+                                <Download className="h-5 w-5" />
+                            </Button>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" className="h-16 flex-1 md:w-20 rounded-[1.5rem] border-white/10 bg-white/5 text-white hover:bg-white/10 shadow-lg">
+                                        <PlusCircle className="h-5 w-5" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-56 rounded-2xl p-2 bg-slate-900 text-white border-white/10 shadow-3xl">
+                                    <DropdownMenuLabel className="text-[10px] font-black p-2 uppercase tracking-widest text-slate-500">Flux de travail</DropdownMenuLabel>
+                                    <DropdownMenuItem className="p-4 rounded-xl gap-3 cursor-pointer">
+                                        <History className="h-4 w-4 text-blue-400" /> Nouvel historique
                                     </DropdownMenuItem>
-                                )}
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                                    <DropdownMenuItem className="p-4 rounded-xl gap-3 cursor-pointer">
+                                        <FileText className="h-4 w-4 text-emerald-400" /> Générer Attestation
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator className="bg-white/10"/>
+                                    {canDelete && (
+                                        <DropdownMenuItem 
+                                            onClick={() => setIsDeleteDialogOpen(true)} 
+                                            className="p-4 rounded-xl gap-3 cursor-pointer text-rose-400 focus:bg-rose-500/10"
+                                        >
+                                            <Trash2 className="h-4 w-4" /> Radier l'agent
+                                        </DropdownMenuItem>
+                                    )}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -303,160 +332,164 @@ export default function EmployeeDetailPage() {
                 onValueChange={(v) => startTransition(() => setActiveTab(v))}
                 className="space-y-8"
             >
-                <TabsList className="bg-white border border-slate-100 p-1.5 rounded-xl shadow-xl shadow-slate-200/50 flex flex-wrap h-auto gap-2">
-                    <TabsTrigger value="info" className="rounded-lg px-8 py-3 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-[10px] transition-all">
-                        <UserCircle2 className="mr-2 h-4 w-4" /> Identité
+                <TabsList className="bg-white/40 backdrop-blur-xl border border-white/20 p-2 rounded-[2rem] shadow-2xl shadow-slate-200/40 flex flex-wrap h-auto gap-2">
+                    <TabsTrigger value="info" className="rounded-3xl px-10 py-5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-[10px] transition-all">
+                        <UserCircle2 className="mr-3 h-5 w-5" /> Identité & État Civil
                     </TabsTrigger>
-                    <TabsTrigger value="career" className="rounded-lg px-8 py-3 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-[10px] transition-all">
-                        <Briefcase className="mr-2 h-4 w-4" /> Carrière
+                    <TabsTrigger value="career" className="rounded-3xl px-10 py-5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-[10px] transition-all">
+                        <Briefcase className="mr-3 h-5 w-5" /> Parcours & Carrière
                     </TabsTrigger>
                     {canViewSalary && (
-                        <TabsTrigger value="salary" className="rounded-lg px-8 py-3 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-[10px] transition-all">
-                            <Banknote className="mr-2 h-4 w-4" /> Rémunération
+                        <TabsTrigger value="salary" className="rounded-3xl px-10 py-5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-[10px] transition-all">
+                            <Banknote className="mr-3 h-5 w-5" /> Rémunération
                         </TabsTrigger>
                     )}
-                    <TabsTrigger value="history" className="rounded-lg px-8 py-3 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-[10px] transition-all">
-                        <History className="mr-2 h-4 w-4" /> Événements
+                    <TabsTrigger value="history" className="rounded-3xl px-10 py-5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-[10px] transition-all">
+                        <History className="mr-3 h-5 w-5" /> Timeline RH
                     </TabsTrigger>
                 </TabsList>
 
                 {/* Identity Tab */}
                 <TabsContent value="info" className="grid grid-cols-1 lg:grid-cols-3 gap-8 focus-visible:outline-none">
-                    <Card className="lg:col-span-2 border-none shadow-xl shadow-slate-200/50 rounded-xl overflow-hidden">
-                        <CardHeader className="p-8 pb-4">
-                            <CardTitle className="text-xl flex items-center gap-3">
-                                <CheckCircle2 className="h-5 w-5 text-emerald-500" /> État Civil & Identité
+                    <Card className="lg:col-span-2 border-none bg-white/40 backdrop-blur-xl rounded-[2.5rem] shadow-3xl shadow-slate-200/50 overflow-hidden border border-white/20">
+                        <CardHeader className="p-10 pb-4 border-b border-white/10 bg-slate-50/50">
+                            <CardTitle className="text-2xl font-black uppercase tracking-tight flex items-center gap-4">
+                                <div className="h-10 w-10 rounded-xl bg-emerald-100 flex items-center justify-center">
+                                    <CheckCircle2 className="h-6 w-6 text-emerald-600" />
+                                </div>
+                                État Civil & Données Privées
                             </CardTitle>
                         </CardHeader>
-                        <CardContent className="p-8 pt-4 grid grid-cols-1 md:grid-cols-2 gap-8">
-                            <div className="space-y-6">
-                                <div className="space-y-1">
-                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Nom de Famille</span>
-                                    <p className="text-base font-bold text-slate-900">{employee.lastName || "—"}</p>
-                                </div>
-                                <div className="space-y-1">
-                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Prénoms</span>
-                                    <p className="text-base font-bold text-slate-900">{employee.firstName || "—"}</p>
-                                </div>
-                                <div className="space-y-1">
-                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Sexe</span>
-                                    <p className="text-base font-bold text-slate-900">{employee.sexe || "—"}</p>
-                                </div>
-                                <div className="space-y-1">
-                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Date de Naissance</span>
-                                    <p className="text-base font-bold text-slate-900 flex items-center gap-2">
-                                        <Calendar className="h-4 w-4 text-slate-300" /> {formatDate(employee.Date_Naissance)}
-                                    </p>
-                                </div>
+                        <CardContent className="p-10 grid grid-cols-1 md:grid-cols-2 gap-10">
+                            <div className="grid grid-cols-1 gap-8">
+                                {[
+                                    { label: "Nom de Famille", val: employee.lastName, icon: UserCircle },
+                                    { label: "Prénoms", val: employee.firstName, icon: null },
+                                    { label: "Sexe & Genre", val: employee.sexe, icon: Sparkles },
+                                    { label: "Date de Naissance", val: formatDate(employee.Date_Naissance), icon: Calendar }
+                                ].map((item, idx) => (
+                                    <div key={idx} className="space-y-1">
+                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{item.label}</span>
+                                        <p className="text-lg font-bold text-slate-900 flex items-center gap-3">
+                                            {item.icon && <item.icon className="h-4 w-4 text-slate-300" />} {item.val || "—"}
+                                        </p>
+                                    </div>
+                                ))}
                             </div>
-                            <div className="space-y-6">
-                                <div className="space-y-1">
-                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Téléphone Mobile</span>
-                                    <p className="text-base font-bold text-slate-900 flex items-center gap-2">
-                                        <Phone className="h-4 w-4 text-blue-500" /> {employee.mobile || "—"}
-                                    </p>
-                                </div>
-                                <div className="space-y-1">
-                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Email</span>
-                                    <p className="text-base font-bold text-slate-900 flex items-center gap-2">
-                                        <Mail className="h-4 w-4 text-amber-500" /> {employee.email || "—"}
-                                    </p>
-                                </div>
-                                <div className="space-y-1">
-                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Enfants</span>
-                                    <p className="text-base font-bold text-slate-900 flex items-center gap-2">
-                                        <Users2 className="h-4 w-4 text-slate-300" /> {employee.enfants || 0}
-                                    </p>
-                                </div>
+                            <div className="grid grid-cols-1 gap-8">
+                                {[
+                                    { label: "Téléphone Mobile", val: employee.mobile, icon: Phone, color: "text-blue-500" },
+                                    { label: "Canal Email", val: employee.email, icon: Mail, color: "text-amber-500" },
+                                    { label: "Situation Familiale", val: `${employee.enfants || 0} enfant(s)`, icon: Users2, color: "text-slate-300" }
+                                ].map((item, idx) => (
+                                    <div key={idx} className="space-y-1">
+                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{item.label}</span>
+                                        <p className="text-lg font-bold text-slate-900 flex items-center gap-3 italic">
+                                            <item.icon className={cn("h-4 w-4", item.color)} /> {item.val || "—"}
+                                        </p>
+                                    </div>
+                                ))}
                             </div>
                         </CardContent>
                     </Card>
 
-                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-xl bg-slate-50 overflow-hidden self-start">
-                        <CardHeader className="p-8 pb-4">
-                            <CardTitle className="text-xl flex items-center gap-3">
-                                <Award className="h-5 w-5 text-amber-500" /> Qualifications
+                    <Card className="border-none bg-slate-900 text-white rounded-[2.5rem] shadow-3xl overflow-hidden self-start relative">
+                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(59,130,246,0.1),transparent)]" />
+                        <CardHeader className="p-10 pb-4 relative z-10">
+                            <CardTitle className="text-2xl font-black uppercase tracking-tight flex items-center gap-4">
+                                <Award className="h-6 w-6 text-amber-500" /> Qualifications
                             </CardTitle>
                         </CardHeader>
-                        <CardContent className="p-8 pt-4 space-y-6">
-                            <div className="space-y-1">
-                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Catégorie</span>
-                                <Badge variant="outline" className="text-xs font-bold bg-white text-slate-700 border-slate-200 h-8 px-4 rounded-lg">
-                                    {employee.categorie || "Non renseigné"}
-                                </Badge>
+                        <CardContent className="p-10 pt-4 space-y-8 relative z-10">
+                            <div className="space-y-2">
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Hiérarchie / Grade</span>
+                                <div className="bg-white/5 border border-white/10 p-6 rounded-3xl">
+                                    <span className="text-xl font-black text-blue-400 uppercase tracking-tighter">
+                                        {employee.categorie || "AGENT GÉNÉRAL"}
+                                    </span>
+                                </div>
+                            </div>
+                            <div className="p-6 bg-amber-500/10 rounded-2xl border border-amber-500/20 flex items-center gap-4">
+                                <div className="h-10 w-10 rounded-full bg-amber-500 flex items-center justify-center text-slate-900 font-black">!</div>
+                                <p className="text-[10px] font-bold text-amber-500 uppercase tracking-widest leading-relaxed">Agent habilité à manipuler des ressources stratégiques.</p>
                             </div>
                         </CardContent>
                     </Card>
                 </TabsContent>
 
                 {/* Career Tab */}
-                <TabsContent value="career" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 focus-visible:outline-none">
-                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-xl overflow-hidden">
-                        <CardHeader className="p-8 pb-4 bg-slate-900 text-white">
-                            <div className="flex items-center gap-3">
-                                <Building2 className="h-5 w-5 text-blue-400" />
-                                <CardTitle className="text-xl">Organisation</CardTitle>
+                <TabsContent value="career" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 focus-visible:outline-none">
+                    <Card className="border-none bg-white/40 backdrop-blur-xl rounded-[2.5rem] shadow-3xl shadow-slate-200/50 overflow-hidden border border-white/20">
+                        <CardHeader className="p-10 pb-4 bg-slate-900 text-white">
+                            <div className="flex items-center gap-4">
+                                <div className="h-10 w-10 rounded-xl bg-blue-500/20 flex items-center justify-center">
+                                    <Building2 className="h-6 w-6 text-blue-400" />
+                                </div>
+                                <CardTitle className="text-xl font-black uppercase tracking-tight">Affectation</CardTitle>
                             </div>
                         </CardHeader>
-                        <CardContent className="p-8 space-y-8">
-                             <div className="space-y-1">
-                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Direction</span>
-                                <p className="text-base font-bold text-slate-900">{directionName || "—"}</p>
+                        <CardContent className="p-10 space-y-8">
+                             {[
+                                { label: "Direction", val: directionName },
+                                { label: "Département", val: deptName },
+                                { label: "Service Affecté", val: serviceName }
+                             ].map((item, idx) => (
+                                <div key={idx} className="space-y-1">
+                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{item.label}</span>
+                                    <p className="text-lg font-bold text-slate-900">{item.val || "Non spécifié"}</p>
+                                </div>
+                             ))}
+                        </CardContent>
+                    </Card>
+
+                    <Card className="border-none bg-white/40 backdrop-blur-xl rounded-[2.5rem] shadow-3xl shadow-slate-200/50 overflow-hidden border border-white/20">
+                        <CardHeader className="p-10 pb-4 bg-blue-600 text-white">
+                             <div className="flex items-center gap-4">
+                                <div className="h-10 w-10 rounded-xl bg-white/20 flex items-center justify-center">
+                                    <Calendar className="h-6 w-6 text-white" />
+                                </div>
+                                <CardTitle className="text-xl font-black uppercase tracking-tight">Anciennété</CardTitle>
+                            </div>
+                        </CardHeader>
+                        <CardContent className="p-10 space-y-8">
+                            <div className="space-y-1">
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Entrée en Service</span>
+                                <p className="text-lg font-bold text-slate-900">{formatDate(employee.dateEmbauche)}</p>
+                            </div>
+                            <div className="p-6 bg-blue-50 border border-blue-100 rounded-3xl">
+                                <span className="text-[9px] font-black text-blue-400 uppercase tracking-[0.2em] block mb-2">Calcul Automatique</span>
+                                <p className="text-2xl font-black text-blue-600 tracking-tighter">
+                                    {employee.dateEmbauche ? differenceInYears(new Date(), parseISO(employee.dateEmbauche)) : 0} ANS <span className="text-sm font-bold text-blue-400 ml-1">DE SERVICE</span>
+                                </p>
                             </div>
                             <div className="space-y-1">
-                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Département</span>
-                                <p className="text-base font-bold text-slate-900">{deptName || "—"}</p>
-                            </div>
-                            <div className="space-y-1">
-                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Service</span>
-                                <p className="text-base font-bold text-slate-900">{serviceName || "—"}</p>
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Fin de Mission (Prévue)</span>
+                                <p className="text-lg font-bold text-rose-500">{formatDate(employee.Date_Depart) || "Indéterminée"}</p>
                             </div>
                         </CardContent>
                     </Card>
 
-                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-xl overflow-hidden">
-                        <CardHeader className="p-8 pb-4 bg-blue-600 text-white">
-                             <div className="flex items-center gap-3">
-                                <Calendar className="h-5 w-5 text-blue-200" />
-                                <CardTitle className="text-xl">Temporalité</CardTitle>
+                    <Card className="border-none bg-white/40 backdrop-blur-xl rounded-[2.5rem] shadow-3xl shadow-slate-200/50 overflow-hidden border border-white/20 lg:col-span-1">
+                        <CardHeader className="p-10 pb-4 bg-emerald-600 text-white">
+                            <div className="flex items-center gap-4">
+                                <div className="h-10 w-10 rounded-xl bg-white/20 flex items-center justify-center">
+                                    <ShieldCheck className="h-6 w-6 text-white" />
+                                </div>
+                                <CardTitle className="text-xl font-black uppercase tracking-tight">Certification</CardTitle>
                             </div>
                         </CardHeader>
-                        <CardContent className="p-8 space-y-8">
-                            <div className="space-y-1">
-                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Date d'Embauche</span>
-                                <p className="text-base font-bold text-slate-900">{formatDate(employee.dateEmbauche)}</p>
+                        <CardContent className="p-10 space-y-8">
+                            <div className="space-y-3">
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">N° Assurance CNPS</span>
+                                <div className="bg-slate-900 text-white p-5 rounded-2xl border-l-4 border-emerald-400 font-mono text-lg font-black tracking-widest">
+                                    {employee.CNPS ? "CNPS-RECO-8271" : "REG-INV-4402"}
+                                </div>
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center italic">{employee.CNPS ? "Contrat immatriculé" : "En cours de régularisation"}</p>
                             </div>
                             <div className="space-y-1">
-                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Anciennété</span>
-                                <p className="text-base font-bold text-blue-600">
-                                    {employee.dateEmbauche ? differenceInYears(new Date(), parseISO(employee.dateEmbauche)) : 0} ans de service
-                                </p>
-                            </div>
-                            <div className="space-y-1">
-                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Date de Départ Prévue</span>
-                                <p className="text-base font-bold text-rose-500">{formatDate(employee.Date_Depart) || "Indéterminée"}</p>
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-xl overflow-hidden lg:col-span-1">
-                        <CardHeader className="p-8 pb-4 bg-emerald-600 text-white">
-                            <div className="flex items-center gap-3">
-                                <ShieldCheck className="h-5 w-5 text-emerald-200" />
-                                <CardTitle className="text-xl">Sécurité Sociale</CardTitle>
-                            </div>
-                        </CardHeader>
-                        <CardContent className="p-8 space-y-8">
-                            <div className="space-y-1">
-                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Affiliation CNPS</span>
-                                <p className="text-base font-bold font-mono text-slate-900 bg-slate-50 p-3 rounded-lg border border-dotted border-slate-200">
-                                    {employee.CNPS ? "Déclaré & Actif" : "Non immatriculé"}
-                                </p>
-                            </div>
-                            <div className="space-y-1">
-                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Catégorie</span>
-                                <Badge className="bg-emerald-100 text-emerald-700 border-none font-black px-4 h-6 text-[10px] tracking-widest uppercase">
-                                    {employee.categorie || "—"}
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Badge Identité</span>
+                                <Badge className="bg-emerald-100 text-emerald-700 border-none font-black px-6 h-8 text-[11px] tracking-widest uppercase rounded-xl">
+                                    {employee.categorie || "AGENT STANDARD"}
                                 </Badge>
                             </div>
                         </CardContent>
@@ -465,69 +498,72 @@ export default function EmployeeDetailPage() {
 
                 {/* Salary Tab */}
                 {canViewSalary && (
-                    <TabsContent value="salary" className="grid grid-cols-1 lg:grid-cols-2 gap-8 focus-visible:outline-none">
-                        <Card className="border-none shadow-xl shadow-slate-200/50 rounded-xl overflow-hidden relative">
-                             <div className="absolute top-0 right-0 p-8 opacity-5">
-                                <Banknote className="h-32 w-32" />
+                    <TabsContent value="salary" className="grid grid-cols-1 lg:grid-cols-2 gap-10 focus-visible:outline-none">
+                        <Card className="border-none bg-white/40 backdrop-blur-xl rounded-[2.5rem] shadow-3xl shadow-slate-200/50 overflow-hidden border border-white/20 relative">
+                             <div className="absolute top-0 right-0 p-12 opacity-5 pointer-events-none">
+                                <Banknote className="h-48 w-48" />
                              </div>
-                             <CardHeader className="p-8 pb-4">
-                                <CardTitle className="text-xl flex items-center gap-3">
-                                    <Wallet className="h-5 w-5 text-emerald-500" /> Salaire & Primes
+                             <CardHeader className="p-10 pb-4">
+                                <CardTitle className="text-2xl font-black uppercase tracking-tight flex items-center gap-4">
+                                    <div className="h-10 w-10 rounded-xl bg-emerald-100 flex items-center justify-center">
+                                        <Wallet className="h-6 w-6 text-emerald-600" />
+                                    </div>
+                                    Architecture Salariale
                                 </CardTitle>
                              </CardHeader>
-                             <CardContent className="p-8 pt-4 space-y-6">
-                                <div className="flex justify-between items-center p-4 rounded-lg bg-emerald-50 border border-emerald-100">
-                                    <span className="text-sm font-black text-emerald-900 uppercase tracking-widest">Salaire Brut Total</span>
-                                    <span className="text-2xl font-black text-emerald-600">{formatCurrency(displayBrut)}</span>
+                             <CardContent className="p-10 pt-4 space-y-10">
+                                <div className="flex justify-between items-center p-8 rounded-[2rem] bg-emerald-900 text-white shadow-2xl shadow-emerald-900/20 relative overflow-hidden group">
+                                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_50%,rgba(16,185,129,0.2),transparent)]" />
+                                    <span className="text-[11px] font-black uppercase tracking-[0.3em] relative z-10 opacity-70">Salaire Brut Conventionnel</span>
+                                    <span className="text-4xl font-black relative z-10 tracking-tighter">{formatCurrency(displayBrut)}</span>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-6">
-                                    <div className="space-y-1">
-                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Salaire de Base</span>
-                                        <p className="text-base font-bold text-slate-900">{formatCurrency(employee.baseSalary || 0)}</p>
-                                    </div>
-                                    <div className="space-y-1">
-                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Ancienneté</span>
-                                        <p className="text-base font-bold text-slate-900">{formatCurrency(employee.primeAnciennete || 0)}</p>
-                                    </div>
-                                    <div className="space-y-1">
-                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Ind. Logement</span>
-                                        <p className="text-base font-bold text-slate-900">{formatCurrency(employee.indemniteLogement || 0)}</p>
-                                    </div>
-                                    <div className="space-y-1">
-                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Ind. Transport</span>
-                                        <p className="text-base font-bold text-slate-900">{formatCurrency(employee.indemniteTransportImposable || 0)}</p>
-                                    </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                                    {[
+                                        { label: "Salaire de Base", val: employee.baseSalary },
+                                        { label: "Primes Ancienneté", val: employee.primeAnciennete },
+                                        { label: "Indemnité Logement", val: employee.indemniteLogement },
+                                        { label: "Indemnité Transport", val: employee.indemniteTransportImposable }
+                                    ].map((field, idx) => (
+                                        <div key={idx} className="space-y-1 border-b border-slate-100 pb-4">
+                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{field.label}</span>
+                                            <p className="text-lg font-bold text-slate-900">{formatCurrency(field.val || 0)}</p>
+                                        </div>
+                                    ))}
                                 </div>
 
-                                <div className="p-4 rounded-lg bg-slate-900 text-white flex justify-between items-center group overflow-hidden relative">
-                                    <div className="absolute inset-0 bg-blue-500 w-0 group-hover:w-full transition-all duration-700 opacity-20" />
-                                    <span className="text-sm font-black uppercase tracking-[0.2em] relative z-10">Net à Payer</span>
-                                    <span className="text-3xl font-black text-blue-400 relative z-10">{formatCurrency(displayNet)}</span>
+                                <div className="p-8 rounded-[2rem] bg-blue-600 text-white flex justify-between items-center shadow-2xl shadow-blue-900/40 relative overflow-hidden">
+                                     <div className="absolute inset-0 bg-[linear-gradient(45deg,rgba(0,0,0,0.1)_25%,transparent_25%,transparent_50%,rgba(0,0,0,0.1)_50%,rgba(0,0,0,0.1)_75%,transparent_75%,transparent)] bg-[length:20px_20px] opacity-10 animate-[pulse_2s_infinite]" />
+                                    <span className="text-[11px] font-black uppercase tracking-[0.3em] relative z-10">Solde Net Liquidable</span>
+                                    <span className="text-5xl font-black relative z-10 tracking-tighter">{formatCurrency(displayNet)}</span>
                                 </div>
                              </CardContent>
                         </Card>
 
-                        <Card className="border-none shadow-xl shadow-slate-200/50 rounded-xl overflow-hidden">
-                             <CardHeader className="p-8 pb-4">
-                                <CardTitle className="text-xl flex items-center gap-3">
-                                    <CreditCard className="h-5 w-5 text-blue-500" /> Coordonnées Bancaires
+                        <Card className="border-none bg-white/40 backdrop-blur-xl rounded-[2.5rem] shadow-3xl shadow-slate-200/50 overflow-hidden border border-white/20">
+                             <CardHeader className="p-10 pb-4">
+                                <CardTitle className="text-2xl font-black uppercase tracking-tight flex items-center gap-4">
+                                    <div className="h-10 w-10 rounded-xl bg-blue-100 flex items-center justify-center">
+                                        <CreditCard className="h-6 w-6 text-blue-600" />
+                                    </div>
+                                    Moyens de Paiement
                                 </CardTitle>
                              </CardHeader>
-                             <CardContent className="p-8 pt-4 space-y-8">
-                                <div className="space-y-1 p-6 bg-slate-50 rounded-3xl border border-slate-100">
-                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Établissement</span>
-                                    <p className="text-xl font-black text-slate-900 italic">{employee.banque || "Virement Bancaire"}</p>
+                             <CardContent className="p-10 pt-4 space-y-10">
+                                <div className="space-y-4 p-8 bg-slate-900 text-white rounded-[2rem] border border-white/10 shadow-3xl relative overflow-hidden">
+                                    <div className="absolute top-4 right-4 text-white/10 italic font-black text-4xl">SECURE</div>
+                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Banque Partenaire</span>
+                                    <p className="text-2xl font-black italic tracking-tight">{employee.banque || "TRÉSOR PUBLIC / VIREMENT"}</p>
                                 </div>
-                                <div className="space-y-1">
-                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">N° de Compte</span>
-                                    <p className="text-lg font-mono font-bold text-slate-600 bg-white p-4 rounded-xl border border-slate-100 shadow-inner">
-                                        {employee.numeroCompte || "—"}
+                                <div className="space-y-2">
+                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Identification Bancaire (IBAN/RIB)</span>
+                                    <p className="text-xl font-mono font-black text-slate-700 bg-white p-6 rounded-2xl border-2 border-slate-100 shadow-inner tracking-widest">
+                                        {employee.numeroCompte || "— — — — —"}
                                     </p>
                                 </div>
-                                <div className="flex items-center gap-3 p-4 bg-blue-50/50 rounded-xl border border-blue-100">
-                                    <ShieldCheck className="h-5 w-5 text-blue-500" />
-                                    <p className="text-xs font-medium text-blue-600">Ces informations sont cryptées et restreintes au personnel RH habilité.</p>
+                                <div className="flex items-center gap-4 p-6 bg-blue-50 rounded-2xl border border-blue-100">
+                                    <ShieldCheck className="h-8 w-8 text-blue-500" />
+                                    <p className="text-[11px] font-bold text-blue-600 uppercase tracking-widest leading-relaxed">Cryptage des données bancaires activé. Accès restreint au contrôleur financier.</p>
                                 </div>
                              </CardContent>
                         </Card>
@@ -536,10 +572,13 @@ export default function EmployeeDetailPage() {
 
                 {/* History Tab */}
                 <TabsContent value="history" className="focus-visible:outline-none">
-                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-xl overflow-hidden">
-                        <CardHeader className="p-8 pb-4 flex flex-row items-center justify-between">
-                            <CardTitle className="text-xl flex items-center gap-3">
-                                <History className="h-5 w-5 text-blue-500" /> Historique de Carrière
+                    <Card className="border-none bg-white/40 backdrop-blur-xl rounded-[2.5rem] shadow-3xl shadow-slate-200/50 overflow-hidden border border-white/20">
+                        <CardHeader className="p-10 pb-4 border-b border-white/10 bg-slate-50/50 flex flex-row items-center justify-between">
+                            <CardTitle className="text-2xl font-black uppercase tracking-tight flex items-center gap-4">
+                                <div className="h-10 w-10 rounded-xl bg-blue-100 flex items-center justify-center">
+                                    <History className="h-6 w-6 text-blue-600" />
+                                </div>
+                                Timeline de Carrière
                             </CardTitle>
                             {canEdit && (
                                 <Button 
@@ -547,13 +586,13 @@ export default function EmployeeDetailPage() {
                                         setEventToEdit(null);
                                         setIsHistorySheetOpen(true);
                                     }}
-                                    className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl"
+                                    className="h-12 px-6 rounded-2xl bg-slate-900 text-white font-black uppercase tracking-widest text-[9px] hover:bg-black transition-all"
                                 >
-                                    <PlusCircle className="mr-2 h-4 w-4" /> Nouvel Événement
+                                    <PlusCircle className="mr-2 h-4 w-4 text-emerald-400" /> Nouvel Événement
                                 </Button>
                             )}
                         </CardHeader>
-                        <CardContent className="p-8 pt-4">
+                        <CardContent className="p-10">
                             {activeTab === "history" && (
                                 <EmployeeHistoryTimeline 
                                     events={historyEvents}

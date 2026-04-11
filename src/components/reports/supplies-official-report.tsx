@@ -5,13 +5,22 @@ import { createPortal } from "react-dom";
 import type { Supply, OrganizationSettings } from "@/lib/data";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Package, AlertTriangle, Zap, BarChart3 } from "lucide-react";
+import { Package, AlertTriangle, Zap, BarChart3, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+interface ExtendedSupply extends Supply {
+    qteInventaire: number;
+    qteEntree: number;
+    qteSortie: number;
+    qteStock: number;
+    isModified: boolean;
+}
 
 interface SuppliesOfficialReportProps {
     logos: OrganizationSettings | null;
-    supplies: Supply[];
+    supplies: ExtendedSupply[];
     categoryLabel: string;
+    periodLabel: string;
     stats: {
         total: number;
         outOfStock: number;
@@ -28,6 +37,7 @@ export function SuppliesOfficialReport({
     logos, 
     supplies, 
     categoryLabel, 
+    periodLabel,
     stats,
     options 
 }: SuppliesOfficialReportProps) {
@@ -35,16 +45,16 @@ export function SuppliesOfficialReport({
 
     useEffect(() => {
         setMounted(true);
-        // Portrait mode for official administrative documents
-        document.body.classList.add('print-portrait');
+        // Force landscape mode for audit-style tables
+        document.body.classList.add('print-landscape');
         
         const timer = setTimeout(() => {
             window.print();
-        }, 1000);
+        }, 1200);
 
         return () => {
             setMounted(false);
-            document.body.classList.remove('print-portrait');
+            document.body.classList.remove('print-landscape');
             clearTimeout(timer);
         };
     }, []);
@@ -52,198 +62,292 @@ export function SuppliesOfficialReport({
     if (!mounted || !logos) return null;
 
     return createPortal(
-        <div id="print-section" className="bg-white text-black w-full print:shadow-none print:border-none">
+        <div id="print-section" className="bg-white text-black w-full print:shadow-none print:border-none printable-portal-root">
+            <style jsx global>{`
+                @media print {
+                    @page { 
+                        size: landscape; 
+                        margin: 15mm 15mm 25mm 15mm; /* Extra bottom margin for fixed footer */
+                    }
+                    * {
+                        -webkit-print-color-adjust: exact !important;
+                        print-color-adjust: exact !important;
+                    }
+                    .modified-row {
+                        background-color: #f0f7ff !important;
+                    }
+                    .modified-border {
+                        border-left: 6px solid #006039 !important;
+                    }
+                    thead {
+                        display: table-header-group !important;
+                        background-color: #0f172a !important;
+                    }
+                    th {
+                        color: white !important;
+                        background-color: #0f172a !important;
+                        border: 1px solid #000 !important;
+                    }
+                    td {
+                        border: 1px solid #94a3b8 !important; /* darker borders for grid */
+                    }
+                    tr {
+                        break-inside: avoid !important;
+                    }
+                    img {
+                        max-width: 100%;
+                    }
+                    /* Ensure headers are visible even if bg is lost */
+                    .print-text-black {
+                        color: black !important;
+                    }
+                }
+            `}</style>
+            
             {/* --- PAGE DE GARDE --- */}
-            <div className="print-page h-screen flex flex-col p-16 border-b-2 border-slate-100 break-inside-avoid">
-                <header className="flex justify-between items-start mb-24 min-h-[140px] break-inside-avoid">
-                    <div className="w-1/3 text-center flex flex-col justify-center items-center break-inside-avoid">
-                        <p className="font-bold text-[10px] items-center text-slate-800 leading-tight uppercase">
+            <div className="print-page h-screen flex flex-col p-16 break-after-page relative overflow-hidden">
+                {/* Decorative Elements */}
+                <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2" />
+                <div className="absolute bottom-0 left-0 w-96 h-96 bg-primary/5 rounded-full translate-y-1/2 -translate-x-1/2" />
+                
+                <header className="flex justify-between items-start mb-24 min-h-[140px] relative z-10">
+                    <div className="w-1/3 text-center flex flex-col justify-center items-center">
+                        <p className="font-bold text-[11px] items-center text-slate-800 leading-tight uppercase">
                             Chambre Nationale des Rois<br />et Chefs Traditionnels
                         </p>
-                        {logos.mainLogoUrl && <img src={logos.mainLogoUrl} alt="Logo" className="max-h-24 mt-4" loading="eager" />}
-                        <div className="w-12 h-0.5 bg-slate-900 mt-4 rounded-full" />
+                        {logos.mainLogoUrl && <img src={logos.mainLogoUrl} alt="Logo" className="max-h-24 mt-6 drop-shadow-sm" loading="eager" />}
+                        <div className="w-12 h-0.5 bg-[#006039] mt-4 rounded-full" />
                     </div>
                     <div className="w-1/3"></div>
-                    <div className="w-1/3 text-center flex flex-col justify-center items-center break-inside-avoid">
-                        <p className="font-bold text-[10px] leading-tight text-slate-800 uppercase tracking-wider">
+                    <div className="w-1/3 text-center flex flex-col justify-center items-center">
+                        <p className="font-bold text-[11px] leading-tight text-slate-800 uppercase tracking-widest">
                             République de Côte d'Ivoire
                         </p>
-                        {logos.secondaryLogoUrl && <img src={logos.secondaryLogoUrl} alt="Logo" className="max-h-20 my-4" loading="eager" />}
-                        <p className="text-[9px] italic font-bold border-t border-slate-200 mt-1 px-4">Union - Discipline - Travail</p>
+                        {logos.secondaryLogoUrl && <img src={logos.secondaryLogoUrl} alt="Logo" className="max-h-20 my-6 drop-shadow-sm" loading="eager" />}
+                        <p className="text-[10px] italic font-black border-t-2 border-slate-900 mt-2 pt-2 px-6 uppercase tracking-tighter">Union - Discipline - Travail</p>
                     </div>
                 </header>
 
-                <div className="flex-grow flex flex-col items-center justify-center text-center space-y-16">
-                    <div className="space-y-6">
-                        <h1 className="text-4xl font-black uppercase tracking-tighter text-slate-900 leading-none italic">
-                            ÉTAT DE GESTION DES FOURNITURES<br />ET CONSOMMABLES
+                <div className="flex-grow flex flex-col items-center justify-center text-center space-y-16 relative z-10">
+                    <div className="space-y-8">
+                        <div className="inline-block px-6 py-2 border-2 border-[#006039] text-[#006039] font-black uppercase tracking-[0.3em] text-sm rounded-full mb-4">
+                            Document Officiel d'Audit
+                        </div>
+                        <h1 className="text-5xl font-black uppercase tracking-tighter text-slate-900 leading-[0.95] italic">
+                            PV D'INVENTAIRE ET DE GESTION<br />DES FOURNITURES & CONSOMMABLES
                         </h1>
-                        <div className="h-2 w-64 bg-slate-900 mx-auto rounded-full"></div>
+                        <div className="h-2 w-48 bg-[#006039] mx-auto rounded-full mt-4"></div>
                     </div>
                     
-                    <div className="space-y-4">
-                        <h2 className="text-xl font-bold text-slate-600 bg-slate-50 px-10 py-6 rounded-xl border border-slate-100 italic inline-block">
+                    <div className="space-y-6">
+                        <h2 className="text-2xl font-black text-slate-700 bg-white shadow-xl-premium px-12 py-8 rounded-2xl border-2 border-slate-100 italic inline-block">
                              Direction des Affaires Financières et du Patrimoine (DAFP)
                         </h2>
-                        <p className="text-slate-400 font-black uppercase text-xs tracking-[0.3em]">Service de l'Intendance et de la Logistique</p>
+                        <div className="flex flex-col gap-1 uppercase tracking-[0.2em] font-black text-slate-400">
+                            <p className="text-sm">Service de l'Intendance et de la Logistique</p>
+                            <div className="h-px w-12 bg-slate-200 mx-auto" />
+                            <p className="text-[10px]">Division de la Gestion du Patrimoine</p>
+                        </div>
                     </div>
 
-                    <div className="mt-16 p-10 border-[6px] border-double border-slate-200 rounded-xl bg-slate-50/30">
-                        <p className="text-2xl font-black uppercase underline decoration-slate-300 decoration-4 underline-offset-8">
-                            SITUATION AU : {format(new Date(), 'dd MMMM yyyy', { locale: fr })}
+                    <div className="mt-20 p-12 border-[8px] border-double border-slate-200 rounded-2xl bg-slate-50/50 backdrop-blur-sm relative">
+                        <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white px-6 py-1 border border-slate-200 rounded-full font-black text-[10px] uppercase tracking-widest text-slate-400">
+                            Rapport de Situation
+                        </div>
+                        <p className="text-3xl font-black uppercase underline decoration-[#006039] decoration-8 underline-offset-[12px]">
+                            PÉRIODE : {periodLabel}
                         </p>
-                        {categoryLabel !== 'all' && (
-                            <p className="text-lg font-bold text-primary mt-4 uppercase italic">Périmètre : {categoryLabel}</p>
-                        )}
-                    </div>
-                </div>
-
-                <footer className="mt-auto pt-10 text-center border-t border-slate-100">
-                    <p className="font-black text-xl uppercase tracking-[0.2em] text-slate-900">Secrétariat Général / Cabinet</p>
-                    <p className="text-xs text-slate-400 mt-2 italic font-medium">Document officiel généré par le Système de Gestion Intégré - GèreEcole</p>
-                </footer>
-            </div>
-
-            {/* --- PAGE DE SYNTHÈSE ET TABLEAU --- */}
-            <div className="print-page min-h-screen p-12">
-                <div className="flex justify-between items-center mb-8 pb-4 border-b-2 border-slate-900">
-                    <h3 className="text-xl font-black uppercase tracking-tight italic">
-                        Inventaire et Analyse du Stock
-                    </h3>
-                    <span className="px-4 py-1.5 bg-slate-900 text-white text-[10px] font-black rounded-full uppercase tracking-widest">
-                        {categoryLabel === 'all' ? 'Inventaire Global' : categoryLabel}
-                    </span>
-                </div>
-
-                {/* --- KPI Block in Official Style --- */}
-                <div className="grid grid-cols-4 gap-4 mb-10">
-                    <div className="border border-slate-200 p-4 rounded-xl bg-slate-50/50">
-                        <div className="flex items-center gap-2 text-slate-400 mb-2">
-                            <Package className="h-3.5 w-3.5" />
-                            <span className="text-[10px] font-black uppercase tracking-wider">Total Articles</span>
-                        </div>
-                        <div className="text-2xl font-black text-slate-900 leading-none">{stats.total}</div>
-                    </div>
-                    <div className={cn(
-                        "border p-4 rounded-2xl",
-                        stats.outOfStock > 0 ? "border-red-200 bg-red-50/30" : "border-slate-200 bg-slate-50/50"
-                    )}>
-                        <div className={cn("flex items-center gap-2 mb-2", stats.outOfStock > 0 ? "text-red-500" : "text-slate-400")}>
-                            <AlertTriangle className="h-3.5 w-3.5" />
-                            <span className="text-[10px] font-black uppercase tracking-wider">Ruptures</span>
-                        </div>
-                        <div className={cn("text-2xl font-black leading-none", stats.outOfStock > 0 ? "text-red-600" : "text-slate-900")}>
-                            {stats.outOfStock}
-                        </div>
-                    </div>
-                    <div className={cn(
-                        "border p-4 rounded-2xl",
-                        stats.lowStock > 0 ? "border-amber-200 bg-amber-50/30" : "border-slate-200 bg-slate-50/50"
-                    )}>
-                        <div className={cn("flex items-center gap-2 mb-2", stats.lowStock > 0 ? "text-amber-500" : "text-slate-400")}>
-                            <Zap className="h-3.5 w-3.5" />
-                            <span className="text-[10px] font-black uppercase tracking-wider">Stocks Critiques</span>
-                        </div>
-                        <div className={cn("text-2xl font-black leading-none", stats.lowStock > 0 ? "text-amber-600" : "text-slate-900")}>
-                            {stats.lowStock}
-                        </div>
-                    </div>
-                    <div className="border border-slate-200 p-4 rounded-2xl bg-slate-50/50">
-                        <div className="flex items-center gap-2 text-emerald-600 mb-2">
-                            <BarChart3 className="h-3.5 w-3.5" />
-                            <span className="text-[10px] font-black uppercase tracking-wider">Disponibilité</span>
-                        </div>
-                        <div className="text-2xl font-black text-emerald-600 leading-none">{Math.round(stats.avgHealth)}%</div>
-                    </div>
-                </div>
-
-                {/* --- Main Data Table (Black Border Administrative Style) --- */}
-                <table className="w-full border-collapse border border-slate-900 text-[10px] leading-tight">
-                    <thead>
-                        <tr className="bg-slate-100 text-slate-900 uppercase font-black text-center border-b border-slate-900">
-                            <th className="border border-slate-900 p-3 w-[40px]">N°</th>
-                            {options.includePhotos && <th className="border border-slate-900 p-3 w-[60px]">Aperçu</th>}
-                            <th className="border border-slate-900 p-3 w-[80px]">Code</th>
-                            <th className="border border-slate-900 p-3 text-left">Désignation de l'Article</th>
-                            <th className="border border-slate-900 p-3 w-[60px]">Qté</th>
-                            {options.showHealthStatus && <th className="border border-slate-900 p-3 w-[120px]">État de Santé</th>}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {supplies.map((item, idx) => (
-                            <tr key={item.id} className="border-b border-slate-200 hover:bg-slate-50/50">
-                                <td className="border border-slate-900 p-3 text-center font-bold text-slate-400">{idx + 1}</td>
-                                {options.includePhotos && (
-                                    <td className="border border-slate-900 p-2 text-center">
-                                        <div className="h-8 w-8 rounded bg-slate-50 border border-slate-100 flex items-center justify-center overflow-hidden mx-auto">
-                                            {item.photoUrl ? (
-                                                <img src={item.photoUrl} alt="" crossOrigin="anonymous" className="w-full h-full object-cover" />
-                                            ) : (
-                                                <Package className="h-3 w-3 text-slate-200" />
-                                            )}
-                                        </div>
-                                    </td>
-                                )}
-                                <td className="border border-slate-900 p-3 text-center font-mono text-[9px] uppercase">{item.code || '---'}</td>
-                                <td className="border border-slate-900 p-3">
-                                    <div className="font-black text-slate-900 uppercase">{item.name}</div>
-                                    <div className="text-[8px] text-slate-400 font-bold uppercase tracking-tighter mt-0.5">{item.category}</div>
-                                </td>
-                                <td className="border border-slate-900 p-3 text-center text-lg font-black text-slate-900 italic">{item.quantity}</td>
-                                {options.showHealthStatus && (
-                                    <td className="border border-slate-900 p-3">
-                                        <div className="flex flex-col gap-1">
-                                            <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden border border-slate-200">
-                                                <div 
-                                                    className={cn(
-                                                        "h-full transition-all",
-                                                        item.quantity <= 0 ? "bg-red-500 w-[5%]" :
-                                                        item.quantity <= item.reorderLevel ? "bg-amber-500 w-[40%]" : "bg-emerald-500 w-[100%]"
-                                                    )}
-                                                />
-                                            </div>
-                                            <span className={cn(
-                                                "text-[8px] font-black uppercase text-right",
-                                                item.quantity <= 0 ? "text-red-500" :
-                                                item.quantity <= item.reorderLevel ? "text-amber-500" : "text-emerald-500"
-                                            )}>
-                                                {item.quantity <= 0 ? 'Rupture' : item.quantity <= item.reorderLevel ? 'Bas' : 'Optimal'}
-                                            </span>
-                                        </div>
-                                    </td>
-                                )}
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-
-                {/* --- Validations Area --- */}
-                <div className="mt-12 grid grid-cols-2 gap-12 pt-8 border-t border-slate-100">
-                    <div className="space-y-4">
-                        <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest italic underline underline-offset-4">Visa Technique (Logistique)</p>
-                        <div className="h-32 w-56 border-2 border-dashed border-slate-100 rounded-xl flex flex-col items-center justify-center p-6 text-center">
-                            <span className="text-[9px] text-slate-300 font-bold uppercase tracking-[0.2em] leading-tight">Réservé au Chef de Service<br />Patrimoine & Maintenance</span>
-                        </div>
-                    </div>
-                    <div className="text-right space-y-6">
-                        <div className="space-y-1">
-                            <p className="text-xs font-black text-slate-900 italic">Fait à Yamoussoukro, le {format(new Date(), 'dd MMMM yyyy', { locale: fr })}</p>
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.1em]">Contrôleur Interne et Qualité, CNRCT</p>
-                        </div>
-                        <div className="pt-8 flex flex-col items-end gap-3">
-                             <div className="h-0.5 w-32 bg-slate-900 rounded-full" />
-                             <p className="text-xl font-black text-slate-900 uppercase italic tracking-tighter">COULIBALY Hamadou</p>
-                             <div className="bg-slate-50 px-4 py-1.5 rounded-full border border-slate-100 flex items-center gap-2">
-                                 <BarChart3 className="h-3 w-3 text-slate-400" />
-                                 <span className="text-[8px] font-black uppercase text-slate-400 tracking-widest">Document Généré par Système GèreEcole</span>
+                        <div className="flex gap-12 justify-center mt-10">
+                             {categoryLabel !== 'all' && (
+                                <div className="flex flex-col items-center">
+                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Catégorie</span>
+                                    <p className="text-xl font-black text-[#006039] uppercase italic">{categoryLabel}</p>
+                                </div>
+                             )}
+                             <div className="flex flex-col items-center">
+                                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Articles</span>
+                                 <p className="text-xl font-black text-slate-900 uppercase italic">{stats.total}</p>
                              </div>
                         </div>
                     </div>
                 </div>
 
-                <footer className="fixed bottom-12 left-12 right-12 text-center text-[8px] text-slate-400 border-t border-slate-50 pt-4 flex justify-between items-center px-4">
-                    <p className="font-bold">© {new Date().getFullYear()} CNRCT - Système de Surveillance et de Gestion Intégré</p>
-                    <p>Yamoussoukro, Riviera - BP 201 | Tél : (225) 30 64 06 60</p>
+                <footer className="mt-auto pt-10 text-center border-t-2 border-slate-900 relative z-10">
+                    <div className="flex justify-between items-end">
+                        <div className="text-left">
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Généré via</p>
+                            <p className="text-lg font-black text-[#006039] uppercase tracking-tighter">GèreEcole v2.0</p>
+                        </div>
+                        <div>
+                            <p className="font-black text-2xl uppercase tracking-[0.2em] text-[#006039]">Secrétariat Général</p>
+                        </div>
+                        <div className="text-right">
+                             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest underline decoration-2 underline-offset-4 decoration-[#006039]">Authenticité Garantie</p>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+
+            {/* --- PAGE DE SYNTHÈSE ET TABLEAU --- */}
+            <div className="print-page min-h-screen p-12 break-before-page">
+                <div className="flex justify-between items-center mb-8 pb-4 border-b-4 border-[#006039]">
+                    <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 bg-[#006039] rounded-xl flex items-center justify-center text-white">
+                            <BarChart3 className="h-6 w-6" />
+                        </div>
+                        <div>
+                            <h3 className="text-2xl font-black uppercase tracking-tighter italic leading-none">
+                                Détail des Mouvements de Stock
+                            </h3>
+                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Situation détaillée au {format(new Date(), 'dd/MM/yyyy à HH:mm')}</p>
+                        </div>
+                    </div>
+                    <div className="flex flex-col items-end">
+                        <span className="px-6 py-2 bg-slate-900 text-white text-xs font-black rounded-xl uppercase tracking-widest transition-all">
+                            {categoryLabel === 'all' ? 'Inventaire Consolidé' : categoryLabel}
+                        </span>
+                    </div>
+                </div>
+
+                {/* --- KPI Block (Improved style) --- */}
+                <div className="grid grid-cols-4 gap-6 mb-12">
+                    <div className="border-2 border-slate-100 p-6 rounded-2xl bg-slate-50/30 break-inside-avoid">
+                        <div className="flex items-center gap-2 text-slate-400 mb-2">
+                            <Package className="h-4 w-4" />
+                            <span className="text-[11px] font-black uppercase tracking-widest">Total Références</span>
+                        </div>
+                        <div className="text-3xl font-black text-slate-900 leading-none">{stats.total}</div>
+                    </div>
+                    <div className={cn(
+                        "border-2 p-6 rounded-2xl break-inside-avoid shadow-sm",
+                        stats.outOfStock > 0 ? "border-red-100 bg-red-50/20" : "border-slate-100 bg-slate-50/30"
+                    )}>
+                        <div className={cn("flex items-center gap-2 mb-2", stats.outOfStock > 0 ? "text-red-500" : "text-slate-400")}>
+                            <AlertTriangle className="h-4 w-4" />
+                            <span className="text-[11px] font-black uppercase tracking-widest">Ruptures Détectées</span>
+                        </div>
+                        <div className={cn("text-3xl font-black leading-none", stats.outOfStock > 0 ? "text-red-600" : "text-slate-900")}>
+                            {stats.outOfStock}
+                        </div>
+                    </div>
+                    <div className="border-2 border-[#006039]/10 p-6 rounded-2xl bg-[#006039]/5 break-inside-avoid">
+                        <div className="flex items-center gap-2 text-[#006039] mb-2">
+                            <Zap className="h-4 w-4" />
+                            <span className="text-[11px] font-black uppercase tracking-widest">Mouvements Période</span>
+                        </div>
+                        <div className="text-3xl font-black text-slate-900 leading-none">
+                            {supplies.filter(s => s.isModified).length}
+                        </div>
+                    </div>
+                    <div className="border-2 border-emerald-100 p-6 rounded-2xl bg-emerald-50/20 break-inside-avoid">
+                        <div className="flex items-center gap-2 text-emerald-600 mb-2">
+                            <BarChart3 className="h-4 w-4" />
+                            <span className="text-[11px] font-black uppercase tracking-widest">Disponibilité Global</span>
+                        </div>
+                        <div className="text-3xl font-black text-emerald-700 leading-none">{Math.round(stats.avgHealth)}%</div>
+                    </div>
+                </div>
+
+                {/* --- Main Data Table (Black Border Administrative Style) --- */}
+                <table className="w-full border-collapse border-2 border-slate-900 text-[10px] leading-tight shadow-lg">
+                    <thead>
+                        <tr className="bg-slate-900 text-white uppercase font-black text-center border-b-2 border-slate-900">
+                            <th className="border border-slate-800 p-4 w-[40px]">N°</th>
+                            <th className="border border-slate-800 p-4 w-[130px]">Code Article</th>
+                            <th className="border border-slate-800 p-4 text-left">Désignation / Catégorie</th>
+                            <th className="border border-slate-800 p-4 w-[100px] bg-slate-800">Initial</th>
+                            <th className="border border-slate-800 p-4 w-[100px] bg-emerald-900">Entrées (+)</th>
+                            <th className="border border-slate-800 p-4 w-[100px] bg-amber-800">Sorties (-)</th>
+                            <th className="border border-slate-800 p-4 w-[120px] font-black bg-white text-slate-900 border-l-4 border-l-slate-900">Stock Final</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {supplies.map((item, idx) => (
+                            <tr 
+                                key={item.id} 
+                                className={cn(
+                                    "border-b border-slate-300",
+                                    item.isModified && "modified-row modified-border"
+                                )}
+                            >
+                                <td className="border border-slate-300 p-3 text-center font-bold text-slate-400">{idx + 1}</td>
+                                <td className="border border-slate-300 p-3 text-center font-mono text-[9px] uppercase font-bold text-slate-600">
+                                    {item.code || '---'}
+                                </td>
+                                <td className="border border-slate-300 p-3">
+                                    <div className="flex items-center gap-3">
+                                        {options.includePhotos && item.photoUrl && (
+                                            <div className="h-8 w-8 rounded-lg bg-white border border-slate-200 overflow-hidden flex-shrink-0 shadow-sm">
+                                                <img src={item.photoUrl} alt="" className="w-full h-full object-cover" />
+                                            </div>
+                                        )}
+                                        <div>
+                                            <div className="font-black text-slate-900 uppercase text-xs tracking-tight">{item.name}</div>
+                                            <div className="text-[8px] text-slate-500 font-bold uppercase tracking-widest">{item.category}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td className="border border-slate-300 p-3 text-center text-sm font-bold text-slate-600 bg-slate-50/30">
+                                    {item.qteInventaire}
+                                </td>
+                                <td className="border border-slate-300 p-3 text-center text-sm font-black text-emerald-700 italic bg-emerald-50/10">
+                                    {item.qteEntree > 0 ? `+ ${item.qteEntree}` : '---'}
+                                </td>
+                                <td className="border border-slate-300 p-3 text-center text-sm font-black text-amber-700 italic bg-amber-50/10">
+                                    {item.qteSortie > 0 ? `- ${item.qteSortie}` : '---'}
+                                </td>
+                                <td className={cn(
+                                    "border border-slate-900 p-3 text-center text-base font-black italic border-l-4 border-l-slate-900",
+                                    item.qteStock <= (item.reorderLevel || 5) ? "text-red-700 bg-red-50/50" : "text-slate-900"
+                                )}>
+                                    {item.qteStock}
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+
+                {/* --- Validations Area (Institutional Style) --- */}
+                <div className="mt-16 grid grid-cols-3 gap-12 pt-12 border-t-4 border-slate-900 break-inside-avoid">
+                    <div className="space-y-6">
+                        <p className="text-xs font-black uppercase text-slate-500 tracking-[0.2em] italic underline decoration-2 underline-offset-8 decoration-[#006039]">Visa Magasinier / Régisseur</p>
+                        <div className="h-32 w-full border-4 border-dashed border-slate-100 rounded-2xl flex items-center justify-center text-center p-4 bg-slate-50/30">
+                            <span className="text-[9px] text-slate-300 font-black uppercase tracking-[0.3em] leading-relaxed">Signatures des mouvements<br />physiques constatés</span>
+                        </div>
+                    </div>
+                    <div className="space-y-6">
+                        <p className="text-xs font-black uppercase text-slate-500 tracking-[0.2em] italic underline decoration-2 underline-offset-8 decoration-[#006039]">Direction Financière / Audit</p>
+                        <div className="h-32 w-full border-4 border-dashed border-slate-100 rounded-2xl flex items-center justify-center text-center p-4 bg-slate-50/30">
+                            <span className="text-[9px] text-slate-300 font-black uppercase tracking-[0.3em] leading-relaxed">Validation de la conformité<br />comptable et analytique</span>
+                        </div>
+                    </div>
+                    <div className="text-right space-y-8">
+                        <div className="space-y-2">
+                            <p className="text-[11px] font-black text-slate-900 italic">Édité le {format(new Date(), 'dd MMMM yyyy à HH:mm', { locale: fr })}</p>
+                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Système de Gestion Intégré, Yamoussoukro</p>
+                        </div>
+                        <div className="pt-4 flex flex-col items-end gap-3">
+                             <div className="h-1 w-40 bg-slate-900 rounded-full" />
+                             <p className="text-2xl font-black text-slate-900 uppercase italic tracking-tighter">COULIBALY Hamadou</p>
+                             <div className="bg-[#006039] text-white px-6 py-2 rounded-xl flex items-center gap-3 shadow-md">
+                                 <Shield className="h-4 w-4" />
+                                 <span className="text-[9px] font-black uppercase tracking-[0.2em]">Authentifié par GèreEcole</span>
+                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* --- Traceability Bar --- */}
+                <div className="mt-12 pt-4 border-t border-slate-100 flex justify-between items-center text-[7px] text-slate-300 font-mono uppercase tracking-widest break-inside-avoid">
+                    <p>DOC_ID: {Math.random().toString(36).substring(2, 12).toUpperCase()}</p>
+                    <p>HASH_DIGITAL: {Buffer.from(periodLabel).toString('hex').substring(0, 16).toUpperCase()}</p>
+                    <p>CNRCT_INTRA_SEC_V3</p>
+                </div>
+
+                <footer className="fixed bottom-6 left-12 right-12 text-center text-[8px] text-slate-500 border-t-2 border-slate-900 pt-4 flex justify-between items-center px-4 bg-white/80 backdrop-blur-sm">
+                    <p className="font-black uppercase tracking-widest">© {new Date().getFullYear()} CNRCT - Yamoussoukro</p>
+                    <p className="font-black italic text-slate-900">PV D'INVENTAIRE OFFICIEL - DOCUMENT À VALEUR JURIDIQUE</p>
+                    <p className="font-black uppercase">BP 201 | Tél : +225 30 64 06 60</p>
                 </footer>
             </div>
         </div>,

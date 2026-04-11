@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState, useMemo, useRef, useTransition } from "react";
@@ -6,7 +5,8 @@ import {
     LayoutDashboard, TrendingUp, AlertTriangle, 
     ArrowLeft, Calendar, Users, ShieldAlert,
     BarChart3, PieChart as PieChartIcon, Globe, CheckCircle2,
-    FileDown, Loader2, Filter
+    FileDown, Loader2, Filter, Activity,
+    Target, Zap
 } from "lucide-react";
 import Link from "next/link";
 import html2canvas from "html2canvas";
@@ -42,7 +42,6 @@ import {
     SelectValue 
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import Image from "next/image";
 
 /**
  * En-tête institutionnel dédié à l'export PDF
@@ -169,18 +168,11 @@ export default function ConflictAnalyticsPage() {
         if (!reportRef.current) return;
         setExporting(true);
         
-        // Wait for next paint to ensure the "Exporting..." UI is visible
-        // This is crucial for solving INP (Interaction to Next Paint) issues
         await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-        
-        // Ensure we are at the top for proper capture
         window.scrollTo(0, 0);
-        
-        // Let animations and charts stabilize - increase slightly for safety
         await new Promise(resolve => setTimeout(resolve, 2000));
 
         try {
-            // Force header visibility
             const header = document.getElementById('pdf-report-header');
             if (header) {
                 header.classList.remove('hidden');
@@ -202,15 +194,12 @@ export default function ConflictAnalyticsPage() {
 
             for (let i = 0; i < blocks.length; i++) {
                 const block = blocks[i] as HTMLElement;
-                
-                // Capture block with Scale 2 for better stability
                 const canvas = await html2canvas(block, {
                     scale: 2, 
                     useCORS: true,
                     logging: false,
                     backgroundColor: "#f1f5f9",
                     windowWidth: 1200,
-                    // Ensure charts are rendered before capture
                     onclone: (clonedDoc) => {
                         const clonedBlock = clonedDoc.querySelector('.pdf-page-block') as HTMLElement;
                         if (clonedBlock) {
@@ -220,7 +209,7 @@ export default function ConflictAnalyticsPage() {
                     }
                 });
 
-                const imgData = canvas.toDataURL("image/png", 0.8); // Slight compression 
+                const imgData = canvas.toDataURL("image/png", 0.8);
                 const imgProps = pdf.getImageProperties(imgData);
                 const blockHeightInPdf = (imgProps.height * contentWidth) / imgProps.width;
 
@@ -230,9 +219,7 @@ export default function ConflictAnalyticsPage() {
                 }
 
                 pdf.addImage(imgData, "PNG", margin, currentY, contentWidth, blockHeightInPdf, undefined, 'FAST');
-                currentY += blockHeightInPdf + 8; // More padding between blocks
-
-                // Small pause between blocks to let the browser breath
+                currentY += blockHeightInPdf + 8;
                 await new Promise(resolve => setTimeout(resolve, 300));
             }
 
@@ -270,262 +257,261 @@ export default function ConflictAnalyticsPage() {
     return (
         <div className="pb-20 space-y-10">
             <Chart3DEffects />
-            {/* Header section */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                <div className="space-y-2">
-                    <div className="flex items-center gap-2">
+            
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-4">
+                <div className="space-y-3">
+                    <div className="flex items-center gap-3">
                         <Link href="/conflicts">
-                            <Button variant="ghost" size="sm" className="h-8 rounded-full">
-                                <ArrowLeft className="h-4 w-4 mr-2" /> Retour
+                            <Button variant="outline" size="sm" className="h-9 px-4 rounded-xl border-slate-200 bg-white shadow-sm font-bold text-xs uppercase tracking-wider hover:bg-slate-50 transition-all">
+                                <ArrowLeft className="h-3.5 w-3.5 mr-2" /> Retour
                             </Button>
                         </Link>
-                        <Badge variant="outline" className="text-[10px] font-black uppercase tracking-widest text-primary border-primary/20">
-                            Centre d'Analyse Stratégique
+                        <Badge variant="outline" className="text-[10px] font-black uppercase tracking-[0.2em] text-primary border-primary/20 bg-primary/5 px-3 py-1">
+                            Observatoire Strategique
                         </Badge>
                     </div>
-                    <h1 className="text-4xl font-black text-slate-900 tracking-tight flex items-center gap-3">
-                        Statistiques des Conflits <LayoutDashboard className="h-8 w-8 text-slate-300" />
+                    <h1 className="text-5xl font-black text-slate-900 tracking-tight flex items-center gap-4">
+                        Analyses des Conflits <Activity className="h-10 w-10 text-primary animate-pulse" />
                     </h1>
-                    <p className="text-slate-500 font-medium max-w-2xl">
-                        Analyse dynamique des dossiers. Utilisez les filtres pour affiner les tendances, la géographie et les performances.
+                    <p className="text-slate-500 font-medium max-w-2xl leading-relaxed">
+                        Intelligence opérationnelle et cartographie des tendances sociales pour la prévention des crises nationales.
                     </p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-3">
                     <Button 
                         variant="outline" 
-                        className="rounded-xl font-bold h-11 border-slate-200 hover:bg-slate-50"
+                        className="rounded-xl font-black h-12 px-6 border-slate-200 bg-white shadow-sm hover:shadow-md transition-all uppercase text-[10px] tracking-widest"
                         onClick={handleExportPDF}
                         disabled={exporting}
                     >
                         {exporting ? (
-                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin text-primary" />
                         ) : (
-                            <FileDown className="h-4 w-4 mr-2" />
+                            <FileDown className="h-4 w-4 mr-2 text-primary" />
                         )} 
-                        Rapport PDF
+                        Rapport Stratégique
                     </Button>
                     <Button 
                         onClick={() => window.location.reload()}
-                        className="rounded-xl font-bold h-11 shadow-lg shadow-primary/20 bg-slate-900 hover:bg-slate-800"
+                        className="rounded-xl font-black h-12 px-6 shadow-xl shadow-primary/20 bg-slate-900 border-none hover:bg-slate-800 transition-all uppercase text-[10px] tracking-widest"
                     >
-                        <BarChart3 className="h-4 w-4 mr-2" /> Actualiser
+                        <Zap className="h-4 w-4 mr-2 text-yellow-400 fill-yellow-400" /> Actualiser
                     </Button>
                 </div>
             </div>
 
-            {/* Filters Section */}
-            <Card className="border-none shadow-xl shadow-slate-100 rounded-[2rem] bg-white p-4">
-                <div className="flex flex-wrap items-center gap-4">
-                    <div className="flex items-center gap-2 px-3 py-2 bg-slate-50 rounded-xl text-slate-500">
-                        <Filter className="h-4 w-4" />
-                        <span className="text-xs font-bold uppercase tracking-wider">Filtres</span>
+            <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-[2.5rem] bg-white/80 backdrop-blur-xl p-6 border border-white/40">
+                <div className="flex flex-col md:flex-row items-center gap-6">
+                    <div className="flex items-center gap-3 px-4 py-2.5 bg-slate-900 rounded-2xl text-white shadow-lg shadow-slate-200">
+                        <Filter className="h-4 w-4 text-primary" />
+                        <span className="text-xs font-black uppercase tracking-widest">Paramètres d'Affichage</span>
                     </div>
 
-                    <Select value={selectedRegion} onValueChange={(v) => startTransition(() => setSelectedRegion(v))}>
-                        <SelectTrigger className="w-[180px] rounded-xl border-slate-100 bg-slate-50/50 font-bold">
-                            <SelectValue placeholder="Région" />
-                        </SelectTrigger>
-                        <SelectContent className="rounded-xl border-slate-100">
-                            <SelectItem value="Tous">Toutes les régions</SelectItem>
-                            {IVORIAN_REGIONS.map(region => (
-                                <SelectItem key={region} value={region}>{region}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                    <div className="flex flex-wrap items-center gap-4 flex-1">
+                        <Select value={selectedRegion} onValueChange={(v) => startTransition(() => setSelectedRegion(v))}>
+                            <SelectTrigger className="w-full md:w-[220px] h-11 rounded-xl border-slate-200 bg-white font-bold text-xs uppercase tracking-tight">
+                                <SelectValue placeholder="Région" />
+                            </SelectTrigger>
+                            <SelectContent className="rounded-xl border-slate-100">
+                                <SelectItem value="Tous">Toutes les régions</SelectItem>
+                                {IVORIAN_REGIONS.map(region => (
+                                    <SelectItem key={region} value={region}>{region}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
 
-                    <Select value={selectedYear} onValueChange={(v) => startTransition(() => setSelectedYear(v))}>
-                        <SelectTrigger className="w-[140px] rounded-xl border-slate-100 bg-slate-50/50 font-bold">
-                            <SelectValue placeholder="Année" />
-                        </SelectTrigger>
-                        <SelectContent className="rounded-xl border-slate-100">
-                            <SelectItem value="Tous">Toutes les années</SelectItem>
-                            {availableYears.map(year => (
-                                <SelectItem key={year} value={year}>{year}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                        <Select value={selectedYear} onValueChange={(v) => startTransition(() => setSelectedYear(v))}>
+                            <SelectTrigger className="w-full md:w-[160px] h-11 rounded-xl border-slate-200 bg-white font-bold text-xs uppercase tracking-tight">
+                                <SelectValue placeholder="Année" />
+                            </SelectTrigger>
+                            <SelectContent className="rounded-xl border-slate-100">
+                                <SelectItem value="Tous">Toutes les années</SelectItem>
+                                {availableYears.map(year => (
+                                    <SelectItem key={year} value={year}>{year}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
 
-                    <Select value={selectedType} onValueChange={(v) => startTransition(() => setSelectedType(v))}>
-                        <SelectTrigger className="w-[180px] rounded-xl border-slate-100 bg-slate-50/50 font-bold">
-                            <SelectValue placeholder="Type de conflit" />
-                        </SelectTrigger>
-                        <SelectContent className="rounded-xl border-slate-100">
-                            <SelectItem value="Tous">Tous les types</SelectItem>
-                            {availableTypes.map(type => (
-                                <SelectItem key={type} value={type}>{type}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                        <Select value={selectedType} onValueChange={(v) => startTransition(() => setSelectedType(v))}>
+                            <SelectTrigger className="w-full md:w-[220px] h-11 rounded-xl border-slate-200 bg-white font-bold text-xs uppercase tracking-tight">
+                                <SelectValue placeholder="Type de conflit" />
+                            </SelectTrigger>
+                            <SelectContent className="rounded-xl border-slate-100">
+                                <SelectItem value="Tous">Tous les types</SelectItem>
+                                {availableTypes.map(type => (
+                                    <SelectItem key={type} value={type}>{type}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
 
-                    {(selectedRegion !== "Tous" || selectedYear !== "Tous" || selectedType !== "Tous") && (
-                        <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            className="text-[10px] font-black uppercase text-rose-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg px-2"
-                            onClick={() => {
-                                startTransition(() => {
-                                    setSelectedRegion("Tous");
-                                    setSelectedYear("Tous");
-                                    setSelectedType("Tous");
-                                });
-                            }}
-                        >
-                            Réinitialiser
-                        </Button>
-                    )}
+                        {(selectedRegion !== "Tous" || selectedYear !== "Tous" || selectedType !== "Tous") && (
+                            <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                className="text-[10px] font-black uppercase text-rose-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg h-11 px-4"
+                                onClick={() => {
+                                    startTransition(() => {
+                                        setSelectedRegion("Tous");
+                                        setSelectedYear("Tous");
+                                        setSelectedType("Tous");
+                                    });
+                                }}
+                            >
+                                Réinitialiser
+                            </Button>
+                        )}
+                    </div>
 
-                    <div className="ml-auto">
-                        <Badge variant="outline" className="bg-slate-50 border-slate-100 text-slate-400 font-bold rounded-lg px-3 py-1">
-                            {filteredConflicts.length} dossiers filtrés
-                        </Badge>
+                    <div className="hidden lg:block ml-auto border-l border-slate-100 pl-6">
+                        <div className="text-right">
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Dossiers Analysés</p>
+                            <p className="text-2xl font-black text-slate-900">{filteredConflicts.length}</p>
+                        </div>
                     </div>
                 </div>
             </Card>
             
-            <div ref={reportRef} className="space-y-10 p-4 md:p-8 bg-[#f1f5f9] rounded-[3rem]">
+            <div ref={reportRef} className="space-y-10 p-4 md:p-10 bg-[#f1f5f9] rounded-[3.5rem] border border-white/50">
                 <div className="pdf-page-block">
                     <ReportPdfHeader region={selectedRegion} year={selectedYear} type={selectedType} />
                 </div>
 
-                {/* KPI Cards */}
-                <div className="pdf-page-block grid grid-cols-1 md:grid-cols-4 gap-6">
-                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-3xl overflow-hidden bg-white group hover:shadow-2xl transition-all duration-500">
-                        <CardHeader className="pb-2">
-                            <div className="h-10 w-10 rounded-xl bg-blue-50 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-                                <Users className="h-5 w-5 text-blue-600" />
+                {/* KPI Cards Upgraded */}
+                <div className="pdf-page-block grid grid-cols-1 md:grid-cols-4 gap-8">
+                    <Card className="border-none shadow-2xl shadow-slate-200/40 rounded-[2rem] overflow-hidden bg-white group hover:-translate-y-2 transition-all duration-500 relative">
+                        <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
+                            <Users className="h-16 w-16" />
+                        </div>
+                        <CardHeader className="pb-4 relative z-10">
+                            <div className="h-12 w-12 rounded-2xl bg-slate-900 flex items-center justify-center mb-4 shadow-lg shadow-slate-200 group-hover:bg-primary transition-colors">
+                                <Users className="h-6 w-6 text-white" />
                             </div>
-                            <CardDescription className="text-[10px] font-black uppercase tracking-widest">Total Dossiers</CardDescription>
-                            <CardTitle className="text-3xl font-black text-slate-900">{stats?.total}</CardTitle>
+                            <CardDescription className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Total Dossiers</CardDescription>
+                            <CardTitle className="text-4xl font-black text-slate-900 tracking-tight">{stats?.total}</CardTitle>
                         </CardHeader>
-                        <CardContent>
-                            <p className="text-[10px] text-slate-400 font-medium">Archivage cumulé 2016-2025</p>
+                        <CardContent className="relative z-10">
+                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider italic">Volume global archivé</p>
                         </CardContent>
                     </Card>
 
-                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-3xl overflow-hidden bg-white group hover:shadow-2xl transition-all duration-500">
-                        <CardHeader className="pb-2">
-                            <div className="h-10 w-10 rounded-xl bg-emerald-50 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-                                <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+                    <Card className="border-none shadow-2xl shadow-slate-200/40 rounded-[2rem] overflow-hidden bg-white group hover:-translate-y-2 transition-all duration-500 relative">
+                        <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
+                            <CheckCircle2 className="h-16 w-16" />
+                        </div>
+                        <CardHeader className="pb-4 relative z-10">
+                            <div className="h-12 w-12 rounded-2xl bg-emerald-500 flex items-center justify-center mb-4 shadow-lg shadow-emerald-100 group-hover:scale-110 transition-transform">
+                                <Target className="h-6 w-6 text-white" />
                             </div>
-                            <CardDescription className="text-[10px] font-black uppercase tracking-widest">Dossiers Résolus</CardDescription>
-                            <CardTitle className="text-3xl font-black text-slate-900">{stats?.resolved}</CardTitle>
+                            <CardDescription className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Taux de Résolution</CardDescription>
+                            <CardTitle className="text-4xl font-black text-slate-900 tracking-tight">{stats?.resolved}</CardTitle>
                         </CardHeader>
-                        <CardContent>
-                            <Badge variant="outline" className="bg-emerald-50 text-emerald-600 border-none font-bold">
-                                {stats?.resolutionRate}% de réussite
+                        <CardContent className="relative z-10">
+                            <Badge className="bg-emerald-50 text-emerald-600 border-none font-black text-[10px] px-3 py-1 rounded-full uppercase tracking-tighter">
+                                {stats?.resolutionRate}% de succès national
                             </Badge>
                         </CardContent>
                     </Card>
 
-                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-3xl overflow-hidden bg-white group hover:shadow-2xl transition-all duration-500">
-                        <CardHeader className="pb-2">
-                            <div className="h-10 w-10 rounded-xl bg-amber-50 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-                                <ShieldAlert className="h-5 w-5 text-amber-600" />
+                    <Card className="border-none shadow-2xl shadow-slate-200/40 rounded-[2rem] overflow-hidden bg-white group hover:-translate-y-2 transition-all duration-500 relative">
+                        <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
+                            <ShieldAlert className="h-16 w-16" />
+                        </div>
+                        <CardHeader className="pb-4 relative z-10">
+                            <div className="h-12 w-12 rounded-2xl bg-blue-600 flex items-center justify-center mb-4 shadow-lg shadow-blue-100 group-hover:rotate-12 transition-transform">
+                                <ShieldAlert className="h-6 w-6 text-white" />
                             </div>
-                            <CardDescription className="text-[10px] font-black uppercase tracking-widest">En Médiation</CardDescription>
-                            <CardTitle className="text-3xl font-black text-slate-900">{stats?.inMediation}</CardTitle>
+                            <CardDescription className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">En Médiation</CardDescription>
+                            <CardTitle className="text-4xl font-black text-slate-900 tracking-tight">{stats?.inMediation}</CardTitle>
                         </CardHeader>
-                        <CardContent>
-                            <p className="text-[10px] text-slate-400 font-medium">Procédures actives sur le terrain</p>
+                        <CardContent className="relative z-10">
+                            <p className="text-[10px] text-blue-600 font-black uppercase tracking-widest border-l-2 border-blue-600 pl-3">Dossiers sous surveillance</p>
                         </CardContent>
                     </Card>
 
-                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-3xl overflow-hidden bg-white group hover:shadow-2xl transition-all duration-500">
-                        <CardHeader className="pb-2">
-                            <div className="h-10 w-10 rounded-xl bg-rose-50 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-                                <AlertTriangle className="h-5 w-5 text-rose-600" />
+                    <Card className="border-none shadow-2xl shadow-slate-200/40 rounded-[2rem] overflow-hidden bg-white group hover:-translate-y-2 transition-all duration-500 relative">
+                        <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
+                            <AlertTriangle className="h-16 w-16" />
+                        </div>
+                        <CardHeader className="pb-4 relative z-10">
+                            <div className="h-12 w-12 rounded-2xl bg-rose-600 flex items-center justify-center mb-4 shadow-lg shadow-rose-100 group-hover:scale-90 transition-transform">
+                                <AlertTriangle className="h-6 w-6 text-white" />
                             </div>
-                            <CardDescription className="text-[10px] font-black uppercase tracking-widest">En Cours</CardDescription>
-                            <CardTitle className="text-3xl font-black text-slate-900">{stats?.inProgress}</CardTitle>
+                            <CardDescription className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Foyers Ouverts</CardDescription>
+                            <CardTitle className="text-4xl font-black text-slate-900 tracking-tight">{stats?.inProgress}</CardTitle>
                         </CardHeader>
-                        <CardContent>
-                            <p className="text-[10px] text-slate-400 font-medium">Nouveaux dossiers non traités</p>
+                        <CardContent className="relative z-10">
+                            <p className="text-[10px] text-rose-600 font-black uppercase tracking-widest border-l-2 border-rose-600 pl-3">Alerte Priorité Haute</p>
                         </CardContent>
                     </Card>
                 </div>
 
-                {/* Charts Grid */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    {/* Evolution Profile */}
-                    <Card className="pdf-page-block border-none shadow-2xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden">
-                        <CardHeader className="p-8 border-b border-slate-50">
-                            <CardTitle className="text-xl flex items-center gap-2">
-                                <TrendingUp className="h-5 w-5 text-slate-400" /> Courbe d'Activité Historique
-                            </CardTitle>
-                            <CardDescription>Nombre de conflits signalés par année.</CardDescription>
+                {/* Charts Grid - Enhanced */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                    <Card className="pdf-page-block border-none shadow-2xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden bg-white hover:shadow-primary/5 transition-all">
+                        <CardHeader className="p-10 border-b border-slate-50 bg-slate-50/30">
+                            <div className="flex items-center gap-3 mb-2">
+                                <TrendingUp className="h-5 w-5 text-primary" />
+                                <CardTitle className="text-xl font-black text-slate-900 uppercase tracking-tight">Profil d'Expansion Historique</CardTitle>
+                            </div>
+                            <CardDescription className="font-medium">Analyse longitudinale du flux de signalements (2016-2025).</CardDescription>
                         </CardHeader>
-                        <CardContent className="p-8">
+                        <CardContent className="p-10">
                             <ConflictHistoryChart conflicts={filteredConflicts} />
                         </CardContent>
                     </Card>
 
-                    {/* Impact Analysis */}
-                    <Card className="pdf-page-block border-none shadow-2xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden">
-                        <CardHeader className="p-8 border-b border-slate-50">
-                            <CardTitle className="text-xl flex items-center gap-2">
-                                <BarChart3 className="h-5 w-5 text-slate-400" /> Analyse Thématique des Impacts
-                            </CardTitle>
-                            <CardDescription>Principales conséquences identifiées dans les dossiers.</CardDescription>
+                    <Card className="pdf-page-block border-none shadow-2xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden bg-white hover:shadow-primary/5 transition-all">
+                        <CardHeader className="p-10 border-b border-slate-50 bg-slate-50/30">
+                            <div className="flex items-center gap-3 mb-2">
+                                <PieChartIcon className="h-5 w-5 text-primary" />
+                                <CardTitle className="text-xl font-black text-slate-900 uppercase tracking-tight">Répartition des Typologies</CardTitle>
+                            </div>
+                            <CardDescription className="font-medium">Nature prédominante des litiges enregistrés sur la période.</CardDescription>
                         </CardHeader>
-                        <CardContent className="p-8">
-                            <ImpactThematicChart conflicts={filteredConflicts} />
-                        </CardContent>
-                    </Card>
-
-                    {/* Typology distribution */}
-                    <Card className="pdf-page-block border-none shadow-2xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden">
-                        <CardHeader className="p-8 border-b border-slate-50">
-                            <CardTitle className="text-xl flex items-center gap-2">
-                                <PieChartIcon className="h-5 w-5 text-slate-400" /> Analyse par Typologie
-                            </CardTitle>
-                            <CardDescription>Répartition des natures de conflits enregistrés.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="p-8">
+                        <CardContent className="p-10">
                             <ConflictTypeChart conflicts={filteredConflicts} />
                         </CardContent>
                     </Card>
 
-                    {/* Resolution Performance */}
-                    <Card className="pdf-page-block border-none shadow-2xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden">
-                        <CardHeader className="p-8 border-b border-slate-50">
-                            <CardTitle className="text-xl flex items-center gap-2">
-                                <Calendar className="h-5 w-5 text-slate-400" /> Délais de Résolution
-                            </CardTitle>
-                            <CardDescription>Distribution du temps de traitement des dossiers clôturés.</CardDescription>
+                    <Card className="pdf-page-block border-none shadow-2xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden bg-white hover:shadow-primary/5 transition-all">
+                        <CardHeader className="p-10 border-b border-slate-50 bg-slate-50/30">
+                            <div className="flex items-center gap-3 mb-2">
+                                <Globe className="h-5 w-5 text-primary" />
+                                <CardTitle className="text-xl font-black text-slate-900 uppercase tracking-tight">Concentration Régionale (Top 10)</CardTitle>
+                            </div>
+                            <CardDescription className="font-medium">Hiérarchie géographique des zones à forte conflictualité.</CardDescription>
                         </CardHeader>
-                        <CardContent className="p-8">
-                            <ResolutionTimeChart conflicts={filteredConflicts} />
-                        </CardContent>
-                    </Card>
-
-                    {/* Regional Stats */}
-                    <Card className="pdf-page-block border-none shadow-2xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden">
-                        <CardHeader className="p-8 border-b border-slate-50">
-                            <CardTitle className="text-xl flex items-center gap-2">
-                                <Globe className="h-5 w-5 text-slate-400" /> Top 10 des Régions
-                            </CardTitle>
-                            <CardDescription>Classement géographique par volume de litiges.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="p-8">
+                        <CardContent className="p-10">
                             <ConflictRegionChart conflicts={filteredConflicts} />
                         </CardContent>
                     </Card>
 
-
-                    {/* Performance / Status */}
-                    <Card className="pdf-page-block border-none shadow-2xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden">
-                        <CardHeader className="p-8 border-b border-slate-50">
-                            <CardTitle className="text-xl flex items-center gap-2">
-                                <CheckCircle2 className="h-5 w-5 text-slate-400" /> État Global d'Avancement
-                            </CardTitle>
-                            <CardDescription>Visualisation du cycle de vie des dossiers.</CardDescription>
+                    <Card className="pdf-page-block border-none shadow-2xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden bg-white hover:shadow-primary/5 transition-all">
+                        <CardHeader className="p-10 border-b border-slate-50 bg-slate-50/30">
+                            <div className="flex items-center gap-3 mb-2">
+                                <Calendar className="h-5 w-5 text-primary" />
+                                <CardTitle className="text-xl font-black text-slate-900 uppercase tracking-tight">Vitesse de Résolution (MGP)</CardTitle>
+                            </div>
+                            <CardDescription className="font-medium">Évaluation de l'efficacité opérationnelle des comités de médiation.</CardDescription>
                         </CardHeader>
-                        <CardContent className="p-8">
-                            <ConflictStatusChart conflicts={filteredConflicts} />
+                        <CardContent className="p-10">
+                            <ResolutionTimeChart conflicts={filteredConflicts} />
                         </CardContent>
                     </Card>
 
-                    {/* Social Heatmap - Full Width */}
+                    <Card className="pdf-page-block border-none shadow-2xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden bg-white lg:col-span-2">
+                        <CardHeader className="p-10 border-b border-slate-50 bg-slate-50/30">
+                            <div className="flex items-center gap-3 mb-2">
+                                <BarChart3 className="h-5 w-5 text-primary" />
+                                <CardTitle className="text-xl font-black text-slate-900 uppercase tracking-tight">Matrice d'Impact & Risques</CardTitle>
+                            </div>
+                            <CardDescription className="font-medium">Conséquences socio-économiques et environnementales des conflits répertoriés.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="p-10">
+                            <ImpactThematicChart conflicts={filteredConflicts} />
+                        </CardContent>
+                    </Card>
+
                     <div className="pdf-page-block lg:col-span-2">
                         <ConflictHeatmap conflicts={filteredConflicts} />
                     </div>

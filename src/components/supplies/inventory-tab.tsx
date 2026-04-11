@@ -78,20 +78,23 @@ export const InventoryTab = memo(({
     return (
         <div className="space-y-6">
             {/* --- Statistical Dashboard --- */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                <Card className="bg-white shadow-sm border-slate-100 hover:border-primary/20 transition-all group">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <Card className="border-white/10 shadow-xl bg-gradient-to-br from-slate-900 to-slate-800 text-white overflow-hidden relative group transition-all hover:shadow-2xl hover:-translate-y-1">
                     <CardContent className="p-4 flex items-center gap-4">
-                        <div className="h-10 w-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
+                        <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center text-white group-hover:scale-110 transition-transform">
                             <Package className="h-5 w-5" />
                         </div>
                         <div className="flex flex-col">
-                            <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Total Articles</span>
-                            <span className="text-xl font-black text-slate-900">{stats.total}</span>
+                            <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Total Articles</span>
+                            <span className="text-xl font-black">{stats.total}</span>
                         </div>
                     </CardContent>
+                    <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                        <Archive className="h-10 w-10 rotate-12" />
+                    </div>
                 </Card>
                 
-                <Card className="bg-white shadow-sm border-slate-100 hover:border-red-100 transition-all group">
+                <Card className="border-white/10 shadow-xl bg-card/40 backdrop-blur-md overflow-hidden relative group transition-all hover:shadow-2xl hover:-translate-y-1 border-l-4 border-l-red-500">
                     <CardContent className="p-4 flex items-center gap-4">
                         <div className={cn(
                             "h-10 w-10 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110",
@@ -100,7 +103,7 @@ export const InventoryTab = memo(({
                             <AlertTriangle className="h-5 w-5" />
                         </div>
                         <div className="flex flex-col">
-                            <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Rupture de Stock</span>
+                            <span className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">En Rupture</span>
                             <span className={cn("text-xl font-black", stats.outOfStock > 0 ? "text-red-600" : "text-slate-900")}>
                                 {stats.outOfStock}
                             </span>
@@ -108,7 +111,7 @@ export const InventoryTab = memo(({
                     </CardContent>
                 </Card>
 
-                <Card className="bg-white shadow-sm border-slate-100 hover:border-amber-100 transition-all group">
+                <Card className="border-white/10 shadow-xl bg-card/40 backdrop-blur-md overflow-hidden relative group transition-all hover:shadow-2xl hover:-translate-y-1 border-l-4 border-l-amber-500">
                     <CardContent className="p-4 flex items-center gap-4">
                         <div className={cn(
                             "h-10 w-10 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110",
@@ -117,7 +120,7 @@ export const InventoryTab = memo(({
                             <Zap className="h-5 w-5" />
                         </div>
                         <div className="flex flex-col">
-                            <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Stock Critique</span>
+                            <span className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Stock Critique</span>
                             <span className={cn("text-xl font-black", stats.lowStock > 0 ? "text-amber-600" : "text-slate-900")}>
                                 {stats.lowStock}
                             </span>
@@ -125,13 +128,13 @@ export const InventoryTab = memo(({
                     </CardContent>
                 </Card>
 
-                <Card className="bg-white shadow-sm border-slate-100 hover:border-emerald-100 transition-all group">
+                <Card className="border-white/10 shadow-xl bg-card/40 backdrop-blur-md overflow-hidden relative group transition-all hover:shadow-2xl hover:-translate-y-1 border-l-4 border-l-emerald-500">
                     <CardContent className="p-4 flex items-center gap-4">
                         <div className="h-10 w-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform">
                             <BarChart3 className="h-5 w-5" />
                         </div>
                         <div className="flex flex-col">
-                            <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Santé Globale</span>
+                            <span className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Santé Globale</span>
                             <span className="text-xl font-black text-emerald-600">{Math.round(stats.avgHealth)}%</span>
                         </div>
                     </CardContent>

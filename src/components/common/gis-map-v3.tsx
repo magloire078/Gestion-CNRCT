@@ -107,15 +107,17 @@ export function GISMap(props: GISMapProps) {
             color = 'bg-blue-600';
             iconSvg = '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>';
         } else if (type === 'conflict') {
-            // Mapping des couleurs par statut
+            // Mapping des couleurs institutionnelles par statut (MGP)
             const statusColors: Record<string, string> = {
                 'Résolu': 'bg-emerald-500',
-                'En médiation': 'bg-amber-500',
+                'En médiation': 'bg-blue-500',
+                'Ouvert': 'bg-rose-500',
                 'En cours': 'bg-rose-500',
-                'default': 'bg-red-500'
+                'Classé sans suite': 'bg-slate-400',
+                'default': 'bg-rose-500'
             };
             color = statusColors[options?.status || 'default'] || statusColors.default;
-            iconSvg = '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>';
+            iconSvg = '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="M12 8v4"/><path d="M12 16h.01"/>';
         } else if (type === 'heritage') {
             const colors: Record<string, string> = {
                 ethnies: 'bg-amber-600',
@@ -263,18 +265,31 @@ export function GISMap(props: GISMapProps) {
 
             const popupContent = document.createElement('div');
             popupContent.className = 'p-4 min-w-[250px] font-sans';
-            const statusColor = conflict.status === 'Résolu' ? 'text-emerald-700' : 'text-rose-700';
-            const statusBg = conflict.status === 'Résolu' ? 'bg-emerald-50' : 'bg-rose-50';
+            // Couleurs de popup par statut
+            let statusClassName = 'bg-rose-50 text-rose-700 border-rose-200';
+            let statusLabel = 'SIGNALÉ / OUVERT';
+
+            if (conflict.status === 'Résolu') {
+                statusClassName = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+                statusLabel = 'DOSSIER RÉSOLU';
+            } else if (conflict.status === 'En médiation') {
+                statusClassName = 'bg-blue-50 text-blue-700 border-blue-200';
+                statusLabel = 'MÉDIATION ACTIVE';
+            } else if (conflict.status === 'Classé sans suite') {
+                statusClassName = 'bg-slate-50 text-slate-600 border-slate-200';
+                statusLabel = 'CLASSÉ SANS SUITE';
+            }
             
             popupContent.innerHTML = `
-                <div class="${statusBg} -m-4 p-4 mb-3 border-b border-white/20 rounded-t-lg">
-                    <h3 class="text-[10px] font-black ${statusColor} uppercase tracking-[0.2em] mb-1">INCIDENT: ${conflict.status}</h3>
-                    <p class="text-sm font-bold text-slate-800">${conflict.village}</p>
+                <div class="${statusClassName} -m-4 p-4 mb-3 border-b-2 rounded-t-lg">
+                    <h3 class="text-[9px] font-black uppercase tracking-[0.2em] mb-1 opacity-80">${statusLabel}</h3>
+                    <p class="text-sm font-black text-slate-900 leading-tight uppercase">${conflict.village}</p>
                 </div>
-                <div class="space-y-2 mt-4">
-                    <p class="text-xs text-slate-600 italic leading-relaxed">"${conflict.description}"</p>
-                    <div class="pt-4 border-t border-slate-100 italic font-medium text-[10px] text-slate-400 uppercase tracking-widest">
-                        Type: ${conflict.type}
+                <div class="space-y-3 mt-4">
+                    <p class="text-xs text-slate-600 leading-relaxed font-medium">"${conflict.description.substring(0, 120)}${conflict.description.length > 120 ? '...' : ''}"</p>
+                    <div class="flex items-center justify-between pt-3 border-t border-slate-100">
+                        <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">${conflict.type}</span>
+                        <span class="text-[9px] font-bold text-slate-500">${conflict.reportedDate}</span>
                     </div>
                 </div>
             `;

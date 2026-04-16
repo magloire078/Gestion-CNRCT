@@ -111,20 +111,20 @@ export function SuppliesOfficialReport({
                 <div className="absolute bottom-0 left-0 w-96 h-96 bg-primary/5 rounded-full translate-y-1/2 -translate-x-1/2" />
                 
                 <header className="flex justify-between items-start mb-24 min-h-[140px] relative z-10">
-                    <div className="w-1/3 text-center flex flex-col justify-center items-center">
-                        <p className="font-bold text-[11px] items-center text-slate-800 leading-tight uppercase">
+                    <div className="w-1/3 text-center flex flex-col items-center">
+                        <p className="font-bold text-[11px] text-slate-800 leading-tight uppercase w-full">
                             Chambre Nationale des Rois<br />et Chefs Traditionnels
                         </p>
-                        {logos.mainLogoUrl && <img src={logos.mainLogoUrl} alt="Logo" className="max-h-24 mt-6 drop-shadow-sm" loading="eager" />}
-                        <div className="w-12 h-0.5 bg-[#006039] mt-4 rounded-full" />
+                        {logos.mainLogoUrl && <img src={logos.mainLogoUrl} alt="Logo" className="max-h-24 mt-4 drop-shadow-sm object-contain" loading="eager" />}
+                        <div className="w-12 h-0.5 bg-[#006039] mt-3 rounded-full" />
                     </div>
                     <div className="w-1/3"></div>
-                    <div className="w-1/3 text-center flex flex-col justify-center items-center">
-                        <p className="font-bold text-[11px] leading-tight text-slate-800 uppercase tracking-widest">
+                    <div className="w-1/3 text-center flex flex-col items-center">
+                        <p className="font-bold text-[11px] leading-tight text-slate-800 uppercase tracking-widest w-full">
                             République de Côte d'Ivoire
                         </p>
-                        {logos.secondaryLogoUrl && <img src={logos.secondaryLogoUrl} alt="Logo" className="max-h-20 my-6 drop-shadow-sm" loading="eager" />}
-                        <p className="text-[10px] italic font-black border-t-2 border-slate-900 mt-2 pt-2 px-6 uppercase tracking-tighter">Union - Discipline - Travail</p>
+                        {logos.secondaryLogoUrl && <img src={logos.secondaryLogoUrl} alt="Logo" className="max-h-20 my-4 drop-shadow-sm object-contain" loading="eager" />}
+                        <p className="text-[10px] italic font-black border-t-2 border-slate-900 mt-2 pt-2 px-4 uppercase tracking-tighter w-full">Union - Discipline - Travail</p>
                     </div>
                 </header>
 
@@ -150,14 +150,14 @@ export function SuppliesOfficialReport({
                         </div>
                     </div>
 
-                    <div className="mt-20 p-12 border-[8px] border-double border-slate-200 rounded-2xl bg-slate-50/50 backdrop-blur-sm relative">
+                    <div className="mt-12 p-10 border-[6px] border-double border-slate-200 rounded-2xl bg-slate-50/50 backdrop-blur-sm relative max-w-[80%] mx-auto">
                         <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white px-6 py-1 border border-slate-200 rounded-full font-black text-[10px] uppercase tracking-widest text-slate-400">
                             Rapport de Situation
                         </div>
                         <p className="text-3xl font-black uppercase underline decoration-[#006039] decoration-8 underline-offset-[12px]">
                             PÉRIODE : {periodLabel || format(new Date(), 'MMMM yyyy', { locale: fr })}
                         </p>
-                        <div className="flex gap-12 justify-center mt-10">
+                        <div className="flex gap-12 justify-center mt-8">
                              {categoryLabel !== 'all' && (
                                 <div className="flex flex-col items-center">
                                     <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Catégorie</span>

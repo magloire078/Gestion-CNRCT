@@ -81,12 +81,12 @@ export function SuppliesOfficialReport({
                     }
                     thead {
                         display: table-header-group !important;
-                        background-color: #0f172a !important;
+                        background-color: #f1f5f9 !important;
                     }
                     th {
-                        color: white !important;
-                        background-color: #0f172a !important;
-                        border: 1px solid #000 !important;
+                        color: black !important;
+                        background-color: #f1f5f9 !important;
+                        border: 1px solid #94a3b8 !important;
                     }
                     td {
                         border: 1px solid #94a3b8 !important; /* darker borders for grid */
@@ -253,14 +253,14 @@ export function SuppliesOfficialReport({
                 {/* --- Main Data Table (Black Border Administrative Style) --- */}
                 <table className="w-full border-collapse border-2 border-slate-900 text-[10px] leading-tight shadow-lg">
                     <thead>
-                        <tr className="bg-slate-900 text-white uppercase font-black text-center border-b-2 border-slate-900">
-                            <th className="border border-slate-800 p-4 w-[40px]">N°</th>
-                            <th className="border border-slate-800 p-4 w-[130px]">Code Article</th>
-                            <th className="border border-slate-800 p-4 text-left">Désignation / Catégorie</th>
-                            <th className="border border-slate-800 p-4 w-[100px] bg-slate-800">Initial</th>
-                            <th className="border border-slate-800 p-4 w-[100px] bg-emerald-900">Entrées (+)</th>
-                            <th className="border border-slate-800 p-4 w-[100px] bg-amber-800">Sorties (-)</th>
-                            <th className="border border-slate-800 p-4 w-[120px] font-black bg-white text-slate-900 border-l-4 border-l-slate-900">Stock Final</th>
+                        <tr className="bg-slate-100 text-slate-900 uppercase font-black text-center border-b-2 border-slate-900">
+                            <th className="border border-slate-300 p-4 w-[40px]">N°</th>
+                            <th className="border border-slate-300 p-4 w-[130px]">Code Article</th>
+                            <th className="border border-slate-300 p-4 text-left">Désignation / Catégorie</th>
+                            <th className="border border-slate-300 p-4 w-[100px] bg-slate-50">Initial</th>
+                            <th className="border border-slate-300 p-4 w-[100px] bg-emerald-50">Entrées (+)</th>
+                            <th className="border border-slate-300 p-4 w-[100px] bg-amber-50">Sorties (-)</th>
+                            <th className="border border-slate-300 p-4 w-[120px] font-black bg-white text-slate-900 border-l-4 border-l-slate-900">Stock Final</th>
                         </tr>
                     </thead>
                     <tbody>

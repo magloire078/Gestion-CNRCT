@@ -10,6 +10,11 @@ export async function GET() {
     // Note: Pour plus de sécurité, on pourrait vérifier le token ID ici.
     // Cependant, pour cette phase, nous nous concentrons sur le filtrage des données.
 
+    if (!adminDb) {
+      console.error('[API Employees Directory] adminDb is not initialized');
+      return NextResponse.json({ error: 'Database service unavailable' }, { status: 503 });
+    }
+
     const employeesRef = adminDb.collection('employees');
     const snapshot = await employeesRef
       .where('status', 'in', ['Actif', 'En congé'])
@@ -40,9 +45,9 @@ export async function GET() {
 
     return NextResponse.json(directory);
   } catch (error: any) {
-    console.error('[API Employees Directory] Error:', error);
+    console.error('[API Employees Directory] Error:', error.message);
     return NextResponse.json(
-      { error: 'Erreur lors de la récupération de l\'annuaire' }, 
+      { error: 'Erreur lors de la récupération de l\'annuaire', detail: error.message }, 
       { status: 500 }
     );
   }

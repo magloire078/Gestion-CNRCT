@@ -7,7 +7,12 @@ let credential;
 
 try {
   if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
-    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
+    let key = process.env.FIREBASE_SERVICE_ACCOUNT_KEY.trim();
+    // Remove wrapping quotes if they exist
+    if (key.startsWith('"') && key.endsWith('"')) {
+      key = key.substring(1, key.length - 1);
+    }
+    const serviceAccount = JSON.parse(key);
     credential = admin.credential.cert(serviceAccount);
   } else {
     credential = admin.credential.applicationDefault();
@@ -22,9 +27,10 @@ if (!admin.apps.length) {
     admin.initializeApp({
       credential: credential,
     });
-    console.log("Firebase Admin SDK initialized successfully.");
+    console.log("[FirebaseAdmin] Initialized successfully.");
   } catch (error: any) {
-    console.error("Firebase Admin SDK initialization error. Ensure credentials are set.", error.message);
+    console.error("[FirebaseAdmin] Initialization CRITICAL error:", error.message);
+    if (error.stack) console.error(error.stack);
   }
 }
 

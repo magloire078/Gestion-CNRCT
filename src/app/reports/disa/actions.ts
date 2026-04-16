@@ -25,7 +25,7 @@ export interface DisaReportState {
   error: string | null;
 }
 
-const salaryEventTypes: EmployeeEvent['eventType'][] = ['Promotion', 'Augmentation au Mérite', 'Ajustement de Marché', 'Revalorisation Salariale'];
+const salaryEventTypes: EmployeeEvent['eventType'][] = ['Promotion', 'Augmentation au Mérite', 'Ajustement de Marché', 'Revalorisation Salariale', 'Changement de poste', 'Autre'];
 
 function calculateBrutSalary(baseSalary: number, primeAnciennete: number, details: Record<string, any>): number {
   const otherIndemnities = [

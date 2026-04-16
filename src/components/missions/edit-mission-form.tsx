@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { format, parseISO } from "date-fns";
 import { fr } from "date-fns/locale";
 import { 
@@ -49,6 +50,7 @@ interface EditMissionFormProps {
 }
 
 export function EditMissionForm({ mission, onUpdateMission }: EditMissionFormProps) {
+    const router = useRouter();
     const [title, setTitle] = useState(mission.title);
     const [description, setDescription] = useState(mission.description);
     const [lieuMission, setLieuMission] = useState(mission.lieuMission || "");

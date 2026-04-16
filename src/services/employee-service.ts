@@ -340,7 +340,7 @@ const processEmployeeData = (employeeData: Partial<Employe>): Partial<Employe> =
 
 export async function addEmployee(employeeData: Omit<Employe, 'id'>, photoFile: File | null): Promise<Employe> {
     try {
-        let photoUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(employeeData.name || 'E')}&background=006039&color=fff&size=100`;
+        let photoUrl = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(employeeData.name || 'E')}&backgroundColor=006039&fontFamily=Arial`;
         const docRef = doc(collection(db, "employees"));
 
         if (photoFile) {

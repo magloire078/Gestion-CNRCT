@@ -131,7 +131,7 @@ export function RegionalCommittees({
                                 {selected.president?.photoUrl && !selected.president?.photoUrl.includes('ui-avatars.com') && !selected.president?.photoUrl.includes('placehold.co') ? (
                                   <AvatarImage src={selected.president.photoUrl} className="object-cover" />
                                 ) : (
-                                  <AvatarImage src={`https://ui-avatars.com/api/?name=${encodeURIComponent(selected.president?.name || selected.region[0])}&background=006039&color=D4AF37&size=100&bold=true`} className="object-cover" />
+                                  <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(selected.president?.name || selected.region[0])}&backgroundColor=006039&fontFamily=Arial`} className="object-cover" />
                                 )}
                                 <AvatarFallback className="bg-muted text-[#006039] font-black text-2xl">
                                   {getInitials(selected.president?.name || selected.region[0])}

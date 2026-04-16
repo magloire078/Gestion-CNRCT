@@ -117,21 +117,24 @@ function ProtectedPage({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
 
-  React.useEffect(() => {
-    if (loading) return;
-    if (!user) return; 
+  const { requiredPermission, isPersonalPage } = React.useMemo(() => {
+    const purePath = pathname.split('?')[0];
+    return {
+      requiredPermission: getRequiredPermission(purePath),
+      isPersonalPage: ['/payroll', '/leave', '/missions'].includes(purePath)
+    };
+  }, [pathname]);
 
-    const requiredPermission = getRequiredPermission(pathname);
-    const isPersonalPage = ['/payroll', '/leave', '/missions'].includes(pathname.split('?')[0]);
+  React.useEffect(() => {
+    if (loading || !user) return; 
+
     const canAccessPersonal = isPersonalPage && !!user.employeeId;
 
     if (requiredPermission && !hasPermission(requiredPermission) && !canAccessPersonal) {
       router.replace('/intranet');
     }
-  }, [pathname, hasPermission, loading, user, router]);
+  }, [requiredPermission, isPersonalPage, hasPermission, loading, user, router]);
 
-  const requiredPermission = getRequiredPermission(pathname);
-  const isPersonalPage = ['/payroll', '/leave', '/missions'].includes(pathname.split('?')[0]);
   const canAccessPersonal = isPersonalPage && !!user?.employeeId;
 
   if (requiredPermission && !hasPermission(requiredPermission) && !canAccessPersonal) {
@@ -166,9 +169,9 @@ function MobileBottomNav() {
   }, [hasPermission]);
 
   return (
-    <div className="fixed bottom-0 left-0 z-50 w-full h-16 bg-background border-t border-border md:hidden print:hidden">
+    <div className="fixed bottom-0 left-0 z-50 w-full h-16 bg-white/70 backdrop-blur-xl border-t border-white/20 md:hidden print:hidden shadow-[0_-8px_30px_rgb(0,0,0,0.04)]">
       <div className={cn(
-        "grid h-full mx-auto font-medium",
+        "grid h-full mx-auto font-bold px-2",
         visibleNavItems.length === 4 ? "grid-cols-5" :
           visibleNavItems.length === 3 ? "grid-cols-4" :
             visibleNavItems.length === 2 ? "grid-cols-3" : "grid-cols-2"
@@ -178,21 +181,28 @@ function MobileBottomNav() {
             key={item.href}
             href={item.href}
             className={cn(
-              "inline-flex flex-col items-center justify-center px-2 hover:bg-muted group",
-              pathname === item.href ? "text-primary" : "text-muted-foreground"
+              "inline-flex flex-col items-center justify-center px-1 transition-all",
+              pathname === item.href ? "text-slate-900" : "text-slate-400 hover:text-slate-600"
             )}
           >
-            <item.icon className="w-5 h-5 mb-1" />
-            <span className="text-[10px] text-center">{item.label}</span>
+             <div className={cn(
+               "p-1.5 rounded-lg transition-all",
+               pathname === item.href ? "bg-slate-900/5" : ""
+             )}>
+              <item.icon className="w-5 h-5" />
+            </div>
+            <span className="text-[8px] uppercase tracking-widest mt-1 font-black">{item.label}</span>
           </Link>
         ))}
         <button
           onClick={toggleSidebar}
           type="button"
-          className="inline-flex flex-col items-center justify-center px-2 text-muted-foreground hover:bg-muted group"
+          className="inline-flex flex-col items-center justify-center px-1 text-slate-400 hover:text-slate-600"
         >
-          <Menu className="w-5 h-5 mb-1" />
-          <span className="text-[10px]">Plus</span>
+          <div className="p-1.5 hover:bg-slate-900/5 rounded-lg">
+            <Menu className="w-5 h-5" />
+          </div>
+          <span className="text-[8px] uppercase tracking-widest mt-1 font-black">Plus</span>
         </button>
       </div>
     </div>
@@ -202,15 +212,14 @@ function MobileBottomNav() {
 // Memoized MenuItem component to prevent re-rendering the whole sidebar when one item changes
 const SidebarMenuItemComponent = React.memo(({ 
   item, 
-  pathname, 
   hasPermission, 
   user 
 }: { 
   item: MenuItem; 
-  pathname: string; 
   hasPermission: (p: string) => boolean; 
   user: any;
 }) => {
+  const pathname = usePathname();
   const isSubItemActive = React.useMemo(() => {
     if (!item.subItems) return false;
     return item.subItems.some(sub => pathname.startsWith(sub.href.split('?')[0]));
@@ -278,7 +287,6 @@ const SidebarMenuItemComponent = React.memo(({
 SidebarMenuItemComponent.displayName = "SidebarMenuItemComponent";
 
 function AppLayout({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
   const router = useRouter();
   const { user, loading, hasPermission, settings } = useAuth();
 
@@ -359,16 +367,19 @@ function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <SidebarProvider>
-      <Sidebar className="print:hidden">
-        <SidebarHeader>
-          <div className="flex items-center gap-3 px-2">
-            <Avatar className="h-10 w-10 rounded-md">
-              <AvatarImage src={settings?.mainLogoUrl} alt={settings?.organizationName} />
-              <AvatarFallback><Building2 className="size-6" /></AvatarFallback>
-            </Avatar>
+      <Sidebar className="print:hidden border-r-0 bg-slate-50/50 backdrop-blur-xl">
+        <SidebarHeader className="p-4">
+          <div className="flex items-center gap-3 px-1 py-2">
+            <div className="relative group">
+              <div className="absolute -inset-1 bg-gradient-to-tr from-slate-900 to-slate-700 rounded-xl blur-md opacity-20 group-hover:opacity-40 transition-opacity" />
+              <Avatar className="h-10 w-10 rounded-xl border-2 border-white shadow-xl relative z-10 transition-transform group-hover:scale-105">
+                <AvatarImage src={settings?.mainLogoUrl} alt={settings?.organizationName} />
+                <AvatarFallback className="bg-slate-900 text-white"><Building2 className="size-5" /></AvatarFallback>
+              </Avatar>
+            </div>
             <div className="flex flex-col overflow-hidden">
-              <span className="text-sm font-bold tracking-tight truncate">Gestion CNRCT</span>
-              <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Plateforme Interne</span>
+              <span className="text-sm font-black tracking-tight text-slate-900 uppercase">Gestion CNRCT</span>
+              <span className="text-[8px] text-slate-400 font-extrabold uppercase tracking-widest leading-tight">Plateforme Tactique</span>
             </div>
           </div>
         </SidebarHeader>
@@ -378,7 +389,6 @@ function AppLayout({ children }: { children: React.ReactNode }) {
               <SidebarMenuItemComponent 
                 key={`${item.label}-${index}`}
                 item={item}
-                pathname={pathname}
                 hasPermission={hasPermission}
                 user={user}
               />
@@ -424,13 +434,13 @@ function AppLayout({ children }: { children: React.ReactNode }) {
           </DropdownMenu>
         </SidebarFooter>
       </Sidebar>
-      <SidebarInset>
-        <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6 print:hidden">
-          <div className="ml-auto flex items-center gap-2">
+      <SidebarInset className="bg-slate-50/20">
+        <header className="sticky top-0 z-40 flex h-16 items-center gap-4 bg-white/40 backdrop-blur-xl px-6 border-b border-white/20 print:hidden transition-all shadow-sm">
+          <div className="ml-auto flex items-center gap-4">
             <NotificationBell />
           </div>
         </header>
-        <main className="flex-1 p-4 sm:p-6 sm:pt-0 mb-16 md:mb-0">
+        <main className="flex-1 p-6 md:p-8 mb-16 md:mb-0 relative z-10">
           <div className="mx-auto w-full max-w-7xl">
             <ProtectedPage>
               {children}

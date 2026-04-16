@@ -228,10 +228,10 @@ export default function DisaPage() {
                     </div>
                 </div>
 
-                <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-[3rem] overflow-hidden bg-white group transition-all duration-500">
+                <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-2xl overflow-hidden bg-white/80 backdrop-blur-md group transition-all duration-500">
                     <CardHeader className="p-10 border-b border-slate-50">
                         <div className="flex items-center gap-6">
-                            <div className="h-14 w-14 rounded-2xl bg-slate-900 flex items-center justify-center shadow-2xl shadow-slate-900/20 group-hover:rotate-12 transition-transform">
+                            <div className="h-14 w-14 rounded-xl bg-slate-900 flex items-center justify-center shadow-2xl shadow-slate-900/20 group-hover:rotate-12 transition-transform">
                                 <FileText className="h-7 w-7 text-blue-400" />
                             </div>
                             <div>
@@ -248,17 +248,17 @@ export default function DisaPage() {
                                     <div className="flex flex-col sm:flex-row gap-4 items-center">
                                         <div className="relative flex-1 w-full">
                                             <Select name="year" value={year} onValueChange={(val) => startTransition(() => setYear(val))}>
-                                                <SelectTrigger id="year" className="h-16 rounded-2xl border-slate-100 bg-slate-50/50 shadow-inner focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all text-lg font-black text-slate-700 px-6">
+                                                <SelectTrigger id="year" className="h-16 rounded-xl border-slate-100 bg-slate-50/50 shadow-inner focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all text-lg font-black text-slate-700 px-6">
                                                     <SelectValue placeholder="Choisir l'année" />
                                                 </SelectTrigger>
-                                                <SelectContent className="rounded-[1.5rem] border-none shadow-2xl p-2">
+                                                <SelectContent className="rounded-2xl border-none shadow-2xl p-2">
                                                     {years.map((y: string) => (
                                                         <SelectItem key={y} value={y} className="rounded-xl p-3 font-bold cursor-pointer">{y}</SelectItem>
                                                     ))}
                                                 </SelectContent>
                                             </Select>
                                         </div>
-                                        <Button type="submit" disabled={loading} className="h-16 px-10 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-black shadow-xl shadow-slate-200 hover:scale-[1.02] active:scale-[0.98] transition-all w-full sm:w-auto">
+                                        <Button type="submit" disabled={loading} className="h-16 px-10 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-black shadow-xl shadow-slate-200 hover:scale-[1.02] active:scale-[0.98] transition-all w-full sm:w-auto">
                                             {loading ? (
                                                 <div className="flex items-center gap-3">
                                                     <Loader2 className="h-5 w-5 animate-spin" />
@@ -277,7 +277,7 @@ export default function DisaPage() {
                         </form>
 
                         {state.error && (
-                            <Alert variant="destructive" className="mt-8 rounded-2xl border-none bg-rose-50 text-rose-700 shadow-sm animate-in slide-in-from-top-4">
+                            <Alert variant="destructive" className="mt-8 rounded-xl border-none bg-rose-50 text-rose-700 shadow-sm animate-in slide-in-from-top-4">
                                 <AlertCircle className="h-5 w-5 text-rose-600" />
                                 <AlertTitle className="font-black text-rose-900">Calcul Interrompu</AlertTitle>
                                 <AlertDescription className="font-medium">{state.error}</AlertDescription>
@@ -287,11 +287,11 @@ export default function DisaPage() {
                 </Card>
 
                 {state.reportData && (
-                    <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-[3rem] overflow-hidden bg-white animate-in zoom-in-95 duration-700">
+                    <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-2xl overflow-hidden bg-white/80 backdrop-blur-md animate-in zoom-in-95 duration-700">
                         <CardHeader className="p-10 border-b border-slate-50">
                             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
                                 <div className="flex items-center gap-6">
-                                    <div className="h-16 w-16 rounded-[1.5rem] bg-blue-600 flex items-center justify-center shadow-2xl shadow-blue-200">
+                                    <div className="h-16 w-16 rounded-xl bg-blue-600 flex items-center justify-center shadow-2xl shadow-blue-200">
                                         <Printer className="h-8 w-8 text-white" />
                                     </div>
                                     <div>
@@ -299,7 +299,7 @@ export default function DisaPage() {
                                         <CardDescription className="font-bold text-slate-400 uppercase text-[10px] tracking-widest leading-none mt-1">Total de {state.reportData.length} collaborateur(s) assujetti(s)</CardDescription>
                                     </div>
                                 </div>
-                                <Button onClick={handlePrint} className="h-14 px-8 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-black shadow-xl border-none">
+                                <Button onClick={handlePrint} className="h-14 px-8 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-black shadow-xl border-none">
                                     <Printer className="mr-2 h-5 w-5" />
                                     Imprimer l'Officiel
                                 </Button>
@@ -307,10 +307,10 @@ export default function DisaPage() {
                         </CardHeader>
                         <CardContent className="p-0">
                             <div className="p-10 bg-slate-50/50">
-                                <div className="bg-white p-8 rounded-[2rem] shadow-xl shadow-slate-200/30 border border-slate-100">
+                                <div className="bg-white p-8 rounded-2xl shadow-xl shadow-slate-200/30 border border-slate-100">
                                     <DisaHeader organizationLogos={state.organizationLogos} year={state.year || ""} />
                                     
-                                    <div className="overflow-x-auto rounded-[1.5rem] border border-slate-100 overflow-hidden mt-8 shadow-2xl shadow-slate-200/20">
+                                    <div className="overflow-x-auto rounded-xl border border-slate-100 overflow-hidden mt-8 shadow-2xl shadow-slate-200/20">
                                         <table className="w-full border-collapse">
                                             <thead className="bg-[#1e3a8a] text-white">
                                                 <tr>
@@ -364,10 +364,10 @@ export default function DisaPage() {
                 )}
 
                 {!state.reportData && !loading && (
-                    <div className="flex flex-col items-center justify-center min-h-[400px] border-[3px] border-dashed border-slate-200 rounded-[3rem] bg-slate-50/30 group hover:border-blue-200 hover:bg-blue-50/20 transition-all duration-700">
+                    <div className="flex flex-col items-center justify-center min-h-[400px] border-[3px] border-dashed border-slate-200 rounded-2xl bg-slate-50/30 group hover:border-blue-200 hover:bg-blue-50/20 transition-all duration-700">
                         <div className="relative">
                             <div className="absolute inset-0 bg-blue-500 blur-[60px] opacity-20 scale-150 rotate-12" />
-                            <div className="h-24 w-24 rounded-[2rem] bg-white shadow-2xl flex items-center justify-center relative z-10 transition-transform group-hover:scale-110 duration-700">
+                            <div className="h-24 w-24 rounded-2xl bg-white shadow-2xl flex items-center justify-center relative z-10 transition-transform group-hover:scale-110 duration-700">
                                 <FileText className="h-10 w-10 text-slate-300 group-hover:text-blue-500 transition-colors" />
                             </div>
                         </div>

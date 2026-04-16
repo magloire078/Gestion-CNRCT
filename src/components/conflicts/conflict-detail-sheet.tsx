@@ -122,7 +122,7 @@ export function ConflictDetailSheet({ conflict, open, onOpenChange }: ConflictDe
                         <SheetTitle className="text-2xl font-black text-white leading-tight uppercase tracking-tight">
                             {conflict.village}
                         </SheetTitle>
-                        <SheetDescription className="text-slate-400 font-medium flex flex-wrap items-center gap-x-6 gap-y-2 mt-3">
+                        <SheetDescription className="text-slate-400 font-medium flex flex-wrap items-center gap-x-6 gap-y-2 mt-3 text-slate-400">
                             <span className="flex items-center gap-2"><MapPin className="h-4 w-4 text-primary" /> {conflict.region || 'Secteur Non Défini'}</span>
                             <span className="flex items-center gap-2"><Calendar className="h-4 w-4 text-primary" /> Signalé le {format(parseISO(conflict.reportedDate), 'dd MMMM yyyy', { locale: fr })}</span>
                         </SheetDescription>
@@ -212,7 +212,7 @@ export function ConflictDetailSheet({ conflict, open, onOpenChange }: ConflictDe
                                             disabled={isSubmitting || isActive}
                                             className={cn(
                                                 "h-auto py-3 px-2 flex flex-col gap-2 rounded-2xl font-bold transition-all border-slate-200",
-                                                isActive ? "bg-slate-900 text-white border-slate-900 ring-4 ring-slate-100 shadow-lg" : "hover:bg-white hover:border-primary/20 bg-white/50"
+                                                isActive ? "bg-slate-900 text-white border-slate-900 ring-4 ring-slate-100 shadow-lg" : "hover:bg-white hover:border-primary/20 bg-white/50 text-slate-600"
                                             )}
                                         >
                                             <Icon className={cn("h-5 w-5", isActive ? "text-primary" : "text-slate-400")} />
@@ -308,7 +308,7 @@ export function ConflictDetailSheet({ conflict, open, onOpenChange }: ConflictDe
                         />
                     </div>
                 )}
-            </div>
+            </SheetContent>
         </Sheet>
     );
 }

@@ -45,6 +45,7 @@ import { IVORIAN_REGIONS } from "@/constants/regions";
 import { ScrollArea } from "../ui/scroll-area";
 import { DebouncedInput } from "@/components/ui/debounced-input";
 import { Checkbox } from "@/components/ui/checkbox";
+import { cn } from "@/lib/utils";
 
 interface AddEmployeeSheetProps {
   isOpen: boolean;
@@ -80,6 +81,7 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
   const [village, setVillage] = useState("");
   const [numDecision, setNumDecision] = useState("");
   const [cnps, setCnps] = useState(true);
+  const [dateImmatriculation, setDateImmatriculation] = useState("");
   const [dateCessationCNPS, setDateCessationCNPS] = useState("");
 
   const [error, setError] = useState("");
@@ -152,6 +154,7 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
     setVillage("");
     setNumDecision("");
     setCnps(true);
+    setDateImmatriculation("");
     setDateCessationCNPS("");
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
@@ -207,6 +210,7 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
         Village: village,
         Num_Decision: numDecision,
         CNPS: cnps,
+        Date_Immatriculation: cnps ? dateImmatriculation : undefined,
         Date_Cessation_CNPS: cnps ? dateCessationCNPS : undefined,
         photoUrl: '', // This will be set by the service after upload
       };
@@ -223,50 +227,50 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
   return (
     <>
       <Sheet open={isOpen} onOpenChange={(open) => { if (!open) handleClose(); }}>
-        <SheetContent className="sm:max-w-xl bg-white/40 backdrop-blur-2xl border-l border-white/20 p-0 shadow-3xl overflow-hidden rounded-l-[3rem]">
+        <SheetContent className="sm:max-w-xl bg-white/40 backdrop-blur-2xl border-l border-white/20 p-0 shadow-3xl overflow-hidden rounded-l-3xl">
           <form onSubmit={handleSubmit} className="h-full flex flex-col">
             <div className="absolute inset-0 bg-gradient-to-b from-blue-50/20 to-transparent pointer-events-none" />
             
-            <SheetHeader className="p-10 pb-6 relative z-10">
-              <div className="flex items-center gap-4 mb-2">
-                <div className="h-10 w-10 rounded-xl bg-slate-900 flex items-center justify-center shadow-lg">
-                  <UserCircle2 className="h-6 w-6 text-white" />
+            <SheetHeader className="p-6 md:p-8 pb-4 relative z-10">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="h-9 w-9 rounded-lg bg-slate-900 flex items-center justify-center shadow-lg">
+                  <UserCircle2 className="h-5 w-5 text-white" />
                 </div>
-                <SheetTitle className="text-2xl font-black uppercase tracking-tight text-slate-900">Enrôlement Agent</SheetTitle>
+                <SheetTitle className="text-xl font-black uppercase tracking-tight text-slate-900">Enrôlement Agent</SheetTitle>
               </div>
-              <SheetDescription className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-                Création d'un nouveau dossier individuel dans la base CNRCT
+              <SheetDescription className="text-[9px] font-black uppercase tracking-widest text-slate-400">
+                Création d'un nouveau dossier individuel
               </SheetDescription>
             </SheetHeader>
 
             <div className="flex-1 overflow-hidden relative z-10">
-              <ScrollArea className="h-full w-full px-10">
+              <ScrollArea className="h-full w-full px-6 md:px-8">
                 {isSubmitting && !firstName ? (
-                  <div className="flex flex-col items-center justify-center h-64 gap-4">
-                    <Loader2 className="h-12 w-12 animate-spin text-blue-600" />
-                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 animate-pulse">Initialisation du flux...</p>
+                  <div className="flex flex-col items-center justify-center h-64 gap-3">
+                    <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
+                    <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 animate-pulse">Initialisation...</p>
                   </div>
                 ) : (
-                  <div className="grid gap-10 pb-10">
+                  <div className="grid gap-6 pb-8">
                     {/* Photo upload section */}
-                    <div className="flex items-center gap-8 p-6 bg-white/40 rounded-[2rem] border border-white/20 shadow-xl shadow-slate-200/20 group">
+                    <div className="flex items-center gap-6 p-5 bg-white/40 rounded-2xl border border-white/20 shadow-xl shadow-slate-200/20 group">
                       <div className="relative">
-                        <Avatar className="h-24 w-24 border-4 border-white shadow-2xl transition-transform group-hover:scale-105 duration-500">
+                        <Avatar className="h-20 w-20 border-4 border-white shadow-2xl transition-transform group-hover:scale-105 duration-500">
                           <AvatarImage src={photoPreview} alt="Aperçu" className="object-cover" />
-                          <AvatarFallback className="text-2xl font-black bg-slate-100 text-slate-400 uppercase">{lastName ? lastName.charAt(0) : 'E'}</AvatarFallback>
+                          <AvatarFallback className="text-xl font-black bg-slate-100 text-slate-400 uppercase">{lastName ? lastName.charAt(0) : 'E'}</AvatarFallback>
                         </Avatar>
                         <Button 
                           type="button" 
                           size="icon" 
-                          className="absolute -bottom-2 -right-2 h-10 w-10 rounded-full bg-slate-900 border-4 border-white shadow-xl hover:scale-110" 
+                          className="absolute -bottom-1 -right-1 h-8 w-8 rounded-full bg-slate-900 border-2 border-white shadow-xl hover:scale-110" 
                           onClick={() => fileInputRef.current?.click()}
                         >
-                          <Upload className="h-4 w-4" />
+                          <Upload className="h-3.5 w-3.5" />
                         </Button>
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500 group-hover:text-blue-600 transition-colors">Photographie Officielle</Label>
-                        <p className="text-[10px] text-slate-400 leading-relaxed font-bold">Format recommandé : JPG/PNG 400x400px. Taille max 2Mo.</p>
+                        <Label className="text-[9px] font-black uppercase tracking-widest text-slate-500 group-hover:text-blue-600 transition-colors">Photographie Officielle</Label>
+                        <p className="text-[9px] text-slate-400 leading-relaxed font-bold">JPG/PNG 400x400px. Max 2Mo.</p>
                       </div>
                       <Input ref={fileInputRef} type="file" className="hidden" accept="image/*" onChange={handlePhotoChange} />
                     </div>
@@ -402,30 +406,41 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
                         </div>
                       </div>
 
-                      <div className="p-8 bg-blue-50/50 rounded-[2rem] border border-blue-100 shadow-xl shadow-blue-500/5 relative overflow-hidden group">
+                      <div className="p-6 bg-blue-50/50 rounded-2xl border border-blue-100 shadow-xl shadow-blue-500/5 relative overflow-hidden group">
                         <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-                          <ShieldCheck className="h-16 w-16" />
+                          <ShieldCheck className="h-12 w-12" />
                         </div>
-                        <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center justify-between mb-4">
                            <div className="flex items-center space-x-3">
                             <Checkbox 
                               id="cnps-add" 
                               checked={cnps} 
                               onCheckedChange={(checked) => setCnps(checked as boolean)}
-                              className="h-6 w-6 rounded-lg border-blue-200 bg-white data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 shadow-md transition-all"
+                              className="h-5 w-5 rounded-md border-blue-200 bg-white data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 shadow-md transition-all"
                             />
-                            <Label htmlFor="cnps-add" className="text-[10px] font-black uppercase tracking-widest text-slate-700 cursor-pointer">Immatriculation CNPS active</Label>
+                            <Label htmlFor="cnps-add" className="text-[9px] font-black uppercase tracking-widest text-slate-700 cursor-pointer">Immatriculation CNPS active</Label>
                           </div>
                         </div>
                         {cnps && (
-                           <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
-                            <Label className="text-[9px] font-black uppercase tracking-widest text-blue-600 ml-1">Date d'effet immatriculation</Label>
-                            <Input 
-                              type="date"
-                              value={dateCessationCNPS} 
-                              onChange={(e) => setDateCessationCNPS(e.target.value)}
-                              className="h-12 rounded-xl border-blue-200 bg-white/60 font-bold focus-visible:ring-blue-500"
-                            />
+                           <div className="grid grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                            <div className="space-y-2">
+                              <Label className="text-[9px] font-black uppercase tracking-widest text-blue-600 ml-1">Date d'immatriculation</Label>
+                              <Input 
+                                type="date"
+                                value={dateImmatriculation} 
+                                onChange={(e) => setDateImmatriculation(e.target.value)}
+                                className="h-11 rounded-lg border-blue-200 bg-white/60 font-bold focus-visible:ring-blue-500"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Cessation (Optionnel)</Label>
+                              <Input 
+                                type="date"
+                                value={dateCessationCNPS} 
+                                onChange={(e) => setDateCessationCNPS(e.target.value)}
+                                className="h-11 rounded-lg border-slate-200 bg-white/60 font-bold focus-visible:ring-slate-500"
+                              />
+                            </div>
                           </div>
                         )}
                       </div>
@@ -454,14 +469,14 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
               </ScrollArea>
             </div>
 
-            <SheetFooter className="p-10 bg-white/40 border-t border-white/20 backdrop-blur-md relative z-10">
+            <SheetFooter className="p-6 md:p-8 bg-white/40 border-t border-white/20 backdrop-blur-md relative z-10">
               <div className="flex gap-4 w-full">
                 <SheetClose asChild>
                   <Button 
                     type="button" 
                     variant="outline" 
                     onClick={handleClose}
-                    className="h-14 flex-1 rounded-2xl border-slate-200 bg-white font-black uppercase tracking-widest text-[10px] hover:bg-slate-50 hover:text-slate-900 shadow-lg"
+                    className="h-11 flex-1 rounded-xl border-slate-200 bg-white font-black uppercase tracking-widest text-[9px] hover:bg-slate-50 hover:text-slate-900 shadow-lg"
                   >
                     Annuler
                   </Button>
@@ -469,13 +484,13 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
                 <Button 
                   type="submit" 
                   disabled={isSubmitting}
-                  className="h-14 flex-1 rounded-2xl bg-slate-900 text-white font-black uppercase tracking-widest text-[10px] hover:bg-black shadow-2xl shadow-black/20 group"
+                  className="h-11 flex-1 rounded-xl bg-slate-900 text-white font-black uppercase tracking-widest text-[9px] hover:bg-black shadow-xl shadow-black/20 group"
                 >
                   {isSubmitting ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
                     <>
-                      <Save className="mr-3 h-5 w-5 text-emerald-400 group-hover:scale-110 transition-transform" /> 
+                      <Save className="mr-2 h-4 w-4 text-emerald-400 group-hover:scale-110 transition-transform" /> 
                       Valider Dossier
                     </>
                   )}

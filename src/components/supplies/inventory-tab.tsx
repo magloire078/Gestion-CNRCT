@@ -76,10 +76,10 @@ export const InventoryTab = memo(({
     renderSupplyCard
 }: InventoryTabProps) => {
     return (
-        <div className="space-y-6">
+        <div className={cn("space-y-6 transition-opacity duration-300", isPending && "opacity-60 pointer-events-none", "contain-layout")}>
             {/* --- Statistical Dashboard --- */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <Card className="border-white/10 shadow-xl bg-gradient-to-br from-slate-900 to-slate-800 text-white overflow-hidden relative group transition-all hover:shadow-2xl hover:-translate-y-1">
+                <Card className="border-white/10 shadow-xl bg-gradient-to-br from-slate-900 to-slate-800 text-white overflow-hidden relative group transition-[transform,shadow] duration-200 hover:shadow-2xl hover:-translate-y-1">
                     <CardContent className="p-4 flex items-center gap-4">
                         <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center text-white group-hover:scale-110 transition-transform">
                             <Package className="h-5 w-5" />
@@ -94,7 +94,7 @@ export const InventoryTab = memo(({
                     </div>
                 </Card>
                 
-                <Card className="border-white/10 shadow-xl bg-card/40 backdrop-blur-md overflow-hidden relative group transition-all hover:shadow-2xl hover:-translate-y-1 border-l-4 border-l-red-500">
+                <Card className="border-white/10 shadow-xl bg-card/40 backdrop-blur-md overflow-hidden relative group transition-[transform,shadow] duration-200 hover:shadow-2xl hover:-translate-y-1 border-l-4 border-l-red-500">
                     <CardContent className="p-4 flex items-center gap-4">
                         <div className={cn(
                             "h-10 w-10 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110",
@@ -111,7 +111,7 @@ export const InventoryTab = memo(({
                     </CardContent>
                 </Card>
 
-                <Card className="border-white/10 shadow-xl bg-card/40 backdrop-blur-md overflow-hidden relative group transition-all hover:shadow-2xl hover:-translate-y-1 border-l-4 border-l-amber-500">
+                <Card className="border-white/10 shadow-xl bg-card/40 backdrop-blur-md overflow-hidden relative group transition-[transform,shadow] duration-200 hover:shadow-2xl hover:-translate-y-1 border-l-4 border-l-amber-500">
                     <CardContent className="p-4 flex items-center gap-4">
                         <div className={cn(
                             "h-10 w-10 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110",
@@ -128,7 +128,7 @@ export const InventoryTab = memo(({
                     </CardContent>
                 </Card>
 
-                <Card className="border-white/10 shadow-xl bg-card/40 backdrop-blur-md overflow-hidden relative group transition-all hover:shadow-2xl hover:-translate-y-1 border-l-4 border-l-emerald-500">
+                <Card className="border-white/10 shadow-xl bg-card/40 backdrop-blur-md overflow-hidden relative group transition-[transform,shadow] duration-200 hover:shadow-2xl hover:-translate-y-1 border-l-4 border-l-emerald-500">
                     <CardContent className="p-4 flex items-center gap-4">
                         <div className="h-10 w-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform">
                             <BarChart3 className="h-5 w-5" />
@@ -199,7 +199,7 @@ export const InventoryTab = memo(({
                             </Table>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                             {loading ? (
                                 Array.from({ length: 6 }).map((_, i) => (
                                     <Card key={i} className="rounded-2xl border-slate-100"><CardContent className="p-6"><Skeleton className="h-40 w-full rounded-xl" /></CardContent></Card>

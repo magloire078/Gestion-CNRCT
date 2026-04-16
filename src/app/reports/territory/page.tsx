@@ -168,10 +168,10 @@ export default function TerritoryReportPage() {
 
                 {/* KPI Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden bg-slate-900 text-white group hover:scale-[1.02] transition-all duration-500">
+                    <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-2xl overflow-hidden bg-slate-900 text-white group hover:scale-[1.02] transition-all duration-500">
                         <CardContent className="p-8">
                             <div className="flex items-center justify-between mb-6">
-                                <div className="h-14 w-14 rounded-2xl bg-white/10 flex items-center justify-center backdrop-blur-md group-hover:rotate-6 transition-transform">
+                                <div className="h-14 w-14 rounded-xl bg-white/10 flex items-center justify-center backdrop-blur-md group-hover:rotate-6 transition-transform">
                                     <MapPin className="h-7 w-7 text-amber-400" />
                                 </div>
                                 <Badge variant="secondary" className="bg-white/5 text-slate-400 border-none font-black text-[10px] px-3 py-1 uppercase tracking-widest">Localités</Badge>
@@ -184,10 +184,10 @@ export default function TerritoryReportPage() {
                         </CardContent>
                     </Card>
 
-                    <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden bg-white group hover:scale-[1.02] transition-all duration-500">
+                    <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-2xl overflow-hidden bg-white group hover:scale-[1.02] transition-all duration-500">
                         <CardContent className="p-8">
                             <div className="flex items-center justify-between mb-6">
-                                <div className="h-14 w-14 rounded-2xl bg-blue-500 flex items-center justify-center shadow-xl shadow-blue-200 group-hover:rotate-6 transition-transform">
+                                <div className="h-14 w-14 rounded-xl bg-blue-500 flex items-center justify-center shadow-xl shadow-blue-200 group-hover:rotate-6 transition-transform">
                                     <Users className="h-7 w-7 text-white" />
                                 </div>
                                 <Badge variant="secondary" className="bg-slate-50 text-slate-400 border-none font-black text-[10px] px-3 py-1 uppercase tracking-widest">Démographie</Badge>
@@ -198,10 +198,10 @@ export default function TerritoryReportPage() {
                         </CardContent>
                     </Card>
 
-                    <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden bg-white group hover:scale-[1.02] transition-all duration-500">
+                    <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-2xl overflow-hidden bg-white group hover:scale-[1.02] transition-all duration-500">
                         <CardContent className="p-8">
                             <div className="flex items-center justify-between mb-6">
-                                <div className="h-14 w-14 rounded-2xl bg-amber-500 flex items-center justify-center shadow-xl shadow-amber-200 group-hover:rotate-6 transition-transform">
+                                <div className="h-14 w-14 rounded-xl bg-amber-500 flex items-center justify-center shadow-xl shadow-amber-200 group-hover:rotate-6 transition-transform">
                                     <Zap className="h-7 w-7 text-white" />
                                 </div>
                                 <Badge variant="secondary" className="bg-slate-50 text-slate-400 border-none font-black text-[10px] px-3 py-1 uppercase tracking-widest">Énergie</Badge>
@@ -212,10 +212,10 @@ export default function TerritoryReportPage() {
                         </CardContent>
                     </Card>
 
-                    <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden bg-white group hover:scale-[1.02] transition-all duration-500">
+                    <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-2xl overflow-hidden bg-white group hover:scale-[1.02] transition-all duration-500">
                         <CardContent className="p-8">
                             <div className="flex items-center justify-between mb-6">
-                                <div className="h-14 w-14 rounded-2xl bg-cyan-500 flex items-center justify-center shadow-xl shadow-cyan-200 group-hover:rotate-6 transition-transform">
+                                <div className="h-14 w-14 rounded-xl bg-cyan-500 flex items-center justify-center shadow-xl shadow-cyan-200 group-hover:rotate-6 transition-transform">
                                     <Droplets className="h-7 w-7 text-white" />
                                 </div>
                                 <Badge variant="secondary" className="bg-slate-50 text-slate-400 border-none font-black text-[10px] px-3 py-1 uppercase tracking-widest">Hydraulique</Badge>
@@ -229,11 +229,11 @@ export default function TerritoryReportPage() {
 
                 {/* Quick Secondary Stats */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-slate-900">
-                    <Card className="border-none shadow-2xl shadow-slate-200/30 rounded-[2.5rem] bg-white overflow-hidden group">
+                    <Card className="border-none shadow-2xl shadow-slate-200/30 rounded-2xl bg-white overflow-hidden group">
                         <CardContent className="p-8 flex justify-between items-center relative">
                             <div className="absolute top-0 right-0 h-32 w-32 -mr-16 -mt-16 bg-rose-500/5 rounded-full blur-3xl group-hover:bg-rose-500/10 transition-all" />
                             <div className="flex items-center gap-6 relative z-10">
-                                <div className="h-16 w-16 bg-rose-50 rounded-2xl flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform">
+                                <div className="h-16 w-16 bg-rose-50 rounded-xl flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform">
                                     <Activity className="h-8 w-8 text-rose-500" />
                                 </div>
                                 <div className="space-y-1">
@@ -249,11 +249,11 @@ export default function TerritoryReportPage() {
                         </CardContent>
                     </Card>
 
-                    <Card className="border-none shadow-2xl shadow-slate-200/30 rounded-[2.5rem] bg-white overflow-hidden group">
+                    <Card className="border-none shadow-2xl shadow-slate-200/30 rounded-2xl bg-white overflow-hidden group">
                         <CardContent className="p-8 flex justify-between items-center relative">
                             <div className="absolute top-0 right-0 h-32 w-32 -mr-16 -mt-16 bg-indigo-500/5 rounded-full blur-3xl group-hover:bg-indigo-500/10 transition-all" />
                             <div className="flex items-center gap-6 relative z-10">
-                                <div className="h-16 w-16 bg-indigo-50 rounded-2xl flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform">
+                                <div className="h-16 w-16 bg-indigo-50 rounded-xl flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform">
                                     <School className="h-8 w-8 text-indigo-500" />
                                 </div>
                                 <div className="space-y-1">
@@ -271,10 +271,10 @@ export default function TerritoryReportPage() {
                 </div>
 
                 {/* Filters and Table */}
-                <Card className="border-none shadow-2xl shadow-slate-200/40 rounded-[3rem] overflow-hidden bg-white">
+                <Card className="border-none shadow-2xl shadow-slate-200/40 rounded-2xl overflow-hidden bg-white">
                     <CardHeader className="border-b border-slate-50 p-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
                         <div className="flex items-center gap-6">
-                            <div className="h-16 w-16 rounded-[1.5rem] bg-slate-900 flex items-center justify-center shadow-xl shadow-slate-900/20">
+                            <div className="h-16 w-16 rounded-xl bg-slate-900 flex items-center justify-center shadow-xl shadow-slate-900/20">
                                 <Map className="h-8 w-8 text-amber-400" />
                             </div>
                             <div>

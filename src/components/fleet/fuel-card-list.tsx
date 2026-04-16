@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal, Pencil, Trash2, Fuel, User, Car, Printer } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
 import type { FuelCard, FuelProvider } from "@/types/fuel";
 import type { Employe, Fleet } from "@/lib/data";
 

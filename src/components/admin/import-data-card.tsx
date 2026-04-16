@@ -117,7 +117,7 @@ export function ImportDataCard() {
                                   !photoPath.startsWith('.') &&
                                   (photoPath.includes('.') || photoPath.startsWith('http'));
 
-              const defaultAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(combinedName || 'E')}&background=006039&color=fff&size=100`;
+              const defaultAvatar = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(combinedName || 'E')}&backgroundColor=006039&fontFamily=Arial`;
 
               const employeeData: Omit<Employe, 'id'> = {
                 matricule: String(row.matricule),

@@ -6,6 +6,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Printer, Settings, ListChecks, ArrowUpCircle, ArrowDownCircle, Info } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { ScrollArea } from "@/components/ui/scroll-area";
+
 
 interface PrintDialogProps {
   isOpen: boolean;

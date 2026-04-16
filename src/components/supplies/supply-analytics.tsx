@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useMemo, memo } from "react";
 import { 
     PieChart, 
     Pie, 
@@ -49,7 +49,7 @@ const COLORS = [
     "#334155"
 ];
 
-export function SupplyAnalytics({ supplies, transactions }: SupplyAnalyticsProps) {
+export const SupplyAnalytics = memo(({ supplies, transactions }: SupplyAnalyticsProps) => {
     
     // 1. Data Processing for Category Distribution
     const categoryData = useMemo(() => {
@@ -260,4 +260,4 @@ export function SupplyAnalytics({ supplies, transactions }: SupplyAnalyticsProps
             </div>
         </div>
     );
-}
+});

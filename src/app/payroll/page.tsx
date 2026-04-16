@@ -745,7 +745,7 @@ export default function PayrollPage() {
                             <SelectItem
                               key={m.value}
                               value={m.value}
-                              disabled={isBeforeStart}
+                              disabled={isBeforeStart || (!canViewSalaries && (isFutureYear || isFutureMonth))}
                             >
                               {m.label}
                             </SelectItem>

@@ -20,6 +20,7 @@ import { Terminal, FileText, Bot, Loader2, Printer, Download } from "lucide-reac
 import { Skeleton } from "@/components/ui/skeleton";
 import { DocumentLayout } from "@/components/common/document-layout";
 import { useAuth } from "@/hooks/use-auth";
+import { PermissionGuard } from "@/components/auth/permission-guard";
 
 const initialState: FormState = {
   message: "",
@@ -195,7 +196,7 @@ Date Retour: Samedi 16 août 2025
     : null;
 
   return (
-    <>
+    <PermissionGuard permission="page:documents:view">
       <div className={isPrinting ? 'print-hidden' : ''}>
         <div className="flex flex-col gap-6">
           <h1 className="text-3xl font-bold tracking-tight">Génération de Documents</h1>
@@ -320,7 +321,7 @@ Date Retour: Samedi 16 août 2025
             )}
         </div>
       </div>
-    </>
+    </PermissionGuard>
   );
 }
 

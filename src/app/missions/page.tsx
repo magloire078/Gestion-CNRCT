@@ -2,10 +2,10 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { 
-    PlusCircle, Search, Eye, Pencil, Trash2, 
-    MoreHorizontal, FileText, Calendar, 
-    CheckCircle2, Clock, PlayCircle, MapPin
+import {
+  PlusCircle, Search, Eye, Pencil, Trash2,
+  MoreHorizontal, FileText, Calendar,
+  CheckCircle2, Clock, PlayCircle, MapPin, LogOut
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -158,7 +158,7 @@ export default function MissionsPage() {
   }, [filteredMissions, currentPage, itemsPerPage]);
 
   const totalPages = Math.ceil(filteredMissions.length / itemsPerPage);
-  
+
   const stats = useMemo(() => {
     const total = missions.length;
     const ongoing = missions.filter(m => m.status === 'En cours').length;
@@ -181,7 +181,7 @@ export default function MissionsPage() {
             </h1>
             <p className="text-sm font-bold uppercase tracking-[0.2em] text-slate-500 pl-1">Régulation des Ordres de Mission Institutionnels</p>
           </div>
-          
+
           <div className="flex items-center gap-3">
             {hasPermission('page:missions:view') && (
               <>
@@ -201,52 +201,52 @@ export default function MissionsPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 px-1">
-            <Card className="border-white/10 shadow-2xl bg-slate-900 text-white overflow-hidden relative group transition-all duration-500 hover:scale-[1.02] rounded-[2.5rem]">
-                <CardHeader className="p-6 relative z-10">
-                    <CardDescription className="text-slate-400 font-black uppercase text-[9px] tracking-[0.2em]">Total Ordonnancements</CardDescription>
-                    <CardTitle className="text-4xl font-black mt-1">{loading ? <Skeleton className="h-10 w-20 bg-slate-800" /> : stats.total}</CardTitle>
-                </CardHeader>
-                <div className="absolute -bottom-6 -right-6 opacity-10 group-hover:opacity-20 transition-all duration-700 pointer-events-none group-hover:rotate-0 group-hover:scale-110">
-                    <Calendar className="h-32 w-32 -rotate-12" />
-                </div>
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-50" />
-            </Card>
+          <Card className="border-white/10 shadow-2xl bg-slate-900 text-white overflow-hidden relative group transition-all duration-500 hover:scale-[1.02] rounded-2xl">
+            <CardHeader className="p-6 relative z-10">
+              <CardDescription className="text-slate-400 font-black uppercase text-[9px] tracking-[0.2em]">Total Ordonnancements</CardDescription>
+              <CardTitle className="text-4xl font-black mt-1">{loading ? <Skeleton className="h-10 w-20 bg-slate-800" /> : stats.total}</CardTitle>
+            </CardHeader>
+            <div className="absolute -bottom-6 -right-6 opacity-10 group-hover:opacity-20 transition-all duration-700 pointer-events-none group-hover:rotate-0 group-hover:scale-110">
+              <Calendar className="h-32 w-32 -rotate-12" />
+            </div>
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-50" />
+          </Card>
 
-            <Card className="border-white/10 shadow-xl bg-card/40 backdrop-blur-md overflow-hidden relative group transition-all duration-500 hover:scale-[1.02] rounded-[2.5rem]">
-                <CardHeader className="p-6 relative z-10">
-                    <CardDescription className="text-slate-500 font-black uppercase text-[9px] tracking-[0.2em]">Déploiements Actifs</CardDescription>
-                    <CardTitle className="text-4xl font-black mt-1 text-slate-900">{loading ? <Skeleton className="h-10 w-16" /> : stats.ongoing}</CardTitle>
-                </CardHeader>
-                <div className="absolute -bottom-6 -right-6 opacity-[0.03] group-hover:opacity-[0.08] transition-all duration-700 pointer-events-none">
-                    <PlayCircle className="h-32 w-32" />
-                </div>
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent" />
-            </Card>
+          <Card className="border-white/10 shadow-xl bg-card/40 backdrop-blur-md overflow-hidden relative group transition-all duration-500 hover:scale-[1.02] rounded-2xl">
+            <CardHeader className="p-6 relative z-10">
+              <CardDescription className="text-slate-500 font-black uppercase text-[9px] tracking-[0.2em]">Déploiements Actifs</CardDescription>
+              <CardTitle className="text-4xl font-black mt-1 text-slate-900">{loading ? <Skeleton className="h-10 w-16" /> : stats.ongoing}</CardTitle>
+            </CardHeader>
+            <div className="absolute -bottom-6 -right-6 opacity-[0.03] group-hover:opacity-[0.08] transition-all duration-700 pointer-events-none">
+              <PlayCircle className="h-32 w-32" />
+            </div>
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent" />
+          </Card>
 
-            <Card className="border-white/10 shadow-xl bg-card/40 backdrop-blur-md overflow-hidden relative group transition-all duration-500 hover:scale-[1.02] rounded-[2.5rem]">
-                <CardHeader className="p-6 relative z-10">
-                    <CardDescription className="text-slate-500 font-black uppercase text-[9px] tracking-[0.2em]">Programmation</CardDescription>
-                    <CardTitle className="text-4xl font-black mt-1 text-blue-600">{loading ? <Skeleton className="h-10 w-16" /> : stats.planned}</CardTitle>
-                </CardHeader>
-                <div className="absolute -bottom-6 -right-6 opacity-[0.03] group-hover:opacity-[0.08] transition-all duration-700 pointer-events-none">
-                    <Clock className="h-32 w-32" />
-                </div>
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500/50 to-transparent" />
-            </Card>
+          <Card className="border-white/10 shadow-xl bg-card/40 backdrop-blur-md overflow-hidden relative group transition-all duration-500 hover:scale-[1.02] rounded-2xl">
+            <CardHeader className="p-6 relative z-10">
+              <CardDescription className="text-slate-500 font-black uppercase text-[9px] tracking-[0.2em]">Programmation</CardDescription>
+              <CardTitle className="text-4xl font-black mt-1 text-blue-600">{loading ? <Skeleton className="h-10 w-16" /> : stats.planned}</CardTitle>
+            </CardHeader>
+            <div className="absolute -bottom-6 -right-6 opacity-[0.03] group-hover:opacity-[0.08] transition-all duration-700 pointer-events-none">
+              <Clock className="h-32 w-32" />
+            </div>
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500/50 to-transparent" />
+          </Card>
 
-            <Card className="border-white/10 shadow-xl bg-card/40 backdrop-blur-md overflow-hidden relative group transition-all duration-500 hover:scale-[1.02] rounded-[2.5rem]">
-                <CardHeader className="p-6 relative z-10">
-                    <CardDescription className="text-slate-500 font-black uppercase text-[9px] tracking-[0.2em]">Exécutions Validées</CardDescription>
-                    <CardTitle className="text-4xl font-black mt-1 text-emerald-600">{loading ? <Skeleton className="h-10 w-16" /> : stats.completed}</CardTitle>
-                </CardHeader>
-                <div className="absolute -bottom-6 -right-6 opacity-[0.03] group-hover:opacity-[0.08] transition-all duration-700 pointer-events-none">
-                    <CheckCircle2 className="h-32 w-32" />
-                </div>
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-emerald-600 to-transparent" />
-            </Card>
+          <Card className="border-white/10 shadow-xl bg-card/40 backdrop-blur-md overflow-hidden relative group transition-all duration-500 hover:scale-[1.02] rounded-2xl">
+            <CardHeader className="p-6 relative z-10">
+              <CardDescription className="text-slate-500 font-black uppercase text-[9px] tracking-[0.2em]">Exécutions Validées</CardDescription>
+              <CardTitle className="text-4xl font-black mt-1 text-emerald-600">{loading ? <Skeleton className="h-10 w-16" /> : stats.completed}</CardTitle>
+            </CardHeader>
+            <div className="absolute -bottom-6 -right-6 opacity-[0.03] group-hover:opacity-[0.08] transition-all duration-700 pointer-events-none">
+              <CheckCircle2 className="h-32 w-32" />
+            </div>
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-emerald-600 to-transparent" />
+          </Card>
         </div>
 
-        <Card className="border-white/10 shadow-2xl bg-card/40 backdrop-blur-md overflow-hidden rounded-[2.5rem] px-2">
+        <Card className="border-white/10 shadow-2xl bg-card/40 backdrop-blur-md overflow-hidden rounded-2xl px-2">
           <CardHeader className="border-b border-border/50 bg-primary/5 py-8 px-8">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
@@ -268,7 +268,7 @@ export default function MissionsPage() {
           </CardHeader>
           <CardContent className="p-0">
             {error && <p className="text-destructive text-center py-10 font-bold">{error}</p>}
-            
+
             <div className="hidden md:block">
               <Table>
                 <TableHeader>
@@ -295,9 +295,9 @@ export default function MissionsPage() {
                     ))
                   ) : (
                     paginatedMissions.map((mission, index) => (
-                      <TableRow 
-                        key={mission.id} 
-                        onClick={() => router.push(`/missions/${mission.id}`)} 
+                      <TableRow
+                        key={mission.id}
+                        onClick={() => router.push(`/missions/${mission.id}`)}
                         className="cursor-pointer border-border/20 hover:bg-white/40 transition-all group h-20"
                       >
                         <TableCell className="text-center font-black text-slate-300 group-hover:text-slate-900 transition-colors">
@@ -316,20 +316,20 @@ export default function MissionsPage() {
                         </TableCell>
                         <TableCell>
                           <div className="flex justify-center -space-x-2">
-                             {(mission.participants || []).slice(0, 3).map((p, idx) => (
-                                <div 
-                                  key={p.employeeId} 
-                                  className="h-8 w-8 rounded-full border-2 border-white bg-slate-100 flex items-center justify-center text-[10px] font-black text-slate-600 shadow-sm"
-                                  title={p.employeeName}
-                                >
-                                  {p.employeeName.charAt(0)}
-                                </div>
-                             ))}
-                             {(mission.participants || []).length > 3 && (
-                                <div className="h-8 w-8 rounded-full border-2 border-white bg-slate-900 flex items-center justify-center text-[10px] font-black text-white shadow-sm">
-                                  +{(mission.participants || []).length - 3}
-                                </div>
-                             )}
+                            {(mission.participants || []).slice(0, 3).map((p, idx) => (
+                              <div
+                                key={`${p.employeeId}-${idx}`}
+                                className="h-8 w-8 rounded-full border-2 border-white bg-slate-100 flex items-center justify-center text-[10px] font-black text-slate-600 shadow-sm"
+                                title={p.employeeName}
+                              >
+                                {p.employeeName.charAt(0)}
+                              </div>
+                            ))}
+                            {(mission.participants || []).length > 3 && (
+                              <div className="h-8 w-8 rounded-full border-2 border-white bg-slate-900 flex items-center justify-center text-[10px] font-black text-white shadow-sm">
+                                +{(mission.participants || []).length - 3}
+                              </div>
+                            )}
                           </div>
                         </TableCell>
                         <TableCell>
@@ -382,21 +382,21 @@ export default function MissionsPage() {
             <div className="grid grid-cols-1 gap-4 md:hidden p-4">
               {loading ? (
                 Array.from({ length: 3 }).map((_, i) => (
-                  <Skeleton key={i} className="h-48 w-full rounded-[2rem]" />
+                  <Skeleton key={i} className="h-48 w-full rounded-2xl" />
                 ))
               ) : (
                 paginatedMissions.map((mission) => (
-                  <Card key={mission.id} onClick={() => router.push(`/missions/${mission.id}`)} className="bg-white/50 border-white/10 rounded-[2rem] shadow-lg overflow-hidden active:scale-95 transition-all">
+                  <Card key={mission.id} onClick={() => router.push(`/missions/${mission.id}`)} className="bg-white/50 border-white/10 rounded-2xl shadow-lg overflow-hidden active:scale-95 transition-all">
                     <CardHeader className="pb-2">
-                        <div className="flex justify-between items-start">
-                            <Badge variant={statusVariantMap[mission.status] || 'default'} className="font-black text-[9px] uppercase tracking-widest rounded-md px-2 py-0.5 border-none">
-                                {mission.status}
-                            </Badge>
-                            <span className="text-[10px] font-black text-slate-300">#{mission.id.slice(-4).toUpperCase()}</span>
-                        </div>
-                        <CardTitle className="text-lg font-black text-slate-900 uppercase tracking-tight mt-2 line-clamp-2">
-                            {mission.title}
-                        </CardTitle>
+                      <div className="flex justify-between items-start">
+                        <Badge variant={statusVariantMap[mission.status] || 'default'} className="font-black text-[9px] uppercase tracking-widest rounded-md px-2 py-0.5 border-none">
+                          {mission.status}
+                        </Badge>
+                        <span className="text-[10px] font-black text-slate-300">#{mission.id.slice(-4).toUpperCase()}</span>
+                      </div>
+                      <CardTitle className="text-lg font-black text-slate-900 uppercase tracking-tight mt-2 line-clamp-2">
+                        {mission.title}
+                      </CardTitle>
                     </CardHeader>
                     <CardContent className="pb-4 space-y-3">
                       <div className="flex items-center gap-2 text-[10px] text-slate-500 font-black uppercase tracking-widest">
@@ -404,10 +404,10 @@ export default function MissionsPage() {
                         {formatDateRange(mission.startDate, mission.endDate)}
                       </div>
                       <div className="flex -space-x-1.5 pt-1">
-                        {(mission.participants || []).slice(0, 5).map(p => (
-                            <div key={p.employeeId} className="h-7 w-7 rounded-full border-2 border-white bg-slate-200 flex items-center justify-center text-[9px] font-black text-slate-600">
-                                {p.employeeName.charAt(0)}
-                            </div>
+                        {(mission.participants || []).slice(0, 5).map((p, idx) => (
+                          <div key={`${p.employeeId || 'm'}-${idx}`} className="h-7 w-7 rounded-full border-2 border-white bg-slate-200 flex items-center justify-center text-[9px] font-black text-slate-600">
+                            {p.employeeName.charAt(0)}
+                          </div>
                         ))}
                       </div>
                     </CardContent>
@@ -439,7 +439,7 @@ export default function MissionsPage() {
             </CardFooter>
           )}
         </Card>
-        
+
         <AddMissionSheet
           isOpen={isSheetOpen}
           onCloseAction={() => setIsSheetOpen(false)}

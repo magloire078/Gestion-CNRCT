@@ -26,6 +26,10 @@ export const LoginForm = memo(() => {
         event.preventDefault();
         setLoading(true);
         setError(null);
+        
+        // Yield to allow React to render the loading state and improve INP
+        await new Promise(resolve => setTimeout(resolve, 0));
+
         try {
             await signIn(email, password);
             router.push("/intranet");

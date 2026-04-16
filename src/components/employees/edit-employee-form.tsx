@@ -171,17 +171,17 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
   return (
     <div className="max-w-5xl mx-auto space-y-8">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Modifier le profil</h1>
-          <p className="text-muted-foreground">Mise à jour des informations de {employee.name}</p>
+        <div className="space-y-1">
+          <h1 className="text-2xl font-black tracking-tight text-slate-900 uppercase">Modifier le profil</h1>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Édition du dossier : {employee.name}</p>
         </div>
-        <div className="flex gap-2">
-           <Button variant="outline" onClick={() => router.back()} disabled={isSubmitting}>
-            <X className="mr-2 h-4 w-4" /> Annuler
+        <div className="flex gap-3">
+           <Button variant="outline" onClick={() => router.back()} disabled={isSubmitting} className="h-10 rounded-lg border-slate-200 font-bold text-[10px] uppercase tracking-widest">
+            <X className="mr-2 h-3.5 w-3.5" /> Annuler
           </Button>
-          <Button onClick={handleSubmit} disabled={isSubmitting}>
-            {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-            Enregistrer les modifications
+          <Button onClick={handleSubmit} disabled={isSubmitting} className="h-10 rounded-lg bg-slate-900 font-bold text-[10px] uppercase tracking-widest">
+            {isSubmitting ? <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" /> : <Save className="mr-2 h-3.5 w-3.5" />}
+            Enregistrer
           </Button>
         </div>
       </div>
@@ -190,30 +190,30 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
       <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-4 gap-10">
         {/* --- LEFT SIDEBAR: PROFILE & STATUS --- */}
         <div className="lg:col-span-1 space-y-6">
-          <Card className="border-none bg-white/40 backdrop-blur-xl rounded-[2.5rem] shadow-3xl shadow-slate-200/50 border border-white/20 overflow-hidden sticky top-8">
-            <CardHeader className="bg-slate-900 text-white p-8">
+          <Card className="border-none bg-white/40 backdrop-blur-xl rounded-2xl shadow-xl shadow-slate-200/50 border border-white/20 overflow-hidden sticky top-8">
+            <CardHeader className="bg-slate-900 text-white p-6">
               <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Profil & État</CardTitle>
             </CardHeader>
-            <CardContent className="p-8 space-y-8">
+            <CardContent className="p-6 space-y-6">
               <div className="flex flex-col items-center gap-6">
                 <div className="relative group">
-                  <div className="absolute -inset-2 bg-blue-500 rounded-[2.5rem] blur-xl opacity-20 group-hover:opacity-40 transition-all duration-700" />
-                  <Avatar className="h-44 w-44 rounded-[2rem] border-4 border-white shadow-2xl relative z-10">
+                  <div className="absolute -inset-2 bg-blue-500 rounded-2xl blur-xl opacity-20 group-hover:opacity-40 transition-all duration-700" />
+                  <Avatar className="h-40 w-40 rounded-xl border-4 border-white shadow-2xl relative z-10">
                     <AvatarImage src={photoPreview} alt={employee.name} className="object-cover" />
                     <AvatarFallback className="text-4xl font-black bg-slate-100 text-slate-400 uppercase">{employee.lastName?.charAt(0)}</AvatarFallback>
                   </Avatar>
                   <Button 
                     type="button" 
                     size="icon" 
-                    className="absolute -bottom-2 -right-2 h-12 w-12 rounded-2xl bg-slate-900 border-4 border-white shadow-2xl relative z-20 hover:scale-110 transition-transform" 
+                    className="absolute -bottom-1 -right-1 h-10 w-10 rounded-lg bg-slate-900 border-2 border-white shadow-2xl relative z-20 hover:scale-110 transition-transform" 
                     onClick={() => fileInputRef.current?.click()}
                   >
-                    <Upload className="h-5 w-5 text-white" />
+                    <Upload className="h-4 w-4 text-white" />
                   </Button>
                 </div>
                 <div className="text-center">
                    <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-1 leading-none">Matricule</p>
-                   <p className="text-xl font-black text-slate-900 tracking-widest leading-none">{formData.matricule}</p>
+                   <p className="text-xl font-black text-slate-900 tracking-widest">{formData.matricule}</p>
                 </div>
                 <input ref={fileInputRef} type="file" className="hidden" accept="image/*" onChange={handlePhotoChange} title="Sélectionner une photo de profil" />
               </div>
@@ -253,24 +253,24 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
 
         {/* --- MAIN CONTENT: DETAILS TABS --- */}
         <div className="lg:col-span-3">
-          <Tabs defaultValue="identity" className="w-full space-y-8">
-            <TabsList className="flex bg-white/40 backdrop-blur-xl border border-white/20 p-2 rounded-[2rem] shadow-2xl shadow-slate-200/40 w-fit h-auto gap-2">
-              <TabsTrigger value="identity" className="rounded-3xl px-8 py-4 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-[9px] transition-all">
-                <UserCircle2 className="mr-2 h-4 w-4" /> État Civil
+          <Tabs defaultValue="identity" className="w-full space-y-6">
+            <TabsList className="flex bg-white/40 backdrop-blur-xl border border-white/20 p-1.5 rounded-2xl shadow-xl shadow-slate-200/40 w-fit h-auto gap-1">
+              <TabsTrigger value="identity" className="rounded-xl px-6 py-3 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-[9px] transition-all">
+                <UserCircle2 className="mr-2 h-4 w-4" /> Identity
               </TabsTrigger>
-              <TabsTrigger value="job" className="rounded-3xl px-8 py-4 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-[9px] transition-all">
-                <Briefcase className="mr-2 h-4 w-4" /> Poste & Structure
+              <TabsTrigger value="job" className="rounded-xl px-6 py-3 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-[9px] transition-all">
+                <Briefcase className="mr-2 h-4 w-4" /> Career
               </TabsTrigger>
-              <TabsTrigger value="finance" className="rounded-3xl px-8 py-4 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-[9px] transition-all">
-                <Save className="mr-2 h-4 w-4" /> Social & Finance
+              <TabsTrigger value="finance" className="rounded-xl px-6 py-3 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-[9px] transition-all">
+                <Save className="mr-2 h-4 w-4" /> Salary
               </TabsTrigger>
             </TabsList>
 
             <ScrollArea className="h-[600px] pr-4">
-              <TabsContent value="identity" className="space-y-8 m-0 focus-visible:outline-none">
-                <Card className="border-none bg-white/40 backdrop-blur-xl rounded-[2.5rem] shadow-3xl shadow-slate-200/50 border border-white/20 overflow-hidden">
-                  <CardHeader className="p-10 pb-4 border-b border-white/10 bg-slate-50/50"><CardTitle className="text-xl font-black uppercase tracking-tight text-slate-800">Données Individuelles</CardTitle></CardHeader>
-                  <CardContent className="p-10 grid grid-cols-1 md:grid-cols-2 gap-8">
+              <TabsContent value="identity" className="space-y-6 m-0 focus-visible:outline-none">
+                <Card className="border-none bg-white/40 backdrop-blur-xl rounded-2xl shadow-xl shadow-slate-200/50 border border-white/20 overflow-hidden">
+                  <CardHeader className="p-6 pb-3 border-b border-white/10 bg-slate-50/50"><CardTitle className="text-lg font-black uppercase tracking-tight text-slate-800">Données Individuelles</CardTitle></CardHeader>
+                  <CardContent className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-3">
                       <Label htmlFor="lastName" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Nom de famille</Label>
                       <DebouncedInput id="lastName" value={formData.lastName || ''} onChange={(val) => handleValueChange('lastName', val as string)} className="h-12 rounded-xl border-slate-200 bg-white shadow-sm font-bold uppercase" />
@@ -298,9 +298,9 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                   </CardContent>
                 </Card>
 
-                <Card className="border-none bg-white/40 backdrop-blur-xl rounded-[2.5rem] shadow-3xl shadow-slate-200/50 border border-white/20 overflow-hidden">
-                  <CardHeader className="p-10 pb-4 border-b border-white/10 bg-slate-50/50"><CardTitle className="text-xl font-black uppercase tracking-tight text-slate-800">Origine & Résidence</CardTitle></CardHeader>
-                  <CardContent className="p-10 grid grid-cols-1 md:grid-cols-2 gap-8">
+                <Card className="border-none bg-white/40 backdrop-blur-xl rounded-2xl shadow-xl shadow-slate-200/50 border border-white/20 overflow-hidden">
+                  <CardHeader className="p-6 pb-3 border-b border-white/10 bg-slate-50/50"><CardTitle className="text-lg font-black uppercase tracking-tight text-slate-800">Origine & Résidence</CardTitle></CardHeader>
+                  <CardContent className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-3">
                       <Label htmlFor="Region" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Région Administrative</Label>
                       <Select 
@@ -331,10 +331,10 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                 </Card>
               </TabsContent>
 
-              <TabsContent value="job" className="space-y-8 m-0 focus-visible:outline-none">
-                <Card className="border-none bg-white/40 backdrop-blur-xl rounded-[2.5rem] shadow-3xl shadow-slate-200/50 border border-white/20 overflow-hidden">
-                  <CardHeader className="p-10 pb-4 border-b border-white/10 bg-slate-50/50"><CardTitle className="text-xl font-black uppercase tracking-tight text-slate-800">Assignation & Temporalité</CardTitle></CardHeader>
-                  <CardContent className="p-10 grid grid-cols-1 md:grid-cols-2 gap-8">
+              <TabsContent value="job" className="space-y-6 m-0 focus-visible:outline-none">
+                <Card className="border-none bg-white/40 backdrop-blur-xl rounded-2xl shadow-xl shadow-slate-200/50 border border-white/20 overflow-hidden">
+                  <CardHeader className="p-6 pb-3 border-b border-white/10 bg-slate-50/50"><CardTitle className="text-lg font-black uppercase tracking-tight text-slate-800">Temporalité</CardTitle></CardHeader>
+                  <CardContent className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-3">
                       <Label htmlFor="poste" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Intitulé du Poste</Label>
                       <DebouncedInput id="poste" value={formData.poste || ''} onChange={(val) => handleValueChange('poste', val as string)} className="h-12 rounded-xl border-slate-200 bg-white font-black uppercase text-blue-600 shadow-sm" />
@@ -354,9 +354,9 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                   </CardContent>
                 </Card>
 
-                <Card className="border-none bg-white/40 backdrop-blur-xl rounded-[2.5rem] shadow-3xl shadow-slate-200/50 border border-white/20 overflow-hidden">
-                  <CardHeader className="p-10 pb-4 border-b border-white/10 bg-slate-50/50"><CardTitle className="text-xl font-black uppercase tracking-tight text-slate-800">Arborescence Structurelle</CardTitle></CardHeader>
-                  <CardContent className="p-10 space-y-6">
+                <Card className="border-none bg-white/40 backdrop-blur-xl rounded-2xl shadow-xl shadow-slate-200/50 border border-white/20 overflow-hidden">
+                  <CardHeader className="p-6 pb-3 border-b border-white/10 bg-slate-50/50"><CardTitle className="text-lg font-black uppercase tracking-tight text-slate-800">Structure</CardTitle></CardHeader>
+                  <CardContent className="p-6 space-y-4">
                     <div className="space-y-2">
                       <Label htmlFor="departmentId" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Département Parent</Label>
                       <Select value={formData.departmentId} onValueChange={(v) => handleSelectChange('departmentId', v)}>
@@ -390,10 +390,10 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                 </Card>
               </TabsContent>
 
-              <TabsContent value="finance" className="space-y-8 m-0 focus-visible:outline-none">
-                <Card className="border-none bg-white/40 backdrop-blur-xl rounded-[2.5rem] shadow-3xl shadow-slate-200/50 border border-white/20 overflow-hidden">
-                  <CardHeader className="p-10 pb-4 border-b border-white/10 bg-slate-50/50"><CardTitle className="text-xl font-black uppercase tracking-tight text-slate-800">Données Financières</CardTitle></CardHeader>
-                  <CardContent className="p-10 grid grid-cols-1 md:grid-cols-2 gap-8">
+              <TabsContent value="finance" className="space-y-6 m-0 focus-visible:outline-none">
+                <Card className="border-none bg-white/40 backdrop-blur-xl rounded-2xl shadow-xl shadow-slate-200/50 border border-white/20 overflow-hidden">
+                  <CardHeader className="p-6 pb-3 border-b border-white/10 bg-slate-50/50"><CardTitle className="text-lg font-black uppercase tracking-tight text-slate-800">Paiement</CardTitle></CardHeader>
+                  <CardContent className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-3">
                       <Label htmlFor="banque" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Établissement Bancaire</Label>
                       <Input id="banque" value={formData.banque || ''} onChange={handleInputChange} className="h-12 rounded-xl border-slate-200 bg-white font-black italic tracking-widest" />
@@ -405,10 +405,10 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                   </CardContent>
                 </Card>
 
-                <Card className="border-none bg-white/40 backdrop-blur-xl rounded-[2.5rem] shadow-3xl shadow-slate-200/50 border border-white/20 overflow-hidden">
-                  <CardHeader className="p-10 pb-4 border-b border-white/10 bg-slate-50/50"><CardTitle className="text-xl font-black uppercase tracking-tight text-slate-800">Protection Sociale & Aptitudes</CardTitle></CardHeader>
-                  <CardContent className="p-10 space-y-8">
-                     <div className="p-8 bg-blue-50/50 rounded-[2rem] border border-blue-100 flex flex-col md:flex-row gap-8 items-start md:items-center">
+                <Card className="border-none bg-white/40 backdrop-blur-xl rounded-2xl shadow-xl shadow-slate-200/50 border border-white/20 overflow-hidden">
+                  <CardHeader className="p-6 pb-3 border-b border-white/10 bg-slate-50/50"><CardTitle className="text-lg font-black uppercase tracking-tight text-slate-800">Social & Aptitudes</CardTitle></CardHeader>
+                  <CardContent className="p-6 space-y-6">
+                     <div className="p-6 bg-blue-50/50 rounded-2xl border border-blue-100 flex flex-col md:flex-row gap-6 items-start md:items-center">
                         <div className="flex items-center space-x-4">
                           <Checkbox 
                             id="CNPS" 
@@ -418,16 +418,29 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                           />
                           <Label htmlFor="CNPS" className="text-[11px] font-black uppercase tracking-widest text-slate-700 cursor-pointer">Immatriculation CNPS Active</Label>
                         </div>
-                        <div className="flex-1 space-y-2 w-full">
-                          <Label htmlFor="Date_Cessation_CNPS" className="text-[9px] font-black uppercase tracking-widest text-blue-600 ml-1">Date d'effet immatriculation</Label>
-                          <Input 
-                            id="Date_Cessation_CNPS" 
-                            type="date" 
-                            value={formData.Date_Cessation_CNPS || ''} 
-                            onChange={handleInputChange} 
-                            disabled={!formData.CNPS}
-                            className="h-12 rounded-2xl border-blue-200 bg-white/60 font-bold"
-                          />
+                        <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
+                           <div className="space-y-2">
+                             <Label htmlFor="Date_Immatriculation" className="text-[9px] font-black uppercase tracking-widest text-blue-600 ml-1">Date d'immatriculation</Label>
+                             <Input 
+                               id="Date_Immatriculation" 
+                               type="date" 
+                               value={formData.Date_Immatriculation || ''} 
+                               onChange={handleInputChange} 
+                               disabled={!formData.CNPS}
+                               className="h-12 rounded-2xl border-blue-200 bg-white/60 font-bold"
+                             />
+                           </div>
+                           <div className="space-y-2">
+                             <Label htmlFor="Date_Cessation_CNPS" className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Cessation (Optionnel)</Label>
+                             <Input 
+                               id="Date_Cessation_CNPS" 
+                               type="date" 
+                               value={formData.Date_Cessation_CNPS || ''} 
+                               onChange={handleInputChange} 
+                               disabled={!formData.CNPS}
+                               className="h-12 rounded-2xl border-slate-200 bg-white/60 font-bold"
+                             />
+                           </div>
                         </div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -454,27 +467,27 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
       </form>
 
       {/* --- STICKY ACTIONS FOOTER --- */}
-      <div className="sticky bottom-8 left-0 right-0 z-50 px-4 md:px-0">
-        <div className="max-w-5xl mx-auto bg-white/40 backdrop-blur-2xl border border-white/30 p-4 rounded-[2.5rem] shadow-3xl flex gap-4">
+      <div className="sticky bottom-6 left-0 right-0 z-50 px-4 md:px-0">
+        <div className="max-w-5xl mx-auto bg-white/40 backdrop-blur-2xl border border-white/30 p-3 rounded-2xl shadow-3xl flex gap-3">
            <Button 
             variant="outline" 
             onClick={() => router.back()} 
             disabled={isSubmitting}
-            className="h-16 flex-1 rounded-[1.8rem] border-slate-200 bg-white font-black uppercase tracking-widest text-[10px] hover:bg-slate-50 shadow-xl"
+            className="h-12 flex-1 rounded-xl border-slate-200 bg-white font-black uppercase tracking-widest text-[9px] hover:bg-slate-50 shadow-xl"
           >
-            <X className="mr-3 h-5 w-5 text-slate-400" /> Annuler les modifications
+            <X className="mr-2 h-4 w-4 text-slate-400" /> Annuler
           </Button>
           <Button 
             onClick={handleSubmit} 
             disabled={isSubmitting}
-            className="h-16 flex-[2] rounded-[1.8rem] bg-slate-900 text-white font-black uppercase tracking-widest text-[11px] hover:bg-black shadow-2xl shadow-black/20 group transition-all"
+            className="h-12 flex-[2] rounded-xl bg-slate-900 text-white font-black uppercase tracking-widest text-[10px] hover:bg-black shadow-2xl shadow-black/20 group transition-all"
           >
             {isSubmitting ? (
-              <Loader2 className="mr-3 h-5 w-5 animate-spin" />
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
-              <Save className="mr-3 h-6 w-6 text-emerald-400 group-hover:scale-110 transition-transform" />
+              <Save className="mr-2 h-5 w-5 text-emerald-400 group-hover:scale-110 transition-transform" />
             )}
-            {isSubmitting ? "Synchronisation en cours..." : "Sauvegarder le dossier agent"}
+            {isSubmitting ? "Enregistrement..." : "Sauvegarder le dossier"}
           </Button>
         </div>
       </div>

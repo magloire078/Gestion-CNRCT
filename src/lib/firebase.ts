@@ -1,87 +1,30 @@
 
-if (typeof window === 'undefined') {
-  // Polyfill for localStorage on the server to avoid error: localStorage.getItem is not a function
-  (global as any).localStorage = {
-    getItem: (key: string) => null,
-    setItem: (key: string, value: string) => { },
-    removeItem: (key: string) => { },
-    clear: () => { },
-    length: 0,
-    key: (index: number) => null,
-  };
-}
-
-import { initializeApp, getApps, getApp, type FirebaseOptions, type FirebaseApp } from "firebase/app";
-import { 
-  initializeFirestore, 
-  Firestore, 
-  persistentLocalCache, 
-  persistentMultipleTabManager 
-} from "firebase/firestore";
-import { getAuth, Auth } from "firebase/auth";
-import { getStorage, FirebaseStorage } from "firebase/storage";
+import { app, db, auth, storage, isConfigValid, config } from './firebase-init';
 import { getAnalytics } from "firebase/analytics";
 
-const firebaseConfig: FirebaseOptions = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
-};
-
-const isConfigValid = !!firebaseConfig.apiKey && firebaseConfig.apiKey !== 'undefined';
-
-
-// Initialize Firebase
-
-// Provide a dummy config during build if real config is missing
-// This prevents crashes in services that call doc(db, ...) at module level
-const finalConfig = isConfigValid ? firebaseConfig : {
-  apiKey: "dummy-api-key",
-  authDomain: "dummy.firebaseapp.com",
-  projectId: "gestion-cnrct-dummy", // Must be a valid format
-  storageBucket: "dummy.appspot.com",
-  messagingSenderId: "000000000",
-  appId: "1:000000000:web:000000000"
-};
-
-const app = getApps().length === 0 ? initializeApp(finalConfig) : getApp();
-
-// Modern persistence settings (replaces deprecated enableMultiTabIndexedDbPersistence)
-const db = initializeFirestore(app, {
-  localCache: persistentLocalCache({
-    tabManager: persistentMultipleTabManager()
-  })
-});
-
-const auth = getAuth(app);
-const storage = getStorage(app);
-
+// Initialize Analytics lazily
 if (isConfigValid && typeof window !== 'undefined') {
   try {
     getAnalytics(app);
   } catch (error) {
-    // Analytics initialization failed, but we don't need to log it for now.
+    // Silently fail analytics
   }
 }
 
-if (!isConfigValid) {
-  if (typeof window !== 'undefined') {
-    console.error("CRITICAL: Firebase configuration is missing! Check Vercel environment variables.");
+if (typeof window !== 'undefined') {
+  if (isConfigValid) {
+    console.log(`[Firebase] Active Project: ${config.projectId}`);
   } else {
-    console.warn("Firebase configuration is missing. Using dummy config for build purposes.");
+    console.warn("[Firebase] Running with DUMMY config. Check .env.local variables.");
   }
 }
 
 export { app, db, auth, storage, isConfigValid };
 
-// Exporter le wrapper onSnapshot qui attend l'authentification
+// Export the wrapped onSnapshot that waits for Auth
 export { onSnapshot } from './firestore-wrapper';
 
-// Ré-exporter les autres fonctions Firestore dont les services ont besoin
+// Re-export Firestore functions for services
 export {
   collection,
   collectionGroup,
@@ -115,5 +58,3 @@ export {
   or,
   and,
 } from 'firebase/firestore';
-
-

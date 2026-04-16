@@ -71,11 +71,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Timeout safety: Force loading to false after 7 seconds if somehow stuck
     const timeoutId = setTimeout(() => {
       if (isMounted && loading) {
-        console.warn("[Auth] Initialization timeout (7s) - proceeding with local state to avoid blocking UI.");
+        console.warn("[Auth] Initialization timeout (15s) - proceeding with local state to avoid blocking UI.");
         // Try to proceed with whatever state we have
         setLoading(false);
       }
-    }, 7000);
+    }, 15000);
 
     return () => {
       isMounted = false;

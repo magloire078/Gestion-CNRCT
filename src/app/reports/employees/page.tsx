@@ -115,9 +115,9 @@ export default function EmployeeReportsPage() {
             <div className="p-8 space-y-8">
                 <Skeleton className="h-12 w-1/3" />
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                    {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-32 rounded-3xl" />)}
+                    {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-32 rounded-xl" />)}
                 </div>
-                <Skeleton className="h-[500px] rounded-[2.5rem]" />
+                <Skeleton className="h-[500px] rounded-2xl" />
             </div>
         );
     }
@@ -140,18 +140,18 @@ export default function EmployeeReportsPage() {
                     </p>
                 </div>
                 <div className="flex items-center gap-3">
-                    <Button onClick={handlePrint} variant="outline" className="rounded-2xl h-14 px-6 border-slate-200 bg-white/50 backdrop-blur-sm shadow-xl shadow-slate-200/20 font-black text-slate-600 hover:bg-white transition-all text-sm">
+                    <Button onClick={handlePrint} variant="outline" className="rounded-xl h-14 px-6 border-slate-200 bg-white/20 backdrop-blur-xl shadow-xl shadow-slate-200/20 font-black text-slate-600 hover:bg-white transition-all text-sm">
                         <Printer className="mr-2 h-4 w-4 text-indigo-500" />
                         Imprimer
                     </Button>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button className="bg-slate-900 hover:bg-slate-800 rounded-2xl h-14 px-8 font-black text-white shadow-xl shadow-slate-200 hover:scale-[1.02] transition-all text-sm">
+                            <Button className="bg-slate-900 hover:bg-slate-800 rounded-xl h-14 px-8 font-black text-white shadow-xl shadow-slate-200 hover:scale-[1.02] transition-all text-sm">
                                 <Download className="mr-2 h-4 w-4" />
                                 Exporter
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-56 p-2 rounded-[1.5rem] shadow-2xl border-none">
+                        <DropdownMenuContent align="end" className="w-56 p-2 rounded-2xl shadow-2xl border-none">
                             <DropdownMenuLabel className="px-3 py-2 text-[10px] uppercase font-black text-slate-400 tracking-widest">Format de sortie</DropdownMenuLabel>
                             <DropdownMenuSeparator className="bg-slate-50" />
                             <DropdownMenuItem onClick={handleExportCsv} className="gap-3 p-3 cursor-pointer rounded-xl hover:bg-indigo-50 transition-colors">
@@ -179,7 +179,7 @@ export default function EmployeeReportsPage() {
                     { label: "Sorties / Absents", value: stats.inactive, icon: UserX, color: "text-rose-600", bg: "bg-rose-500", shadow: "shadow-rose-200", progress: (stats.inactive / stats.total) * 100 },
                     { label: "Opérationnalité", value: `${((stats.active / stats.total) * 100).toFixed(1)}%`, icon: TrendingUp, color: "text-amber-600", bg: "bg-amber-500", shadow: "shadow-amber-200", progress: (stats.active / stats.total) * 100 }
                 ].map((kpi, i) => (
-                    <Card key={i} className="border-none shadow-2xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden group hover:scale-[1.02] transition-all duration-500 bg-white">
+                    <Card key={i} className="border-none shadow-2xl shadow-slate-200/50 rounded-xl overflow-hidden group hover:scale-[1.02] transition-all duration-500 bg-white">
                         <CardContent className="p-8">
                             <div className="flex items-center justify-between mb-6">
                                 <div className={cn("h-14 w-14 rounded-2xl flex items-center justify-center shadow-xl group-hover:rotate-6 transition-transform", kpi.bg, kpi.shadow)}>
@@ -196,11 +196,11 @@ export default function EmployeeReportsPage() {
             </div>
 
             {/* Main Data View */}
-            <Card className="border-none shadow-2xl shadow-slate-200/40 rounded-[3rem] overflow-hidden bg-white">
+            <Card className="border-none shadow-2xl shadow-slate-200/40 rounded-xl overflow-hidden bg-white">
                 <CardHeader className="p-10 border-b border-slate-50">
                     <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
                         <div className="flex items-center gap-6">
-                            <div className="h-16 w-16 rounded-[1.5rem] bg-slate-900 flex items-center justify-center shadow-2xl shadow-slate-900/20 group-hover:rotate-6 transition-transform">
+                            <div className="h-16 w-16 rounded-xl bg-slate-900 flex items-center justify-center shadow-2xl shadow-slate-900/20 group-hover:rotate-6 transition-transform">
                                 <BarChart3 className="h-8 w-8 text-indigo-400" />
                             </div>
                             <div>
@@ -211,12 +211,12 @@ export default function EmployeeReportsPage() {
                         <div className="flex items-center gap-4 print:hidden">
                             <div className="relative group">
                                 <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-indigo-600 transition-colors" />
-                                <Input 
-                                    placeholder="Rechercher par nom, poste ou département..." 
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="pl-14 w-[380px] h-16 rounded-2xl border-slate-100 bg-slate-50/50 shadow-inner focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-bold text-slate-700 placeholder:text-slate-400"
-                                />
+                                    <Input 
+                                        placeholder="Rechercher par nom, poste ou département..." 
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        className="pl-14 w-[380px] h-16 rounded-xl border-slate-100 bg-slate-50/50 shadow-inner focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-bold text-slate-700 placeholder:text-slate-400"
+                                    />
                             </div>
                         </div>
                     </div>
@@ -237,7 +237,7 @@ export default function EmployeeReportsPage() {
                                     <TableRow>
                                         <TableCell colSpan={4} className="h-64 text-center">
                                             <div className="flex flex-col items-center justify-center gap-6 max-w-sm mx-auto">
-                                                <div className="h-20 w-20 rounded-[2rem] bg-slate-50 border border-slate-100 flex items-center justify-center shadow-inner">
+                                                <div className="h-20 w-20 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center shadow-inner">
                                                     <Users className="h-8 w-8 text-slate-300" />
                                                 </div>
                                                 <div className="space-y-1">
@@ -254,7 +254,7 @@ export default function EmployeeReportsPage() {
                                             <TableRow key={employee.id} className="group hover:bg-slate-50/80 transition-all duration-300 border-b border-slate-50 last:border-0 hover:shadow-inner">
                                                 <TableCell className="py-6 pl-10">
                                                     <div className="flex items-center gap-5">
-                                                        <div className="h-14 w-14 rounded-2xl bg-white border border-slate-100 flex items-center justify-center font-black text-slate-400 overflow-hidden group-hover:scale-110 transition-all duration-500 shadow-xl shadow-slate-100 group-hover:rotate-3">
+                                                        <div className="h-14 w-14 rounded-xl bg-white border border-slate-100 flex items-center justify-center font-black text-slate-400 overflow-hidden group-hover:scale-110 transition-all duration-500 shadow-xl shadow-slate-100 group-hover:rotate-3">
                                                             {employee.photoUrl || employee.Photo ? (
                                                                 <img src={employee.photoUrl || employee.Photo} alt={employee.name} className="h-full w-full object-cover" />
                                                             ) : (

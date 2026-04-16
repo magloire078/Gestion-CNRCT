@@ -32,7 +32,7 @@ import {
 import type { Mission } from "@/lib/data";
 import { getLatestMissionNumber } from "@/services/mission-service";
 import { cn } from "@/lib/utils";
-import { CalendarIcon, Loader2 } from "lucide-react";
+import { CalendarIcon, Loader2, LogOut, PlusCircle } from "lucide-react";
 import { ScrollArea } from "../ui/scroll-area";
 
 

@@ -1,4 +1,11 @@
-/* Premium Typography handled via next/font in layout.tsx */
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Poppins:wght@600;700;800&display=swap');
+
+:root {
+  --font-inter: "Inter", sans-serif;
+  --font-poppins: "Poppins", sans-serif;
+}
+
+/* Premium Typography handled via CSS variables */
 
 @tailwind base;
 @tailwind components;
@@ -174,8 +181,10 @@
   }
 }
 
-/* Premium Utilities Layer */
 @layer utilities {
+  .contain-layout {
+    contain: layout;
+  }
 
   /* Glassmorphism Effects */
   .glass-card {
@@ -463,29 +472,31 @@
         visibility: visible !important;
     }
 
-    /* Force table to use full width without borders */
+    /* Force table to use full width */
     #print-section table {
       width: 100% !important;
       max-width: 100% !important;
       min-width: 100% !important;
       table-layout: fixed !important;
       font-size: 8pt !important;
-      border-collapse: separate !important;
-      border-spacing: 0 !important;
+      border-collapse: collapse !important;
     }
 
     #print-section table th,
     #print-section table td {
       overflow: visible !important;
-      white-space: nowrap !important;
-      padding: 0px !important;
+      white-space: normal !important;
+      padding: 4px !important;
+      border: 0.25pt solid #666 !important; /* Bordure extra-fine et grise pour plus de légèreté */
     }
 
     #print-section table thead th {
-        background-color: white !important;
+        background-color: #f3f4f6 !important; /* Gris très clair pour distinguer l'entête */
+        font-weight: bold !important;
+        text-transform: uppercase !important;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
-        border: 0 !important;
+        border: 1pt solid #000 !important; /* Entête un peu plus marqué */
     }
 
     /* Apply landscape page when print-landscape class is on body */
@@ -599,4 +610,42 @@
   .card-gradient-info {
     @apply bg-gradient-to-br from-sky-400/10 via-background to-background border-sky-400/20;
   }
+
+  /* Institutional Premium System */
+  .institutional-card {
+    @apply bg-card/40 backdrop-blur-md rounded-[2.5rem] border border-white/20 shadow-3xl;
+  }
+
+  .institutional-title {
+    @apply font-black uppercase tracking-tighter text-slate-900 leading-[0.9];
+  }
+
+  .institutional-badge {
+    @apply px-4 py-1 rounded-xl font-black uppercase tracking-widest text-[9px] shadow-lg;
+  }
+
+  .text-shadow-premium {
+    text-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .text-shadow-premium-light {
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  }
+}
+
+/* Global Smooth Behavior */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Scrollbar refinement */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-200 rounded-full border-4 border-solid border-background hover:bg-slate-300 transition-colors;
 }

@@ -21,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { PlusCircle } from "lucide-react";
 import type { Fleet } from "@/lib/data";
 
 interface AddVehicleSheetProps {

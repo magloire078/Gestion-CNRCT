@@ -12,7 +12,8 @@ import { subscribeToChiefs } from "@/services/chief-service";
 import { subscribeToDepartments } from "@/services/department-service";
 import { subscribeToConflicts } from "@/services/conflict-service";
 import type { Conflict } from "@/types/common";
-import { parseISO, differenceInYears, isAfter, isBefore, isWithinInterval, startOfDay } from 'date-fns';
+import { parseISO, differenceInYears, isAfter, isBefore, isWithinInterval, startOfDay, format } from 'date-fns';
+import { fr } from 'date-fns/locale';
 import { DEFAULT_ROLE_PERMISSIONS } from "@/types/permissions";
 
 export function useDashboardData(user: User | null) {
@@ -34,10 +35,10 @@ export function useDashboardData(user: User | null) {
     });
     const [summary, setSummary] = useState<string | null>(null);
     const [organizationLogos, setOrganizationLogos] = useState<OrganizationSettings | null>(null);
-    const [seniorityAnniversaries, setSeniorityAnniversaries] = useState<Employe[]>([]);
-    const [birthdayAnniversaries, setBirthdayAnniversaries] = useState<Employe[]>([]);
+    const [seniorityAnniversaries, setSeniorityAnniversaries] = useState<(Employe & { seniorityYears: number })[]>([]);
+    const [birthdayAnniversaries, setBirthdayAnniversaries] = useState<(Employe & { birthDayFormatted: string })[]>([]);
     const [allRawLeaves, setAllRawLeaves] = useState<Leave[]>([]);
-    const [upcomingRetirements, setUpcomingRetirements] = useState<(Employe & { calculatedRetirementDate: Date })[]>([]);
+    const [upcomingRetirements, setUpcomingRetirements] = useState<(Employe & { calculatedRetirementDate: Date, formattedRetirementDate: string })[]>([]);
 
     const [loading, setLoading] = useState(true);
     const [loadingSummary, setLoadingSummary] = useState(true);
@@ -216,22 +217,32 @@ export function useDashboardData(user: User | null) {
         const anniversaryYear = parseInt(selectedAnniversaryYear);
         const referenceDate = new Date(anniversaryYear, anniversaryMonth);
 
-        const seniority = globalStats.employees.filter(emp => {
-            if (!emp.dateEmbauche || emp.status !== 'Actif') return false;
-            try {
-                const hireDate = parseISO(emp.dateEmbauche);
-                return hireDate.getMonth() === anniversaryMonth && differenceInYears(referenceDate, hireDate) >= 1;
-            } catch { return false; }
-        });
+        const seniority = globalStats.employees
+            .filter(emp => {
+                if (!emp.dateEmbauche || emp.status !== 'Actif') return false;
+                try {
+                    const hireDate = parseISO(emp.dateEmbauche);
+                    return hireDate.getMonth() === anniversaryMonth && differenceInYears(referenceDate, hireDate) >= 1;
+                } catch { return false; }
+            })
+            .map(emp => ({
+                ...emp,
+                seniorityYears: emp.dateEmbauche ? differenceInYears(referenceDate, parseISO(emp.dateEmbauche)) : 0
+            }));
         setSeniorityAnniversaries(seniority);
 
-        const birthdays = globalStats.employees.filter(emp => {
-            if (!emp.Date_Naissance || emp.status !== 'Actif') return false;
-            try {
-                const birthDate = parseISO(emp.Date_Naissance);
-                return birthDate.getMonth() === anniversaryMonth;
-            } catch { return false; }
-        });
+        const birthdays = globalStats.employees
+            .filter(emp => {
+                if (!emp.Date_Naissance || emp.status !== 'Actif') return false;
+                try {
+                    const birthDate = parseISO(emp.Date_Naissance);
+                    return birthDate.getMonth() === anniversaryMonth;
+                } catch { return false; }
+            })
+            .map(emp => ({
+                ...emp,
+                birthDayFormatted: emp.Date_Naissance ? format(parseISO(emp.Date_Naissance), 'dd MMMM', { locale: fr }) : '-'
+            }));
         setBirthdayAnniversaries(birthdays);
 
         const retirementYearNum = parseInt(selectedRetirementYear);
@@ -241,10 +252,14 @@ export function useDashboardData(user: User | null) {
                 try {
                     const birthDate = parseISO(emp.Date_Naissance);
                     const retirementDate = new Date(birthDate.getFullYear() + 60, 11, 31);
-                    return { ...emp, calculatedRetirementDate: retirementDate };
+                    return { 
+                        ...emp, 
+                        calculatedRetirementDate: retirementDate,
+                        formattedRetirementDate: format(retirementDate, 'MMM yyyy', { locale: fr })
+                    };
                 } catch { return null; }
             })
-            .filter((emp): emp is Employe & { calculatedRetirementDate: Date } => {
+            .filter((emp): emp is Employe & { calculatedRetirementDate: Date, formattedRetirementDate: string } => {
                 if (!emp || emp.status === 'Retraité' || emp.status === 'Décédé') return false;
                 return emp.calculatedRetirementDate.getFullYear() === retirementYearNum;
             })

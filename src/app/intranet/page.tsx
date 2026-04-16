@@ -152,46 +152,57 @@ function IntranetContent() {
 
     return (
         <div className="pb-20 space-y-12">
-            {/* Immersive Welcome Section - Restored to Premium Height */}
-            <div className="relative rounded-2xl bg-slate-900 px-8 py-10 overflow-hidden group shadow-2xl">
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(59,130,246,0.15),transparent)]" />
-                <div className="absolute top-0 right-0 p-12 opacity-10 rotate-12">
-                    <Rocket className="h-32 w-32 text-white" />
+            {/* Immersive Welcome Section - Premium Masterpiece */}
+            <div className="relative rounded-2xl bg-slate-950 px-10 py-12 overflow-hidden group shadow-2xl shadow-slate-900/20">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(59,130,246,0.2),transparent_50%)]" />
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_70%,rgba(99,102,241,0.15),transparent_50%)]" />
+                <div className="absolute -bottom-24 -right-24 h-64 w-64 bg-blue-600/10 rounded-full blur-[100px]" />
+                
+                <div className="absolute top-0 right-0 p-12 opacity-5 rotate-12 transition-transform duration-1000 group-hover:rotate-[30deg] group-hover:scale-110">
+                    <Rocket className="h-40 w-40 text-white" />
                 </div>
                 
-                <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
-                    <div className="flex items-center gap-6">
-                        <Avatar className="h-20 w-20 border-4 border-white/10 shadow-2xl shrink-0 transition-transform group-hover:scale-105 duration-500">
-                            <AvatarImage src={getValidPhotoUrl(user?.photoUrl)} alt={user?.name} />
-                            <AvatarFallback className="bg-blue-600 text-white text-xl font-black">
-                                {user?.name?.split(' ').map(n => n[0]).join('') || "U"}
-                            </AvatarFallback>
-                        </Avatar>
-                        <div>
-                            <div className="flex items-center gap-2 mb-2">
-                                <span className="relative flex h-2 w-2">
-                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
-                                </span>
-                                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-400/90">Espace Collaborateur CNRCT</span>
+                <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div className="flex items-center gap-8">
+                        <div className="relative">
+                            <div className="absolute -inset-1 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-2xl blur opacity-30 group-hover:opacity-60 transition duration-500" />
+                            <Avatar className="h-24 w-24 border-2 border-white/20 shadow-2xl shrink-0 transition-transform group-hover:scale-105 duration-700 relative z-10">
+                                <AvatarImage src={getValidPhotoUrl(user?.photoUrl)} alt={user?.name} />
+                                <AvatarFallback className="bg-slate-900 text-white text-2xl font-black">
+                                    {user?.name?.split(' ').map(n => n[0]).join('') || "U"}
+                                </AvatarFallback>
+                            </Avatar>
+                        </div>
+                        <div className="space-y-2">
+                            <div className="flex items-center gap-3">
+                                <div className="px-2 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center gap-2">
+                                     <span className="relative flex h-2 w-2">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                                    </span>
+                                    <span className="text-[9px] font-black uppercase tracking-[0.2em] text-blue-400">Live • CNRCT Control</span>
+                                </div>
                             </div>
-                            <h1 className="text-3xl md:text-4xl font-black text-white tracking-tight">
-                                Bonjour, {user?.name?.split(' ')[0]} 👋
+                            <h1 className="text-4xl md:text-5xl font-black text-white tracking-tighter leading-none">
+                                Bonjour, <span className="bg-clip-text text-transparent bg-gradient-to-r from-white via-white to-slate-400">{user?.name?.split(' ')[0]}</span> 👋
                             </h1>
-                            <p className="text-slate-400 text-sm mt-1 font-medium italic">
-                                Heureux de vous revoir. Voici l'état de votre direction aujourd'hui.
+                            <p className="text-slate-400 text-base font-medium max-w-lg leading-relaxed">
+                                Le centre de pilotage est opérationnel. Vos <span className="text-slate-200 underline decoration-blue-500/50 underline-offset-4">indicateurs territoriaux</span> sont à jour.
                             </p>
                         </div>
                     </div>
                     
-                    {/* Improved AI Status Box */}
-                    <div className="hidden lg:flex items-center gap-4 bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-4 max-w-sm shadow-inner group/status hover:bg-white/10 transition-colors">
-                        <div className="h-10 w-10 rounded-xl bg-blue-500/20 flex items-center justify-center shrink-0">
-                            <Bot className="h-5 w-5 text-blue-400" />
+                    {/* Immersive AI Hub Status */}
+                    <div className="hidden lg:flex items-center gap-5 bg-white/[0.03] backdrop-blur-3xl border border-white/10 rounded-2xl p-6 max-w-sm shadow-2xl relative group/ai overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-br from-blue-600/5 to-purple-600/5 opacity-0 group-hover/ai:opacity-100 transition-opacity duration-700" />
+                        <div className="h-12 w-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center shrink-0 shadow-lg shadow-blue-500/20 relative z-10">
+                            <Bot className="h-6 w-6 text-white animate-pulse" />
                         </div>
-                        <div className="text-[11px] text-slate-300 leading-relaxed font-medium">
-                            <span className="text-blue-400 font-bold block mb-0.5 uppercase tracking-wider">Assistant IA</span>
-                            Pilotage en temps réel activé. Vos indicateurs territoriaux sont à jour.
+                        <div className="relative z-10">
+                            <span className="text-[10px] font-black text-blue-400 block mb-1 uppercase tracking-widest">Assistant Stratégique Alpha</span>
+                            <div className="text-xs text-slate-300 font-medium leading-relaxed italic">
+                                "Analyse des effectifs complétée. Stabilité organisationnelle optimale."
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -200,60 +211,69 @@ function IntranetContent() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 px-2">
                 {/* Left: Sidebar Mini-Widgets - Moved to Left as per clarification */}
                 <div className="lg:col-span-3 order-2 lg:order-1 space-y-6">
-                    {/* Ecosystem Stats - High Density Grid */}
-                    <Card className="border-none shadow-xl shadow-indigo-100/50 rounded-2xl bg-indigo-900 text-white overflow-hidden">
-                        <div className="p-6 space-y-6">
+                    {/* Ecosystem Stats - Ultra Modern Grid */}
+                    <Card className="border-none shadow-2xl shadow-indigo-900/20 rounded-2xl bg-indigo-950 text-white overflow-hidden group/stats relative">
+                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_0%_0%,rgba(99,102,241,0.1),transparent)] flex flex-col" />
+                        <div className="p-8 space-y-8 relative z-10">
                             <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-3 opacity-80">
-                                    <Zap className="h-5 w-5 text-indigo-300" />
-                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] italic">Écosystème CNRCT</span>
+                                <div className="flex flex-col gap-1">
+                                    <span className="text-[9px] font-black uppercase tracking-[0.3em] text-indigo-400 italic">Core Metrics</span>
+                                    <h3 className="text-lg font-black tracking-tight">Ecosystème CNRCT</h3>
                                 </div>
-                                <div className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                                <div className="h-10 w-10 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center backdrop-blur-xl transition-transform group-hover/stats:rotate-12">
+                                    <Zap className="h-5 w-5 text-indigo-400" />
+                                </div>
                             </div>
                             
-                            <div className="grid grid-cols-2 gap-3">
-                                <div className="p-4 rounded-xl bg-white/10 border border-white/5 shadow-inner group transition-colors hover:bg-white/15">
-                                    <div className="flex items-center gap-2 mb-2 opacity-60">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/5 shadow-inner group/item transition-all hover:bg-white/[0.07] hover:border-white/10">
+                                    <div className="flex items-center gap-2 mb-3 opacity-50 transition-opacity group-hover/item:opacity-80">
                                         <Users className="h-3 w-3" />
-                                        <span className="text-[9px] font-bold uppercase tracking-tight">Effectif</span>
+                                        <span className="text-[8px] font-black uppercase tracking-widest">Effectif</span>
                                     </div>
-                                    <span className="text-2xl font-black text-white">{globalStats.activeEmployees}</span>
+                                    <div className="flex items-baseline gap-1">
+                                        <span className="text-3xl font-black text-white leading-none">{globalStats.activeEmployees}</span>
+                                        <span className="text-[10px] font-bold text-emerald-400">+2%</span>
+                                    </div>
                                 </div>
                                 
-                                <div className="p-4 rounded-xl bg-white/10 border border-white/5 shadow-inner group transition-colors hover:bg-white/15">
-                                    <div className="flex items-center gap-2 mb-2 opacity-60">
+                                <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/5 shadow-inner group/item transition-all hover:bg-white/[0.07] hover:border-white/10">
+                                    <div className="flex items-center gap-2 mb-3 opacity-50 transition-opacity group-hover/item:opacity-80">
                                         <Building className="h-3 w-3" />
-                                        <span className="text-[9px] font-bold uppercase tracking-tight">Pôles</span>
+                                        <span className="text-[8px] font-black uppercase tracking-widest">Pôles</span>
                                     </div>
-                                    <span className="text-2xl font-black text-white">{globalStats.departments.length}</span>
+                                    <span className="text-3xl font-black text-white leading-none">{globalStats.departments.length}</span>
                                 </div>
 
-                                <div className="p-4 rounded-xl bg-white/10 border border-white/5 shadow-inner group transition-colors hover:bg-white/15">
-                                    <div className="flex items-center gap-2 mb-2 opacity-60 text-amber-300">
+                                <div className="p-5 rounded-[1.5rem] bg-white/[0.03] border border-white/5 shadow-inner group transition-all hover:bg-white/[0.07] hover:border-white/10">
+                                    <div className="flex items-center gap-2 mb-3 text-amber-400/60">
                                         <ShieldCheck className="h-3 w-3" />
-                                        <span className="text-[9px] font-bold uppercase tracking-tight text-white/60">Directoire</span>
+                                        <span className="text-[8px] font-black uppercase tracking-widest text-white/50">Directoire</span>
                                     </div>
-                                    <span className="text-2xl font-black text-white">{directoireMembers.length}</span>
+                                    <span className="text-3xl font-black text-white leading-none">{directoireMembers.length}</span>
                                 </div>
 
-                                <div className="p-4 rounded-xl bg-white/10 border border-white/5 shadow-inner group transition-colors hover:bg-white/15">
-                                    <div className="flex items-center gap-2 mb-2 opacity-60 text-blue-300">
+                                <div className="p-5 rounded-[1.5rem] bg-white/[0.03] border border-white/5 shadow-inner group transition-all hover:bg-white/[0.07] hover:border-white/10">
+                                    <div className="flex items-center gap-2 mb-3 text-blue-400/60">
                                         <MapIcon className="h-3 w-3" />
-                                        <span className="text-[9px] font-bold uppercase tracking-tight text-white/60">Comités</span>
+                                        <span className="text-[8px] font-black uppercase tracking-widest text-white/50">Comités</span>
                                     </div>
-                                    <span className="text-2xl font-black text-white">{Object.keys(divisions).length}</span>
+                                    <span className="text-3xl font-black text-white leading-none">{Object.keys(divisions).length}</span>
                                 </div>
 
-                                <div className="col-span-2 p-4 rounded-xl bg-emerald-500/20 border border-emerald-500/20 shadow-inner flex items-center justify-between group transition-colors hover:bg-emerald-500/30">
-                                    <div className="flex flex-col">
-                                        <div className="flex items-center gap-2 mb-1 opacity-80 text-emerald-300">
+                                <div className="col-span-2 p-6 rounded-2xl bg-gradient-to-br from-emerald-500/10 to-teal-500/5 border border-emerald-500/20 shadow-inner flex items-center justify-between group transition-all hover:from-emerald-500/20 hover:to-teal-500/10 hover:border-emerald-500/40">
+                                    <div className="flex flex-col gap-1">
+                                        <div className="flex items-center gap-2 opacity-60 text-emerald-400">
                                             <Palmtree className="h-3 w-3" />
-                                            <span className="text-[9px] font-bold uppercase tracking-tight">En Congés</span>
+                                            <span className="text-[8px] font-black uppercase tracking-widest">Disponibilité Alpha</span>
                                         </div>
-                                        <span className="text-2xl font-black text-white">{employeesOnLeave.length}</span>
+                                        <div className="flex items-baseline gap-2">
+                                            <span className="text-2xl font-black text-white">{globalStats.activeEmployees - employeesOnLeave.length}</span>
+                                            <span className="text-[10px] font-bold text-slate-400">/ {globalStats.activeEmployees} actifs</span>
+                                        </div>
                                     </div>
-                                    <div className="text-[10px] font-bold text-emerald-400/80 italic">
-                                        Détroit de pause
+                                    <div className="h-12 w-12 rounded-full border-4 border-emerald-500/20 flex items-center justify-center font-black text-[10px] text-emerald-400 bg-emerald-500/5">
+                                        {Math.round(((globalStats.activeEmployees - employeesOnLeave.length) / globalStats.activeEmployees) * 100)}%
                                     </div>
                                 </div>
                             </div>

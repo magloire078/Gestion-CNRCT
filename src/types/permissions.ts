@@ -58,6 +58,7 @@ export const RESOURCES_CONFIG: ResourceConfig[] = [
     { id: 'fuel', label: 'Gestion de carburant', icon: 'Fuel', availableActions: ['read', 'create', 'update', 'delete'], parentId: 'group:operations' },
     { id: 'budget', label: 'Budget', icon: 'PieChart', availableActions: ['read', 'create', 'update', 'delete'], parentId: 'group:operations' },
     { id: 'repository', label: 'Référentiel Documents', icon: 'FolderOpen', availableActions: ['read', 'create', 'update', 'delete'], parentId: 'group:operations' },
+    { id: 'documents', label: 'Génération de Documents', icon: 'FilePlus', availableActions: ['read', 'create'], parentId: 'group:operations' },
     { id: 'mgp', label: 'Gestion des Plaintes', icon: 'MessageCircle', availableActions: ['read', 'create', 'update', 'delete'], parentId: 'group:operations' },
 
     { id: 'chiefs', label: 'Chefs Coutumiers', icon: 'Crown', availableActions: ['read', 'create', 'update', 'delete'], parentId: 'group:localities' },
@@ -114,29 +115,33 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, ResourcePermissions> = {
         'organization-chart': ALL_READ, intranet: ALL_READ,
         'report-disa': ALL_READ, 'report-nominative': ALL_READ,
         'report-territory': ALL_READ, 'report-it-technical': ALL_READ,
+        documents: ALL_CRUD, mgp: ALL_CRUD,
     }),
     'mediation': buildDefault({
         dashboard: ALL_READ, conflicts: ALL_CRUD, chiefs: ALL_CRUD,
         villages: ALL_CRUD, 'us-et-coutumes': ALL_CRUD, mapping: ALL_READ,
         repository: ALL_READ, assistant: ALL_READ, intranet: ALL_READ,
+        documents: READ_CREATE, mgp: ALL_CRUD,
     }),
     'patrimoine': buildDefault({
         dashboard: ALL_READ, heritage: ALL_CRUD, 'it-assets': ALL_CRUD,
         fleet: ALL_CRUD, supplies: ALL_CRUD, repository: ALL_READ,
         assistant: ALL_READ, intranet: ALL_READ,
+        documents: READ_CREATE,
     }),
     'manager-rh': buildDefault({
         dashboard: ALL_READ, employees: READ_UPDATE, payroll: ALL_READ,
         leaves: ALL_CRUD, missions: ALL_READ, evaluations: ALL_CRUD,
         repository: READ_CREATE, tickets: ALL_CRUD, assistant: ALL_READ,
         intranet: ALL_READ, 'organization-chart': ALL_READ,
-        indemnities: ALL_READ,
+        indemnities: ALL_READ, documents: READ_CREATE,
     }),
     'comptable': buildDefault({
         dashboard: ALL_READ, payroll: ALL_CRUD, budget: ALL_CRUD,
         repository: READ_CREATE, tickets: ALL_READ, assistant: ALL_READ,
         intranet: ALL_READ, indemnities: READ_UPDATE,
         'report-disa': ALL_READ, 'report-nominative': ALL_READ,
+        documents: READ_CREATE,
     }),
     'dirigeant-president': buildDefault({
         dashboard: ALL_READ, employees: ALL_READ, payroll: ALL_READ,
@@ -146,12 +151,12 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, ResourcePermissions> = {
         assistant: ALL_READ, settings: ALL_READ, admin: ALL_READ,
         'audit-log': ALL_READ, heritage: ALL_READ, villages: ALL_READ,
         'us-et-coutumes': ALL_READ, intranet: ALL_READ,
-        'organization-chart': ALL_READ,
+        'organization-chart': ALL_READ, documents: ALL_READ, mgp: ALL_READ,
     }),
     'chef-de-service': buildDefault({
         dashboard: ALL_READ, employees: ALL_READ, leaves: ALL_CRUD,
         missions: READ_CREATE, evaluations: ALL_CRUD, tickets: ALL_CRUD,
-        repository: READ_CREATE, assistant: ALL_READ,
+        repository: READ_CREATE, assistant: ALL_READ, documents: READ_CREATE,
     }),
     'employe': buildDefault({
         dashboard: ALL_READ, repository: ALL_READ, assistant: ALL_READ,
@@ -169,7 +174,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, ResourcePermissions> = {
     'responsable-it': buildDefault({
         dashboard: ALL_READ, 'it-assets': ALL_CRUD, fleet: ALL_CRUD,
         supplies: ALL_CRUD, tickets: ALL_CRUD, repository: READ_CREATE,
-        assistant: ALL_READ,
+        assistant: ALL_READ, documents: READ_CREATE,
     }),
     'gestionnaire-stock': buildDefault({
         dashboard: ALL_READ, supplies: ALL_CRUD, repository: READ_CREATE,

@@ -190,10 +190,10 @@ export default function NominativeReportPage() {
               </p>
             </div>
           </div>
-          <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden bg-white border border-slate-100/50">
+          <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-2xl overflow-hidden bg-white/80 backdrop-blur-md border border-slate-100/50">
             <CardHeader className="p-10 border-b border-slate-50">
               <div className="flex items-center gap-6">
-                <div className="h-16 w-16 rounded-2xl bg-slate-900 flex items-center justify-center shadow-xl shadow-slate-900/20">
+                <div className="h-16 w-16 rounded-xl bg-slate-900 flex items-center justify-center shadow-xl shadow-slate-900/20">
                   <FileText className="h-8 w-8 text-indigo-400" />
                 </div>
                 <div>
@@ -208,7 +208,7 @@ export default function NominativeReportPage() {
                   <Label htmlFor="employee" className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Employé</Label>
                   <Popover open={isComboboxOpen} onOpenChange={setIsComboboxOpen}>
                     <PopoverTrigger asChild>
-                      <Button variant="outline" role="combobox" aria-expanded={isComboboxOpen} className="w-full h-16 rounded-2xl border-slate-100 bg-slate-50/50 shadow-inner px-6 justify-between font-black text-slate-700 hover:bg-slate-50">
+                      <Button variant="outline" role="combobox" aria-expanded={isComboboxOpen} className="w-full h-16 rounded-xl border-slate-100 bg-slate-50/50 shadow-inner px-6 justify-between font-black text-slate-700 hover:bg-slate-50 transition-all">
                         {selectedEmployeeId ? employees.find(e => e.id === selectedEmployeeId)?.name : "Sélectionner..."}
                         <ChevronsUpDown className="ml-2 h-5 w-5 shrink-0 opacity-50" />
                       </Button>
@@ -220,7 +220,7 @@ export default function NominativeReportPage() {
                           <CommandEmpty className="p-4 text-xs font-bold text-slate-400 text-center">Aucun employé trouvé.</CommandEmpty>
                           <CommandGroup>
                             {employees.map(emp => (
-                              <CommandItem key={emp.id} value={emp.name} onSelect={() => { setSelectedEmployeeId(emp.id); setIsComboboxOpen(false); }} className="p-3 font-bold text-slate-700 flex items-center justify-between cursor-pointer hover:bg-slate-50">
+                              <CommandItem key={emp.id} value={emp.name} onSelect={() => { setSelectedEmployeeId(emp.id); setIsComboboxOpen(false); }} className="p-3 font-bold text-slate-700 flex items-center justify-between cursor-pointer hover:bg-slate-50 transition-colors">
                                 <span className="flex items-center gap-3">
                                   <div className="h-8 w-8 rounded-lg bg-indigo-50 flex items-center justify-center font-black text-indigo-600 text-[10px]">
                                     {emp.name.split(' ').map(n => n[0]).join('').substring(0, 2)}
@@ -239,7 +239,7 @@ export default function NominativeReportPage() {
                 <div className="space-y-3">
                   <Label htmlFor="startYear" className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Année de début</Label>
                   <Select value={startYear} onValueChange={setStartYear}>
-                    <SelectTrigger id="startYear" className="h-16 rounded-2xl border-slate-100 bg-slate-50/50 shadow-inner px-6 font-black text-slate-700">
+                    <SelectTrigger id="startYear" className="h-16 rounded-xl border-slate-100 bg-slate-50/50 shadow-inner px-6 font-black text-slate-700 focus:bg-white transition-all">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="rounded-xl shadow-2xl border-slate-100">
@@ -250,7 +250,7 @@ export default function NominativeReportPage() {
                 <div className="space-y-3">
                   <Label htmlFor="endYear" className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Année de fin</Label>
                   <Select value={endYear} onValueChange={setEndYear}>
-                    <SelectTrigger id="endYear" className="h-16 rounded-2xl border-slate-100 bg-slate-50/50 shadow-inner px-6 font-black text-slate-700">
+                    <SelectTrigger id="endYear" className="h-16 rounded-xl border-slate-100 bg-slate-50/50 shadow-inner px-6 font-black text-slate-700 focus:bg-white transition-all">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="rounded-xl shadow-2xl border-slate-100">
@@ -261,14 +261,14 @@ export default function NominativeReportPage() {
                 <Button 
                   onClick={generateReport} 
                   disabled={isGenerating || loading} 
-                  className="h-16 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-black shadow-xl shadow-slate-200 transition-all active:scale-95 disabled:opacity-50"
+                  className="h-16 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-black shadow-xl shadow-slate-200 transition-all active:scale-95 disabled:opacity-50"
                 >
                   {isGenerating ? <Loader2 className="mr-3 h-5 w-5 animate-spin" /> : <FileText className="mr-3 h-5 w-5" />}
                   {isGenerating ? "Génération en cours..." : "Générer le Rapport"}
                 </Button>
               </div>
               {error && (
-                <Alert variant="destructive" className="mt-8 rounded-2xl bg-rose-50 border-rose-100 text-rose-900 p-6 flex flex-col gap-1">
+                <Alert variant="destructive" className="mt-8 rounded-xl bg-rose-50 border-rose-100 text-rose-900 p-6 flex flex-col gap-1">
                   <AlertTitle className="font-black uppercase tracking-widest text-[10px]">Erreur de configuration</AlertTitle>
                   <AlertDescription className="font-bold opacity-80">{error}</AlertDescription>
                 </Alert>
@@ -277,11 +277,11 @@ export default function NominativeReportPage() {
           </Card>
 
           {reportData && (
-            <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-[3rem] overflow-hidden bg-white animate-in slide-in-from-bottom duration-700">
+            <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-2xl overflow-hidden bg-white/80 backdrop-blur-md animate-in slide-in-from-bottom duration-700">
               <CardHeader className="p-10 border-b border-slate-50">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
                   <div className="flex items-center gap-6">
-                    <div className="h-16 w-16 rounded-[1.5rem] bg-indigo-500 flex items-center justify-center shadow-xl shadow-indigo-100">
+                    <div className="h-16 w-16 rounded-xl bg-indigo-500 flex items-center justify-center shadow-xl shadow-indigo-100">
                       <FileText className="h-8 w-8 text-white" />
                     </div>
                     <div>
@@ -289,7 +289,7 @@ export default function NominativeReportPage() {
                       <CardDescription className="font-bold text-slate-400 uppercase text-[10px] tracking-widest leading-none mt-1">Relevé détaillé du {reportData.startYear} au {reportData.endYear}</CardDescription>
                     </div>
                   </div>
-                  <Button variant="outline" onClick={handlePrint} className="h-14 rounded-2xl px-6 border-slate-100 bg-slate-50 font-black text-slate-700 shadow-sm hover:bg-white transition-all">
+                  <Button variant="outline" onClick={handlePrint} className="h-14 rounded-xl px-6 border-slate-100 bg-slate-50 font-black text-slate-700 shadow-sm hover:bg-white transition-all">
                     <Printer className="mr-3 h-5 w-5" /> Imprimer le Relevé
                   </Button>
                 </div>
@@ -312,7 +312,7 @@ export default function NominativeReportPage() {
                       {reportData.annualSalaries.map(yearData => (
                         <TableRow key={yearData.year} className="group hover:bg-slate-50/50 transition-all border-b border-slate-50">
                           <TableCell className="py-6 pl-10">
-                            <span className="inline-flex items-center justify-center h-10 px-4 rounded-xl bg-slate-900 text-white font-black text-sm tracking-tighter">
+                            <span className="inline-flex items-center justify-center h-10 px-4 rounded-lg bg-slate-900 text-white font-black text-sm tracking-tighter">
                               {yearData.year}
                             </span>
                           </TableCell>
@@ -327,7 +327,7 @@ export default function NominativeReportPage() {
                             </TableCell>
                           ))}
                           <TableCell className="text-right pr-10">
-                            <span className="text-sm font-black text-indigo-600 bg-indigo-50 px-4 py-2 rounded-xl border border-indigo-100 shadow-sm">
+                            <span className="text-sm font-black text-indigo-600 bg-indigo-50 px-4 py-2 rounded-lg border border-indigo-100 shadow-sm">
                               {formatCurrency(yearData.total)}
                             </span>
                           </TableCell>
@@ -354,9 +354,9 @@ export default function NominativeReportPage() {
           )}
 
           {!reportData && !isGenerating && (
-            <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-[3rem] overflow-hidden bg-slate-50/50 py-24 border border-slate-100/50">
+            <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-2xl overflow-hidden bg-white/60 backdrop-blur-md py-24 border border-slate-100/50">
               <div className="text-center space-y-6 max-w-sm mx-auto">
-                <div className="h-24 w-24 rounded-[2rem] bg-indigo-50 border border-indigo-100 flex items-center justify-center mx-auto shadow-inner group">
+                <div className="h-24 w-24 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center mx-auto shadow-inner group">
                   <FileText className="h-10 w-10 text-indigo-300 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500" />
                 </div>
                 <div className="space-y-2">

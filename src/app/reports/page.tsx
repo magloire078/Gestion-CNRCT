@@ -177,7 +177,7 @@ export default function ReportingDashboard() {
                         { label: "IT Health", value: `${Math.round(((stats.assets - stats.itRepair) / (stats.assets || 1)) * 100)}%`, trend: "Opérationnel", icon: Laptop, color: "text-emerald-600", bg: "from-emerald-500/20 to-emerald-500/5", border: "border-emerald-100" },
                         { label: "Alertes Supply", value: stats.lowStock, trend: "-5", icon: Package, color: "text-amber-600", bg: "from-amber-500/20 to-amber-500/5", border: "border-amber-100" }
                     ].map((kpi, i) => (
-                        <Card key={i} className="border-none shadow-2xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden group hover:shadow-indigo-200/30 transition-all duration-700 bg-white">
+                        <Card key={i} className="border-none shadow-2xl shadow-slate-200/50 rounded-2xl overflow-hidden group hover:shadow-indigo-200/30 transition-all duration-700 bg-white">
                             <CardContent className="p-10 relative">
                                 <div className={cn("absolute top-0 right-0 h-40 w-40 -mr-20 -mt-20 rounded-full blur-[80px] opacity-10 bg-gradient-to-br", kpi.bg)} />
                                 <div className="flex flex-col gap-6 relative z-10">
@@ -205,7 +205,7 @@ export default function ReportingDashboard() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {reportCards.map((card, i) => (
                         <Link href={card.href} key={i} className="h-full">
-                            <Card className="h-full border border-slate-100 shadow-2xl shadow-slate-200/30 rounded-[2.5rem] overflow-hidden group hover:shadow-indigo-300/20 hover:scale-[1.02] active:scale-[0.98] transition-all duration-700 bg-white relative flex flex-col">
+                            <Card className="h-full border border-slate-100 shadow-2xl shadow-slate-200/30 rounded-2xl overflow-hidden group hover:shadow-indigo-300/20 hover:scale-[1.02] active:scale-[0.98] transition-all duration-700 bg-white relative flex flex-col">
                                 <div className={cn("absolute top-0 right-0 h-40 w-40 -mr-20 -mt-20 rounded-full blur-[60px] opacity-10 group-hover:opacity-30 transition-all duration-700", card.color)} />
                                 <CardHeader className="p-10 pb-4 relative z-10 flex-1">
                                     <div className={cn("h-16 w-16 rounded-[1.25rem] flex items-center justify-center shadow-xl mb-8 group-hover:scale-110 group-hover:rotate-12 transition-all duration-700", card.color)}>

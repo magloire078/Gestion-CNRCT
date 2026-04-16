@@ -39,6 +39,10 @@ export default function ForgotPasswordPage() {
     setLoading(true);
     setError(null);
     setSuccess(null);
+
+    // Yield to allow React to render the loading state and improve INP
+    await new Promise(resolve => setTimeout(resolve, 0));
+
     try {
       await sendPasswordReset(email);
       setSuccess("Si un compte avec cet email existe, un lien de réinitialisation a été envoyé.");

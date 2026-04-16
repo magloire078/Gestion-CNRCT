@@ -40,7 +40,7 @@ import {
 } from "@/services/fuel-card-service";
 import { FuelProvider, FuelCard } from "@/types/fuel";
 import { Employe, Fleet } from "@/lib/data";
-import { Loader2 } from "lucide-react";
+import { Building2, CreditCard, PlusCircle, Fuel, CheckCircle2, Loader2 } from "lucide-react";
 import { SearchableSelect } from "@/components/ui/searchable-select";
 
 // --- SCHEMAS ---

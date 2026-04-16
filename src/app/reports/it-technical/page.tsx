@@ -64,7 +64,7 @@ export default function TechnicalManagementReportPage() {
 
         <InstitutionalReportWrapper isPrinting={isPrinting} onAfterPrint={() => setIsPrinting(false)}>
           {/* Main Report Container */}
-          <div id="printable-report" className="border-none shadow-2xl shadow-slate-200/60 rounded-[2.5rem] overflow-hidden bg-white print:shadow-none print:m-0 print:border-none">
+          <div id="printable-report" className="border-none shadow-2xl shadow-slate-200/60 rounded-2xl overflow-hidden bg-white/80 backdrop-blur-md print:shadow-none print:m-0 print:border-none">
             <div className="p-12 md:p-16 space-y-12">
               
               {/* Reusable Institutional Header */}
@@ -74,7 +74,7 @@ export default function TechnicalManagementReportPage() {
               />
 
             {/* Observation Note */}
-            <div className="bg-amber-50/50 border border-amber-100 rounded-2xl p-6 flex items-start gap-4">
+            <div className="bg-amber-50/50 border border-amber-100 rounded-xl p-6 flex items-start gap-4">
               <div className="h-10 w-10 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
                  <FileText className="h-5 w-5 text-amber-600" />
               </div>
@@ -91,15 +91,15 @@ export default function TechnicalManagementReportPage() {
                   <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight">Suivi des Stocks</h3>
                </div>
                
-               <div className="overflow-hidden rounded-3xl border border-slate-100 shadow-sm p-1">
+               <div className="overflow-hidden rounded-2xl border border-slate-100 shadow-sm p-1">
                  <Table>
                    <TableHeader>
-                     <TableRow className="bg-slate-900 hover:bg-slate-900 border-none rounded-t-2xl">
-                       <TableHead className="text-white font-black uppercase text-[10px] tracking-widest h-14 pl-8 rounded-tl-2xl">Désignation</TableHead>
+                     <TableRow className="bg-slate-900 hover:bg-slate-900 border-none rounded-t-xl">
+                       <TableHead className="text-white font-black uppercase text-[10px] tracking-widest h-14 pl-8 rounded-tl-xl">Désignation</TableHead>
                        <TableHead className="text-white font-black uppercase text-[10px] tracking-widest h-14 text-center">Stock Initial</TableHead>
                        <TableHead className="text-white font-black uppercase text-[10px] tracking-widest h-14 text-center">Stock Entré</TableHead>
                        <TableHead className="text-white font-black uppercase text-[10px] tracking-widest h-14 text-center">Stock Sorti</TableHead>
-                       <TableHead className="text-white font-black uppercase text-[10px] tracking-widest h-14 text-center pr-8 rounded-tr-2xl">Stock Restant</TableHead>
+                       <TableHead className="text-white font-black uppercase text-[10px] tracking-widest h-14 text-center pr-8 rounded-tr-xl">Stock Restant</TableHead>
                      </TableRow>
                    </TableHeader>
                    <TableBody>

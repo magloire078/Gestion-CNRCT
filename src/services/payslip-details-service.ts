@@ -8,7 +8,7 @@ import { getEmployeeHistory } from './employee-history-service';
 import { getDepartments } from './department-service';
 import { getDirections } from './direction-service';
 import { getServices } from './service-service';
-import { differenceInYears, differenceInMonths, differenceInDays, addYears, addMonths, parseISO, isValid, lastDayOfMonth, getDay, isBefore, isEqual, isAfter, format } from 'date-fns';
+import { startOfMonth, differenceInYears, differenceInMonths, differenceInDays, addYears, addMonths, parseISO, isValid, lastDayOfMonth, getDay, isBefore, isEqual, isAfter, format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
 
@@ -16,7 +16,7 @@ import { fr } from 'date-fns/locale';
 // Note : Les taux d'imposition et de cotisation sont des approximations simplifiées.
 // Une application réelle nécessiterait des taux et des réglementations précis et à jour.
 
-const salaryEventTypes: EmployeeEvent['eventType'][] = ['Augmentation au Mérite', 'Promotion', 'Ajustement de Marché', 'Revalorisation Salariale'];
+const salaryEventTypes: EmployeeEvent['eventType'][] = ['Augmentation au Mérite', 'Promotion', 'Ajustement de Marché', 'Revalorisation Salariale', 'Changement de poste', 'Autre'];
 
 /**
  * Calcule l'ancienneté d'un employé à une date donnée.
@@ -171,9 +171,10 @@ export async function getPayslipDetails(
 
     const brutImposable = earnings.reduce((sum, item) => sum + item.amount, 0);
 
-    const isCNPSActive = employee.CNPS && (
-        !employee.Date_Cessation_CNPS || 
-        isBefore(payslipDateObj, parseISO(employee.Date_Cessation_CNPS))
+    // Robust CNPS Activity check
+    const isCNPSActive = !!employee.CNPS && (
+        (!employee.Date_Immatriculation || !isAfter(startOfMonth(parseISO(employee.Date_Immatriculation)), payslipDateObj)) &&
+        (!employee.Date_Cessation_CNPS || isBefore(payslipDateObj, parseISO(employee.Date_Cessation_CNPS)))
     );
 
     const cnps = isCNPSActive ? (brutImposable * 0.063) : 0;

@@ -201,7 +201,3 @@ export function PrintConflictDetail({ conflict, organizationSettings }: PrintCon
         </InstitutionalReportWrapper>
     );
 }
-           </div>
-        </PrintLayout>
-    );
-}

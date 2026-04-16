@@ -44,6 +44,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
@@ -106,38 +107,29 @@ const SupplyRow = memo(({
     openRestockDialog,
     openEditSheet, 
     setDeleteTarget,
-    transactions
-}: {
-    supply: Supply;
-    index: number;
+    hasRecentActivity
+}: { 
+    supply: Supply; 
+    index: number; 
     openDistributeDialog: (s: Supply) => void;
     openRestockDialog: (s: Supply) => void;
     openEditSheet: (s: Supply) => void;
     setDeleteTarget: (s: Supply) => void;
-    transactions?: SupplyTransaction[];
+    hasRecentActivity: boolean;
 }) => {
     const status = getStockStatus(supply.quantity, supply.reorderLevel);
-    const Icon = status.icon;
-
-    // Check for movements in current month for activity marker
-    const hasRecentActivity = useMemo(() => {
-        if (!transactions) return false;
-        const now = new Date();
-        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-        return transactions.some(t => t.supplyId === supply.id && new Date(t.date) >= startOfMonth);
-    }, [transactions, supply.id]);
 
     return (
         <TableRow key={supply.id} className={cn(
-            "group hover:bg-primary/5 transition-all border-border/40",
+            "group hover:bg-primary/5 transition-colors duration-200 border-border/40",
             hasRecentActivity && "bg-blue-50/10"
         )}>
-            <TableCell className="text-center font-bold text-muted-foreground opacity-50">
+            <TableCell className="text-center font-bold text-muted-foreground opacity-50 py-2">
                 {index + 1}
             </TableCell>
-            <TableCell className="font-mono text-[10px] font-black text-muted-foreground">
+            <TableCell className="font-mono text-[9px] font-black text-muted-foreground py-2">
                 <div className="flex flex-col gap-1 items-start">
-                    <span className="bg-muted px-1.5 py-0.5 rounded text-foreground/70">{supply.code || 'NO-CODE'}</span>
+                    <span className="bg-muted px-1 py-0.5 rounded text-foreground/70">{supply.code || 'NO-CODE'}</span>
                     {hasRecentActivity && (
                         <Badge variant="secondary" className="bg-blue-100 text-blue-700 text-[8px] px-1 py-0 border-none uppercase font-black w-fit">
                             Actif
@@ -145,46 +137,44 @@ const SupplyRow = memo(({
                     )}
                 </div>
             </TableCell>
-            <TableCell className="font-bold text-foreground">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-card/40 backdrop-blur-md border border-white/10 flex items-center justify-center overflow-hidden flex-shrink-0 shadow-sm relative group">
+            <TableCell className="py-2">
+                <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-card/40 backdrop-blur-md border border-white/10 flex items-center justify-center overflow-hidden flex-shrink-0 shadow-sm relative group">
                         {supply.photoUrl ? (
-                            <img src={supply.photoUrl} alt={supply.name} className="w-full h-full object-cover transition-transform group-hover:scale-110" />
+                            <img src={supply.photoUrl} alt={supply.name} className="w-full h-full object-cover" />
                         ) : (
-                            <Package className="h-5 w-5 text-slate-400" />
+                            <Package className="h-4 w-4 text-slate-400" />
                         )}
-                        <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                     </div>
                     <div className="flex flex-col">
-                        <span className="text-sm font-bold tracking-tight">{supply.name}</span>
-                        <span className="text-[10px] text-muted-foreground uppercase font-black tracking-widest leading-none mt-1">{supply.category}</span>
+                        <span className="text-xs font-bold tracking-tight">{supply.name}</span>
+                        <span className="text-[9px] text-muted-foreground uppercase font-black tracking-widest leading-none mt-0.5">{supply.category}</span>
                     </div>
                 </div>
             </TableCell>
-            <TableCell className="text-center font-black text-foreground text-lg">{supply.quantity}</TableCell>
-            <TableCell className="text-center text-muted-foreground font-bold text-[10px] uppercase tracking-widest">{supply.reorderLevel}</TableCell>
-            <TableCell>
-                <div className="flex flex-col gap-1.5 min-w-[120px]">
-                    <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest">
+            <TableCell className="text-center font-black text-foreground text-base py-2">{supply.quantity}</TableCell>
+            <TableCell className="text-center text-muted-foreground font-bold text-[9px] uppercase tracking-widest py-2">{supply.reorderLevel}</TableCell>
+            <TableCell className="py-2">
+                <div className="flex flex-col gap-1 min-w-[100px]">
+                    <div className="flex items-center justify-between text-[8px] font-black uppercase tracking-widest">
                         <span className={cn(
                             status.color === 'destructive' ? "text-red-500" :
                             status.color === 'warning' ? "text-amber-500" : "text-emerald-500"
                         )}>
                             {status.text}
                         </span>
-                        <Icon className={cn("h-3 w-3", status.className.replace('bg-', 'text-'))} />
                     </div>
                     <Progress 
                         value={status.value} 
-                        className="h-1.5 rounded-full bg-muted overflow-hidden border border-border/50" 
+                        className="h-1 rounded-full bg-muted border border-border/50" 
                         indicatorClassName={cn("transition-all duration-1000", status.className)} 
                     />
                 </div>
             </TableCell>
-            <TableCell className="text-right">
+            <TableCell className="text-right py-2">
                 <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-primary/10 transition-colors">
+                    <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full hover:bg-primary/10 transition-colors duration-150">
                         <MoreHorizontal className="h-4 w-4" />
                     </Button>
                 </DropdownMenuTrigger>
@@ -207,38 +197,48 @@ const SupplyRow = memo(({
             </TableCell>
         </TableRow>
     );
+
 });
 
 // Memoized Card component for Grid view
 const SupplyCard = memo(({ 
   supply, 
-  status, 
+  hasRecentActivity,
   openDistributeDialog, 
   openEditSheet, 
-  setDeleteTarget 
-}: {
-  supply: Supply;
-  status: any;
+  setDeleteTarget,
+}: { 
+  supply: Supply; 
+  hasRecentActivity: boolean;
   openDistributeDialog: (s: Supply) => void;
   openEditSheet: (s: Supply) => void;
   setDeleteTarget: (s: Supply) => void;
 }) => {
+  const status = getStockStatus(supply.quantity, supply.reorderLevel);
+
   return (
-    <Card key={supply.id} className="group overflow-hidden rounded-2xl border-white/10 shadow-xl bg-card/40 backdrop-blur-md transition-all hover:shadow-2xl hover:-translate-y-1 relative">
-        <div className={cn("h-1.5 w-full", status.className)} />
-        <CardHeader className="pb-3">
+    <Card key={supply.id} className="group overflow-hidden rounded-xl border-white/10 shadow-lg bg-card/40 backdrop-blur-md transition-[transform,shadow] duration-200 hover:shadow-xl hover:-translate-y-1 relative contain-layout">
+        <div className={cn("h-1 w-full", status.className)} />
+        <CardHeader className="p-3 pb-2">
             <div className="flex justify-between items-start">
-                <Badge variant="outline" className="bg-card/60 backdrop-blur-sm border-white/10 rounded-lg text-[10px] font-black uppercase tracking-widest mb-2 px-2 py-0.5">
-                    {supply.category}
-                </Badge>
-                {supply.code && (
-                    <Badge variant="secondary" className="bg-slate-900/10 text-slate-600 border-none rounded-lg text-[10px] font-black mb-2 ml-2">
-                        {supply.code}
+                <div className="flex flex-wrap gap-1">
+                    <Badge variant="outline" className="bg-card/60 backdrop-blur-sm border-white/10 rounded-md text-[8px] font-black uppercase tracking-widest px-1.5 py-0">
+                        {supply.category}
                     </Badge>
-                )}
+                    {supply.code && (
+                        <Badge variant="secondary" className="bg-slate-900/10 text-slate-600 border-none rounded-md text-[8px] font-black px-1.5 py-0">
+                            {supply.code}
+                        </Badge>
+                    )}
+                    {hasRecentActivity && (
+                        <Badge variant="secondary" className="bg-blue-100/50 text-blue-700 border-none rounded-md text-[8px] font-black px-1.5 py-0 uppercase">
+                            Actif
+                        </Badge>
+                    )}
+                </div>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg hover:bg-primary/10 transition-colors"><MoreHorizontal className="h-4 w-4" /></Button>
+                        <Button variant="ghost" size="icon" className="h-6 w-6 rounded-md hover:bg-primary/10 transition-colors duration-150"><MoreHorizontal className="h-3.5 w-3.5" /></Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-2xl border-white/10 bg-card/90 backdrop-blur-xl">
                         <DropdownMenuLabel className="font-black uppercase text-[10px] tracking-widest opacity-50 px-2 py-1.5">Options Article</DropdownMenuLabel>
@@ -247,72 +247,72 @@ const SupplyCard = memo(({
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>
-            <CardTitle className="text-lg font-black text-slate-900 tracking-tight leading-tight">{supply.name}</CardTitle>
+            <CardTitle className="text-sm font-black text-slate-900 tracking-tight leading-snug mt-1.5 line-clamp-2 min-h-[2.5rem]">{supply.name}</CardTitle>
         </CardHeader>
-        <div className="px-5 pb-2">
-            <div className="w-full aspect-[4/3] rounded-2xl bg-card/40 backdrop-blur-md border border-white/10 overflow-hidden flex items-center justify-center relative group shadow-inner">
+        <div className="px-3 pb-1.5">
+            <div className="w-full aspect-video rounded-xl bg-card/40 backdrop-blur-md border border-white/10 overflow-hidden flex items-center justify-center relative group shadow-inner">
                 {supply.photoUrl ? (
                     <img src={supply.photoUrl} alt={supply.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                 ) : (
-                    <div className="flex flex-col items-center gap-2">
-                        <Package className="h-10 w-10 text-slate-300" />
-                        <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Institutionnel</span>
+                    <div className="flex flex-col items-center gap-1.5">
+                        <Package className="h-6 w-6 text-slate-300" />
+                        <span className="text-[8px] text-slate-400 font-black uppercase tracking-widest">Institutionnel</span>
                     </div>
                 )}
                 {supply.quantity <= supply.reorderLevel && (
-                    <div className="absolute top-3 left-3 px-2 py-1 bg-red-600 text-white text-[9px] font-black uppercase rounded-lg shadow-xl z-10 animate-pulse border border-white/20">
+                    <div className="absolute top-2 left-2 px-1.5 py-0.5 bg-red-600 text-white text-[8px] font-black uppercase rounded shadow-xl z-10 animate-pulse border border-white/20">
                         Stock Bas
                     </div>
                 )}
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/20 to-transparent h-1/3 opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>
         </div>
-        <CardContent className="pb-6">
-            <div className="space-y-4">
+        <CardContent className="px-3 pb-3">
+            <div className="space-y-2.5">
                 <div className="flex justify-between items-end">
-                    <div className="space-y-0.5 transition-all group-hover:translate-x-1">
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">En Stock</p>
-                        <p className="text-2xl font-black text-slate-900">{supply.quantity}</p>
+                    <div className="space-y-0.5">
+                        <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">En Stock</p>
+                        <p className="text-xl font-black text-slate-900 leading-none">{supply.quantity}</p>
                     </div>
-                    <div className="text-right space-y-0.5 transition-all group-hover:-translate-x-1">
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Seuil</p>
-                        <p className="text-xs font-black text-slate-600 bg-muted px-1.5 py-0.5 rounded-md inline-block">{supply.reorderLevel}</p>
+                    <div className="text-right space-y-0.5">
+                        <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Seuil</p>
+                        <p className="text-[10px] font-black text-slate-600 bg-muted px-1 py-0 rounded inline-block leading-none">{supply.reorderLevel}</p>
                     </div>
                 </div>
-                <div className="space-y-2">
-                     <div className="flex justify-between text-[10px] font-black uppercase tracking-widest">
+                <div className="space-y-1.5">
+                     <div className="flex justify-between text-[8px] font-black uppercase tracking-widest">
                         <span className={cn(
                             "flex items-center gap-1",
                             status.color === 'destructive' ? "text-red-500" :
                             status.color === 'warning' ? "text-amber-500" : "text-emerald-500"
                         )}>
-                            <div className={cn("h-1.5 w-1.5 rounded-full", status.className)} />
+                            <div className={cn("h-1 w-1 rounded-full", status.className)} />
                             {status.text}
                         </span>
                         <span className="text-slate-400">{Math.round(status.value)}%</span>
                     </div>
-                    <Progress value={status.value} className="h-1.5 rounded-full bg-muted border border-border/20 overflow-hidden" indicatorClassName={cn("transition-all duration-1000", status.className)} />
+                    <Progress value={status.value} className="h-1 rounded-full bg-muted border border-border/10 overflow-hidden" indicatorClassName={cn("transition-all duration-1000", status.className)} />
                 </div>
-                <div className="pt-2">
+                <div className="pt-1">
                     <Button 
                         onClick={() => openDistributeDialog(supply)} 
                         disabled={supply.quantity <= 0}
-                        className="w-full bg-slate-900 rounded-xl h-10 text-xs font-black uppercase tracking-widest shadow-lg hover:shadow-2xl transition-all active:scale-95"
+                        className="w-full bg-slate-900 rounded-lg h-8 text-[9px] font-black uppercase tracking-widest shadow-lg hover:shadow-xl transition-all active:scale-95"
                     >
-                        <ShoppingCart className="mr-2 h-4 w-4" /> Distribuer
+                        <ShoppingCart className="mr-1.5 h-3.5 w-3.5" /> Distribuer
                     </Button>
                 </div>
             </div>
         </CardContent>
-        <CardFooter className="bg-card/20 py-3 border-t border-white/5 flex justify-between items-center px-6">
-            <div className="flex items-center gap-1.5 text-[9px] text-slate-400 font-black uppercase tracking-tighter">
-                <TrendingUp className="h-3 w-3 text-primary/50" /> {supply.lastRestockDate ? `MAJ: ${supply.lastRestockDate}` : 'Aucun mouvement'}
+        <CardFooter className="bg-card/20 py-1.5 border-t border-white/5 flex justify-between items-center px-3.5">
+            <div className="flex items-center gap-1 text-[8px] text-slate-400 font-black uppercase tracking-tighter">
+                <TrendingUp className="h-2.5 w-2.5 text-primary/50" /> {supply.lastRestockDate ? `MAJ: ${supply.lastRestockDate}` : 'Aucun mouvement'}
             </div>
-            <Button variant="ghost" size="sm" onClick={() => openEditSheet(supply)} className="h-7 text-[10px] uppercase font-black tracking-widest text-slate-400 hover:text-slate-900 p-0 hover:bg-transparent transition-colors">
-                Gérer <ChevronRight className="ml-1 h-3 w-3" />
+            <Button variant="ghost" size="sm" onClick={() => openEditSheet(supply)} className="h-6 text-[8px] uppercase font-black tracking-widest text-slate-400 hover:text-slate-900 p-0 hover:bg-transparent transition-colors">
+                Gérer <ChevronRight className="ml-1 h-2.5 w-2.5" />
             </Button>
         </CardFooter>
     </Card>
+
   );
 });
 
@@ -354,7 +354,11 @@ export default function SuppliesPage() {
 
   // Handlers mémorisés pour la navigation et les modals
   const toggleViewMode = useCallback((mode: 'table' | 'grid') => setViewMode(mode), []);
-  const handleTabChange = useCallback((v: string) => setActiveTab(v), []);
+  const handleTabChange = useCallback((v: string) => {
+    startTransition(() => {
+      setActiveTab(v);
+    });
+  }, []);
   
   const handleOpenAddSheet = useCallback(() => {
     startTransition(() => {
@@ -549,25 +553,39 @@ export default function SuppliesPage() {
   };
 
   const deferredSearchTerm = useDeferredValue(searchTerm);
+  const deferredCategoryFilter = useDeferredValue(categoryFilter);
 
   const filteredSupplies = useMemo(() => {
         return supplies.filter(s => {
             const matchesSearch = s.name.toLowerCase().includes(deferredSearchTerm.toLowerCase()) || 
                                 (s.code && s.code.toLowerCase().includes(deferredSearchTerm.toLowerCase()));
-            const matchesCategory = categoryFilter === 'all' || s.category === categoryFilter;
+            const matchesCategory = deferredCategoryFilter === 'all' || s.category === deferredCategoryFilter;
             return matchesSearch && matchesCategory;
         });
-    }, [supplies, deferredSearchTerm, categoryFilter]);
+    }, [supplies, deferredSearchTerm, deferredCategoryFilter]);
 
-    // --- Statistics calculation ---
+    // --- Statistics calculation optimized to single pass ---
     const stats = useMemo(() => {
+        let outOfStock = 0;
+        let lowStock = 0;
+        let totalHealth = 0;
         const total = filteredSupplies.length;
-        const outOfStock = filteredSupplies.filter(s => s.quantity <= 0).length;
-        const lowStock = filteredSupplies.filter(s => s.quantity > 0 && s.quantity <= s.reorderLevel).length;
+
+        filteredSupplies.forEach(s => {
+            if (s.quantity <= 0) {
+                outOfStock++;
+            } else if (s.quantity <= s.reorderLevel) {
+                lowStock++;
+            }
+            
+            // Re-use logic from getStockStatus to get the health value efficiently
+            const healthValue = s.quantity <= 0 ? 5 : 
+                               s.quantity <= s.reorderLevel ? (s.quantity / (s.reorderLevel * 2)) * 100 :
+                               Math.min(100, (s.quantity / (s.reorderLevel * 2)) * 100);
+            totalHealth += healthValue;
+        });
         
-        // Calculate average health (0-100)
-        const healthVals = filteredSupplies.map(s => getStockStatus(s.quantity, s.reorderLevel).value);
-        const avgHealth = healthVals.length > 0 ? healthVals.reduce((a, b) => a + b, 0) / healthVals.length : 100;
+        const avgHealth = total > 0 ? totalHealth / total : 100;
         
         return { total, outOfStock, lowStock, avgHealth };
     }, [filteredSupplies]);
@@ -579,6 +597,20 @@ export default function SuppliesPage() {
       setCurrentPage(1);
     }
   }, [filteredSupplies.length, itemsPerPage, currentPage]);
+
+  const recentActivityIds = useMemo(() => {
+    if (!transactions) return new Set<string>();
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const activeIds = new Set<string>();
+    transactions.forEach(t => {
+      // Check if transaction happened this month
+      if (new Date(t.date) >= startOfMonth) {
+        activeIds.add(t.supplyId);
+      }
+    });
+    return activeIds;
+  }, [transactions]);
 
   const paginatedSupplies = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
@@ -671,6 +703,31 @@ export default function SuppliesPage() {
     const months = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
     return `${months[printOptions.periodMonth]} ${printOptions.periodYear}`;
   }, [printOptions]);
+
+  // Memoize render functions to prevent InventoryTab re-renders
+  const memoizedRenderSupplyRow = useCallback((item: Supply, index: number) => (
+    <SupplyRow 
+        key={item.id}
+        supply={item} 
+        index={index} 
+        openDistributeDialog={openDistributeDialog} 
+        openRestockDialog={openRestockDialog}
+        openEditSheet={openEditSheet}
+        setDeleteTarget={handleSetDeleteTarget}
+        hasRecentActivity={recentActivityIds.has(item.id)}
+    />
+  ), [openDistributeDialog, openRestockDialog, openEditSheet, handleSetDeleteTarget, recentActivityIds]);
+
+  const memoizedRenderSupplyCard = useCallback((supply: Supply) => (
+    <SupplyCard 
+        key={supply.id}
+        supply={supply} 
+        openDistributeDialog={openDistributeDialog} 
+        openEditSheet={openEditSheet}
+        setDeleteTarget={handleSetDeleteTarget}
+        hasRecentActivity={recentActivityIds.has(supply.id)}
+    />
+  ), [openDistributeDialog, openEditSheet, handleSetDeleteTarget, recentActivityIds]);
 
   return (
     <PermissionGuard permission="page:supplies:view">
@@ -768,28 +825,8 @@ export default function SuppliesPage() {
             onItemsPerPageChange={setItemsPerPage}
             onCategoryFilterChange={handleCategoryFilterChange}
             onSearchChange={handleSearchChange}
-            renderSupplyRow={(item, index) => (
-                <SupplyRow 
-                    key={item.id}
-                    supply={item}
-                    index={(currentPage - 1) * itemsPerPage + index}
-                    openDistributeDialog={openDistributeDialog}
-                    openRestockDialog={openRestockDialog}
-                    openEditSheet={openEditSheet}
-                    setDeleteTarget={handleSetDeleteTarget}
-                    transactions={transactions}
-                />
-            )}
-            renderSupplyCard={(supply) => (
-                <SupplyCard 
-                    key={supply.id}
-                    supply={supply}
-                    status={getStockStatus(supply.quantity, supply.reorderLevel)}
-                    openDistributeDialog={openDistributeDialog}
-                    openEditSheet={openEditSheet}
-                    setDeleteTarget={handleSetDeleteTarget}
-                />
-            )}
+            renderSupplyRow={memoizedRenderSupplyRow}
+            renderSupplyCard={memoizedRenderSupplyCard}
           />
       </TabsContent>
 
@@ -885,7 +922,7 @@ export default function SuppliesPage() {
         onAfterPrint={() => setIsPrinting(false)}
       >
         {isPrinting && printOptions?.reportTemplate !== 'official' && (
-            <div id="printable-report" className="bg-white p-10 min-h-screen text-black">
+            <div id="printable-report" className="bg-white p-6 min-h-screen text-black">
               <InstitutionalHeader 
                 title={categoryFilter !== 'all' ? `État des Stocks : ${categoryFilter}` : "État de Gestion des Fournitures et Consommables"} 
                 period={`Période : ${periodLabel || format(new Date(), 'MMMM yyyy', { locale: fr })}`}

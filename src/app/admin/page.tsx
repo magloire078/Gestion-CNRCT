@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PermissionGuard } from "@/components/auth/permission-guard";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Layers, Users, ShieldCheck, Building } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 import type { User, Role, Department, Direction, Service } from "@/lib/data";
 import { deleteUser, updateUser } from "@/services/user-service";
@@ -110,6 +111,7 @@ export default function AdminPage() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
+  const [activeTab, setActiveTab] = useState("overview");
 
   // États regroupés par catégorie
   const [dialogs, setDialogs] = useState({
@@ -417,16 +419,21 @@ export default function AdminPage() {
           )}
 
           <PermissionLock userEmail={user?.email ?? ''}>
-            <Tabs defaultValue="overview" className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <Tabs 
+              value={activeTab} 
+              onValueChange={(val) => startTransition(() => setActiveTab(val))}
+              className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500"
+            >
               <div className="overflow-x-auto pb-2 -mx-2 px-2 scrollbar-none">
                 <TabsList className="bg-card/40 p-1.5 border border-white/10 backdrop-blur-md rounded-2xl shadow-xl inline-flex gap-1.5 h-14">
                   {TAB_CONFIG.map(({ value, label, icon: Icon }) => (
                     <TabsTrigger 
                       key={value}
                       value={value} 
-                      className="gap-2.5 px-8 py-3 rounded-xl data-[state=active]:bg-slate-900 data-[state=active]:text-white data-[state=active]:shadow-2xl active:scale-95 transition-all text-xs font-black uppercase tracking-widest"
+                      disabled={isPending}
+                      className="gap-2.5 px-8 py-3 rounded-xl data-[state=active]:bg-slate-900 data-[state=active]:text-white data-[state=active]:shadow-2xl active:scale-95 transition-all text-xs font-black uppercase tracking-widest disabled:opacity-50"
                     >
-                      <Icon className="h-4.5 w-4.5" />
+                      <Icon className={cn("h-4.5 w-4.5", isPending && activeTab !== value && "animate-pulse")} />
                       {label}
                     </TabsTrigger>
                   ))}

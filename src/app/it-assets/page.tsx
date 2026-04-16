@@ -20,7 +20,6 @@ import { ConfirmationDialog } from "@/components/common/confirmation-dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useRouter } from "next/navigation";
 import Papa from "papaparse";
-import { ImportAssetsDataCard } from "@/components/it-assets/import-assets-data-card";
 import { PrintAssetsDialog } from "@/components/it-assets/print-assets-dialog";
 import { PaginationControls } from "@/components/common/pagination-controls";
 import { useAuth } from "@/hooks/use-auth";
@@ -85,7 +84,7 @@ export default function ItAssetsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
-  const canImport = hasPermission('feature:it-assets:import');
+
 
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [initialAssetTag, setInitialAssetTag] = useState<string | undefined>(undefined);
@@ -290,328 +289,326 @@ export default function ItAssetsPage() {
 
   return (
     <PermissionGuard permission="page:it-assets:view">
-    <>
-      <div className={`flex flex-col gap-6 ${isPrinting || isPrintingLabels || isPrintingSingleLabel ? 'print-hidden' : ''}`}>
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold tracking-tight">Actifs Informatiques</h1>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setIsScannerOpen(true)}>
-              <QrCode className="mr-2 h-4 w-4" />
-              Scanner un actif
-            </Button>
-            <Button variant="outline" onClick={() => setIsPrintDialogOpen(true)}>
-              <Printer className="mr-2 h-4 w-4" />
-              Imprimer Liste
-            </Button>
-            <Button variant="outline" onClick={handlePrintLabels}>
-              <QrCode className="mr-2 h-4 w-4" />
-              Imprimer Étiquettes
-            </Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="w-full sm:w-auto">
-                  <Download className="mr-2 h-4 w-4" />
-                  Exporter
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={handleExportCsv}>Exporter en CSV</DropdownMenuItem>
-                <DropdownMenuItem onClick={handleExportJson}>Exporter en JSON</DropdownMenuItem>
-                <DropdownMenuItem onClick={handleExportSql}>Exporter en SQL</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <Button onClick={() => setIsAddSheetOpen(true)} className="w-full sm:w-auto">
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Ajouter un actif
-            </Button>
+      <>
+        <div className={`flex flex-col gap-6 ${isPrinting || isPrintingLabels || isPrintingSingleLabel ? 'print-hidden' : ''}`}>
+          <div className="flex items-center justify-between">
+            <h1 className="text-3xl font-bold tracking-tight">Actifs Informatiques</h1>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setIsScannerOpen(true)}>
+                <QrCode className="mr-2 h-4 w-4" />
+                Scanner un actif
+              </Button>
+              <Button variant="outline" onClick={() => setIsPrintDialogOpen(true)}>
+                <Printer className="mr-2 h-4 w-4" />
+                Imprimer Liste
+              </Button>
+              <Button variant="outline" onClick={handlePrintLabels}>
+                <QrCode className="mr-2 h-4 w-4" />
+                Imprimer Étiquettes
+              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="w-full sm:w-auto">
+                    <Download className="mr-2 h-4 w-4" />
+                    Exporter
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={handleExportCsv}>Exporter en CSV</DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleExportJson}>Exporter en JSON</DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleExportSql}>Exporter en SQL</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <Button onClick={() => setIsAddSheetOpen(true)} className="w-full sm:w-auto">
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Ajouter un actif
+              </Button>
+            </div>
           </div>
-        </div>
-        {canImport && <div className="mb-6">
-          <ImportAssetsDataCard />
-        </div>}
-        <Card>
-          <CardHeader>
-            <CardTitle>Inventaire des actifs</CardTitle>
-            <CardDescription>Suivez tout le matériel et les licences logicielles de l'entreprise.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col sm:flex-row gap-4 mb-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                <DebouncedInput
-                  placeholder="Rechercher par N° inventaire, IP, modèle..."
-                  className="pl-10"
-                  value={searchTerm}
-                  onChange={(val) => startTransition(() => {
-                    setSearchTerm(val.toString());
-                    setDebouncedSearchTerm(val.toString());
-                  })}
-                />
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Inventaire des actifs</CardTitle>
+              <CardDescription>Suivez tout le matériel et les licences logicielles de l'entreprise.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col sm:flex-row gap-4 mb-4">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                  <DebouncedInput
+                    placeholder="Rechercher par N° inventaire, IP, modèle..."
+                    className="pl-10"
+                    value={searchTerm}
+                    onChange={(val) => startTransition(() => {
+                      setSearchTerm(val.toString());
+                      setDebouncedSearchTerm(val.toString());
+                    })}
+                  />
+                </div>
+                <Select value={typeFilter} onValueChange={(val) => startTransition(() => {
+                  setTypeFilter(val);
+                  setCurrentPage(1);
+                })}>
+                  <SelectTrigger className="w-full sm:w-[180px]">
+                    <SelectValue placeholder="Filtrer par type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tous les types</SelectItem>
+                    {assetTypes.map(type => <SelectItem key={type} value={type}>{type}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+                <Select value={statusFilter} onValueChange={(val) => startTransition(() => {
+                  setStatusFilter(val);
+                  setCurrentPage(1);
+                })}>
+                  <SelectTrigger className="w-full sm:w-[180px]">
+                    <SelectValue placeholder="Filtrer par statut" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tous les statuts</SelectItem>
+                    {assetStatuses.map(status => <SelectItem key={status} value={status}>{status}</SelectItem>)}
+                  </SelectContent>
+                </Select>
               </div>
-              <Select value={typeFilter} onValueChange={(val) => startTransition(() => {
-                setTypeFilter(val);
-                setCurrentPage(1);
-              })}>
-                <SelectTrigger className="w-full sm:w-[180px]">
-                  <SelectValue placeholder="Filtrer par type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Tous les types</SelectItem>
-                  {assetTypes.map(type => <SelectItem key={type} value={type}>{type}</SelectItem>)}
-                </SelectContent>
-              </Select>
-              <Select value={statusFilter} onValueChange={(val) => startTransition(() => {
-                setStatusFilter(val);
-                setCurrentPage(1);
-              })}>
-                <SelectTrigger className="w-full sm:w-[180px]">
-                  <SelectValue placeholder="Filtrer par statut" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Tous les statuts</SelectItem>
-                  {assetStatuses.map(status => <SelectItem key={status} value={status}>{status}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="mb-4 text-sm text-muted-foreground">
-              {filteredAssets.length} résultat(s) trouvé(s).
-            </div>
-            {error && <p className="text-destructive text-center py-4">{error}</p>}
-            <div className="hidden md:block">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>N°</TableHead>
-                    <TableHead>N° Inventaire</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Fabricant/Modèle</TableHead>
-                    <TableHead>Adresse IP</TableHead>
-                    <TableHead>Assigné à</TableHead>
-                    <TableHead>Statut</TableHead>
-                    <TableHead><span className="sr-only">Actions</span></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {loading ? (
-                    Array.from({ length: 5 }).map((_, i) => (
-                      <TableRow key={i}>
-                        <TableCell><Skeleton className="h-4 w-4" /></TableCell>
-                        <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                        <TableCell><Skeleton className="h-4 w-20" /></TableCell>
-                        <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                        <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                        <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                        <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
-                        <TableCell><Skeleton className="h-8 w-8" /></TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    paginatedAssets.map((asset, index) => {
-                      const Icon = assetIcons[asset.type] || PackageIcon;
-                      return (
-                        <TableRow key={asset.tag}>
-                          <TableCell>{(currentPage - 1) * itemsPerPage + index + 1}</TableCell>
-                          <TableCell className="font-medium">{asset.tag}</TableCell>
-                          <TableCell>
+              <div className="mb-4 text-sm text-muted-foreground">
+                {filteredAssets.length} résultat(s) trouvé(s).
+              </div>
+              {error && <p className="text-destructive text-center py-4">{error}</p>}
+              <div className="hidden md:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>N°</TableHead>
+                      <TableHead>N° Inventaire</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Fabricant/Modèle</TableHead>
+                      <TableHead>Adresse IP</TableHead>
+                      <TableHead>Assigné à</TableHead>
+                      <TableHead>Statut</TableHead>
+                      <TableHead><span className="sr-only">Actions</span></TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {loading ? (
+                      Array.from({ length: 5 }).map((_, i) => (
+                        <TableRow key={i}>
+                          <TableCell><Skeleton className="h-4 w-4" /></TableCell>
+                          <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                          <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                          <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                          <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                          <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                          <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
+                          <TableCell><Skeleton className="h-8 w-8" /></TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      paginatedAssets.map((asset, index) => {
+                        const Icon = assetIcons[asset.type] || PackageIcon;
+                        return (
+                          <TableRow key={asset.tag}>
+                            <TableCell>{(currentPage - 1) * itemsPerPage + index + 1}</TableCell>
+                            <TableCell className="font-medium">{asset.tag}</TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                <Icon className="h-4 w-4 text-muted-foreground" />
+                                {asset.type}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div>{asset.fabricant}</div>
+                              <div className="text-sm text-muted-foreground">{asset.modele}</div>
+                            </TableCell>
+                            <TableCell>
+                              {asset.ipAddress ? (
+                                <a
+                                  href={`http://${asset.ipAddress}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 hover:underline"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  {asset.ipAddress}
+                                </a>
+                              ) : '-'}
+                            </TableCell>
+                            <TableCell>{asset.assignedTo}</TableCell>
+                            <TableCell>
+                              <Badge variant={statusVariantMap[asset.status as Status] || 'default'}>{asset.status}</Badge>
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button aria-haspopup="true" size="icon" variant="ghost" onClick={(e) => e.stopPropagation()}>
+                                    <MoreHorizontal className="h-4 w-4" />
+                                    <span className="sr-only">Ouvrir le menu</span>
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                                  <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                  <DropdownMenuItem asChild>
+                                    <Link href={`/it-assets/${asset.tag}/edit`}>
+                                      <Pencil className="mr-2 h-4 w-4" /> Modifier
+                                    </Link>
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onSelect={() => handleShowLabelPreview(asset)}>
+                                    <QrCode className="mr-2 h-4 w-4" /> Aperçu Étiquette
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => setDeleteTarget(asset)} className="text-destructive focus:text-destructive">
+                                    <Trash2 className="mr-2 h-4 w-4" /> Supprimer
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </TableCell>
+                          </TableRow>
+                        )
+                      })
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+              <div className="grid grid-cols-1 gap-4 md:hidden">
+                {loading ? (
+                  Array.from({ length: 5 }).map((_, i) => (
+                    <Card key={i}><CardContent className="p-4"><Skeleton className="h-24 w-full" /></CardContent></Card>
+                  ))
+                ) : (
+                  paginatedAssets.map((asset, index) => {
+                    const Icon = assetIcons[asset.type] || PackageIcon;
+                    return (
+                      <Card key={asset.tag}>
+                        <CardHeader>
+                          <CardTitle className="text-base">
+                            {(currentPage - 1) * itemsPerPage + index + 1}. {asset.fabricant} {asset.modele}
+                          </CardTitle>
+                          <div className="text-sm text-muted-foreground">
                             <div className="flex items-center gap-2">
-                              <Icon className="h-4 w-4 text-muted-foreground" />
+                              <Icon className="h-4 w-4" />
                               {asset.type}
                             </div>
-                          </TableCell>
-                          <TableCell>
-                            <div>{asset.fabricant}</div>
-                            <div className="text-sm text-muted-foreground">{asset.modele}</div>
-                          </TableCell>
-                          <TableCell>
-                            {asset.ipAddress ? (
-                              <a
-                                href={`http://${asset.ipAddress}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-blue-600 hover:underline"
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                {asset.ipAddress}
-                              </a>
-                            ) : '-'}
-                          </TableCell>
-                          <TableCell>{asset.assignedTo}</TableCell>
-                          <TableCell>
-                            <Badge variant={statusVariantMap[asset.status as Status] || 'default'}>{asset.status}</Badge>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button aria-haspopup="true" size="icon" variant="ghost" onClick={(e) => e.stopPropagation()}>
-                                  <MoreHorizontal className="h-4 w-4" />
-                                  <span className="sr-only">Ouvrir le menu</span>
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                <DropdownMenuItem asChild>
-                                  <Link href={`/it-assets/${asset.tag}/edit`}>
-                                    <Pencil className="mr-2 h-4 w-4" /> Modifier
-                                  </Link>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onSelect={() => handleShowLabelPreview(asset)}>
-                                  <QrCode className="mr-2 h-4 w-4" /> Aperçu Étiquette
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => setDeleteTarget(asset)} className="text-destructive focus:text-destructive">
-                                  <Trash2 className="mr-2 h-4 w-4" /> Supprimer
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </TableCell>
-                        </TableRow>
-                      )
-                    })
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-            <div className="grid grid-cols-1 gap-4 md:hidden">
-              {loading ? (
-                Array.from({ length: 5 }).map((_, i) => (
-                  <Card key={i}><CardContent className="p-4"><Skeleton className="h-24 w-full" /></CardContent></Card>
-                ))
-              ) : (
-                paginatedAssets.map((asset, index) => {
-                  const Icon = assetIcons[asset.type] || PackageIcon;
-                  return (
-                    <Card key={asset.tag}>
-                      <CardHeader>
-                        <CardTitle className="text-base">
-                          {(currentPage - 1) * itemsPerPage + index + 1}. {asset.fabricant} {asset.modele}
-                        </CardTitle>
-                        <div className="text-sm text-muted-foreground">
-                          <div className="flex items-center gap-2">
-                            <Icon className="h-4 w-4" />
-                            {asset.type}
                           </div>
-                        </div>
-                      </CardHeader>
-                      <CardContent className="p-4 pt-0 space-y-2">
-                        <Badge variant={statusVariantMap[asset.status as Status] || 'default'}>{asset.status}</Badge>
-                        <p className="text-sm"><span className="font-medium">N° Inventaire:</span> {asset.tag}</p>
-                        {asset.ipAddress && <p className="text-sm"><span className="font-medium">IP:</span> {asset.ipAddress}</p>}
-                        <p className="text-sm"><span className="font-medium">Assigné à:</span> {asset.assignedTo}</p>
-                      </CardContent>
-                      <CardFooter className="flex justify-end p-4 pt-0">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="sm" onClick={(e) => e.stopPropagation()}>Actions</Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-                            <DropdownMenuItem asChild>
-                              <Link href={`/it-assets/${asset.tag}/edit`}>
-                                <Pencil className="mr-2 h-4 w-4" /> Modifier
-                              </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onSelect={() => handleShowLabelPreview(asset)}>
-                              <QrCode className="mr-2 h-4 w-4" /> Aperçu Étiquette
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => setDeleteTarget(asset)} className="text-destructive focus:text-destructive">
-                              <Trash2 className="mr-2 h-4 w-4" /> Supprimer
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </CardFooter>
-                    </Card>
-                  )
-                })
+                        </CardHeader>
+                        <CardContent className="p-4 pt-0 space-y-2">
+                          <Badge variant={statusVariantMap[asset.status as Status] || 'default'}>{asset.status}</Badge>
+                          <p className="text-sm"><span className="font-medium">N° Inventaire:</span> {asset.tag}</p>
+                          {asset.ipAddress && <p className="text-sm"><span className="font-medium">IP:</span> {asset.ipAddress}</p>}
+                          <p className="text-sm"><span className="font-medium">Assigné à:</span> {asset.assignedTo}</p>
+                        </CardContent>
+                        <CardFooter className="flex justify-end p-4 pt-0">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="outline" size="sm" onClick={(e) => e.stopPropagation()}>Actions</Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                              <DropdownMenuItem asChild>
+                                <Link href={`/it-assets/${asset.tag}/edit`}>
+                                  <Pencil className="mr-2 h-4 w-4" /> Modifier
+                                </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onSelect={() => handleShowLabelPreview(asset)}>
+                                <QrCode className="mr-2 h-4 w-4" /> Aperçu Étiquette
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => setDeleteTarget(asset)} className="text-destructive focus:text-destructive">
+                                <Trash2 className="mr-2 h-4 w-4" /> Supprimer
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </CardFooter>
+                      </Card>
+                    )
+                  })
+                )}
+              </div>
+              {!loading && paginatedAssets.length === 0 && (
+                <div className="text-center py-10 text-muted-foreground">
+                  Aucun actif trouvé.
+                </div>
               )}
-            </div>
-            {!loading && paginatedAssets.length === 0 && (
-              <div className="text-center py-10 text-muted-foreground">
-                Aucun actif trouvé.
-              </div>
+            </CardContent>
+            {totalPages > 1 && (
+              <CardFooter>
+                <PaginationControls
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={(page) => startTransition(() => setCurrentPage(page))}
+                  itemsPerPage={itemsPerPage}
+                  onItemsPerPageChange={setItemsPerPage}
+                  totalItems={filteredAssets.length}
+                  isPending={isPending}
+                />
+              </CardFooter>
             )}
-          </CardContent>
-          {totalPages > 1 && (
-            <CardFooter>
-              <PaginationControls
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={(page) => startTransition(() => setCurrentPage(page))}
-                itemsPerPage={itemsPerPage}
-                onItemsPerPageChange={setItemsPerPage}
-                totalItems={filteredAssets.length}
-                isPending={isPending}
-              />
-            </CardFooter>
-          )}
-        </Card>
-        <AddAssetSheet
-          isOpen={isAddSheetOpen}
-          onClose={() => { setIsAddSheetOpen(false); setInitialAssetTag(undefined); }}
-          onAddAsset={handleAddAsset}
-          initialTag={initialAssetTag}
+          </Card>
+          <AddAssetSheet
+            isOpen={isAddSheetOpen}
+            onClose={() => { setIsAddSheetOpen(false); setInitialAssetTag(undefined); }}
+            onAddAsset={handleAddAsset}
+            initialTag={initialAssetTag}
+          />
+          <PrintAssetsDialog
+            isOpen={isPrintDialogOpen}
+            onClose={() => setIsPrintDialogOpen(false)}
+            onPrint={handlePrint}
+            allColumns={allAssetColumns}
+          />
+          <BarcodeScanner
+            isOpen={isScannerOpen}
+            onClose={() => setIsScannerOpen(false)}
+            onScan={handleScanResult}
+          />
+        </div>
+        <ConfirmationDialog
+          isOpen={!!deleteTarget}
+          onCloseAction={() => setDeleteTarget(null)}
+          onConfirmAction={handleDeleteAsset}
+          title={`Supprimer l'actif : ${deleteTarget?.tag}`}
+          description={`Êtes-vous sûr de vouloir supprimer "${deleteTarget?.modele} (${deleteTarget?.tag})" ? Cette action est irréversible.`}
         />
-        <PrintAssetsDialog
-          isOpen={isPrintDialogOpen}
-          onClose={() => setIsPrintDialogOpen(false)}
-          onPrint={handlePrint}
-          allColumns={allAssetColumns}
-        />
-        <BarcodeScanner
-          isOpen={isScannerOpen}
-          onClose={() => setIsScannerOpen(false)}
-          onScan={handleScanResult}
-        />
-      </div>
-      <ConfirmationDialog
-        isOpen={!!deleteTarget}
-        onCloseAction={() => setDeleteTarget(null)}
-        onConfirmAction={handleDeleteAsset}
-        title={`Supprimer l'actif : ${deleteTarget?.tag}`}
-        description={`Êtes-vous sûr de vouloir supprimer "${deleteTarget?.modele} (${deleteTarget?.tag})" ? Cette action est irréversible.`}
-      />
 
 
-      {isPrinting && organizationLogos && (
-        <PrintAssetsList
-          assets={filteredAssets}
-          settings={organizationLogos}
-          columnsToPrint={columnsToPrint}
-          allAssetColumns={allAssetColumns}
-          printDate={printDate}
-        />
-      )}
+        {isPrinting && organizationLogos && (
+          <PrintAssetsList
+            assets={filteredAssets}
+            settings={organizationLogos}
+            columnsToPrint={columnsToPrint}
+            allAssetColumns={allAssetColumns}
+            printDate={printDate}
+          />
+        )}
 
-      {isPrintingLabels && organizationLogos && (
-        <PrintLabels assets={filteredAssets} settings={organizationLogos} />
-      )}
+        {isPrintingLabels && organizationLogos && (
+          <PrintLabels assets={filteredAssets} settings={organizationLogos} />
+        )}
 
-      {isPrintingSingleLabel && assetToPrint && organizationLogos && (
-        <PrintSingleLabel asset={assetToPrint} settings={organizationLogos} />
-      )}
+        {isPrintingSingleLabel && assetToPrint && organizationLogos && (
+          <PrintSingleLabel asset={assetToPrint} settings={organizationLogos} />
+        )}
 
-      {assetForLabelPreview && organizationLogos && (
-        <Dialog open={!!assetForLabelPreview} onOpenChange={(open) => !open && setAssetForLabelPreview(null)}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Aperçu de l'étiquette</DialogTitle>
-              <DialogDescription>
-                Voici à quoi ressemblera l'étiquette pour l'actif {assetForLabelPreview.tag}.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="flex justify-center items-center p-4 my-4 bg-muted rounded-md">
-              <div className="border shadow-md scale-150 origin-center">
-                <PrintSingleLabel asset={assetForLabelPreview} settings={organizationLogos} isPreview={true} />
+        {assetForLabelPreview && organizationLogos && (
+          <Dialog open={!!assetForLabelPreview} onOpenChange={(open) => !open && setAssetForLabelPreview(null)}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Aperçu de l'étiquette</DialogTitle>
+                <DialogDescription>
+                  Voici à quoi ressemblera l'étiquette pour l'actif {assetForLabelPreview.tag}.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="flex justify-center items-center p-4 my-4 bg-muted rounded-md">
+                <div className="border shadow-md scale-150 origin-center">
+                  <PrintSingleLabel asset={assetForLabelPreview} settings={organizationLogos} isPreview={true} />
+                </div>
               </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setAssetForLabelPreview(null)}>Annuler</Button>
-              <Button onClick={handleConfirmPrintSingleLabel}>
-                <Printer className="mr-2 h-4 w-4" />
-                Imprimer
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      )}
-    </>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setAssetForLabelPreview(null)}>Annuler</Button>
+                <Button onClick={handleConfirmPrintSingleLabel}>
+                  <Printer className="mr-2 h-4 w-4" />
+                  Imprimer
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        )}
+      </>
     </PermissionGuard>
   );
 }

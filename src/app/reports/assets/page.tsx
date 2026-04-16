@@ -206,10 +206,10 @@ export default function AssetReportsPage() {
 
                 {/* Stats Overview */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                    <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden group hover:scale-[1.02] transition-all duration-500 bg-white">
+                    <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-2xl overflow-hidden group hover:scale-[1.02] transition-all duration-500 bg-white/80 backdrop-blur-md">
                         <CardContent className="p-8">
                             <div className="flex items-center justify-between mb-6">
-                                <div className="h-14 w-14 rounded-2xl bg-indigo-500 flex items-center justify-center shadow-xl shadow-indigo-200 group-hover:rotate-6 transition-transform">
+                                <div className="h-14 w-14 rounded-xl bg-indigo-500 flex items-center justify-center shadow-xl shadow-indigo-200 group-hover:rotate-6 transition-transform">
                                     <Layers className="h-7 w-7 text-white" />
                                 </div>
                                 <Badge variant="secondary" className="bg-indigo-50 text-indigo-700 border-none font-black text-[10px] px-3 py-1 uppercase tracking-widest">Volume</Badge>
@@ -222,10 +222,10 @@ export default function AssetReportsPage() {
                         </CardContent>
                     </Card>
 
-                    <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden group hover:scale-[1.02] transition-all duration-500 bg-white">
+                    <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-2xl overflow-hidden group hover:scale-[1.02] transition-all duration-500 bg-white/80 backdrop-blur-md">
                         <CardContent className="p-8">
                             <div className="flex items-center justify-between mb-6">
-                                <div className="h-14 w-14 rounded-2xl bg-emerald-500 flex items-center justify-center shadow-xl shadow-emerald-200 group-hover:rotate-6 transition-transform">
+                                <div className="h-14 w-14 rounded-xl bg-emerald-500 flex items-center justify-center shadow-xl shadow-emerald-200 group-hover:rotate-6 transition-transform">
                                     <ShieldCheck className="h-7 w-7 text-white" />
                                 </div>
                                 <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 border-none font-black text-[10px] px-3 py-1 uppercase tracking-widest">Santé</Badge>
@@ -238,10 +238,10 @@ export default function AssetReportsPage() {
                         </CardContent>
                     </Card>
 
-                    <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden group hover:scale-[1.02] transition-all duration-500 bg-white">
+                    <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-2xl overflow-hidden group hover:scale-[1.02] transition-all duration-500 bg-white/80 backdrop-blur-md">
                         <CardContent className="p-8">
                             <div className="flex items-center justify-between mb-6">
-                                <div className="h-14 w-14 rounded-2xl bg-amber-500 flex items-center justify-center shadow-xl shadow-amber-200 group-hover:rotate-6 transition-transform">
+                                <div className="h-14 w-14 rounded-xl bg-amber-500 flex items-center justify-center shadow-xl shadow-amber-200 group-hover:rotate-6 transition-transform">
                                     <Wrench className="h-7 w-7 text-white" />
                                 </div>
                                 <Badge variant="secondary" className="bg-amber-50 text-amber-700 border-none font-black text-[10px] px-3 py-1 uppercase tracking-widest">Alerte</Badge>
@@ -252,10 +252,10 @@ export default function AssetReportsPage() {
                         </CardContent>
                     </Card>
 
-                    <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden group hover:scale-[1.02] transition-all duration-500 bg-slate-900">
+                    <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-2xl overflow-hidden group hover:scale-[1.02] transition-all duration-500 bg-slate-900/90 backdrop-blur-md text-white">
                         <CardContent className="p-8">
                             <div className="flex items-center justify-between mb-6">
-                                <div className="h-14 w-14 rounded-2xl bg-white/10 flex items-center justify-center">
+                                <div className="h-14 w-14 rounded-xl bg-white/10 flex items-center justify-center">
                                     <Activity className="h-7 w-7 text-white" />
                                 </div>
                                 <Badge variant="secondary" className="bg-white/10 text-white border-none font-black text-[10px] px-3 py-1 uppercase tracking-widest">Mix</Badge>
@@ -275,11 +275,11 @@ export default function AssetReportsPage() {
                 </div>
 
                 {/* Main Content */}
-                <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-[3rem] overflow-hidden bg-white group transition-all duration-500">
+                <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-2xl overflow-hidden bg-white/80 backdrop-blur-md group transition-all duration-500">
                     <CardHeader className="p-10 border-b border-slate-50">
                         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
                             <div className="flex items-center gap-6">
-                                <div className="h-16 w-16 rounded-[1.5rem] bg-slate-900 flex items-center justify-center shadow-2xl shadow-slate-900/20 group-hover:rotate-6 transition-transform">
+                                <div className="h-16 w-16 rounded-xl bg-slate-900 flex items-center justify-center shadow-2xl shadow-slate-900/20 group-hover:rotate-6 transition-transform">
                                     <Monitor className="h-8 w-8 text-indigo-400" />
                                 </div>
                                 <div>
@@ -294,10 +294,10 @@ export default function AssetReportsPage() {
                                         placeholder="Désignation, tag ou lieu..." 
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
-                                        className="pl-14 w-[350px] h-16 rounded-2xl border-slate-100 bg-slate-50/50 shadow-inner focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-bold text-slate-700"
+                                        className="pl-14 w-[350px] h-16 rounded-xl border-slate-100 bg-slate-50/50 shadow-inner focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-bold text-slate-700"
                                     />
                                 </div>
-                                <Button variant="outline" className="rounded-2xl h-16 w-16 p-0 border-slate-100 bg-slate-50/50 hover:bg-white shadow-sm flex items-center justify-center transition-all">
+                                <Button variant="outline" className="rounded-xl h-16 w-16 p-0 border-slate-100 bg-slate-50/50 hover:bg-white shadow-sm flex items-center justify-center transition-all">
                                     <Filter className="h-6 w-6 text-slate-600" />
                                 </Button>
                             </div>

@@ -9,7 +9,7 @@ import {
     ArrowRight, Printer, Share2,
     Shield, Building2, Briefcase,
     Info, ListChecks, Landmark,
-    Car, Hotel, CreditCard
+    Car, Hotel, CreditCard, AlertTriangle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";

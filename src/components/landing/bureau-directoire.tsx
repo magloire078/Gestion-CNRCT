@@ -63,11 +63,7 @@ export function BureauDirectoire({ loading, members }: BureauDirectoireProps) {
                       {president.photoUrl && !president.photoUrl.includes('ui-avatars.com') && !president.photoUrl.includes('placehold.co') ? (
                         <Image src={president.photoUrl} alt={president.name || ''} fill className="object-cover" sizes="160px" />
                       ) : (
-                        <>
-                          <div className="w-full h-full bg-[url('https://www.transparenttextures.com/patterns/natural-paper.png')] opacity-20" />
-                          <span className="absolute text-6xl font-serif text-[#006039]/20 italic">P</span>
-                          <span className="relative text-3xl font-bold text-[#006039]">{getInitials(president.name || 'P')}</span>
-                        </>
+                        <Image src={`https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(president.name || 'P')}&backgroundColor=006039&fontFamily=Arial`} alt={president.name || ''} fill className="object-cover" sizes="160px" />
                       )}
                     </div>
                     {showStatus && (
@@ -95,11 +91,7 @@ export function BureauDirectoire({ loading, members }: BureauDirectoireProps) {
                         {vp.photoUrl && !vp.photoUrl.includes('ui-avatars.com') && !vp.photoUrl.includes('placehold.co') ? (
                           <Image src={vp.photoUrl} alt={vp.name || ''} fill className="object-cover" sizes="96px" />
                         ) : (
-                          <>
-                            <div className="w-full h-full bg-[url('https://www.transparenttextures.com/patterns/natural-paper.png')] opacity-10" />
-                            <span className="absolute text-3xl font-serif text-muted-foreground/30 italic">{getInitials(vp.name || 'VP')}</span>
-                            <span className="relative text-xl font-bold text-muted-foreground/50">{getInitials(vp.name || 'VP')}</span>
-                          </>
+                          <Image src={`https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(vp.name || 'VP')}&backgroundColor=006039&fontFamily=Arial`} alt={vp.name || ''} fill className="object-cover" sizes="96px" />
                         )}
                       </div>
                       <p className="text-[10px] uppercase tracking-widest font-bold text-[#D4AF37] text-center leading-tight mb-2">Vice-Président</p>
@@ -136,7 +128,7 @@ export function BureauDirectoire({ loading, members }: BureauDirectoireProps) {
                           {member.photoUrl && !member.photoUrl.includes('ui-avatars.com') && !member.photoUrl.includes('placehold.co') ? (
                             <Image src={member.photoUrl} alt={member.name || ''} fill className="object-cover" sizes="64px" />
                           ) : (
-                            <span className="text-xl font-serif text-muted-foreground/30 italic">{getInitials(member.name || 'MB')}</span>
+                            <Image src={`https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(member.name || 'MB')}&backgroundColor=006039&fontFamily=Arial`} alt={member.name || ''} fill className="object-cover" sizes="64px" />
                           )}
                         </div>
                         <p className="text-[9px] uppercase tracking-widest font-bold text-[#D4AF37] text-center leading-tight mb-1">{member.poste || 'Membre du Bureau'}</p>
@@ -174,7 +166,7 @@ export function BureauDirectoire({ loading, members }: BureauDirectoireProps) {
                           {member.photoUrl && !member.photoUrl.includes('ui-avatars.com') && !member.photoUrl.includes('placehold.co') ? (
                             <Image src={member.photoUrl} alt={member.name || ''} fill className="object-cover" sizes="80px" />
                           ) : (
-                            <span className="text-2xl font-bold text-[#006039]">{getInitials(member.name || 'CAB')}</span>
+                            <Image src={`https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(member.name || 'CAB')}&backgroundColor=006039&fontFamily=Arial`} alt={member.name || ''} fill className="object-cover" sizes="80px" />
                           )}
                         </div>
                         <p className="text-[10px] uppercase tracking-widest font-bold text-[#006039] text-center leading-tight mb-1">{member.poste}</p>
@@ -212,7 +204,7 @@ export function BureauDirectoire({ loading, members }: BureauDirectoireProps) {
                           {member.photoUrl && !member.photoUrl.includes('ui-avatars.com') && !member.photoUrl.includes('placehold.co') ? (
                             <Image src={member.photoUrl} alt={member.name || ''} fill className="object-cover" sizes="64px" />
                           ) : (
-                            <span className="text-xl font-bold text-muted-foreground/30">{getInitials(member.name || 'DIR')}</span>
+                            <Image src={`https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(member.name || 'DIR')}&backgroundColor=006039&fontFamily=Arial`} alt={member.name || ''} fill className="object-cover" sizes="64px" />
                           )}
                         </div>
                         <p className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground text-center leading-tight mb-1">{member.poste}</p>

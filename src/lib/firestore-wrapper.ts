@@ -27,22 +27,23 @@ function ensureAuthListener() {
 
     authListenerInitialized = true;
 
-    // Créer la Promise maintenant avec un timeout de secours (4s)
+    // Créer la Promise maintenant avec un timeout de secours (15s)
     authReady = new Promise<void>((resolve) => {
         const timeoutId = setTimeout(() => {
-            console.warn('[firestore-wrapper] Auth initialization timed out (10s) - proceeding with local cache');
+            console.warn('[firestore-wrapper] Auth initialization timed out (15s) - proceeding with local cache');
             resolve();
             authReadyResolve = null;
-        }, 10000);
+        }, 15000);
 
         authReadyResolve = () => {
+            console.log('[firestore-wrapper] Auth is ready, activating listeners.');
             clearTimeout(timeoutId);
             resolve();
         };
     });
 
-    // Importer dynamiquement pour éviter les problèmes d'initialisation
-    import('@/lib/firebase').then(({ auth }) => {
+    // Importer dynamiquement pour éviter les problèmes d'initialisation au top-level
+    import('@/lib/firebase-init').then(({ auth }) => {
         // Utiliser l'import dynamique de onAuthStateChanged aussi
         import('firebase/auth').then(({ onAuthStateChanged }) => {
             try {

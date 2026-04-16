@@ -159,10 +159,10 @@ export default function SupplyReportsPage() {
 
                 {/* Stats Overview */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-3xl overflow-hidden group hover:scale-[1.02] transition-transform">
+                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-2xl overflow-hidden group hover:scale-[1.02] transition-transform bg-white/80 backdrop-blur-md">
                         <CardContent className="p-6">
                             <div className="flex items-center justify-between mb-4">
-                                <div className="h-12 w-12 rounded-2xl bg-blue-500/10 flex items-center justify-center">
+                                <div className="h-12 w-12 rounded-xl bg-blue-500/10 flex items-center justify-center">
                                     <Package className="h-6 w-6 text-blue-600" />
                                 </div>
                                 <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-none font-bold">Catalogue</Badge>
@@ -172,10 +172,10 @@ export default function SupplyReportsPage() {
                         </CardContent>
                     </Card>
 
-                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-3xl overflow-hidden group hover:scale-[1.02] transition-transform">
+                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-2xl overflow-hidden group hover:scale-[1.02] transition-transform bg-white/80 backdrop-blur-md">
                         <CardContent className="p-6">
                             <div className="flex items-center justify-between mb-4">
-                                <div className="h-12 w-12 rounded-2xl bg-rose-500/10 flex items-center justify-center">
+                                <div className="h-12 w-12 rounded-xl bg-rose-500/10 flex items-center justify-center">
                                     <AlertTriangle className="h-6 w-6 text-rose-600" />
                                 </div>
                                 <Badge variant="secondary" className="bg-rose-50 text-rose-700 border-none font-bold">Attention</Badge>
@@ -185,10 +185,10 @@ export default function SupplyReportsPage() {
                         </CardContent>
                     </Card>
 
-                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-3xl overflow-hidden group hover:scale-[1.02] transition-transform">
+                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-2xl overflow-hidden group hover:scale-[1.02] transition-transform bg-white/80 backdrop-blur-md">
                         <CardContent className="p-6">
                             <div className="flex items-center justify-between mb-4">
-                                <div className="h-12 w-12 rounded-2xl bg-amber-500/10 flex items-center justify-center">
+                                <div className="h-12 w-12 rounded-xl bg-amber-500/10 flex items-center justify-center">
                                     <History className="h-6 w-6 text-amber-600" />
                                 </div>
                                 <Badge variant="secondary" className="bg-amber-50 text-amber-700 border-none font-bold">Mois</Badge>
@@ -198,10 +198,10 @@ export default function SupplyReportsPage() {
                         </CardContent>
                     </Card>
 
-                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-3xl overflow-hidden group hover:scale-[1.02] transition-transform">
+                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-2xl overflow-hidden group hover:scale-[1.02] transition-transform bg-white/80 backdrop-blur-md">
                         <CardContent className="p-6">
                             <div className="flex items-center justify-between mb-4">
-                                <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center">
+                                <div className="h-12 w-12 rounded-xl bg-emerald-500/10 flex items-center justify-center">
                                     <Box className="h-6 w-6 text-emerald-600" />
                                 </div>
                                 <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 border-none font-bold">Total</Badge>
@@ -213,11 +213,11 @@ export default function SupplyReportsPage() {
                 </div>
 
                 {/* Main Content */}
-                <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden">
+                <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-2xl overflow-hidden bg-white/80 backdrop-blur-md">
                     <CardHeader className="bg-slate-50/50 border-b border-slate-100 p-8">
                         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                             <div className="flex items-center gap-4">
-                                <div className="h-12 w-12 rounded-2xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-200">
+                                <div className="h-12 w-12 rounded-xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-200">
                                     <ShoppingCart className="h-6 w-6 text-white" />
                                 </div>
                                 <div>
@@ -232,7 +232,7 @@ export default function SupplyReportsPage() {
                                         placeholder="Libellé ou bénéficiaire..." 
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
-                                        className="pl-12 w-[300px] h-12 rounded-2xl border-slate-200 bg-white shadow-sm"
+                                        className="pl-12 w-[300px] h-12 rounded-xl border-slate-200 bg-white shadow-sm"
                                     />
                                 </div>
                                 <Button variant="outline" className="rounded-xl h-12 w-12 p-0 border-slate-200 shadow-sm">

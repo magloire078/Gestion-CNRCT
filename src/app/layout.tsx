@@ -1,6 +1,4 @@
-
 import type { Metadata } from 'next';
-import { Inter, Poppins } from 'next/font/google';
 import './globals.css';
 import '@/lib/suppress-firestore-errors'; // Filtre global pour supprimer les erreurs Firestore attendues
 import { Toaster } from '@/components/ui/toaster';
@@ -9,20 +7,13 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { BASE_URL } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 
-const inter = Inter({
-  subsets: ['latin'],
-  variable: '--font-inter',
-  display: 'swap',
-});
-
-const poppins = Poppins({
-  weight: ['600', '700', '800'],
-  subsets: ['latin'],
-  variable: '--font-poppins',
-  display: 'swap',
-});
 
 import { getOrganizationSettings } from '@/services/organization-service';
+import type { Viewport } from 'next';
+
+export const viewport: Viewport = {
+  themeColor: '#2C3E50',
+};
 
 export async function generateMetadata(): Promise<Metadata> {
   try {
@@ -71,13 +62,8 @@ export default async function RootLayout({
 }>) {
   return (
     <html lang="fr" suppressHydrationWarning>
-      <head>
-        <meta name="theme-color" content="#2C3E50" />
-      </head>
       <body className={cn(
-        "antialiased relative min-h-screen",
-        inter.variable,
-        poppins.variable
+        "antialiased relative min-h-screen"
       )} suppressHydrationWarning={true}>
         <div className="fixed inset-0 z-[-1] gradient-mesh pointer-events-none" aria-hidden="true" />
         <ThemeProvider

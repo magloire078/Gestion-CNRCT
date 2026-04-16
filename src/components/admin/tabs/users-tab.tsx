@@ -23,6 +23,115 @@ interface UsersTabProps {
   onDeleteUserAction: (id: string, name: string) => void;
 }
 
+// Sous-composant de ligne mémoïsé pour optimiser l'INP
+const UserRow = memo(({ 
+  user, 
+  index, 
+  userCurrentPage, 
+  userItemsPerPage, 
+  employeeMap,
+  onLinkUserAction,
+  onEditRoleAction,
+  onEditPermissionsAction,
+  onDeleteUserAction
+}: { 
+  user: User; 
+  index: number; 
+  userCurrentPage: number; 
+  userItemsPerPage: number; 
+  employeeMap: Map<string, Employe>;
+  onLinkUserAction: (user: User) => void;
+  onEditRoleAction: (user: User) => void;
+  onEditPermissionsAction: (user: User) => void;
+  onDeleteUserAction: (id: string, name: string) => void;
+}) => {
+  const isOnline = useMemo(() => {
+    if (!user.lastActive) return false;
+    try {
+        const lastActiveDate = typeof user.lastActive.toDate === 'function' 
+            ? user.lastActive.toDate() 
+            : new Date(user.lastActive as any);
+        return (Date.now() - lastActiveDate.getTime()) < 5 * 60 * 1000;
+    } catch {
+        return false;
+    }
+  }, [user.lastActive]);
+
+  return (
+    <TableRow className="group hover:bg-white/40 transition-all duration-500 border-white/10">
+      <TableCell className="text-center font-black text-slate-300 group-hover:text-blue-600 transition-colors uppercase tracking-widest text-[10px]">
+        {((userCurrentPage - 1) * userItemsPerPage + index + 1).toString().padStart(2, '0')}
+      </TableCell>
+      <TableCell className="py-5">
+        <div className="flex flex-col">
+          <span className="font-black text-slate-900 text-sm uppercase tracking-tight flex items-center gap-2 group-hover:translate-x-1 transition-transform">
+            {user.name}
+            {isOnline && (
+                <div className="flex h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.8)] animate-pulse" />
+            )}
+          </span>
+          <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-0.5 opacity-70">{user.email}</span>
+          {user.employeeId && (
+            <div className="flex items-center gap-2 mt-2">
+                <Badge variant="outline" className="text-[7px] px-2 py-0.5 bg-blue-500/5 text-blue-600 border-blue-200 font-black uppercase tracking-[0.1em]">
+                    RH : {employeeMap.get(user.employeeId)?.name || 'Lié'}
+                </Badge>
+            </div>
+          )}
+        </div>
+      </TableCell>
+      <TableCell>
+        <div className="flex flex-col gap-1.5">
+          <Badge
+            variant={!user.role ? "destructive" : "secondary"}
+            className={cn(
+              "w-fit font-black text-[9px] uppercase tracking-[0.15em] py-1 px-3 shadow-md",
+              !user.role ? "bg-rose-50 text-rose-600 border-rose-200" : "bg-slate-900 text-white border-none"
+            )}
+          >
+            {user.role?.name || 'ACCÈS RESTREINT'}
+          </Badge>
+          {user.resourcePermissions && Object.keys(user.resourcePermissions).length > 0 && (
+            <Badge variant="outline" className="text-[7px] py-0.5 px-2 border-amber-200 bg-amber-50 text-amber-700 w-fit font-black uppercase tracking-[0.1em]">
+              Privilèges Spécifiques
+            </Badge>
+          )}
+        </div>
+      </TableCell>
+      <TableCell className="text-right pr-6 py-5">
+        <div className="flex justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0 duration-300">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg bg-white shadow-sm border border-white/60 hover:bg-blue-50 hover:text-blue-600 transition-all" onClick={() => onLinkUserAction(user)}>
+                <Link2 className="h-3.5 w-3.5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent className="font-black uppercase tracking-widest text-[8px] bg-slate-900 text-white border-none">Liaison RH</TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg bg-white shadow-sm border border-white/60 hover:bg-slate-900 hover:text-white transition-all" onClick={() => onEditRoleAction(user)}>
+                <Pencil className="h-3.5 w-3.5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent className="font-black uppercase tracking-widest text-[8px] bg-slate-900 text-white border-none">Rang</TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg bg-white shadow-sm border border-white/60 hover:bg-rose-50 hover:text-rose-600 transition-all" onClick={() => onDeleteUserAction(user.id, user.name)}>
+                <Trash2 className="h-3.5 w-3.5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent className="font-black uppercase tracking-widest text-[8px] bg-slate-900 text-white border-none">Supprimer</TooltipContent>
+          </Tooltip>
+        </div>
+      </TableCell>
+    </TableRow>
+  );
+});
+
+UserRow.displayName = 'UserRow';
+
 export const UsersTab = memo(function UsersTab({
   users,
   loading,
@@ -125,95 +234,20 @@ export const UsersTab = memo(function UsersTab({
                   </TableCell>
                 </TableRow>
               ) : (
-                paginatedUsers.map((user, index) => {
-                  const isOnline = user.lastActive && (Date.now() - user.lastActive.toDate().getTime()) < 5 * 60 * 1000;
-                  
-                  return (
-                    <TableRow key={user.id} className="group hover:bg-white/40 transition-all duration-500 border-white/10">
-                      <TableCell className="text-center font-black text-slate-300 group-hover:text-blue-600 transition-colors uppercase tracking-widest text-xs">
-                        {((userCurrentPage - 1) * userItemsPerPage + index + 1).toString().padStart(2, '0')}
-                      </TableCell>
-                      <TableCell className="py-6">
-                        <div className="flex flex-col">
-                          <span className="font-black text-slate-900 text-base uppercase tracking-tight flex items-center gap-3 group-hover:translate-x-1 transition-transform">
-                            {user.name}
-                            {isOnline && (
-                                <Tooltip>
-                                    <TooltipTrigger>
-                                        <span className="flex h-2.5 w-2.5 rounded-full bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.8)] animate-pulse" />
-                                    </TooltipTrigger>
-                                    <TooltipContent className="bg-emerald-900 border-none text-white font-black text-[10px] uppercase py-2 px-3">Live</TooltipContent>
-                                </Tooltip>
-                            )}
-                          </span>
-                          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1 opacity-70">{user.email}</span>
-                          {user.employeeId && (
-                            <div className="flex items-center gap-2 mt-3">
-                                <Badge variant="outline" className="text-[8px] px-2.5 py-1 bg-blue-500/5 text-blue-600 border-blue-200 font-black uppercase tracking-[0.15em] shadow-sm">
-                                    Compte Lié : {employeeMap.get(user.employeeId)?.name || 'N/A'}
-                                </Badge>
-                            </div>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col gap-2.5">
-                          <Badge
-                            variant={!user.role ? "destructive" : "secondary"}
-                            className={cn(
-                              "w-fit font-black text-[10px] uppercase tracking-[0.2em] py-1.5 px-4 shadow-2xl",
-                              !user.role ? "bg-rose-50 text-rose-600 border-rose-200" : "bg-slate-900 text-white border-none"
-                            )}
-                          >
-                            {!user.role && <AlertTriangle className="h-3.5 w-3.5 mr-2" />}
-                            {user.role?.name || 'ACCÈS RESTREINT'}
-                          </Badge>
-                          {user.resourcePermissions && Object.keys(user.resourcePermissions).length > 0 && (
-                            <Badge variant="outline" className="text-[8px] py-1 px-3 border-amber-200 bg-amber-50 text-amber-700 w-fit font-black uppercase tracking-[0.15em] shadow-sm">
-                              Exceptions Actives
-                            </Badge>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right pr-10 py-6">
-                        <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all transform translate-x-4 group-hover:translate-x-0 duration-500">
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-10 w-10 rounded-[1.25rem] bg-white shadow-sm border border-white/60 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all duration-300" onClick={() => onLinkUserAction(user)}>
-                                <Link2 className="h-4 w-4" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent className="font-black uppercase tracking-widest text-[9px] bg-slate-900 text-white border-none py-2 px-3">Liaison RH</TooltipContent>
-                          </Tooltip>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-10 w-10 rounded-[1.25rem] bg-white shadow-sm border border-white/60 hover:bg-slate-900 hover:text-white hover:border-slate-800 transition-all duration-300" onClick={() => onEditRoleAction(user)}>
-                                <Pencil className="h-4 w-4" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent className="font-black uppercase tracking-widest text-[9px] bg-slate-900 text-white border-none py-2 px-3">Éditer Rang</TooltipContent>
-                          </Tooltip>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-10 w-10 rounded-[1.25rem] bg-white shadow-sm border border-white/60 hover:bg-amber-50 hover:text-amber-600 hover:border-amber-200 transition-all duration-300" onClick={() => onEditPermissionsAction(user)}>
-                                <ShieldAlert className="h-4 w-4" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent className="font-black uppercase tracking-widest text-[9px] bg-slate-900 text-white border-none py-2 px-3">Habilitations</TooltipContent>
-                          </Tooltip>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-10 w-10 rounded-[1.25rem] bg-white shadow-sm border border-white/60 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition-all duration-300" onClick={() => onDeleteUserAction(user.id, user.name)}>
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent className="font-black uppercase tracking-widest text-[9px] bg-slate-900 text-white border-none py-2 px-3">Suppression</TooltipContent>
-                          </Tooltip>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
+                paginatedUsers.map((user, index) => (
+                  <UserRow 
+                    key={user.id} 
+                    user={user} 
+                    index={index} 
+                    userCurrentPage={userCurrentPage} 
+                    userItemsPerPage={userItemsPerPage} 
+                    employeeMap={employeeMap}
+                    onLinkUserAction={onLinkUserAction}
+                    onEditRoleAction={onEditRoleAction}
+                    onEditPermissionsAction={onEditPermissionsAction}
+                    onDeleteUserAction={onDeleteUserAction}
+                  />
+                ))
               )}
             </TableBody>
           </Table>

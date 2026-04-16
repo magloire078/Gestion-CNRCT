@@ -46,7 +46,7 @@ const DirectoireMap = dynamic<{ members: any[]; className?: string }>(
   () => import('@/components/employees/directoire-map').then(m => m.DirectoireMap),
   { 
     ssr: false,
-    loading: () => <Skeleton className="h-[600px] w-full rounded-[2.5rem]" />
+    loading: () => <Skeleton className="h-[600px] w-full rounded-2xl" />
   }
 );
 
@@ -125,9 +125,9 @@ export default function ChiefsReportsPage() {
             <div className="p-8 space-y-8">
                 <Skeleton className="h-12 w-1/3" />
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                    {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-32 rounded-3xl" />)}
+                    {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-32 rounded-2xl" />)}
                 </div>
-                <Skeleton className="h-[600px] rounded-[2.5rem]" />
+                <Skeleton className="h-[600px] rounded-2xl" />
             </div>
         );
     }
@@ -187,10 +187,10 @@ export default function ChiefsReportsPage() {
 
                 {/* Stats Overview */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-3xl overflow-hidden group hover:scale-[1.02] transition-transform">
+                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-2xl overflow-hidden group hover:scale-[1.02] transition-transform bg-white/80 backdrop-blur-md">
                         <CardContent className="p-6">
                             <div className="flex items-center justify-between mb-4">
-                                <div className="h-12 w-12 rounded-2xl bg-[#D4AF37]/10 flex items-center justify-center">
+                                <div className="h-12 w-12 rounded-xl bg-[#D4AF37]/10 flex items-center justify-center">
                                     <Crown className="h-6 w-6 text-[#D4AF37]" />
                                 </div>
                                 <Badge variant="secondary" className="bg-[#D4AF37]/5 text-[#D4AF37] border border-[#D4AF37]/20 font-bold">Autorités</Badge>
@@ -200,10 +200,10 @@ export default function ChiefsReportsPage() {
                         </CardContent>
                     </Card>
 
-                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-3xl overflow-hidden group hover:scale-[1.02] transition-transform">
+                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-2xl overflow-hidden group hover:scale-[1.02] transition-transform bg-white/80 backdrop-blur-md">
                         <CardContent className="p-6">
                             <div className="flex items-center justify-between mb-4">
-                                <div className="h-12 w-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center">
+                                <div className="h-12 w-12 rounded-xl bg-indigo-500/10 flex items-center justify-center">
                                     <Compass className="h-6 w-6 text-indigo-600" />
                                 </div>
                                 <Badge variant="secondary" className="bg-indigo-50 text-indigo-700 border-none font-bold">Zones</Badge>
@@ -213,10 +213,10 @@ export default function ChiefsReportsPage() {
                         </CardContent>
                     </Card>
 
-                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-3xl overflow-hidden group hover:scale-[1.02] transition-transform">
+                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-2xl overflow-hidden group hover:scale-[1.02] transition-transform bg-white/80 backdrop-blur-md">
                         <CardContent className="p-6">
                             <div className="flex items-center justify-between mb-4">
-                                <div className="h-12 w-12 rounded-2xl bg-amber-500/10 flex items-center justify-center">
+                                <div className="h-12 w-12 rounded-xl bg-amber-500/10 flex items-center justify-center">
                                     <Home className="h-6 w-6 text-amber-600" />
                                 </div>
                                 <Badge variant="secondary" className="bg-amber-50 text-amber-700 border-none font-bold">Localités</Badge>
@@ -226,10 +226,10 @@ export default function ChiefsReportsPage() {
                         </CardContent>
                     </Card>
 
-                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-3xl overflow-hidden group hover:scale-[1.02] transition-transform">
+                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-2xl overflow-hidden group hover:scale-[1.02] transition-transform bg-white/80 backdrop-blur-md">
                         <CardContent className="p-6">
                             <div className="flex items-center justify-between mb-4">
-                                <div className="h-12 w-12 rounded-2xl bg-slate-900 flex items-center justify-center">
+                                <div className="h-12 w-12 rounded-xl bg-slate-900 flex items-center justify-center">
                                     <BarChart3 className="h-6 w-6 text-white" />
                                 </div>
                                 <Badge variant="secondary" className="bg-slate-100 text-slate-700 border-none font-bold">Densité</Badge>
@@ -243,10 +243,10 @@ export default function ChiefsReportsPage() {
                 {/* Content View */}
                 <div className="space-y-6">
                     {viewMode === "map" ? (
-                        <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden">
+                        <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-2xl overflow-hidden bg-white/80 backdrop-blur-md">
                             <CardHeader className="bg-slate-900 p-8 border-b border-white/10">
                                 <div className="flex items-center gap-4">
-                                    <div className="h-12 w-12 rounded-2xl bg-[#D4AF37] flex items-center justify-center shadow-lg shadow-[#D4AF37]/20">
+                                    <div className="h-12 w-12 rounded-xl bg-[#D4AF37] flex items-center justify-center shadow-lg shadow-[#D4AF37]/20">
                                         <MapIcon className="h-6 w-6 text-white" />
                                     </div>
                                     <div>
@@ -260,7 +260,7 @@ export default function ChiefsReportsPage() {
                             </CardContent>
                         </Card>
                     ) : (
-                        <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden">
+                        <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-2xl overflow-hidden bg-white/80 backdrop-blur-md">
                             <CardHeader className="bg-slate-50/50 border-b border-slate-100 p-8">
                                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                                     <div className="flex items-center gap-4">

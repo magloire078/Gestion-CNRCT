@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import Link from "next/link";
 import { format, parseISO, differenceInYears } from "date-fns";
 import { fr } from "date-fns/locale";
-import { PlusCircle, Search, Download, Printer, Eye, Pencil, Trash2, MoreHorizontal, ShieldCheck, Globe, Building, BarChart3, Shield } from "lucide-react";
+import { PlusCircle, Search, Download, Printer, Eye, Pencil, Trash2, MoreHorizontal, ShieldCheck, Globe, Building, BarChart3, Shield, Users2, Zap, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -416,77 +416,77 @@ export default function EmployeesPage() {
   return (
     <PermissionGuard permission="page:employees:view">
       <div className={isPrinting ? 'print-hidden' : ''}>
-        <div className="flex flex-col gap-6 main-content">
+        <div className="flex flex-col gap-4 main-content">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-2">
             <div>
-              <h1 className="text-4vw md:text-5xl font-black uppercase tracking-tighter text-slate-900 leading-none">
+              <h1 className="text-3xl md:text-4xl font-black uppercase tracking-tighter text-slate-900 leading-none">
                 {pageTitle}
               </h1>
-              <div className="flex items-center gap-4 mt-4">
-                <div className="flex items-center gap-2 bg-slate-900 text-white px-4 py-1.5 rounded-full shadow-lg shadow-slate-900/10">
-                  <Shield className="h-3.5 w-3.5" />
-                  <span className="text-[10px] font-black uppercase tracking-widest text-white/90">Registre National RH</span>
+              <div className="flex items-center gap-4 mt-3">
+                <div className="flex items-center gap-2 bg-slate-900 text-white px-3 py-1 rounded-full shadow-lg shadow-slate-900/10">
+                  <Shield className="h-3 w-3" />
+                  <span className="text-[9px] font-black uppercase tracking-widest text-white/90">Registre National RH</span>
                 </div>
-                <span className="h-4 w-px bg-slate-200" />
-                <span className="text-slate-500 font-bold uppercase text-[10px] tracking-[0.2em] flex items-center gap-2">
-                  <Globe className="h-3.5 w-3.5" /> Administration Centrale
+                <span className="h-3 w-px bg-slate-200" />
+                <span className="text-slate-500 font-bold uppercase text-[9px] tracking-[0.2em] flex items-center gap-2">
+                  <Globe className="h-3 w-3" /> Administration Centrale
                 </span>
               </div>
             </div>
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-wrap items-center gap-2">
               <Button 
                 variant="outline" 
-                className="h-14 px-6 rounded-[1.5rem] border-slate-200 bg-white/50 backdrop-blur-md shadow-sm font-black uppercase tracking-widest text-[10px] hover:bg-white hover:scale-105 transition-all"
+                className="h-11 px-4 rounded-lg border-slate-200 bg-white/20 backdrop-blur-xl shadow-sm font-black uppercase tracking-widest text-[9px] hover:bg-white hover:scale-105 transition-all"
                 onClick={() => setTimeout(() => setIsPrintDialogOpen(true), 50)}
               >
-                <Printer className="mr-2 h-4 w-4 text-blue-600" />
+                <Printer className="mr-2 h-3.5 w-3.5 text-blue-600" />
                 Liste Officielle
               </Button>
               {canExport && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="h-14 px-6 rounded-[1.5rem] border-slate-200 bg-white/50 backdrop-blur-md shadow-sm font-black uppercase tracking-widest text-[10px] hover:bg-white transition-all">
-                      <Download className="mr-2 h-4 w-4 text-emerald-600" />
+                    <Button variant="outline" className="h-11 px-4 rounded-lg border-slate-200 bg-white/20 backdrop-blur-xl shadow-sm font-black uppercase tracking-widest text-[9px] hover:bg-white transition-all">
+                      <Download className="mr-2 h-3.5 w-3.5 text-emerald-600" />
                       Exporter
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56 p-2 rounded-2xl border-white/20 bg-white/90 backdrop-blur-xl shadow-2xl">
-                    <DropdownMenuLabel className="text-[10px] font-black uppercase text-slate-400 p-2">Formats Systèmes</DropdownMenuLabel>
-                    <DropdownMenuItem onSelect={() => setTimeout(handleExportCsv, 50)} className="rounded-xl font-bold p-3">CSV (Compatible Excel)</DropdownMenuItem>
-                    <DropdownMenuItem onSelect={() => setTimeout(handleExportJson, 50)} className="rounded-xl font-bold p-3">JSON (Structure de données)</DropdownMenuItem>
-                    <DropdownMenuItem onSelect={() => setTimeout(handleExportSql, 50)} className="rounded-xl font-bold p-3">SQL (Base de données)</DropdownMenuItem>
+                  <DropdownMenuContent align="end" className="w-56 p-2 rounded-xl border-white/20 bg-white/90 backdrop-blur-xl shadow-2xl">
+                    <DropdownMenuLabel className="text-[9px] font-black uppercase text-slate-400 p-2">Formats Systèmes</DropdownMenuLabel>
+                    <DropdownMenuItem onSelect={() => setTimeout(handleExportCsv, 50)} className="rounded-lg font-bold p-2 text-sm">CSV (Excel)</DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => setTimeout(handleExportJson, 50)} className="rounded-lg font-bold p-2 text-sm">JSON</DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => setTimeout(handleExportSql, 50)} className="rounded-lg font-bold p-2 text-sm">SQL</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               )}
               <Button 
                 onClick={() => setTimeout(() => setIsAddSheetOpen(true), 50)} 
-                className="h-14 px-8 rounded-[1.5rem] bg-slate-900 shadow-2xl shadow-slate-900/20 font-black uppercase tracking-widest text-[10px] hover:bg-black active:scale-95 transition-all text-white border-t border-white/10"
+                className="h-11 px-6 rounded-lg bg-slate-900 shadow-xl shadow-slate-900/10 font-black uppercase tracking-widest text-[9px] hover:bg-black active:scale-95 transition-all text-white border-t border-white/10"
               >
-                <PlusCircle className="mr-3 h-5 w-5 text-emerald-400" />
+                <PlusCircle className="mr-2 h-4 w-4 text-emerald-400" />
                 Intégrer Agent
               </Button>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             {[
               { label: "Effectif Total", value: employees.length, sub: "Collaborateurs enregistrés", icon: Users2, color: "text-blue-600", bg: "bg-blue-50/50" },
               { label: "Agents Actifs", value: employees.filter(e => e.status === 'Actif').length, sub: "En poste actuellement", icon: ShieldCheck, color: "text-emerald-600", bg: "bg-emerald-50/50" },
               { label: "Nouveaux / 30j", value: employees.filter(e => e.dateEmbauche && new Date(e.dateEmbauche) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)).length, sub: "Derniers recrutements", icon: Zap, color: "text-amber-600", bg: "bg-amber-50/50" },
               { label: "Parité H/F", value: `${Math.round((employees.filter(e => e.sexe === 'Homme').length / employees.length) * 100) || 0}%`, sub: "Ratio Hommes / Femmes", icon: Heart, color: "text-rose-600", bg: "bg-rose-50/50" }
             ].map((stat, i) => (
-              <Card key={i} className="border-none bg-white/40 backdrop-blur-xl rounded-[2rem] shadow-xl shadow-slate-200/50 border border-white/20 hover:scale-[1.02] transition-all group overflow-hidden">
-                <CardContent className="p-8 relative">
-                  <div className={cn("absolute -top-4 -right-4 h-24 w-24 rounded-full opacity-5 transition-transform group-hover:scale-150 duration-700", stat.bg)} />
-                  <div className="flex flex-col gap-4">
-                    <div className={cn("h-12 w-12 rounded-2xl flex items-center justify-center shadow-inner border border-white/50", stat.bg)}>
-                      <stat.icon className={cn("h-6 w-6", stat.color)} />
+              <Card key={i} className="border-none bg-white border border-slate-200/60 rounded-xl shadow-sm hover:shadow-md transition-all group overflow-hidden">
+                <CardContent className="p-6 relative">
+                  <div className={cn("absolute -top-4 -right-4 h-16 w-16 rounded-full opacity-5 transition-transform group-hover:scale-150 duration-700", stat.bg)} />
+                  <div className="flex flex-col gap-3">
+                    <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center shadow-inner border border-white/50", stat.bg)}>
+                      <stat.icon className={cn("h-5 w-5", stat.color)} />
                     </div>
                     <div>
-                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-1">{stat.label}</p>
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-3xl font-black text-slate-900 tracking-tighter">{stat.value}</span>
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{stat.sub}</span>
+                      <p className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-500 mb-0.5">{stat.label}</p>
+                      <div className="flex items-baseline gap-1.5">
+                        <span className="text-2xl font-black text-slate-900 tracking-tighter">{stat.value}</span>
+                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{stat.sub}</span>
                       </div>
                     </div>
                   </div>
@@ -496,24 +496,24 @@ export default function EmployeesPage() {
           </div>
 
           <Tabs value={personnelTypeFilter} onValueChange={handleTabChange}>
-            <TabsList className="bg-white/40 backdrop-blur-md border border-white/20 p-1.5 rounded-[2rem] shadow-xl shadow-slate-200/50 flex h-auto overflow-x-auto no-scrollbar gap-1 mb-8">
+            <TabsList className="bg-white/20 backdrop-blur-xl border border-white/20 p-1 rounded-xl shadow-xl shadow-slate-200/50 flex h-auto overflow-x-auto no-scrollbar gap-1 mb-6">
               {!isGeoTab && (
                 <>
-                  <TabsTrigger value="all" className="rounded-3xl px-8 py-4 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-[9px] transition-all">Effectif Global</TabsTrigger>
-                  <TabsTrigger value="directoire" className="rounded-3xl px-8 py-4 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-[9px] transition-all">Directoire</TabsTrigger>
-                  <TabsTrigger value="personnel-siege" className="rounded-3xl px-8 py-4 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-[9px] transition-all">Personnel Siège</TabsTrigger>
-                  <TabsTrigger value="chauffeur-directoire" className="rounded-3xl px-8 py-4 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-[9px] transition-all">Chauffeurs</TabsTrigger>
-                  <TabsTrigger value="regional" className="rounded-3xl px-8 py-4 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-[9px] transition-all">Comités Régionaux</TabsTrigger>
+                  <TabsTrigger value="all" className="rounded-2xl px-6 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-[9px] transition-all">Effectif Global</TabsTrigger>
+                  <TabsTrigger value="directoire" className="rounded-2xl px-6 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-[9px] transition-all">Directoire</TabsTrigger>
+                  <TabsTrigger value="personnel-siege" className="rounded-2xl px-6 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-[9px] transition-all">Personnel Siège</TabsTrigger>
+                  <TabsTrigger value="chauffeur-directoire" className="rounded-2xl px-6 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-[9px] transition-all">Chauffeurs</TabsTrigger>
+                  <TabsTrigger value="regional" className="rounded-2xl px-6 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-[9px] transition-all">Comités Régionaux</TabsTrigger>
                 </>
               )}
               {isGeoTab && (
                 <>
-                  <TabsTrigger value="all-geo" className="rounded-3xl px-10 py-4 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-[9px] transition-all">Membres Géo-localisés</TabsTrigger>
-                  <TabsTrigger value="directoire" className="rounded-3xl px-10 py-4 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-[9px] transition-all">Directoire</TabsTrigger>
-                  <TabsTrigger value="regional" className="rounded-3xl px-10 py-4 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-[9px] transition-all">Comités Régionaux</TabsTrigger>
+                  <TabsTrigger value="all-geo" className="rounded-2xl px-8 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-[9px] transition-all">Membres Géo-localisés</TabsTrigger>
+                  <TabsTrigger value="directoire" className="rounded-2xl px-8 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-[9px] transition-all">Directoire</TabsTrigger>
+                  <TabsTrigger value="regional" className="rounded-2xl px-8 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-[9px] transition-all">Comités Régionaux</TabsTrigger>
                 </>
               )}
-              <TabsTrigger value="analytics" className="rounded-3xl px-8 py-4 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-[9px] transition-all gap-2">
+              <TabsTrigger value="analytics" className="rounded-2xl px-6 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-[9px] transition-all gap-2">
                 <BarChart3 className="h-4 w-4" /> Synthèse
               </TabsTrigger>
             </TabsList>
@@ -530,16 +530,16 @@ export default function EmployeesPage() {
                   </div>
                 )}
 
-                <Card className="border-none bg-white/40 backdrop-blur-md rounded-[2.5rem] shadow-2xl border border-white/20 overflow-hidden mb-8">
-                  <CardHeader className="py-8 px-10 border-b border-white/10 bg-slate-50/10">
+                <Card className="border-none bg-white/20 backdrop-blur-xl rounded-xl shadow-2xl border border-white/20 overflow-hidden mb-6">
+                  <CardHeader className="py-5 px-6 border-b border-white/10 bg-slate-50/10">
                     <CardTitle className="text-2xl font-black uppercase tracking-tight text-slate-900">Registre du Personnel</CardTitle>
                     <CardDescription className="text-xs font-bold uppercase tracking-widest text-slate-500 mt-1">
                       Gestion administrative et tactique des collaborateurs
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="p-8">
+                  <CardContent className="p-4">
                     {isGeoTab && (
-                      <div className="flex flex-col md:flex-row gap-4 mb-8 p-6 bg-slate-900/5 rounded-3xl border border-slate-200/50">
+                      <div className="flex flex-col md:flex-row gap-3 mb-4 p-3 bg-slate-900/5 rounded-xl border border-slate-200/50">
                         <Select
                           value={regionFilter}
                           onValueChange={(val) => startTransition(() => {
@@ -549,13 +549,13 @@ export default function EmployeesPage() {
                             setCurrentPage(1);
                           })}
                         >
-                          <SelectTrigger className="h-12 flex-1 min-w-[200px] rounded-xl border-slate-200 bg-white font-black uppercase text-[10px] tracking-widest">
+                          <SelectTrigger className="h-10 flex-1 min-w-[180px] rounded-lg border-slate-200 bg-white font-black uppercase text-[9px] tracking-widest">
                             <SelectValue placeholder="Région" />
                           </SelectTrigger>
-                          <SelectContent className="rounded-xl border-slate-100 shadow-2xl">
-                            <SelectItem value="all" className="font-bold py-3 uppercase text-[9px] tracking-widest">Toutes les régions</SelectItem>
+                          <SelectContent className="rounded-lg border-slate-100 shadow-2xl">
+                            <SelectItem value="all" className="font-bold py-2.5 uppercase text-[9px] tracking-widest">Toutes les régions</SelectItem>
                             {Object.keys(divisions).sort().map(reg => (
-                              <SelectItem key={reg} value={reg} className="font-bold py-3 uppercase text-[9px] tracking-widest">{reg}</SelectItem>
+                              <SelectItem key={reg} value={reg} className="font-bold py-2.5 uppercase text-[9px] tracking-widest">{reg}</SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
@@ -569,22 +569,22 @@ export default function EmployeesPage() {
                           })}
                           disabled={regionFilter === 'all'}
                         >
-                          <SelectTrigger className="h-12 flex-1 min-w-[200px] rounded-xl border-slate-200 bg-white font-black uppercase text-[10px] tracking-widest">
+                          <SelectTrigger className="h-10 flex-1 min-w-[180px] rounded-lg border-slate-200 bg-white font-black uppercase text-[9px] tracking-widest">
                             <SelectValue placeholder="Département" />
                           </SelectTrigger>
-                          <SelectContent className="rounded-xl border-slate-100 shadow-2xl">
-                            <SelectItem value="all" className="font-bold py-3 uppercase text-[9px] tracking-widest">Tous les départements</SelectItem>
+                          <SelectContent className="rounded-lg border-slate-100 shadow-2xl">
+                            <SelectItem value="all" className="font-bold py-2.5 uppercase text-[9px] tracking-widest">Tous les départements</SelectItem>
                             {Object.keys(divisions[regionFilter] || {}).sort().map(dep => (
-                              <SelectItem key={dep} value={dep} className="font-bold py-3 uppercase text-[9px] tracking-widest">{dep}</SelectItem>
+                              <SelectItem key={dep} value={dep} className="font-bold py-2.5 uppercase text-[9px] tracking-widest">{dep}</SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
 
-                        <div className="relative flex-1 min-w-[200px]">
-                          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                        <div className="relative flex-1 min-w-[180px]">
+                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
                           <DebouncedInput
                             placeholder="RECHERCHER PAR VILLAGE..."
-                            className="h-12 pl-12 rounded-xl border-slate-200 bg-white font-black text-[10px] tracking-widest"
+                            className="h-10 pl-10 rounded-lg border-slate-200 bg-white font-black text-[9px] tracking-widest"
                             value={villageFilter}
                             onChange={(val) => startTransition(() => {
                               const sVal = String(val);
@@ -596,12 +596,12 @@ export default function EmployeesPage() {
                       </div>
                     )}
                     
-                    <div className="flex flex-wrap gap-4 mb-8 items-center bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100">
-                      <div className="relative flex-1 min-w-[240px]">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                    <div className="flex flex-wrap gap-3 mb-4 items-center bg-slate-50/50 p-3 rounded-xl border border-slate-100">
+                      <div className="relative flex-1 min-w-[220px]">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
                         <DebouncedInput
                           placeholder="IDENTIFICATION AGENT / MATRICULE..."
-                          className="h-12 pl-12 rounded-xl border-slate-200 bg-white font-black text-[10px] tracking-widest shadow-sm focus:bg-white transition-all"
+                          className="h-10 pl-10 rounded-lg border-slate-200 bg-white font-black text-[9px] tracking-widest shadow-sm focus:bg-white transition-all"
                           value={searchTerm}
                           onChange={(val) => startTransition(() => {
                             const sVal = String(val);
@@ -616,12 +616,12 @@ export default function EmployeesPage() {
                           setDepartmentFilter(val);
                           setCurrentPage(1);
                         })}>
-                          <SelectTrigger className="h-12 flex-1 min-w-[200px] rounded-xl border-slate-200 bg-white font-black uppercase text-[9px] tracking-widest">
+                          <SelectTrigger className="h-10 flex-1 min-w-[180px] rounded-lg border-slate-200 bg-white font-black uppercase text-[9px] tracking-widest">
                             <SelectValue placeholder="Section / Département" />
                           </SelectTrigger>
-                          <SelectContent className="rounded-xl border-slate-100 shadow-2xl">
-                            <SelectItem value="all" className="font-bold py-3 uppercase text-[9px] tracking-widest">Tous les départements</SelectItem>
-                            {departments.map(dep => <SelectItem key={dep.id} value={dep.id} className="font-bold py-3 uppercase text-[9px] tracking-widest">{dep.name}</SelectItem>)}
+                          <SelectContent className="rounded-lg border-slate-100 shadow-2xl">
+                            <SelectItem value="all" className="font-bold py-2.5 uppercase text-[9px] tracking-widest">Tous les départements</SelectItem>
+                            {departments.map(dep => <SelectItem key={dep.id} value={dep.id} className="font-bold py-2.5 uppercase text-[9px] tracking-widest">{dep.name}</SelectItem>)}
                           </SelectContent>
                         </Select>
                       )}
@@ -630,14 +630,14 @@ export default function EmployeesPage() {
                         setStatusFilter(val);
                         setCurrentPage(1);
                       })}>
-                        <SelectTrigger className="h-12 flex-1 min-w-[180px] rounded-xl border-slate-200 bg-white font-black uppercase text-[9px] tracking-widest text-slate-900 shadow-sm">
+                        <SelectTrigger className="h-10 flex-1 min-w-[150px] rounded-lg border-slate-200 bg-white font-black uppercase text-[9px] tracking-widest text-slate-900 shadow-sm">
                           <SelectValue placeholder="Statut Actuel" />
                         </SelectTrigger>
-                        <SelectContent className="rounded-xl border-slate-100 shadow-2xl">
-                          <SelectItem value="all" className="font-bold py-3 uppercase text-[9px] tracking-widest">Tous les statuts</SelectItem>
-                          <SelectItem value="Actif" className="font-bold py-3 uppercase text-[9px] tracking-widest text-emerald-600">Actif</SelectItem>
-                          <SelectItem value="En congé" className="font-bold py-3 uppercase text-[9px] tracking-widest text-blue-600">En congé</SelectItem>
-                          <SelectItem value="Retraité" className="font-bold py-3 uppercase text-[9px] tracking-widest text-slate-500">Retraité</SelectItem>
+                        <SelectContent className="rounded-lg border-slate-100 shadow-2xl">
+                          <SelectItem value="all" className="font-bold py-2.5 uppercase text-[9px] tracking-widest">Tous les statuts</SelectItem>
+                          <SelectItem value="Actif" className="font-bold py-2.5 uppercase text-[9px] tracking-widest text-emerald-600">Actif</SelectItem>
+                          <SelectItem value="En congé" className="font-bold py-2.5 uppercase text-[9px] tracking-widest text-blue-600">En congé</SelectItem>
+                          <SelectItem value="Retraité" className="font-bold py-2.5 uppercase text-[9px] tracking-widest text-slate-500">Retraité</SelectItem>
                         </SelectContent>
                       </Select>
 
@@ -645,13 +645,13 @@ export default function EmployeesPage() {
                         setSexeFilter(val);
                         setCurrentPage(1);
                       })}>
-                        <SelectTrigger className="h-12 w-[140px] rounded-xl border-slate-200 bg-white font-black uppercase text-[9px] tracking-widest text-slate-900 shadow-sm">
+                        <SelectTrigger className="h-10 w-[140px] rounded-lg border-slate-200 bg-white font-black uppercase text-[9px] tracking-widest text-slate-900 shadow-sm">
                           <SelectValue placeholder="Genre" />
                         </SelectTrigger>
-                        <SelectContent className="rounded-xl border-slate-100 shadow-2xl">
-                          <SelectItem value="all" className="font-bold py-3 uppercase text-[9px] tracking-widest">Tous</SelectItem>
-                          <SelectItem value="Homme" className="font-bold py-3 uppercase text-[9px] tracking-widest">Homme</SelectItem>
-                          <SelectItem value="Femme" className="font-bold py-3 uppercase text-[9px] tracking-widest">Femme</SelectItem>
+                        <SelectContent className="rounded-lg border-slate-100 shadow-2xl">
+                          <SelectItem value="all" className="font-bold py-2.5 uppercase text-[9px] tracking-widest">Tous</SelectItem>
+                          <SelectItem value="Homme" className="font-bold py-2.5 uppercase text-[9px] tracking-widest">Homme</SelectItem>
+                          <SelectItem value="Femme" className="font-bold py-2.5 uppercase text-[9px] tracking-widest">Femme</SelectItem>
                         </SelectContent>
                       </Select>
 
@@ -660,10 +660,10 @@ export default function EmployeesPage() {
                         setSortBy(newSortBy);
                         setSortOrder(newSortOrder);
                       }}>
-                        <SelectTrigger className="h-12 w-[220px] rounded-xl border-slate-900 bg-slate-900 text-white font-black uppercase text-[9px] tracking-widest shadow-lg">
+                        <SelectTrigger className="h-10 w-[220px] rounded-lg border-slate-900 bg-slate-900 text-white font-black uppercase text-[9px] tracking-widest shadow-lg">
                           <SelectValue placeholder="Trier par" />
                         </SelectTrigger>
-                        <SelectContent className="rounded-xl border-slate-100 shadow-2xl">
+                        <SelectContent className="rounded-lg border-slate-100 shadow-2xl">
                           <SelectItem value="name-asc" className="font-bold py-3 uppercase text-[9px] tracking-widest">Nom (ALPHA A-Z)</SelectItem>
                           <SelectItem value="name-desc" className="font-bold py-3 uppercase text-[9px] tracking-widest">Nom (ALPHA Z-A)</SelectItem>
                           <SelectItem value="matricule-asc" className="font-bold py-3 uppercase text-[9px] tracking-widest">Matricule (CROISSANT)</SelectItem>
@@ -727,7 +727,7 @@ export default function EmployeesPage() {
                               <TableRow 
                                 key={employee.id} 
                                 onClick={() => router.push(`/employees/${employee.id}`)}
-                                className="cursor-pointer border-b border-slate-50 hover:bg-white/60 transition-all group h-20"
+                                className="cursor-pointer border-b border-slate-50 hover:bg-white/60 transition-all group h-14"
                               >
                                 {isGeoTab && <TableCell className="text-center font-black text-slate-300">{(currentPage - 1) * itemsPerPage + index + 1}</TableCell>}
                                 <TableCell>
@@ -807,7 +807,7 @@ export default function EmployeesPage() {
 
                     {!loading && filteredEmployees.length === 0 && (
                       <div className="text-center py-20 bg-slate-50/50 rounded-2xl border-2 border-dashed mt-4">
-                        <Users className="h-12 w-12 text-slate-200 mx-auto mb-4" />
+                        <Users2 className="h-12 w-12 text-slate-200 mx-auto mb-4" />
                         <p className="text-slate-400 font-bold uppercase tracking-[0.2em] text-[10px]">Aucun collaborateur identifié pour ce périmètre.</p>
                       </div>
                     )}

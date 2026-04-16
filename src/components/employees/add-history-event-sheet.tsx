@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -29,7 +29,8 @@ import { calculateSeniority } from "@/services/payslip-details-service";
 import { useToast } from "@/hooks/use-toast";
 import { ScrollArea } from "../ui/scroll-area";
 import { differenceInYears, parseISO, isValid, isBefore, isEqual } from "date-fns";
-import { Calculator, Undo2, History, Info, TrendingUp, Wallet, Clock, Activity, Save, XCircle } from "lucide-react";
+import { Calculator, Undo2, History, Info, TrendingUp, Wallet, Clock, Activity, Save, XCircle, Briefcase, Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface AddHistoryEventSheetProps {
   isOpen: boolean;
@@ -40,7 +41,7 @@ interface AddHistoryEventSheetProps {
 }
 
 const eventTypes: EmployeeEvent['eventType'][] = ['Promotion', 'Augmentation au Mérite', 'Ajustement de Marché', 'Revalorisation Salariale', 'Changement de poste', 'Départ', 'Autre'];
-const salaryEventTypes: EmployeeEvent['eventType'][] = ['Augmentation au Mérite', 'Promotion', 'Ajustement de Marché', 'Revalorisation Salariale'];
+const salaryEventTypes: EmployeeEvent['eventType'][] = ['Augmentation au Mérite', 'Promotion', 'Ajustement de Marché', 'Revalorisation Salariale', 'Changement de poste', 'Autre'];
 
 const indemnityFields = [
     { id: 'baseSalary', label: 'Salaire de Base' },
@@ -98,6 +99,8 @@ export function AddHistoryEventSheet({ isOpen, onCloseAction, employeeId, eventT
 
   const [desiredNetSalary, setDesiredNetSalary] = useState<number | string>('');
   const [originalBaseSalary, setOriginalBaseSalary] = useState<number | null>(null);
+
+  const [isPending, startTransition] = useTransition();
 
   const isEditMode = !!eventToEdit;
   const isSalaryEventType = eventType ? salaryEventTypes.includes(eventType as any) : false;
@@ -258,7 +261,11 @@ export function AddHistoryEventSheet({ isOpen, onCloseAction, employeeId, eventT
                   <div className="grid grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <Label htmlFor="eventType" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Type d'acte professionnel</Label>
-                      <Select value={eventType} onValueChange={(value: EmployeeEvent['eventType']) => setEventType(value)}>
+                      <Select value={eventType} onValueChange={(value: EmployeeEvent['eventType']) => {
+                        startTransition(() => {
+                          setEventType(value);
+                        });
+                      }}>
                         <SelectTrigger className="h-12 rounded-xl border-slate-200 bg-white font-bold text-slate-900 shadow-sm">
                           <SelectValue placeholder="Sélectionner..." />
                         </SelectTrigger>

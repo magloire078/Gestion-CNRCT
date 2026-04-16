@@ -59,7 +59,7 @@ export type ConflictComment = {
     date: string;
     author: string;
     content: string;
-    type?: 'Note' | 'Réunion' | 'Document' | 'Résolution' | 'Autre';
+    type?: 'Note' | 'Réunion' | 'Document' | 'Résolution' | 'Autre' | 'Statut';
 };
 
 export type Conflict = {

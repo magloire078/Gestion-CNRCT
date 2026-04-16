@@ -143,24 +143,24 @@ function ManagementHubContent() {
             {/* Dashboard Alerts Section */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {[
-                    { label: "Ruptures de Stock", count: stats.lowStock, icon: AlertTriangle, color: "text-amber-600", bg: "bg-amber-50", description: "Articles sous le seuil critique" },
-                    { label: "Maintenance IT", count: stats.itRepair, icon: Laptop, color: "text-slate-900", bg: "bg-slate-100", description: "Équipements en cours de réparation" },
-                    { label: "Alertes Flotte", count: stats.fleetIssues, icon: Truck, color: "text-rose-600", bg: "bg-rose-50", description: "Assurances ou visites techniques" }
+                    { label: "Ruptures de Stock", count: stats.lowStock, icon: AlertTriangle, color: "text-amber-600", bg: "bg-amber-50", description: "Articles sous le seuil critique", href: "/supplies" },
+                    { label: "Maintenance IT", count: stats.itRepair, icon: Laptop, color: "text-slate-900", bg: "bg-slate-100", description: "Équipements en cours de réparation", href: "/it-assets" },
+                    { label: "Alertes Flotte", count: stats.fleetIssues, icon: Truck, color: "text-rose-600", bg: "bg-rose-50", description: "Assurances ou visites techniques", href: "/fleet" }
                 ].map((alert, i) => (
-                    <Card key={i} className="border-none shadow-xl shadow-slate-200/50 rounded-2xl overflow-hidden group">
-                        <CardContent className="p-6">
+                    <Card key={i} className="border-none shadow-xl shadow-slate-200/50 rounded-xl overflow-hidden group">
+                        <CardContent className="p-5">
                             <div className="flex items-center gap-5">
-                                <div className={cn("h-16 w-16 rounded-xl flex items-center justify-center transition-all duration-500 group-hover:scale-110", alert.bg)}>
-                                    <alert.icon className={cn("h-8 w-8", alert.color)} />
+                                <div className={cn("h-14 w-14 rounded-lg flex items-center justify-center transition-all duration-500 group-hover:scale-110", alert.bg)}>
+                                    <alert.icon className={cn("h-7 w-7", alert.color)} />
                                 </div>
                                 <div>
-                                    <h4 className="text-4xl font-black text-slate-950 tracking-tighter">{alert.count}</h4>
-                                    <p className="text-xs font-black text-slate-400 uppercase tracking-widest">{alert.label}</p>
+                                    <h4 className="text-3xl font-black text-slate-950 tracking-tighter">{alert.count}</h4>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{alert.label}</p>
                                 </div>
                             </div>
-                            <p className="mt-6 text-sm font-medium text-slate-500 leading-relaxed border-t border-slate-50 pt-6">
+                            <p className="mt-5 text-sm font-medium text-slate-500 leading-relaxed border-t border-slate-50 pt-5">
                                 {alert.description}
-                                <Link href="#" className="ml-2 text-indigo-600 font-bold hover:underline inline-flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                                <Link href={alert.href} className="ml-2 text-indigo-600 font-bold hover:underline inline-flex items-center gap-1 group-hover:translate-x-1 transition-transform">
                                     Voir <ArrowRight className="h-3 w-3" />
                                 </Link>
                             </p>
@@ -186,15 +186,15 @@ function ManagementHubContent() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {quickActions.map((action, i) => (
                             <Link href={action.href} key={i}>
-                                <div className="h-full bg-white p-6 rounded-xl shadow-lg shadow-slate-200/40 group hover:shadow-2xl hover:bg-slate-900 transition-all duration-500 cursor-pointer border border-slate-50">
-                                    <div className={cn("h-14 w-14 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-6 transition-all shadow-lg", action.color)}>
-                                        <action.icon className="h-7 w-7 text-white" />
+                                <div className="h-full bg-white p-5 rounded-lg shadow-lg shadow-slate-200/40 group hover:shadow-2xl hover:bg-slate-900 transition-all duration-500 cursor-pointer border border-slate-50">
+                                    <div className={cn("h-12 w-12 rounded-lg flex items-center justify-center mb-5 group-hover:scale-110 group-hover:rotate-6 transition-all shadow-lg", action.color)}>
+                                        <action.icon className="h-6 w-6 text-white" />
                                     </div>
-                                    <h3 className="text-xl font-black text-slate-950 group-hover:text-white transition-colors">{action.label}</h3>
-                                    <p className="text-slate-500 group-hover:text-slate-400 font-medium text-sm mt-2 leading-relaxed">
+                                    <h3 className="text-lg font-black text-slate-950 group-hover:text-white transition-colors">{action.label}</h3>
+                                    <p className="text-slate-500 group-hover:text-slate-400 font-medium text-xs mt-2 leading-relaxed">
                                         {action.description}
                                     </p>
-                                    <div className="mt-8 flex items-center gap-2 text-indigo-600 group-hover:text-indigo-400 font-black text-[10px] uppercase tracking-tighter opacity-0 group-hover:opacity-100 transition-all">
+                                    <div className="mt-6 flex items-center gap-2 text-indigo-600 group-hover:text-indigo-400 font-black text-[9px] uppercase tracking-tighter opacity-0 group-hover:opacity-100 transition-all">
                                         Lancer l'assistant <ArrowUpRight className="h-3 w-3" />
                                     </div>
                                 </div>
@@ -203,7 +203,7 @@ function ManagementHubContent() {
                     </div>
 
                     {/* Operational Map or Chart Placeholder */}
-                    <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-2xl p-8 bg-slate-950 text-white overflow-hidden relative">
+                    <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-xl p-6 bg-slate-950 text-white overflow-hidden relative">
                         <div className="absolute top-0 right-0 h-64 w-64 bg-indigo-600/20 rounded-full blur-[80px] -mr-32 -mt-32" />
                         <div className="relative z-10 space-y-6">
                             <div className="flex items-center justify-between">
@@ -258,7 +258,7 @@ function ManagementHubContent() {
                         </h2>
                     </div>
 
-                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-2xl overflow-hidden bg-white">
+                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-xl overflow-hidden bg-white">
                         <CardContent className="p-6 space-y-8">
                             {stats.recentActivity.length > 0 ? stats.recentActivity.map((log, i) => (
                                 <div key={i} className="flex gap-5 relative group">
@@ -303,9 +303,11 @@ function ManagementHubContent() {
                                 </div>
                             )}
                             
-                            <Button className="w-full h-14 rounded-xl bg-slate-50 hover:bg-slate-100 border-none text-slate-600 font-black text-sm uppercase tracking-widest mt-4">
-                                Voir tout l'historique
-                            </Button>
+                            <Link href="/supplies/transactions" className="block w-full">
+                                <Button className="w-full h-12 rounded-lg bg-slate-50 hover:bg-slate-100 border-none text-slate-600 font-black text-xs uppercase tracking-widest mt-4">
+                                    Voir tout l'historique
+                                </Button>
+                            </Link>
                         </CardContent>
                     </Card>
                 </div>

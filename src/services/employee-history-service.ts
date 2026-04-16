@@ -7,7 +7,7 @@ import { getEmployee } from './employee-service';
 import { getPayslipDetails } from './payslip-details-service';
 import { parseISO, isValid, isBefore, isEqual } from 'date-fns';
 
-const salaryEventTypes: EmployeeEvent['eventType'][] = ['Promotion', 'Augmentation au Mérite', 'Ajustement de Marché', 'Revalorisation Salariale'];
+const salaryEventTypes: EmployeeEvent['eventType'][] = ['Promotion', 'Augmentation au Mérite', 'Ajustement de Marché', 'Revalorisation Salariale', 'Changement de poste', 'Autre'];
 
 /**
  * Retrieves the professional history for a specific employee.

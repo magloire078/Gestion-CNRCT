@@ -244,7 +244,7 @@ export function SuppliesOfficialReport({
                             <BarChart3 className="h-4 w-4" />
                             <span className="text-[11px] font-black uppercase tracking-widest">Disponibilité Global</span>
                         </div>
-                        <div className="text-3xl font-black text-emerald-700 leading-none">{Math.round(stats.avgHealth)}%</div>
+                        <div className="text-3xl font-black text-emerald-700 leading-none">{Math.round(stats.avgHealth || 0)}%</div>
                     </div>
                 </div>
 
@@ -288,7 +288,7 @@ export function SuppliesOfficialReport({
                                     </div>
                                 </td>
                                 <td className="border border-slate-300 p-3 text-center text-sm font-bold text-slate-600 bg-slate-50/30">
-                                    {item.qteInventaire}
+                                    {Number(item.qteInventaire) || 0}
                                 </td>
                                 <td className="border border-slate-300 p-3 text-center text-sm font-black text-emerald-700 italic bg-emerald-50/10">
                                     {item.qteEntree > 0 ? `+ ${item.qteEntree}` : '---'}
@@ -298,9 +298,9 @@ export function SuppliesOfficialReport({
                                 </td>
                                 <td className={cn(
                                     "border border-slate-900 p-3 text-center text-base font-black italic border-l-4 border-l-slate-900",
-                                    item.qteStock <= (item.reorderLevel || 5) ? "text-red-700 bg-red-50/50" : "text-slate-900"
+                                    (Number(item.qteStock) || 0) <= (item.reorderLevel || 5) ? "text-red-700 bg-red-50/50" : "text-slate-900"
                                 )}>
-                                    {item.qteStock}
+                                    {Number(item.qteStock) || 0}
                                 </td>
                             </tr>
                         ))}

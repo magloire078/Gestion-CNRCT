@@ -667,17 +667,19 @@ export default function SuppliesPage() {
 
         const qteEntree = periodTransactions
             .filter(t => t.type === 'restock')
-            .reduce((sum, t) => sum + t.quantity, 0);
+            .reduce((sum, t) => sum + (Number(t.quantity) || 0), 0);
             
         const qteSortie = periodTransactions
             .filter(t => t.type === 'distribution')
-            .reduce((sum, t) => sum + t.quantity, 0);
+            .reduce((sum, t) => sum + (Number(t.quantity) || 0), 0);
 
         const variationPostPeriod = postPeriodTransactions.reduce((acc, t) => {
-            return acc + (t.type === 'restock' ? t.quantity : -t.quantity);
+            const qty = Number(t.quantity) || 0;
+            return acc + (t.type === 'restock' ? qty : -qty);
         }, 0);
         
-        const qteStockFin = supply.quantity - variationPostPeriod;
+        const currentQty = Number(supply.quantity) || 0;
+        const qteStockFin = currentQty - variationPostPeriod;
         const qteInventaire = qteStockFin - (qteEntree - qteSortie);
 
         return {
@@ -898,6 +900,7 @@ export default function SuppliesPage() {
             isOpen={isPrintDialogOpen} 
             onCloseAction={handleClosePrintDialog} 
             onPrintAction={handlePrint}
+            availableCategories={availableCategories.map(cat => cat.name)}
           />
       )}
 

@@ -155,7 +155,7 @@ export function SuppliesOfficialReport({
                             Rapport de Situation
                         </div>
                         <p className="text-3xl font-black uppercase underline decoration-[#006039] decoration-8 underline-offset-[12px]">
-                            PÉRIODE : {periodLabel}
+                            PÉRIODE : {periodLabel || format(new Date(), 'MMMM yyyy', { locale: fr })}
                         </p>
                         <div className="flex gap-12 justify-center mt-10">
                              {categoryLabel !== 'all' && (
@@ -199,12 +199,14 @@ export function SuppliesOfficialReport({
                             <h3 className="text-2xl font-black uppercase tracking-tighter italic leading-none">
                                 Détail des Mouvements de Stock
                             </h3>
-                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Situation détaillée au {format(new Date(), 'dd/MM/yyyy à HH:mm')}</p>
+                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">
+                                PÉRIODE D'AUDIT : <span className="text-slate-900">{periodLabel || format(new Date(), 'MMMM yyyy', { locale: fr })}</span> | Situation au {format(new Date(), 'dd/MM/yyyy à HH:mm')}
+                            </p>
                         </div>
                     </div>
                     <div className="flex flex-col items-end">
                         <span className="px-6 py-2 bg-slate-900 text-white text-xs font-black rounded-xl uppercase tracking-widest transition-all">
-                            {categoryLabel === 'all' ? 'Inventaire Consolidé' : categoryLabel}
+                            {categoryLabel === 'all' ? 'Inventaire Global (Tous articles)' : categoryLabel}
                         </span>
                     </div>
                 </div>

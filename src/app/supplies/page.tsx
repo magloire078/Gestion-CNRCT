@@ -628,16 +628,8 @@ export default function SuppliesPage() {
 
   const handlePrint = useCallback((options: PrintOptions) => {
     setPrintOptions(options);
-    
-    // Sort supplies for printing if needed
-    const sorted = [...filteredSupplies];
-    if (options.sortBy === 'name') sorted.sort((a, b) => a.name.localeCompare(b.name));
-    if (options.sortBy === 'quantity') sorted.sort((a, b) => b.quantity - a.quantity);
-    if (options.sortBy === 'category') sorted.sort((a, b) => a.category.localeCompare(b.category));
-    
-    setSupplies(sorted); // Note: this affects the UI too, which is fine for printing
     setIsPrinting(true);
-  }, [filteredSupplies]);
+  }, []);
 
   const printableSupplies = useMemo(() => {
     if (!printOptions) return [];
@@ -909,7 +901,7 @@ export default function SuppliesPage() {
           <SuppliesOfficialReport 
             logos={settings || { mainLogoUrl: '', secondaryLogoUrl: '', name: 'CNRCT', id: 'default' } as any}
             supplies={printableSupplies}
-            categoryLabel={categoryFilter}
+            categoryLabel={printOptions.category}
             periodLabel={periodLabel}
             stats={stats}
             options={{
@@ -924,10 +916,10 @@ export default function SuppliesPage() {
         isPrinting={isPrinting && printOptions?.reportTemplate !== 'official'} 
         onAfterPrint={() => setIsPrinting(false)}
       >
-        {isPrinting && printOptions?.reportTemplate !== 'official' && (
+        {isPrinting && printOptions?.reportTemplate !== 'official' && printOptions && (
             <div id="printable-report" className="bg-white p-6 min-h-screen text-black">
               <InstitutionalHeader 
-                title={categoryFilter !== 'all' ? `État des Stocks : ${categoryFilter}` : "État de Gestion des Fournitures et Consommables"} 
+                title={printOptions.category !== 'all' ? `État des Stocks : ${printOptions.category}` : "État de Gestion des Fournitures et Consommables"} 
                 period={`Période : ${periodLabel || format(new Date(), 'MMMM yyyy', { locale: fr })}`}
               />
                 

@@ -34,7 +34,9 @@ import { useToast } from "@/hooks/use-toast";
 import { addVillage } from "@/services/village-service";
 import { IVORIAN_REGIONS } from "@/constants/regions";
 import { divisions } from "@/lib/ivory-coast-divisions";
-import {
+import { calculateDevelopmentScore } from "@/services/village-service";
+import { Progress } from "@/components/ui/progress";
+import { 
     Accordion,
     AccordionContent,
     AccordionItem,
@@ -97,6 +99,13 @@ export function AddVillageSheet() {
         ? Object.keys(divisions[selectedRegion][selectedDepartment] || {}) 
         : [];
 
+    const currentValues = form.watch();
+    const liveScore = calculateDevelopmentScore({
+        ...currentValues,
+        latitude: currentValues.latitude ?? undefined,
+        longitude: currentValues.longitude ?? undefined
+    });
+
     async function onSubmit(values: VillageFormValues) {
         setIsSubmitting(true);
         try {
@@ -137,6 +146,24 @@ export function AddVillageSheet() {
                     <SheetDescription>
                         Remplissez l&apos;organisation administrative, les coordonnées SIG et les infrastructures pour l&apos;Observatoire Territorial.
                     </SheetDescription>
+                    <div className="flex items-center gap-3 bg-blue-50/50 p-4 rounded-2xl border border-blue-100/50 mb-6 group">
+                        <div className="bg-blue-600 p-2 rounded-xl text-white shadow-lg shadow-blue-200">
+                            <Activity className="h-5 w-5" />
+                        </div>
+                        <div className="flex-1">
+                            <div className="flex justify-between items-center mb-1.5">
+                                <span className="text-[10px] font-black uppercase text-blue-600 tracking-widest">IDL Prévisionnel</span>
+                                <span className="text-sm font-black text-blue-700">{liveScore}%</span>
+                            </div>
+                            <div className="h-1.5 w-full bg-blue-100 rounded-full overflow-hidden">
+                                <Progress 
+                                    value={liveScore} 
+                                    className="h-full w-full bg-blue-100" 
+                                    indicatorClassName="bg-blue-600"
+                                />
+                            </div>
+                        </div>
+                    </div>
                 </SheetHeader>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col h-full">

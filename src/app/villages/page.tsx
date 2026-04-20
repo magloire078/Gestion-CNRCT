@@ -23,6 +23,7 @@ import {
     School,
     Activity
 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { DebouncedInput } from "@/components/ui/debounced-input";
 import { Button } from "@/components/ui/button";
@@ -57,8 +58,11 @@ import { Progress } from "@/components/ui/progress";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { AddVillageSheet } from "@/components/villages/add-village-sheet";
-import { PrintVillagesList } from "@/components/villages/print-villages-list";
+import { VillageQuickView } from "@/components/villages/village-quick-view";
+import { VillagesOfficialReport } from "@/components/reports/villages-official-report";
 import { PermissionGuard } from "@/components/auth/permission-guard";
+import { useAuth } from "@/hooks/use-auth";
+import { cn } from "@/lib/utils";
 
 export type VillageEntry = {
     village: Village;
@@ -70,9 +74,9 @@ type SeatStatus = "all" | "occupied" | "vacant";
 
 export default function VillagesPage() {
     // Data State
+    const { settings } = useAuth();
     const [villages, setVillages] = useState<Village[]>([]);
     const [chiefs, setChiefs] = useState<Chief[]>([]);
-    const [orgSettings, setOrgSettings] = useState<OrganizationSettings | null>(null);
     const [loading, setLoading] = useState(true);
     
     // UI State
@@ -81,6 +85,8 @@ export default function VillagesPage() {
     const [selectedDepartment, setSelectedDepartment] = useState<string>("all");
     const [selectedCommune, setSelectedCommune] = useState<string>("all");
     const [seatStatus, setSeatStatus] = useState<SeatStatus>("all");
+    const [activeTab, setActiveTab] = useState("all");
+    const [quickViewVillage, setQuickViewVillage] = useState<{ village: Village, chief: Chief | null } | null>(null);
     const [printDate, setPrintDate] = useState("");
     const [isPrinting, setIsPrinting] = useState(false);
     const [isPending, startTransition] = useTransition();
@@ -103,8 +109,6 @@ export default function VillagesPage() {
             console.error("Error subscribing to chiefs:", error);
         });
 
-        // Fetch Organization Settings
-        getOrganizationSettings().then(setOrgSettings);
 
         return () => {
             unsubscribeVillages();
@@ -226,10 +230,11 @@ export default function VillagesPage() {
             {/* Print View Component (Only mounted during print) */}
             {isPrinting && (
                 <div className="hidden print:block">
-                    <PrintVillagesList 
+                    <VillagesOfficialReport 
                         villages={filteredVillages} 
-                        organizationSettings={orgSettings} 
+                        organizationSettings={settings} 
                         subtitle={printSubtitle}
+                        stats={stats}
                     />
                 </div>
             )}
@@ -242,46 +247,35 @@ export default function VillagesPage() {
                 
                 <div className="container relative mx-auto px-4 lg:px-8">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                        <div>
-                            <div className="flex items-center gap-3 mb-4">
-                                <div className="p-3 bg-amber-500/10 rounded-xl border border-amber-500/20">
-                                    <MapIcon className="h-8 w-8 text-amber-500" />
-                                </div>
-                                <h1 className="text-4xl font-black text-white tracking-tight">
-                                    Localités & Autorités
-                                </h1>
+                        <div className="flex items-center gap-5">
+                            <div className="h-20 w-20 rounded-[2rem] bg-amber-500 flex items-center justify-center shadow-2xl shadow-amber-500/20 rotate-3">
+                                <Building2 className="h-10 w-10 text-white -rotate-3" />
                             </div>
-                            <p className="text-slate-400 text-lg max-w-2xl font-medium leading-relaxed">
-                                Cartographie administrative et gestion des sièges des autorités traditionnelles en Côte d'Ivoire.
-                            </p>
-                            
-                            <div className="flex flex-wrap gap-4 mt-8">
-                                <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-lg px-6 py-3">
-                                    <span className="text-3xl font-black text-white">{stats.total}</span>
-                                    <span className="ml-2 text-slate-400 font-semibold uppercase tracking-wider text-xs">Localités</span>
-                                </div>
-                                <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-lg px-6 py-3">
-                                    <span className="text-3xl font-black text-green-400">{stats.occupied}</span>
-                                    <span className="ml-2 text-slate-400 font-semibold uppercase tracking-wider text-xs">Sièges Occupés</span>
-                                </div>
-                                <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl px-6 py-3">
-                                    <span className="text-3xl font-black text-amber-400">{stats.vacant}</span>
-                                    <span className="ml-2 text-slate-400 font-semibold uppercase tracking-wider text-xs">Vacances de Trône</span>
-                                </div>
+                            <div className="space-y-1">
+                                <h1 className="text-4xl font-black tracking-tight text-white uppercase italic leading-none">
+                                    Localités <span className="text-amber-500 italic">&</span> Autorités
+                                </h1>
+                                <p className="text-slate-400 font-bold flex items-center gap-2">
+                                    <Badge variant="outline" className="bg-white/5 text-slate-300 font-black border-white/10 uppercase tracking-widest text-[10px]">RÉPERTOIRE NATIONAL</Badge>
+                                    <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                                    Observatoire Territorial
+                                </p>
                             </div>
                         </div>
 
                         <div className="flex flex-col sm:flex-row gap-3">
                             <Button 
                                 variant="outline" 
-                                className="bg-white/5 border-white/10 text-white hover:bg-white/10 rounded-lg h-14 px-8 font-bold"
+                                className="bg-white/5 border-white/10 text-white hover:bg-white/10 rounded-xl h-14 px-8 font-bold group"
                                 onClick={handlePrint}
                                 disabled={filteredVillages.length === 0}
                             >
-                                <Printer className="mr-2 h-5 w-5" />
+                                <Printer className="mr-2 h-5 w-5 group-hover:text-amber-500 transition-colors" />
                                 Imprimer la liste
                             </Button>
-                            <AddVillageSheet />
+                            <PermissionGuard permissions={["ADMIN", "SUPER_ADMIN", "VILLAGE_CREATE"]}>
+                                <AddVillageSheet />
+                            </PermissionGuard>
                         </div>
                     </div>
 
@@ -494,9 +488,22 @@ export default function VillagesPage() {
                     </div>
                 ) : filteredVillages.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                        {filteredVillages.map((entry) => (
-                            <VillageCard key={entry.village.id} entry={entry} />
-                        ))}
+                        <AnimatePresence mode="popLayout">
+                            {filteredVillages.map((entry) => (
+                                <motion.div
+                                    key={entry.village.id}
+                                    layout
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, scale: 0.95 }}
+                                    transition={{ duration: 0.3 }}
+                                    onClick={() => setQuickViewVillage({ village: entry.village, chief: entry.currentChief })}
+                                    className="cursor-pointer"
+                                >
+                                    <VillageCard entry={entry} />
+                                </motion.div>
+                            ))}
+                        </AnimatePresence>
                     </div>
                  ) : (
                     <div className="bg-white rounded-xl p-8 text-center shadow-xl shadow-slate-200/50 border border-slate-50">
@@ -520,11 +527,23 @@ export default function VillagesPage() {
 
 function VillageCard({ entry }: { entry: VillageEntry }) {
     const { village, currentChief, archivedChiefsCount } = entry;
+    const score = village.developmentScore || 0;
 
     return (
-        <Card className="group relative rounded-xl border-none shadow-xl shadow-slate-200/50 overflow-hidden bg-white hover:shadow-2xl hover:shadow-amber-500/10 transition-all duration-500 hover:-translate-y-2">
+        <Card className={cn(
+            "group relative rounded-xl border-none shadow-xl shadow-slate-200/50 overflow-hidden bg-white hover:shadow-2xl transition-all duration-500 hover:-translate-y-2",
+            !currentChief && "ring-2 ring-amber-500/10 shadow-amber-500/5"
+        )}>
             {/* Background Pattern Header */}
             <div className="h-32 bg-slate-900 relative p-6 flex flex-col justify-end overflow-hidden">
+                {!currentChief && (
+                    <motion.div 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: [0.1, 0.3, 0.1] }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                        className="absolute inset-0 bg-amber-500"
+                    />
+                )}
                 <div className="absolute inset-0 opacity-20 transition-transform duration-700 group-hover:scale-110">
                     <div className="absolute inset-0 pattern-dots text-white"></div>
                 </div>
@@ -579,7 +598,30 @@ function VillageCard({ entry }: { entry: VillageEntry }) {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 mt-8 pt-6 border-t border-slate-50">
+                {/* Indice de Développement Local (IDL) */}
+                <div className="mb-6 space-y-2">
+                    <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest leading-none">
+                        <span className="text-slate-400">Indice de Développement (IDL)</span>
+                        <span className={cn(
+                            score >= 80 ? "text-emerald-500" : 
+                            score >= 50 ? "text-blue-500" : "text-amber-500"
+                        )}>{score}%</span>
+                    </div>
+                    <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                        <motion.div 
+                            initial={{ width: 0 }}
+                            animate={{ width: `${score}%` }}
+                            transition={{ duration: 1, delay: 0.2 }}
+                            className={cn(
+                                "h-full rounded-full",
+                                score >= 80 ? "bg-emerald-500" : 
+                                score >= 50 ? "bg-blue-500" : "bg-amber-500"
+                            )}
+                        />
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-slate-50">
                     <div className="col-span-1">
                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.1em] mb-1">Infrastructures</p>
                         <div className="flex gap-2.5">

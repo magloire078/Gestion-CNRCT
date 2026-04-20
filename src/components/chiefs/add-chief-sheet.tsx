@@ -22,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { Chief, ChiefRole, DesignationMode } from "@/types/chief";
+import type { Chief, ChiefRole, DesignationMode, ChiefCareerEvent } from "@/types/chief";
 import { getChiefs } from "@/services/chief-service";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Upload } from "lucide-react";
@@ -38,6 +38,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { LocationPicker } from "@/components/common/location-picker";
+import { Plus, Trash2 as TrashIcon, Award, Medal, ShieldCheck, Clock, MapPin as PinIcon } from "lucide-react";
 
 interface AddChiefDialogProps {
   isOpen: boolean;
@@ -83,6 +84,9 @@ export function AddChiefSheet({ isOpen, onCloseAction, onAddChiefAction }: AddCh
   const [regencyStartDate, setRegencyStartDate] = useState("");
   const [regencyEndDate, setRegencyEndDate] = useState("");
   const [status, setStatus] = useState<Chief['status']>("actif");
+  
+  // Career Events State
+  const [career, setCareer] = useState<ChiefCareerEvent[]>([]);
 
   const [allChiefs, setAllChiefs] = useState<Chief[]>([]);
   const [error, setError] = useState("");
@@ -120,6 +124,7 @@ export function AddChiefSheet({ isOpen, onCloseAction, onAddChiefAction }: AddCh
     setRegencyStartDate(""); setRegencyEndDate(""); setStatus("actif"); setError("");
     setDesignationDate(""); setDesignationMode(""); setEthnicGroup(""); setLanguages("");
     setCNRCTRegistrationNumber(""); setOfficialDocuments(""); setEmail(""); setAddress("");
+    setCareer([]);
     if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
@@ -178,6 +183,7 @@ export function AddChiefSheet({ isOpen, onCloseAction, onAddChiefAction }: AddCh
         officialDocuments: officialDocuments || undefined,
         status: status || 'actif',
         bio,
+        career,
         photoUrl: '', // This will be set by the service after upload
       };
 
@@ -343,6 +349,107 @@ export function AddChiefSheet({ isOpen, onCloseAction, onAddChiefAction }: AddCh
                           <SelectItem value="archive">Ancien / Archivé</SelectItem>
                         </SelectContent>
                       </Select>
+                    </div>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="item-6">
+                <AccordionTrigger>Parcours & Carrière</AccordionTrigger>
+                <AccordionContent>
+                  <div className="space-y-4 pt-4">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-[10px] font-black uppercase text-slate-400">ÉVÉNEMENTS MARQUANTS</Label>
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        size="sm" 
+                        className="h-8 rounded-lg text-[10px] font-black uppercase hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                        onClick={() => setCareer([...career, { id: crypto.randomUUID(), date: "", title: "", type: "Intronisation", description: "" }])}
+                      >
+                        <Plus className="mr-1.5 h-3 w-3" /> Ajouter un événement
+                      </Button>
+                    </div>
+
+                    <div className="space-y-3">
+                      {career.length === 0 && (
+                        <div className="py-8 text-center border-2 border-dashed border-slate-100 rounded-2xl text-slate-400 text-xs italic">
+                          Aucun événement ajouté à la timeline.
+                        </div>
+                      )}
+                      {career.map((event, index) => (
+                        <div key={event.id} className="relative group p-4 bg-slate-50/50 rounded-2xl border border-slate-200/60 hover:border-blue-200 transition-all duration-300">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="absolute -top-2 -right-2 h-7 w-7 rounded-full bg-white border border-slate-200 text-slate-400 hover:text-red-500 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={() => setCareer(career.filter(e => e.id !== event.id))}
+                          >
+                            <TrashIcon className="h-3.5 w-3.5" />
+                          </Button>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label className="text-[9px] font-black uppercase text-slate-400">Type d'événement</Label>
+                              <Select value={event.type} onValueChange={(v) => {
+                                const newCareer = [...career];
+                                newCareer[index].type = v as any;
+                                setCareer(newCareer);
+                              }}>
+                                <SelectTrigger className="h-9 bg-white border-slate-200 text-xs font-bold">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="Intronisation" className="text-xs">Intronisation</SelectItem>
+                                  <SelectItem value="Médaille" className="text-xs">Médaille / Décoration</SelectItem>
+                                  <SelectItem value="Médiation" className="text-xs">Médiation de Conflit</SelectItem>
+                                  <SelectItem value="Mission" className="text-xs">Mission Officielle</SelectItem>
+                                  <SelectItem value="Autre" className="text-xs">Autre</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="space-y-2">
+                              <Label className="text-[9px] font-black uppercase text-slate-400">Date / Période</Label>
+                              <Input 
+                                className="h-9 bg-white border-slate-200 text-xs font-bold" 
+                                placeholder="ex: 12 Jan 2024" 
+                                value={event.date}
+                                onChange={(e) => {
+                                  const newCareer = [...career];
+                                  newCareer[index].date = e.target.value;
+                                  setCareer(newCareer);
+                                }}
+                              />
+                            </div>
+                            <div className="col-span-2 space-y-2">
+                              <Label className="text-[9px] font-black uppercase text-slate-400">Titre de l'événement</Label>
+                              <Input 
+                                className="h-9 bg-white border-slate-200 text-xs font-bold" 
+                                placeholder="ex: Médiation à Agboville"
+                                value={event.title}
+                                onChange={(e) => {
+                                  const newCareer = [...career];
+                                  newCareer[index].title = e.target.value;
+                                  setCareer(newCareer);
+                                }}
+                              />
+                            </div>
+                            <div className="col-span-2 space-y-2">
+                              <Label className="text-[9px] font-black uppercase text-slate-400">Description détaillée</Label>
+                              <Textarea 
+                                className="bg-white border-slate-200 text-xs font-medium min-h-[60px]" 
+                                placeholder="Précisez le contexte et l'impact..."
+                                value={event.description}
+                                onChange={(e) => {
+                                  const newCareer = [...career];
+                                  newCareer[index].description = e.target.value;
+                                  setCareer(newCareer);
+                                }}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </AccordionContent>

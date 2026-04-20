@@ -6,9 +6,11 @@ import {
     Pencil, Trash2, Download, Crown, 
     UserCheck, MapPin, Grid2X2, List,
     FileSpreadsheet, FileJson, Database,
-    UserCircle2, ShieldCheck, ChevronRight
+    UserCircle2, ShieldCheck, ChevronRight,
+    Star, GraduationCap, Medal
 } from "lucide-react";
 import Link from 'next/link';
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -56,6 +58,8 @@ import { PaginationControls } from "@/components/common/pagination-controls";
 import { ConfirmationDialog } from "@/components/common/confirmation-dialog";
 import { cn } from "@/lib/utils";
 import { PermissionGuard } from "@/components/auth/permission-guard";
+import { ChiefCard } from "@/components/chiefs/chief-card";
+import { ChiefQuickView } from "@/components/chiefs/chief-quick-view";
 
 export default function ChiefsPage() {
   const [chiefs, setChiefs] = useState<Chief[]>([]);
@@ -71,6 +75,9 @@ export default function ChiefsPage() {
   const [selectedRole, setSelectedRole] = useState<string>("all");
   const [selectedRegion, setSelectedRegion] = useState<string>("all");
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
+  
+  const [selectedChief, setSelectedChief] = useState<Chief | null>(null);
+  const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
 
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(viewMode === 'grid' ? 12 : 10);
@@ -139,6 +146,11 @@ export default function ChiefsPage() {
     }
   };
 
+  const handleShowQuickView = (chief: Chief) => {
+    setSelectedChief(chief);
+    setIsQuickViewOpen(true);
+  };
+
   const filteredChiefs = useMemo(() => {
     return chiefs.filter((chief) => {
       const matchesSearch = (chief.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -185,8 +197,11 @@ export default function ChiefsPage() {
       {/* Dynamic Hero Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h1 className="text-4xl font-black tracking-tight text-slate-900">Corps de la Chefferie</h1>
-          <p className="text-muted-foreground mt-2 font-medium">Répertoire souverain des Autorités Traditionnelles de Côte d'Ivoire.</p>
+          <h1 className="text-4xl font-black tracking-tight text-slate-900 flex items-center gap-3">
+            Authority Life Hub
+            <Badge className="bg-amber-500/10 text-amber-600 border-none px-3 py-1 text-xs font-black uppercase tracking-widest hidden sm:flex">Souveraineté</Badge>
+          </h1>
+          <p className="text-muted-foreground mt-2 font-medium">Répertoire intelligent et suivi de carrière des Autorités Traditionnelles.</p>
         </div>
         <div className="flex items-center gap-3">
           {canExport && (
@@ -269,7 +284,7 @@ export default function ChiefsPage() {
                       <Badge variant="secondary" className="bg-indigo-50 text-indigo-700 border-none font-bold">Actifs</Badge>
                   </div>
                   <h3 className="text-3xl font-black text-slate-900">{stats.total > 0 ? ((stats.active / stats.total) * 100).toFixed(0) : 0}%</h3>
-                  <p className="text-sm text-slate-500 font-bold uppercase tracking-wider mt-1">Taux d'activité</p>
+                  <p className="text-sm text-slate-500 font-bold uppercase tracking-wider mt-1">Conformité Administrative</p>
               </CardContent>
           </Card>
       </div>
@@ -366,59 +381,20 @@ export default function ChiefsPage() {
           {error && <div className="p-12 text-center text-red-500 font-black uppercase tracking-widest">{error}</div>}
 
           {viewMode === 'grid' ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <AnimatePresence mode="popLayout">
                   {loading ? (
                       Array.from({ length: 8 }).map((_, i) => (
-                          <div key={i} className="h-[320px] rounded-xl bg-slate-50 animate-pulse border border-slate-100" />
+                          <div key={i} className="h-[280px] rounded-2xl bg-slate-50 animate-pulse border border-slate-100 shadow-sm" />
                       ))
                   ) : paginatedChiefs.map((chief) => (
-                      <Link key={chief.id} href={`/chiefs/${chief.id}`} className="group">
-                          <Card className="h-full border-none shadow-lg shadow-slate-100 rounded-xl overflow-hidden hover:shadow-2xl hover:shadow-slate-200 transition-all duration-500 flex flex-col relative group">
-                              <div className="h-32 bg-slate-900 relative overflow-hidden flex items-center justify-center">
-                                  <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-20" />
-                                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent" />
-                                  <div className="relative z-10 p-4 w-full flex flex-col items-center">
-                                       <Avatar className="h-24 w-24 border-4 border-slate-800 shadow-2xl group-hover:scale-110 transition-transform duration-500">
-                                            <AvatarImage src={chief.photoUrl} alt={chief.name} className="object-cover" />
-                                            <AvatarFallback className="bg-slate-800 text-slate-500 font-black text-2xl">{chief.lastName?.charAt(0)}</AvatarFallback>
-                                       </Avatar>
-                                  </div>
-                              </div>
-                              <CardHeader className="px-6 pt-6 pb-2 text-center">
-                                   <Badge className="mx-auto bg-amber-500/10 text-amber-600 border-none px-3 h-5 text-[9px] font-black uppercase tracking-widest mb-2">
-                                       {chief.role}
-                                   </Badge>
-                                   <CardTitle className="text-lg font-black text-slate-900 group-hover:text-amber-600 transition-colors truncate">
-                                       {chief.name}
-                                   </CardTitle>
-                                   <CardDescription className="text-[11px] font-bold text-slate-400 uppercase tracking-widest truncate">{chief.title}</CardDescription>
-                              </CardHeader>
-                              <CardContent className="px-6 pb-8 flex-grow">
-                                  <div className="flex flex-col gap-3 pt-4 border-t border-slate-50">
-                                      <div className="flex items-center gap-3 text-slate-500">
-                                          <div className="h-8 w-8 rounded-lg bg-slate-50 flex items-center justify-center shrink-0">
-                                              <MapPin className="h-4 w-4 text-slate-300" />
-                                          </div>
-                                          <div className="flex flex-col min-w-0">
-                                              <span className="text-[9px] font-black uppercase text-slate-300">Localité</span>
-                                              <span className="text-xs font-bold truncate">{chief.village}</span>
-                                          </div>
-                                      </div>
-                                      <div className="flex items-center gap-3 text-slate-500">
-                                          <div className="h-8 w-8 rounded-lg bg-slate-50 flex items-center justify-center shrink-0">
-                                              <ShieldCheck className="h-4 w-4 text-slate-300" />
-                                          </div>
-                                          <div className="flex flex-col min-w-0">
-                                              <span className="text-[9px] font-black uppercase text-slate-300">Territoire</span>
-                                              <span className="text-xs font-bold truncate">{chief.region}</span>
-                                          </div>
-                                      </div>
-                                  </div>
-                              </CardContent>
-                              <div className="h-1 bg-amber-500 w-0 group-hover:w-full transition-all duration-700" />
-                          </Card>
-                      </Link>
+                      <ChiefCard 
+                        key={chief.id} 
+                        chief={chief} 
+                        onClick={() => handleShowQuickView(chief)} 
+                      />
                   ))}
+                </AnimatePresence>
               </div>
           ) : (
              <div className="overflow-x-auto rounded-xl border border-slate-100 shadow-inner">
@@ -536,6 +512,12 @@ export default function ChiefsPage() {
           </CardFooter>
         )}
       </Card>
+
+      <ChiefQuickView
+        chief={selectedChief}
+        isOpen={isQuickViewOpen}
+        onClose={() => setIsQuickViewOpen(false)}
+      />
 
       <AddChiefSheet
         isOpen={isSheetOpen}

@@ -38,6 +38,7 @@ import {
   Users2,
   History,
   Zap,
+  HandshakeIcon,
 } from "lucide-react";
 import React from "react";
 
@@ -146,7 +147,7 @@ export const ALL_MENU_ITEMS: MenuItem[] = [
       { href: "/fleet/fuel", label: "Cartes de carburant", icon: Fuel, permission: "page:fuel:view" },
       { href: "/supplies", label: "Stock Fournitures", icon: Package, permission: "page:supplies:view" },
       { href: "/management/supplies", label: "Validation Fournitures", icon: ShieldCheck, permission: "management:supplies:validate" },
-      { href: "/mgp", label: "Gestion des Plaintes", icon: MessageSquare, permission: "page:mgp:view" },
+      { href: "/procurement", label: "Marchés & Prestataires", icon: HandshakeIcon, permission: "page:procurement:view" },
       { href: "/repository", label: "Référentiel", icon: Archive, permission: "page:repository:view" },
     ]
   },

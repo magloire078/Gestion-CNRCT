@@ -15,6 +15,11 @@ import { heritageCategoryLabels, HeritageCategory, HeritageItem } from "@/types/
 import { getAllHeritageItems } from "@/services/heritage-service";
 import { PermissionGuard } from "@/components/auth/permission-guard";
 import { Skeleton } from "@/components/ui/skeleton";
+import { HeritageOfficialReport } from "@/components/reports/heritage-official-report";
+import { getOrganizationSettings } from "@/services/organization-service";
+import { OrganizationSettings } from "@/types/common";
+import { cn } from "@/lib/utils";
+import { Printer } from "lucide-react";
 
 const categories = [
     { 
@@ -75,11 +80,15 @@ export default function HeritageHubPage() {
         loading: true
     });
     const [recentItems, setRecentItems] = useState<HeritageItem[]>([]);
+    const [allItems, setAllItems] = useState<HeritageItem[]>([]);
+    const [isPrinting, setIsPrinting] = useState(false);
+    const [orgSettings, setOrgSettings] = useState<OrganizationSettings | null>(null);
 
     useEffect(() => {
         const fetchStats = async () => {
             try {
                 const items = await getAllHeritageItems();
+                setAllItems(items);
                 const regions = new Set(items.map(i => i.region).filter(Boolean));
                 const ethnies = new Set(items.map(i => i.ethnicGroup).filter(Boolean));
                 
@@ -95,6 +104,10 @@ export default function HeritageHubPage() {
                     new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
                 ).slice(0, 3);
                 setRecentItems(sorted);
+
+                // Fetch org settings
+                const settings = await getOrganizationSettings();
+                setOrgSettings(settings);
             } catch (error) {
                 console.error("Error fetching heritage stats:", error);
                 setStats(s => ({ ...s, loading: false }));
@@ -103,9 +116,17 @@ export default function HeritageHubPage() {
         fetchStats();
     }, []);
 
+    const handlePrint = () => {
+        setIsPrinting(true);
+        setTimeout(() => {
+            window.print();
+            setIsPrinting(false);
+        }, 300);
+    };
+
     return (
         <PermissionGuard permission="page:heritage:view">
-            <div className="flex flex-col gap-12 pb-20">
+            <div className={cn("flex flex-col gap-12 pb-20", isPrinting && "hidden")}>
             {/* Heritage Hero Section */}
             <div className="relative h-[340px] rounded-2xl overflow-hidden bg-slate-950 group">
                 <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1523805081730-61444927f07a?auto=format&fit=crop&q=80')] bg-cover bg-center opacity-30 transition-transform duration-1000 group-hover:scale-110" />
@@ -155,6 +176,15 @@ export default function HeritageHubPage() {
                                 </div>
                             </>
                         )}
+                        <Button 
+                            variant="outline" 
+                            className="bg-white/5 border-white/10 text-white hover:bg-white/20 rounded-xl h-14 px-8 font-black uppercase tracking-widest text-xs backdrop-blur-xl shrink-0"
+                            onClick={handlePrint}
+                            disabled={stats.loading || allItems.length === 0}
+                        >
+                            <Printer className="mr-3 h-5 w-5 text-amber-500" />
+                            Rapport National
+                        </Button>
                     </div>
                 </div>
 
@@ -268,6 +298,10 @@ export default function HeritageHubPage() {
                 </Card>
             </div>
         </div>
+
+        {isPrinting && (
+            <HeritageOfficialReport items={allItems} organizationSettings={orgSettings} />
+        )}
         </PermissionGuard>
     );
 }

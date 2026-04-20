@@ -57,4 +57,5 @@ export type Village = {
     createdAt?: string;
     updatedAt?: string;
     isAutonomousDistrict?: boolean;
+    developmentScore?: number; // Indice de Développement Local (0-100)
 };

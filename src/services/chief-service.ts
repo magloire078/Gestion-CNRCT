@@ -8,6 +8,36 @@ import { FirestorePermissionError, FirestoreQuotaError, FirestoreTimeoutError } 
 
 const chiefsCollection = collection(db, 'chiefs');
 
+/**
+ * Calcule les points de mérite basés sur le parcours et le rôle
+ */
+export function calculateMeritPoints(chief: Partial<Chief>): number {
+    let score = 0;
+    
+    // Points de base selon le rôle
+    const roleWeights: Record<string, number> = {
+        "Roi": 50,
+        "Chef de province": 40,
+        "Chef de canton": 30,
+        "Chef de tribu": 20,
+        "Chef de Village": 10
+    };
+    
+    score += roleWeights[chief.role || ""] || 0;
+
+    // Points par événements de carrière
+    if (chief.career) {
+        chief.career.forEach(event => {
+            if (event.type === "Médaille") score += 20;
+            if (event.type === "Médiation") score += 15;
+            if (event.type === "Mission") score += 10;
+            if (event.type === "Intronisation") score += 5;
+        });
+    }
+
+    return Math.min(score, 100);
+}
+
 const defaultChiefs: Omit<Chief, 'id'>[] = [
     // Existing data
     { name: "KOFFI GUETTA SATURNIN", lastName: "KOFFI", firstName: "GUETTA SATURNIN", title: "CHEF DE VILLAGE", role: "Chef de Village", village: "EBOUASSUE", region: "INDENIE-DJUABLIN", department: "ABENGOUROU", subPrefecture: "ABENGOUROU", contact: "", phone: "", bio: "ARRETE N°87/RID/PA/SG-DAGD", photoUrl: "https://api.dicebear.com/7.x/initials/svg?seed=CV&backgroundColor=006039&fontFamily=Arial" },
@@ -194,7 +224,16 @@ export async function addChief(chiefData: Omit<Chief, "id">, photoFile: File | n
         photoUrl = await uploadToCloudinary(photoFile);
     }
 
-    const finalChiefData = { ...chiefData, photoUrl };
+    const now = new Date().toISOString();
+    const finalChiefData = { 
+        ...chiefData, 
+        photoUrl,
+        meritPoints: calculateMeritPoints(chiefData),
+        audit: {
+            createdAt: now,
+            updatedAt: now
+        }
+    };
     try {
         await setDoc(docRef, finalChiefData);
         return { id: docRef.id, ...finalChiefData };
@@ -248,6 +287,7 @@ export async function batchAddChiefs(chiefs: Omit<Chief, 'id'>[]): Promise<numbe
 
 export async function updateChief(id: string, chiefData: Partial<Omit<Chief, 'id'>>, photoFile: File | null): Promise<void> {
     const chiefDocRef = doc(db, 'chiefs', id);
+    const now = new Date().toISOString();
     const updateData: { [key: string]: any } = { ...chiefData };
 
     if (photoFile) {
@@ -279,6 +319,23 @@ export async function updateChief(id: string, chiefData: Partial<Omit<Chief, 'id
             delete updateData[key as keyof typeof updateData];
         }
     });
+
+    // Logic for Authority Life Hub
+    if (updateData.career !== undefined || updateData.role !== undefined) {
+        // Recalculate merit points if role or career changed
+        const current = await getChief(id);
+        if (current) {
+            const refreshedData = { ...current, ...updateData };
+            updateData.meritPoints = calculateMeritPoints(refreshedData);
+        }
+    }
+
+    // Always update audit
+    const currentChief = await getChief(id);
+    updateData.audit = {
+        createdAt: currentChief?.audit?.createdAt || now,
+        updatedAt: now
+    };
 
     try {
         // Implementation of a 15-second timeout for the Firestore update

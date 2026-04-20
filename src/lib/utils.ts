@@ -76,3 +76,10 @@ export function numberToWords(num: number): string {
 
     return result.trim().toUpperCase();
 }
+
+export function formatCurrency(amount: number | string | undefined | null): string {
+    if (amount === undefined || amount === null) return "0 FCFA";
+    const value = typeof amount === 'string' ? parseFloat(amount) : amount;
+    if (isNaN(value)) return "0 FCFA";
+    return new Intl.NumberFormat('fr-FR').format(value) + ' FCFA';
+}

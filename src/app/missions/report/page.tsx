@@ -25,6 +25,8 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { format, parseISO, isWithinInterval, startOfMonth, endOfMonth } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { MissionsOfficialReport } from "@/components/reports/missions-official-report";
+import { useSettings } from "@/hooks/use-settings";
 
 interface ReportData {
   missions: Mission[];
@@ -38,6 +40,7 @@ export default function MissionReportPage() {
   const [isPrinting, setIsPrinting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [reportData, setReportData] = useState<ReportData | null>(null);
+  const { settings } = useSettings();
   
   const years = Array.from({ length: 10 }, (_, i) => (new Date().getFullYear() - i).toString());
   const months = Array.from({ length: 12 }, (_, i) => ({ value: (i + 1).toString(), label: format(new Date(2000, i, 1), 'MMMM', { locale: fr }) }));
@@ -275,64 +278,13 @@ export default function MissionReportPage() {
       </div>
       
       {isPrinting && reportData && (
-          <div id="print-section" className="bg-white text-black p-12 font-sans min-h-screen">
-               <div className="flex justify-between items-start mb-12 border-b-2 border-black pb-8">
-                  <div className="space-y-1">
-                    <h1 className="text-2xl font-black uppercase tracking-tight">CNRCT - ADMINISTRATION</h1>
-                    <p className="text-xs font-bold uppercase tracking-widest">République de Côte d'Ivoire</p>
-                  </div>
-                  <div className="text-right">
-                    <h2 className="text-xl font-black uppercase tracking-tighter">Rapport Mensuel des Missions</h2>
-                    <p className="text-sm font-bold uppercase tracking-widest text-slate-500">EXERCICE {year}</p>
-                  </div>
-              </div>
-
-              <div className="mb-8 p-4 bg-slate-50 border border-slate-200 rounded-lg">
-                <p className="text-sm font-bold uppercase tracking-widest">Période : <span className="text-slate-900 font-black">{selectedPeriodText}</span></p>
-              </div>
-
-              <table className="w-full text-[10px] border-collapse border border-slate-900">
-                  <thead className="bg-slate-100">
-                      <tr>
-                          <th className="border border-slate-900 p-3 text-left font-black uppercase tracking-widest">N° Mission</th>
-                          <th className="border border-slate-900 p-3 text-left font-black uppercase tracking-widest">Désignation</th>
-                          <th className="border border-slate-900 p-3 text-left font-black uppercase tracking-widest">Période d'exécution</th>
-                          <th className="border border-slate-900 p-3 text-center font-black uppercase tracking-widest">Effectif</th>
-                          <th className="border border-slate-900 p-3 text-right font-black uppercase tracking-widest">Montant Total</th>
-                      </tr>
-                  </thead>
-                  <tbody>
-                      {reportData.missions.map(mission => (
-                          <tr key={mission.id}>
-                              <td className="border border-slate-900 p-3 font-bold">{mission.numeroMission}</td>
-                              <td className="border border-slate-900 p-3 font-black uppercase leading-tight">{mission.title}</td>
-                              <td className="border border-slate-900 p-3">{format(parseISO(mission.startDate), 'dd/MM/yy')} - {format(parseISO(mission.endDate), 'dd/MM/yy')}</td>
-                              <td className="border border-slate-900 p-3 text-center font-bold">{mission.participants.length}</td>
-                              <td className="border border-slate-900 p-3 text-right font-black">{formatCurrency(calculateMissionCost(mission))}</td>
-                          </tr>
-                      ))}
-                      <tr className="font-black bg-slate-900 text-white">
-                          <td colSpan={4} className="text-right p-4 border border-slate-900 uppercase tracking-widest">TOTAL GÉNÉRAL :</td>
-                          <td className="text-right p-4 border border-slate-900 text-lg tracking-tighter">{formatCurrency(reportData.totalCost)}</td>
-                      </tr>
-                  </tbody>
-              </table>
-
-              <div className="mt-20 flex justify-between">
-                <div className="text-center w-64 space-y-12">
-                  <p className="text-xs font-black uppercase tracking-widest underline underline-offset-4">Établi par</p>
-                  <div className="h-px w-full bg-slate-200" />
-                </div>
-                <div className="text-center w-64 space-y-12">
-                  <p className="text-xs font-black uppercase tracking-widest underline underline-offset-4">Approuvé par</p>
-                  <div className="h-px w-full bg-slate-200" />
-                </div>
-              </div>
-
-              <footer className="fixed bottom-12 left-0 right-0 text-center text-[9px] text-slate-400 font-bold uppercase tracking-[0.3em]">
-                  Document généré automatiquement le {format(new Date(), 'dd/MM/yyyy HH:mm')} • CNRCT Gestion V2.0
-              </footer>
-          </div>
+          <MissionsOfficialReport 
+            missions={reportData.missions} 
+            organizationSettings={settings} 
+            fiscalYear={year} 
+            periodText={selectedPeriodText} 
+            totalBudget={reportData.totalCost} 
+          />
       )}
     </div>
   );

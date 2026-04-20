@@ -1,6 +1,15 @@
 export type ChiefRole = "Roi" | "Chef de province" | "Chef de canton" | "Chef de tribu" | "Chef de Village";
 export type DesignationMode = "Héritage" | "Élection" | "Nomination coutumière" | "Autre";
 
+export type ChiefCareerEventType = "Intronisation" | "Médaille" | "Médiation" | "Mission" | "Autre";
+
+export type ChiefCareerEvent = {
+    id: string;
+    date: string;
+    title: string;
+    description: string;
+    type: ChiefCareerEventType;
+};
 
 export type Chief = {
     id: string;
@@ -36,7 +45,16 @@ export type Chief = {
     regencyEndDate?: string;
     villageId?: string;
     status?: 'actif' | 'archive' | 'a_vie';
-
+    
+    // Authority Life Hub fields
+    career?: ChiefCareerEvent[];
+    meritPoints?: number;
+    audit?: {
+        createdAt: string;
+        updatedAt: string;
+        lastVerifiedBy?: string;
+        lastVerifiedAt?: string;
+    };
 };
 
 export type Custom = {

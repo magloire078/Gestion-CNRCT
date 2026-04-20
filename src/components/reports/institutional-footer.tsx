@@ -71,7 +71,7 @@ export function InstitutionalFooter({
                 {showCertification && (
                   <div className="bg-[#006039] text-white px-5 py-2 rounded-xl flex items-center gap-3 shadow-md">
                     <Shield className="h-4 w-4" />
-                    <span className="text-[9px] font-black uppercase tracking-[0.2em]">Certifié par GèreEcole v2.0</span>
+                    <span className="text-[9px] font-black uppercase tracking-[0.2em]">Certifié par CNRCT Digital v2.5</span>
                   </div>
                 )}
               </div>

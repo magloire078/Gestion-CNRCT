@@ -46,6 +46,11 @@ import { ConfirmationDialog } from "@/components/common/confirmation-dialog";
 import { PaginationControls } from "@/components/common/pagination-controls";
 import Link from "next/link";
 import { PermissionGuard } from "@/components/auth/permission-guard";
+import { FleetOfficialReport } from "@/components/reports/fleet-official-report";
+import { getOrganizationSettings } from "@/services/organization-service";
+import { Printer } from "lucide-react";
+import { cn } from "@/lib/utils";
+import type { OrganizationSettings } from "@/lib/data";
 
 
 const statusVariantMap: Record<Fleet['status'], "default" | "secondary" | "outline" | "destructive"> = {
@@ -69,6 +74,8 @@ export default function FleetPage() {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [isPrinting, setIsPrinting] = useState(false);
+  const [settings, setSettings] = useState<OrganizationSettings | null>(null);
 
 
   useEffect(() => {
@@ -84,6 +91,7 @@ export default function FleetPage() {
         setLoading(false);
       }
     );
+    getOrganizationSettings().then(setSettings);
     return () => unsubscribe();
   }, []);
 
@@ -147,9 +155,17 @@ export default function FleetPage() {
 
   const totalPages = Math.ceil(filteredVehicles.length / itemsPerPage);
 
+  const handlePrint = () => {
+    setIsPrinting(true);
+    setTimeout(() => {
+      window.print();
+      setIsPrinting(false);
+    }, 300);
+  };
+
   return (
     <PermissionGuard permission="page:fleet:view">
-      <div className="flex flex-col gap-6 pb-12">
+      <div className={cn("flex flex-col gap-6 pb-12", isPrinting && "hidden")}>
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 px-1">
           <div className="space-y-4">
             <div className="flex items-center gap-3">
@@ -169,6 +185,14 @@ export default function FleetPage() {
             </div>
           </div>
           <div className="flex items-center gap-3">
+            <Button
+              onClick={handlePrint}
+              variant="outline"
+              className="h-14 px-6 rounded-[1.5rem] border-slate-200 bg-white/50 backdrop-blur-md font-black uppercase tracking-widest text-[11px] hover:bg-slate-100 active:scale-95 transition-all text-slate-600"
+            >
+              <Printer className="mr-3 h-5 w-5 text-blue-500" />
+              Rapport Officiel
+            </Button>
             <Button
               onClick={() => setIsAddSheetOpen(true)}
               className="h-14 px-8 rounded-[1.5rem] bg-slate-900 shadow-2xl shadow-slate-900/20 font-black uppercase tracking-widest text-[11px] hover:bg-black active:scale-95 transition-all text-white border-t border-white/10"
@@ -394,6 +418,10 @@ export default function FleetPage() {
           description="Êtes-vous sûr de vouloir supprimer ce véhicule ? Cette action est irréversible."
         />
       </div>
+
+      {isPrinting && (
+        <FleetOfficialReport vehicles={vehicles} organizationSettings={settings} />
+      )}
     </PermissionGuard>
   );
 }

@@ -63,7 +63,8 @@ import { useAuth } from "@/hooks/use-auth";
 import { IVORIAN_REGIONS } from "@/constants/regions";
 import { PaginationControls } from "@/components/common/pagination-controls";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PrintConflictsList, PrintConflictDetail } from "@/components/conflicts/conflict-print-templates";
+import { ConflictsOfficialReport } from "@/components/reports/conflicts-official-report";
+import { PrintConflictDetail } from "@/components/conflicts/conflict-print-templates";
 import { cn } from "@/lib/utils";
 import dynamic from 'next/dynamic';
 import { PermissionGuard } from "@/components/auth/permission-guard";
@@ -310,6 +311,32 @@ export default function ConflictsPage() {
     }, [filteredConflicts, currentPage, itemsPerPage]);
 
     const totalPages = Math.ceil(filteredConflicts.length / itemsPerPage);
+
+    const conflictStats = useMemo(() => {
+        const total = filteredConflicts.length;
+        if (total === 0) return { total: 0, resolved: 0, mediation: 0, open: 0, resolutionRate: 0, topType: "N/A" };
+        
+        const resolved = filteredConflicts.filter(c => c.status === 'Résolu').length;
+        const mediation = filteredConflicts.filter(c => c.status === 'En médiation').length;
+        const open = filteredConflicts.filter(c => c.status === 'Ouvert' || !c.status).length;
+        
+        // Find top type
+        const typeCounts = filteredConflicts.reduce((acc, c) => {
+            acc[c.type] = (acc[c.type] || 0) + 1;
+            return acc;
+        }, {} as Record<string, number>);
+        
+        const topType = Object.entries(typeCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || "N/A";
+
+        return {
+            total,
+            resolved,
+            mediation,
+            open,
+            resolutionRate: Math.round((resolved / total) * 100),
+            topType
+        };
+    }, [filteredConflicts]);
 
     return (
         <PermissionGuard permission="page:conflicts:view">
@@ -679,10 +706,11 @@ export default function ConflictsPage() {
                 </AlertDialog>
 
                 {isPrintingList && (
-                    <PrintConflictsList 
+                    <ConflictsOfficialReport 
                         conflicts={filteredConflicts} 
                         organizationSettings={settings} 
-                        subtitle={`Filtre: ${selectedRegion === 'Tous' ? 'Toutes Régions' : selectedRegion} | ${selectedConflictType === 'Tous' ? 'Tous Types' : selectedConflictType}`}
+                        subtitle={`Périmètre: ${selectedRegion === 'Tous' ? 'National' : selectedRegion} | ${selectedConflictType === 'Tous' ? 'Toutes Natures' : selectedConflictType}`}
+                        stats={conflictStats}
                     />
                 )}
 

@@ -9,3 +9,4 @@ export * from "../types/common";
 export * from "../types/helpdesk";
 export * from "../types/fuel";
 export * from "../types/supply";
+export * from "../types/procurement";

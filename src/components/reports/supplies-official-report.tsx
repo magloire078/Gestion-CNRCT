@@ -176,7 +176,7 @@ export function SuppliesOfficialReport({
                     <div className="flex justify-between items-end">
                         <div className="text-left">
                             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Généré via</p>
-                            <p className="text-lg font-black text-[#006039] uppercase tracking-tighter">GèreEcole v2.0</p>
+                            <p className="text-lg font-black text-[#006039] uppercase tracking-tighter">CNRCT Digital v2.5</p>
                         </div>
                         <div>
                             <p className="font-black text-2xl uppercase tracking-[0.2em] text-[#006039]">Secrétariat Général</p>
@@ -333,7 +333,7 @@ export function SuppliesOfficialReport({
                              <p className="text-2xl font-black text-slate-900 uppercase italic tracking-tighter">COULIBALY Hamadou</p>
                              <div className="bg-[#006039] text-white px-6 py-2 rounded-xl flex items-center gap-3 shadow-md">
                                  <Shield className="h-4 w-4" />
-                                 <span className="text-[9px] font-black uppercase tracking-[0.2em]">Authentifié par GèreEcole</span>
+                                 <span className="text-[9px] font-black uppercase tracking-[0.2em]">Authentifié par CNRCT Digital</span>
                              </div>
                         </div>
                     </div>

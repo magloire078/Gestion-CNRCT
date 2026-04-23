@@ -230,35 +230,35 @@ export function AddHistoryEventSheet({ isOpen, onCloseAction, employeeId, eventT
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <SheetContent className="sm:max-w-2xl bg-white/40 backdrop-blur-2xl border-l border-white/20 p-0 shadow-3xl overflow-hidden rounded-l-[3rem]">
+      <SheetContent className="sm:max-w-2xl bg-white/60 backdrop-blur-3xl border-l border-white/20 p-0 shadow-3xl overflow-hidden rounded-l-sm">
         <form onSubmit={handleSubmit} className="h-full flex flex-col">
           <div className="absolute inset-0 bg-gradient-to-b from-blue-50/20 to-transparent pointer-events-none" />
           
-          <SheetHeader className="p-10 pb-6 relative z-10">
-            <div className="flex items-center gap-4 mb-2">
-              <div className="h-10 w-10 rounded-xl bg-slate-900 flex items-center justify-center shadow-lg">
-                <History className="h-6 w-6 text-white" />
+          <SheetHeader className="p-5 pb-4 relative z-10 bg-slate-50/50 border-b border-slate-100">
+            <div className="flex items-center gap-3 mb-1">
+              <div className="h-8 w-8 rounded-sm bg-slate-900 flex items-center justify-center shadow-lg">
+                <History className="h-4 w-4 text-white" />
               </div>
-              <SheetTitle className="text-2xl font-black uppercase tracking-tight text-slate-900">
+              <SheetTitle className="text-xl font-black uppercase tracking-tight text-slate-900">
                 {isEditMode ? "Édition Événement" : "Nouvel Événement"}
               </SheetTitle>
             </div>
-            <SheetDescription className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+            <SheetDescription className="text-[9px] font-black uppercase tracking-widest text-slate-400">
               {isEditMode ? "Modification d'une étape de carrière existante" : "Enregistrement d'une mutation ou revalorisation dans le parcours agent"}
             </SheetDescription>
           </SheetHeader>
 
           <div className="flex-1 overflow-hidden relative z-10">
-            <ScrollArea className="h-full w-full px-10">
-              <div className="grid gap-10 pb-10">
+            <ScrollArea className="h-full w-full px-5">
+              <div className="grid gap-4 py-4">
                 {/* Main Fields */}
-                <div className="space-y-6">
-                  <div className="flex items-center gap-3 border-b border-slate-100 pb-2">
-                    <Info className="h-4 w-4 text-slate-400" />
-                    <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Classification de l'acte</h3>
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3 border-b border-slate-100 pb-1.5">
+                    <Info className="h-3.5 w-3.5 text-slate-400" />
+                    <h3 className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">Classification de l'acte</h3>
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-6">
+                  <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="eventType" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Type d'acte professionnel</Label>
                       <Select value={eventType} onValueChange={(value: EmployeeEvent['eventType']) => {
@@ -266,10 +266,10 @@ export function AddHistoryEventSheet({ isOpen, onCloseAction, employeeId, eventT
                           setEventType(value);
                         });
                       }}>
-                        <SelectTrigger className="h-12 rounded-xl border-slate-200 bg-white font-bold text-slate-900 shadow-sm">
+                        <SelectTrigger className="h-10 rounded-sm border-slate-200 bg-white font-bold text-slate-900 shadow-sm text-xs">
                           <SelectValue placeholder="Sélectionner..." />
                         </SelectTrigger>
-                        <SelectContent className="rounded-xl border-slate-100 shadow-3xl">
+                        <SelectContent className="rounded-sm border-slate-100 shadow-3xl">
                           {eventTypes.map(type => (
                             <SelectItem key={type} value={type} className="font-bold py-3 uppercase text-[9px] tracking-widest">{type}</SelectItem>
                           ))}
@@ -283,7 +283,7 @@ export function AddHistoryEventSheet({ isOpen, onCloseAction, employeeId, eventT
                         type="date"
                         value={effectiveDate}
                         onChange={(e) => setEffectiveDate(e.target.value)}
-                        className="h-12 rounded-xl border-slate-200 bg-white font-bold"
+                        className="h-10 rounded-sm border-slate-200 bg-white font-bold text-xs"
                       />
                     </div>
                   </div>
@@ -294,7 +294,7 @@ export function AddHistoryEventSheet({ isOpen, onCloseAction, employeeId, eventT
                       id="description"
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
-                      className="rounded-2xl border-slate-200 bg-white/60 min-h-[100px] p-6 text-sm font-medium focus-visible:ring-blue-500/50 shadow-inner"
+                      className="rounded-sm border-slate-200 bg-white/60 min-h-[80px] p-4 text-xs font-medium focus-visible:ring-blue-500/50 shadow-inner"
                       placeholder="Précisez la nature et le contexte de cet événement (ex: Décision N°...)"
                     />
                   </div>
@@ -302,39 +302,39 @@ export function AddHistoryEventSheet({ isOpen, onCloseAction, employeeId, eventT
 
                 {/* Salary Simulation Section */}
                 {isSalaryEventType && (
-                  <div className="space-y-8 animate-in fade-in slide-in-from-top-4 duration-500">
-                    <div className="flex items-center gap-3 border-b border-slate-100 pb-2">
-                      <Wallet className="h-4 w-4 text-blue-500" />
-                      <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-500">Composantes de Rémunération</h3>
+                  <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-500">
+                    <div className="flex items-center gap-3 border-b border-slate-100 pb-1.5">
+                      <Wallet className="h-3.5 w-3.5 text-blue-500" />
+                      <h3 className="text-[9px] font-black uppercase tracking-[0.2em] text-blue-500">Composantes de Rémunération</h3>
                     </div>
-
-                    <div className="p-8 bg-blue-50/50 rounded-[2.5rem] border border-blue-100 shadow-xl shadow-blue-500/5 items-center justify-between group relative overflow-hidden">
+                    
+                    <div className="p-4 bg-blue-50/50 rounded-sm border border-blue-100 shadow-lg shadow-blue-500/5 items-center justify-between group relative overflow-hidden">
                        <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
                         <TrendingUp className="h-16 w-16" />
                       </div>
                       <div className="space-y-4">
                         <Label htmlFor="netSimulator" className="text-[10px] font-black uppercase tracking-widest text-slate-700">Calculateur de net vers brut</Label>
-                        <div className="flex gap-3">
+                        <div className="flex gap-2">
                           <Input 
                             id="netSimulator" 
                             type="number" 
                             placeholder="Salaire Net Requis (ex: 500000)" 
                             value={desiredNetSalary}
                             onChange={(e) => setDesiredNetSalary(e.target.value)}
-                            className="h-14 rounded-2xl border-blue-200 bg-white/60 font-black tracking-widest focus-visible:ring-blue-500 shadow-inner"
+                            className="h-11 rounded-sm border-blue-200 bg-white/60 font-black tracking-widest focus-visible:ring-blue-500 shadow-inner text-xs"
                           />
                           <Button 
                             type="button" 
                             onClick={handleSimulation}
-                            className="h-14 px-8 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-black uppercase tracking-widest text-[9px] shadow-xl shadow-blue-200 hover:scale-105 transition-all"
+                            className="h-11 px-6 rounded-sm bg-blue-600 hover:bg-blue-700 text-white font-black uppercase tracking-widest text-[9px] shadow-xl shadow-blue-200 hover:scale-105 transition-all"
                           >
-                            <Calculator className="mr-2 h-5 w-5" /> Simuler
+                            <Calculator className="mr-2 h-4 w-4" /> Simuler
                           </Button>
                         </div>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                       {indemnityFields.map(field => (
                         <div key={field.id} className="space-y-2">
                           <div className="flex items-center justify-between pr-2">
@@ -355,12 +355,12 @@ export function AddHistoryEventSheet({ isOpen, onCloseAction, employeeId, eventT
                               placeholder="0" 
                               onChange={e => handleDetailChange(field.id, e.target.value)} 
                               className={cn(
-                                "h-12 rounded-xl border-slate-200 bg-white font-black tracking-widest",
+                                "h-10 rounded-sm border-slate-200 bg-white font-black tracking-widest text-xs",
                                 field.id === 'baseSalary' ? "border-blue-200 text-blue-600 bg-blue-50/20" : ""
                               )}
                             />
                             {field.id === 'baseSalary' && originalBaseSalary !== null && (
-                              <div className="absolute -top-1 -right-1 bg-slate-100 px-2 py-0.5 rounded text-[8px] font-black uppercase text-slate-400 line-through tracking-widest border border-slate-200 bg-white shadow-sm">
+                              <div className="absolute -top-1 -right-1 bg-slate-100 px-2 py-0.5 rounded-sm text-[8px] font-black uppercase text-slate-400 line-through tracking-widest border border-slate-200 bg-white shadow-sm">
                                 {originalBaseSalary.toLocaleString()}
                               </div>
                             )}
@@ -372,22 +372,22 @@ export function AddHistoryEventSheet({ isOpen, onCloseAction, employeeId, eventT
                 )}
 
                 {eventType === 'Promotion' && (
-                  <div className="space-y-6 animate-in fade-in slide-in-from-top-4 duration-500">
+                  <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-500">
                     <div className="flex items-center gap-3 border-b border-slate-100 pb-2">
                       <Briefcase className="h-4 w-4 text-slate-400" />
                       <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Nouvelles Fonctions</h3>
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="newPoste" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Nouvel Intitulé de Poste</Label>
-                      <Input id="newPoste" type="text" value={details.newPoste || ''} placeholder="ex: Chef de Service..." onChange={e => handleDetailChange('newPoste', e.target.value)} className="h-14 rounded-2xl border-slate-200 bg-white font-black uppercase text-blue-600 tracking-wider shadow-sm" />
+                      <Input id="newPoste" type="text" value={details.newPoste || ''} placeholder="ex: Chef de Service..." onChange={e => handleDetailChange('newPoste', e.target.value)} className="h-11 rounded-sm border-slate-200 bg-white font-black uppercase text-blue-600 tracking-wider shadow-sm text-xs" />
                     </div>
                   </div>
                 )}
 
                 {livePreview && (
-                  <div className="p-8 bg-slate-900 rounded-[2.5rem] shadow-2xl relative overflow-hidden group">
+                  <div className="p-4 bg-slate-900 rounded-sm shadow-2xl relative overflow-hidden group">
                     <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(59,130,246,0.15),transparent)] opacity-50" />
-                    <div className="relative z-10 space-y-8">
+                    <div className="relative z-10 space-y-4">
                        <div className="flex items-center justify-between border-b border-white/10 pb-4">
                         <div className="flex items-center gap-2">
                           <Activity className="h-4 w-4 text-blue-400" />
@@ -396,7 +396,7 @@ export function AddHistoryEventSheet({ isOpen, onCloseAction, employeeId, eventT
                         <div className="text-[8px] font-black uppercase tracking-widest px-3 py-1 bg-blue-500/10 text-blue-400 rounded-full border border-blue-500/20">Aperçu Live</div>
                       </div>
                       
-                      <div className="grid grid-cols-2 gap-x-10 gap-y-6">
+                      <div className="grid grid-cols-2 gap-x-6 gap-y-3">
                         <div className="space-y-1">
                           <p className="text-[8px] font-black uppercase tracking-widest text-slate-500">Ancienneté d'effet</p>
                           <p className="text-sm font-bold text-white uppercase">{livePreview.anciennete}</p>
@@ -419,23 +419,23 @@ export function AddHistoryEventSheet({ isOpen, onCloseAction, employeeId, eventT
                 )}
 
                 {error && (
-                  <div className="p-6 bg-rose-50 border border-rose-100 rounded-2xl flex items-center gap-4 text-rose-600 shadow-lg shadow-rose-200/50">
-                    <XCircle className="h-6 w-6" />
-                    <p className="text-[10px] font-black uppercase tracking-widest leading-relaxed">{error}</p>
+                  <div className="p-4 bg-rose-50 border border-rose-100 rounded-sm flex items-center gap-3 text-rose-600 shadow-lg shadow-rose-200/50">
+                    <XCircle className="h-5 w-5" />
+                    <p className="text-[9px] font-black uppercase tracking-widest leading-relaxed">{error}</p>
                   </div>
                 )}
               </div>
             </ScrollArea>
           </div>
 
-          <SheetFooter className="p-10 bg-white/40 border-t border-white/20 backdrop-blur-md relative z-10">
-            <div className="flex gap-4 w-full">
+          <SheetFooter className="p-5 bg-white/40 border-t border-white/20 backdrop-blur-md relative z-10">
+            <div className="flex gap-3 w-full">
               <SheetClose asChild>
                 <Button 
                   type="button" 
                   variant="outline" 
                   onClick={handleClose}
-                  className="h-14 flex-1 rounded-2xl border-slate-200 bg-white font-black uppercase tracking-widest text-[10px] hover:bg-slate-50 hover:text-slate-900 shadow-lg"
+                  className="h-11 flex-1 rounded-sm border-slate-200 bg-white font-black uppercase tracking-widest text-[9px] hover:bg-slate-50 hover:text-slate-900 shadow-lg"
                 >
                   Annuler
                 </Button>
@@ -443,13 +443,13 @@ export function AddHistoryEventSheet({ isOpen, onCloseAction, employeeId, eventT
               <Button 
                 type="submit" 
                 disabled={isSubmitting}
-                className="h-14 flex-1 rounded-2xl bg-slate-900 text-white font-black uppercase tracking-widest text-[10px] hover:bg-black shadow-2xl shadow-black/20 group"
+                className="h-11 flex-1 rounded-sm bg-slate-900 text-white font-black uppercase tracking-widest text-[9px] hover:bg-black shadow-2xl shadow-black/20 group"
               >
                 {isSubmitting ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <>
-                    <Save className="mr-3 h-5 w-5 text-emerald-400 group-hover:scale-110 transition-transform" /> 
+                    <Save className="mr-2.5 h-4 w-4 text-emerald-400 group-hover:scale-110 transition-transform" /> 
                     {isEditMode ? "Mettre à jour" : "Valider l'acte"}
                   </>
                 )}

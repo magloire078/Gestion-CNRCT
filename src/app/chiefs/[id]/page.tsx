@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAuth } from "@/hooks/use-auth";
 import { getChief } from "@/services/chief-service";
 import { subscribeToConflicts } from "@/services/conflict-service";
 import type { Chief } from "@/types/chief";
@@ -39,6 +40,10 @@ export default function ChiefProfilePage() {
     const [chief, setChief] = useState<Chief | null>(null);
     const [conflicts, setConflicts] = useState<Conflict[]>([]);
     const [loading, setLoading] = useState(true);
+    const { hasPermission } = useAuth();
+
+    const canViewCareer = hasPermission('chiefs-career:read');
+    const canViewAudit = hasPermission('chiefs-audit:read');
 
     useEffect(() => {
         let unsubscribe: (() => void) | undefined;
@@ -184,7 +189,7 @@ export default function ChiefProfilePage() {
                     <Tabs defaultValue="info" className="w-full">
                         <TabsList className="grid w-full grid-cols-4 mb-6 bg-slate-100/50 p-1 rounded-xl">
                             <TabsTrigger value="info" className="rounded-lg font-bold text-xs uppercase tracking-widest">Général</TabsTrigger>
-                            <TabsTrigger value="career" className="rounded-lg font-bold text-xs uppercase tracking-widest">Parcours</TabsTrigger>
+                            {canViewCareer && <TabsTrigger value="career" className="rounded-lg font-bold text-xs uppercase tracking-widest">Parcours</TabsTrigger>}
                             <TabsTrigger value="territory" className="rounded-lg font-bold text-xs uppercase tracking-widest">Territoire</TabsTrigger>
                             <TabsTrigger value="tensions" className="rounded-lg font-bold text-xs uppercase tracking-widest relative">
                                 Tensions
@@ -293,107 +298,111 @@ export default function ChiefProfilePage() {
                             </div>
                         </TabsContent>
 
-                        <TabsContent value="career" className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                <Card className="md:col-span-2 border-none shadow-sm bg-white overflow-hidden">
-                                     <CardHeader className="border-b bg-slate-50/50">
-                                         <div className="flex items-center gap-2">
-                                             <div className="h-8 w-8 rounded-lg bg-amber-100 flex items-center justify-center text-amber-600">
-                                                 <Clock className="h-4 w-4" />
-                                             </div>
-                                             <div>
-                                                 <CardTitle className="text-lg font-bold">Timeline de Carrière</CardTitle>
-                                                 <CardDescription>Événements marquants et parcours officiel</CardDescription>
-                                             </div>
-                                         </div>
-                                     </CardHeader>
-                                     <CardContent className="pt-8 px-8">
-                                         <div className="relative border-l-2 border-slate-100 ml-3 pb-4 space-y-8">
-                                             {chief.career && chief.career.length > 0 ? (
-                                                 chief.career.map((event, idx) => (
-                                                     <div key={event.id} className="relative pl-8">
-                                                         <div className={cn(
-                                                             "absolute -left-[11px] top-0 h-5 w-5 rounded-full border-4 border-white shadow-sm ring-1 ring-slate-100",
-                                                             event.type === 'Intronisation' ? "bg-amber-500" : 
-                                                             event.type === 'Médaille' ? "bg-indigo-500" :
-                                                             event.type === 'Médiation' ? "bg-teal-500" : "bg-slate-400"
-                                                         )} />
-                                                         <div className="space-y-1">
-                                                             <div className="flex items-center justify-between">
-                                                                 <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">{event.date}</span>
-                                                                 <Badge variant="outline" className="text-[8px] font-black uppercase border-slate-100">{event.type}</Badge>
-                                                             </div>
-                                                             <h4 className="font-extrabold text-slate-800">{event.title}</h4>
-                                                             <p className="text-xs text-slate-500 font-medium leading-relaxed">{event.description}</p>
-                                                         </div>
-                                                     </div>
-                                                 ))
-                                             ) : (
-                                                 <div className="flex flex-col items-center justify-center py-12 text-center space-y-3">
-                                                     <div className="h-12 w-12 rounded-full bg-slate-50 flex items-center justify-center text-slate-200">
-                                                         <Clock className="h-6 w-6" />
-                                                     </div>
-                                                     <p className="text-xs font-bold text-slate-400 uppercase tracking-widest italic">Aucun événement répertorié</p>
+                        {canViewCareer && (
+                            <TabsContent value="career" className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    <Card className="md:col-span-2 border-none shadow-sm bg-white overflow-hidden">
+                                         <CardHeader className="border-b bg-slate-50/50">
+                                             <div className="flex items-center gap-2">
+                                                 <div className="h-8 w-8 rounded-lg bg-amber-100 flex items-center justify-center text-amber-600">
+                                                     <Clock className="h-4 w-4" />
                                                  </div>
-                                             )}
-                                         </div>
-                                     </CardContent>
-                                </Card>
-
-                                <div className="space-y-6">
-                                    <Card className="border-none shadow-sm bg-gradient-to-br from-amber-500 to-amber-600 text-white overflow-hidden">
-                                        <CardContent className="p-6">
-                                            <div className="flex items-start justify-between">
-                                                <div className="space-y-1">
-                                                    <p className="text-[10px] font-black uppercase text-amber-200 tracking-widest">Score de Mérite</p>
-                                                    <h3 className="text-4xl font-black">{chief.meritPoints || 0}</h3>
-                                                </div>
-                                                <div className="h-12 w-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center">
-                                                    <Medal className="h-6 w-6 text-white" />
-                                                </div>
-                                            </div>
-                                            <div className="mt-8 pt-4 border-t border-white/10 space-y-3">
-                                                <div className="flex justify-between text-[10px] font-bold">
-                                                    <span className="text-amber-100">Contribution Sociale</span>
-                                                    <span>85%</span>
-                                                </div>
-                                                <div className="h-1 bg-white/20 rounded-full overflow-hidden">
-                                                    <div className="h-full bg-white w-[85%]" />
-                                                </div>
-                                            </div>
-                                        </CardContent>
+                                                 <div>
+                                                     <CardTitle className="text-lg font-bold">Timeline de Carrière</CardTitle>
+                                                     <CardDescription>Événements marquants et parcours officiel</CardDescription>
+                                                 </div>
+                                             </div>
+                                         </CardHeader>
+                                         <CardContent className="pt-8 px-8">
+                                             <div className="relative border-l-2 border-slate-100 ml-3 pb-4 space-y-8">
+                                                 {chief.career && chief.career.length > 0 ? (
+                                                     chief.career.map((event, idx) => (
+                                                         <div key={event.id} className="relative pl-8">
+                                                             <div className={cn(
+                                                                 "absolute -left-[11px] top-0 h-5 w-5 rounded-full border-4 border-white shadow-sm ring-1 ring-slate-100",
+                                                                 event.type === 'Intronisation' ? "bg-amber-500" : 
+                                                                 event.type === 'Médaille' ? "bg-indigo-500" :
+                                                                 event.type === 'Médiation' ? "bg-teal-500" : "bg-slate-400"
+                                                             )} />
+                                                             <div className="space-y-1">
+                                                                 <div className="flex items-center justify-between">
+                                                                     <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">{event.date}</span>
+                                                                     <Badge variant="outline" className="text-[8px] font-black uppercase border-slate-100">{event.type}</Badge>
+                                                                 </div>
+                                                                 <h4 className="font-extrabold text-slate-800">{event.title}</h4>
+                                                                 <p className="text-xs text-slate-500 font-medium leading-relaxed">{event.description}</p>
+                                                             </div>
+                                                         </div>
+                                                     ))
+                                                 ) : (
+                                                     <div className="flex flex-col items-center justify-center py-12 text-center space-y-3">
+                                                         <div className="h-12 w-12 rounded-full bg-slate-50 flex items-center justify-center text-slate-200">
+                                                             <Clock className="h-6 w-6" />
+                                                         </div>
+                                                         <p className="text-xs font-bold text-slate-400 uppercase tracking-widest italic">Aucun événement répertorié</p>
+                                                     </div>
+                                                 )}
+                                             </div>
+                                         </CardContent>
                                     </Card>
 
-                                    <Card className="border-none shadow-sm bg-white overflow-hidden">
-                                        <CardHeader className="border-b bg-slate-50/50 py-3">
-                                            <CardTitle className="text-[10px] font-black uppercase tracking-widest text-slate-400">Audit & Transparence</CardTitle>
-                                        </CardHeader>
-                                        <CardContent className="p-4 space-y-4">
-                                            <div className="flex items-center gap-3">
-                                                <div className="h-8 w-8 rounded-lg bg-green-50 flex items-center justify-center text-green-600">
-                                                    <UserCheck className="h-4 w-4" />
+                                    <div className="space-y-6">
+                                        <Card className="border-none shadow-sm bg-gradient-to-br from-amber-500 to-amber-600 text-white overflow-hidden">
+                                            <CardContent className="p-6">
+                                                <div className="flex items-start justify-between">
+                                                    <div className="space-y-1">
+                                                        <p className="text-[10px] font-black uppercase text-amber-200 tracking-widest">Score de Mérite</p>
+                                                        <h3 className="text-4xl font-black">{chief.meritPoints || 0}</h3>
+                                                    </div>
+                                                    <div className="h-12 w-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center">
+                                                        <Medal className="h-6 w-6 text-white" />
+                                                    </div>
                                                 </div>
-                                                <div className="flex-1">
-                                                    <p className="text-[9px] font-bold text-slate-400 uppercase">Dernière vérification</p>
-                                                    <p className="text-xs font-bold text-slate-800">{chief.audit?.lastVerifiedBy || 'Système'}</p>
+                                                <div className="mt-8 pt-4 border-t border-white/10 space-y-3">
+                                                    <div className="flex justify-between text-[10px] font-bold">
+                                                        <span className="text-amber-100">Contribution Sociale</span>
+                                                        <span>85%</span>
+                                                    </div>
+                                                    <div className="h-1 bg-white/20 rounded-full overflow-hidden">
+                                                        <div className="h-full bg-white w-[85%]" />
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <div className="flex items-center gap-3">
-                                                <div className="h-8 w-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400">
-                                                    <Calendar className="h-4 w-4" />
-                                                </div>
-                                                <div className="flex-1">
-                                                    <p className="text-[9px] font-bold text-slate-400 uppercase">Date d'audit</p>
-                                                    <p className="text-xs font-bold text-slate-800">
-                                                        {chief.audit?.lastVerifiedAt ? new Date(chief.audit.lastVerifiedAt).toLocaleDateString() : 'Non vérifié'}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-                                </div>
-                             </div>
-                        </TabsContent>
+                                            </CardContent>
+                                        </Card>
+
+                                        {canViewAudit && (
+                                            <Card className="border-none shadow-sm bg-white overflow-hidden">
+                                                <CardHeader className="border-b bg-slate-50/50 py-3">
+                                                    <CardTitle className="text-[10px] font-black uppercase tracking-widest text-slate-400">Audit & Transparence</CardTitle>
+                                                </CardHeader>
+                                                <CardContent className="p-4 space-y-4">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="h-8 w-8 rounded-lg bg-green-50 flex items-center justify-center text-green-600">
+                                                            <UserCheck className="h-4 w-4" />
+                                                        </div>
+                                                        <div className="flex-1">
+                                                            <p className="text-[9px] font-bold text-slate-400 uppercase">Dernière vérification</p>
+                                                            <p className="text-xs font-bold text-slate-800">{chief.audit?.lastVerifiedBy || 'Système'}</p>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="h-8 w-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400">
+                                                            <Calendar className="h-4 w-4" />
+                                                        </div>
+                                                        <div className="flex-1">
+                                                            <p className="text-[9px] font-bold text-slate-400 uppercase">Date d'audit</p>
+                                                            <p className="text-xs font-bold text-slate-800">
+                                                                {chief.audit?.lastVerifiedAt ? new Date(chief.audit.lastVerifiedAt).toLocaleDateString() : 'Non vérifié'}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </CardContent>
+                                            </Card>
+                                        )}
+                                    </div>
+                                 </div>
+                            </TabsContent>
+                        )}
 
                         <TabsContent value="territory" className="space-y-6">
                             <Card className="border-none shadow-sm overflow-hidden">

@@ -26,6 +26,7 @@ import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { useAuth } from "@/hooks/use-auth";
 
 interface ChiefQuickViewProps {
     chief: Chief | null;
@@ -39,6 +40,10 @@ export function ChiefQuickView({ chief, isOpen, onClose }: ChiefQuickViewProps) 
     const career = chief.career || [];
     const meritPoints = chief.meritPoints || 0;
     const isHighAuthority = ["Roi", "Chef de province", "Chef de canton"].includes(chief.role);
+    const { hasPermission } = useAuth();
+    
+    const canReadCareer = hasPermission('chiefs-career:read');
+    const canReadAudit = hasPermission('chiefs-audit:read');
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -110,37 +115,39 @@ export function ChiefQuickView({ chief, isOpen, onClose }: ChiefQuickViewProps) 
                         </section>
 
                         {/* Career Timeline */}
-                        <section className="space-y-4">
-                            <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                                <History className="h-3 w-3" />
-                                PARCOURS DE L&apos;AUTORITÉ
-                            </h4>
-                            
-                            <div className="relative space-y-6 before:absolute before:left-[17px] before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200">
-                                {career.length > 0 ? (
-                                    career.map((event, index) => (
-                                        <div key={event.id} className="relative pl-10">
-                                            <div className="absolute left-0 top-1 h-9 w-9 bg-white rounded-xl border border-slate-200 shadow-sm flex items-center justify-center z-10 transition-transform hover:scale-110">
-                                                {getEventIcon(event.type)}
-                                            </div>
-                                            <div className="bg-white p-4 rounded-2xl border border-slate-200/60 shadow-sm hover:border-blue-400/50 transition-colors">
-                                                <div className="flex justify-between items-start mb-1">
-                                                    <h5 className="font-black text-slate-900 text-sm">{event.title}</h5>
-                                                    <span className="text-[10px] font-bold text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full ring-1 ring-slate-100">
-                                                        {event.date}
-                                                    </span>
+                        {canReadCareer && (
+                            <section className="space-y-4">
+                                <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
+                                    <History className="h-3 w-3" />
+                                    PARCOURS DE L&apos;AUTORITÉ
+                                </h4>
+                                
+                                <div className="relative space-y-6 before:absolute before:left-[17px] before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200">
+                                    {career.length > 0 ? (
+                                        career.map((event, index) => (
+                                            <div key={event.id} className="relative pl-10">
+                                                <div className="absolute left-0 top-1 h-9 w-9 bg-white rounded-xl border border-slate-200 shadow-sm flex items-center justify-center z-10 transition-transform hover:scale-110">
+                                                    {getEventIcon(event.type)}
                                                 </div>
-                                                <p className="text-slate-500 text-xs leading-relaxed">{event.description}</p>
+                                                <div className="bg-white p-4 rounded-2xl border border-slate-200/60 shadow-sm hover:border-blue-400/50 transition-colors">
+                                                    <div className="flex justify-between items-start mb-1">
+                                                        <h5 className="font-black text-slate-900 text-sm">{event.title}</h5>
+                                                        <span className="text-[10px] font-bold text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full ring-1 ring-slate-100">
+                                                            {event.date}
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-slate-500 text-xs leading-relaxed">{event.description}</p>
+                                                </div>
                                             </div>
+                                        ))
+                                    ) : (
+                                        <div className="pl-10 text-slate-400 italic text-sm py-2">
+                                            Aucun événement répertorié dans la timeline officielle.
                                         </div>
-                                    ))
-                                ) : (
-                                    <div className="pl-10 text-slate-400 italic text-sm py-2">
-                                        Aucun événement répertorié dans la timeline officielle.
-                                    </div>
-                                )}
-                            </div>
-                        </section>
+                                    )}
+                                </div>
+                            </section>
+                        )}
 
                         <Separator className="bg-slate-200/60" />
 
@@ -167,10 +174,12 @@ export function ChiefQuickView({ chief, isOpen, onClose }: ChiefQuickViewProps) 
                             <div className="space-y-3">
                                 <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400">ADMINISTRATION</h4>
                                 <div className="space-y-2">
-                                    <div className="flex items-center gap-3 text-sm text-slate-600 font-bold bg-white p-3 rounded-xl border border-slate-200/60">
-                                        <Calendar className="h-4 w-4 text-blue-500" />
-                                        Inscrit le {chief.audit?.createdAt ? format(new Date(chief.audit.createdAt), 'dd MMMM yyyy', { locale: fr }) : "N/A"}
-                                    </div>
+                                    {canReadAudit && (
+                                        <div className="flex items-center gap-3 text-sm text-slate-600 font-bold bg-white p-3 rounded-xl border border-slate-200/60">
+                                            <Calendar className="h-4 w-4 text-blue-500" />
+                                            Inscrit le {chief.audit?.createdAt ? format(new Date(chief.audit.createdAt), 'dd MMMM yyyy', { locale: fr }) : "N/A"}
+                                        </div>
+                                    )}
                                     <div className="flex items-center gap-3 text-sm text-slate-400 font-bold bg-white/50 p-3 rounded-xl border border-dashed border-slate-200/60">
                                         <ShieldCheck className="h-4 w-4" />
                                         ID: {chief.id.substring(0, 8)}...

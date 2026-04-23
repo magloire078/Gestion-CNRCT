@@ -62,6 +62,8 @@ export const RESOURCES_CONFIG: ResourceConfig[] = [
     { id: 'mgp', label: 'Gestion des Plaintes', icon: 'MessageCircle', availableActions: ['read', 'create', 'update', 'delete'], parentId: 'group:operations' },
 
     { id: 'chiefs', label: 'Chefs Coutumiers', icon: 'Crown', availableActions: ['read', 'create', 'update', 'delete'], parentId: 'group:localities' },
+    { id: 'chiefs-career', label: 'Historique & Parcours', icon: 'History', availableActions: ['read', 'create', 'update', 'delete'], parentId: 'group:localities' },
+    { id: 'chiefs-audit', label: 'Audit & Mérite', icon: 'ScrollText', availableActions: ['read', 'update'], parentId: 'group:localities' },
     { id: 'villages', label: 'Villages', icon: 'MapPinned', availableActions: ['read', 'create', 'update', 'delete'], parentId: 'group:localities' },
     { id: 'mapping', label: 'Cartographie SIG', icon: 'Map', availableActions: ['read'], parentId: 'group:localities' },
 
@@ -108,6 +110,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, ResourcePermissions> = {
         supplies: ALL_CRUD, 'it-assets': ALL_CRUD, fleet: ALL_CRUD,
         news: ALL_CRUD, repository: ALL_CRUD, budget: ALL_CRUD,
         evaluations: ALL_CRUD, tickets: ALL_CRUD, chiefs: ALL_CRUD,
+        'chiefs-career': ALL_CRUD, 'chiefs-audit': ALL_CRUD,
         mapping: ALL_READ, assistant: ALL_READ, settings: READ_UPDATE,
         admin: READ_UPDATE, 'audit-log': ALL_READ,
         fuel: ALL_CRUD, indemnities: ALL_CRUD, heritage: ALL_CRUD,
@@ -119,6 +122,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, ResourcePermissions> = {
     }),
     'mediation': buildDefault({
         dashboard: ALL_READ, conflicts: ALL_CRUD, chiefs: ALL_CRUD,
+        'chiefs-career': READ_UPDATE, 'chiefs-audit': ALL_READ,
         villages: ALL_CRUD, 'us-et-coutumes': ALL_CRUD, mapping: ALL_READ,
         repository: ALL_READ, assistant: ALL_READ, intranet: ALL_READ,
         documents: READ_CREATE, mgp: ALL_CRUD,
@@ -147,7 +151,9 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, ResourcePermissions> = {
         dashboard: ALL_READ, employees: ALL_READ, payroll: ALL_READ,
         leaves: ALL_READ, missions: ALL_READ, conflicts: ALL_READ,
         budget: ALL_READ, evaluations: ALL_READ, news: ALL_READ,
-        repository: ALL_READ, chiefs: ALL_READ, mapping: ALL_READ,
+        repository: ALL_READ, chiefs: ALL_READ, 
+        'chiefs-career': ALL_READ, 'chiefs-audit': ALL_READ,
+        mapping: ALL_READ,
         assistant: ALL_READ, settings: ALL_READ, admin: ALL_READ,
         'audit-log': ALL_READ, heritage: ALL_READ, villages: ALL_READ,
         'us-et-coutumes': ALL_READ, intranet: ALL_READ,

@@ -13,6 +13,7 @@ import { getDepartments } from './department-service';
 import { getDirections } from './direction-service';
 import { getServices } from './service-service';
 import { uploadToCloudinary } from '@/lib/cloudinary';
+import { recalculateSalaryChain, getEmployeeHistory } from './employee-history-service';
 
 import { FirestorePermissionError, FirestoreQuotaError, FirestoreTimeoutError } from '@/lib/errors';
 import { parseISO, addYears, format, isValid } from 'date-fns';
@@ -462,6 +463,45 @@ export async function updateEmployee(employeeId: string, employeeDataToUpdate: P
                 createOrUpdateChiefFromEmployee(updatedEmployee).catch(e => console.error("Chief sync error:", e));
             }
         });
+
+        // Check if any salary-related fields were changed
+        const salaryFields = [
+            'baseSalary', 'indemniteTransportImposable', 'indemniteResponsabilite',
+            'indemniteLogement', 'indemniteSujetion', 'indemniteCommunication',
+            'indemniteRepresentation', 'transportNonImposable'
+        ] as const;
+
+        const hasSalaryChange = salaryFields.some(field => updateData[field] !== undefined);
+
+        if (hasSalaryChange) {
+            // If salary events exist, update the "origin" salary (previous_* of the first event)
+            // and recalculate the entire chain
+            const history = await getEmployeeHistory(employeeId);
+            const salaryEventTypes = ['Promotion', 'Augmentation au Mérite', 'Ajustement de Marché', 'Revalorisation Salariale', 'Changement de poste', 'Autre'];
+            const salaryEvents = history
+                .filter(e => salaryEventTypes.includes(e.eventType as any) && e.details)
+                .sort((a, b) => parseISO(a.effectiveDate).getTime() - parseISO(b.effectiveDate).getTime());
+
+            if (salaryEvents.length > 0) {
+                // Get the refreshed employee data (after the updateDoc above)
+                const refreshedEmployee = await getEmployee(employeeId);
+                if (refreshedEmployee) {
+                    // Update the first event's previous_* fields with the new "origin" salary
+                    const firstEvent = salaryEvents[0];
+                    const firstEventRef = doc(db, `employees/${employeeId}/history`, firstEvent.id);
+                    const originUpdates: Record<string, any> = {};
+
+                    for (const field of salaryFields) {
+                        originUpdates[`details.previous_${field}`] = Number((refreshedEmployee as any)[field] || 0);
+                    }
+
+                    await updateDoc(firstEventRef, originUpdates);
+
+                    // Now recalculate the full chain
+                    await recalculateSalaryChain(employeeId);
+                }
+            }
+        }
     } catch (error: any) {
         if (error.code === 'permission-denied') {
             throw new FirestorePermissionError(`Vous n'avez pas la permission de modifier l'employé ${employeeDataToUpdate.name}.`, { operation: 'update', path: `employees/${employeeId}` });

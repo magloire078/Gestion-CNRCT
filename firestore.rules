@@ -133,7 +133,9 @@ service cloud.firestore {
     match /chiefs/{chiefId} {
       allow read: if can('chiefs', 'read');
       allow create: if can('chiefs', 'create');
-      allow update: if can('chiefs', 'update');
+      allow update: if can('chiefs', 'update') && 
+                    (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['career']) || can('chiefs-career', 'update')) &&
+                    (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['audit', 'meritPoints']) || can('chiefs-audit', 'update'));
       allow delete: if can('chiefs', 'delete');
     }
 

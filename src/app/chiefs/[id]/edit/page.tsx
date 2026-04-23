@@ -22,6 +22,7 @@ import type { Chief, ChiefRole, DesignationMode, ChiefCareerEvent } from "@/type
 import { divisions } from "@/lib/ivory-coast-divisions";
 import { IVORIAN_REGIONS } from "@/constants/regions";
 import { LocationPicker } from "@/components/common/location-picker";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function EditChiefPage() {
     const { id } = useParams() as { id: string };
@@ -32,6 +33,9 @@ export default function EditChiefPage() {
     const [loading, setLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState("");
+    const { hasPermission } = useAuth();
+    
+    const canEditCareer = hasPermission('chiefs-career:edit');
 
     // Form states
     const [firstName, setFirstName] = useState("");
@@ -366,111 +370,113 @@ export default function EditChiefPage() {
                                 </AccordionContent>
                             </AccordionItem>
 
-                            <AccordionItem value="career" className="border-none">
-                                <AccordionTrigger className="hover:no-underline">
-                                    <div className="flex items-center gap-2 font-bold text-slate-700 text-sm uppercase tracking-widest">
-                                        <Award className="h-4 w-4" /> Parcours & Carrière
-                                    </div>
-                                </AccordionTrigger>
-                                <AccordionContent>
-                                    <div className="space-y-4 pt-4">
-                                        <div className="flex items-center justify-between">
-                                            <Label className="text-[10px] font-black uppercase text-slate-400">ÉVÉNEMENTS MARQUANTS</Label>
-                                            <Button 
-                                                type="button" 
-                                                variant="outline" 
-                                                size="sm" 
-                                                className="h-8 rounded-lg text-[10px] font-black uppercase hover:bg-blue-50 hover:text-blue-600 transition-colors"
-                                                onClick={() => setCareer([...career, { id: crypto.randomUUID(), date: "", title: "", type: "Intronisation", description: "" }])}
-                                            >
-                                                <Plus className="mr-1.5 h-3 w-3" /> Ajouter
-                                            </Button>
+                            {canEditCareer && (
+                                <AccordionItem value="career" className="border-none">
+                                    <AccordionTrigger className="hover:no-underline">
+                                        <div className="flex items-center gap-2 font-bold text-slate-700 text-sm uppercase tracking-widest">
+                                            <Award className="h-4 w-4" /> Parcours & Carrière
                                         </div>
+                                    </AccordionTrigger>
+                                    <AccordionContent>
+                                        <div className="space-y-4 pt-4">
+                                            <div className="flex items-center justify-between">
+                                                <Label className="text-[10px] font-black uppercase text-slate-400">ÉVÉNEMENTS MARQUANTS</Label>
+                                                <Button 
+                                                    type="button" 
+                                                    variant="outline" 
+                                                    size="sm" 
+                                                    className="h-8 rounded-lg text-[10px] font-black uppercase hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                                                    onClick={() => setCareer([...career, { id: crypto.randomUUID(), date: "", title: "", type: "Intronisation", description: "" }])}
+                                                >
+                                                    <Plus className="mr-1.5 h-3 w-3" /> Ajouter
+                                                </Button>
+                                            </div>
 
-                                        <div className="space-y-3">
-                                            {career.length === 0 && (
-                                                <div className="py-8 text-center border-2 border-dashed border-slate-100 rounded-2xl text-slate-400 text-xs italic">
-                                                    Aucun événement ajouté à la timeline.
-                                                </div>
-                                            )}
-                                            {career.map((event, index) => (
-                                                <div key={event.id} className="relative group p-4 bg-slate-50/50 rounded-2xl border border-slate-200/60 hover:border-blue-200 transition-all duration-300">
-                                                    <Button
-                                                        type="button"
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="absolute -top-2 -right-2 h-7 w-7 rounded-full bg-white border border-slate-200 text-slate-400 hover:text-red-500 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
-                                                        onClick={() => setCareer(career.filter(e => e.id !== event.id))}
-                                                    >
-                                                        <TrashIcon className="h-3.5 w-3.5" />
-                                                    </Button>
+                                            <div className="space-y-3">
+                                                {career.length === 0 && (
+                                                    <div className="py-8 text-center border-2 border-dashed border-slate-100 rounded-2xl text-slate-400 text-xs italic">
+                                                        Aucun événement ajouté à la timeline.
+                                                    </div>
+                                                )}
+                                                {career.map((event, index) => (
+                                                    <div key={event.id} className="relative group p-4 bg-slate-50/50 rounded-2xl border border-slate-200/60 hover:border-blue-200 transition-all duration-300">
+                                                        <Button
+                                                            type="button"
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="absolute -top-2 -right-2 h-7 w-7 rounded-full bg-white border border-slate-200 text-slate-400 hover:text-red-500 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                                                            onClick={() => setCareer(career.filter(e => e.id !== event.id))}
+                                                        >
+                                                            <TrashIcon className="h-3.5 w-3.5" />
+                                                        </Button>
 
-                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                        <div className="space-y-2">
-                                                            <Label className="text-[9px] font-black uppercase text-slate-400">Type d'événement</Label>
-                                                            <Select value={event.type} onValueChange={(v) => {
-                                                                const newCareer = [...career];
-                                                                newCareer[index].type = v as any;
-                                                                setCareer(newCareer);
-                                                            }}>
-                                                                <SelectTrigger className="h-9 bg-white border-slate-200 text-xs font-bold">
-                                                                    <SelectValue />
-                                                                </SelectTrigger>
-                                                                <SelectContent>
-                                                                    <SelectItem value="Intronisation" className="text-xs">Intronisation</SelectItem>
-                                                                    <SelectItem value="Médaille" className="text-xs">Médaille / Décoration</SelectItem>
-                                                                    <SelectItem value="Médiation" className="text-xs">Médiation de Conflit</SelectItem>
-                                                                    <SelectItem value="Mission" className="text-xs">Mission Officielle</SelectItem>
-                                                                    <SelectItem value="Autre" className="text-xs">Autre</SelectItem>
-                                                                </SelectContent>
-                                                            </Select>
-                                                        </div>
-                                                        <div className="space-y-2">
-                                                            <Label className="text-[9px] font-black uppercase text-slate-400">Date / Période</Label>
-                                                            <Input 
-                                                                className="h-9 bg-white border-slate-200 text-xs font-bold" 
-                                                                placeholder="ex: 12 Jan 2024" 
-                                                                value={event.date}
-                                                                onChange={(e) => {
+                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                            <div className="space-y-2">
+                                                                <Label className="text-[9px] font-black uppercase text-slate-400">Type d'événement</Label>
+                                                                <Select value={event.type} onValueChange={(v) => {
                                                                     const newCareer = [...career];
-                                                                    newCareer[index].date = e.target.value;
+                                                                    newCareer[index].type = v as any;
                                                                     setCareer(newCareer);
-                                                                }}
-                                                            />
-                                                        </div>
-                                                        <div className="col-span-2 space-y-2">
-                                                            <Label className="text-[9px] font-black uppercase text-slate-400">Titre de l'événement</Label>
-                                                            <Input 
-                                                                className="h-9 bg-white border-slate-200 text-xs font-bold" 
-                                                                placeholder="ex: Médiation à Agboville"
-                                                                value={event.title}
-                                                                onChange={(e) => {
-                                                                    const newCareer = [...career];
-                                                                    newCareer[index].title = e.target.value;
-                                                                    setCareer(newCareer);
-                                                                }}
-                                                            />
-                                                        </div>
-                                                        <div className="col-span-2 space-y-2">
-                                                            <Label className="text-[9px] font-black uppercase text-slate-400">Description détaillée</Label>
-                                                            <Textarea 
-                                                                className="bg-white border-slate-200 text-xs font-medium min-h-[60px]" 
-                                                                placeholder="Précisez le contexte et l'impact..."
-                                                                value={event.description}
-                                                                onChange={(e) => {
-                                                                    const newCareer = [...career];
-                                                                    newCareer[index].description = e.target.value;
-                                                                    setCareer(newCareer);
-                                                                }}
-                                                            />
+                                                                }}>
+                                                                    <SelectTrigger className="h-9 bg-white border-slate-200 text-xs font-bold">
+                                                                        <SelectValue />
+                                                                    </SelectTrigger>
+                                                                    <SelectContent>
+                                                                        <SelectItem value="Intronisation" className="text-xs">Intronisation</SelectItem>
+                                                                        <SelectItem value="Médaille" className="text-xs">Médaille / Décoration</SelectItem>
+                                                                        <SelectItem value="Médiation" className="text-xs">Médiation de Conflit</SelectItem>
+                                                                        <SelectItem value="Mission" className="text-xs">Mission Officielle</SelectItem>
+                                                                        <SelectItem value="Autre" className="text-xs">Autre</SelectItem>
+                                                                    </SelectContent>
+                                                                </Select>
+                                                            </div>
+                                                            <div className="space-y-2">
+                                                                <Label className="text-[9px] font-black uppercase text-slate-400">Date / Période</Label>
+                                                                <Input 
+                                                                    className="h-9 bg-white border-slate-200 text-xs font-bold" 
+                                                                    placeholder="ex: 12 Jan 2024" 
+                                                                    value={event.date}
+                                                                    onChange={(e) => {
+                                                                        const newCareer = [...career];
+                                                                        newCareer[index].date = e.target.value;
+                                                                        setCareer(newCareer);
+                                                                    }}
+                                                                />
+                                                            </div>
+                                                            <div className="col-span-2 space-y-2">
+                                                                <Label className="text-[9px] font-black uppercase text-slate-400">Titre de l'événement</Label>
+                                                                <Input 
+                                                                    className="h-9 bg-white border-slate-200 text-xs font-bold" 
+                                                                    placeholder="ex: Médiation à Agboville"
+                                                                    value={event.title}
+                                                                    onChange={(e) => {
+                                                                        const newCareer = [...career];
+                                                                        newCareer[index].title = e.target.value;
+                                                                        setCareer(newCareer);
+                                                                    }}
+                                                                />
+                                                            </div>
+                                                            <div className="col-span-2 space-y-2">
+                                                                <Label className="text-[9px] font-black uppercase text-slate-400">Description détaillée</Label>
+                                                                <Textarea 
+                                                                    className="bg-white border-slate-200 text-xs font-medium min-h-[60px]" 
+                                                                    placeholder="Précisez le contexte et l'impact..."
+                                                                    value={event.description}
+                                                                    onChange={(e) => {
+                                                                        const newCareer = [...career];
+                                                                        newCareer[index].description = e.target.value;
+                                                                        setCareer(newCareer);
+                                                                    }}
+                                                                />
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                </div>
-                                            ))}
+                                                ))}
+                                            </div>
                                         </div>
-                                    </div>
-                                </AccordionContent>
-                            </AccordionItem>
+                                    </AccordionContent>
+                                </AccordionItem>
+                            )}
                         </Accordion>
                         {error && <div className="mt-6 p-4 bg-red-50 text-red-600 rounded-xl flex items-center gap-2 text-sm font-bold border border-red-100"><AlertCircle className="h-4 w-4" /> {error}</div>}
                     </CardContent>

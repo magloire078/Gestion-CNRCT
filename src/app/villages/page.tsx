@@ -273,7 +273,7 @@ export default function VillagesPage() {
                                 <Printer className="mr-2 h-5 w-5 group-hover:text-amber-500 transition-colors" />
                                 Imprimer la liste
                             </Button>
-                            <PermissionGuard permissions={["ADMIN", "SUPER_ADMIN", "VILLAGE_CREATE"]}>
+                            <PermissionGuard permission="page:repository:view">
                                 <AddVillageSheet />
                             </PermissionGuard>
                         </div>

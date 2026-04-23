@@ -38,6 +38,10 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "res.cloudinary.com",
       },
+      {
+        protocol: "https",
+        hostname: "api.dicebear.com",
+      },
     ],
   },
   serverExternalPackages: ['genkit', '@genkit-ai', 'google-auth-library', 'xlsx', 'firebase-admin', 'docx'],

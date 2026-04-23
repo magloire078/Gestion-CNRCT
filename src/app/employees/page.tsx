@@ -683,7 +683,7 @@ export default function EmployeesPage() {
                       <Table>
                         <TableHeader className="bg-slate-100/50">
                           <TableRow>
-                            {isGeoTab && <TableHead className="w-[50px]">N°</TableHead>}
+                            <TableHead className="w-[50px] text-center">N°</TableHead>
                             <TableHead className="w-[80px]">Photo</TableHead>
                             <TableHead>{isGeoTab ? 'Nom et prénoms' : 'NOM & Prénoms'}</TableHead>
                             <TableHead>{isGeoTab ? 'N° MAT' : 'Matricule'}</TableHead>
@@ -693,15 +693,13 @@ export default function EmployeesPage() {
                                 <TableHead>Région</TableHead>
                                 <TableHead>Département</TableHead>
                                 <TableHead>Sous-Préfecture</TableHead>
-                                <TableHead>Village</TableHead>
                                 <TableHead>Référence</TableHead>
                               </>
                             ) : (
                               <>
-                                <TableHead>Poste</TableHead>
                                 <TableHead>Service</TableHead>
                                 <TableHead>Statut</TableHead>
-                                <TableHead>CNPS</TableHead>
+                                <TableHead className="text-center">CNPS</TableHead>
                               </>
                             )}
                             <TableHead className="w-[100px] text-right">Actions</TableHead>
@@ -711,14 +709,25 @@ export default function EmployeesPage() {
                           {loading ? (
                             Array.from({ length: 5 }).map((_, i) => (
                               <TableRow key={i}>
-                                {isGeoTab && <TableCell><Skeleton className="h-4 w-4" /></TableCell>}
+                                <TableCell><Skeleton className="h-4 w-4" /></TableCell>
                                 <TableCell><Skeleton className="h-10 w-10 rounded-full" /></TableCell>
                                 <TableCell><Skeleton className="h-4 w-32" /></TableCell>
                                 <TableCell><Skeleton className="h-4 w-20" /></TableCell>
-                                <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                                <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                                <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
-                                <TableCell><Skeleton className="h-6 w-6 rounded-full" /></TableCell>
+                                {isGeoTab ? (
+                                    <>
+                                        <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                                        <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                                        <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                                        <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                                        <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                                    </>
+                                ) : (
+                                    <>
+                                        <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                                        <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
+                                        <TableCell><Skeleton className="h-6 w-6 rounded-full" /></TableCell>
+                                    </>
+                                )}
                                 <TableCell><div className="flex gap-2 justify-end"><Skeleton className="h-8 w-8" /></div></TableCell>
                               </TableRow>
                             ))
@@ -729,7 +738,7 @@ export default function EmployeesPage() {
                                 onClick={() => router.push(`/employees/${employee.id}`)}
                                 className="cursor-pointer border-b border-slate-50 hover:bg-white/60 transition-all group h-14"
                               >
-                                {isGeoTab && <TableCell className="text-center font-black text-slate-300">{(currentPage - 1) * itemsPerPage + index + 1}</TableCell>}
+                                <TableCell className="text-center font-black text-slate-300">{(currentPage - 1) * itemsPerPage + index + 1}</TableCell>
                                 <TableCell>
                                   <Avatar className="h-10 w-10 border-2 border-white shadow-sm transition-transform group-hover:scale-110">
                                     <AvatarImage src={employee.photoUrl || ''} alt={employee.name} className="object-cover" />

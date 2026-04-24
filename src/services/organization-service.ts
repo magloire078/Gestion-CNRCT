@@ -12,6 +12,17 @@ const defaultMainLogoUrl = "https://cnrct.ci/wp-content/uploads/2018/03/logo_cha
 const defaultSecondaryLogoUrl = "https://upload.wikimedia.org/wikipedia/commons/4/4a/Coat_of_arms_of_C%C3%B4te_d%27Ivoire_%281997-2001_variant%29.svg";
 
 export async function getOrganizationSettings(): Promise<OrganizationSettings> {
+    // Return default settings immediately during Server-Side Rendering (SSR)
+    // to prevent Firebase Client SDK from attempting to connect and timing out.
+    if (typeof window === 'undefined') {
+        return {
+            organizationName: 'La Chambre des Rois et des Chefs Traditionnels de Côte d’Ivoire',
+            mainLogoUrl: defaultMainLogoUrl,
+            secondaryLogoUrl: defaultSecondaryLogoUrl,
+            faviconUrl: defaultMainLogoUrl
+        };
+    }
+
     try {
         const docSnap = await getDoc(settingsDocRef);
         if (docSnap.exists()) {

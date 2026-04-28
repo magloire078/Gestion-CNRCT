@@ -23,16 +23,16 @@ const monthLabels = [
 ];
 
 const DisaHeader = ({ organizationLogos, year, isPrinting = false }: { organizationLogos?: any, year: string, isPrinting?: boolean }) => (
-    <div className={`mb-4 border-b pb-4 ${isPrinting ? 'border-black' : ''}`}>
+    <div className={`${isPrinting ? 'mb-2 pb-2' : 'mb-4 pb-4'} border-b ${isPrinting ? 'border-black' : ''}`}>
         <div className="flex justify-between items-start">
             {/* Left: Organization Info - NOW CENTERED AS REQUESTED */}
-            <div className="flex flex-col gap-1 items-center min-w-[250px]">
+            <div className={`flex flex-col gap-0.5 items-center ${isPrinting ? 'min-w-[200px]' : 'min-w-[250px]'}`}>
                 <div className="text-center mb-1 leading-tight">
                     <p className="font-bold text-[10px] uppercase tracking-tight">Chambre Nationale de Rois</p>
                     <p className="font-bold text-[10px] uppercase tracking-tight">Et des Chefs Traditionnels</p>
                 </div>
                 {organizationLogos?.mainLogoUrl && (
-                    <div className="relative h-16 w-40">
+                    <div className={`relative ${isPrinting ? 'h-10 w-32' : 'h-16 w-40'}`}>
                         <Image
                             src={organizationLogos.mainLogoUrl}
                             alt="Logo Principal"
@@ -46,23 +46,23 @@ const DisaHeader = ({ organizationLogos, year, isPrinting = false }: { organizat
             
             {/* Center: Report Title, Year and CNPS */}
             <div className="text-center flex-1">
-                <div className="flex items-center justify-center gap-3">
-                    <h2 className="text-2xl font-black uppercase tracking-tight leading-none">D.I.S.A</h2>
-                    <div className="px-3 py-0.5 border-2 border-black rounded bg-white">
-                        <p className="text-xl font-black italic">{year}</p>
+                <div className="flex items-center justify-center gap-2">
+                    <h2 className={`${isPrinting ? 'text-xl' : 'text-2xl'} font-black uppercase tracking-tight leading-none`}>D.I.S.A</h2>
+                    <div className={`${isPrinting ? 'px-2 py-0' : 'px-3 py-0.5'} border-2 border-black rounded bg-white`}>
+                        <p className={`${isPrinting ? 'text-lg' : 'text-xl'} font-black italic`}>{year}</p>
                     </div>
                 </div>
-                <p className="text-[10px] font-bold mt-1">DÉCLARATION INDIVIDUELLE DES SALAIRES ANNUELS</p>
-                <p className="text-[11px] font-black uppercase mt-2 border-t-2 border-black/5 pt-1 inline-block min-w-[150px]">
+                <p className={`${isPrinting ? 'text-[9px]' : 'text-[10px]'} font-bold mt-1`}>DÉCLARATION INDIVIDUELLE DES SALAIRES ANNUELS</p>
+                <p className={`${isPrinting ? 'text-[9px]' : 'text-[11px]'} font-black uppercase mt-1 border-t-2 border-black/5 pt-0.5 inline-block min-w-[120px]`}>
                     CNPS - SÉCURITÉ SOCIALE
                 </p>
             </div>
 
             {/* Right: National Info (Centered relative to each other) */}
-            <div className="flex flex-col gap-1 items-center min-w-[200px]">
+            <div className={`flex flex-col gap-0.5 items-center ${isPrinting ? 'min-w-[150px]' : 'min-w-[200px]'}`}>
                 <p className="font-bold text-[10px] uppercase leading-tight mb-1 text-center">République de Côte d'Ivoire</p>
                 {organizationLogos?.secondaryLogoUrl && (
-                    <div className="relative h-14 w-14">
+                    <div className={`relative ${isPrinting ? 'h-10 w-10' : 'h-14 w-14'}`}>
                         <Image
                             src={organizationLogos.secondaryLogoUrl}
                             alt="Logo Secondaire"
@@ -72,7 +72,7 @@ const DisaHeader = ({ organizationLogos, year, isPrinting = false }: { organizat
                         />
                     </div>
                 )}
-                <p className="text-[9px] italic text-center mt-1">Union - Discipline - Travail</p>
+                <p className="text-[9px] italic text-center mt-0.5">Union - Discipline - Travail</p>
             </div>
         </div>
     </div>
@@ -117,7 +117,7 @@ export default function DisaPage() {
                 @media print { 
                     @page { 
                         size: landscape; 
-                        margin: 10mm 5mm 15mm 5mm; 
+                        margin: 8mm 5mm 10mm 5mm; 
                     }
                     body {
                         margin: 0;
@@ -148,8 +148,9 @@ export default function DisaPage() {
                         print-color-adjust: exact !important;
                         font-weight: 900 !important;
                         border: 1px solid white !important; 
-                        font-size: 9px !important;
+                        font-size: 8px !important;
                         white-space: nowrap !important;
+                        padding: 2px !important;
                     }
                     thead { display: table-header-group !important; }
                     tfoot { display: table-footer-group !important; }
@@ -165,10 +166,10 @@ export default function DisaPage() {
                         table-layout: fixed !important; /* Fixed layout to prevent cell growth */
                     }
                     #print-section td {
-                        padding: 1px 2px !important;
+                        padding: 0.5px 2px !important;
                         border: 0.8px solid #475569 !important;
                         /* Supprimé background: white !important; pour permettre l'effet striped */
-                        font-size: 8.5px !important; 
+                        font-size: 7.5px !important; 
                         overflow: hidden !important;
                         text-overflow: clip !important;
                         white-space: nowrap !important;
@@ -381,52 +382,52 @@ export default function DisaPage() {
                 <div id="print-section" className="bg-white text-black font-sans p-1">
                     <DisaHeader organizationLogos={state.organizationLogos} year={state.year || ""} isPrinting={true} />
                     
-                    <table className="w-[1080px] text-[8.5px] border-collapse bg-white table-fixed">
+                    <table className="w-[1080px] text-[7.5px] border-collapse bg-white table-fixed">
                         <thead>
                                 <tr className="bg-[#1e3a8a] text-white">
-                                    <th className="p-1 w-[25px] font-black text-center uppercase border border-white">N°</th>
-                                    <th className="p-1 w-[40px] font-black text-center uppercase border border-white">Mat.</th>
-                                    <th className="p-1 w-[150px] text-left pl-1 font-black uppercase border border-white">Nom et Prénoms</th>
+                                    <th className="w-[25px] font-black text-center uppercase border border-white">N°</th>
+                                    <th className="w-[40px] font-black text-center uppercase border border-white">Mat.</th>
+                                    <th className="w-[150px] text-left pl-1 font-black uppercase border border-white">Nom et Prénoms</th>
                                     {monthLabels.map((m: string, i: number) => (
-                                        <th key={`header-print-month-${i}`} className="p-1 w-[58px] font-black text-center uppercase border border-white">
+                                        <th key={`header-print-month-${i}`} className="w-[58px] font-black text-center uppercase border border-white">
                                             {m.substring(0, 3)}.
                                         </th>
                                     ))}
-                                    <th className="p-1 w-[55px] font-black text-center uppercase border border-white">Gratif.</th>
-                                    <th className="p-1 w-[55px] font-black text-center uppercase border border-white">Tot Brut</th>
-                                    <th className="p-1 w-[55px] font-black text-center uppercase border border-white">CNPS</th>
+                                    <th className="w-[55px] font-black text-center uppercase border border-white">Gratif.</th>
+                                    <th className="w-[55px] font-black text-center uppercase border border-white">Tot Brut</th>
+                                    <th className="w-[55px] font-black text-center uppercase border border-white">CNPS</th>
                                 </tr>
                             </thead>
                         <tbody>
                                 {state.reportData.map((row: any, index: number) => (
                                 <tr key={`print-row-${row.matricule}`} className="text-black even:bg-slate-100/50">
-                                    <td className="py-1 px-1 text-center font-bold border border-slate-600">{index + 1}</td>
-                                    <td className="py-1 px-1 text-center font-mono border border-slate-600">{row.matricule}</td>
-                                    <td className="py-1 px-1 whitespace-nowrap text-left pl-1 font-bold border border-slate-600 overflow-hidden text-clip">{row.name}</td>
+                                    <td className="text-center font-bold border border-slate-600">{index + 1}</td>
+                                    <td className="text-center font-mono border border-slate-600">{row.matricule}</td>
+                                    <td className="whitespace-nowrap text-left pl-1 font-bold border border-slate-600 overflow-hidden text-clip">{row.name}</td>
                                     {row.monthlySalaries.map((salary: number, i: number) => (
-                                        <td key={`print-cell-${row.matricule}-month-${i}`} className="py-1 px-0.5 text-right font-mono border border-slate-600 tracking-tighter tabular-nums">
+                                        <td key={`print-cell-${row.matricule}-month-${i}`} className="text-right font-mono border border-slate-600 tracking-tighter tabular-nums">
                                             {formatCurrency(salary)}
                                         </td>
                                     ))}
-                                    <td className="py-1 px-0.5 text-right font-mono border border-slate-600 tracking-tighter tabular-nums">{formatCurrency(row.gratification)}</td>
-                                    <td className="py-1 px-0.5 text-right font-bold font-mono border border-slate-600 tracking-tighter tabular-nums">{formatCurrency(row.totalBrut)}</td>
-                                    <td className="py-1 px-0.5 text-right font-mono border border-slate-600 tracking-tighter tabular-nums">{formatCurrency(row.totalCNPS)}</td>
+                                    <td className="text-right font-mono border border-slate-600 tracking-tighter tabular-nums">{formatCurrency(row.gratification)}</td>
+                                    <td className="text-right font-bold font-mono border border-slate-600 tracking-tighter tabular-nums">{formatCurrency(row.totalBrut)}</td>
+                                    <td className="text-right font-mono border border-slate-600 tracking-tighter tabular-nums">{formatCurrency(row.totalCNPS)}</td>
                                 </tr>
                             ))}
                             <tr className="font-black bg-slate-100 text-black">
-                                <td colSpan={3} className="py-1.5 px-1 text-right pr-4 border border-slate-700 text-[10px]">TOTAL GÉNÉRAL</td>
+                                <td colSpan={3} className="py-1 px-1 text-right pr-4 border border-slate-700 text-[9px]">TOTAL GÉNÉRAL</td>
                                 {state.grandTotal.monthly.map((total: number, index: number) => (
-                                    <td key={`print-total-month-${index}`} className="py-1.5 px-0.5 text-right font-black border border-slate-700 text-[8px] tracking-tighter tabular-nums">
+                                    <td key={`print-total-month-${index}`} className="py-1 px-0.5 text-right font-black border border-slate-700 text-[7.5px] tracking-tighter tabular-nums">
                                         {formatCurrency(total)}
                                     </td>
                                 ))}
-                                <td className="py-1.5 px-0.5 text-right font-black border border-slate-700 text-[8px] tracking-tighter tabular-nums">{formatCurrency(state.grandTotal.gratification)}</td>
-                                <td className="py-1.5 px-0.5 text-right font-black border border-slate-700 text-[8px] tracking-tighter tabular-nums">{formatCurrency(state.grandTotal.brut)}</td>
-                                <td className="py-1.5 px-0.5 text-right font-black border border-slate-700 text-[8px] tracking-tighter tabular-nums">{formatCurrency(state.grandTotal.cnps)}</td>
+                                <td className="py-1 px-0.5 text-right font-black border border-slate-700 text-[7.5px] tracking-tighter tabular-nums">{formatCurrency(state.grandTotal.gratification)}</td>
+                                <td className="py-1 px-0.5 text-right font-black border border-slate-700 text-[7.5px] tracking-tighter tabular-nums">{formatCurrency(state.grandTotal.brut)}</td>
+                                <td className="py-1 px-0.5 text-right font-black border border-slate-700 text-[7.5px] tracking-tighter tabular-nums">{formatCurrency(state.grandTotal.cnps)}</td>
                             </tr>
                         </tbody>
                     </table>
-                    <footer className="mt-4 text-[8px]">
+                    <footer className="mt-1 text-[8px]">
                         <div className="flex justify-between items-end">
                             <div className="text-[7.5px] italic leading-tight max-w-[300px]">
                                 Document généré automatiquement par le système de gestion de la CNRCT le {new Date().toLocaleDateString('fr-FR')}. Page certifiée conforme aux données de l'exercice fiscal {state.year}.

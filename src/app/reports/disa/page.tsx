@@ -26,13 +26,13 @@ const DisaHeader = ({ organizationLogos, year, isPrinting = false }: { organizat
     <div className={`${isPrinting ? 'mb-2 pb-2' : 'mb-4 pb-4'} border-b ${isPrinting ? 'border-black' : ''}`}>
         <div className="flex justify-between items-start">
             {/* Left: Organization Info - NOW CENTERED AS REQUESTED */}
-            <div className={`flex flex-col gap-0.5 items-center ${isPrinting ? 'min-w-[200px]' : 'min-w-[250px]'}`}>
+            <div className="flex flex-col gap-0.5 items-center min-w-[250px]">
                 <div className="text-center mb-1 leading-tight">
                     <p className="font-bold text-[10px] uppercase tracking-tight">Chambre Nationale de Rois</p>
                     <p className="font-bold text-[10px] uppercase tracking-tight">Et des Chefs Traditionnels</p>
                 </div>
                 {organizationLogos?.mainLogoUrl && (
-                    <div className={`relative ${isPrinting ? 'h-10 w-32' : 'h-16 w-40'}`}>
+                    <div className="relative h-16 w-40">
                         <Image
                             src={organizationLogos.mainLogoUrl}
                             alt="Logo Principal"
@@ -59,10 +59,10 @@ const DisaHeader = ({ organizationLogos, year, isPrinting = false }: { organizat
             </div>
 
             {/* Right: National Info (Centered relative to each other) */}
-            <div className={`flex flex-col gap-0.5 items-center ${isPrinting ? 'min-w-[150px]' : 'min-w-[200px]'}`}>
+            <div className="flex flex-col gap-0.5 items-center min-w-[200px]">
                 <p className="font-bold text-[10px] uppercase leading-tight mb-1 text-center">République de Côte d'Ivoire</p>
                 {organizationLogos?.secondaryLogoUrl && (
-                    <div className={`relative ${isPrinting ? 'h-10 w-10' : 'h-14 w-14'}`}>
+                    <div className="relative h-14 w-14">
                         <Image
                             src={organizationLogos.secondaryLogoUrl}
                             alt="Logo Secondaire"

@@ -148,7 +148,7 @@ export default function DisaPage() {
                         print-color-adjust: exact !important;
                         font-weight: 900 !important;
                         border: 1px solid white !important; 
-                        font-size: 8px !important;
+                        font-size: 9px !important;
                         white-space: nowrap !important;
                         padding: 2px !important;
                     }
@@ -169,7 +169,7 @@ export default function DisaPage() {
                         padding: 0.5px 2px !important;
                         border: 0.8px solid #475569 !important;
                         /* Supprimé background: white !important; pour permettre l'effet striped */
-                        font-size: 7.5px !important; 
+                        font-size: 8.5px !important; 
                         overflow: hidden !important;
                         text-overflow: clip !important;
                         white-space: nowrap !important;
@@ -382,7 +382,7 @@ export default function DisaPage() {
                 <div id="print-section" className="bg-white text-black font-sans p-1">
                     <DisaHeader organizationLogos={state.organizationLogos} year={state.year || ""} isPrinting={true} />
                     
-                    <table className="w-[1080px] text-[7.5px] border-collapse bg-white table-fixed">
+                    <table className="w-[1080px] text-[8.5px] border-collapse bg-white table-fixed">
                         <thead>
                                 <tr className="bg-[#1e3a8a] text-white">
                                     <th className="w-[25px] font-black text-center uppercase border border-white">N°</th>
@@ -415,15 +415,15 @@ export default function DisaPage() {
                                 </tr>
                             ))}
                             <tr className="font-black bg-slate-100 text-black">
-                                <td colSpan={3} className="py-1 px-1 text-right pr-4 border border-slate-700 text-[9px]">TOTAL GÉNÉRAL</td>
+                                <td colSpan={3} className="py-1 px-1 text-right pr-4 border border-slate-700 text-[10px]">TOTAL GÉNÉRAL</td>
                                 {state.grandTotal.monthly.map((total: number, index: number) => (
-                                    <td key={`print-total-month-${index}`} className="py-1 px-0.5 text-right font-black border border-slate-700 text-[7.5px] tracking-tighter tabular-nums">
+                                    <td key={`print-total-month-${index}`} className="py-1 px-0.5 text-right font-black border border-slate-700 text-[8px] tracking-tighter tabular-nums">
                                         {formatCurrency(total)}
                                     </td>
                                 ))}
-                                <td className="py-1 px-0.5 text-right font-black border border-slate-700 text-[7.5px] tracking-tighter tabular-nums">{formatCurrency(state.grandTotal.gratification)}</td>
-                                <td className="py-1 px-0.5 text-right font-black border border-slate-700 text-[7.5px] tracking-tighter tabular-nums">{formatCurrency(state.grandTotal.brut)}</td>
-                                <td className="py-1 px-0.5 text-right font-black border border-slate-700 text-[7.5px] tracking-tighter tabular-nums">{formatCurrency(state.grandTotal.cnps)}</td>
+                                <td className="py-1 px-0.5 text-right font-black border border-slate-700 text-[8px] tracking-tighter tabular-nums">{formatCurrency(state.grandTotal.gratification)}</td>
+                                <td className="py-1 px-0.5 text-right font-black border border-slate-700 text-[8px] tracking-tighter tabular-nums">{formatCurrency(state.grandTotal.brut)}</td>
+                                <td className="py-1 px-0.5 text-right font-black border border-slate-700 text-[8px] tracking-tighter tabular-nums">{formatCurrency(state.grandTotal.cnps)}</td>
                             </tr>
                         </tbody>
                     </table>

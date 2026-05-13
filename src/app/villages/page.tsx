@@ -69,7 +69,7 @@ type SeatStatus = "all" | "occupied" | "vacant";
 
 export default function VillagesPage() {
     // Data State
-    const { settings } = useAuth();
+    const { user, settings } = useAuth();
     const [villages, setVillages] = useState<Village[]>([]);
     const [chiefs, setChiefs] = useState<Chief[]>([]);
     const [loading, setLoading] = useState(true);

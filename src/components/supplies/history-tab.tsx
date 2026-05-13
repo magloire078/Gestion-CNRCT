@@ -13,6 +13,7 @@ interface HistoryTabProps {
     isPending: boolean;
     onPageChange: (page: number) => void;
     onItemsPerPageChange: (n: number) => void;
+    onDelete?: (id: string) => void;
 }
 
 export const HistoryTab = memo(({
@@ -22,7 +23,8 @@ export const HistoryTab = memo(({
     itemsPerPage,
     isPending,
     onPageChange,
-    onItemsPerPageChange
+    onItemsPerPageChange,
+    onDelete
 }: HistoryTabProps) => {
     return (
         <Card className="border-none shadow-none bg-white p-6 rounded-2xl">
@@ -31,7 +33,7 @@ export const HistoryTab = memo(({
                 <CardDescription>Journal complet des entrées et sorties de matériel.</CardDescription>
             </CardHeader>
             <CardContent className="px-0">
-                <SupplyTransactionList transactions={transactions} />
+                <SupplyTransactionList transactions={transactions} onDelete={onDelete} />
             </CardContent>
             {totalPages > 1 && (
                 <CardFooter className="px-0 pt-6 border-t border-slate-100">
@@ -49,3 +51,5 @@ export const HistoryTab = memo(({
         </Card>
     );
 });
+
+HistoryTab.displayName = "HistoryTab";

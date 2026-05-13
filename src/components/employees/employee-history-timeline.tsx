@@ -149,7 +149,7 @@ const TimelineItem = React.memo(({
                       <Button variant="ghost" size="icon" className="h-8 w-8 rounded-sm hover:bg-slate-100" onClick={() => onEdit(event)}>
                           <Pencil className="h-4 w-4 text-slate-500" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 rounded-sm hover:bg-rose-50" onClick={() => onDelete(event)}>
+                      <Button variant="ghost" size="icon" title="Annuler cette modification" className="h-8 w-8 rounded-sm hover:bg-rose-50" onClick={() => onDelete(event)}>
                           <Trash2 className="h-4 w-4 text-rose-500" />
                       </Button>
                     </div>

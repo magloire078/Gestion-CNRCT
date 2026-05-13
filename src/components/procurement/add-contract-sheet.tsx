@@ -18,6 +18,7 @@ import {
     Select, SelectContent, SelectItem,
     SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import { Textarea } from "@/components/ui/textarea";
 import { 
     Plus, Loader2, Briefcase, Calendar, 
@@ -188,18 +189,20 @@ export function AddContractSheet() {
                                 name="providerId"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                            <FormControl>
-                                                <SelectTrigger className="bg-white">
-                                                    <SelectValue placeholder="Sélectionner le prestataire" />
-                                                </SelectTrigger>
-                                            </FormControl>
-                                            <SelectContent>
-                                                {providers.map(p => (
-                                                    <SelectItem key={p.id} value={p.id}>{p.name} ({p.category})</SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
+                                        <FormControl>
+                                            <SearchableSelect 
+                                                items={providers.map(p => ({
+                                                    value: p.id,
+                                                    label: `${p.name} (${p.category})`,
+                                                    searchTerms: `${p.name} ${p.category} ${p.rccm}`
+                                                }))}
+                                                value={field.value}
+                                                onValueChange={field.onChange}
+                                                placeholder="Sélectionner le prestataire"
+                                                searchPlaceholder="Rechercher un prestataire..."
+                                                className="bg-white"
+                                            />
+                                        </FormControl>
                                         <FormMessage />
                                     </FormItem>
                                 )}

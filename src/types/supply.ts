@@ -23,6 +23,7 @@ export type SupplyTransaction = {
     timestamp?: string; // ISO String
     type: 'distribution' | 'restock';
     performedBy: string; // User ID
+    isAdjustment?: boolean; // Audit flag for stock reconciliations
 };
 
 export type SupplyRequestItem = {

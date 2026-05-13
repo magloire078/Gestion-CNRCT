@@ -29,7 +29,14 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Plus, Loader2, MapPin, Map as MapIcon, Users, Building2, Droplets, Zap, School, Activity } from "lucide-react";
+import { 
+    Plus, Loader2, MapPin, Map as MapIcon, Users, 
+    Building2, Droplets, Zap, School, Activity,
+    Mountain, Landmark, Coins, Heart, ShoppingBag,
+    Church, Info, Calendar, History,
+    Globe, FileText, Moon as Mosque
+} from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { addVillage } from "@/services/village-service";
 import { IVORIAN_REGIONS } from "@/constants/regions";
@@ -48,20 +55,52 @@ import { LocationPicker } from "@/components/common/location-picker";
 import { Label } from "@/components/ui/label";
 
 const villageSchema = z.object({
+    // Identité administrative
     name: z.string().min(2, "Le nom du village doit avoir au moins 2 caractères"),
     region: z.string().min(1, "La région est requise"),
     department: z.string().min(1, "Le département est requis"),
     subPrefecture: z.string().min(1, "La sous-préfecture est requise"),
     commune: z.string().optional(),
     codeINS: z.string().optional(),
+    
+    // Position SIG & Géo
     latitude: z.number().optional().nullable(),
     longitude: z.number().optional().nullable(),
+    altitude: z.preprocess((val) => val === "" ? undefined : Number(val), z.number().optional()),
+    distanceFromCapital: z.preprocess((val) => val === "" ? undefined : Number(val), z.number().optional()),
+    distanceFromChefLieu: z.preprocess((val) => val === "" ? undefined : Number(val), z.number().optional()),
+    accessRoads: z.string().optional(),
+
+    // Démographie
     population: z.preprocess((val) => val === "" ? undefined : Number(val), z.number().optional()),
     populationYear: z.preprocess((val) => val === "" ? undefined : Number(val), z.number().optional()),
+    numberOfHouseholds: z.preprocess((val) => val === "" ? undefined : Number(val), z.number().optional()),
+    mainEthnicGroups: z.string().optional(),
+    languages: z.string().optional(),
+
+    // Histoire & Culture
+    history: z.string().optional(),
+    customs: z.string().optional(),
+    traditionalPractices: z.string().optional(),
+    annualEvents: z.string().optional(),
+
+    // Économie
+    mainActivities: z.string().optional(),
+    naturalResources: z.string().optional(),
+    mainCrops: z.string().optional(),
+
+    // Infrastructures
     hasSchool: z.boolean().default(false),
     hasHealthCenter: z.boolean().default(false),
     hasElectricity: z.boolean().default(false),
     hasWater: z.boolean().default(false),
+    hasMosque: z.boolean().default(false),
+    hasChurch: z.boolean().default(false),
+    hasMarket: z.boolean().default(false),
+    infrastructureNotes: z.string().optional(),
+
+    // Chefferie
+    chiefTitle: z.string().optional(),
 });
 
 type VillageFormValues = z.infer<typeof villageSchema>;
@@ -82,12 +121,31 @@ export function AddVillageSheet() {
             codeINS: "",
             latitude: null,
             longitude: null,
+            altitude: undefined,
+            distanceFromCapital: undefined,
+            distanceFromChefLieu: undefined,
+            accessRoads: "",
             population: undefined,
             populationYear: 2024,
+            numberOfHouseholds: undefined,
+            mainEthnicGroups: "",
+            languages: "",
+            history: "",
+            customs: "",
+            traditionalPractices: "",
+            annualEvents: "",
+            mainActivities: "",
+            naturalResources: "",
+            mainCrops: "",
             hasSchool: false,
             hasHealthCenter: false,
             hasElectricity: false,
             hasWater: false,
+            hasMosque: false,
+            hasChurch: false,
+            hasMarket: false,
+            infrastructureNotes: "",
+            chiefTitle: "Chef de Village",
         },
     });
 
@@ -103,8 +161,12 @@ export function AddVillageSheet() {
     const liveScore = calculateDevelopmentScore({
         ...currentValues,
         latitude: currentValues.latitude ?? undefined,
-        longitude: currentValues.longitude ?? undefined
-    });
+        longitude: currentValues.longitude ?? undefined,
+        mainEthnicGroups: typeof currentValues.mainEthnicGroups === 'string' ? (currentValues.mainEthnicGroups as string).split(',').map(s => s.trim()).filter(Boolean) : undefined,
+        languages: typeof currentValues.languages === 'string' ? (currentValues.languages as string).split(',').map(s => s.trim()).filter(Boolean) : undefined,
+        mainActivities: typeof currentValues.mainActivities === 'string' ? (currentValues.mainActivities as string).split(',').map(s => s.trim()).filter(Boolean) : undefined,
+        mainCrops: typeof currentValues.mainCrops === 'string' ? (currentValues.mainCrops as string).split(',').map(s => s.trim()).filter(Boolean) : undefined,
+    } as any);
 
     async function onSubmit(values: VillageFormValues) {
         setIsSubmitting(true);
@@ -113,7 +175,11 @@ export function AddVillageSheet() {
                 ...values,
                 latitude: values.latitude ?? undefined,
                 longitude: values.longitude ?? undefined,
-            });
+                mainEthnicGroups: values.mainEthnicGroups ? values.mainEthnicGroups.split(',').map(s => s.trim()).filter(Boolean) : [],
+                languages: values.languages ? values.languages.split(',').map(s => s.trim()).filter(Boolean) : [],
+                mainActivities: values.mainActivities ? values.mainActivities.split(',').map(s => s.trim()).filter(Boolean) : [],
+                mainCrops: values.mainCrops ? values.mainCrops.split(',').map(s => s.trim()).filter(Boolean) : [],
+            } as any);
             toast({
                 title: "Village ajouté",
                 description: `Le village ${values.name} a été créé avec succès.`,
@@ -311,6 +377,64 @@ export function AddVillageSheet() {
                                                     )}
                                                 />
                                             </div>
+                                            
+                                            <div className="grid grid-cols-2 gap-4 pt-2">
+                                                <FormField
+                                                    control={form.control}
+                                                    name="altitude"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel className="font-bold">Altitude (m)</FormLabel>
+                                                            <FormControl><Input type="number" placeholder="Ex: 250" className="h-11 rounded-lg" {...field} /></FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                                <FormField
+                                                    control={form.control}
+                                                    name="accessRoads"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel className="font-bold">Type d'Accès</FormLabel>
+                                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                                <FormControl><SelectTrigger className="h-11 rounded-lg"><SelectValue placeholder="Sél. type" /></SelectTrigger></FormControl>
+                                                                <SelectContent>
+                                                                    <SelectItem value="bitume">Bitumé</SelectItem>
+                                                                    <SelectItem value="laterite">Latérite</SelectItem>
+                                                                    <SelectItem value="piste">Piste</SelectItem>
+                                                                    <SelectItem value="fluvial">Fluvial / Lagunaire</SelectItem>
+                                                                </SelectContent>
+                                                            </Select>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                            </div>
+
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <FormField
+                                                    control={form.control}
+                                                    name="distanceFromCapital"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel className="font-bold">Dist. Capitale (km)</FormLabel>
+                                                            <FormControl><Input type="number" placeholder="Ex: 240" className="h-11 rounded-lg" {...field} /></FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                                <FormField
+                                                    control={form.control}
+                                                    name="distanceFromChefLieu"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel className="font-bold">Dist. Chef-Lieu (km)</FormLabel>
+                                                            <FormControl><Input type="number" placeholder="Ex: 15" className="h-11 rounded-lg" {...field} /></FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                            </div>
                                         </div>
                                     </AccordionContent>
                                 </AccordionItem>
@@ -320,7 +444,7 @@ export function AddVillageSheet() {
                                     <AccordionTrigger className="hover:no-underline py-4">
                                         <div className="flex items-center gap-3">
                                             <div className="p-2 bg-emerald-50 rounded-lg"><Users className="h-5 w-5 text-emerald-600" /></div>
-                                            <span className="font-bold text-slate-900">Démographie</span>
+                                            <span className="font-bold text-slate-900">Démographie & Peuplement</span>
                                         </div>
                                     </AccordionTrigger>
                                     <AccordionContent className="pt-4 space-y-4">
@@ -330,7 +454,7 @@ export function AddVillageSheet() {
                                                 name="population"
                                                 render={({ field }) => (
                                                     <FormItem>
-                                                        <FormLabel className="font-bold">Nombre d&apos;habitants</FormLabel>
+                                                        <FormLabel className="font-bold">Nombre d'habitants</FormLabel>
                                                         <FormControl><Input type="number" placeholder="Ex: 5000" className="h-11 rounded-lg" {...field} /></FormControl>
                                                         <FormMessage />
                                                     </FormItem>
@@ -348,19 +472,157 @@ export function AddVillageSheet() {
                                                 )}
                                             />
                                         </div>
+                                        <FormField
+                                            control={form.control}
+                                            name="numberOfHouseholds"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel className="font-bold">Nombre de Ménages (Estimé)</FormLabel>
+                                                    <FormControl><Input type="number" placeholder="Ex: 850" className="h-11 rounded-lg" {...field} /></FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <FormField
+                                                control={form.control}
+                                                name="mainEthnicGroups"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel className="font-bold flex items-center gap-2"><Globe className="h-4 w-4 text-slate-400" /> Ethnies (séparées par virgule)</FormLabel>
+                                                        <FormControl><Input placeholder="Ex: Baoulé, Agni, Dioula" className="h-11 rounded-lg" {...field} /></FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                            <FormField
+                                                control={form.control}
+                                                name="languages"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel className="font-bold flex items-center gap-2"><FileText className="h-4 w-4 text-slate-400" /> Langues parlées</FormLabel>
+                                                        <FormControl><Input placeholder="Ex: Baoulé, Français" className="h-11 rounded-lg" {...field} /></FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                        </div>
+                                    </AccordionContent>
+                                </AccordionItem>
+
+                                {/* History & Culture Section */}
+                                <AccordionItem value="history" className="border-slate-100">
+                                    <AccordionTrigger className="hover:no-underline py-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2 bg-amber-50 rounded-lg"><History className="h-5 w-5 text-amber-600" /></div>
+                                            <span className="font-bold text-slate-900">Mémoire & Patrimoine Culturel</span>
+                                        </div>
+                                    </AccordionTrigger>
+                                    <AccordionContent className="pt-4 space-y-4">
+                                        <FormField
+                                            control={form.control}
+                                            name="history"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel className="font-bold">Historique de la Fondation</FormLabel>
+                                                    <FormControl><Textarea placeholder="Racontez brièvement l'origine du village..." className="min-h-[100px] rounded-xl resize-none" {...field} /></FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <FormField
+                                            control={form.control}
+                                            name="customs"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel className="font-bold">Us et Coutumes</FormLabel>
+                                                    <FormControl><Textarea placeholder="Règles de vie, interdits, traditions notables..." className="min-h-[80px] rounded-xl resize-none" {...field} /></FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <FormField
+                                                control={form.control}
+                                                name="traditionalPractices"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel className="font-bold">Pratiques Traditionnelles</FormLabel>
+                                                        <FormControl><Input placeholder="Ex: Masques, danses sacrées" className="h-11 rounded-lg" {...field} /></FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                            <FormField
+                                                control={form.control}
+                                                name="annualEvents"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel className="font-bold flex items-center gap-2"><Calendar className="h-4 w-4 text-slate-400" /> Événements Annuels</FormLabel>
+                                                        <FormControl><Input placeholder="Ex: Fête des ignames" className="h-11 rounded-lg" {...field} /></FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                        </div>
+                                    </AccordionContent>
+                                </AccordionItem>
+
+                                {/* Economy Section */}
+                                <AccordionItem value="economy" className="border-slate-100">
+                                    <AccordionTrigger className="hover:no-underline py-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2 bg-blue-50 rounded-lg"><Coins className="h-5 w-5 text-blue-600" /></div>
+                                            <span className="font-bold text-slate-900">Économie & Ressources</span>
+                                        </div>
+                                    </AccordionTrigger>
+                                    <AccordionContent className="pt-4 space-y-4">
+                                        <FormField
+                                            control={form.control}
+                                            name="mainActivities"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel className="font-bold">Activités Principales (virgules)</FormLabel>
+                                                    <FormControl><Input placeholder="Ex: Agriculture, Pêche, Commerce" className="h-11 rounded-lg" {...field} /></FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <FormField
+                                            control={form.control}
+                                            name="mainCrops"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel className="font-bold">Cultures de Rente / Vivrières</FormLabel>
+                                                    <FormControl><Input placeholder="Ex: Cacao, Café, Hévéa, Igname" className="h-11 rounded-lg" {...field} /></FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <FormField
+                                            control={form.control}
+                                            name="naturalResources"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel className="font-bold">Ressources Naturelles</FormLabel>
+                                                    <FormControl><Input placeholder="Ex: Or, Bois, Rivières" className="h-11 rounded-lg" {...field} /></FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
                                     </AccordionContent>
                                 </AccordionItem>
 
                                 {/* Infrastructures Section */}
-                                <AccordionItem value="infrastructures" className="border-none">
+                                <AccordionItem value="infrastructures" className="border-slate-100">
                                     <AccordionTrigger className="hover:no-underline py-4">
                                         <div className="flex items-center gap-3">
                                             <div className="p-2 bg-indigo-50 rounded-lg"><Zap className="h-5 w-5 text-indigo-600" /></div>
                                             <span className="font-bold text-slate-900">Infrastructures & Équipements</span>
                                         </div>
                                     </AccordionTrigger>
-                                    <AccordionContent className="pt-4">
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 p-4 bg-slate-50/50 rounded-xl border border-slate-100">
+                                    <AccordionContent className="pt-4 space-y-6">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-slate-50/50 rounded-xl border border-slate-100">
                                             <FormField
                                                 control={form.control}
                                                 name="hasSchool"
@@ -369,7 +631,7 @@ export function AddVillageSheet() {
                                                         <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} className="h-6 w-6 rounded-md" /></FormControl>
                                                         <div className="flex items-center gap-2">
                                                             <School className="h-4 w-4 text-slate-400" />
-                                                            <FormLabel className="text-sm font-bold text-slate-700 cursor-pointer">Établissement Scolaire</FormLabel>
+                                                            <FormLabel className="text-sm font-bold text-slate-700 cursor-pointer">École / Éducation</FormLabel>
                                                         </div>
                                                     </FormItem>
                                                 )}
@@ -381,8 +643,8 @@ export function AddVillageSheet() {
                                                     <FormItem className="flex flex-row items-center space-x-3 space-y-0">
                                                         <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} className="h-6 w-6 rounded-md" /></FormControl>
                                                         <div className="flex items-center gap-2">
-                                                            <Activity className="h-4 w-4 text-slate-400" />
-                                                            <FormLabel className="text-sm font-bold text-slate-700 cursor-pointer">Centre de Santé / Dispensaire</FormLabel>
+                                                            <Heart className="h-4 w-4 text-rose-500" />
+                                                            <FormLabel className="text-sm font-bold text-slate-700 cursor-pointer">Centre de Santé</FormLabel>
                                                         </div>
                                                     </FormItem>
                                                 )}
@@ -394,8 +656,8 @@ export function AddVillageSheet() {
                                                     <FormItem className="flex flex-row items-center space-x-3 space-y-0">
                                                         <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} className="h-6 w-6 rounded-md" /></FormControl>
                                                         <div className="flex items-center gap-2">
-                                                            <Zap className="h-4 w-4 text-slate-400" />
-                                                            <FormLabel className="text-sm font-bold text-slate-700 cursor-pointer">Électrification (Réseau CIE)</FormLabel>
+                                                            <Zap className="h-4 w-4 text-amber-500" />
+                                                            <FormLabel className="text-sm font-bold text-slate-700 cursor-pointer">Électricité</FormLabel>
                                                         </div>
                                                     </FormItem>
                                                 )}
@@ -407,12 +669,96 @@ export function AddVillageSheet() {
                                                     <FormItem className="flex flex-row items-center space-x-3 space-y-0">
                                                         <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} className="h-6 w-6 rounded-md" /></FormControl>
                                                         <div className="flex items-center gap-2">
-                                                            <Droplets className="h-4 w-4 text-slate-400" />
-                                                            <FormLabel className="text-sm font-bold text-slate-700 cursor-pointer">Accès Eau Potable (SODECI/HVA)</FormLabel>
+                                                            <Droplets className="h-4 w-4 text-blue-500" />
+                                                            <FormLabel className="text-sm font-bold text-slate-700 cursor-pointer">Eau Potable</FormLabel>
                                                         </div>
                                                     </FormItem>
                                                 )}
                                             />
+                                            <FormField
+                                                control={form.control}
+                                                name="hasMarket"
+                                                render={({ field }) => (
+                                                    <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                                                        <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} className="h-6 w-6 rounded-md" /></FormControl>
+                                                        <div className="flex items-center gap-2">
+                                                            <ShoppingBag className="h-4 w-4 text-emerald-500" />
+                                                            <FormLabel className="text-sm font-bold text-slate-700 cursor-pointer">Marché / Commerce</FormLabel>
+                                                        </div>
+                                                    </FormItem>
+                                                )}
+                                            />
+                                            <div className="flex items-center gap-4">
+                                                <FormField
+                                                    control={form.control}
+                                                    name="hasMosque"
+                                                    render={({ field }) => (
+                                                        <FormItem className="flex flex-row items-center space-x-2 space-y-0">
+                                                            <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} className="h-5 w-5 rounded-md" /></FormControl>
+                                                            <Mosque className="h-4 w-4 text-slate-400" />
+                                                            <FormLabel className="text-[10px] font-bold text-slate-600 cursor-pointer">Mosquée</FormLabel>
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                                <FormField
+                                                    control={form.control}
+                                                    name="hasChurch"
+                                                    render={({ field }) => (
+                                                        <FormItem className="flex flex-row items-center space-x-2 space-y-0">
+                                                            <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} className="h-5 w-5 rounded-md" /></FormControl>
+                                                            <Church className="h-4 w-4 text-slate-400" />
+                                                            <FormLabel className="text-[10px] font-bold text-slate-600 cursor-pointer">Église</FormLabel>
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                            </div>
+                                        </div>
+                                        <FormField
+                                            control={form.control}
+                                            name="infrastructureNotes"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel className="font-bold">Notes sur les infrastructures</FormLabel>
+                                                    <FormControl><Textarea placeholder="Précisions sur l'état des bâtiments, manques..." className="min-h-[60px] rounded-xl resize-none" {...field} /></FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                    </AccordionContent>
+                                </AccordionItem>
+
+                                {/* Chefferie Section */}
+                                <AccordionItem value="chief" className="border-none">
+                                    <AccordionTrigger className="hover:no-underline py-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2 bg-slate-100 rounded-lg"><Landmark className="h-5 w-5 text-slate-600" /></div>
+                                            <span className="font-bold text-slate-900">Autorité Traditionnelle</span>
+                                        </div>
+                                    </AccordionTrigger>
+                                    <AccordionContent className="pt-4 space-y-4">
+                                        <FormField
+                                            control={form.control}
+                                            name="chiefTitle"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel className="font-bold">Titre de l'Autorité</FormLabel>
+                                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                        <FormControl><SelectTrigger className="h-11 rounded-lg"><SelectValue placeholder="Sél. titre" /></SelectTrigger></FormControl>
+                                                        <SelectContent>
+                                                            <SelectItem value="Chef de Village">Chef de Village</SelectItem>
+                                                            <SelectItem value="Chef de Canton">Chef de Canton</SelectItem>
+                                                            <SelectItem value="Chef de Province">Chef de Province</SelectItem>
+                                                            <SelectItem value="Roi">Roi</SelectItem>
+                                                            <SelectItem value="Chef de Tribu">Chef de Tribu</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <div className="p-4 bg-amber-50/50 rounded-xl border border-amber-100 text-[11px] text-amber-800 font-medium">
+                                            <Info className="h-4 w-4 inline mr-2 mb-1" />
+                                            Le nom du chef et son statut détaillé doivent être gérés via le module "Chefferie" une fois le village créé.
                                         </div>
                                     </AccordionContent>
                                 </AccordionItem>

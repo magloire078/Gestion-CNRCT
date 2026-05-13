@@ -63,7 +63,7 @@ export const RESOURCES_CONFIG: ResourceConfig[] = [
 
     { id: 'chiefs', label: 'Chefs Coutumiers', icon: 'Crown', availableActions: ['read', 'create', 'update', 'delete'], parentId: 'group:localities' },
     { id: 'chiefs-career', label: 'Historique & Parcours', icon: 'History', availableActions: ['read', 'create', 'update', 'delete'], parentId: 'group:localities' },
-    { id: 'chiefs-audit', label: 'Audit & Mérite', icon: 'ScrollText', availableActions: ['read', 'update'], parentId: 'group:localities' },
+    { id: 'chiefs-audit', label: 'Contrôle & Mérite', icon: 'ScrollText', availableActions: ['read', 'update'], parentId: 'group:localities' },
     { id: 'villages', label: 'Villages', icon: 'MapPinned', availableActions: ['read', 'create', 'update', 'delete'], parentId: 'group:localities' },
     { id: 'mapping', label: 'Cartographie SIG', icon: 'Map', availableActions: ['read'], parentId: 'group:localities' },
 
@@ -79,7 +79,7 @@ export const RESOURCES_CONFIG: ResourceConfig[] = [
     { id: 'news', label: 'Actualités', icon: 'Newspaper', availableActions: ['read', 'create', 'update', 'delete'], parentId: 'group:administration' },
     { id: 'backup', label: 'Sauvegarde & Restauration', icon: 'Database', availableActions: ['read', 'create'], parentId: 'group:administration' },
     { id: 'settings', label: 'Réglages Système', icon: 'Settings', availableActions: ['read', 'update'], parentId: 'group:administration' },
-    { id: 'audit-log', label: "Journal d'Audit", icon: 'ScrollText', availableActions: ['read'], parentId: 'group:administration' },
+    { id: 'audit-log', label: "Journal des Activités", icon: 'ScrollText', availableActions: ['read'], parentId: 'group:administration' },
     { id: 'tickets', label: 'Assistant IA & Support', icon: 'Bot', availableActions: ['read'], parentId: 'group:administration' },
 ];
 
@@ -225,7 +225,7 @@ export const ENTERPRISE_ROLES: RoleConfig[] = [
     { id: 'responsable-it', label: 'Responsable IT', isSystem: false, defaultPermissions: DEFAULT_ROLE_PERMISSIONS['responsable-it'] },
     { id: 'gestionnaire-stock', label: 'Gestionnaire de Stock et fournitures', isSystem: false, defaultPermissions: DEFAULT_ROLE_PERMISSIONS['gestionnaire-stock'] },
     { id: 'gestionnaire-carburant', label: 'Gestionnaire de carburant', isSystem: false, defaultPermissions: DEFAULT_ROLE_PERMISSIONS['gestionnaire-carburant'] },
-    { id: 'auditeur', label: 'Auditeur / CAC', isSystem: false, defaultPermissions: DEFAULT_ROLE_PERMISSIONS['auditeur'] },
+    { id: 'auditeur', label: 'Contrôleur / CAC', isSystem: false, defaultPermissions: DEFAULT_ROLE_PERMISSIONS['auditeur'] },
     { id: 'directoire-central', label: 'Membre du Directoire Central', isSystem: false, defaultPermissions: DEFAULT_ROLE_PERMISSIONS['directoire-central'] },
     { id: 'comite-regional', label: 'Membre de Comité Régional', isSystem: false, defaultPermissions: DEFAULT_ROLE_PERMISSIONS['comite-regional'] },
     { id: 'employe', label: 'Employé Opérationnel', isSystem: false, defaultPermissions: DEFAULT_ROLE_PERMISSIONS['employe'] },

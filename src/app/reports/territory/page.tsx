@@ -32,7 +32,7 @@ import { Badge } from "@/components/ui/badge";
 import { getVillages } from "@/services/village-service";
 import type { Village } from "@/types/village";
 import { getOrganizationSettings } from "@/services/organization-service";
-import { PrintLayout } from "@/components/reports/print-layout";
+import { TerritoryOfficialReport } from "@/components/reports/territory-official-report";
 import { Progress } from "@/components/ui/progress";
 import { OrganizationSettings } from "@/types/common";
 import Papa from "papaparse";
@@ -92,10 +92,10 @@ export default function TerritoryReportPage() {
 
         const total = filteredVillages.length;
         const population = filteredVillages.reduce((acc, v) => acc + (v.population || 0), 0);
-        const electricity = (filteredVillages.filter(v => v.hasElectricity).length / total) * 100;
-        const water = (filteredVillages.filter(v => v.hasWater).length / total) * 100;
-        const health = (filteredVillages.filter(v => v.hasHealthCenter).length / total) * 100;
-        const school = (filteredVillages.filter(v => v.hasSchool).length / total) * 100;
+        const electricity = (filteredVillages.filter(v => v.hasElectricity).length / (total || 1)) * 100;
+        const water = (filteredVillages.filter(v => v.hasWater).length / (total || 1)) * 100;
+        const health = (filteredVillages.filter(v => v.hasHealthCenter).length / (total || 1)) * 100;
+        const school = (filteredVillages.filter(v => v.hasSchool).length / (total || 1)) * 100;
 
         return { total, population, electricity, water, health, school };
     }, [filteredVillages]);
@@ -292,8 +292,8 @@ export default function TerritoryReportPage() {
                                     className="pl-14 h-16 w-[320px] rounded-2xl border-slate-100 bg-slate-50/50 shadow-inner focus:bg-white focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-slate-700"
                                 />
                             </div>
-                            <div className="flex items-center bg-slate-50 p-1.5 rounded-2xl border border-slate-100 shadow-inner">
-                                {regions.slice(0, 4).map(reg => (
+                            <div className="flex flex-wrap items-center bg-slate-50 p-1.5 rounded-2xl border border-slate-100 shadow-inner">
+                                {regions.map(reg => (
                                     <button
                                         key={reg}
                                         onClick={() => setRegionFilter(reg)}
@@ -388,86 +388,18 @@ export default function TerritoryReportPage() {
                 </Card>
 
                 {/* Print Portal */}
-                {isPrinting && orgSettings && (
-                    <PrintLayout
-                        logos={orgSettings}
-                        title="DIAGNOSTIC DE L'OBSERVATOIRE TERRITORIAL"
-                        subtitle={`État global des infrastructures rurales - ${new Date().toLocaleDateString('fr-FR')}`}
-                        orientation="landscape"
-                    >
-                        <div className="space-y-8 pt-6">
-                            <div className="grid grid-cols-4 gap-4">
-                                <div className="border border-slate-900/10 p-3 rounded-lg bg-slate-50">
-                                    <p className="text-[10px] font-bold uppercase text-slate-500">Localités</p>
-                                    <p className="text-xl font-black">{stats.total}</p>
-                                </div>
-                                <div className="border border-slate-900/10 p-3 rounded-lg bg-slate-50">
-                                    <p className="text-[10px] font-bold uppercase text-slate-500">Électricité</p>
-                                    <p className="text-xl font-black">{stats.electricity.toFixed(1)}%</p>
-                                </div>
-                                <div className="border border-slate-900/10 p-3 rounded-lg bg-slate-50">
-                                    <p className="text-[10px] font-bold uppercase text-slate-500">Eau Potable</p>
-                                    <p className="text-xl font-black">{stats.water.toFixed(1)}%</p>
-                                </div>
-                                <div className="border border-slate-900/10 p-3 rounded-lg bg-slate-50">
-                                    <p className="text-[10px] font-bold uppercase text-slate-500">Population</p>
-                                    <p className="text-xl font-black">{stats.population.toLocaleString()}</p>
-                                </div>
-                            </div>
-
-                            <table className="w-full text-[10px] border-collapse border border-slate-200 mt-4">
-                                <thead className="bg-slate-100">
-                                    <tr>
-                                        <th className="border border-slate-200 p-2 text-left">Village</th>
-                                        <th className="border border-slate-200 p-2 text-left">Région</th>
-                                        <th className="border border-slate-200 p-2 text-left">S-Préf.</th>
-                                        <th className="border border-slate-200 p-2 text-center">Pop.</th>
-                                        <th className="border border-slate-200 p-2 text-center">Elec.</th>
-                                        <th className="border border-slate-200 p-2 text-center">Eau</th>
-                                        <th className="border border-slate-200 p-2 text-center">Santé</th>
-                                        <th className="border border-slate-200 p-2 text-center">Ecole</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {filteredVillages.map(v => (
-                                        <tr key={v.id}>
-                                            <td className="border border-slate-200 p-2 font-bold">{v.name}</td>
-                                            <td className="border border-slate-200 p-2">{v.region}</td>
-                                            <td className="border border-slate-200 p-2">{v.subPrefecture}</td>
-                                            <td className="border border-slate-200 p-2 text-center">{v.population || 0}</td>
-                                            <td className="border border-slate-200 p-2 text-center">{v.hasElectricity ? 'OUI' : 'NON'}</td>
-                                            <td className="border border-slate-200 p-2 text-center">{v.hasWater ? 'OUI' : 'NON'}</td>
-                                            <td className="border border-slate-200 p-2 text-center">{v.hasHealthCenter ? 'OUI' : 'NON'}</td>
-                                            <td className="border border-slate-200 p-2 text-center">{v.hasSchool ? 'OUI' : 'NON'}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                            
-                            <div className="pt-10 flex justify-between">
-                                <div className="w-[200px] border-t border-slate-900 pt-2 text-center text-[10px] font-bold">
-                                    Le Service des Études
-                                </div>
-                                <div className="w-[200px] border-t border-slate-900 pt-2 text-center text-[10px] font-bold">
-                                    Le Directeur du Patrimoine
-                                </div>
-                            </div>
-                        </div>
-                    </PrintLayout>
+                {orgSettings && (
+                    <TerritoryOfficialReport 
+                        isPrinting={isPrinting}
+                        villages={filteredVillages}
+                        organizationSettings={orgSettings}
+                        stats={stats}
+                        subtitle={`Région: ${regionFilter === 'all' ? 'National' : regionFilter}`}
+                        onAfterPrint={() => setIsPrinting(false)}
+                    />
                 )}
 
-                {/* Back to top effect to ensure Print portal closes correctly */}
-                {isPrinting && (
-                    <div className="fixed inset-0 z-[100] bg-white flex items-center justify-center print:hidden">
-                        <div className="text-center">
-                            <Loader2 className="h-10 w-10 animate-spin text-amber-600 mx-auto" />
-                            <p className="mt-4 font-black uppercase text-xs tracking-widest text-slate-400">Préparation de l'impression...</p>
-                            <Button onClick={() => setIsPrinting(false)} variant="ghost" className="mt-8 text-slate-500 font-bold hover:text-slate-900">
-                                Fermer cet aperçu
-                            </Button>
-                        </div>
-                    </div>
-                )}
+
             </div>
         </PermissionGuard>
     );

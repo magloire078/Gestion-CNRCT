@@ -246,16 +246,10 @@ export default function ConflictsPage() {
 
     const handlePrint = () => {
         setIsPrintingList(true);
-        setTimeout(() => {
-            setIsPrintingList(false);
-        }, 3000);
     };
 
     const handlePrintIndividual = (conflict: Conflict) => {
         setPrintingConflict(conflict);
-        setTimeout(() => {
-            setPrintingConflict(null);
-        }, 3000);
     };
 
     const handleViewDetails = (conflict: Conflict) => {
@@ -343,14 +337,15 @@ export default function ConflictsPage() {
             <div className="flex flex-col gap-6">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-2">
                     <div className="space-y-1">
-                        <Badge variant="outline" className="text-[10px] font-black uppercase tracking-widest text-primary border-primary/20 bg-primary/5">
+                        <Badge variant="outline" className="text-[10px] font-black uppercase tracking-[0.3em] text-primary border-primary/20 bg-primary/5 px-3 py-1 rounded-full shadow-sm">
                             Observatoire National
                         </Badge>
-                        <h1 className="text-4xl font-black text-slate-900 tracking-tight flex items-center gap-3">
-                            Gestion des Conflits <ShieldAlert className="h-8 w-8 text-slate-300" />
+                        <h1 className="text-5xl font-black text-slate-900 tracking-tighter flex items-center gap-4 italic">
+                            Gestion des Conflits <div className="h-10 w-1 bg-slate-200 rounded-full rotate-12" /> <ShieldAlert className="h-10 w-10 text-rose-500 drop-shadow-lg" />
                         </h1>
-                        <p className="text-slate-500 font-medium max-w-2xl text-slate-500">
-                            Suivi stratégique et médiation des litiges communautaires sur l'ensemble du territoire national.
+                        <p className="text-slate-500 font-medium max-w-2xl text-sm leading-relaxed border-l-2 border-slate-100 pl-4 mt-2">
+                            Dispositif stratégique de veille et de médiation communautaire. 
+                            <span className="text-primary font-black ml-1 uppercase text-[10px] tracking-widest bg-primary/5 px-2 py-0.5 rounded">Digital Audit Trail enabled</span>
                         </p>
                     </div>
                     <div className="flex flex-wrap items-center gap-3">
@@ -402,49 +397,61 @@ export default function ConflictsPage() {
                 <Tabs value={activeTab} onValueChange={setActiveTab}>
                     <TabsContent value="list" className="mt-0 focus-visible:ring-0">
                         <Card className="border-none shadow-xl shadow-slate-100 rounded-[2rem] overflow-hidden bg-white">
-                            <CardHeader className="bg-slate-50/50 border-b border-slate-100 p-8">
-                                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                                    <div>
-                                        <CardTitle className="text-xl font-black text-slate-900 uppercase tracking-tight">Registre des Litiges</CardTitle>
-                                        <CardDescription className="font-medium text-slate-500">
-                                            Exploration et filtrage multicritères des dossiers de médiation.
-                                        </CardDescription>
+                        <CardHeader className="bg-slate-50/80 backdrop-blur-md border-b border-slate-100 p-8">
+                            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-8">
+                                <div className="space-y-2">
+                                    <div className="flex items-center gap-3">
+                                        <div className="h-2 w-12 bg-slate-900 rounded-full" />
+                                        <CardTitle className="text-2xl font-black text-slate-900 uppercase tracking-tighter">Registre des Litiges</CardTitle>
                                     </div>
-                                    <div className="flex flex-wrap items-center gap-3">
-                                        <div className="relative w-full md:w-80">
-                                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                                            <Input
-                                                placeholder="Village, médiateur, description..."
-                                                className="pl-10 h-10 rounded-xl bg-white border-slate-200 focus:ring-2 focus:ring-primary/10 transition-all font-medium"
-                                                value={searchTerm}
-                                                onChange={(e) => setSearchTerm(e.target.value)}
-                                            />
-                                        </div>
+                                    <CardDescription className="font-bold text-slate-400 italic text-sm">
+                                        Exploration et arbitrage des dossiers de médiation communautaire.
+                                    </CardDescription>
+                                </div>
+                                <div className="flex flex-wrap items-center gap-4">
+                                    <div className="relative group w-full md:w-96">
+                                        <div className="absolute inset-0 bg-slate-900/5 rounded-2xl blur-lg group-hover:bg-slate-900/10 transition-all duration-500" />
+                                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-hover:text-slate-900 transition-colors z-10" />
+                                        <Input
+                                            placeholder="Rechercher un village, un médiateur..."
+                                            className="relative pl-12 h-14 rounded-2xl bg-white border-slate-100 focus:border-slate-900 focus:ring-0 transition-all font-black text-xs uppercase tracking-widest shadow-sm z-10"
+                                            value={searchTerm}
+                                            onChange={(e) => setSearchTerm(e.target.value)}
+                                        />
+                                    </div>
+                                    <div className="flex items-center gap-3">
                                         <Select value={selectedYear} onValueChange={setSelectedYear}>
-                                            <SelectTrigger className="w-[120px] h-10 rounded-xl border-slate-200 bg-white font-bold text-xs uppercase">
-                                                <SelectValue placeholder="Année" />
+                                            <SelectTrigger className="w-[140px] h-14 rounded-2xl border-slate-100 bg-white font-black text-[10px] uppercase tracking-widest shadow-sm hover:border-slate-900 transition-all">
+                                                <div className="flex items-center gap-2">
+                                                    <History className="h-3.5 w-3.5 text-slate-400" />
+                                                    <SelectValue placeholder="Année" />
+                                                </div>
                                             </SelectTrigger>
-                                            <SelectContent className="rounded-xl border-slate-100">
-                                                <SelectItem value="Tous">Années</SelectItem>
+                                            <SelectContent className="rounded-2xl border-slate-100 shadow-2xl">
+                                                <SelectItem value="Tous" className="font-black text-[10px] uppercase">Toutes Années</SelectItem>
                                                 {availableYears.map(year => (
-                                                    <SelectItem key={year} value={year}>{year}</SelectItem>
+                                                    <SelectItem key={year} value={year} className="font-bold">{year}</SelectItem>
                                                 ))}
                                             </SelectContent>
                                         </Select>
                                         <Select value={selectedRegion} onValueChange={setSelectedRegion}>
-                                            <SelectTrigger className="w-[160px] h-10 rounded-xl border-slate-200 bg-white font-bold text-xs uppercase">
-                                                <SelectValue placeholder="Région" />
+                                            <SelectTrigger className="w-[200px] h-14 rounded-2xl border-slate-100 bg-white font-black text-[10px] uppercase tracking-widest shadow-sm hover:border-slate-900 transition-all">
+                                                <div className="flex items-center gap-2">
+                                                    <Map className="h-3.5 w-3.5 text-slate-400" />
+                                                    <SelectValue placeholder="Région" />
+                                                </div>
                                             </SelectTrigger>
-                                            <SelectContent className="rounded-xl border-slate-100">
-                                                <SelectItem value="Tous">Régions</SelectItem>
+                                            <SelectContent className="rounded-2xl border-slate-100 shadow-2xl">
+                                                <SelectItem value="Tous" className="font-black text-[10px] uppercase">Toutes Régions</SelectItem>
                                                 {regions.map(region => (
-                                                    <SelectItem key={region} value={region}>{region}</SelectItem>
+                                                    <SelectItem key={region} value={region} className="font-bold">{region}</SelectItem>
                                                 ))}
                                             </SelectContent>
                                         </Select>
                                     </div>
                                 </div>
-                            </CardHeader>
+                            </div>
+                        </CardHeader>
                             <CardContent className="p-0">
                                 {error && (
                                     <div className="m-8 p-4 bg-rose-50 border border-rose-100 rounded-2xl flex items-center gap-3 text-rose-600">
@@ -461,101 +468,133 @@ export default function ConflictsPage() {
                                 ) : (
                                     <>
                                         <div className="hidden md:block">
-                                            <Table className="border-collapse">
-                                                <TableHeader className="bg-slate-100/50">
-                                                    <TableRow className="hover:bg-transparent border-b-2 border-slate-900">
-                                                        <TableHead className="w-12 text-[10px] font-black uppercase text-slate-500 text-center py-4">N°</TableHead>
-                                                        <TableHead className="text-[10px] font-black uppercase text-slate-500">Localité & Région</TableHead>
-                                                        <TableHead className="text-[10px] font-black uppercase text-slate-500">Nature du Dossier</TableHead>
-                                                        <TableHead className="text-[10px] font-black uppercase text-slate-500">Signalement</TableHead>
-                                                        <TableHead className="text-[10px] font-black uppercase text-slate-500">Médiateur</TableHead>
-                                                        <TableHead className="text-[10px] font-black uppercase text-slate-500">État d'Avancement</TableHead>
-                                                        <TableHead className="w-20 text-[10px] font-black uppercase text-slate-500 text-right pr-8">Actions</TableHead>
+                                            <Table>
+                                                <TableHeader className="bg-slate-50/50">
+                                                    <TableRow className="hover:bg-transparent border-b border-slate-100">
+                                                        <TableHead className="w-16 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 text-center py-6">Réf.</TableHead>
+                                                        <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Localité & Région</TableHead>
+                                                        <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Nature du Dossier</TableHead>
+                                                        <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Date Signalement</TableHead>
+                                                        <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Médiateur Assigné</TableHead>
+                                                        <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Statut</TableHead>
+                                                        <TableHead className="w-24 text-right pr-10"></TableHead>
                                                     </TableRow>
                                                 </TableHeader>
                                                 <TableBody>
                                                     {loading ? (
                                                         Array.from({ length: 5 }).map((_, i) => (
-                                                            <TableRow key={i}>
-                                                                <TableCell><Skeleton className="h-4 w-4 mx-auto" /></TableCell>
-                                                                <TableCell><Skeleton className="h-10 w-48 rounded-lg" /></TableCell>
+                                                            <TableRow key={i} className="border-b border-slate-50">
+                                                                <TableCell><Skeleton className="h-4 w-4 mx-auto rounded" /></TableCell>
+                                                                <TableCell><Skeleton className="h-10 w-48 rounded-xl" /></TableCell>
                                                                 <TableCell><Skeleton className="h-6 w-32 rounded-full" /></TableCell>
-                                                                <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                                                                <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                                                                <TableCell><Skeleton className="h-6 w-24 rounded-full" /></TableCell>
-                                                                <TableCell className="pr-8"><Skeleton className="h-8 w-8 ml-auto rounded-lg" /></TableCell>
+                                                                <TableCell><Skeleton className="h-4 w-24 rounded" /></TableCell>
+                                                                <TableCell><Skeleton className="h-4 w-32 rounded" /></TableCell>
+                                                                <TableCell><Skeleton className="h-7 w-24 rounded-full" /></TableCell>
+                                                                <TableCell className="pr-10"><Skeleton className="h-10 w-10 ml-auto rounded-xl" /></TableCell>
                                                             </TableRow>
                                                         ))
                                                     ) : (
                                                         paginatedConflicts.map((conflict, index) => (
-                                                            <TableRow key={conflict.id} className="group border-b border-slate-100 hover:bg-slate-50/50 transition-colors">
-                                                                <TableCell className="text-center font-bold text-slate-400 tabular-nums">
-                                                                    {(currentPage - 1) * itemsPerPage + index + 1}
+                                                            <TableRow key={conflict.id} className="group border-b border-slate-50 hover:bg-slate-50/30 transition-all duration-300">
+                                                                <TableCell className="text-center">
+                                                                    <span className="text-[10px] font-black text-slate-300 tabular-nums bg-slate-50 px-2 py-1 rounded-lg group-hover:bg-white group-hover:text-slate-900 transition-colors">
+                                                                        #{String((currentPage - 1) * itemsPerPage + index + 1).padStart(3, '0')}
+                                                                    </span>
                                                                 </TableCell>
                                                                 <TableCell>
-                                                                    <div className="flex flex-col">
-                                                                        <span className="font-black text-slate-900 text-sm group-hover:text-primary transition-colors">{conflict.village}</span>
-                                                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">{conflict.region || 'SANS RÉGION'}</span>
+                                                                    <div className="flex flex-col gap-0.5">
+                                                                        <span className="font-black text-slate-900 text-sm tracking-tight group-hover:translate-x-1 transition-transform duration-300">{conflict.village}</span>
+                                                                        <div className="flex items-center gap-1.5">
+                                                                            <Map className="h-2.5 w-2.5 text-slate-400" />
+                                                                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{conflict.region || 'National'}</span>
+                                                                        </div>
                                                                     </div>
                                                                 </TableCell>
                                                                 <TableCell>
                                                                     <Badge variant="outline" className={cn(
-                                                                        "text-[10px] font-black uppercase border-none px-2 py-0.5",
-                                                                         (conflictTypeVariantMap as any)[conflict.type] === 'destructive' ? "bg-rose-50 text-rose-600" :
-                                                                         (conflictTypeVariantMap as any)[conflict.type] === 'warning' ? "bg-amber-50 text-amber-600" : "bg-blue-50 text-blue-600"
+                                                                        "text-[9px] font-black uppercase tracking-widest border-none px-2.5 py-1 rounded-lg shadow-sm",
+                                                                         (conflictTypeVariantMap as any)[conflict.type] === 'destructive' ? "bg-rose-50 text-rose-600 shadow-rose-100/50" :
+                                                                         (conflictTypeVariantMap as any)[conflict.type] === 'warning' ? "bg-amber-50 text-amber-600 shadow-amber-100/50" : "bg-indigo-50 text-indigo-600 shadow-indigo-100/50"
                                                                     )}>
                                                                         {conflict.type}
                                                                     </Badge>
                                                                 </TableCell>
-                                                                <TableCell className="font-mono text-[11px] font-bold text-slate-500">
-                                                                    {conflict.reportedDate ? (
-                                                                        (() => {
-                                                                            const d = parseISO(conflict.reportedDate);
-                                                                            return isValid(d) ? format(d, 'dd MMM yyyy', { locale: fr }) : conflict.reportedDate;
-                                                                        })()
-                                                                    ) : '-'}
+                                                                <TableCell>
+                                                                    <div className="flex items-center gap-2">
+                                                                        <History className="h-3 w-3 text-slate-300" />
+                                                                        <span className="text-[11px] font-bold text-slate-500 italic">
+                                                                            {conflict.reportedDate ? (
+                                                                                (() => {
+                                                                                    const d = parseISO(conflict.reportedDate);
+                                                                                    return isValid(d) ? format(d, 'dd MMM yyyy', { locale: fr }) : conflict.reportedDate;
+                                                                                })()
+                                                                            ) : '-'}
+                                                                        </span>
+                                                                    </div>
                                                                 </TableCell>
                                                                 <TableCell>
-                                                                    <span className="text-xs font-bold text-slate-600 italic text-slate-600">
-                                                                        {conflict.mediatorName || 'Non assigné'}
-                                                                    </span>
+                                                                    <div className="flex items-center gap-2">
+                                                                        <div className="h-6 w-6 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-[10px] font-black text-slate-500">
+                                                                            {conflict.mediatorName?.charAt(0) || '?'}
+                                                                        </div>
+                                                                        <span className="text-xs font-black text-slate-700 tracking-tight">
+                                                                            {conflict.mediatorName || 'Non assigné'}
+                                                                        </span>
+                                                                    </div>
                                                                 </TableCell>
                                                                 <TableCell>
-                                                                    <Badge variant="outline" className={cn(
-                                                                        "text-[10px] font-black uppercase border-none",
-                                                                        conflict.status === 'Résolu' ? "bg-emerald-50 text-emerald-600" :
-                                                                        conflict.status === 'En médiation' ? "bg-blue-50 text-blue-600" : "bg-rose-50 text-rose-600"
+                                                                    <div className={cn(
+                                                                        "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm",
+                                                                        conflict.status === 'Résolu' ? "bg-emerald-50 text-emerald-600 border border-emerald-100" :
+                                                                        conflict.status === 'En médiation' ? "bg-indigo-50 text-indigo-600 border border-indigo-100" : "bg-rose-50 text-rose-600 border border-rose-100"
                                                                     )}>
+                                                                        <span className={cn(
+                                                                            "h-1.5 w-1.5 rounded-full",
+                                                                            conflict.status === 'Résolu' ? "bg-emerald-500" :
+                                                                            conflict.status === 'En médiation' ? "bg-indigo-500 animate-pulse" : "bg-rose-500"
+                                                                        )} />
                                                                         {conflict.status || 'Ouvert'}
-                                                                    </Badge>
+                                                                    </div>
                                                                 </TableCell>
-                                                                <TableCell className="text-right pr-8">
+                                                                <TableCell className="text-right pr-10">
                                                                     <DropdownMenu>
                                                                         <DropdownMenuTrigger asChild>
-                                                                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg group-hover:bg-white group-hover:shadow-sm">
-                                                                                <MoreHorizontal className="h-4 w-4" />
+                                                                            <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 transition-all">
+                                                                                <MoreHorizontal className="h-5 w-5 text-slate-400" />
                                                                             </Button>
                                                                         </DropdownMenuTrigger>
-                                                                        <DropdownMenuContent align="end" className="w-56 rounded-xl border-slate-100 shadow-xl">
-                                                                            <DropdownMenuItem onSelect={() => handleViewDetails(conflict)} className="font-bold cursor-pointer">
-                                                                                <Eye className="mr-2 h-4 w-4 text-blue-500" /> Détails & Médiation
+                                                                        <DropdownMenuContent align="end" className="w-64 p-2 rounded-2xl border-slate-100 shadow-2xl bg-white/95 backdrop-blur-xl">
+                                                                            <DropdownMenuItem onSelect={() => handleViewDetails(conflict)} className="p-3 rounded-xl font-black text-xs uppercase tracking-widest cursor-pointer hover:bg-slate-50 transition-colors">
+                                                                                <div className="h-8 w-8 rounded-lg bg-blue-50 flex items-center justify-center mr-3">
+                                                                                    <Eye className="h-4 w-4 text-blue-600" />
+                                                                                </div>
+                                                                                Consulter le dossier
                                                                             </DropdownMenuItem>
-                                                                            <DropdownMenuItem onSelect={() => handlePrintIndividual(conflict)} className="font-bold cursor-pointer">
-                                                                                <Printer className="mr-2 h-4 w-4 text-slate-400" /> Imprimer la Fiche
+                                                                            <DropdownMenuItem onSelect={() => handlePrintIndividual(conflict)} className="p-3 rounded-xl font-black text-xs uppercase tracking-widest cursor-pointer hover:bg-slate-50 transition-colors">
+                                                                                <div className="h-8 w-8 rounded-lg bg-slate-50 flex items-center justify-center mr-3">
+                                                                                    <Printer className="h-4 w-4 text-slate-600" />
+                                                                                </div>
+                                                                                Imprimer la fiche
                                                                             </DropdownMenuItem>
                                                                             {canEdit && (
-                                                                                <DropdownMenuItem onSelect={() => handleEditClick(conflict)} className="font-bold cursor-pointer">
-                                                                                    <Pencil className="mr-2 h-4 w-4 text-amber-500" /> Modifier le dossier
+                                                                                <DropdownMenuItem onSelect={() => handleEditClick(conflict)} className="p-3 rounded-xl font-black text-xs uppercase tracking-widest cursor-pointer hover:bg-slate-50 transition-colors text-amber-600">
+                                                                                    <div className="h-8 w-8 rounded-lg bg-amber-50 flex items-center justify-center mr-3">
+                                                                                        <Pencil className="h-4 w-4 text-amber-600" />
+                                                                                    </div>
+                                                                                    Modifier les données
                                                                                 </DropdownMenuItem>
                                                                             )}
                                                                             {canDelete && (
                                                                                 <>
-                                                                                    <div className="h-px bg-slate-100 my-1" />
+                                                                                    <div className="h-px bg-slate-100 my-2" />
                                                                                     <DropdownMenuItem
                                                                                         onSelect={() => handleDeleteClick(conflict)}
-                                                                                        className="text-rose-500 focus:text-rose-600 focus:bg-rose-50 font-bold cursor-pointer"
+                                                                                        className="p-3 rounded-xl font-black text-xs uppercase tracking-widest cursor-pointer hover:bg-rose-50 text-rose-500 transition-colors"
                                                                                     >
-                                                                                        <Trash2 className="mr-2 h-4 w-4" /> Supprimer
+                                                                                        <div className="h-8 w-8 rounded-lg bg-rose-50 flex items-center justify-center mr-3">
+                                                                                            <Trash2 className="h-4 w-4 text-rose-600" />
+                                                                                        </div>
+                                                                                        Supprimer
                                                                                     </DropdownMenuItem>
                                                                                 </>
                                                                             )}
@@ -711,6 +750,8 @@ export default function ConflictsPage() {
                         organizationSettings={settings} 
                         subtitle={`Périmètre: ${selectedRegion === 'Tous' ? 'National' : selectedRegion} | ${selectedConflictType === 'Tous' ? 'Toutes Natures' : selectedConflictType}`}
                         stats={conflictStats}
+                        isPrinting={isPrintingList}
+                        onAfterPrint={() => setIsPrintingList(false)}
                     />
                 )}
 
@@ -718,6 +759,8 @@ export default function ConflictsPage() {
                     <PrintConflictDetail 
                         conflict={printingConflict} 
                         organizationSettings={settings} 
+                        isPrinting={!!printingConflict}
+                        onAfterPrint={() => setPrintingConflict(null)}
                     />
                 )}
             </div>

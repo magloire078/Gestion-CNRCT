@@ -227,7 +227,7 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
   return (
     <>
       <Sheet open={isOpen} onOpenChange={(open) => { if (!open) handleClose(); }}>
-        <SheetContent className="sm:max-w-xl bg-white/40 backdrop-blur-2xl border-l border-white/20 p-0 shadow-3xl overflow-hidden rounded-l-3xl">
+        <SheetContent className="sm:max-w-xl bg-white border-l border-slate-200 p-0 shadow-3xl overflow-hidden rounded-l-3xl">
           <form onSubmit={handleSubmit} className="h-full flex flex-col">
             <div className="absolute inset-0 bg-gradient-to-b from-blue-50/20 to-transparent pointer-events-none" />
             
@@ -284,7 +284,7 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
                       <div className="grid grid-cols-2 gap-6">
                          <div className="space-y-2">
                           <Label htmlFor="matricule" className="text-[9px] font-black uppercase tracking-widest text-slate-900 ml-1">N° Matricule</Label>
-                          <DebouncedInput id="matricule" value={matricule} onChange={(val) => setMatricule(val as string)} required className="h-12 rounded-xl bg-slate-900 text-white font-black tracking-widest border-none shadow-lg focus-visible:ring-blue-500/50" />
+                          <Input id="matricule" value={matricule} onChange={(e) => setMatricule(e.target.value)} required className="h-12 rounded-xl bg-slate-900 text-white font-black tracking-widest border-none shadow-lg focus-visible:ring-blue-500/50" />
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="sexe" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Genre</Label>
@@ -301,15 +301,15 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="lastName" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Nom de Famille</Label>
-                        <DebouncedInput id="lastName" value={lastName} onChange={(val) => setLastName(val as string)} required className="h-12 rounded-xl border-slate-200 bg-white shadow-inner font-bold uppercase" />
+                        <Input id="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} required className="h-12 rounded-xl border-slate-200 bg-slate-50/50 shadow-inner font-bold uppercase focus:bg-white transition-colors" />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="firstName" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Prénom(s)</Label>
-                        <DebouncedInput id="firstName" value={firstName} onChange={(val) => setFirstName(val as string)} required className="h-12 rounded-xl border-slate-200 bg-white shadow-inner font-bold" />
+                        <Input id="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} required className="h-12 rounded-xl border-slate-200 bg-slate-50/50 shadow-inner font-bold focus:bg-white transition-colors" />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="email" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Canal Email (Personnel)</Label>
-                        <DebouncedInput id="email" type="email" value={email} onChange={(val) => setEmail(val as string)} className="h-12 rounded-xl border-slate-200 bg-white italic" placeholder="exemple@cnrct.ci" />
+                        <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="h-12 rounded-xl border-slate-200 bg-white italic" placeholder="exemple@cnrct.ci" />
                       </div>
                     </div>
 
@@ -321,7 +321,7 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="poste" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Intitulé du Poste</Label>
-                        <DebouncedInput id="poste" value={poste} onChange={(val) => setPoste(val as string)} required className="h-12 rounded-xl border-slate-200 bg-white font-black uppercase text-blue-600 shadow-sm" />
+                        <Input id="poste" value={poste} onChange={(e) => setPoste(e.target.value)} required className="h-12 rounded-xl border-slate-200 bg-blue-50/30 font-black uppercase text-blue-600 shadow-sm focus:bg-white transition-colors" />
                       </div>
                       <div className="space-y-4">
                         <div className="space-y-2">
@@ -374,7 +374,7 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="departement" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Département</Label>
-                          <DebouncedInput id="departement" value={departement} onChange={(val) => setDepartement(val as string)} className="h-12 rounded-xl border-slate-200 bg-white shadow-sm font-bold" />
+                          <Input id="departement" value={departement} onChange={(e) => setDepartement(e.target.value)} className="h-12 rounded-xl border-slate-200 bg-white shadow-sm font-bold" />
                         </div>
                       </div>
                     </div>
@@ -402,7 +402,7 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="numDecision" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Référence Décision</Label>
-                          <DebouncedInput id="numDecision" value={numDecision} onChange={(val) => setNumDecision(val as string)} className="h-12 rounded-xl border-slate-200 bg-white shadow-sm font-mono font-bold" placeholder="EX: DEC-2024-..." />
+                          <Input id="numDecision" value={numDecision} onChange={(e) => setNumDecision(e.target.value)} className="h-12 rounded-xl border-slate-200 bg-white shadow-sm font-mono font-bold" placeholder="EX: DEC-2024-..." />
                         </div>
                       </div>
 

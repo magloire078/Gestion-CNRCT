@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import '@/lib/suppress-firestore-errors'; // Filtre global pour supprimer les erreurs Firestore attendues
 import { Toaster } from '@/components/ui/toaster';
+import { Toaster as SonnerToaster } from "@/components/ui/sonner"
 import { SiteLayout } from '@/components/site-layout';
 import { ThemeProvider } from "@/components/theme-provider"
 import { BASE_URL } from '@/lib/constants';
@@ -76,6 +77,7 @@ export default async function RootLayout({
             {children}
           </SiteLayout>
           <Toaster />
+          <SonnerToaster position="top-right" expand={true} richColors />
         </ThemeProvider>
       </body>
     </html>

@@ -2,157 +2,122 @@
 
 import React, { ReactNode, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { cn } from "@/lib/utils";
 
 interface InstitutionalReportWrapperProps {
   children: ReactNode;
   isPrinting: boolean;
   onAfterPrint?: () => void;
+  orientation?: 'portrait' | 'landscape';
 }
 
 /**
- * InstitutionalReportWrapper
- * Uses React Portal during printing to move the report to the root of the document.
- * This bypasses container layout issues (like sidebars) that cause blank PDF outputs.
+ * InstitutionalReportWrapper V8 - "Clone" of the working IT Assets pattern.
+ * Uses a direct Portal to document.body and the #print-section ID.
  */
-export function InstitutionalReportWrapper({ children, isPrinting, onAfterPrint }: InstitutionalReportWrapperProps) {
+export function InstitutionalReportWrapper({ 
+  children, 
+  isPrinting, 
+  onAfterPrint, 
+  orientation = 'portrait' 
+}: InstitutionalReportWrapperProps) {
   const [mounted, setMounted] = useState(false);
+  const [isPreparing, setIsPreparing] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    
-    if (isPrinting) {
-      const handleAfterPrint = () => {
-        if (onAfterPrint) onAfterPrint();
-      };
+    return () => setMounted(false);
+  }, []);
 
-      window.addEventListener("afterprint", handleAfterPrint);
+  useEffect(() => {
+    if (isPrinting && mounted) {
+      setIsPreparing(true);
       
-      // Long delay (1s) to ensure complex DOM (like 180+ lines) is fully rendered in the portal
+      if (orientation === 'landscape') {
+        document.body.classList.add('print-landscape');
+      }
+
+      // Small delay to ensure the portal is fully rendered in the DOM
       const timer = setTimeout(() => {
-        window.print();
-      }, 1000);
+        setIsPreparing(false);
+        
+        // Final buffer before print
+        setTimeout(() => {
+          window.print();
+          
+          if (orientation === 'landscape') {
+            document.body.classList.remove('print-landscape');
+          }
+          
+          if (onAfterPrint) onAfterPrint();
+        }, 150);
+      }, 600);
 
       return () => {
-        window.removeEventListener("afterprint", handleAfterPrint);
         clearTimeout(timer);
+        document.body.classList.remove('print-landscape');
       };
     }
-  }, [isPrinting, onAfterPrint]);
+  }, [isPrinting, mounted, orientation, onAfterPrint]);
 
-  if (!mounted) return <>{children}</>;
+  if (!mounted || !isPrinting) return null;
 
-  // If we are printing, render into a portal at the body level
-  if (isPrinting) {
-    return createPortal(
-      <div className="absolute inset-0 bg-white z-[99999] min-h-screen p-10 overflow-visible text-black printable-portal-root">
+  const content = (
+    <div 
+      id="print-section" 
+      className="bg-white text-black w-full min-h-screen font-sans"
+    >
+      {/* Visual Loader - Hidden during actual print */}
+      {isPreparing && (
+        <div className="fixed inset-0 z-[2147483647] bg-white flex flex-col items-center justify-center print:hidden">
+          <div className="relative">
+            <div className="h-24 w-24 rounded-full border-4 border-[#006039]/20 border-t-[#006039] animate-spin" />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="h-12 w-12 rounded-full bg-[#006039]/10 animate-pulse" />
+            </div>
+          </div>
+          <h2 className="mt-8 text-2xl font-black text-slate-900 tracking-tighter uppercase italic">
+            Génération du Rapport
+          </h2>
+          <p className="mt-2 text-slate-500 font-bold uppercase tracking-widest text-[10px]">
+            Finalisation de la mise en page institutionnelle...
+          </p>
+        </div>
+      )}
+
+      {/* Actual Content */}
+      <div className="w-full relative print:m-0 print:p-0">
         {children}
-        
-        <style jsx global>{`
-          @media print {
-            @page {
-              size: A4;
-              margin: 15mm;
-              @bottom-right {
-                content: "Page " counter(page) " sur " counter(pages);
-                font-family: var(--font-inter);
-                font-size: 8pt;
-                color: #94a3b8;
-              }
-            }
-            body > *:not(.printable-portal-root) {
-              display: none !important;
-            }
-            .printable-portal-root {
-              display: block !important;
-              position: static !important;
-              visibility: visible !important;
-              opacity: 1 !important;
-              background: white !important;
-              width: 100% !important;
-              height: auto !important;
-            }
-            /* Enhanced Page Numbering for browsers not supporting @bottom-right */
-            .page-number:after {
-              content: counter(page);
-            }
-            .total-pages:after {
-              content: counter(pages);
-            }
-            
-            /* Professional Watermark */
-            .printable-portal-root::before {
-              content: "CNRCT - DOCUMENT OFFICIEL - GÈRE-ÉCOLE";
-              position: fixed;
-              top: 50%;
-              left: 50%;
-              transform: translate(-50%, -50%) rotate(-45deg);
-              font-size: 5rem;
-              font-weight: 900;
-              color: rgba(0, 96, 57, 0.03);
-              white-space: nowrap;
-              pointer-events: none;
-              z-index: -1;
-            }
+      </div>
 
-            /* Force Background and Colors */
-            * {
-              -webkit-print-color-adjust: exact !important;
-              print-color-adjust: exact !important;
-            }
-
-            .bg-slate-900 {
-              background-color: #0f172a !important;
-              color: white !important;
-            }
-            .bg-[#006039] {
-              background-color: #006039 !important;
-              color: white !important;
-            }
-            
-            /* Enhanced Table Borders (Grid/Cadriage) */
-            table {
-                width: 100% !important;
-                border-collapse: collapse !important;
-                border: 2px solid #000 !important;
-                margin-bottom: 20px !important;
-            }
-            
-            th, td {
-                border: 1px solid #334155 !important; /* slate-700 equivalent for print */
-                padding: 8px !important;
-            }
-            
-            thead tr {
-                background-color: #0f172a !important;
-                border-bottom: 2px solid #000 !important;
-            }
-
-            thead th {
-                color: white !important;
-                font-weight: 900 !important;
-            }
-
-            /* Avoid breaking elements */
-            .break-inside-avoid {
-              break-inside: avoid !important;
-              page-break-inside: avoid !important;
-            }
-            
-            tr {
-                break-inside: avoid !important;
-                page-break-inside: avoid !important;
-            }
-            
-            thead {
-                display: table-header-group !important;
-            }
+      <style jsx global>{`
+        @media print {
+          /* Force isolation via the project's global CSS standard */
+          #print-section {
+            display: block !important;
+            visibility: visible !important;
+            width: 100% !important;
+            background: white !important;
           }
-        `}</style>
-      </div>,
-      document.body
-    );
-  }
+          
+          /* Professional Watermark */
+          #print-section::before {
+            content: "CNRCT - DOCUMENT OFFICIEL";
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-size: 5rem;
+            font-weight: 900;
+            color: rgba(0, 96, 57, 0.03) !important;
+            pointer-events: none;
+            z-index: -1;
+            white-space: nowrap;
+          }
+        }
+      `}</style>
+    </div>
+  );
 
-  // Normal render
-  return <div className="report-screen-view">{children}</div>;
+  return createPortal(content, document.body);
 }

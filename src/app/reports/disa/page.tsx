@@ -10,6 +10,7 @@ import { generateDisaReport, type DisaReportState as DisaReportResult } from "./
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import Image from "next/image";
 import { PermissionGuard } from "@/components/auth/permission-guard";
+import { DisaOfficialReport } from "@/components/reports/disa-official-report";
 
 // Helper for formatting currency in CFA
 const formatCurrency = (amount: number) => {
@@ -110,106 +111,7 @@ export default function DisaPage() {
         }
     };
 
-    useEffect(() => {
-        if (isPrinting) {
-            const style = document.createElement('style');
-            style.innerHTML = `
-                @media print { 
-                    @page { 
-                        size: landscape; 
-                        margin: 8mm 5mm 10mm 5mm; 
-                    }
-                    body {
-                        margin: 0;
-                        padding: 0;
-                        color: black !important;
-                        visibility: hidden;
-                        -webkit-print-color-adjust: exact !important;
-                        print-color-adjust: exact !important;
-                    }
-                    #print-section {
-                        visibility: visible;
-                        position: absolute;
-                        left: 0;
-                        top: 0;
-                        width: 1080px !important; /* Expanded width to use full landscape space */
-                        margin: 0 !important;
-                        padding: 0 !important;
-                        background: transparent !important;
-                    }
-                    #print-section * {
-                        visibility: visible;
-                    }
-                    /* HEADER BLEU PRINT CORRECTION - EXTRA STRONG BORDERS */
-                    #print-section thead tr th {
-                        background-color: #1e3a8a !important;
-                        color: white !important;
-                        -webkit-print-color-adjust: exact !important;
-                        print-color-adjust: exact !important;
-                        font-weight: 900 !important;
-                        border: 1px solid white !important; 
-                        font-size: 9px !important;
-                        white-space: nowrap !important;
-                        padding: 2px !important;
-                    }
-                    thead { display: table-header-group !important; }
-                    tfoot { display: table-footer-group !important; }
-                    tr { page-break-inside: avoid !important; }
-                    .print-hidden { display: none !important; }
-                    
-                    /* Reset cleanup rules that was overriding background colors */
-                    #print-section table {
-                        border-collapse: collapse !important;
-                        width: 100% !important;
-                        font-family: sans-serif !important;
-                        border: 1px solid #1e3a8a !important; 
-                        table-layout: fixed !important; /* Fixed layout to prevent cell growth */
-                    }
-                    #print-section td {
-                        padding: 0.5px 2px !important;
-                        border: 0.8px solid #475569 !important;
-                        /* Supprimé background: white !important; pour permettre l'effet striped */
-                        font-size: 8.5px !important; 
-                        overflow: hidden !important;
-                        text-overflow: clip !important;
-                        white-space: nowrap !important;
-                        word-break: keep-all !important;
-                        letter-spacing: -0.025em !important; /* trackers-tighter equivalent */
-                    }
-                    
-                    /* Pagination */
-                    body { counter-reset: page; }
-                    .page-number::after {
-                        counter-increment: page;
-                        content: "Page " counter(page);
-                    }
-                    .footer-print {
-                        position: fixed;
-                        bottom: 0px;
-                        right: 0px;
-                        padding: 2px;
-                        font-size: 8px;
-                        color: #64748b;
-                        background: transparent !important;
-                    }
-
-                    /* Zebra stripping for print */
-                    #print-section tbody tr:nth-child(even) {
-                        background-color: #f1f5f9 !important;
-                        -webkit-print-color-adjust: exact !important;
-                        print-color-adjust: exact !important;
-                    }
-                }
-            `;
-            document.head.appendChild(style);
-
-            setTimeout(() => {
-                window.print();
-                document.head.removeChild(style);
-                setIsPrinting(false);
-            }, 500);
-        }
-    }, [isPrinting]);
+    // Suppression de l'ancien useEffect d'impression manuelle
 
     return (
         <PermissionGuard permission="page:disa:view">
@@ -378,75 +280,15 @@ export default function DisaPage() {
                 )}
             </div>
 
-            {isPrinting && state.reportData && state.grandTotal && (
-                <div id="print-section" className="bg-white text-black font-sans p-1">
-                    <DisaHeader organizationLogos={state.organizationLogos} year={state.year || ""} isPrinting={true} />
-                    
-                    <table className="w-[1080px] text-[8.5px] border-collapse bg-white table-fixed">
-                        <thead>
-                                <tr className="bg-[#1e3a8a] text-white">
-                                    <th className="w-[25px] font-black text-center uppercase border border-white">N°</th>
-                                    <th className="w-[40px] font-black text-center uppercase border border-white">Mat.</th>
-                                    <th className="w-[150px] text-left pl-1 font-black uppercase border border-white">Nom et Prénoms</th>
-                                    {monthLabels.map((m: string, i: number) => (
-                                        <th key={`header-print-month-${i}`} className="w-[58px] font-black text-center uppercase border border-white">
-                                            {m.substring(0, 3)}.
-                                        </th>
-                                    ))}
-                                    <th className="w-[55px] font-black text-center uppercase border border-white">Gratif.</th>
-                                    <th className="w-[55px] font-black text-center uppercase border border-white">Tot Brut</th>
-                                    <th className="w-[55px] font-black text-center uppercase border border-white">CNPS</th>
-                                </tr>
-                            </thead>
-                        <tbody>
-                                {state.reportData.map((row: any, index: number) => (
-                                <tr key={`print-row-${row.matricule}`} className="text-black even:bg-slate-100/50">
-                                    <td className="text-center font-bold border border-slate-600">{index + 1}</td>
-                                    <td className="text-center font-mono border border-slate-600">{row.matricule}</td>
-                                    <td className="whitespace-nowrap text-left pl-1 font-bold border border-slate-600 overflow-hidden text-clip">{row.name}</td>
-                                    {row.monthlySalaries.map((salary: number, i: number) => (
-                                        <td key={`print-cell-${row.matricule}-month-${i}`} className="text-right font-mono border border-slate-600 tracking-tighter tabular-nums">
-                                            {formatCurrency(salary)}
-                                        </td>
-                                    ))}
-                                    <td className="text-right font-mono border border-slate-600 tracking-tighter tabular-nums">{formatCurrency(row.gratification)}</td>
-                                    <td className="text-right font-bold font-mono border border-slate-600 tracking-tighter tabular-nums">{formatCurrency(row.totalBrut)}</td>
-                                    <td className="text-right font-mono border border-slate-600 tracking-tighter tabular-nums">{formatCurrency(row.totalCNPS)}</td>
-                                </tr>
-                            ))}
-                            <tr className="font-black bg-slate-100 text-black">
-                                <td colSpan={3} className="py-1 px-1 text-right pr-4 border border-slate-700 text-[10px]">TOTAL GÉNÉRAL</td>
-                                {state.grandTotal.monthly.map((total: number, index: number) => (
-                                    <td key={`print-total-month-${index}`} className="py-1 px-0.5 text-right font-black border border-slate-700 text-[8px] tracking-tighter tabular-nums">
-                                        {formatCurrency(total)}
-                                    </td>
-                                ))}
-                                <td className="py-1 px-0.5 text-right font-black border border-slate-700 text-[8px] tracking-tighter tabular-nums">{formatCurrency(state.grandTotal.gratification)}</td>
-                                <td className="py-1 px-0.5 text-right font-black border border-slate-700 text-[8px] tracking-tighter tabular-nums">{formatCurrency(state.grandTotal.brut)}</td>
-                                <td className="py-1 px-0.5 text-right font-black border border-slate-700 text-[8px] tracking-tighter tabular-nums">{formatCurrency(state.grandTotal.cnps)}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    <footer className="mt-1 text-[8px]">
-                        <div className="flex justify-between items-end">
-                            <div className="text-[7.5px] italic leading-tight max-w-[300px]">
-                                Document généré automatiquement par le système de gestion de la CNRCT le {new Date().toLocaleDateString('fr-FR')}. Page certifiée conforme aux données de l'exercice fiscal {state.year}.
-                            </div>
-                            <div className="text-center leading-tight opacity-70">
-                                <p className="font-bold uppercase">Chambre Nationale de Rois et Chefs Traditionnels (CNRCT)</p>
-                                <p>Yamoussoukro, Riviera - BP 201 Yamoussoukro | Tél : (225) 30 64 06 60 | Fax : (+255) 30 64 06 63</p>
-                            </div>
-                            <div className="min-w-[180px] border-t-2 border-black pt-1 text-center font-black uppercase text-[9px]">
-                                Signature et Cachet
-                            </div>
-                        </div>
-                    </footer>
-
-                    {/* Pagination fixe */}
-                    <div className="hidden print:block footer-print opacity-70">
-                        <span className="page-number"></span>
-                    </div>
-                </div>
+            {state.reportData && state.grandTotal && (
+                <DisaOfficialReport 
+                    reportData={state.reportData}
+                    grandTotal={state.grandTotal}
+                    organizationSettings={state.organizationLogos}
+                    year={state.year || year}
+                    isPrinting={isPrinting}
+                    onAfterPrint={() => setIsPrinting(false)}
+                />
             )}
         </PermissionGuard>
     );

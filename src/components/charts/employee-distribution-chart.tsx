@@ -26,7 +26,7 @@ const chartConfig = {
   "Informatique": { label: "Informatique", color: "hsl(var(--chart-1))" },
   "Directoire": { label: "Directoire", color: "hsl(var(--chart-2))" },
   "Membres du Directoire": { label: "Membres du Directoire", color: "hsl(var(--chart-2))" },
-  "Direction des Affaires financières et du patrimoine": { label: "Finances", color: "hsl(var(--chart-3))" },
+  "Direction Financière et du Patrimoine": { label: "DFP", color: "hsl(var(--chart-3))" },
   "Secretariat Général": { label: "Secrétariat", color: "hsl(var(--chart-4))" },
   "Communication": { label: "Communication", color: "hsl(var(--chart-5))" },
   "Comités Régionaux": { label: "Régions", color: "hsl(var(--chart-1))" },

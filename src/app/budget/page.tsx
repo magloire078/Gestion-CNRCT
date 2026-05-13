@@ -8,8 +8,14 @@ import {
     DollarSign, Calendar as CalendarIcon,
     Filter, Download, ArrowUpRight,
     ArrowDownRight, Wallet, Info,
-    ArrowLeftRight, FileText, CheckCircle2
+    ArrowLeftRight, FileText, CheckCircle2,
+    Activity, BarChart3
 } from "lucide-react";
+import { 
+    AreaChart, Area, XAxis, YAxis, 
+    CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
+    PieChart, Pie, Cell, Legend
+} from 'recharts';
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -22,6 +28,7 @@ import {
 import {
   Table,
   TableBody,
+  TableFooter,
   TableCell,
   TableHead,
   TableHeader,
@@ -58,15 +65,42 @@ import { AddBudgetLineSheet } from "@/components/budget/add-budget-line-sheet";
 import { EditBudgetLineSheet } from "@/components/budget/edit-budget-line-sheet";
 import { PaginationControls } from "@/components/common/pagination-controls";
 import { BudgetPrintTemplate } from "@/components/budget/budget-print-template";
-import { 
-    BarChart, Bar, XAxis, YAxis, 
-    CartesianGrid, Tooltip, ResponsiveContainer,
-    PieChart, Pie, Cell, Legend
-} from 'recharts';
 import { cn } from "@/lib/utils";
 import { PermissionGuard } from "@/components/auth/permission-guard";
 
 const COLORS = ['#0f172a', '#334155', '#475569', '#64748b', '#94a3b8', '#cbd5e1'];
+const CHART_COLORS_CLASSES = [
+    'bg-slate-900',
+    'bg-slate-700',
+    'bg-slate-600',
+    'bg-slate-500',
+    'bg-slate-400',
+    'bg-slate-300'
+];
+
+const TOOLTIP_STYLES = {
+    contentStyle: {
+        backgroundColor: '#020617',
+        border: '1px solid #1e293b',
+        borderRadius: '16px',
+        fontSize: '10px',
+        color: '#fff',
+        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+    },
+    itemStyle: {
+        fontWeight: '900'
+    }
+};
+
+const CHART_CONFIG = {
+    tick: { fill: '#475569', fontSize: 9, fontWeight: '900' },
+    grid: { stroke: '#ffffff05', strokeDasharray: "3 3" },
+    axis: { stroke: '#ffffff20' },
+    colors: {
+        current: '#10b981',
+        previous: '#6366f1'
+    }
+};
 
 export default function BudgetPage() {
   const [budgetLines, setBudgetLines] = useState<BudgetLine[]>([]);
@@ -83,6 +117,7 @@ export default function BudgetPage() {
   const [activeTab, setActiveTab] = useState<string>("emploi");
   
   const [isSyncing, setIsSyncing] = useState(false);
+  const [isPrinting, setIsPrinting] = useState(false);
   const { toast } = useToast();
 
   const handleSyncPreviousYear = async () => {
@@ -175,7 +210,7 @@ export default function BudgetPage() {
   };
 
   const handlePrint = () => {
-    window.print();
+    setIsPrinting(true);
   };
 
   const years = useMemo(() => {
@@ -231,24 +266,17 @@ export default function BudgetPage() {
     return { totalEmplois, totalRessources, balance, isBalanced };
   }, [safeBudgetLines, yearFilter]);
 
-  const chartData = useMemo(() => {
-    const currentYearLines = safeBudgetLines.filter(l => yearFilter === "all" || l.year.toString() === yearFilter);
-    const topLines = [...currentYearLines]
-        .filter(l => l.type === 'emploi')
-        .sort((a, b) => (b.allocatedAmount || 0) - (a.allocatedAmount || 0))
-        .slice(0, 5)
-        .map(line => ({ 
-            name: (line.name && line.name.length > 20) ? line.name.substring(0, 17) + "..." : (line.name || "Inconnu"), 
-            value: line.allocatedAmount || 0 
-        }));
+  const analyticsData = useMemo(() => {
+    const currentLines = filteredLines.slice(0, 8);
+    const data = currentLines.map(line => ({
+        name: line.name.length > 15 ? line.name.substring(0, 15) + '...' : line.name,
+        current: line.allocatedAmount,
+        previous: line.previousAmount || 0,
+    }));
     
-    const yearData = years.map(yr => {
-        const amount = safeBudgetLines.filter(l => l.year.toString() === yr && l.type === 'emploi').reduce((acc, l) => acc + (l.allocatedAmount || 0), 0);
-        return { name: yr, amount };
-    }).sort((a, b) => parseInt(a.name) - parseInt(b.name));
-
-    return { topLines, yearData };
-  }, [safeBudgetLines, yearFilter, years]);
+    const totalCurrent = filteredLines.reduce((acc, l) => acc + l.allocatedAmount, 0);
+    return { data, totalCurrent };
+  }, [filteredLines]);
 
   const handleFullImport2026 = async () => {
     const data2026: Omit<BudgetLine, "id">[] = [
@@ -349,309 +377,430 @@ export default function BudgetPage() {
 
   return (
     <PermissionGuard permission="page:budget:view">
-        <div className="container mx-auto py-10 px-4 md:px-6">
-            <div className="flex flex-col gap-8 pb-20 print:hidden">
-          {/* Page Header */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <h1 className="text-3xl font-extrabold tracking-tight flex items-center gap-3">
-                 <ArrowLeftRight className="h-8 w-8 text-primary" /> Annexe Budgétaire
-              </h1>
-              <p className="text-muted-foreground mt-1">Comparatif des dotations entre N-1 et l'exercice en cours.</p>
-            </div>
-            <div className="flex items-center gap-2">
-                <Button onClick={handlePrint} variant="outline" className="rounded-xl h-11 border-slate-200 hover:bg-slate-50">
-                    <Download className="mr-2 h-4 w-4" /> Exporter PDF
-                </Button>
-                {budgetLines.filter(l => l.year === 2025 && l.type).length === 0 && (
-                    <Button 
-                        onClick={handleFullImport2025} 
-                        className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl h-11"
-                    >
-                        <ArrowDownRight className="mr-2 h-4 w-4" /> Importer Annexe 2025
-                    </Button>
-                )}
-                {budgetLines.filter(l => l.year === 2026 && l.type).length === 0 && (
-                    <Button 
-                        onClick={handleFullImport2026} 
-                        className="bg-purple-600 hover:bg-purple-700 text-white rounded-xl h-11"
-                    >
-                        <ArrowUpRight className="mr-2 h-4 w-4" /> Importer Annexe 2026
-                    </Button>
-                )}
-                {yearFilter !== "all" && (
-                    <Button 
-                        variant="outline" 
-                        onClick={handleSyncPreviousYear} 
-                        disabled={isSyncing || loading}
-                        className="rounded-xl h-11 border-slate-200 hover:bg-slate-50"
-                    >
-                        {isSyncing ? (
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        ) : (
-                            <RefreshCcw className="mr-2 h-4 w-4" />
-                        )}
-                        Synchroniser N-1
-                    </Button>
-                )}
-                <Button onClick={() => setIsAddSheetOpen(true)} className="bg-slate-900 rounded-xl h-11">
-                    <PlusCircle className="mr-2 h-4 w-4" /> Nouvelle Ligne
-                </Button>
-            </div>
-          </div>
+        <div className="min-h-screen bg-slate-50/50">
+            {/* Dark Immersive Header */}
+            <div className="bg-slate-950 text-white pt-16 pb-32 px-4 md:px-10 relative overflow-hidden print:hidden">
+                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10" />
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 via-primary to-indigo-600" />
+                <div className="absolute -top-24 -right-24 w-96 h-96 bg-primary/10 rounded-full blur-[120px]" />
+                <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-emerald-500/10 rounded-full blur-[120px]" />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card className="border-white/10 shadow-xl bg-gradient-to-br from-slate-900 to-slate-800 text-white overflow-hidden relative group transition-all hover:shadow-2xl hover:-translate-y-1">
-              <CardHeader className="pb-2">
-                <CardDescription className="text-slate-400 font-black uppercase text-[10px] tracking-widest">TOTAL EMPLOIS</CardDescription>
-                <CardTitle className="text-2xl font-black">
-                    {loading ? <Skeleton className="h-9 w-48 bg-slate-800" /> : formatCurrency(stats.totalEmplois)}
-                </CardTitle>
-              </CardHeader>
-              <div className="absolute bottom-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-                <ArrowUpRight className="h-12 w-12" />
-              </div>
-            </Card>
+                <div className="container mx-auto relative z-10">
+                    <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+                        <div className="space-y-4">
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-black uppercase tracking-[0.2em] animate-in fade-in slide-in-from-left-4">
+                                <Wallet className="h-3 w-3" />
+                                Finances & Budget
+                            </div>
+                            <h1 className="text-4xl md:text-6xl font-black tracking-tight italic uppercase leading-none">
+                                Annexe <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-primary">Budgétaire</span>
+                            </h1>
+                            <p className="text-slate-400 font-bold max-w-2xl italic">
+                                Pilotage financier et comparatif des dotations institutionnelles. Harmonisation des ressources et emplois pour l'exercice {yearFilter}.
+                            </p>
+                        </div>
 
-            <Card className="border-white/10 shadow-xl bg-emerald-600 text-white overflow-hidden relative group transition-all hover:shadow-2xl hover:-translate-y-1">
-              <CardHeader className="pb-2">
-                <CardDescription className="text-emerald-100 font-black opacity-80 uppercase text-[10px] tracking-widest">TOTAL RESSOURCES</CardDescription>
-                <CardTitle className="text-2xl font-black">
-                    {loading ? <Skeleton className="h-9 w-48 bg-emerald-500" /> : formatCurrency(stats.totalRessources)}
-                </CardTitle>
-              </CardHeader>
-              <div className="absolute bottom-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                <ArrowDownRight className="h-12 w-12" />
-              </div>
-            </Card>
-
-            <Card className={cn(
-                "border-white/10 shadow-xl overflow-hidden relative group transition-all hover:shadow-2xl hover:-translate-y-1",
-                stats.isBalanced ? "bg-blue-600 text-white" : "bg-orange-500 text-white"
-            )}>
-              <CardHeader className="pb-2">
-                <CardDescription className="text-white font-black opacity-80 uppercase text-[10px] tracking-widest">SOLDE / ÉQUILIBRE</CardDescription>
-                <CardTitle className="text-2xl font-black flex items-center gap-2">
-                    {loading ? <Skeleton className="h-9 w-48 bg-blue-500" /> : formatCurrency(stats.balance)}
-                    {stats.isBalanced && <CheckCircle2 className="h-6 w-6 text-emerald-300" />}
-                </CardTitle>
-              </CardHeader>
-            </Card>
-
-            <Card className="border-white/10 shadow-xl bg-card/40 backdrop-blur-md transition-all hover:shadow-2xl hover:-translate-y-1 group">
-              <CardHeader className="pb-2">
-                <CardDescription className="text-muted-foreground font-black uppercase text-[10px] tracking-widest">NOMBRE DE LIGNES</CardDescription>
-                <CardTitle className="text-2xl font-black text-foreground">
-                    {loading ? <Skeleton className="h-8 w-24" /> : filteredLines.length}
-                </CardTitle>
-              </CardHeader>
-            </Card>
-          </div>
-
-          {/* Charts Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <Card className="border-white/10 shadow-xl bg-card/40 backdrop-blur-md">
-              <CardHeader>
-                <CardTitle className="text-lg font-bold flex items-center gap-2">
-                    <BarIcon className="h-5 w-5 text-primary" /> Évolution des Dépenses
-                </CardTitle>
-                <CardDescription className="text-xs font-medium">Montants des emplois par exercice.</CardDescription>
-              </CardHeader>
-              <CardContent className="h-[300px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={chartData.yearData}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} dy={10} />
-                    <YAxis hide />
-                    <Tooltip 
-                        cursor={{ fill: '#f8fafc' }} 
-                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
-                        formatter={(value: number) => [formatCurrency(value), 'Dépenses']}
-                    />
-                    <Bar dataKey="amount" fill="#0f172a" radius={[6, 6, 0, 0]} barSize={40} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-
-            <Card className="border-white/10 shadow-xl bg-card/40 backdrop-blur-md">
-              <CardHeader>
-                <CardTitle className="text-lg font-bold flex items-center gap-2">
-                    <PieIcon className="h-5 w-5 text-primary" /> Répartition des Emplois
-                </CardTitle>
-                <CardDescription className="text-xs font-medium">Postes les plus importants de l'année.</CardDescription>
-              </CardHeader>
-              <CardContent className="h-[300px] flex items-center justify-center">
-                {chartData.topLines.length > 0 ? (
-                    <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                            <Pie
-                                data={chartData.topLines}
-                                cx="50%"
-                                cy="45%"
-                                innerRadius={70}
-                                outerRadius={100}
-                                paddingAngle={5}
-                                dataKey="value"
+                        <div className="flex flex-wrap items-center gap-3">
+                            <Button onClick={handlePrint} variant="outline" className="h-12 px-6 rounded-2xl border-white/10 bg-white/5 text-white hover:bg-white/10 hover:border-white/20 transition-all font-black uppercase text-[10px] tracking-widest backdrop-blur-xl">
+                                <Download className="mr-2 h-4 w-4 text-emerald-400" /> Exporter PDF
+                            </Button>
+                            
+                            {yearFilter !== "all" && (
+                                <Button 
+                                    variant="outline" 
+                                    onClick={handleSyncPreviousYear} 
+                                    disabled={isSyncing || loading}
+                                    className="h-12 px-6 rounded-2xl border-white/10 bg-white/5 text-white hover:bg-white/10 hover:border-white/20 transition-all font-black uppercase text-[10px] tracking-widest backdrop-blur-xl"
+                                >
+                                    {isSyncing ? (
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin text-primary" />
+                                    ) : (
+                                        <RefreshCcw className="mr-2 h-4 w-4 text-primary" />
+                                    )}
+                                    Synchro N-1
+                                </Button>
+                            )}
+                            
+                            <Button onClick={() => setIsAddSheetOpen(true)} className="h-12 px-8 rounded-2xl bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20 transition-all active:scale-95 font-black uppercase text-[10px] tracking-widest">
+                                <PlusCircle className="mr-2 h-4 w-4" /> Nouvelle Ligne
+                            </Button>
+                        </div>
+                    </div>
+                    
+                    {/* Special Import Actions */}
+                    <div className="mt-8 flex flex-wrap gap-2">
+                        {budgetLines.filter(l => l.year === 2025 && l.type).length === 0 && (
+                            <button 
+                                onClick={handleFullImport2025} 
+                                className="px-4 py-2 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[9px] font-black uppercase tracking-widest hover:bg-blue-500/20 transition-colors"
                             >
-                                {chartData.topLines.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                ))}
-                            </Pie>
-                            <Tooltip />
-                            <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontSize: '10px' }} />
-                        </PieChart>
-                    </ResponsiveContainer>
-                ) : (
-                    <div className="flex flex-col items-center justify-center text-muted-foreground italic">
-                        <Info className="h-8 w-8 mb-2 opacity-20" />
-                        Aucune donnée disponible
+                                <ArrowDownRight className="inline mr-1 h-3 w-3" /> Importer Annexe 2025
+                            </button>
+                        )}
+                        {budgetLines.filter(l => l.year === 2026 && l.type).length === 0 && (
+                            <button 
+                                onClick={handleFullImport2026} 
+                                className="px-4 py-2 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-[9px] font-black uppercase tracking-widest hover:bg-indigo-500/20 transition-colors"
+                            >
+                                <ArrowUpRight className="inline mr-1 h-3 w-3" /> Importer Annexe 2026
+                            </button>
+                        )}
                     </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Main Content Card (Table with Tabs) */}
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <div className="flex items-center justify-between mb-4">
-                <TabsList className="bg-slate-100 p-1 rounded-xl">
-                    <TabsTrigger value="emploi" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">
-                        <TrendingUp className="h-4 w-4 mr-2" /> EMPLOIS
-                    </TabsTrigger>
-                    <TabsTrigger value="ressource" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">
-                        <FileText className="h-4 w-4 mr-2" /> RESSOURCES
-                    </TabsTrigger>
-                </TabsList>
-
-                <div className="flex items-center gap-3">
-                    <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                        <Input
-                            placeholder="Rechercher..."
-                            className="pl-9 h-10 w-[200px] rounded-xl border-slate-200"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                    </div>
-                    <Select value={yearFilter} onValueChange={setYearFilter}>
-                        <SelectTrigger className="w-[120px] h-10 rounded-xl">
-                            <SelectValue placeholder="Année" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">Toutes</SelectItem>
-                            {years.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
-                        </SelectContent>
-                    </Select>
                 </div>
             </div>
 
-            <Card className="border-white/10 shadow-xl bg-card/40 backdrop-blur-md overflow-hidden">
-                <CardHeader className="bg-primary/5 border-b border-border/50">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <CardTitle className="text-sm font-black uppercase tracking-widest text-muted-foreground">
-                                Récapitulatif de l'Annexe {yearFilter === "all" ? "" : yearFilter}
+            <div className="container mx-auto px-4 md:px-10 -mt-20 relative z-20 pb-20">
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+                    <Card className="border-0 shadow-[0_20px_50px_rgba(0,0,0,0.15)] bg-slate-900 text-white overflow-hidden relative group transition-all hover:shadow-2xl hover:-translate-y-2 rounded-[2rem]">
+                        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900" />
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-bl-full transition-all group-hover:scale-110" />
+                        <CardHeader className="relative z-10 pb-2 p-8">
+                            <CardDescription className="text-slate-500 font-black uppercase text-[10px] tracking-[0.3em] mb-2">Total Emplois</CardDescription>
+                            <CardTitle className="text-3xl font-black tracking-tighter">
+                                {loading ? <Skeleton className="h-9 w-40 bg-slate-800" /> : formatCurrency(stats.totalEmplois)}
                             </CardTitle>
-                            <CardDescription className="text-[10px] font-bold">Comptes du Budget Général - Côte d'Ivoire</CardDescription>
+                        </CardHeader>
+                        <div className="absolute bottom-4 right-8 p-3 bg-white/5 rounded-2xl border border-white/5 backdrop-blur-xl opacity-20 group-hover:opacity-100 transition-all group-hover:scale-110">
+                            <ArrowUpRight className="h-5 w-5 text-rose-500" />
                         </div>
-                        <div className="text-[10px] font-black text-primary bg-primary/10 px-2 py-1 rounded-full uppercase tracking-widest">EN F CFA</div>
+                    </Card>
+
+                    <Card className="border-0 shadow-[0_20px_50px_rgba(0,0,0,0.15)] bg-emerald-600 text-white overflow-hidden relative group transition-all hover:shadow-2xl hover:-translate-y-2 rounded-[2rem]">
+                        <div className="absolute inset-0 bg-gradient-to-br from-emerald-600 to-emerald-700" />
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-bl-full transition-all group-hover:scale-110" />
+                        <CardHeader className="relative z-10 pb-2 p-8">
+                            <CardDescription className="text-emerald-100/60 font-black uppercase text-[10px] tracking-[0.3em] mb-2">Total Ressources</CardDescription>
+                            <CardTitle className="text-3xl font-black tracking-tighter">
+                                {loading ? <Skeleton className="h-9 w-40 bg-emerald-500" /> : formatCurrency(stats.totalRessources)}
+                            </CardTitle>
+                        </CardHeader>
+                        <div className="absolute bottom-4 right-8 p-3 bg-white/10 rounded-2xl border border-white/10 backdrop-blur-xl opacity-40 group-hover:opacity-100 transition-all group-hover:scale-110">
+                            <ArrowDownRight className="h-5 w-5 text-white" />
+                        </div>
+                    </Card>
+
+                    <Card className={cn(
+                        "border-0 shadow-[0_20px_50px_rgba(0,0,0,0.15)] overflow-hidden relative group transition-all hover:shadow-2xl hover:-translate-y-2 rounded-[2rem]",
+                        stats.isBalanced ? "bg-indigo-600 text-white" : "bg-amber-500 text-white"
+                    )}>
+                        <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent" />
+                        <CardHeader className="relative z-10 pb-2 p-8">
+                            <CardDescription className="text-white/60 font-black uppercase text-[10px] tracking-[0.3em] mb-2">Solde / Équilibre</CardDescription>
+                            <CardTitle className="text-3xl font-black tracking-tighter flex items-center gap-3">
+                                {loading ? <Skeleton className="h-9 w-40 bg-white/10" /> : formatCurrency(stats.balance)}
+                                {stats.isBalanced && <CheckCircle2 className="h-7 w-7 text-emerald-300 animate-pulse" />}
+                            </CardTitle>
+                        </CardHeader>
+                    </Card>
+
+                    <Card className="border-0 shadow-[0_20px_50px_rgba(0,0,0,0.05)] bg-white/80 backdrop-blur-2xl transition-all hover:shadow-2xl hover:-translate-y-2 group rounded-[2rem] border border-white">
+                        <CardHeader className="pb-2 p-8">
+                            <CardDescription className="text-slate-400 font-black uppercase text-[10px] tracking-[0.3em] mb-2">Dotations</CardDescription>
+                            <CardTitle className="text-4xl font-black text-slate-950 tracking-tighter">
+                                {loading ? <Skeleton className="h-10 w-20" /> : filteredLines.length}
+                            </CardTitle>
+                        </CardHeader>
+                        <div className="absolute bottom-6 right-8 text-slate-100 font-black text-6xl italic -rotate-12 select-none group-hover:text-primary/5 transition-colors">
+                            {yearFilter === "all" ? "ALL" : yearFilter}
+                        </div>
+                    </Card>
+                </div>
+
+                    {/* Intelligence Section */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+                        <Card className="lg:col-span-2 border-0 shadow-2xl bg-slate-950 overflow-hidden rounded-[2.5rem] relative group">
+                            <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 via-transparent to-emerald-500/10 opacity-50 group-hover:opacity-80 transition-opacity" />
+                            <CardHeader className="relative z-10 p-8 border-b border-white/5">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <CardTitle className="text-xs font-black uppercase tracking-[0.4em] text-slate-500 mb-2">Analyse Comparative</CardTitle>
+                                        <CardDescription className="text-white text-lg font-black tracking-tighter">Évolution des Dotations par Poste</CardDescription>
+                                    </div>
+                                    <div className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-2xl border border-white/10">
+                                        <Activity className="h-4 w-4 text-emerald-400" />
+                                        <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">Temps Réel</span>
+                                    </div>
+                                </div>
+                            </CardHeader>
+                            <CardContent className="relative z-10 p-8 h-[350px]">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <AreaChart data={analyticsData.data}>
+                                        <defs>
+                                            <linearGradient id="colorCurrent" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="5%" stopColor={CHART_CONFIG.colors.current} stopOpacity={0.3}/>
+                                                <stop offset="95%" stopColor={CHART_CONFIG.colors.current} stopOpacity={0}/>
+                                            </linearGradient>
+                                            <linearGradient id="colorPrevious" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="5%" stopColor={CHART_CONFIG.colors.previous} stopOpacity={0.3}/>
+                                                <stop offset="95%" stopColor={CHART_CONFIG.colors.previous} stopOpacity={0}/>
+                                            </linearGradient>
+                                        </defs>
+                                        <CartesianGrid {...CHART_CONFIG.grid} vertical={false} />
+                                        <XAxis 
+                                            dataKey="name" 
+                                            stroke={CHART_CONFIG.axis.stroke}
+                                            fontSize={CHART_CONFIG.tick.fontSize} 
+                                            fontWeight={CHART_CONFIG.tick.fontWeight}
+                                            tick={CHART_CONFIG.tick}
+                                            axisLine={false}
+                                            tickLine={false}
+                                        />
+                                        <YAxis 
+                                            stroke={CHART_CONFIG.axis.stroke}
+                                            fontSize={CHART_CONFIG.tick.fontSize} 
+                                            fontWeight={CHART_CONFIG.tick.fontWeight}
+                                            tick={CHART_CONFIG.tick}
+                                            tickFormatter={(value) => `${(value / 1000000).toFixed(0)}M`}
+                                            axisLine={false}
+                                            tickLine={false}
+                                        />
+                                        <RechartsTooltip 
+                                            contentStyle={TOOLTIP_STYLES.contentStyle}
+                                            itemStyle={TOOLTIP_STYLES.itemStyle}
+                                        />
+                                        <Area type="monotone" dataKey="current" stroke={CHART_CONFIG.colors.current} fillOpacity={1} fill="url(#colorCurrent)" strokeWidth={3} />
+                                        <Area type="monotone" dataKey="previous" stroke={CHART_CONFIG.colors.previous} fillOpacity={1} fill="url(#colorPrevious)" strokeWidth={3} strokeDasharray="5 5" />
+                                    </AreaChart>
+                                </ResponsiveContainer>
+                            </CardContent>
+                        </Card>
+
+                        <Card className="border-0 shadow-2xl bg-white overflow-hidden rounded-[2.5rem] border border-slate-100 flex flex-col">
+                            <CardHeader className="p-8 border-b border-slate-50">
+                                <CardTitle className="text-xs font-black uppercase tracking-[0.4em] text-slate-400 mb-2">Répartition Stratégique</CardTitle>
+                                <CardDescription className="text-slate-900 text-lg font-black tracking-tighter">Poids des Postes Actuels</CardDescription>
+                            </CardHeader>
+                            <CardContent className="p-8 flex-1 flex flex-col justify-center min-h-[300px]">
+                                <div className="h-[200px] w-full relative">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <PieChart>
+                                            <Pie
+                                                data={analyticsData.data}
+                                                innerRadius={60}
+                                                outerRadius={80}
+                                                paddingAngle={8}
+                                                dataKey="current"
+                                            >
+                                                {analyticsData.data.map((entry, index) => (
+                                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                                ))}
+                                            </Pie>
+                                            <RechartsTooltip 
+                                                contentStyle={TOOLTIP_STYLES.contentStyle}
+                                                itemStyle={TOOLTIP_STYLES.itemStyle}
+                                            />
+                                        </PieChart>
+                                    </ResponsiveContainer>
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Total</span>
+                                        <span className="text-xl font-black text-slate-900 tracking-tighter">{(analyticsData.totalCurrent / 1000000).toFixed(1)}M</span>
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-2 mt-6">
+                                    {analyticsData.data.slice(0, 4).map((entry, index) => (
+                                        <div key={index} className="flex items-center gap-2 p-2 rounded-xl bg-slate-50 border border-slate-100">
+                                            <div 
+                                                className={cn(
+                                                    "w-2 h-2 rounded-full shadow-[0_0_8px_rgba(0,0,0,0.1)]",
+                                                    CHART_COLORS_CLASSES[index % CHART_COLORS_CLASSES.length]
+                                                )} 
+                                            />
+                                            <span className="text-[9px] font-black text-slate-500 uppercase tracking-tighter truncate w-full">{entry.name}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </CardContent>
+                        </Card>
                     </div>
-                </CardHeader>
-                <CardContent className="pt-0 px-0">
-                    <Table>
-                        <TableHeader className="bg-slate-50/80">
-                            <TableRow className="hover:bg-transparent border-slate-100">
-                                <TableHead className="w-20 text-center text-[10px] font-bold uppercase tracking-wider text-slate-500">Paragraphe</TableHead>
-                                <TableHead className="w-20 text-center text-[10px] font-bold uppercase tracking-wider text-slate-500">Ligne</TableHead>
-                                <TableHead className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Libellé du Poste</TableHead>
-                                <TableHead className="text-right text-[10px] font-bold uppercase tracking-wider text-slate-500">Dotation {yearFilter !== "all" ? parseInt(yearFilter) - 1 : "Rappel"}</TableHead>
-                                <TableHead className="text-right text-[10px] font-bold uppercase tracking-wider text-slate-500">Dotation {yearFilter}</TableHead>
-                                <TableHead className="w-12"></TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {loading ? (
-                                Array.from({ length: 5 }).map((_, i) => (
-                                    <TableRow key={i} className="border-border/40">
-                                        <TableCell><Skeleton className="h-4 w-12 mx-auto" /></TableCell>
-                                        <TableCell><Skeleton className="h-4 w-12 mx-auto" /></TableCell>
-                                        <TableCell><Skeleton className="h-4 w-64" /></TableCell>
-                                        <TableCell><Skeleton className="h-4 w-24 ml-auto" /></TableCell>
-                                        <TableCell><Skeleton className="h-4 w-24 ml-auto" /></TableCell>
-                                        <TableCell><Skeleton className="h-8 w-8 ml-auto" /></TableCell>
+
+          {/* Main Content Card (Table with Tabs) */}
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-8">
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                        <TabsList className="h-14 bg-white shadow-xl shadow-slate-200/50 p-2 rounded-2xl border border-slate-100 shrink-0">
+                            <TabsTrigger value="emploi" className="h-full px-8 rounded-xl font-black uppercase text-[10px] tracking-widest data-[state=active]:bg-slate-950 data-[state=active]:text-white transition-all">
+                                <TrendingUp className="h-4 w-4 mr-2" /> Dotations Emplois
+                            </TabsTrigger>
+                            <TabsTrigger value="ressource" className="h-full px-8 rounded-xl font-black uppercase text-[10px] tracking-widest data-[state=active]:bg-slate-950 data-[state=active]:text-white transition-all">
+                                <FileText className="h-4 w-4 mr-2" /> Dotations Ressources
+                            </TabsTrigger>
+                        </TabsList>
+
+                        <div className="flex flex-wrap items-center gap-4">
+                            <div className="relative group">
+                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-primary transition-colors" />
+                                <Input
+                                    placeholder="Rechercher une ligne..."
+                                    className="pl-11 h-14 w-[300px] rounded-2xl border-0 bg-white shadow-xl shadow-slate-200/50 focus:ring-4 focus:ring-primary/5 font-bold transition-all"
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                />
+                            </div>
+                            <Select value={yearFilter} onValueChange={setYearFilter}>
+                                <SelectTrigger className="w-[160px] h-14 rounded-2xl border-0 bg-white shadow-xl shadow-slate-200/50 font-black uppercase text-[10px] tracking-widest">
+                                    <div className="flex items-center gap-2">
+                                        <CalendarIcon className="h-4 w-4 text-primary" />
+                                        <SelectValue placeholder="Année" />
+                                    </div>
+                                </SelectTrigger>
+                                <SelectContent className="rounded-2xl border-slate-100 shadow-2xl p-2">
+                                    <SelectItem value="all" className="rounded-xl font-black uppercase text-[10px] tracking-widest py-3">Toutes les années</SelectItem>
+                                    {years.map(y => (
+                                        <SelectItem key={y} value={y} className="rounded-xl font-black uppercase text-[10px] tracking-widest py-3">Exercice {y}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
+
+                    <Card className="border-0 shadow-[0_30px_60px_rgba(0,0,0,0.08)] bg-white/80 backdrop-blur-2xl overflow-hidden rounded-[2.5rem] border border-white">
+                        <CardHeader className="bg-slate-950 text-white p-8 border-b-0 relative overflow-hidden">
+                            <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950" />
+                            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-emerald-500 opacity-50" />
+                            <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                <div>
+                                    <div className="flex items-center gap-3 mb-2">
+                                        <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                                        <CardTitle className="text-xs font-black uppercase tracking-[0.4em] text-slate-400">
+                                            Registre Budgétaire {yearFilter === "all" ? "Global" : yearFilter}
+                                        </CardTitle>
+                                    </div>
+                                    <CardDescription className="text-slate-500 font-bold italic">
+                                        Détails des postes de l'annexe du budget général
+                                    </CardDescription>
+                                </div>
+                                <div className="px-4 py-2 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl text-[10px] font-black text-emerald-400 uppercase tracking-widest">
+                                    Devise: Franc CFA (XOF)
+                                </div>
+                            </div>
+                        </CardHeader>
+                        <CardContent className="p-0">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow className="hover:bg-transparent border-slate-100 bg-slate-50/50">
+                                        <TableHead className="w-28 text-center text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 py-6">Paragraphe</TableHead>
+                                        <TableHead className="w-28 text-center text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Ligne</TableHead>
+                                        <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Libellé du Poste</TableHead>
+                                        <TableHead className="text-right text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Dotation {yearFilter !== "all" ? parseInt(yearFilter) - 1 : "Antérieure"}</TableHead>
+                                        <TableHead className="text-right text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Dotation {yearFilter}</TableHead>
+                                        <TableHead className="w-20"></TableHead>
                                     </TableRow>
-                                ))
-                            ) : paginatedLines.length > 0 ? (
-                                paginatedLines.map((line) => (
-                                    <TableRow key={line.id} className="hover:bg-primary/5 transition-colors border-border/40 group">
-                                        <TableCell className="text-center font-black text-muted-foreground bg-primary/5 tracking-tighter text-xs">{line.paragraphe || '-'}</TableCell>
-                                        <TableCell className="text-center font-mono text-[10px] font-bold text-muted-foreground">{line.code || '-'}</TableCell>
-                                        <TableCell className="font-bold text-foreground text-sm">{line.name}</TableCell>
-                                        <TableCell className="text-right font-mono text-xs text-muted-foreground opacity-70">
-                                            {formatCurrency(line.previousAmount || 0)}
-                                        </TableCell>
-                                        <TableCell className="text-right font-mono font-bold text-primary bg-primary/5">
-                                            {formatCurrency(line.allocatedAmount)}
-                                        </TableCell>
-                                        <TableCell className="text-right">
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-primary/10"><MoreHorizontal className="h-4 w-4" /></Button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end" className="w-40">
-                                                    <DropdownMenuLabel className="font-black uppercase text-[10px] tracking-widest opacity-50 text-center">Gestion</DropdownMenuLabel>
-                                                    <DropdownMenuItem onClick={() => openEditSheet(line)} className="font-bold">
-                                                        <Pencil className="mr-2 h-4 w-4" /> Modifier
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem onClick={() => setDeleteTarget(line)} className="text-destructive font-bold">
-                                                        <Trash2 className="mr-2 h-4 w-4" /> Supprimer
-                                                    </DropdownMenuItem>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
-                                        </TableCell>
-                                    </TableRow>
-                                ))
-                            ) : (
-                                <TableRow>
-                                    <TableCell colSpan={6} className="text-center py-20">
-                                        <Info className="h-12 w-12 text-slate-200 mx-auto mb-4" />
-                                        <p className="font-bold text-slate-400">Aucune donnée pour cette année ou ce type.</p>
-                                    </TableCell>
-                                </TableRow>
-                            )}
+                                </TableHeader>
+                                <TableBody>
+                                    {loading ? (
+                                        Array.from({ length: 5 }).map((_, i) => (
+                                            <TableRow key={i} className="border-slate-50">
+                                                <TableCell><Skeleton className="h-6 w-16 mx-auto rounded-lg" /></TableCell>
+                                                <TableCell><Skeleton className="h-6 w-16 mx-auto rounded-lg" /></TableCell>
+                                                <TableCell><Skeleton className="h-6 w-72 rounded-lg" /></TableCell>
+                                                <TableCell><Skeleton className="h-6 w-32 ml-auto rounded-lg" /></TableCell>
+                                                <TableCell><Skeleton className="h-6 w-32 ml-auto rounded-lg" /></TableCell>
+                                                <TableCell><Skeleton className="h-10 w-10 ml-auto rounded-full" /></TableCell>
+                                            </TableRow>
+                                        ))
+                                    ) : paginatedLines.length > 0 ? (
+                                        paginatedLines.map((line) => (
+                                            <TableRow key={line.id} className="hover:bg-slate-50/80 transition-all border-slate-50 group">
+                                                <TableCell className="text-center">
+                                                    <span className="px-3 py-1 bg-slate-100 rounded-lg font-black text-slate-500 text-[10px] tracking-tighter">
+                                                        {line.paragraphe || '-'}
+                                                    </span>
+                                                </TableCell>
+                                                <TableCell className="text-center">
+                                                    <span className="font-mono text-[10px] font-bold text-slate-400">
+                                                        {line.code || '-'}
+                                                    </span>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="flex flex-col py-2">
+                                                        <span className="font-black text-slate-900 text-sm tracking-tight leading-tight mb-1">{line.name}</span>
+                                                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest italic">Annexe {line.year}</span>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell className="text-right font-mono text-xs text-slate-400 italic">
+                                                    {formatCurrency(line.previousAmount || 0)}
+                                                </TableCell>
+                                                <TableCell className="text-right">
+                                                    <div className="inline-flex flex-col items-end">
+                                                        <span className="font-black text-slate-950 text-base tracking-tighter">
+                                                            {formatCurrency(line.allocatedAmount)}
+                                                        </span>
+                                                        {line.previousAmount && line.previousAmount > 0 && (
+                                                            <span className={cn(
+                                                                "text-[9px] font-black px-1.5 py-0.5 rounded-md",
+                                                                line.allocatedAmount > line.previousAmount ? "text-emerald-600 bg-emerald-50" : "text-rose-600 bg-rose-50"
+                                                            )}>
+                                                                {line.allocatedAmount > line.previousAmount ? "+" : ""}
+                                                                {Math.round(((line.allocatedAmount - line.previousAmount) / line.previousAmount) * 100)}%
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell className="text-right pr-8">
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <Button variant="ghost" size="icon" className="h-10 w-10 rounded-2xl hover:bg-slate-100 hover:text-primary transition-all">
+                                                                <MoreHorizontal className="h-5 w-5" />
+                                                            </Button>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent align="end" className="w-56 rounded-2xl border-slate-100 shadow-2xl p-2">
+                                                            <DropdownMenuLabel className="font-black uppercase text-[10px] tracking-[0.3em] opacity-30 text-center py-3">Actions Pilotage</DropdownMenuLabel>
+                                                            <DropdownMenuItem onClick={() => openEditSheet(line)} className="rounded-xl font-black uppercase text-[10px] tracking-widest py-3 cursor-pointer">
+                                                                <Pencil className="mr-3 h-4 w-4 text-primary" /> Éditer la Dotation
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem onClick={() => setDeleteTarget(line)} className="rounded-xl font-black uppercase text-[10px] tracking-widest py-3 cursor-pointer text-rose-600 focus:bg-rose-50 focus:text-rose-700">
+                                                                <Trash2 className="mr-3 h-4 w-4" /> Supprimer la Ligne
+                                                            </DropdownMenuItem>
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                    ) : (
+                                        <TableRow>
+                                            <TableCell colSpan={6} className="text-center py-32">
+                                                <div className="flex flex-col items-center">
+                                                    <div className="w-20 h-20 bg-slate-50 rounded-[2rem] flex items-center justify-center mb-6 border border-slate-100">
+                                                        <Info className="h-8 w-8 text-slate-200" />
+                                                    </div>
+                                                    <p className="font-black uppercase text-xs tracking-[0.3em] text-slate-300">Aucun enregistrement trouvé</p>
+                                                    <p className="text-slate-400 text-sm mt-2 font-medium italic">Ajustez vos filtres ou lancez une importation</p>
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
                         </TableBody>
-                        {filteredLines.length > 0 && !loading && (
-                            <tfoot className="bg-slate-900 text-white font-bold">
-                                <TableRow>
-                                    <TableCell colSpan={3} className="py-4 text-right uppercase text-xs tracking-widest opacity-70">Total {activeTab === 'emploi' ? 'Emplois' : 'Ressources'}</TableCell>
-                                    <TableCell className="text-right font-mono">
-                                        {formatCurrency(filteredLines.reduce((acc, l) => acc + (l.previousAmount || 0), 0))}
-                                    </TableCell>
-                                    <TableCell className="text-right font-mono text-emerald-400">
-                                        {formatCurrency(filteredLines.reduce((acc, l) => acc + l.allocatedAmount, 0))}
-                                    </TableCell>
-                                    <TableCell></TableCell>
-                                </TableRow>
-                            </tfoot>
-                        )}
+                                    {filteredLines.length > 0 && !loading && (
+                                        <TableFooter className="bg-transparent border-0">
+                                            <TableRow className="bg-slate-950 text-white font-black hover:bg-slate-900 border-0">
+                                                <TableCell colSpan={3} className="py-8 text-right uppercase text-[10px] tracking-[0.4em] text-slate-500">Total {activeTab === 'emploi' ? 'Emplois' : 'Ressources'}</TableCell>
+                                                <TableCell className="text-right font-mono text-slate-500 text-sm">
+                                                    {formatCurrency(filteredLines.reduce((acc, l) => acc + (l.previousAmount || 0), 0))}
+                                                </TableCell>
+                                                <TableCell className="text-right font-mono text-emerald-400 text-xl tracking-tighter">
+                                                    {formatCurrency(filteredLines.reduce((acc, l) => acc + l.allocatedAmount, 0))}
+                                                </TableCell>
+                                                <TableCell></TableCell>
+                                            </TableRow>
+                                        </TableFooter>
+                                    )}
                     </Table>
                 </CardContent>
-                {totalPages > 1 && (
-                    <CardFooter className="bg-slate-50/50 border-t border-slate-100 px-6 py-4">
-                        <PaginationControls
-                            currentPage={currentPage}
-                            totalPages={totalPages}
-                            onPageChange={setCurrentPage}
-                            itemsPerPage={itemsPerPage}
-                            onItemsPerPageChange={setItemsPerPage}
-                            totalItems={filteredLines.length}
-                        />
-                    </CardFooter>
-                )}
-            </Card>
-          </Tabs>
-        </div>
+                                {totalPages > 1 && (
+                                    <div className="bg-slate-50/50 border-t border-slate-100 px-10 py-6">
+                                        <PaginationControls
+                                            currentPage={currentPage}
+                                            totalPages={totalPages}
+                                            onPageChange={setCurrentPage}
+                                            itemsPerPage={itemsPerPage}
+                                            onItemsPerPageChange={setItemsPerPage}
+                                            totalItems={filteredLines.length}
+                                        />
+                                    </div>
+                                )}
+                            </Card>
+                        </Tabs>
+                    </div>
 
         <AddBudgetLineSheet
           isOpen={isAddSheetOpen}
@@ -676,13 +825,12 @@ export default function BudgetPage() {
         />
       </div>
 
-       {/* Hidden Print Template */}
-        <div className="hidden print:block absolute inset-0 z-[9999] bg-white">
-           <BudgetPrintTemplate 
-             budgetLines={safeBudgetLines.filter(l => yearFilter === "all" || l.year.toString() === yearFilter)}
-             year={yearFilter === "all" ? new Date().getFullYear().toString() : yearFilter}
-           />
-       </div>
+       <BudgetPrintTemplate 
+         budgetLines={safeBudgetLines.filter(l => yearFilter === "all" || l.year.toString() === yearFilter)}
+         year={yearFilter === "all" ? new Date().getFullYear().toString() : yearFilter}
+         isPrinting={isPrinting}
+         onAfterPrint={() => setIsPrinting(false)}
+       />
     </PermissionGuard>
   );
 }

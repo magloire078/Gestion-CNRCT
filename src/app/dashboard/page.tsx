@@ -293,7 +293,7 @@ export default function DashboardPage() {
                             <Link href="/reports">
                                 <Button variant="outline" className="h-16 rounded-2xl px-10 border-slate-200 font-black bg-white text-slate-900 shadow-2xl hover:bg-slate-50 hover:shadow-primary/10 transition-all uppercase text-[11px] tracking-widest active:scale-95">
                                     <Download className="h-5 w-5 mr-4 text-blue-600" />
-                                    Reportings d'Audit
+                                    Rapports de Contrôle
                                 </Button>
                             </Link>
                             <Link href="/mapping">
@@ -335,7 +335,7 @@ export default function DashboardPage() {
                                 </div>
                                 <div className="flex items-center gap-3">
                                     <div className="h-2 w-2 rounded-full bg-blue-500" /> 
-                                    Audit Temps-Réel
+                                    Suivi Temps-Réel
                                 </div>
                             </div>
                         </div>
@@ -651,7 +651,7 @@ export default function DashboardPage() {
                                             </div>
                                          </div>
                                          <Button className="w-full mt-10 bg-blue-600 hover:bg-blue-700 h-16 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-3xl shadow-blue-500/40 transition-all border-none relative z-10 active:scale-95" asChild>
-                                             <Link href="/conflicts/analytics">Lancer Audit de Terrain <TrendingUp className="ml-4 h-5 w-5" /></Link>
+                                             <Link href="/conflicts/analytics">Lancer Analyse de Terrain <TrendingUp className="ml-4 h-5 w-5" /></Link>
                                          </Button>
                                     </Card>
 

@@ -272,5 +272,89 @@ export async function getSupplyRecentActivity(limit: number = 5) {
 
 export async function deleteSupplyTransaction(id: string): Promise<void> {
     const transactionDocRef = doc(db, 'supply_transactions', id);
-    await deleteDoc(transactionDocRef);
+    const transactionSnap = await getDoc(transactionDocRef);
+    
+    if (!transactionSnap.exists()) {
+        throw new Error("Mouvement non trouvé.");
+    }
+
+    const transactionData = transactionSnap.data() as SupplyTransaction;
+    const supplyDocRef = doc(db, 'supplies', transactionData.supplyId);
+    const supplySnap = await getDoc(supplyDocRef);
+
+    if (!supplySnap.exists()) {
+        throw new Error("L'article associé à ce mouvement n'existe plus.");
+    }
+
+    const supplyData = supplySnap.data() as Supply;
+    
+    // Calculate the inverse change:
+    // If it was a distribution (stock was removed), we add it back.
+    // If it was a restock (stock was added), we remove it.
+    const qtyChange = transactionData.type === 'distribution' ? transactionData.quantity : -transactionData.quantity;
+
+    // Check if reversing a restock would result in negative stock
+    if (qtyChange < 0 && (supplyData.quantity + qtyChange) < 0) {
+        throw new Error(`Impossible d'annuler ce réapprovisionnement : le stock actuel (${supplyData.quantity}) est insuffisant pour retirer ${transactionData.quantity} unités.`);
+    }
+
+    const batch = writeBatch(db);
+    
+    // 1. Delete the transaction log
+    batch.delete(transactionDocRef);
+    
+    // 2. Reverse the quantity on the supply
+    batch.update(supplyDocRef, {
+        quantity: increment(qtyChange)
+    });
+    
+    await batch.commit();
+}
+
+/**
+ * Adjusts the supply stock to match a physical count.
+ * Creates an adjustment transaction log.
+ */
+export async function adjustSupplyStock(
+    supplyId: string, 
+    physicalQuantity: number, 
+    reason: string, 
+    userId: string
+): Promise<void> {
+    const supplyDocRef = doc(db, 'supplies', supplyId);
+    const supplySnap = await getDoc(supplyDocRef);
+
+    if (!supplySnap.exists()) {
+        throw new Error("L'article n'existe plus.");
+    }
+
+    const supplyData = supplySnap.data() as Supply;
+    const logicalQuantity = supplyData.quantity;
+    const diff = physicalQuantity - logicalQuantity;
+
+    if (diff === 0) return; // No change needed
+
+    const batch = writeBatch(db);
+    const transactionsCollection = collection(db, 'supply_transactions');
+    
+    // 1. Create the adjustment transaction log
+    const newTransRef = doc(transactionsCollection);
+    batch.set(newTransRef, {
+        supplyId,
+        supplyName: supplyData.name,
+        recipientName: `AJUSTEMENT INVENTAIRE (${reason})`,
+        quantity: Math.abs(diff),
+        date: new Date().toISOString().split('T')[0],
+        type: diff > 0 ? 'restock' : 'distribution', // Use existing types for compatibility
+        performedBy: userId,
+        timestamp: new Date().toISOString(),
+        isAdjustment: true // Flag to distinguish from regular movements
+    });
+
+    // 2. Set the exact physical quantity
+    batch.update(supplyDocRef, {
+        quantity: physicalQuantity
+    });
+
+    await batch.commit();
 }

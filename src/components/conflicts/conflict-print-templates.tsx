@@ -81,11 +81,16 @@ export function PrintConflictsList({ conflicts, organizationSettings, subtitle }
 interface PrintConflictDetailProps {
     conflict: Conflict;
     organizationSettings: OrganizationSettings | null;
+    isPrinting?: boolean;
+    onAfterPrint?: () => void;
 }
 
-export function PrintConflictDetail({ conflict, organizationSettings }: PrintConflictDetailProps) {
+export function PrintConflictDetail({ conflict, organizationSettings, isPrinting, onAfterPrint }: PrintConflictDetailProps) {
     return (
-        <InstitutionalReportWrapper isPrinting={true}>
+        <InstitutionalReportWrapper 
+            isPrinting={isPrinting || false}
+            onAfterPrint={onAfterPrint}
+        >
             <div className="bg-white p-4">
                 <InstitutionalHeader 
                     title={`FICHE DE SUIVI DE CONFLIT`}

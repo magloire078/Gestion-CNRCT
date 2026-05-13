@@ -1,3 +1,5 @@
+import { Chief } from "./chief";
+
 export type Village = {
     id: string;
 
@@ -48,6 +50,8 @@ export type Village = {
     // Chefferie
     currentChiefId?: string;
     chiefTitle?: string; // Titre du chef (Chef de village, Roi, Chef de canton...)
+    chieftaincyType?: string; // Type de chefferie (Patrilinéaire, Matrilinéaire...)
+    successionMode?: string; // Mode de succession
 
     // Médias
     photoUrl?: string;
@@ -58,4 +62,10 @@ export type Village = {
     updatedAt?: string;
     isAutonomousDistrict?: boolean;
     developmentScore?: number; // Indice de Développement Local (0-100)
+};
+
+export type VillageEntry = {
+    village: Village;
+    currentChief: Chief | null;
+    archivedChiefsCount: number;
 };

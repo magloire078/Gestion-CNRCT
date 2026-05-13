@@ -10,9 +10,10 @@ interface PrintLayoutProps {
     data?: Record<string, any>[];
     children?: ReactNode;
     orientation?: 'landscape' | 'portrait';
+    onAfterPrint?: () => void;
 }
 
-export function PrintLayout({ logos, title, subtitle, columns, data, children, orientation = 'landscape' }: PrintLayoutProps) {
+export function PrintLayout({ logos, title, subtitle, columns, data, children, orientation = 'landscape', onAfterPrint }: PrintLayoutProps) {
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
@@ -22,19 +23,26 @@ export function PrintLayout({ logos, title, subtitle, columns, data, children, o
             document.body.classList.add('print-landscape');
         }
         
+        const handleAfterPrint = () => {
+            if (onAfterPrint) onAfterPrint();
+        };
+
+        window.addEventListener('afterprint', handleAfterPrint);
+        
         // Laisser le temps au portail de se rendre dans le DOM puis déclencher l'impression
         const printTimer = setTimeout(() => {
             window.print();
-        }, 800);
+        }, 1000);
 
         return () => {
+            window.removeEventListener('afterprint', handleAfterPrint);
             clearTimeout(printTimer);
             setMounted(false);
             if (orientation === 'landscape') {
                 document.body.classList.remove('print-landscape');
             }
         };
-    }, [orientation]);
+    }, [orientation, onAfterPrint]);
 
     if (!mounted) return null;
 

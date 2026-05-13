@@ -8,6 +8,10 @@ import {
     Tag, Layers, Activity, Wrench, MapPin
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { getOrganizationSettings } from "@/services/organization-service";
+import type { OrganizationSettings } from "@/lib/data";
+import { AssetOfficialReport, type CombinedAsset } from "@/components/reports/asset-official-report";
+
 import {
   Card,
   CardContent,
@@ -43,32 +47,30 @@ import Papa from "papaparse";
 import { cn } from "@/lib/utils";
 import { PermissionGuard } from "@/components/auth/permission-guard";
 
-type CombinedAsset = {
-    id: string;
-    name: string;
-    category: string;
-    status: string;
-    type: 'IT' | 'Heritage';
-    location?: string;
-    tag?: string;
-    dateAcquisition?: string;
-};
+// CombinedAsset type is now imported from AssetOfficialReport
+
 
 export default function AssetReportsPage() {
     const [assets, setAssets] = useState<Asset[]>([]);
     const [heritage, setHeritage] = useState<HeritageItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
+    const [isPrinting, setIsPrinting] = useState(false);
+    const [organizationSettings, setOrganizationSettings] = useState<OrganizationSettings | null>(null);
+
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [aData, hData] = await Promise.all([
+                const [aData, hData, settings] = await Promise.all([
                     getAssets(),
-                    getAllHeritageItems()
+                    getAllHeritageItems(),
+                    getOrganizationSettings()
                 ]);
                 setAssets(aData);
                 setHeritage(hData);
+                setOrganizationSettings(settings);
+
             } catch (err) {
                 console.error(err);
             } finally {
@@ -179,10 +181,15 @@ export default function AssetReportsPage() {
                         </p>
                     </div>
                     <div className="flex items-center gap-3">
-                        <Button onClick={() => window.print()} variant="outline" className="rounded-xl h-12 shadow-sm border-slate-200 font-bold">
+                        <Button 
+                            onClick={() => setIsPrinting(true)} 
+                            variant="outline" 
+                            className="rounded-xl h-12 shadow-sm border-slate-200 font-bold hover:bg-slate-50 transition-colors"
+                        >
                             <Printer className="mr-2 h-4 w-4" />
                             Imprimer
                         </Button>
+
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl h-12 px-6 font-bold shadow-xl border-none">
@@ -383,7 +390,18 @@ export default function AssetReportsPage() {
                         </div>
                     </CardContent>
                 </Card>
+
+                {/* Official Report Component (Portalized) */}
+                {organizationSettings && (
+                    <AssetOfficialReport 
+                        items={combinedData}
+                        organizationSettings={organizationSettings}
+                        isPrinting={isPrinting}
+                        onAfterPrint={() => setIsPrinting(false)}
+                    />
+                )}
             </div>
         </PermissionGuard>
+
     );
 }

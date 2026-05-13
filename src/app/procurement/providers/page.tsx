@@ -14,6 +14,7 @@ import Link from "next/link";
 import { subscribeToProviders, deleteProvider } from "@/services/procurement-service";
 import type { Provider } from "@/lib/data";
 import { AddProviderSheet } from "@/components/procurement/add-provider-sheet";
+import { EditProviderSheet } from "@/components/procurement/edit-provider-sheet";
 import {
     DropdownMenu, DropdownMenuContent, DropdownMenuItem,
     DropdownMenuTrigger, DropdownMenuSeparator
@@ -33,6 +34,8 @@ export default function ProvidersPage() {
     const [search, setSearch] = useState("");
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     const [loading, setLoading] = useState(true);
+    const [selectedProvider, setSelectedProvider] = useState<Provider | null>(null);
+    const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
 
     useEffect(() => {
         return subscribeToProviders((data) => {
@@ -60,6 +63,11 @@ export default function ProvidersPage() {
                 toast.error("Erreur lors de la suppression");
             }
         }
+    };
+
+    const handleEdit = (provider: Provider) => {
+        setSelectedProvider(provider);
+        setIsEditSheetOpen(true);
     };
 
     return (
@@ -154,13 +162,16 @@ export default function ProvidersPage() {
                                                 </Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="end" className="rounded-xl">
-                                                <DropdownMenuItem className="text-xs font-bold gap-2">
-                                                    <Edit className="h-3.5 w-3.5" /> Modifier
+                                                <DropdownMenuItem 
+                                                    className="text-xs font-bold gap-2 cursor-pointer"
+                                                    onSelect={() => handleEdit(provider)}
+                                                >
+                                                    <Edit className="h-3.5 w-3.5 text-amber-500" /> Modifier
                                                 </DropdownMenuItem>
                                                 <DropdownMenuSeparator />
                                                 <DropdownMenuItem 
-                                                    className="text-xs font-bold gap-2 text-destructive"
-                                                    onClick={() => handleDelete(provider.id)}
+                                                    className="text-xs font-bold gap-2 text-destructive cursor-pointer"
+                                                    onSelect={() => handleDelete(provider.id)}
                                                 >
                                                     <Trash2 className="h-3.5 w-3.5" /> Supprimer
                                                 </DropdownMenuItem>
@@ -205,6 +216,12 @@ export default function ProvidersPage() {
                         </div>
                     )}
                 </div>
+
+                <EditProviderSheet 
+                    provider={selectedProvider} 
+                    open={isEditSheetOpen} 
+                    onOpenChange={setIsEditSheetOpen} 
+                />
             </div>
         </PermissionGuard>
     );

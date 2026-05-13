@@ -30,7 +30,7 @@ import { cn } from "@/lib/utils";
 import { parseISO, differenceInCalendarYears, getYear, format, startOfYear, endOfYear, isAfter } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { getOrganizationSettings } from "@/services/organization-service";
-import { PrintLayout } from "@/components/reports/print-layout";
+import { NominativeOfficialReport } from "@/components/reports/nominative-official-report";
 import { Month } from "@/types/common";
 
 
@@ -147,23 +147,6 @@ export default function NominativeReportPage() {
     }
   };
 
-  useEffect(() => {
-    if (isPrinting) {
-      const style = document.createElement('style');
-      style.id = 'print-landscape-style';
-      style.innerHTML = `@media print { @page { size: landscape; margin: 1cm; } }`;
-      document.head.appendChild(style);
-
-      setTimeout(() => {
-        window.print();
-        const styleElement = document.getElementById('print-landscape-style');
-        if (styleElement) {
-          document.head.removeChild(styleElement);
-        }
-        setIsPrinting(false);
-      }, 500); // Delay to ensure styles are applied
-    }
-  }, [isPrinting]);
 
   const handlePrint = () => {
     setIsPrinting(true);
@@ -370,38 +353,12 @@ export default function NominativeReportPage() {
           )}
         </div>
 
-        {isPrinting && reportData && organizationLogos && (
-          <PrintLayout
-            logos={organizationLogos}
-            title="TABLEAU NOMINATIF DES SALAIRES BRUTS"
-            subtitle={`Période du ${reportData.startYear} au ${reportData.endYear} pour ${reportData.employee.name} (Mle: ${reportData.employee.matricule})`}
-            columns={[
-              { header: "Année", key: "year" },
-              ...(reportData.annualSalaries[0]?.months.map(m => ({ header: m.month.toUpperCase(), key: m.month, align: 'right' as const })) || []),
-              { header: "Total Annuel", key: "total", align: 'right' as const },
-            ]}
-            data={[
-              ...reportData.annualSalaries.map(yearData => {
-                const row: Record<string, any> = { year: yearData.year };
-                yearData.months.forEach(m => {
-                  row[m.month] = yearData.total > 0 ? m.gross.toLocaleString('fr-FR') : '-';
-                });
-                row.total = yearData.total > 0 ? yearData.total.toLocaleString('fr-FR') : '-';
-                return row;
-              }),
-              // Add the total row
-              (() => {
-                const totalRow: Record<string, any> = { year: "TOTAL GÉNÉRAL" };
-                // Calculate monthly totals
-                reportData.annualSalaries[0]?.months.forEach((_, monthIndex) => {
-                  const monthKey = reportData.annualSalaries[0].months[monthIndex].month;
-                  const monthlyTotal = reportData.annualSalaries.reduce((acc, yearData) => acc + yearData.months[monthIndex].gross, 0);
-                  totalRow[monthKey] = monthlyTotal > 0 ? monthlyTotal.toLocaleString('fr-FR') : '-';
-                });
-                totalRow.total = reportData.grandTotal > 0 ? reportData.grandTotal.toLocaleString('fr-FR') : '-';
-                return totalRow;
-              })()
-            ]}
+        {reportData && organizationLogos && (
+          <NominativeOfficialReport 
+            reportData={reportData}
+            organizationSettings={organizationLogos}
+            isPrinting={isPrinting}
+            onAfterPrint={() => setIsPrinting(false)}
           />
         )}
       </>

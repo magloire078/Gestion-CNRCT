@@ -118,10 +118,6 @@ export default function HeritageHubPage() {
 
     const handlePrint = () => {
         setIsPrinting(true);
-        setTimeout(() => {
-            window.print();
-            setIsPrinting(false);
-        }, 300);
     };
 
     return (
@@ -299,9 +295,12 @@ export default function HeritageHubPage() {
             </div>
         </div>
 
-        {isPrinting && (
-            <HeritageOfficialReport items={allItems} organizationSettings={orgSettings} />
-        )}
+        <HeritageOfficialReport 
+            items={allItems} 
+            organizationSettings={orgSettings} 
+            isPrinting={isPrinting}
+            onAfterPrint={() => setIsPrinting(false)}
+        />
         </PermissionGuard>
     );
 }

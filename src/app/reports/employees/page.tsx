@@ -5,9 +5,22 @@ import {
     Users, TrendingUp, UserCheck, UserX, 
     Download, Printer, Filter, Search,
     FileSpreadsheet, FileJson, BarChart3,
-    PieChart, Briefcase, MapPin, Calendar
+    PieChart, Briefcase, MapPin, Calendar,
+    CheckCircle2, XCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { InstitutionalReportWrapper } from "@/components/reports/institutional-report-wrapper";
+import { EmployeeOfficialReport } from "@/components/reports/employee-official-report";
+import { getOrganizationSettings } from "@/services/organization-service";
+import type { OrganizationSettings } from "@/lib/data";
+import { useAuth } from "@/hooks/use-auth";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Card,
   CardContent,
@@ -46,9 +59,15 @@ export default function EmployeeReportsPage() {
     const [employees, setEmployees] = useState<Employe[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
+    const [statusFilter, setStatusFilter] = useState("all");
+    const [isPrinting, setIsPrinting] = useState(false);
+    const [orgSettings, setOrgSettings] = useState<OrganizationSettings | null>(null);
     const { toast } = useToast();
+    const { hasPermission } = useAuth();
 
     useEffect(() => {
+        // Fetch org settings for logos
+        getOrganizationSettings().then(setOrgSettings);
         const unsubscribe = subscribeToEmployees(
             (data) => {
                 setEmployees(data);
@@ -80,14 +99,23 @@ export default function EmployeeReportsPage() {
     }, [employees]);
 
     const filteredEmployees = useMemo(() => {
-        return employees.filter(e => 
-            e.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            (e.department || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-            (e.poste || '').toLowerCase().includes(searchTerm.toLowerCase())
-        );
-    }, [employees, searchTerm]);
+        return employees.filter(e => {
+            const matchesSearch = e.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                (e.department || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                (e.poste || '').toLowerCase().includes(searchTerm.toLowerCase());
+            
+            const isActive = e.status === 'Actif' || e.bActif;
+            const matchesStatus = statusFilter === 'all' || 
+                (statusFilter === 'active' && isActive) || 
+                (statusFilter === 'inactive' && !isActive);
+
+            return matchesSearch && matchesStatus;
+        });
+    }, [employees, searchTerm, statusFilter]);
 
     const handleExportCsv = () => {
+        if (!hasPermission('page:admin:view')) return;
+
         const csv = Papa.unparse(employees.map(e => ({
             Nom: e.name,
             Sexe: e.sexe,
@@ -107,7 +135,7 @@ export default function EmployeeReportsPage() {
     };
 
     const handlePrint = () => {
-        window.print();
+        setIsPrinting(true);
     };
 
     if (loading) {
@@ -122,11 +150,13 @@ export default function EmployeeReportsPage() {
         );
     }
 
+    const canExport = hasPermission('page:admin:view');
+
     return (
         <PermissionGuard permission="page:directory:view">
             <div className="flex flex-col gap-8 pb-20 animate-in fade-in duration-700">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 print:hidden">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
                 <div className="space-y-4">
                     <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-600 font-black uppercase tracking-[0.2em] text-[10px] shadow-sm">
                         <Users className="h-3.5 w-3.5" />
@@ -144,40 +174,45 @@ export default function EmployeeReportsPage() {
                         <Printer className="mr-2 h-4 w-4 text-indigo-500" />
                         Imprimer
                     </Button>
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button className="bg-slate-900 hover:bg-slate-800 rounded-xl h-14 px-8 font-black text-white shadow-xl shadow-slate-200 hover:scale-[1.02] transition-all text-sm">
-                                <Download className="mr-2 h-4 w-4" />
-                                Exporter
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-56 p-2 rounded-2xl shadow-2xl border-none">
-                            <DropdownMenuLabel className="px-3 py-2 text-[10px] uppercase font-black text-slate-400 tracking-widest">Format de sortie</DropdownMenuLabel>
-                            <DropdownMenuSeparator className="bg-slate-50" />
-                            <DropdownMenuItem onClick={handleExportCsv} className="gap-3 p-3 cursor-pointer rounded-xl hover:bg-indigo-50 transition-colors">
-                                <div className="h-8 w-8 rounded-lg bg-emerald-50 flex items-center justify-center">
-                                    <FileSpreadsheet className="h-4 w-4 text-emerald-600" />
-                                </div>
-                                <span className="font-bold text-slate-700">Données CSV</span>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="gap-3 p-3 cursor-pointer rounded-xl hover:bg-indigo-50 transition-colors">
-                                <div className="h-8 w-8 rounded-lg bg-amber-50 flex items-center justify-center">
-                                    <FileJson className="h-4 w-4 text-amber-600" />
-                                </div>
-                                <span className="font-bold text-slate-700">Structure JSON</span>
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                    
+                    {canExport && (
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button className="bg-slate-900 hover:bg-slate-800 rounded-xl h-14 px-8 font-black text-white shadow-xl shadow-slate-200 hover:scale-[1.02] transition-all text-sm">
+                                    <Download className="mr-2 h-4 w-4" />
+                                    Exporter
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-56 p-2 rounded-2xl shadow-2xl border-none">
+                                <DropdownMenuLabel className="px-3 py-2 text-[10px] uppercase font-black text-slate-400 tracking-widest">Format de sortie</DropdownMenuLabel>
+                                <DropdownMenuSeparator className="bg-slate-50" />
+                                <DropdownMenuItem onClick={handleExportCsv} className="gap-3 p-3 cursor-pointer rounded-xl hover:bg-indigo-50 transition-colors">
+                                    <div className="h-8 w-8 rounded-lg bg-emerald-50 flex items-center justify-center">
+                                        <FileSpreadsheet className="h-4 w-4 text-emerald-600" />
+                                    </div>
+                                    <span className="font-bold text-slate-700">Données CSV</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem className="gap-3 p-3 cursor-pointer rounded-xl hover:bg-indigo-50 transition-colors">
+                                    <div className="h-8 w-8 rounded-lg bg-amber-50 flex items-center justify-center">
+                                        <FileJson className="h-4 w-4 text-amber-600" />
+                                    </div>
+                                    <span className="font-bold text-slate-700">Structure JSON</span>
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    )}
                 </div>
             </div>
 
-            {/* Stats Overview */}
+
+
+            {/* Stats Overview - Hidden in Print as requested for a cleaner list */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {[
-                    { label: "Effectif Total", value: stats.total, icon: Users, color: "text-indigo-600", bg: "bg-indigo-500", shadow: "shadow-indigo-200", progress: 100 },
-                    { label: "Membres Actifs", value: stats.active, icon: UserCheck, color: "text-emerald-600", bg: "bg-emerald-500", shadow: "shadow-emerald-200", progress: (stats.active / stats.total) * 100 },
-                    { label: "Sorties / Absents", value: stats.inactive, icon: UserX, color: "text-rose-600", bg: "bg-rose-500", shadow: "shadow-rose-200", progress: (stats.inactive / stats.total) * 100 },
-                    { label: "Opérationnalité", value: `${((stats.active / stats.total) * 100).toFixed(1)}%`, icon: TrendingUp, color: "text-amber-600", bg: "bg-amber-500", shadow: "shadow-amber-200", progress: (stats.active / stats.total) * 100 }
+                    { label: "Effectif Total", value: stats.total || 0, icon: Users, color: "text-indigo-600", bg: "bg-indigo-500", shadow: "shadow-indigo-200", progress: 100 },
+                    { label: "Membres Actifs", value: stats.active || 0, icon: UserCheck, color: "text-emerald-600", bg: "bg-emerald-500", shadow: "shadow-emerald-200", progress: stats.total > 0 ? (stats.active / stats.total) * 100 : 0 },
+                    { label: "Sorties / Absents", value: stats.inactive || 0, icon: UserX, color: "text-rose-600", bg: "bg-rose-500", shadow: "shadow-rose-200", progress: stats.total > 0 ? (stats.inactive / stats.total) * 100 : 0 },
+                    { label: "Opérationnalité", value: `${stats.total > 0 ? ((stats.active / stats.total) * 100).toFixed(1) : "0.0"}%`, icon: TrendingUp, color: "text-amber-600", bg: "bg-amber-500", shadow: "shadow-amber-200", progress: stats.total > 0 ? (stats.active / stats.total) * 100 : 0 }
                 ].map((kpi, i) => (
                     <Card key={i} className="border-none shadow-2xl shadow-slate-200/50 rounded-xl overflow-hidden group hover:scale-[1.02] transition-all duration-500 bg-white">
                         <CardContent className="p-8">
@@ -208,14 +243,37 @@ export default function EmployeeReportsPage() {
                                 <CardDescription className="font-bold text-slate-400 uppercase text-[10px] tracking-[0.2em] leading-none">Extraction consolidée du personnel en temps réel</CardDescription>
                             </div>
                         </div>
-                        <div className="flex items-center gap-4 print:hidden">
+                        <div className="flex flex-col sm:flex-row items-center gap-4">
+                            <Select value={statusFilter} onValueChange={setStatusFilter}>
+                                <SelectTrigger className="w-[180px] h-16 rounded-xl border-slate-100 bg-slate-50/50 shadow-inner font-bold text-slate-700">
+                                    <div className="flex items-center gap-2">
+                                        <Filter className="h-4 w-4 text-indigo-500" />
+                                        <SelectValue placeholder="Statut" />
+                                    </div>
+                                </SelectTrigger>
+                                <SelectContent className="rounded-xl border-none shadow-2xl p-1">
+                                    <SelectItem value="all" className="rounded-lg font-bold py-3">Tous les statuts</SelectItem>
+                                    <SelectItem value="active" className="rounded-lg font-bold py-3">
+                                        <div className="flex items-center gap-2">
+                                            <div className="h-2 w-2 rounded-full bg-emerald-500" />
+                                            Actifs uniquement
+                                        </div>
+                                    </SelectItem>
+                                    <SelectItem value="inactive" className="rounded-lg font-bold py-3">
+                                        <div className="flex items-center gap-2">
+                                            <div className="h-2 w-2 rounded-full bg-rose-500" />
+                                            Inactifs uniquement
+                                        </div>
+                                    </SelectItem>
+                                </SelectContent>
+                            </Select>
                             <div className="relative group">
                                 <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-indigo-600 transition-colors" />
                                     <Input 
-                                        placeholder="Rechercher par nom, poste ou département..." 
+                                        placeholder="Rechercher par nom..." 
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
-                                        className="pl-14 w-[380px] h-16 rounded-xl border-slate-100 bg-slate-50/50 shadow-inner focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-bold text-slate-700 placeholder:text-slate-400"
+                                        className="pl-14 w-[300px] h-16 rounded-xl border-slate-100 bg-slate-50/50 shadow-inner focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-bold text-slate-700 placeholder:text-slate-400"
                                     />
                             </div>
                         </div>
@@ -225,7 +283,7 @@ export default function EmployeeReportsPage() {
                     <div className="max-h-[600px] overflow-auto">
                         <Table>
                             <TableHeader className="sticky top-0 z-10 bg-white/95 backdrop-blur-md">
-                                <TableRow className="border-b border-slate-100">
+                                <TableRow className="border-b border-slate-100 print:border-black">
                                     <TableHead className="py-8 pl-10 text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">Collaborateur</TableHead>
                                     <TableHead className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">Affectation</TableHead>
                                     <TableHead className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] text-center">Status</TableHead>
@@ -310,7 +368,23 @@ export default function EmployeeReportsPage() {
                     </div>
                 </CardContent>
             </Card>
+
         </div>
+
+        {/* --- INSTITUTIONAL PRINT PORTAL --- */}
+        <EmployeeOfficialReport 
+            isPrinting={isPrinting} 
+            onAfterPrint={() => setIsPrinting(false)}
+            employees={filteredEmployees}
+            logos={orgSettings}
+            unitLabel={statusFilter === 'active' ? "Rapport Personnel (ACTIF)" : statusFilter === 'inactive' ? "Rapport Personnel (INACTIF)" : "Rapport Personnel Global"}
+            stats={{
+                total: filteredEmployees.length,
+                active: filteredEmployees.filter(e => e.status === 'Actif' || e.bActif).length,
+                men: filteredEmployees.filter(e => e.sexe === 'Homme').length,
+                women: filteredEmployees.filter(e => e.sexe === 'Femme').length
+            }}
+        />
         </PermissionGuard>
     );
 }

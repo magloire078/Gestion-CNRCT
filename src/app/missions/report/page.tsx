@@ -96,10 +96,6 @@ export default function MissionReportPage() {
   
   const handlePrint = () => {
     setIsPrinting(true);
-    setTimeout(() => {
-        window.print();
-        setIsPrinting(false);
-    }, 300);
   };
   
   const formatCurrency = (value: number) => {
@@ -277,13 +273,15 @@ export default function MissionReportPage() {
         )}
       </div>
       
-      {isPrinting && reportData && (
+      {reportData && (
           <MissionsOfficialReport 
             missions={reportData.missions} 
             organizationSettings={settings} 
             fiscalYear={year} 
             periodText={selectedPeriodText} 
             totalBudget={reportData.totalCost} 
+            isPrinting={isPrinting}
+            onAfterPrint={() => setIsPrinting(false)}
           />
       )}
     </div>

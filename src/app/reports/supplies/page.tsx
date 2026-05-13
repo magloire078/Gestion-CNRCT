@@ -8,6 +8,9 @@ import {
     ShoppingCart, History, Tag, Box
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SuppliesOfficialReport } from "@/components/reports/supplies-official-report";
+import { getOrganizationSettings } from "@/services/organization-service";
+import type { OrganizationSettings } from "@/lib/data";
 import {
   Card,
   CardContent,
@@ -48,8 +51,11 @@ export default function SupplyReportsPage() {
     const [transactions, setTransactions] = useState<SupplyTransaction[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
+    const [isPrinting, setIsPrinting] = useState(false);
+    const [orgSettings, setOrgSettings] = useState<OrganizationSettings | null>(null);
 
     useEffect(() => {
+        getOrganizationSettings().then(setOrgSettings);
         const fetchData = async () => {
             try {
                 const [sData, tData] = await Promise.all([
@@ -93,6 +99,23 @@ export default function SupplyReportsPage() {
         );
     }, [transactions, searchTerm]);
 
+    const extendedSupplies = useMemo(() => {
+        return supplies.map(s => {
+            const supplyTransactions = transactions.filter(t => t.supplyId === s.id);
+            const entries = supplyTransactions.filter(t => t.type === 'restock').reduce((acc, t) => acc + t.quantity, 0);
+            const exits = supplyTransactions.filter(t => t.type === 'distribution').reduce((acc, t) => acc + t.quantity, 0);
+            
+            return {
+                ...s,
+                qteInventaire: s.quantity + exits - entries,
+                qteEntree: entries,
+                qteSortie: exits,
+                qteStock: s.quantity,
+                isModified: supplyTransactions.length > 0
+            };
+        });
+    }, [supplies, transactions]);
+
     const handleExportCsv = () => {
         const csv = Papa.unparse(transactions.map(t => ({
             Article: t.supplyName,
@@ -126,13 +149,13 @@ export default function SupplyReportsPage() {
         <PermissionGuard permission="page:reports:view">
             <div className="flex flex-col gap-8 pb-20 animate-in fade-in duration-700">
                 {/* Header */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 print:hidden">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div>
                         <h1 className="text-4xl font-black tracking-tight text-slate-900">Rapports Logistique</h1>
                         <p className="text-muted-foreground mt-2 font-medium">Suivi des stocks et historique des mouvements de fournitures.</p>
                     </div>
                     <div className="flex items-center gap-3">
-                        <Button onClick={() => window.print()} variant="outline" className="rounded-xl h-12 shadow-sm border-slate-200 font-bold">
+                        <Button onClick={() => setIsPrinting(true)} variant="outline" className="rounded-xl h-12 shadow-sm border-slate-200 font-bold">
                             <Printer className="mr-2 h-4 w-4" />
                             Imprimer
                         </Button>
@@ -225,7 +248,7 @@ export default function SupplyReportsPage() {
                                     <CardDescription className="font-bold text-slate-500 uppercase text-[10px] tracking-widest leading-none mt-1">Journal complet des entrées et sorties de fournitures</CardDescription>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-3 print:hidden">
+                            <div className="flex items-center gap-3">
                                 <div className="relative">
                                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                                     <Input 
@@ -305,6 +328,26 @@ export default function SupplyReportsPage() {
                         </Table>
                     </CardContent>
                 </Card>
+                {/* --- PRINT PORTAL --- */}
+                {isPrinting && (
+                    <SuppliesOfficialReport 
+                        supplies={extendedSupplies as any}
+                        logos={orgSettings}
+                        onAfterPrint={() => setIsPrinting(false)}
+                        categoryLabel="all"
+                        periodLabel={format(new Date(), 'MMMM yyyy', { locale: fr })}
+                        stats={{
+                            total: supplies.length,
+                            outOfStock: supplies.filter(s => s.quantity <= 0).length,
+                            lowStock: stats.lowStock,
+                            avgHealth: (supplies.filter(s => s.quantity > s.reorderLevel).length / (supplies.length || 1)) * 100
+                        }}
+                        options={{
+                            includePhotos: true,
+                            showHealthStatus: true
+                        }}
+                    />
+                )}
             </div>
         </PermissionGuard>
     );

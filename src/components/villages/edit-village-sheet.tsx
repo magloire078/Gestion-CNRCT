@@ -28,12 +28,21 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Loader2, MapPin, Users, Building2, Droplets, Zap, School, Activity } from "lucide-react";
+import { 
+    Loader2, MapPin, Map as MapIcon, Users, 
+    Building2, Droplets, Zap, School, Activity,
+    Mountain, Landmark, Coins, Heart, ShoppingBag,
+    Church, Info, Calendar, History,
+    Globe, FileText, Moon as Mosque
+} from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { updateVillage } from "@/services/village-service";
 import { IVORIAN_REGIONS } from "@/constants/regions";
 import { divisions } from "@/lib/ivory-coast-divisions";
-import {
+import { calculateDevelopmentScore } from "@/services/village-service";
+import { Progress } from "@/components/ui/progress";
+import { 
     Accordion,
     AccordionContent,
     AccordionItem,
@@ -42,23 +51,57 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { LocationPicker } from "@/components/common/location-picker";
+import { Label } from "@/components/ui/label";
 import { Village } from "@/types/village";
 
 const villageSchema = z.object({
+    // Identité administrative
     name: z.string().min(2, "Le nom du village doit avoir au moins 2 caractères"),
     region: z.string().min(1, "La région est requise"),
     department: z.string().min(1, "Le département est requis"),
     subPrefecture: z.string().min(1, "La sous-préfecture est requise"),
     commune: z.string().optional(),
     codeINS: z.string().optional(),
+    
+    // Position SIG & Géo
     latitude: z.number().optional().nullable(),
     longitude: z.number().optional().nullable(),
+    altitude: z.preprocess((val) => val === "" ? undefined : Number(val), z.number().optional()),
+    distanceFromCapital: z.preprocess((val) => val === "" ? undefined : Number(val), z.number().optional()),
+    distanceFromChefLieu: z.preprocess((val) => val === "" ? undefined : Number(val), z.number().optional()),
+    accessRoads: z.string().optional(),
+
+    // Démographie
     population: z.preprocess((val) => val === "" ? undefined : Number(val), z.number().optional()),
     populationYear: z.preprocess((val) => val === "" ? undefined : Number(val), z.number().optional()),
+    numberOfHouseholds: z.preprocess((val) => val === "" ? undefined : Number(val), z.number().optional()),
+    mainEthnicGroups: z.string().optional(),
+    languages: z.string().optional(),
+
+    // Histoire & Culture
+    history: z.string().optional(),
+    customs: z.string().optional(),
+    traditionalPractices: z.string().optional(),
+    annualEvents: z.string().optional(),
+
+    // Économie
+    mainActivities: z.string().optional(),
+    naturalResources: z.string().optional(),
+    mainCrops: z.string().optional(),
+
+    // Infrastructures
     hasSchool: z.boolean().default(false),
     hasHealthCenter: z.boolean().default(false),
     hasElectricity: z.boolean().default(false),
     hasWater: z.boolean().default(false),
+    hasMosque: z.boolean().default(false),
+    hasChurch: z.boolean().default(false),
+    hasMarket: z.boolean().default(false),
+    infrastructureNotes: z.string().optional(),
+
+    // Chefferie
+    chieftaincyType: z.string().optional(),
+    successionMode: z.string().optional(),
 });
 
 type VillageFormValues = z.infer<typeof villageSchema>;
@@ -84,18 +127,38 @@ export function EditVillageSheet({ village, open, onOpenChangeAction }: EditVill
             codeINS: village.codeINS || "",
             latitude: village.latitude ?? null,
             longitude: village.longitude ?? null,
+            altitude: village.altitude,
+            distanceFromCapital: village.distanceFromCapital,
+            distanceFromChefLieu: village.distanceFromChefLieu,
+            accessRoads: village.accessRoads || "",
             population: village.population,
             populationYear: village.populationYear || 2024,
+            numberOfHouseholds: village.numberOfHouseholds,
+            mainEthnicGroups: village.mainEthnicGroups?.join(", ") || "",
+            languages: village.languages?.join(", ") || "",
+            history: village.history || "",
+            customs: village.customs || "",
+            traditionalPractices: village.traditionalPractices || "",
+            annualEvents: village.annualEvents || "",
+            mainActivities: village.mainActivities?.join(", ") || "",
+            naturalResources: village.naturalResources || "",
+            mainCrops: village.mainCrops?.join(", ") || "",
             hasSchool: !!village.hasSchool,
             hasHealthCenter: !!village.hasHealthCenter,
             hasElectricity: !!village.hasElectricity,
             hasWater: !!village.hasWater,
+            hasMosque: !!village.hasMosque,
+            hasChurch: !!village.hasChurch,
+            hasMarket: !!village.hasMarket,
+            infrastructureNotes: village.infrastructureNotes || "",
+            chieftaincyType: village.chieftaincyType || "",
+            successionMode: village.successionMode || "",
         },
     });
 
     // Update form when village prop changes
     useEffect(() => {
-        if (village) {
+        if (village && open) {
             form.reset({
                 name: village.name || "",
                 region: village.region || "",
@@ -105,15 +168,35 @@ export function EditVillageSheet({ village, open, onOpenChangeAction }: EditVill
                 codeINS: village.codeINS || "",
                 latitude: village.latitude ?? null,
                 longitude: village.longitude ?? null,
+                altitude: village.altitude,
+                distanceFromCapital: village.distanceFromCapital,
+                distanceFromChefLieu: village.distanceFromChefLieu,
+                accessRoads: village.accessRoads || "",
                 population: village.population,
                 populationYear: village.populationYear || 2024,
+                numberOfHouseholds: village.numberOfHouseholds,
+                mainEthnicGroups: village.mainEthnicGroups?.join(", ") || "",
+                languages: village.languages?.join(", ") || "",
+                history: village.history || "",
+                customs: village.customs || "",
+                traditionalPractices: village.traditionalPractices || "",
+                annualEvents: village.annualEvents || "",
+                mainActivities: village.mainActivities?.join(", ") || "",
+                naturalResources: village.naturalResources || "",
+                mainCrops: village.mainCrops?.join(", ") || "",
                 hasSchool: !!village.hasSchool,
                 hasHealthCenter: !!village.hasHealthCenter,
                 hasElectricity: !!village.hasElectricity,
                 hasWater: !!village.hasWater,
+                hasMosque: !!village.hasMosque,
+                hasChurch: !!village.hasChurch,
+                hasMarket: !!village.hasMarket,
+                infrastructureNotes: village.infrastructureNotes || "",
+                chieftaincyType: village.chieftaincyType || "",
+                successionMode: village.successionMode || "",
             });
         }
-    }, [village, form]);
+    }, [village, form, open]);
 
     const selectedRegion = form.watch("region");
     const selectedDepartment = form.watch("department");
@@ -123,14 +206,33 @@ export function EditVillageSheet({ village, open, onOpenChangeAction }: EditVill
         ? Object.keys(divisions[selectedRegion][selectedDepartment] || {}) 
         : [];
 
+    const watchedFields = form.watch(["hasSchool", "hasHealthCenter", "hasElectricity", "hasWater", "hasMarket", "hasMosque", "hasChurch"]);
+    const currentScore = calculateDevelopmentScore({
+        hasSchool: watchedFields[0],
+        hasHealthCenter: watchedFields[1],
+        hasElectricity: watchedFields[2],
+        hasWater: watchedFields[3],
+        hasMarket: watchedFields[4],
+        hasMosque: watchedFields[5],
+        hasChurch: watchedFields[6],
+    } as any);
+
     async function onSubmit(values: VillageFormValues) {
         setIsSubmitting(true);
         try {
-            await updateVillage(village.id, {
+            // Transformation des champs string en tableaux
+            const finalData = {
                 ...values,
+                mainEthnicGroups: values.mainEthnicGroups ? values.mainEthnicGroups.split(",").map(s => s.trim()).filter(s => s !== "") : [],
+                languages: values.languages ? values.languages.split(",").map(s => s.trim()).filter(s => s !== "") : [],
+                mainActivities: values.mainActivities ? values.mainActivities.split(",").map(s => s.trim()).filter(s => s !== "") : [],
+                mainCrops: values.mainCrops ? values.mainCrops.split(",").map(s => s.trim()).filter(s => s !== "") : [],
                 latitude: values.latitude ?? undefined,
                 longitude: values.longitude ?? undefined,
-            });
+            };
+
+            await updateVillage(village.id, finalData);
+            
             toast({
                 title: "Village mis à jour",
                 description: `Le village ${values.name} a été modifié avec succès.`,
@@ -150,284 +252,325 @@ export function EditVillageSheet({ village, open, onOpenChangeAction }: EditVill
 
     return (
         <Sheet open={open} onOpenChange={onOpenChangeAction}>
-            <SheetContent className="sm:max-w-[700px]">
-                <SheetHeader className="mb-6">
-                    <SheetTitle className="text-2xl font-black">Modifier la localité</SheetTitle>
-                    <SheetDescription>
-                        Mettez à jour les informations administratives, SIG et les infrastructures de {village.name}.
-                    </SheetDescription>
-                </SheetHeader>
-                <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col h-full">
-                        <ScrollArea className="flex-grow h-[calc(100vh-220px)] -mx-6 px-6">
-                            <Accordion type="multiple" defaultValue={["admin", "infrastructures"]} className="w-full h-full pb-8">
-                                {/* Administrative Section */}
-                                <AccordionItem value="admin" className="border-slate-100">
-                                    <AccordionTrigger className="hover:no-underline py-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="p-2 bg-blue-50 rounded-lg"><Building2 className="h-5 w-5 text-blue-600" /></div>
-                                            <span className="font-bold text-slate-900">Identité Administrative</span>
-                                        </div>
-                                    </AccordionTrigger>
-                                    <AccordionContent className="pt-4 space-y-4">
-                                        <FormField
-                                            control={form.control}
-                                            name="name"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel className="font-bold">Nom du village/localité</FormLabel>
-                                                    <FormControl><Input placeholder="Ex: Ebouassue" className="h-11 rounded-lg" {...field} /></FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
+            <SheetContent className="sm:max-w-[700px] p-0 border-none shadow-2xl">
+                <div className="flex flex-col h-full bg-slate-50/30">
+                    <div className="p-8 pb-4 bg-white border-b border-slate-100">
+                        <div className="flex justify-between items-start mb-2">
+                            <div>
+                                <SheetTitle className="text-3xl font-black text-slate-900 tracking-tighter">MODIFIER LOCALITÉ</SheetTitle>
+                                <SheetDescription className="text-slate-500 font-medium">
+                                    Enrichissement des données territoriales pour {village.name}
+                                </SheetDescription>
+                            </div>
+                            <div className="text-right">
+                                <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">IDL Actuel</div>
+                                <div className="text-2xl font-black text-blue-600 leading-none">{currentScore}%</div>
+                            </div>
+                        </div>
+                        <Progress value={currentScore} className="h-1.5 bg-slate-100" />
+                    </div>
 
-                                        <FormField
-                                            control={form.control}
-                                            name="region"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel className="font-bold">Région</FormLabel>
-                                                    <Select 
-                                                        onValueChange={(value) => {
-                                                            field.onChange(value);
-                                                            form.setValue("department", "");
-                                                            form.setValue("subPrefecture", "");
-                                                        }} 
-                                                        value={field.value}
-                                                    >
-                                                        <FormControl><SelectTrigger className="h-11 rounded-lg"><SelectValue placeholder="Sélectionner une région" /></SelectTrigger></FormControl>
-                                                        <SelectContent className="max-h-[300px]">{IVORIAN_REGIONS.map((region) => (<SelectItem key={region} value={region}>{region}</SelectItem>))}</SelectContent>
-                                                    </Select>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-
-                                        <div className="grid grid-cols-2 gap-4">
+                    <Form {...form}>
+                        <form onSubmit={form.handleSubmit(onSubmit)} className="flex-grow flex flex-col min-h-0">
+                            <ScrollArea className="flex-grow px-8">
+                                <Accordion type="multiple" defaultValue={["admin"]} className="py-6 space-y-4">
+                                    {/* Section 1: Administration */}
+                                    <AccordionItem value="admin" className="border-none bg-white rounded-3xl px-6 shadow-sm border border-slate-100/50">
+                                        <AccordionTrigger className="hover:no-underline py-6">
+                                            <div className="flex items-center gap-4">
+                                                <div className="p-2.5 bg-blue-50 rounded-2xl text-blue-600"><Building2 className="h-5 w-5" /></div>
+                                                <div className="text-left">
+                                                    <div className="font-black text-slate-900 text-sm uppercase tracking-tight">Identité Administrative</div>
+                                                    <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Localisation & Codes</div>
+                                                </div>
+                                            </div>
+                                        </AccordionTrigger>
+                                        <AccordionContent className="pb-8 space-y-5">
                                             <FormField
                                                 control={form.control}
-                                                name="department"
+                                                name="name"
                                                 render={({ field }) => (
                                                     <FormItem>
-                                                        <FormLabel className="font-bold">Département</FormLabel>
-                                                        <Select onValueChange={(v) => { field.onChange(v); form.setValue("subPrefecture", ""); }} value={field.value} disabled={!selectedRegion}>
-                                                            <FormControl><SelectTrigger className="h-11 rounded-lg"><SelectValue placeholder="Sél. dépt." /></SelectTrigger></FormControl>
-                                                            <SelectContent>{departments.map((dept) => (<SelectItem key={dept} value={dept}>{dept}</SelectItem>))}</SelectContent>
-                                                        </Select>
+                                                        <FormLabel className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Nom officiel de la localité</FormLabel>
+                                                        <FormControl><Input placeholder="Ex: Ebouassue" className="h-12 bg-slate-50/50 border-slate-100 rounded-xl focus:ring-blue-500" {...field} /></FormControl>
                                                         <FormMessage />
                                                     </FormItem>
                                                 )}
-                                            />
-                                            <FormField
-                                                control={form.control}
-                                                name="subPrefecture"
-                                                render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabel className="font-bold">Sous-Préfecture</FormLabel>
-                                                        <Select onValueChange={field.onChange} value={field.value} disabled={!selectedDepartment}>
-                                                            <FormControl><SelectTrigger className="h-11 rounded-lg"><SelectValue placeholder="Sél. s-préf." /></SelectTrigger></FormControl>
-                                                            <SelectContent>{subPrefectures.map((sp) => (<SelectItem key={sp} value={sp}>{sp}</SelectItem>))}</SelectContent>
-                                                        </Select>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
-                                            />
-                                        </div>
-
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <FormField
-                                                control={form.control}
-                                                name="commune"
-                                                render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabel className="font-bold">Commune</FormLabel>
-                                                        <FormControl><Input placeholder="Ex: Abidjan" className="h-11 rounded-lg" {...field} /></FormControl>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
-                                            />
-                                            <FormField
-                                                control={form.control}
-                                                name="codeINS"
-                                                render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabel className="font-bold">Code INS (Optionnel)</FormLabel>
-                                                        <FormControl><Input placeholder="Ex: CIV0101" className="h-11 rounded-lg" {...field} /></FormControl>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
-                                            />
-                                        </div>
-                                    </AccordionContent>
-                                </AccordionItem>
-
-                                {/* SIG & Geographic Section */}
-                                <AccordionItem value="sig" className="border-slate-100">
-                                    <AccordionTrigger className="hover:no-underline py-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="p-2 bg-amber-50 rounded-lg"><MapPin className="h-5 w-5 text-amber-600" /></div>
-                                            <span className="font-bold text-slate-900">Position SIG & Carte</span>
-                                        </div>
-                                    </AccordionTrigger>
-                                    <AccordionContent className="pt-4 space-y-4">
-                                        <div className="flex flex-col gap-4">
-                                            <LocationPicker 
-                                                onLocationSelectAction={(lat, lng) => {
-                                                    form.setValue("latitude", lat);
-                                                    form.setValue("longitude", lng);
-                                                }}
-                                                className="border shadow-sm rounded-xl"
                                             />
                                             <div className="grid grid-cols-2 gap-4">
                                                 <FormField
                                                     control={form.control}
-                                                    name="latitude"
+                                                    name="region"
                                                     render={({ field }) => (
                                                         <FormItem>
-                                                            <FormLabel className="text-[10px] uppercase font-black text-slate-400">Latitude</FormLabel>
-                                                            <FormControl><Input type="number" step="any" {...field} value={field.value || ''} onChange={e => field.onChange(parseFloat(e.target.value) || null)} className="h-10 rounded-lg" /></FormControl>
+                                                            <FormLabel className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Région</FormLabel>
+                                                            <Select onValueChange={(v) => { field.onChange(v); form.setValue("department", ""); form.setValue("subPrefecture", ""); }} value={field.value}>
+                                                                <FormControl><SelectTrigger className="h-12 bg-slate-50/50 border-slate-100 rounded-xl"><SelectValue placeholder="Sél. région" /></SelectTrigger></FormControl>
+                                                                <SelectContent className="max-h-[300px]">{IVORIAN_REGIONS.map((r) => (<SelectItem key={r} value={r}>{r}</SelectItem>))}</SelectContent>
+                                                            </Select>
                                                             <FormMessage />
                                                         </FormItem>
                                                     )}
                                                 />
                                                 <FormField
                                                     control={form.control}
-                                                    name="longitude"
+                                                    name="department"
                                                     render={({ field }) => (
                                                         <FormItem>
-                                                            <FormLabel className="text-[10px] uppercase font-black text-slate-400">Longitude</FormLabel>
-                                                            <FormControl><Input type="number" step="any" {...field} value={field.value || ''} onChange={e => field.onChange(parseFloat(e.target.value) || null)} className="h-10 rounded-lg" /></FormControl>
+                                                            <FormLabel className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Département</FormLabel>
+                                                            <Select onValueChange={(v) => { field.onChange(v); form.setValue("subPrefecture", ""); }} value={field.value} disabled={!selectedRegion}>
+                                                                <FormControl><SelectTrigger className="h-12 bg-slate-50/50 border-slate-100 rounded-xl"><SelectValue placeholder="Sél. dépt." /></SelectTrigger></FormControl>
+                                                                <SelectContent>{departments.map((d) => (<SelectItem key={d} value={d}>{d}</SelectItem>))}</SelectContent>
+                                                            </Select>
                                                             <FormMessage />
                                                         </FormItem>
                                                     )}
                                                 />
                                             </div>
-                                        </div>
-                                    </AccordionContent>
-                                </AccordionItem>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <FormField
+                                                    control={form.control}
+                                                    name="subPrefecture"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Sous-Préfecture</FormLabel>
+                                                            <Select onValueChange={field.onChange} value={field.value} disabled={!selectedDepartment}>
+                                                                <FormControl><SelectTrigger className="h-12 bg-slate-50/50 border-slate-100 rounded-xl"><SelectValue placeholder="Sél. s-préf." /></SelectTrigger></FormControl>
+                                                                <SelectContent>{subPrefectures.map((s) => (<SelectItem key={s} value={s}>{s}</SelectItem>))}</SelectContent>
+                                                            </Select>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                                <FormField
+                                                    control={form.control}
+                                                    name="codeINS"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Code INS</FormLabel>
+                                                            <FormControl><Input placeholder="Ex: CIV001" className="h-12 bg-slate-50/50 border-slate-100 rounded-xl" {...field} /></FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                            </div>
+                                        </AccordionContent>
+                                    </AccordionItem>
 
-                                {/* Demography Section */}
-                                <AccordionItem value="demography" className="border-slate-100">
-                                    <AccordionTrigger className="hover:no-underline py-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="p-2 bg-emerald-50 rounded-lg"><Users className="h-5 w-5 text-emerald-600" /></div>
-                                            <span className="font-bold text-slate-900">Démographie</span>
-                                        </div>
-                                    </AccordionTrigger>
-                                    <AccordionContent className="pt-4 space-y-4">
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <FormField
-                                                control={form.control}
-                                                name="population"
-                                                render={({ field }) => (
+                                    {/* Section 2: Géographie & SIG */}
+                                    <AccordionItem value="geo" className="border-none bg-white rounded-3xl px-6 shadow-sm border border-slate-100/50">
+                                        <AccordionTrigger className="hover:no-underline py-6">
+                                            <div className="flex items-center gap-4">
+                                                <div className="p-2.5 bg-amber-50 rounded-2xl text-amber-600"><MapIcon className="h-5 w-5" /></div>
+                                                <div className="text-left">
+                                                    <div className="font-black text-slate-900 text-sm uppercase tracking-tight">Géographie & SIG</div>
+                                                    <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Coordonnées & Accès</div>
+                                                </div>
+                                            </div>
+                                        </AccordionTrigger>
+                                        <AccordionContent className="pb-8 space-y-6">
+                                            <div className="rounded-[2rem] overflow-hidden border border-slate-100 shadow-inner bg-slate-50">
+                                                <LocationPicker 
+                                                    onLocationSelectAction={(lat, lng) => {
+                                                        form.setValue("latitude", lat);
+                                                        form.setValue("longitude", lng);
+                                                    }}
+                                                />
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <FormField control={form.control} name="latitude" render={({ field }) => (
                                                     <FormItem>
-                                                        <FormLabel className="font-bold">Nombre d&apos;habitants</FormLabel>
-                                                        <FormControl><Input type="number" placeholder="Ex: 5000" className="h-11 rounded-lg" {...field} /></FormControl>
-                                                        <FormMessage />
+                                                        <FormLabel className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Latitude</FormLabel>
+                                                        <FormControl><Input type="number" step="any" {...field} value={field.value || ""} onChange={e => field.onChange(parseFloat(e.target.value) || null)} className="h-12 bg-slate-50/50 rounded-xl" /></FormControl>
                                                     </FormItem>
-                                                )}
-                                            />
-                                            <FormField
-                                                control={form.control}
-                                                name="populationYear"
-                                                render={({ field }) => (
+                                                )} />
+                                                <FormField control={form.control} name="longitude" render={({ field }) => (
                                                     <FormItem>
-                                                        <FormLabel className="font-bold">Année Recensement</FormLabel>
-                                                        <FormControl><Input type="number" placeholder="Ex: 2024" className="h-11 rounded-lg" {...field} /></FormControl>
-                                                        <FormMessage />
+                                                        <FormLabel className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Longitude</FormLabel>
+                                                        <FormControl><Input type="number" step="any" {...field} value={field.value || ""} onChange={e => field.onChange(parseFloat(e.target.value) || null)} className="h-12 bg-slate-50/50 rounded-xl" /></FormControl>
                                                     </FormItem>
-                                                )}
-                                            />
-                                        </div>
-                                    </AccordionContent>
-                                </AccordionItem>
+                                                )} />
+                                            </div>
+                                            <div className="grid grid-cols-3 gap-4">
+                                                <FormField control={form.control} name="altitude" render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Alt. (m)</FormLabel>
+                                                        <FormControl><Input type="number" {...field} className="h-12 bg-slate-50/50 rounded-xl" /></FormControl>
+                                                    </FormItem>
+                                                )} />
+                                                <FormField control={form.control} name="distanceFromCapital" render={({ field }) => (
+                                                    <FormItem className="col-span-2">
+                                                        <FormLabel className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Dist. Capitale (km)</FormLabel>
+                                                        <FormControl><Input type="number" {...field} className="h-12 bg-slate-50/50 rounded-xl" /></FormControl>
+                                                    </FormItem>
+                                                )} />
+                                            </div>
+                                            <FormField control={form.control} name="accessRoads" render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Voies d'accès & État</FormLabel>
+                                                    <FormControl><Textarea placeholder="Ex: Bitumée en bon état, Piste carrossable..." className="min-h-[80px] bg-slate-50/50 rounded-xl resize-none" {...field} /></FormControl>
+                                                </FormItem>
+                                            )} />
+                                        </AccordionContent>
+                                    </AccordionItem>
 
-                                {/* Infrastructures Section */}
-                                <AccordionItem value="infrastructures" className="border-none">
-                                    <AccordionTrigger className="hover:no-underline py-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="p-2 bg-indigo-50 rounded-lg"><Zap className="h-5 w-5 text-indigo-600" /></div>
-                                            <span className="font-bold text-slate-900">Infrastructures & Équipements</span>
-                                        </div>
-                                    </AccordionTrigger>
-                                    <AccordionContent className="pt-4">
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 p-4 bg-slate-50/50 rounded-xl border border-slate-100">
-                                            <FormField
-                                                control={form.control}
-                                                name="hasSchool"
-                                                render={({ field }) => (
-                                                    <FormItem className="flex flex-row items-center space-x-3 space-y-0">
-                                                        <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} className="h-6 w-6 rounded-md" /></FormControl>
-                                                        <div className="flex items-center gap-2">
-                                                            <School className="h-4 w-4 text-slate-400" />
-                                                            <FormLabel className="text-sm font-bold text-slate-700 cursor-pointer">Établissement Scolaire</FormLabel>
-                                                        </div>
+                                    {/* Section 3: Démographie & Peuplement */}
+                                    <AccordionItem value="demography" className="border-none bg-white rounded-3xl px-6 shadow-sm border border-slate-100/50">
+                                        <AccordionTrigger className="hover:no-underline py-6">
+                                            <div className="flex items-center gap-4">
+                                                <div className="p-2.5 bg-emerald-50 rounded-2xl text-emerald-600"><Users className="h-5 w-5" /></div>
+                                                <div className="text-left">
+                                                    <div className="font-black text-slate-900 text-sm uppercase tracking-tight">Démographie & Peuplement</div>
+                                                    <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Population & Ethnies</div>
+                                                </div>
+                                            </div>
+                                        </AccordionTrigger>
+                                        <AccordionContent className="pb-8 space-y-6">
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <FormField control={form.control} name="population" render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Population Totale</FormLabel>
+                                                        <FormControl><Input type="number" placeholder="Habitants" className="h-12 bg-slate-50/50 rounded-xl" {...field} /></FormControl>
                                                     </FormItem>
-                                                )}
-                                            />
-                                            <FormField
-                                                control={form.control}
-                                                name="hasHealthCenter"
-                                                render={({ field }) => (
-                                                    <FormItem className="flex flex-row items-center space-x-3 space-y-0">
-                                                        <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} className="h-6 w-6 rounded-md" /></FormControl>
-                                                        <div className="flex items-center gap-2">
-                                                            <Activity className="h-4 w-4 text-slate-400" />
-                                                            <FormLabel className="text-sm font-bold text-slate-700 cursor-pointer">Centre de Santé / Dispensaire</FormLabel>
-                                                        </div>
+                                                )} />
+                                                <FormField control={form.control} name="populationYear" render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Année Recens.</FormLabel>
+                                                        <FormControl><Input type="number" placeholder="Ex: 2024" className="h-12 bg-slate-50/50 rounded-xl" {...field} /></FormControl>
                                                     </FormItem>
-                                                )}
-                                            />
-                                            <FormField
-                                                control={form.control}
-                                                name="hasElectricity"
-                                                render={({ field }) => (
-                                                    <FormItem className="flex flex-row items-center space-x-3 space-y-0">
-                                                        <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} className="h-6 w-6 rounded-md" /></FormControl>
-                                                        <div className="flex items-center gap-2">
-                                                            <Zap className="h-4 w-4 text-slate-400" />
-                                                            <FormLabel className="text-sm font-bold text-slate-700 cursor-pointer">Électrification (Réseau CIE)</FormLabel>
-                                                        </div>
-                                                    </FormItem>
-                                                )}
-                                            />
-                                            <FormField
-                                                control={form.control}
-                                                name="hasWater"
-                                                render={({ field }) => (
-                                                    <FormItem className="flex flex-row items-center space-x-3 space-y-0">
-                                                        <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} className="h-6 w-6 rounded-md" /></FormControl>
-                                                        <div className="flex items-center gap-2">
-                                                            <Droplets className="h-4 w-4 text-slate-400" />
-                                                            <FormLabel className="text-sm font-bold text-slate-700 cursor-pointer">Accès Eau Potable (SODECI/HVA)</FormLabel>
-                                                        </div>
-                                                    </FormItem>
-                                                )}
-                                            />
-                                        </div>
-                                    </AccordionContent>
-                                </AccordionItem>
-                            </Accordion>
-                        </ScrollArea>
+                                                )} />
+                                            </div>
+                                            <FormField control={form.control} name="mainEthnicGroups" render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Ethnies majoritaires (séparées par virgule)</FormLabel>
+                                                    <FormControl><Input placeholder="Ex: Baoulé, Agni, Dioula..." className="h-12 bg-slate-50/50 rounded-xl" {...field} /></FormControl>
+                                                </FormItem>
+                                            )} />
+                                            <FormField control={form.control} name="languages" render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Langues parlées</FormLabel>
+                                                    <FormControl><Input placeholder="Ex: Français, Baoulé..." className="h-12 bg-slate-50/50 rounded-xl" {...field} /></FormControl>
+                                                </FormItem>
+                                            )} />
+                                        </AccordionContent>
+                                    </AccordionItem>
 
-                        <div className="flex justify-end gap-3 pt-6 mt-6 border-t bg-white relative z-10 p-2">
-                            <Button variant="ghost" type="button" onClick={() => onOpenChangeAction(false)} className="rounded-xl h-12 font-bold px-8">
-                                Annuler
-                            </Button>
-                            <Button type="submit" disabled={isSubmitting} className="rounded-xl h-12 font-bold px-8 bg-slate-900 border-none hover:bg-slate-800">
-                                {isSubmitting ? (
-                                    <>
-                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                        Mise à jour...
-                                    </>
-                                ) : (
-                                    "Mettre à jour la localité"
-                                )}
-                            </Button>
-                        </div>
-                    </form>
-                </Form>
+                                    {/* Section 4: Histoire & Patrimoine */}
+                                    <AccordionItem value="history" className="border-none bg-white rounded-3xl px-6 shadow-sm border border-slate-100/50">
+                                        <AccordionTrigger className="hover:no-underline py-6">
+                                            <div className="flex items-center gap-4">
+                                                <div className="p-2.5 bg-purple-50 rounded-2xl text-purple-600"><Landmark className="h-5 w-5" /></div>
+                                                <div className="text-left">
+                                                    <div className="font-black text-slate-900 text-sm uppercase tracking-tight">Histoire & Patrimoine</div>
+                                                    <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Origines & Coutumes</div>
+                                                </div>
+                                            </div>
+                                        </AccordionTrigger>
+                                        <AccordionContent className="pb-8 space-y-6">
+                                            <FormField control={form.control} name="history" render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Bref aperçu historique</FormLabel>
+                                                    <FormControl><Textarea placeholder="Origine du village, fondateurs..." className="min-h-[100px] bg-slate-50/50 rounded-xl resize-none" {...field} /></FormControl>
+                                                </FormItem>
+                                            )} />
+                                            <FormField control={form.control} name="customs" render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Coutumes & Totems</FormLabel>
+                                                    <FormControl><Textarea placeholder="Interdits, lieux sacrés..." className="min-h-[100px] bg-slate-50/50 rounded-xl resize-none" {...field} /></FormControl>
+                                                </FormItem>
+                                            )} />
+                                        </AccordionContent>
+                                    </AccordionItem>
+
+                                    {/* Section 5: Économie */}
+                                    <AccordionItem value="economy" className="border-none bg-white rounded-3xl px-6 shadow-sm border border-slate-100/50">
+                                        <AccordionTrigger className="hover:no-underline py-6">
+                                            <div className="flex items-center gap-4">
+                                                <div className="p-2.5 bg-rose-50 rounded-2xl text-rose-600"><Coins className="h-5 w-5" /></div>
+                                                <div className="text-left">
+                                                    <div className="font-black text-slate-900 text-sm uppercase tracking-tight">Économie Locale</div>
+                                                    <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Activités & Cultures</div>
+                                                </div>
+                                            </div>
+                                        </AccordionTrigger>
+                                        <AccordionContent className="pb-8 space-y-6">
+                                            <FormField control={form.control} name="mainActivities" render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Activités principales</FormLabel>
+                                                    <FormControl><Input placeholder="Ex: Agriculture, Commerce, Pêche..." className="h-12 bg-slate-50/50 rounded-xl" {...field} /></FormControl>
+                                                </FormItem>
+                                            )} />
+                                            <FormField control={form.control} name="mainCrops" render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Cultures majeures</FormLabel>
+                                                    <FormControl><Input placeholder="Ex: Cacao, Café, Hévéa, Igname..." className="h-12 bg-slate-50/50 rounded-xl" {...field} /></FormControl>
+                                                </FormItem>
+                                            )} />
+                                        </AccordionContent>
+                                    </AccordionItem>
+
+                                    {/* Section 6: Infrastructures */}
+                                    <AccordionItem value="infra" className="border-none bg-white rounded-3xl px-6 shadow-sm border border-slate-100/50">
+                                        <AccordionTrigger className="hover:no-underline py-6">
+                                            <div className="flex items-center gap-4">
+                                                <div className="p-2.5 bg-indigo-50 rounded-2xl text-indigo-600"><Zap className="h-5 w-5" /></div>
+                                                <div className="text-left">
+                                                    <div className="font-black text-slate-900 text-sm uppercase tracking-tight">Infrastructures</div>
+                                                    <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Équipements & IDL</div>
+                                                </div>
+                                            </div>
+                                        </AccordionTrigger>
+                                        <AccordionContent className="pb-8 space-y-6">
+                                            <div className="grid grid-cols-1 gap-4">
+                                                {[
+                                                    { id: "hasElectricity", label: "Électrification (CIE)", icon: Zap, color: "text-amber-500" },
+                                                    { id: "hasWater", label: "Eau Potable (SODECI/HVA)", icon: Droplets, color: "text-blue-500" },
+                                                    { id: "hasSchool", label: "Établissement Scolaire", icon: School, color: "text-indigo-500" },
+                                                    { id: "hasHealthCenter", label: "Centre de Santé", icon: Activity, color: "text-rose-500" },
+                                                    { id: "hasMarket", label: "Marché Permanent", icon: ShoppingBag, color: "text-emerald-500" },
+                                                    { id: "hasMosque", label: "Mosquée", icon: Mosque, color: "text-slate-600" },
+                                                    { id: "hasChurch", label: "Église", icon: Church, color: "text-slate-600" },
+                                                ].map((item) => (
+                                                    <FormField
+                                                        key={item.id}
+                                                        control={form.control}
+                                                        name={item.id as any}
+                                                        render={({ field }) => (
+                                                            <div className="flex items-center justify-between p-4 bg-slate-50/50 rounded-2xl border border-slate-100">
+                                                                <div className="flex items-center gap-3">
+                                                                    <item.icon className={`h-5 w-5 ${item.color}`} />
+                                                                    <Label htmlFor={item.id} className="font-bold text-slate-700 cursor-pointer">{item.label}</Label>
+                                                                </div>
+                                                                <FormControl><Checkbox id={item.id} checked={field.value} onCheckedChange={field.onChange} className="h-6 w-6 rounded-lg" /></FormControl>
+                                                            </div>
+                                                        )}
+                                                    />
+                                                ))}
+                                            </div>
+                                            <FormField control={form.control} name="infrastructureNotes" render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Notes sur l'état des infrastructures</FormLabel>
+                                                    <FormControl><Textarea placeholder="Besoin de réhabilitation, extension..." className="min-h-[80px] bg-slate-50/50 rounded-xl resize-none" {...field} /></FormControl>
+                                                </FormItem>
+                                            )} />
+                                        </AccordionContent>
+                                    </AccordionItem>
+                                </Accordion>
+                            </ScrollArea>
+
+                            <div className="p-8 bg-white border-t border-slate-100 flex gap-4">
+                                <Button variant="outline" type="button" onClick={() => onOpenChangeAction(false)} className="flex-1 h-14 rounded-2xl font-black uppercase tracking-widest border-slate-200 text-slate-500 hover:bg-slate-50">
+                                    Annuler
+                                </Button>
+                                <Button type="submit" disabled={isSubmitting} className="flex-[2] h-14 rounded-2xl font-black uppercase tracking-widest bg-slate-900 border-none hover:bg-slate-800 shadow-xl shadow-slate-200">
+                                    {isSubmitting ? (
+                                        <div className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /> Synchronisation...</div>
+                                    ) : "Mettre à jour la fiche"}
+                                </Button>
+                            </div>
+                        </form>
+                    </Form>
+                </div>
             </SheetContent>
         </Sheet>
     );

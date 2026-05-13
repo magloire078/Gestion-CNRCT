@@ -30,60 +30,80 @@ export function ConflictStatsCards({ conflicts }: ConflictStatsCardsProps) {
     }, [conflicts]);
 
     return (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
-            <Card className="border-none shadow-sm bg-gradient-to-br from-blue-50 to-white dark:from-slate-900">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium text-blue-600">Total Dossiers</CardTitle>
-                    <ClipboardList className="h-4 w-4 text-blue-500" />
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
+            <Card className="border-none shadow-xl shadow-blue-500/5 bg-gradient-to-br from-blue-50/50 to-white relative overflow-hidden group hover:scale-[1.02] transition-all duration-300">
+                <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <ClipboardList className="h-16 w-16 -mr-4 -mt-4 text-blue-600" />
+                </div>
+                <CardHeader className="pb-2">
+                    <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-500 flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                        Registre Global
+                    </CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">{stats.total}</div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                        Dossiers enregistrés
+                    <div className="text-4xl font-black text-slate-900 tracking-tighter tabular-nums">{stats.total}</div>
+                    <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-widest">
+                        Dossiers Enregistrés
                     </p>
                 </CardContent>
             </Card>
 
-            <Card className="border-none shadow-sm bg-gradient-to-br from-amber-50 to-white dark:from-slate-900">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium text-amber-600">En Cours</CardTitle>
-                    <Hourglass className="h-4 w-4 text-amber-500" />
+            <Card className="border-none shadow-xl shadow-amber-500/5 bg-gradient-to-br from-amber-50/50 to-white relative overflow-hidden group hover:scale-[1.02] transition-all duration-300">
+                <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <Hourglass className="h-16 w-16 -mr-4 -mt-4 text-amber-600" />
+                </div>
+                <CardHeader className="pb-2">
+                    <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-500 flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                        Traitement Actif
+                    </CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">{stats.open + stats.mediating}</div>
-                    <div className="flex items-center gap-2 mt-1">
-                        <span className="text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full font-bold">
+                    <div className="text-4xl font-black text-slate-900 tracking-tighter tabular-nums">{stats.open + stats.mediating}</div>
+                    <div className="flex items-center gap-2 mt-2">
+                        <span className="text-[9px] font-black uppercase tracking-tighter px-2 py-0.5 rounded bg-amber-100 text-amber-700 border border-amber-200/50">
                             {stats.open} Ouverts
                         </span>
-                        <span className="text-[10px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full font-bold">
+                        <span className="text-[9px] font-black uppercase tracking-tighter px-2 py-0.5 rounded bg-blue-100 text-blue-700 border border-blue-200/50">
                             {stats.mediating} Médiation
                         </span>
                     </div>
                 </CardContent>
             </Card>
 
-            <Card className="border-none shadow-sm bg-gradient-to-br from-emerald-50 to-white dark:from-slate-900">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium text-emerald-600">Taux de Résolution</CardTitle>
-                    <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+            <Card className="border-none shadow-xl shadow-emerald-500/5 bg-gradient-to-br from-emerald-50/50 to-white relative overflow-hidden group hover:scale-[1.02] transition-all duration-300">
+                <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <CheckCircle2 className="h-16 w-16 -mr-4 -mt-4 text-emerald-600" />
+                </div>
+                <CardHeader className="pb-2">
+                    <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-500 flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                        Performance
+                    </CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">{stats.resolutionRate}%</div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                        {stats.resolved} dossiers résolus
+                    <div className="text-4xl font-black text-slate-900 tracking-tighter tabular-nums">{stats.resolutionRate}<span className="text-lg ml-0.5 opacity-40">%</span></div>
+                    <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-widest">
+                        {stats.resolved} Cas résolus avec succès
                     </p>
                 </CardContent>
             </Card>
 
-            <Card className="border-none shadow-sm bg-gradient-to-br from-purple-50 to-white dark:from-slate-900">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium text-purple-600">Zone Active</CardTitle>
-                    <AlertCircle className="h-4 w-4 text-purple-500" />
+            <Card className="border-none shadow-xl shadow-indigo-500/5 bg-gradient-to-br from-indigo-50/50 to-white relative overflow-hidden group hover:scale-[1.02] transition-all duration-300">
+                <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <AlertCircle className="h-16 w-16 -mr-4 -mt-4 text-indigo-600" />
+                </div>
+                <CardHeader className="pb-2">
+                    <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-500 flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+                        Foyer de Tension
+                    </CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="text-lg font-bold truncate">{stats.topRegion}</div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                        Région avec plus de cas
+                    <div className="text-xl font-black text-slate-900 tracking-tight truncate leading-none pt-2">{stats.topRegion}</div>
+                    <p className="text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-widest">
+                        Région à haute intensité
                     </p>
                 </CardContent>
             </Card>

@@ -157,10 +157,6 @@ export default function FleetPage() {
 
   const handlePrint = () => {
     setIsPrinting(true);
-    setTimeout(() => {
-      window.print();
-      setIsPrinting(false);
-    }, 300);
   };
 
   return (
@@ -420,7 +416,12 @@ export default function FleetPage() {
       </div>
 
       {isPrinting && (
-        <FleetOfficialReport vehicles={vehicles} organizationSettings={settings} />
+        <FleetOfficialReport 
+          vehicles={vehicles} 
+          organizationSettings={settings} 
+          isPrinting={isPrinting}
+          onAfterPrint={() => setIsPrinting(false)}
+        />
       )}
     </PermissionGuard>
   );

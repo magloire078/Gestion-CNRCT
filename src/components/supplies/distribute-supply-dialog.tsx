@@ -120,74 +120,83 @@ export function DistributeSupplyDialog({ isOpen, onCloseAction, supply }: Distri
 
     return (
         <Dialog open={isOpen} onOpenChange={onCloseAction}>
-            <DialogContent className="sm:max-w-[450px] rounded-xl">
-                <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2 text-xl font-black">
-                        <Package className="h-5 w-5 text-slate-400" />
-                        Sortie de Stock : {supply.name}
-                    </DialogTitle>
-                    <DialogDescription>
-                        Enregistrez la distribution de cet article à un membre du personnel.
-                    </DialogDescription>
-                </DialogHeader>
-
-                <form onSubmit={handleSubmit} className="space-y-6 py-4">
-                    <div className="space-y-4">
-                        <div className="space-y-2">
-                            <Label className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-2">
-                                <User className="h-3 w-3" /> Bénéficiaire
-                            </Label>
-                            <SearchableSelect
-                                items={employeeOptions}
-                                value={recipientId}
-                                onValueChange={handleRecipientChange}
-                                placeholder="Sélectionner un employé..."
-                                searchPlaceholder="Rechercher par nom ou matricule..."
-                                disabled={loading}
-                            />
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-2">
-                                    <Hash className="h-3 w-3" /> Quantité
-                                </Label>
-                                <Input 
-                                    type="number" 
-                                    min={1} 
-                                    max={supply.quantity}
-                                    value={quantity}
-                                    onChange={(e) => setQuantity(parseInt(e.target.value))}
-                                    className="rounded-lg border-slate-200 focus:ring-slate-900" 
-                                />
-                                <p className="text-[10px] text-slate-400 font-medium">
-                                    Stock disponible: <span className="font-bold text-slate-900">{supply.quantity}</span>
-                                </p>
+            <DialogContent className="sm:max-w-[480px] p-0 overflow-hidden border-none shadow-2xl rounded-3xl bg-white/95 backdrop-blur-xl">
+                <div className="bg-slate-900 px-6 py-8 text-white relative overflow-hidden">
+                    <div className="absolute top-[-20%] right-[-10%] w-40 h-40 bg-blue-500/10 rounded-full blur-3xl" />
+                    
+                    <DialogHeader className="relative z-10">
+                        <DialogTitle className="flex items-center gap-3 text-2xl font-black tracking-tight">
+                            <div className="h-10 w-10 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/10">
+                                <Package className="h-5 w-5 text-white" />
                             </div>
+                            Sortie de Stock
+                        </DialogTitle>
+                        <DialogDescription className="text-slate-400 text-sm font-medium mt-2">
+                            Distribution de <span className="text-white font-bold">{supply.name}</span>.
+                        </DialogDescription>
+                    </DialogHeader>
+                </div>
 
-                            <div className="space-y-2">
-                                <Label className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-2">
-                                    <Calendar className="h-3 w-3" /> Date
+                <div className="px-6 py-6">
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        <div className="space-y-6">
+                            <div className="space-y-3">
+                                <Label className="text-xs font-black uppercase tracking-widest text-slate-500 flex items-center gap-2 px-1">
+                                    <User className="h-3.5 w-3.5 text-slate-400" /> Bénéficiaire
                                 </Label>
-                                <Input 
-                                    type="date" 
-                                    value={date}
-                                    onChange={(e) => setDate(e.target.value)}
-                                    className="rounded-lg border-slate-200 focus:ring-slate-900" 
+                                <SearchableSelect
+                                    items={employeeOptions}
+                                    value={recipientId}
+                                    onValueChange={handleRecipientChange}
+                                    placeholder="Sélectionner un employé..."
+                                    searchPlaceholder="Rechercher par nom ou matricule..."
+                                    disabled={loading}
+                                    className="rounded-2xl h-12 bg-slate-50/50"
                                 />
                             </div>
-                        </div>
-                    </div>
 
-                    <DialogFooter className="pt-4">
-                        <Button type="button" variant="ghost" onClick={onCloseAction} disabled={submitting} className="rounded-lg">
-                            Annuler
-                        </Button>
-                        <Button type="submit" disabled={submitting || supply.quantity <= 0} className="bg-slate-900 rounded-lg px-8">
-                            {submitting ? "Traitement..." : "Valider la Sortie"}
-                        </Button>
-                    </DialogFooter>
-                </form>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-3">
+                                    <Label className="text-xs font-black uppercase tracking-widest text-slate-500 flex items-center gap-2 px-1">
+                                        <Hash className="h-3.5 w-3.5 text-slate-400" /> Quantité
+                                    </Label>
+                                    <Input 
+                                        type="number" 
+                                        min={1} 
+                                        max={supply.quantity}
+                                        value={quantity}
+                                        onChange={(e) => setQuantity(parseInt(e.target.value))}
+                                        className="rounded-2xl border-slate-200 focus:ring-slate-900 h-12 bg-slate-50/50" 
+                                    />
+                                    <p className="text-[10px] text-slate-400 font-bold px-1 uppercase tracking-tighter">
+                                        Stock dispo: <span className="text-slate-900 font-black">{supply.quantity}</span>
+                                    </p>
+                                </div>
+
+                                <div className="space-y-3">
+                                    <Label className="text-xs font-black uppercase tracking-widest text-slate-500 flex items-center gap-2 px-1">
+                                        <Calendar className="h-3.5 w-3.5 text-slate-400" /> Date
+                                    </Label>
+                                    <Input 
+                                        type="date" 
+                                        value={date}
+                                        onChange={(e) => setDate(e.target.value)}
+                                        className="rounded-2xl border-slate-200 focus:ring-slate-900 h-12 bg-slate-50/50" 
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center gap-3 pt-2">
+                            <Button type="button" variant="ghost" onClick={onCloseAction} disabled={submitting} className="flex-1 rounded-2xl h-12 font-bold text-slate-500">
+                                Annuler
+                            </Button>
+                            <Button type="submit" disabled={submitting || supply.quantity <= 0} className="flex-[2] bg-slate-900 hover:bg-black text-white rounded-2xl h-12 font-black shadow-lg shadow-slate-900/20 active:scale-95 transition-all">
+                                {submitting ? "Traitement..." : "Valider la Sortie"}
+                            </Button>
+                        </div>
+                    </form>
+                </div>
             </DialogContent>
         </Dialog>
     );

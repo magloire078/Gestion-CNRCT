@@ -1,7 +1,6 @@
-
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -25,6 +24,9 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { format, parseISO, eachDayOfInterval, getDay, startOfMonth, endOfMonth, max, min, isWithinInterval } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { LeaveOfficialReport } from "@/components/reports/leave-official-report";
+import { getOrganizationSettings } from "@/services/organization-service";
+import type { OrganizationSettings } from "@/lib/data";
 
 interface ReportData {
   leaves: Leave[];
@@ -39,7 +41,12 @@ export default function LeaveReportPage() {
   const [isPrinting, setIsPrinting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [reportData, setReportData] = useState<ReportData | null>(null);
+  const [organizationLogos, setOrganizationLogos] = useState<OrganizationSettings | null>(null);
   const [isPending, startTransition] = useTransition();
+
+  useEffect(() => {
+    getOrganizationSettings().then(setOrganizationLogos);
+  }, []);
   
   const years = Array.from({ length: 10 }, (_, i) => (new Date().getFullYear() - i).toString());
   const months = Array.from({ length: 12 }, (_, i) => ({ value: (i + 1).toString(), label: format(new Date(2000, i, 1), 'MMMM', { locale: fr }) }));
@@ -106,12 +113,8 @@ export default function LeaveReportPage() {
     }
   };
   
-   const handlePrint = () => {
+  const handlePrint = () => {
     setIsPrinting(true);
-    setTimeout(() => {
-        window.print();
-        setIsPrinting(false);
-    }, 300);
   };
 
   return (
@@ -240,48 +243,20 @@ export default function LeaveReportPage() {
 
     </div>
     
-    {isPrinting && reportData && (
-        <div id="print-section" className="bg-white text-black p-8 font-sans">
-             <div className="text-center mb-8">
-                <h1 className="text-xl font-bold">RAPPORT MENSUEL DES CONGÉS</h1>
-                <h2 className="text-lg">Période de {selectedPeriodText}</h2>
-            </div>
-            <table className="w-full text-xs border-collapse border border-black">
-                <thead className="bg-gray-200">
-                    <tr>
-                        <th className="border border-black p-2 text-left">Employé</th>
-                        <th className="border border-black p-2 text-left">Type de Congé</th>
-                        <th className="border border-black p-2 text-left">Date de Début</th>
-                        <th className="border border-black p-2 text-left">Date de Fin</th>
-                        <th className="border border-black p-2 text-center">Jours (période)</th>
-                        <th className="border border-black p-2 text-left">Statut</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {reportData.leaves.map(leave => (
-                        <tr key={leave.id}>
-                            <td className="border border-black p-2">{leave.employee}</td>
-                            <td className="border border-black p-2">{leave.type}</td>
-                            <td className="border border-black p-2">{format(parseISO(leave.startDate), 'dd/MM/yyyy')}</td>
-                            <td className="border border-black p-2">{format(parseISO(leave.endDate), 'dd/MM/yyyy')}</td>
-                            <td className="border border-black p-2 text-center">{calculateWorkingDaysInPeriod(leave, startOfMonth(new Date(parseInt(year), parseInt(month) - 1)), endOfMonth(new Date(parseInt(year), parseInt(month) - 1)))}</td>
-                            <td className="border border-black p-2">{leave.status}</td>
-                        </tr>
-                    ))}
-                </tbody>
-                 <tfoot>
-                    <tr className="font-bold bg-gray-100">
-                        <td colSpan={4} className="text-right p-2 border border-black">Total de jours de congé dans la période :</td>
-                        <td className="text-center p-2 border border-black">{reportData.totalDaysInPeriod}</td>
-                        <td className="border border-black"></td>
-                    </tr>
-                </tfoot>
-            </table>
-             <footer className="mt-12 text-center text-xs text-gray-500">
-                <p>Rapport généré le {format(new Date(), 'dd/MM/yyyy HH:mm')}</p>
-                 <div className="mt-4"><p className="page-number"></p></div>
-            </footer>
-        </div>
+    {reportData && (
+        <LeaveOfficialReport 
+            leaves={reportData.leaves}
+            logos={organizationLogos}
+            selectedPeriodText={selectedPeriodText}
+            totalDaysInPeriod={reportData.totalDaysInPeriod}
+            isPrinting={isPrinting}
+            onAfterPrint={() => setIsPrinting(false)}
+            calculateWorkingDaysInPeriod={(l) => calculateWorkingDaysInPeriod(
+                l, 
+                startOfMonth(new Date(parseInt(year), parseInt(month) - 1)), 
+                endOfMonth(new Date(parseInt(year), parseInt(month) - 1))
+            )}
+        />
     )}
     </>
   );

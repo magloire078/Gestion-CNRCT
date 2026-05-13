@@ -100,6 +100,7 @@ export default function EmployeesPage() {
   const [organizationLogos, setOrganizationLogos] = useState<OrganizationSettings | null>(null);
 
   const [printDate, setPrintDate] = useState('');
+  const [printOrientation, setPrintOrientation] = useState<'portrait' | 'landscape'>('portrait');
   const [showDirectoireMap, setShowDirectoireMap] = useState(false);
 
   // Sorting state
@@ -353,8 +354,9 @@ export default function EmployeesPage() {
   };
 
 
-  const handlePrint = async (selectedColumns: ColumnKeys[]) => {
+  const handlePrint = async (selectedColumns: ColumnKeys[], orientation: 'portrait' | 'landscape') => {
     setColumnsToPrint(selectedColumns);
+    setPrintOrientation(orientation);
     const now = new Date();
     setPrintDate(now.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }));
 
@@ -792,11 +794,15 @@ export default function EmployeesPage() {
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end" className="w-56 p-2 rounded-2xl border-white/20 bg-white/90 backdrop-blur-xl shadow-2xl">
                                       <DropdownMenuLabel className="px-3 py-2 font-black uppercase text-[9px] tracking-[0.2em] text-slate-400">Actions Dossier</DropdownMenuLabel>
-                                      <DropdownMenuItem onSelect={() => router.push(`/employees/${employee.id}`)} className="rounded-xl font-bold py-2.5 px-3 focus:bg-slate-100 cursor-pointer">
+                                      <DropdownMenuItem asChild className="rounded-xl font-bold py-2.5 px-3 focus:bg-slate-100 cursor-pointer">
+                                        <Link href={`/employees/${employee.id}`}>
                                           <Eye className="mr-2 h-4 w-4 text-blue-500" /> Profil Complet
+                                        </Link>
                                       </DropdownMenuItem>
-                                      <DropdownMenuItem onSelect={() => router.push(`/employees/${employee.id}/edit`)} className="rounded-xl font-bold py-2.5 px-3 focus:bg-slate-100 cursor-pointer">
+                                      <DropdownMenuItem asChild className="rounded-xl font-bold py-2.5 px-3 focus:bg-slate-100 cursor-pointer">
+                                        <Link href={`/employees/${employee.id}/edit`}>
                                           <Pencil className="mr-2 h-4 w-4 text-amber-500" /> Modifier Données
+                                        </Link>
                                       </DropdownMenuItem>
                                       <DropdownMenuItem 
                                         onSelect={() => setTimeout(() => setDeleteTarget(employee), 50)} 
@@ -866,11 +872,14 @@ export default function EmployeesPage() {
         <InstitutionalReportWrapper 
             isPrinting={isPrinting} 
             onAfterPrint={() => setIsPrinting(false)}
+            orientation={printOrientation}
         >
             <EmployeeOfficialReport 
                 employees={filteredEmployees}
                 logos={organizationLogos}
                 unitLabel={pageTitle}
+                selectedColumns={columnsToPrint}
+                isPrinting={isPrinting}
                 stats={{
                     total: filteredEmployees.length,
                     active: filteredEmployees.filter(e => e.status === 'Actif').length,

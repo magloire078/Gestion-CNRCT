@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { createPortal } from "react-dom";
 import { useAuth } from "@/hooks/use-auth";
 import { getPayslipDetails } from "@/services/payslip-details-service";
 import { getEmployee } from "@/services/employee-service";
@@ -22,6 +21,7 @@ import { useToast } from "@/hooks/use-toast";
 import { format, parseISO, isValid, addMonths, lastDayOfMonth } from "date-fns";
 import { fr } from "date-fns/locale";
 import { logPrintAction } from "@/services/print-tracking-service";
+import { InstitutionalReportWrapper } from "@/components/reports/institutional-report-wrapper";
 
 export default function PayslipDetailPage() {
     const params = useParams();
@@ -91,8 +91,6 @@ export default function PayslipDetailPage() {
     }, [employeeId, payslipDate, endDate, router, toast]);
 
     const handlePrint = () => {
-        setIsPrinting(true);
-        
         // Log the printing action
         if (allPayslips.length > 0) {
             if (endDate) {
@@ -120,12 +118,9 @@ export default function PayslipDetailPage() {
                 });
             }
         }
-
-        // Little delay to ensure state update potentially triggers re-render if needed
-        setTimeout(() => {
-            window.print();
-            setIsPrinting(false);
-        }, 300);
+        
+        // Trigger the print lifecycle in the wrapper
+        setIsPrinting(true);
     };
 
     if (loading) {
@@ -190,17 +185,20 @@ export default function PayslipDetailPage() {
                 ))}
             </div>
 
-            {/* Print Container (Visible only in print, ID must be print-section for globals.css) */}
-            {typeof document !== 'undefined' && createPortal(
-                <div id="print-section" className="bg-white">
+            {/* Optimized Print Implementation */}
+            <InstitutionalReportWrapper 
+                isPrinting={isPrinting} 
+                onAfterPrint={() => setIsPrinting(false)}
+                orientation="portrait"
+            >
+                <div className="bg-white">
                     {allPayslips.map((payslip, index) => (
                         <div key={index} className={index > 0 ? "print:break-before-page" : ""}>
                             <PayslipTemplate payslipDetails={payslip} />
                         </div>
                     ))}
-                </div>,
-                document.body
-            )}
+                </div>
+            </InstitutionalReportWrapper>
 
             {/* Help / Contextual Note */}
             <div className="bg-indigo-50 border border-indigo-100 rounded-[2rem] p-8 flex gap-6 items-start print:hidden">

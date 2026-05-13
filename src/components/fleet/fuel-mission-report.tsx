@@ -147,7 +147,7 @@ export function FuelMissionReport({ transactions, card, month: initialMonth, yea
                                 <div class="signature-box"></div>
                             </div>
                             <div>
-                                <p>Approbation DAFP</p>
+                                <p>Approbation DFP</p>
                                 <div class="signature-box"></div>
                             </div>
                         </div>
@@ -271,7 +271,7 @@ export function FuelMissionReport({ transactions, card, month: initialMonth, yea
                             <div className="border border-gray-300 h-20 w-full rounded"></div>
                         </div>
                         <div className="space-y-12">
-                            <p className="text-center">Approbation DAFP</p>
+                            <p className="text-center">Approbation DFP</p>
                             <div className="border border-gray-300 h-20 w-full rounded"></div>
                         </div>
                     </div>

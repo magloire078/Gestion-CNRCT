@@ -54,7 +54,11 @@ export const SupplyTransactionList = React.memo(({ transactions, onDelete }: Sup
                             </TableCell>
                             <TableCell>
                                 <div className="flex items-center gap-2">
-                                    {t.type === 'restock' ? (
+                                    {t.isAdjustment ? (
+                                        <Badge variant="outline" className="text-amber-600 border-amber-500 bg-amber-50/50 gap-1 rounded-md text-[10px] font-bold py-0.5">
+                                            <Package className="h-3 w-3" /> Ajustement
+                                        </Badge>
+                                    ) : t.type === 'restock' ? (
                                         <Badge variant="outline" className="text-emerald-600 border-emerald-500 bg-emerald-50/50 gap-1 rounded-md text-[10px] font-bold py-0.5">
                                             <ArrowUpCircle className="h-3 w-3" /> Réappro.
                                         </Badge>
@@ -92,7 +96,7 @@ export const SupplyTransactionList = React.memo(({ transactions, onDelete }: Sup
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end" className="rounded-lg shadow-xl border-slate-100">
                                         <DropdownMenuItem className="text-red-600 focus:text-red-600 font-bold" onClick={() => onDelete?.(t.id!)}>
-                                            <Trash2 className="mr-2 h-4 w-4" /> Supprimer Trace
+                                            <Trash2 className="mr-2 h-4 w-4" /> Annuler Mouvement
                                         </DropdownMenuItem>
                                     </DropdownMenuContent>
                                 </DropdownMenu>

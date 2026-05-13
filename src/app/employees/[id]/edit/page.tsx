@@ -20,10 +20,13 @@ export default function EditEmployeePage() {
     
     const [employee, setEmployee] = useState<Employe | null>(null);
     const [loading, setLoading] = useState(true);
+    const { loading: authLoading } = useAuth();
 
     const employeeId = params.id as string;
 
     useEffect(() => {
+        if (authLoading) return;
+
         if (!hasPermission('page:employees:edit')) {
             toast({
                 variant: "destructive",
@@ -51,7 +54,7 @@ export default function EditEmployeePage() {
             })
             .catch(console.error)
             .finally(() => setLoading(false));
-    }, [employeeId, router, toast, hasPermission]);
+    }, [employeeId, router, toast, hasPermission, authLoading]);
 
     if (loading) {
         return (

@@ -67,7 +67,7 @@
     "react-leaflet-cluster": "^4.0.0",
     "react-qr-code": "^2.0.12",
     "react-zxing": "^2.0.0",
-    "recharts": "^2.15.1",
+    "recharts": "^2.15.4",
     "server-only": "^0.0.1",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.0.1",

@@ -14,7 +14,11 @@ if (typeof window !== 'undefined') {
             lowerMsg.includes('permission_denied') ||
             lowerMsg.includes('firebaseerror') ||
             lowerMsg.includes('firestore') ||
-            lowerMsg.includes('could not reach cloud firestore backend');
+            lowerMsg.includes('auth/network-request-failed') ||
+            lowerMsg.includes('fetching auth token failed') ||
+            lowerMsg.includes('could not reach cloud firestore backend') ||
+            lowerMsg.includes('code=unavailable') ||
+            lowerMsg.includes('the operation could not be completed');
     };
 
     // Intercepter console.error

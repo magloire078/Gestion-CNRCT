@@ -49,6 +49,7 @@ interface InventoryTabProps {
     onItemsPerPageChange: (n: number) => void;
     onCategoryFilterChange: (val: string) => void;
     onSearchChange: (val: string) => void;
+    openAdjustDialog: (s: Supply) => void;
     // Render functions to keep components in parent scope for now or passed down
     renderSupplyRow: (item: Supply, index: number) => React.ReactNode;
     renderSupplyCard: (item: Supply) => React.ReactNode;
@@ -72,6 +73,7 @@ export const InventoryTab = memo(({
     onItemsPerPageChange,
     onCategoryFilterChange,
     onSearchChange,
+    openAdjustDialog,
     renderSupplyRow,
     renderSupplyCard
 }: InventoryTabProps) => {

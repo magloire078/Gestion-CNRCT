@@ -123,7 +123,7 @@ export default function ReportingDashboard() {
         },
         {
             title: "États Nominatifs",
-            description: "Listes détaillées pour les audits financiers et structurels.",
+            description: "Listes détaillées pour les contrôles financiers et structurels.",
             icon: FileText,
             color: "bg-indigo-500",
             href: "/reports/nominative",

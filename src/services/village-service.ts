@@ -6,17 +6,28 @@ import { FirestorePermissionError } from '@/lib/errors';
 const villagesCollection = collection(db, 'villages');
 
 /**
- * Calcule l'Indice de Développement Local (IDL) basé sur les infrastructures
+ * Calculates the Local Development Index (IDL) for a village.
+ * The score is based on key infrastructure availability with specific weighting.
+ * Base (80%): Water (20%), Health (20%), Electricity (20%), Education (20%)
+ * Economic/Social (20%): Market (10%), Spiritual/Social (10% for Mosque OR Church)
  */
-export function calculateDevelopmentScore(v: Partial<Village>): number {
+export const calculateDevelopmentScore = (village: Partial<Village>): number => {
     let score = 0;
-    // Poids des infrastructures (Total = 100)
-    if (v.hasWater) score += 30;       // Eau potable : priorité haute
-    if (v.hasHealthCenter) score += 30; // Santé : priorité haute
-    if (v.hasElectricity) score += 20;  // Électricité : priorité moyenne
-    if (v.hasSchool) score += 20;       // Éducation : priorité moyenne
+    
+    // Core infrastructure (80 points total)
+    if (village.hasSchool) score += 20;
+    if (village.hasHealthCenter) score += 20;
+    if (village.hasElectricity) score += 20;
+    if (village.hasWater) score += 20;
+    
+    // Economic & Social (20 points total)
+    if (village.hasMarket) score += 10;
+    
+    // Spiritual/Social gathering points (either counts)
+    if (village.hasMosque || village.hasChurch) score += 10;
+    
     return score;
-}
+};
 
 export async function getVillages(): Promise<Village[]> {
     const snapshot = await getDocs(query(villagesCollection, orderBy("name", "asc")));
@@ -85,7 +96,10 @@ export async function updateVillage(id: string, villageData: Partial<Omit<Villag
             villageData.hasWater !== undefined || 
             villageData.hasElectricity !== undefined || 
             villageData.hasHealthCenter !== undefined || 
-            villageData.hasSchool !== undefined
+            villageData.hasSchool !== undefined ||
+            villageData.hasMarket !== undefined ||
+            villageData.hasMosque !== undefined ||
+            villageData.hasChurch !== undefined
         ) {
             // On récupère le village actuel pour avoir toutes les données pour le score
             const current = await getVillage(id);
@@ -104,10 +118,19 @@ export async function updateVillage(id: string, villageData: Partial<Omit<Villag
     }
 }
 
-export function subscribeToVillages(callback: (villages: Village[]) => void): Unsubscribe {
+export function subscribeToVillages(
+    callback: (villages: Village[]) => void,
+    onError?: (error: Error) => void
+): Unsubscribe {
     const q = query(villagesCollection, orderBy("name", "asc"));
-    return onSnapshot(q, (snapshot) => {
-        const villages = snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() } as Village));
-        callback(villages);
-    });
+    return onSnapshot(q, 
+        (snapshot) => {
+            const villages = snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() } as Village));
+            callback(villages);
+        },
+        (error) => {
+            console.error("Error in subscribeToVillages:", error);
+            if (onError) onError(error);
+        }
+    );
 }

@@ -8,6 +8,9 @@ import {
     MapPin, Home, Info, Compass
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ChiefsOfficialReport } from "@/components/reports/chiefs-official-report";
+import { getOrganizationSettings } from "@/services/organization-service";
+import type { OrganizationSettings } from "@/lib/data";
 import {
   Card,
   CardContent,
@@ -57,9 +60,12 @@ export default function ChiefsReportsPage() {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
     const [viewMode, setViewMode] = useState<"list" | "map">("map");
+    const [isPrinting, setIsPrinting] = useState(false);
+    const [orgSettings, setOrgSettings] = useState<OrganizationSettings | null>(null);
     const [isPending, startTransition] = useTransition();
 
     useEffect(() => {
+        getOrganizationSettings().then(setOrgSettings);
         const unsubscribe = subscribeToChiefs(
             (data) => {
                 setChiefs(data);
@@ -134,236 +140,300 @@ export default function ChiefsReportsPage() {
 
     return (
         <PermissionGuard permission="page:chiefs:view">
-            <div className="flex flex-col gap-8 pb-20 animate-in fade-in duration-700">
-                {/* Header */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 print:hidden">
-                    <div>
-                        <h1 className="text-4xl font-black tracking-tight text-slate-900">Directoire des Rois et Chefs</h1>
-                        <p className="text-muted-foreground mt-2 font-medium">Cartographie et registre des autorités traditionnelles.</p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                        <div className="bg-slate-100 p-1 rounded-2xl flex items-center shadow-inner mr-2">
-                            <Button 
-                                variant={viewMode === "map" ? "default" : "ghost"}
-                                className={cn("rounded-xl h-10 px-4 font-bold transition-all", viewMode === "map" ? "bg-slate-900 shadow-lg text-white" : "text-slate-500 hover:bg-white")}
-                                onClick={() => startTransition(() => setViewMode("map"))}
-                                disabled={isPending}
-                            >
-                                <MapIcon className="mr-2 h-4 w-4" /> Carte
-                            </Button>
-                            <Button 
-                                variant={viewMode === "list" ? "default" : "ghost"}
-                                className={cn("rounded-xl h-10 px-4 font-bold transition-all", viewMode === "list" ? "bg-slate-900 shadow-lg text-white" : "text-slate-500 hover:bg-white")}
-                                onClick={() => startTransition(() => setViewMode("list"))}
-                                disabled={isPending}
-                            >
-                                <Users className="mr-2 h-4 w-4" /> Liste
-                            </Button>
+            <div className="flex flex-col gap-10 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+                {/* Header Section with Premium Glassmorphism */}
+                <div className="relative overflow-hidden rounded-[2.5rem] bg-slate-950 p-10 md:p-14 shadow-2xl print:hidden">
+                    {/* Decorative Elements */}
+                    <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-[#D4AF37]/10 to-transparent opacity-50" />
+                    <div className="absolute -top-24 -right-24 w-64 h-64 bg-[#D4AF37]/20 rounded-full blur-[100px]" />
+                    <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-indigo-500/10 rounded-full blur-[100px]" />
+
+                    <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-8">
+                        <div className="space-y-4">
+                            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
+                                <Crown className="h-4 w-4 text-[#D4AF37]" />
+                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#D4AF37]">Institutionnel</span>
+                            </div>
+                            <h1 className="text-4xl md:text-5xl font-black tracking-tight text-white leading-tight">
+                                Directoire des Rois <br/>
+                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] via-[#F1D279] to-[#D4AF37]">
+                                    et Chefs Traditionnels
+                                </span>
+                            </h1>
+                            <p className="text-slate-400 text-lg font-medium max-w-xl">
+                                Cartographie stratégique et registre centralisé des autorités traditionnelles de Côte d'Ivoire.
+                            </p>
                         </div>
-                        <Button onClick={() => window.print()} variant="outline" className="rounded-xl h-12 shadow-sm border-slate-200 font-bold">
-                            <Printer className="mr-2 h-4 w-4" />
-                            Imprimer
-                        </Button>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button className="bg-[#D4AF37] hover:bg-[#B8972F] text-white rounded-xl h-12 px-6 font-bold shadow-xl shadow-[#D4AF37]/20 border-none">
-                                    <Download className="mr-2 h-4 w-4" />
-                                    Exporter
+
+                        <div className="flex flex-wrap items-center gap-4">
+                            <div className="bg-white/5 p-1.5 rounded-[1.25rem] border border-white/10 backdrop-blur-xl flex items-center shadow-2xl">
+                                <Button 
+                                    variant="ghost"
+                                    className={cn(
+                                        "rounded-xl h-12 px-6 font-bold transition-all duration-300", 
+                                        viewMode === "map" 
+                                            ? "bg-[#D4AF37] text-slate-950 shadow-lg shadow-[#D4AF37]/20 hover:bg-[#D4AF37]/90" 
+                                            : "text-slate-400 hover:text-white hover:bg-white/5"
+                                    )}
+                                    onClick={() => startTransition(() => setViewMode("map"))}
+                                    disabled={isPending}
+                                >
+                                    <MapIcon className="mr-2 h-4 w-4" /> Carte
                                 </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-48 rounded-xl shadow-2xl">
-                                <DropdownMenuLabel className="text-[10px] uppercase font-black text-slate-400">Format d'export</DropdownMenuLabel>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={handleExportCsv} className="gap-2 cursor-pointer">
-                                    <FileSpreadsheet className="h-4 w-4 text-emerald-500" /> Excel (CSV)
-                                </DropdownMenuItem>
-                                <DropdownMenuItem className="gap-2 cursor-pointer">
-                                    <FileJson className="h-4 w-4 text-amber-500" /> JSON
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                                <Button 
+                                    variant="ghost"
+                                    className={cn(
+                                        "rounded-xl h-12 px-6 font-bold transition-all duration-300", 
+                                        viewMode === "list" 
+                                            ? "bg-white text-slate-950 shadow-lg hover:bg-white/90" 
+                                            : "text-slate-400 hover:text-white hover:bg-white/5"
+                                    )}
+                                    onClick={() => startTransition(() => setViewMode("list"))}
+                                    disabled={isPending}
+                                >
+                                    <Users className="mr-2 h-4 w-4" /> Liste
+                                </Button>
+                            </div>
+
+                            <div className="flex items-center gap-3">
+                                <Button onClick={() => setIsPrinting(true)} variant="outline" className="rounded-2xl h-14 px-6 shadow-xl border-white/10 bg-white/5 text-white font-bold hover:bg-white/10">
+                                    <Printer className="mr-2 h-5 w-5" />
+                                    Imprimer
+                                </Button>
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button className="bg-gradient-to-br from-[#D4AF37] to-[#B8972F] hover:from-[#B8972F] hover:to-[#D4AF37] text-slate-950 rounded-2xl h-14 px-8 font-black shadow-2xl shadow-[#D4AF37]/30 border-none transition-all duration-500 hover:scale-[1.02] active:scale-[0.98]">
+                                            <Download className="mr-2 h-5 w-5" />
+                                            Exporter
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end" className="w-56 rounded-[1.5rem] shadow-2xl p-2 bg-white/95 backdrop-blur-xl border-slate-100">
+                                        <DropdownMenuLabel className="px-4 py-3 text-[10px] uppercase font-black text-slate-400 tracking-widest">Format d'export</DropdownMenuLabel>
+                                        <DropdownMenuSeparator className="bg-slate-100" />
+                                        <DropdownMenuItem onClick={handleExportCsv} className="gap-3 cursor-pointer rounded-xl py-3 px-4 focus:bg-slate-50">
+                                            <div className="h-8 w-8 rounded-lg bg-emerald-50 flex items-center justify-center">
+                                                <FileSpreadsheet className="h-4 w-4 text-emerald-600" />
+                                            </div>
+                                            <span className="font-bold text-slate-700 text-sm">Excel (CSV)</span>
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem className="gap-3 cursor-pointer rounded-xl py-3 px-4 focus:bg-slate-50">
+                                            <div className="h-8 w-8 rounded-lg bg-amber-50 flex items-center justify-center">
+                                                <FileJson className="h-4 w-4 text-amber-600" />
+                                            </div>
+                                            <span className="font-bold text-slate-700 text-sm">JSON</span>
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                {/* Stats Overview */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-2xl overflow-hidden group hover:scale-[1.02] transition-transform bg-white/80 backdrop-blur-md">
-                        <CardContent className="p-6">
-                            <div className="flex items-center justify-between mb-4">
-                                <div className="h-12 w-12 rounded-xl bg-[#D4AF37]/10 flex items-center justify-center">
-                                    <Crown className="h-6 w-6 text-[#D4AF37]" />
-                                </div>
-                                <Badge variant="secondary" className="bg-[#D4AF37]/5 text-[#D4AF37] border border-[#D4AF37]/20 font-bold">Autorités</Badge>
-                            </div>
-                            <h3 className="text-3xl font-black text-slate-900">{stats.total}</h3>
-                            <p className="text-sm text-slate-500 font-bold uppercase tracking-wider mt-1">Membres total</p>
-                        </CardContent>
-                    </Card>
-
-                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-2xl overflow-hidden group hover:scale-[1.02] transition-transform bg-white/80 backdrop-blur-md">
-                        <CardContent className="p-6">
-                            <div className="flex items-center justify-between mb-4">
-                                <div className="h-12 w-12 rounded-xl bg-indigo-500/10 flex items-center justify-center">
-                                    <Compass className="h-6 w-6 text-indigo-600" />
-                                </div>
-                                <Badge variant="secondary" className="bg-indigo-50 text-indigo-700 border-none font-bold">Zones</Badge>
-                            </div>
-                            <h3 className="text-3xl font-black text-slate-900">{stats.regions}</h3>
-                            <p className="text-sm text-slate-500 font-bold uppercase tracking-wider mt-1">Régions Couvertes</p>
-                        </CardContent>
-                    </Card>
-
-                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-2xl overflow-hidden group hover:scale-[1.02] transition-transform bg-white/80 backdrop-blur-md">
-                        <CardContent className="p-6">
-                            <div className="flex items-center justify-between mb-4">
-                                <div className="h-12 w-12 rounded-xl bg-amber-500/10 flex items-center justify-center">
-                                    <Home className="h-6 w-6 text-amber-600" />
-                                </div>
-                                <Badge variant="secondary" className="bg-amber-50 text-amber-700 border-none font-bold">Localités</Badge>
-                            </div>
-                            <h3 className="text-3xl font-black text-slate-900">{stats.villages}</h3>
-                            <p className="text-sm text-slate-500 font-bold uppercase tracking-wider mt-1">Villages Représentés</p>
-                        </CardContent>
-                    </Card>
-
-                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-2xl overflow-hidden group hover:scale-[1.02] transition-transform bg-white/80 backdrop-blur-md">
-                        <CardContent className="p-6">
-                            <div className="flex items-center justify-between mb-4">
-                                <div className="h-12 w-12 rounded-xl bg-slate-900 flex items-center justify-center">
-                                    <BarChart3 className="h-6 w-6 text-white" />
-                                </div>
-                                <Badge variant="secondary" className="bg-slate-100 text-slate-700 border-none font-bold">Densité</Badge>
-                            </div>
-                            <h3 className="text-3xl font-black text-slate-900">{(stats.total / (stats.regions || 1)).toFixed(1)}</h3>
-                            <p className="text-sm text-slate-500 font-bold uppercase tracking-wider mt-1">Moyenne par Région</p>
-                        </CardContent>
-                    </Card>
-                </div>
-
-                {/* Content View */}
-                <div className="space-y-6">
-                    {viewMode === "map" ? (
-                        <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-2xl overflow-hidden bg-white/80 backdrop-blur-md">
-                            <CardHeader className="bg-slate-900 p-8 border-b border-white/10">
-                                <div className="flex items-center gap-4">
-                                    <div className="h-12 w-12 rounded-xl bg-[#D4AF37] flex items-center justify-center shadow-lg shadow-[#D4AF37]/20">
-                                        <MapIcon className="h-6 w-6 text-white" />
+                {/* Stats Grid - Hyper-Premium Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {[
+                        { 
+                            label: "Membres total", 
+                            value: stats.total, 
+                            icon: Crown, 
+                            color: "#D4AF37", 
+                            bg: "bg-[#D4AF37]/5", 
+                            tag: "Autorités" 
+                        },
+                        { 
+                            label: "Régions Couvertes", 
+                            value: stats.regions, 
+                            icon: Compass, 
+                            color: "#6366f1", 
+                            bg: "bg-indigo-50", 
+                            tag: "Géo-Data" 
+                        },
+                        { 
+                            label: "Villages Représentés", 
+                            value: stats.villages, 
+                            icon: Home, 
+                            color: "#f59e0b", 
+                            bg: "bg-amber-50", 
+                            tag: "Localités" 
+                        },
+                        { 
+                            label: "Moyenne par Région", 
+                            value: (stats.total / (stats.regions || 1)).toFixed(1), 
+                            icon: BarChart3, 
+                            color: "#0f172a", 
+                            bg: "bg-slate-100", 
+                            tag: "Densité" 
+                        }
+                    ].map((stat, i) => (
+                        <Card key={i} className="group relative border-none shadow-xl shadow-slate-200/40 rounded-[2rem] overflow-hidden bg-white hover:scale-[1.02] transition-all duration-500">
+                            <div className={`absolute top-0 right-0 w-32 h-32 ${stat.bg} rounded-full -mr-16 -mt-16 blur-3xl opacity-50 group-hover:opacity-80 transition-opacity`} />
+                            <CardContent className="p-8">
+                                <div className="flex items-center justify-between mb-6">
+                                    <div className={cn("h-14 w-14 rounded-2xl flex items-center justify-center shadow-inner", stat.bg)}>
+                                        <stat.icon className="h-7 w-7" style={{ color: stat.color }} />
                                     </div>
-                                    <div>
-                                        <CardTitle className="text-2xl font-black text-white">Visualisation Cartographique</CardTitle>
-                                        <CardDescription className="font-bold text-[#D4AF37]/80 uppercase text-[10px] tracking-widest leading-none mt-1">Distribution géographique des autorités traditionnelles en Côte d'Ivoire</CardDescription>
-                                    </div>
+                                    <Badge variant="secondary" className={cn("rounded-full px-4 py-1 font-black text-[10px] uppercase tracking-wider border-none", stat.bg)} style={{ color: stat.color }}>
+                                        {stat.tag}
+                                    </Badge>
                                 </div>
-                            </CardHeader>
-                            <CardContent className="p-0">
-                                <DirectoireMap members={chiefs} className="min-h-[800px] border-none rounded-none" />
+                                <div className="space-y-1">
+                                    <h3 className="text-4xl font-black text-slate-950 tracking-tighter">{stat.value}</h3>
+                                    <p className="text-[11px] text-slate-400 font-bold uppercase tracking-[0.15em]">{stat.label}</p>
+                                </div>
                             </CardContent>
                         </Card>
-                    ) : (
-                        <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-2xl overflow-hidden bg-white/80 backdrop-blur-md">
-                            <CardHeader className="bg-slate-50/50 border-b border-slate-100 p-8">
-                                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-                                    <div className="flex items-center gap-4">
-                                        <div className="h-12 w-12 rounded-2xl bg-slate-900 flex items-center justify-center shadow-lg">
-                                            <Users className="h-6 w-6 text-white" />
+                    ))}
+                </div>
+
+
+                {/* Content Area */}
+                <div className="space-y-8">
+                    {viewMode === "map" ? (
+                        <div className="group relative">
+                            <div className="absolute -inset-1 bg-gradient-to-r from-[#D4AF37]/20 to-transparent rounded-[2.5rem] blur-xl opacity-50 transition duration-1000 group-hover:opacity-100" />
+                            <Card className="relative border-none shadow-2xl rounded-[2.5rem] overflow-hidden bg-white">
+                                <CardHeader className="bg-slate-950 p-10 border-b border-white/5">
+                                    <div className="flex items-center gap-6">
+                                        <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-[#D4AF37] to-[#B8972F] flex items-center justify-center shadow-2xl shadow-[#D4AF37]/20">
+                                            <MapIcon className="h-8 w-8 text-slate-950" />
                                         </div>
                                         <div>
-                                            <CardTitle className="text-2xl font-black text-slate-900">Répertoire des Chefs</CardTitle>
-                                            <CardDescription className="font-bold text-slate-500 uppercase text-[10px] tracking-widest leading-none mt-1">Liste exhaustive et recherche par circonscription</CardDescription>
+                                            <CardTitle className="text-3xl font-black text-white tracking-tight">Visualisation Cartographique</CardTitle>
+                                            <p className="text-[#D4AF37] font-black uppercase text-[10px] tracking-[0.3em] mt-2 opacity-80">Réseau des autorités traditionnelles</p>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-3 print:hidden">
-                                        <div className="relative">
-                                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                                </CardHeader>
+                                <CardContent className="p-0">
+                                    <div className="min-h-[850px] relative">
+                                        <DirectoireMap members={chiefs} className="min-h-[850px]" />
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
+                    ) : (
+                        <Card className="border-none shadow-2xl rounded-[2.5rem] overflow-hidden bg-white">
+                            <CardHeader className="p-10 border-b border-slate-50 bg-slate-50/30">
+                                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+                                    <div className="flex items-center gap-6">
+                                        <div className="h-16 w-16 rounded-2xl bg-slate-950 flex items-center justify-center shadow-2xl">
+                                            <Users className="h-8 w-8 text-white" />
+                                        </div>
+                                        <div>
+                                            <CardTitle className="text-3xl font-black text-slate-950 tracking-tight">Répertoire des Chefs</CardTitle>
+                                            <p className="text-slate-400 font-black uppercase text-[10px] tracking-[0.3em] mt-2">Registre officiel consolidé</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-4 print:hidden">
+                                        <div className="relative group">
+                                            <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-300 transition-colors group-focus-within:text-[#D4AF37]" />
                                             <Input 
-                                                placeholder="Rechercher un chef ou village..." 
+                                                placeholder="Rechercher par nom, titre ou localité..." 
                                                 value={searchTerm}
                                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                                className="pl-12 w-[300px] h-12 rounded-2xl border-slate-200 bg-white shadow-sm"
+                                                className="pl-14 w-[400px] h-16 rounded-2xl border-none bg-slate-100 font-medium text-slate-700 placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-[#D4AF37]/50 shadow-inner"
                                             />
                                         </div>
-                                        <Button variant="outline" className="rounded-xl h-12 w-12 p-0 border-slate-200 shadow-sm">
-                                            <Filter className="h-4 w-4 text-slate-600" />
+                                        <Button variant="outline" className="rounded-2xl h-16 w-16 p-0 border-slate-100 bg-white shadow-xl hover:bg-slate-50 group">
+                                            <Filter className="h-5 w-5 text-slate-400 group-hover:text-slate-900 transition-colors" />
                                         </Button>
                                     </div>
                                 </div>
                             </CardHeader>
                             <CardContent className="p-0">
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 border-b border-slate-100">
-                                            <TableHead className="py-6 pl-8 text-[10px] font-black uppercase text-slate-400 tracking-widest">Autorité</TableHead>
-                                            <TableHead className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Titre / Rôle</TableHead>
-                                            <TableHead className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Circonscription</TableHead>
-                                            <TableHead className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Statut</TableHead>
-                                            <TableHead className="text-[10px] font-black uppercase text-slate-400 tracking-widest text-right pr-8">Localisation</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {filteredChiefs.map((chief) => (
-                                            <TableRow key={chief.id} className="group hover:bg-slate-50/50 transition-colors border-b border-slate-50">
-                                                <TableCell className="py-5 pl-8">
-                                                    <div className="flex items-center gap-4">
-                                                        <div className="h-10 w-10 rounded-xl bg-slate-100 flex items-center justify-center font-black text-[#D4AF37] overflow-hidden border border-[#D4AF37]/10">
-                                                            {chief.photoUrl ? (
-                                                                <img src={chief.photoUrl} alt={chief.lastName} className="h-full w-full object-cover" />
-                                                            ) : (
-                                                                <Crown className="h-5 w-5" />
-                                                            )}
-                                                        </div>
-                                                        <div>
-                                                            <p className="font-black text-slate-900 leading-none uppercase tracking-tighter">{chief.lastName} {chief.firstName}</p>
-                                                            <p className="text-[10px] text-slate-500 font-bold uppercase mt-1">{chief.phone || chief.contact || 'Aucun contact'}</p>
-                                                        </div>
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <Badge className="bg-amber-50 text-amber-700 hover:bg-amber-100 border-none rounded-lg px-2.5 py-1 text-[10px] font-black uppercase tracking-tight">
-                                                        {chief.title || 'Chef traditionnel'}
-                                                    </Badge>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <div className="flex flex-col gap-0.5">
-                                                        <div className="flex items-center gap-1.5 font-bold text-xs text-slate-700">
-                                                            <Building2 className="h-3 w-3 text-slate-400" />
-                                                            {chief.region}
-                                                        </div>
-                                                        <span className="text-[10px] text-slate-400 font-medium ml-4.5">{chief.department}</span>
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell>
-                                                    {showStatus && (
-                                                        <Badge 
-                                                            className={cn(
-                                                                "border-none rounded-lg px-2.5 py-1 text-[10px] font-black uppercase tracking-tight",
-                                                                chief.status === 'archive' 
-                                                                    ? "bg-slate-100 text-slate-500" 
-                                                                    : chief.status === 'a_vie'
-                                                                        ? "bg-indigo-50 text-indigo-700"
-                                                                        : "bg-emerald-50 text-emerald-700"
-                                                            )}
-                                                        >
-                                                            {chief.status === 'a_vie' ? 'À Vie' : chief.status || 'Actif'}
-                                                        </Badge>
-                                                    )}
-                                                </TableCell>
-                                                <TableCell className="text-right pr-8">
-                                                    <div className="flex flex-col items-end gap-1">
-                                                        <div className="flex items-center gap-1.5 text-slate-900">
-                                                            <MapPin className="h-3 w-3 text-[#D4AF37]" />
-                                                            <span className="text-xs font-black uppercase tracking-tighter">{chief.village}</span>
-                                                        </div>
-                                                        <span className="text-[9px] text-slate-400 font-bold uppercase">{chief.subPrefecture || 'District Central'}</span>
-                                                    </div>
-                                                </TableCell>
+                                <div className="overflow-x-auto">
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 border-b border-slate-100">
+                                                <TableHead className="py-8 pl-10 text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">Autorité / Identité</TableHead>
+                                                <TableHead className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">Titre & Rôle</TableHead>
+                                                <TableHead className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">Circonscription</TableHead>
+                                                <TableHead className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">Statut</TableHead>
+                                                <TableHead className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] text-right pr-10">Localisation</TableHead>
                                             </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {filteredChiefs.map((chief) => (
+                                                <TableRow key={chief.id} className="group hover:bg-slate-50/50 transition-all duration-300 border-b border-slate-50/50">
+                                                    <TableCell className="py-6 pl-10">
+                                                        <div className="flex items-center gap-5">
+                                                            <div className="relative">
+                                                                <div className="absolute -inset-1 bg-gradient-to-br from-[#D4AF37] to-[#B8972F] rounded-[1.25rem] blur opacity-0 group-hover:opacity-40 transition duration-500" />
+                                                                <div className="relative h-14 w-14 rounded-[1.25rem] bg-slate-100 flex items-center justify-center font-black text-[#D4AF37] overflow-hidden border border-slate-200 shadow-sm">
+                                                                    {chief.photoUrl ? (
+                                                                        <img src={chief.photoUrl} alt={chief.lastName} className="h-full w-full object-cover transition duration-500 group-hover:scale-110" />
+                                                                    ) : (
+                                                                        <Crown className="h-6 w-6 opacity-40" />
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                            <div className="space-y-1">
+                                                                <p className="font-black text-slate-900 leading-none uppercase tracking-tight text-base group-hover:text-[#D4AF37] transition-colors">{chief.lastName} {chief.firstName}</p>
+                                                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{chief.phone || chief.contact || 'Contact non renseigné'}</p>
+                                                            </div>
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <Badge className="bg-[#D4AF37]/5 text-[#D4AF37] hover:bg-[#D4AF37]/10 border border-[#D4AF37]/10 rounded-xl px-4 py-1.5 text-[10px] font-black uppercase tracking-wider">
+                                                            {chief.title || 'Chef traditionnel'}
+                                                        </Badge>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <div className="flex flex-col gap-1">
+                                                            <div className="flex items-center gap-2 font-black text-[11px] text-slate-700 uppercase">
+                                                                <Building2 className="h-3.5 w-3.5 text-slate-300" />
+                                                                {chief.region}
+                                                            </div>
+                                                            <span className="text-[10px] text-slate-400 font-bold ml-5.5 uppercase">{chief.department}</span>
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        {showStatus && (
+                                                            <div className="flex items-center gap-2">
+                                                                <div className={cn(
+                                                                    "h-2 w-2 rounded-full",
+                                                                    chief.status === 'archive' ? "bg-slate-300" : "bg-emerald-500 animate-pulse"
+                                                                )} />
+                                                                <span className={cn(
+                                                                    "text-[10px] font-black uppercase tracking-tight",
+                                                                    chief.status === 'archive' ? "text-slate-400" : "text-emerald-700"
+                                                                )}>
+                                                                    {chief.status === 'a_vie' ? 'Mandat À Vie' : chief.status || 'Actif'}
+                                                                </span>
+                                                            </div>
+                                                        )}
+                                                    </TableCell>
+                                                    <TableCell className="text-right pr-10">
+                                                        <div className="flex flex-col items-end gap-1.5">
+                                                            <div className="flex items-center gap-2 text-slate-950">
+                                                                <MapPin className="h-4 w-4 text-[#D4AF37]" />
+                                                                <span className="text-sm font-black uppercase tracking-tighter">{chief.village}</span>
+                                                            </div>
+                                                            <span className="text-[9px] text-slate-400 font-black uppercase tracking-widest bg-slate-100 px-2 py-0.5 rounded-md">{chief.subPrefecture || 'District Central'}</span>
+                                                        </div>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </div>
                             </CardContent>
                         </Card>
                     )}
                 </div>
+
+                {/* --- PRINT PORTAL --- */}
+                <ChiefsOfficialReport 
+                    chiefs={chiefs}
+                    organizationSettings={orgSettings}
+                    isPrinting={isPrinting}
+                    onAfterPrint={() => setIsPrinting(false)}
+                    stats={{
+                        total: stats.total,
+                        regions: stats.regions,
+                        villages: stats.villages
+                    }}
+                    subtitle={viewMode === 'map' ? "Vue Cartographique" : "Liste Nominative"}
+                />
             </div>
         </PermissionGuard>
     );

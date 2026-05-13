@@ -1,32 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { createPortal } from "react-dom";
+import React from "react";
 import type { Conflict, OrganizationSettings } from "@/lib/data";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { FileText, MapPin, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { InstitutionalCover } from "./institutional-cover";
+import { InstitutionalHeader } from "./institutional-header";
+import { InstitutionalReportWrapper } from "./institutional-report-wrapper";
 
 interface AnnualReportLayoutProps {
     logos: OrganizationSettings;
     conflicts: Conflict[];
     periodLabel: string;
+    onAfterPrint?: () => void;
 }
 
-export function AnnualReportLayout({ logos, conflicts, periodLabel }: AnnualReportLayoutProps) {
-    const [mounted, setMounted] = useState(false);
-
-    useEffect(() => {
-        setMounted(true);
-        // Portrait mode for this specific report
-        document.body.classList.add('print-portrait');
-        return () => {
-            setMounted(false);
-            document.body.classList.remove('print-portrait');
-        };
-    }, []);
-
-    if (!mounted) return null;
-
+export function AnnualReportLayout({ logos, conflicts, periodLabel, onAfterPrint }: AnnualReportLayoutProps) {
     // Group conflicts by year
     const conflictsByYear: Record<string, Conflict[]> = {};
     conflicts.forEach(c => {
@@ -36,119 +26,115 @@ export function AnnualReportLayout({ logos, conflicts, periodLabel }: AnnualRepo
     });
 
     const years = Object.keys(conflictsByYear).sort().reverse();
+    const totalConflicts = conflicts.length;
+    const resolvedConflicts = conflicts.filter(c => c.status === "Résolu").length;
+    const resolutionRate = totalConflicts > 0 ? Math.round((resolvedConflicts / totalConflicts) * 100) : 0;
 
-    return createPortal(
-        <div id="print-section" className="bg-white text-black w-full print:shadow-none print:border-none">
+    return (
+        <InstitutionalReportWrapper isPrinting={true} orientation="portrait" onAfterPrint={onAfterPrint}>
             {/* Page de Garde */}
-            <div className="print-page h-screen flex flex-col p-12 border-b-2 border-slate-100 break-inside-avoid">
-                <header className="flex justify-between items-start mb-20 min-h-[140px] break-inside-avoid">
-                    <div className="w-1/3 text-center flex flex-col justify-center items-center break-inside-avoid">
-                        <p className="font-bold text-[10px] items-center text-slate-800 leading-tight">Chambre Nationale des Rois<br />et Chefs Traditionnels</p>
-                        {logos.mainLogoUrl && <img src={logos.mainLogoUrl} alt="Logo" className="max-h-24 mt-2" loading="eager" />}
-                    </div>
-                    <div className="w-1/3"></div>
-                    <div className="w-1/3 text-center flex flex-col justify-center items-center break-inside-avoid">
-                        <p className="font-bold text-[10px] leading-tight text-slate-800">République de Côte d'Ivoire</p>
-                        {logos.secondaryLogoUrl && <img src={logos.secondaryLogoUrl} alt="Logo" className="max-h-20 my-2" loading="eager" />}
-                        <p className="text-[10px] italic">Union - Discipline - Travail</p>
-                    </div>
-                </header>
-
-                <div className="flex-grow flex flex-col items-center justify-center text-center space-y-12">
-                    <div className="space-y-4">
-                        <h1 className="text-3xl font-black uppercase tracking-widest text-slate-800">
-                            RÉCAPITULATIF ET STATISTIQUES DES LITIGES
-                        </h1>
-                        <div className="h-1.5 w-48 bg-primary mx-auto"></div>
-                    </div>
-                    
-                    <h2 className="text-xl font-bold text-slate-600 bg-slate-50 px-8 py-4 rounded-full border border-slate-100 italic">
-                        Soumis à la Chambre Nationale des Rois<br />et Chefs Traditionnels
-                    </h2>
-
-                    <div className="mt-12 p-8 border-4 border-double border-slate-200 rounded-lg">
-                        <p className="text-2xl font-bold uppercase underline">PÉRIODE : {periodLabel}</p>
-                    </div>
-                </div>
-
-                <footer className="mt-auto pt-10 text-center border-t border-slate-100">
-                    <p className="font-bold text-lg uppercase tracking-widest">Secrétariat Général / Cabinet</p>
-                    <p className="text-sm text-slate-500 mt-2 italic">Document généré le {format(new Date(), 'dd MMMM yyyy', { locale: fr })}</p>
-                </footer>
-            </div>
+            <InstitutionalCover 
+                title="RÉCAPITULATIF ET STATISTIQUES DES LITIGES"
+                subtitle="ANALYSE DES CONFLITS COMMUNAUTAIRES"
+                period={periodLabel}
+                direction="SG / CABINET"
+                service="Secrétariat Général"
+                stats={[
+                    { label: "Total Dossiers", value: totalConflicts, icon: FileText },
+                    { label: "Localités", value: new Set(conflicts.map(c => c.village)).size, icon: MapPin },
+                    { label: "Taux Résolution", value: `${resolutionRate}%`, icon: CheckCircle2 },
+                    { label: "Alertes Actives", value: conflicts.filter(c => c.status === "Ouvert").length, icon: AlertTriangle },
+                ]}
+                reference={`STATS-LIT-${new Date().getFullYear()}-${Math.floor(Math.random() * 900) + 100}`}
+                settings={logos}
+                orientation="portrait"
+            />
 
             {/* Sommaire */}
-            <div className="print-page min-h-screen p-12 break-after-page">
-                <h2 className="text-2xl font-bold uppercase underline mb-8">SOMMAIRE</h2>
-                <div className="space-y-6 text-lg mt-12">
+            <div className="min-h-[29.7cm] p-12 print:p-16 break-after-page bg-white">
+                    <InstitutionalHeader 
+                        title="SOMMAIRE DU RAPPORT"
+                        period={periodLabel}
+                        settings={logos}
+                    />
+                
+                <div className="mt-20 space-y-8">
                     {years.map((year, idx) => (
-                        <div key={year} className="flex justify-between border-b-2 border-dotted border-slate-200 pb-2">
-                            <span className="font-semibold uppercase text-slate-700">
-                                {idx + 1} - TABLEAU RÉCAPITULATIF DES LITIGES AU COURS DE L’ANNÉE {year}
-                            </span>
-                            <span className="font-bold text-primary">PAGE {idx + 2}</span>
+                        <div key={year} className="flex justify-between items-end border-b-2 border-dotted border-slate-200 pb-2">
+                            <div className="flex items-center gap-4">
+                                <span className="flex items-center justify-center w-10 h-10 rounded-full bg-slate-900 text-white font-black text-sm">
+                                    {idx + 1}
+                                </span>
+                                <span className="font-black uppercase text-lg tracking-tight text-slate-800">
+                                    TABLEAU RÉCAPITULATIF DES LITIGES - ANNÉE {year}
+                                </span>
+                            </div>
+                            <span className="font-black text-slate-400 tabular-nums">PAGE {idx + 2}</span>
                         </div>
                     ))}
+                </div>
+
+                <div className="mt-auto pt-10 text-center">
+                    <p className="text-[10px] text-slate-400 uppercase tracking-[0.3em] font-black italic">
+                        Document de Travail Interne - Diffusion Limitée
+                    </p>
                 </div>
             </div>
 
             {/* Tableaux par année */}
             {years.map((year, idx) => (
-                <div key={year} className="print-page min-h-screen p-8 break-after-page">
-                    <div className="mb-6 flex justify-between items-center bg-slate-50 p-4 border border-slate-200">
-                         <h3 className="text-lg font-bold uppercase tracking-tight">
-                            {idx + 1} - TABLEAU RÉCAPITULATIF DES LITIGES AU COURS DE L’ANNÉE {year}
-                        </h3>
-                        <span className="px-3 py-1 bg-primary text-white text-xs font-bold rounded">ANNÉE {year}</span>
+                <div key={year} className="min-h-[29.7cm] p-8 print:p-10 break-after-page bg-white">
+                    <InstitutionalHeader 
+                        title={`Récapitulatif des Litiges - Exercice ${year}`}
+                        period={periodLabel}
+                        settings={logos}
+                    />
+
+                    <div className="mt-8">
+                        <table className="w-full border-collapse border-2 border-slate-900 text-[9px] leading-tight">
+                            <thead>
+                                <tr className="bg-slate-900 text-white uppercase font-black text-center">
+                                    <th className="p-2 w-[30px] border-r border-slate-700">N°</th>
+                                    <th className="p-2 w-[110px] border-r border-slate-700 text-left">District / Région</th>
+                                    <th className="p-2 w-[90px] border-r border-slate-700 text-left">Localité</th>
+                                    <th className="p-2 border-r border-slate-700 text-left">Nature du Litige / Résumé</th>
+                                    <th className="p-2 w-[80px]">Statut</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {conflictsByYear[year].map((conflict, index) => (
+                                    <tr key={conflict.id} className="align-top border-b border-slate-200">
+                                        <td className="p-2 text-center font-black border-r border-slate-200">{index + 1}</td>
+                                        <td className="p-2 border-r border-slate-200 uppercase">
+                                            <div className="font-black text-slate-900">{conflict.district || '-'}</div>
+                                            <div className="text-slate-400 italic text-[7px] leading-none mt-1">{conflict.region || '-'}</div>
+                                        </td>
+                                        <td className="p-2 border-r border-slate-200 font-bold">{conflict.village}</td>
+                                        <td className="p-2 border-r border-slate-200">
+                                            <div className="font-black text-slate-900 uppercase mb-1">{conflict.type}</div>
+                                            <div className="text-slate-600 italic line-clamp-3 leading-tight">{conflict.description}</div>
+                                        </td>
+                                        <td className="p-2 text-center uppercase">
+                                            <span className={`px-2 py-1 rounded-sm font-black text-[7px] ${
+                                                conflict.status === 'Résolu' ? 'bg-emerald-100 text-emerald-800' : 
+                                                conflict.status === 'En médiation' ? 'bg-amber-100 text-amber-800' : 
+                                                'bg-slate-100 text-slate-800'
+                                            }`}>
+                                                {conflict.status}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
                     </div>
 
-                    <table className="w-full border-collapse border border-black text-[9px] leading-tight">
-                        <thead>
-                            <tr className="bg-slate-200 text-black uppercase font-bold text-center">
-                                <th className="border border-black p-2 w-[35px]">N°</th>
-                                <th className="border border-black p-2 w-[120px]">DISTRICT / RÉGION</th>
-                                <th className="border border-black p-2 w-[100px]">VILLAGE / COMMUNE</th>
-                                <th className="border border-black p-2 w-[150px]">PARTIES EN CONFLIT</th>
-                                <th className="border border-black p-2">NATURE DU LITIGE / RÉSUMÉ DES FAITS</th>
-                                <th className="border border-black p-2 w-[100px]">ETAT DE LA PROCÉDURE</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {conflictsByYear[year].map((conflict, index) => (
-                                <tr key={conflict.id} className="align-top">
-                                    <td className="border border-black p-2 text-center font-bold">{index + 1}</td>
-                                    <td className="border border-black p-2 uppercase">
-                                        <div className="font-bold text-slate-900">{conflict.district || '-'}</div>
-                                        <div className="text-slate-500 italic mt-1 text-[8px]">{conflict.region || '-'}</div>
-                                    </td>
-                                    <td className="border border-black p-2 font-semibold">{conflict.village}</td>
-                                    <td className="border border-black p-2">{conflict.parties || '-'}</td>
-                                    <td className="border border-black p-2">
-                                        <div className="font-bold text-primary italic underline mb-1">{conflict.type}</div>
-                                        <div className="leading-normal">{conflict.description}</div>
-                                        {conflict.impact && (
-                                            <div className="mt-2 pt-2 border-t border-slate-100 text-slate-500 italic">
-                                                <span className="font-bold text-[8px]">IMPACT:</span> {conflict.impact}
-                                            </div>
-                                        )}
-                                    </td>
-                                    <td className="border border-black p-2 font-bold uppercase text-center text-[8px]">{conflict.status}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-
-                    <footer className="mt-8 pt-4 border-t border-slate-200 flex justify-between text-[10px] text-slate-400 italic">
-                        <p>Document CNRCT - Système de Gestion Intégré</p>
-                        <p>Page {idx + 2}</p>
-                    </footer>
+                    <div className="mt-auto pt-8 flex justify-between items-end border-t border-slate-100 text-[8px] font-bold text-slate-400 uppercase tracking-widest">
+                        <span>Chambre Nationale des Rois et Chefs Traditionnels</span>
+                        <span>Page {idx + 2} / {years.length + 1}</span>
+                    </div>
                 </div>
             ))}
-
-            <footer className="print-only fixed bottom-0 left-0 right-0 p-4 text-center text-[9px] text-slate-400">
-                 Yamoussoukro, Riviera - BP 201 Yamoussoukro | Tél : (225) 30 64 06 60 | Fax : (+255) 30 64 06 63 | info@cnrct.ci
-            </footer>
-        </div>,
-        document.body
+        </InstitutionalReportWrapper>
     );
 }

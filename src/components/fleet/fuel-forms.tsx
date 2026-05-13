@@ -899,7 +899,7 @@ export function FuelExpenseDialog({
                                         <FormItem className="space-y-1.5">
                                             <FormLabel className="text-[11px] font-black uppercase tracking-widest text-slate-500 pl-1">Entité / Service</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="ex: DAFP, DAS..." className="h-12 rounded-xl border-slate-200 bg-white font-bold text-sm uppercase" {...field} />
+                                                <Input placeholder="ex: DFP, DAS..." className="h-12 rounded-xl border-slate-200 bg-white font-bold text-sm uppercase" {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>

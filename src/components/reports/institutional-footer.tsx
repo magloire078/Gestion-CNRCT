@@ -80,10 +80,23 @@ export function InstitutionalFooter({
         )}
       </div>
       
-      {/* Metadata Line */}
-      <div className="mt-8 pt-4 border-t border-slate-50 flex justify-between items-center text-[8px] text-slate-300 font-bold uppercase tracking-widest">
-        <span>Généré le {new Date().toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
-        <span className="italic">Document Institutional - CNRCT Yamoussoukro</span>
+      {/* Institutional Details Footer */}
+      <div className="mt-12 pt-8 border-t border-slate-200 flex flex-col md:flex-row justify-between items-center text-center md:text-left gap-6 text-slate-500">
+        <div className="space-y-1">
+          <p className="text-[10px] font-black text-slate-900 uppercase tracking-widest">Chambre Nationale des Rois et Chefs Traditionnels</p>
+          <p className="text-[9px] font-medium leading-relaxed italic">
+            Quartier Résidentiel, Rue du Lycée Scientifique, Yamoussoukro, Côte d'Ivoire<br />
+            BP 1500 Yamoussoukro | Tél: (+225) 27 30 64 20 20 | Fax: (+225) 27 30 64 20 21
+          </p>
+        </div>
+        <div className="flex flex-col items-center md:items-end gap-1">
+          <p className="text-[9px] font-black text-primary lowercase tracking-tighter">www.cnrct.ci | info@cnrct.ci</p>
+          <div className="flex items-center gap-4 text-[8px] font-black uppercase tracking-[0.2em] text-slate-300">
+            <span>Généré le {new Date().toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+            <span className="w-1 h-1 bg-slate-200 rounded-full" />
+            <span>Digital Audit Trail v2.5</span>
+          </div>
+        </div>
       </div>
     </div>
   );

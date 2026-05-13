@@ -48,7 +48,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { subscribeToVillages } from "@/services/village-service";
 import { subscribeToChiefs } from "@/services/chief-service";
 import { getOrganizationSettings } from "@/services/organization-service";
-import { Village } from "@/types/village";
+import { Village, VillageEntry } from "@/types/village";
 import { Chief } from "@/types/chief";
 import { OrganizationSettings } from "@/types/common";
 import { IVORIAN_REGIONS } from "@/constants/regions";
@@ -64,11 +64,6 @@ import { PermissionGuard } from "@/components/auth/permission-guard";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 
-export type VillageEntry = {
-    village: Village;
-    currentChief: Chief | null;
-    archivedChiefsCount: number;
-};
 
 type SeatStatus = "all" | "occupied" | "vacant";
 
@@ -93,22 +88,41 @@ export default function VillagesPage() {
 
     // Fetch Data with Real-time Sync
     useEffect(() => {
+        let villagesLoaded = false;
+        let chiefsLoaded = false;
+
+        const checkLoadingFinished = () => {
+            if (villagesLoaded && chiefsLoaded) {
+                console.log(`[VillagesPage] Loading finished. Villages: ${villages.length}, Chiefs: ${chiefs.length}`);
+                setLoading(false);
+            }
+        };
+
         setLoading(true);
         
         // Subscription to Villages
         const unsubscribeVillages = subscribeToVillages((updatedVillages) => {
+            console.log(`[VillagesPage] Received ${updatedVillages.length} villages`);
             setVillages(updatedVillages);
-            if (chiefs.length > 0) setLoading(false);
+            villagesLoaded = true;
+            checkLoadingFinished();
+        }, (error) => {
+            console.error("Error subscribing to villages:", error);
+            villagesLoaded = true;
+            checkLoadingFinished();
         });
 
         // Subscription to Chiefs
         const unsubscribeChiefs = subscribeToChiefs((updatedChiefs) => {
+            console.log(`[VillagesPage] Received ${updatedChiefs.length} chiefs`);
             setChiefs(updatedChiefs);
-            setLoading(false);
+            chiefsLoaded = true;
+            checkLoadingFinished();
         }, (error) => {
             console.error("Error subscribing to chiefs:", error);
+            chiefsLoaded = true;
+            checkLoadingFinished();
         });
-
 
         return () => {
             unsubscribeVillages();
@@ -120,11 +134,7 @@ export default function VillagesPage() {
         setPrintDate(format(new Date(), "dd/MM/yyyy"));
     }, []);
 
-    useEffect(() => {
-        const handleAfterPrint = () => setIsPrinting(false);
-        window.addEventListener('afterprint', handleAfterPrint);
-        return () => window.removeEventListener('afterprint', handleAfterPrint);
-    }, []);
+
 
     // Derived Data: Merge Villages and Chiefs
     const villageEntries = useMemo(() => {
@@ -199,7 +209,7 @@ export default function VillagesPage() {
 
     const stats = useMemo(() => {
         const total = filteredVillages.length;
-        if (total === 0) return { total: 0, vacant: 0, occupied: 0, electricity: 0, water: 0, school: 0, health: 0 };
+        if (total === 0) return { total: 0, vacant: 0, occupied: 0, electricity: 0, water: 0, school: 0, health: 0, market: 0, spiritual: 0 };
         
         return {
             total,
@@ -208,7 +218,9 @@ export default function VillagesPage() {
             electricity: (filteredVillages.filter(v => v.village.hasElectricity).length / total) * 100,
             water: (filteredVillages.filter(v => v.village.hasWater).length / total) * 100,
             school: (filteredVillages.filter(v => v.village.hasSchool).length / total) * 100,
-            health: (filteredVillages.filter(v => v.village.hasHealthCenter).length / total) * 100
+            health: (filteredVillages.filter(v => v.village.hasHealthCenter).length / total) * 100,
+            market: (filteredVillages.filter(v => v.village.hasMarket).length / total) * 100,
+            spiritual: (filteredVillages.filter(v => v.village.hasMosque || v.village.hasChurch).length / total) * 100
         };
     }, [filteredVillages]);
 
@@ -229,14 +241,14 @@ export default function VillagesPage() {
             <div className="min-h-screen bg-slate-50/50">
             {/* Print View Component (Only mounted during print) */}
             {isPrinting && (
-                <div className="hidden print:block">
-                    <VillagesOfficialReport 
-                        villages={filteredVillages} 
-                        organizationSettings={settings} 
-                        subtitle={printSubtitle}
-                        stats={stats}
-                    />
-                </div>
+                <VillagesOfficialReport 
+                    villages={filteredVillages} 
+                    organizationSettings={settings} 
+                    subtitle={printSubtitle}
+                    isPrinting={isPrinting}
+                    onAfterPrint={() => setIsPrinting(false)}
+                    stats={stats}
+                />
             )}
 
             {/* Villages Header Section */}
@@ -268,10 +280,10 @@ export default function VillagesPage() {
                                 variant="outline" 
                                 className="bg-white/5 border-white/10 text-white hover:bg-white/10 rounded-xl h-14 px-8 font-bold group"
                                 onClick={handlePrint}
-                                disabled={filteredVillages.length === 0}
+                                disabled={filteredVillages.length === 0 || !settings}
                             >
                                 <Printer className="mr-2 h-5 w-5 group-hover:text-amber-500 transition-colors" />
-                                Imprimer la liste
+                                {settings ? "Imprimer la liste" : "Chargement..."}
                             </Button>
                             <PermissionGuard permission="page:repository:view">
                                 <AddVillageSheet />
@@ -336,6 +348,21 @@ export default function VillagesPage() {
                                     value={stats.health} 
                                     className="h-1.5 bg-white/10" 
                                     indicatorClassName="bg-emerald-400"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <div className="flex items-center gap-2 text-rose-400">
+                                <Building2 className="h-4 w-4" />
+                                <span className="text-[10px] font-black uppercase tracking-widest">Économie / Marchés</span>
+                            </div>
+                            <div className="flex items-end gap-2">
+                                <span className="text-3xl font-black text-white leading-none">{stats.market.toFixed(0)}%</span>
+                                <Progress 
+                                    value={stats.market} 
+                                    className="h-1.5 bg-white/10" 
+                                    indicatorClassName="bg-rose-400"
                                 />
                             </div>
                         </div>
@@ -519,6 +546,19 @@ export default function VillagesPage() {
                         </Button>
                     </div>
                 )}
+
+                {/* --- DIAGNOSTICS (Admin only) --- */}
+                {(user?.roleId === 'super-admin' || user?.email === 'magloire078@gmail.com') && (
+                    <div className="mt-8 p-4 bg-slate-900 text-slate-400 text-[10px] font-mono rounded-lg border border-slate-800">
+                        <div className="flex gap-4">
+                            <span>VILLAGES: {villages.length}</span>
+                            <span>CHIEFS: {chiefs.length}</span>
+                            <span>FILTERED: {filteredVillages.length}</span>
+                            <span>LOADING: {loading ? "YES" : "NO"}</span>
+                            <span>AUTH: {user?.email}</span>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     </PermissionGuard>
@@ -624,11 +664,12 @@ function VillageCard({ entry }: { entry: VillageEntry }) {
                 <div className="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-slate-50">
                     <div className="col-span-1">
                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.1em] mb-1">Infrastructures</p>
-                        <div className="flex gap-2.5">
-                            <Zap className={`h-4 w-4 ${village.hasElectricity ? 'text-amber-500' : 'text-slate-200'}`} />
-                            <Droplets className={`h-4 w-4 ${village.hasWater ? 'text-blue-500' : 'text-slate-200'}`} />
-                            <School className={`h-4 w-4 ${village.hasSchool ? 'text-indigo-500' : 'text-slate-200'}`} />
-                            <Activity className={`h-4 w-4 ${village.hasHealthCenter ? 'text-emerald-500' : 'text-slate-200'}`} />
+                        <div className="flex flex-wrap gap-2">
+                            <Zap className={cn("h-3.5 w-3.5", village.hasElectricity ? 'text-amber-500' : 'text-slate-200')} />
+                            <Droplets className={cn("h-3.5 w-3.5", village.hasWater ? 'text-blue-500' : 'text-slate-200')} />
+                            <School className={cn("h-3.5 w-3.5", village.hasSchool ? 'text-indigo-500' : 'text-slate-200')} />
+                            <Activity className={cn("h-3.5 w-3.5", village.hasHealthCenter ? 'text-emerald-500' : 'text-slate-200')} />
+                            <Building2 className={cn("h-3.5 w-3.5", village.hasMarket ? 'text-rose-500' : 'text-slate-200')} />
                         </div>
                     </div>
                     <div className="col-span-1 text-right">

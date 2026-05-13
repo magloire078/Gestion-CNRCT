@@ -74,6 +74,7 @@ import { AddSupplySheet } from "@/components/supplies/add-supply-sheet";
 import { EditSupplySheet } from "@/components/supplies/edit-supply-sheet";
 import { DistributeSupplyDialog } from "@/components/supplies/distribute-supply-dialog";
 import { RestockSupplyDialog } from "@/components/supplies/restock-supply-dialog";
+import { AdjustStockDialog } from "@/components/supplies/adjust-stock-dialog";
 import { SupplyTransactionList } from "@/components/supplies/supply-transaction-list";
 import { ManageCategoriesDialog } from "@/components/supplies/manage-categories-dialog";
 import { ConfirmationDialog } from "@/components/common/confirmation-dialog";
@@ -106,6 +107,7 @@ const SupplyRow = memo(({
     openDistributeDialog, 
     openRestockDialog,
     openEditSheet, 
+    openAdjustDialog,
     setDeleteTarget,
     hasRecentActivity
 }: { 
@@ -114,6 +116,7 @@ const SupplyRow = memo(({
     openDistributeDialog: (s: Supply) => void;
     openRestockDialog: (s: Supply) => void;
     openEditSheet: (s: Supply) => void;
+    openAdjustDialog: (s: Supply) => void;
     setDeleteTarget: (s: Supply) => void;
     hasRecentActivity: boolean;
 }) => {
@@ -186,6 +189,9 @@ const SupplyRow = memo(({
                     <DropdownMenuItem onClick={() => openRestockDialog(supply)} className="cursor-pointer font-bold text-emerald-600 focus:bg-emerald-50 rounded-lg mx-1 my-0.5">
                         <PlusCircle className="mr-2 h-4 w-4" /> Réapprovisionner
                     </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => openAdjustDialog(supply)} className="cursor-pointer font-bold text-amber-600 focus:bg-amber-50 rounded-lg mx-1 my-0.5">
+                        <RefreshCw className="mr-2 h-4 w-4" /> Régulariser le Stock
+                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => openEditSheet(supply)} className="cursor-pointer font-bold mx-1 my-0.5 rounded-lg">
                         <Settings className="mr-2 h-4 w-4 text-slate-400" /> Paramètres Article
                     </DropdownMenuItem>
@@ -206,12 +212,14 @@ const SupplyCard = memo(({
   hasRecentActivity,
   openDistributeDialog, 
   openEditSheet, 
+  openAdjustDialog,
   setDeleteTarget,
 }: { 
   supply: Supply; 
   hasRecentActivity: boolean;
   openDistributeDialog: (s: Supply) => void;
   openEditSheet: (s: Supply) => void;
+  openAdjustDialog: (s: Supply) => void;
   setDeleteTarget: (s: Supply) => void;
 }) => {
   const status = getStockStatus(supply.quantity, supply.reorderLevel);
@@ -243,6 +251,7 @@ const SupplyCard = memo(({
                     <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-2xl border-white/10 bg-card/90 backdrop-blur-xl">
                         <DropdownMenuLabel className="font-black uppercase text-[10px] tracking-widest opacity-50 px-2 py-1.5">Options Article</DropdownMenuLabel>
                         <DropdownMenuItem onClick={() => openEditSheet(supply)} className="font-bold rounded-lg mx-1 my-0.5"><Settings className="mr-2 h-4 w-4 text-slate-400" /> Modifier Détails</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => openAdjustDialog(supply)} className="font-bold text-amber-600 rounded-lg mx-1 my-0.5"><RefreshCw className="mr-2 h-4 w-4" /> Régulariser Stock</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => setDeleteTarget(supply)} className="text-destructive font-bold focus:bg-destructive/10 rounded-lg mx-1 my-0.5"><Trash2 className="mr-2 h-4 w-4" /> Supprimer</DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
@@ -325,6 +334,7 @@ export default function SuppliesPage() {
   const [selectedSupply, setSelectedSupply] = useState<Supply | null>(null);
   const [isDistributeDialogOpen, setIsDistributeDialogOpen] = useState(false);
   const [isRestockDialogOpen, setIsRestockDialogOpen] = useState(false);
+  const [isAdjustStockDialogOpen, setIsAdjustStockDialogOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Supply | null>(null);
   const [activeTab, setActiveTab] = useState("inventory");
   const [isPrintDialogOpen, setIsPrintDialogOpen] = useState(false);
@@ -394,6 +404,15 @@ export default function SuppliesPage() {
   }, []);
 
   const closeRestockDialog = useCallback(() => setIsRestockDialogOpen(false), []);
+
+  const openAdjustDialog = useCallback((supply: Supply) => {
+    startTransition(() => {
+      setSelectedSupply(supply);
+      setIsAdjustStockDialogOpen(true);
+    });
+  }, []);
+
+  const closeAdjustDialog = useCallback(() => setIsAdjustStockDialogOpen(false), []);
 
   const handleSetDeleteTarget = useCallback((s: Supply | null) => setDeleteTarget(s), []);
 
@@ -501,19 +520,19 @@ export default function SuppliesPage() {
   };
 
   const handleDeleteTransaction = async (id: string) => {
-    if (confirm("Voulez-vous vraiment supprimer cette trace du journal ? Cela n'affectera pas le stock actuel.")) {
+    if (confirm("Voulez-vous vraiment annuler ce mouvement ? \n\nCette action va : \n1. Supprimer la trace du journal \n2. Rétablir/Ajuster automatiquement le stock actuel.")) {
         try {
             await deleteSupplyTransaction(id);
             toast({
-                title: "Trace supprimée",
-                description: "Le mouvement a été retiré du journal.",
+                title: "Mouvement annulé",
+                description: "Le journal a été nettoyé et le stock a été ajusté.",
             });
-        } catch (err) {
+        } catch (err: any) {
             console.error("Failed to delete transaction:", err);
             toast({
                 variant: "destructive",
-                title: "Erreur",
-                description: "Impossible de supprimer la trace.",
+                title: "Action impossible",
+                description: err.message || "Impossible d'annuler ce mouvement.",
             });
         }
     }
@@ -692,6 +711,45 @@ export default function SuppliesPage() {
     });
   }, [supplies, transactions, printOptions]);
 
+  const reportStats = useMemo(() => {
+    if (!printableSupplies.length) return { total: 0, outOfStock: 0, lowStock: 0, avgHealth: 0, movements: 0 };
+    
+    let outOfStock = 0;
+    let lowStock = 0;
+    let totalHealth = 0;
+    let movements = 0;
+    const total = printableSupplies.length;
+
+    printableSupplies.forEach(s => {
+        // Use the period-specific qteStock for report stats
+        const qty = s.qteStock;
+        const reorder = s.reorderLevel || 5;
+
+        if (qty <= 0) {
+            outOfStock++;
+        } else if (qty <= reorder) {
+            lowStock++;
+        }
+
+        if (s.isModified) {
+            movements++;
+        }
+
+        const healthValue = qty <= 0 ? 5 : 
+                           qty <= reorder ? (qty / (reorder * 2)) * 100 :
+                           Math.min(100, (qty / (reorder * 2)) * 100);
+        totalHealth += healthValue;
+    });
+
+    return { 
+        total, 
+        outOfStock, 
+        lowStock, 
+        avgHealth: total > 0 ? totalHealth / total : 100,
+        movements
+    };
+  }, [printableSupplies]);
+
   const periodLabel = useMemo(() => {
     if (!printOptions) return "";
     const months = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
@@ -707,10 +765,11 @@ export default function SuppliesPage() {
         openDistributeDialog={openDistributeDialog} 
         openRestockDialog={openRestockDialog}
         openEditSheet={openEditSheet}
+        openAdjustDialog={openAdjustDialog}
         setDeleteTarget={handleSetDeleteTarget}
         hasRecentActivity={recentActivityIds.has(item.id)}
     />
-  ), [openDistributeDialog, openRestockDialog, openEditSheet, handleSetDeleteTarget, recentActivityIds]);
+  ), [openDistributeDialog, openRestockDialog, openEditSheet, openAdjustDialog, handleSetDeleteTarget, recentActivityIds]);
 
   const memoizedRenderSupplyCard = useCallback((supply: Supply) => (
     <SupplyCard 
@@ -718,10 +777,11 @@ export default function SuppliesPage() {
         supply={supply} 
         openDistributeDialog={openDistributeDialog} 
         openEditSheet={openEditSheet}
+        openAdjustDialog={openAdjustDialog}
         setDeleteTarget={handleSetDeleteTarget}
         hasRecentActivity={recentActivityIds.has(supply.id)}
     />
-  ), [openDistributeDialog, openEditSheet, handleSetDeleteTarget, recentActivityIds]);
+  ), [openDistributeDialog, openEditSheet, openAdjustDialog, handleSetDeleteTarget, recentActivityIds]);
 
   return (
     <PermissionGuard permission="page:supplies:view">
@@ -819,6 +879,7 @@ export default function SuppliesPage() {
             onItemsPerPageChange={setItemsPerPage}
             onCategoryFilterChange={handleCategoryFilterChange}
             onSearchChange={handleSearchChange}
+            openAdjustDialog={openAdjustDialog}
             renderSupplyRow={memoizedRenderSupplyRow}
             renderSupplyCard={memoizedRenderSupplyCard}
           />
@@ -837,6 +898,7 @@ export default function SuppliesPage() {
             isPending={isPending}
             onPageChange={(page) => startTransition(() => setHistoryPage(page))}
             onItemsPerPageChange={setHistoryItemsPerPage}
+            onDelete={handleDeleteTransaction}
           />
       </TabsContent>
       </Tabs>
@@ -867,6 +929,11 @@ export default function SuppliesPage() {
           <RestockSupplyDialog
             isOpen={isRestockDialogOpen}
             onCloseAction={closeRestockDialog}
+            supply={selectedSupply}
+          />
+          <AdjustStockDialog
+            isOpen={isAdjustStockDialogOpen}
+            onCloseAction={closeAdjustDialog}
             supply={selectedSupply}
           />
         </>
@@ -903,7 +970,7 @@ export default function SuppliesPage() {
             supplies={printableSupplies}
             categoryLabel={printOptions.category}
             periodLabel={periodLabel}
-            stats={stats}
+            stats={reportStats}
             options={{
                 includePhotos: printOptions.includePhotos,
                 showHealthStatus: printOptions.showHealthStatus
@@ -917,7 +984,7 @@ export default function SuppliesPage() {
         onAfterPrint={() => setIsPrinting(false)}
       >
         {isPrinting && printOptions?.reportTemplate !== 'official' && printOptions && (
-            <div id="printable-report" className="bg-white p-6 min-h-screen text-black">
+            <div className="bg-white p-6 min-h-screen text-black">
               <InstitutionalHeader 
                 title={printOptions.category !== 'all' ? `État des Stocks : ${printOptions.category}` : "État de Gestion des Fournitures et Consommables"} 
                 period={`Période : ${periodLabel || format(new Date(), 'MMMM yyyy', { locale: fr })}`}
@@ -930,7 +997,7 @@ export default function SuppliesPage() {
                       </div>
                       <div className="flex flex-col">
                           <span className="text-[9px] font-black uppercase text-slate-400 mb-0.5">Nombre d'Articles</span>
-                          <span className="text-xl font-black text-slate-900 leading-tight">{stats.total}</span>
+                          <span className="text-xl font-black text-slate-900 leading-tight">{reportStats.total}</span>
                       </div>
                   </div>
                   <div className="flex items-start gap-3">
@@ -943,7 +1010,7 @@ export default function SuppliesPage() {
                       <div className="flex flex-col">
                           <span className={cn("text-[9px] font-black uppercase mb-0.5", stats.outOfStock > 0 ? "text-red-500" : "text-slate-400")}>Ruptures</span>
                           <span className={cn("text-xl font-black leading-tight", stats.outOfStock > 0 ? "text-red-600" : "text-slate-900")}>
-                                {stats.outOfStock}
+                                {reportStats.outOfStock}
                           </span>
                       </div>
                   </div>
@@ -957,7 +1024,7 @@ export default function SuppliesPage() {
                       <div className="flex flex-col">
                           <span className={cn("text-[9px] font-black uppercase mb-0.5", stats.lowStock > 0 ? "text-amber-500" : "text-slate-400")}>Critiques</span>
                           <span className={cn("text-xl font-black leading-tight", stats.lowStock > 0 ? "text-amber-600" : "text-slate-900")}>
-                                {stats.lowStock}
+                                {reportStats.lowStock}
                           </span>
                       </div>
                   </div>
@@ -967,7 +1034,7 @@ export default function SuppliesPage() {
                       </div>
                       <div className="flex flex-col">
                           <span className="text-[9px] font-black uppercase text-emerald-500 mb-0.5">Santé</span>
-                          <span className="text-xl font-black text-emerald-600 leading-tight">{Math.round(stats.avgHealth)}%</span>
+                          <span className="text-xl font-black text-emerald-600 leading-tight">{Math.round(reportStats.avgHealth)}%</span>
                       </div>
                   </div>
               </div>

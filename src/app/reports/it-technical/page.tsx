@@ -15,11 +15,11 @@ import {
 } from "@/components/ui/table";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { InstitutionalHeader } from "@/components/reports/institutional-header";
-import { InstitutionalFooter } from "@/components/reports/institutional-footer";
-import { InstitutionalReportWrapper } from "@/components/reports/institutional-report-wrapper";
+import { getOrganizationSettings } from "@/services/organization-service";
+import type { OrganizationSettings } from "@/types/common";
+import { TechnicalOfficialReport, type TechnicalItem } from "@/components/reports/technical-official-report";
 
-const inventoryData = [
+const inventoryData: TechnicalItem[] = [
   { name: "Escabeau alu ECOPLUS", initial: 1, entered: 0, exit: 0 },
   { name: "Echelle simple PRONOR 5.2 m", initial: 1, entered: 0, exit: 0 },
   { name: "Paquet de limes", initial: 6, entered: 0, exit: 0 },
@@ -37,6 +37,11 @@ const inventoryData = [
 
 export default function TechnicalManagementReportPage() {
   const [isPrinting, setIsPrinting] = useState(false);
+  const [organizationSettings, setOrganizationSettings] = useState<OrganizationSettings | null>(null);
+
+  useEffect(() => {
+    getOrganizationSettings().then(setOrganizationSettings);
+  }, []);
 
   const handlePrint = () => {
     setIsPrinting(true);
@@ -44,130 +49,94 @@ export default function TechnicalManagementReportPage() {
 
   return (
     <PermissionGuard permission="page:reports:view">
-      <div className="flex flex-col gap-8 pb-20 max-w-5xl mx-auto py-10 px-6 sm:px-10 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+      <div className="flex flex-col gap-10 pb-20 max-w-6xl mx-auto py-12 px-6 sm:px-10 animate-in fade-in slide-in-from-bottom-4 duration-1000">
         {/* Controls - Hidden on Print */}
-        <div className="flex items-center justify-between print:hidden">
-          <Link href="/reports">
-            <Button variant="ghost" className="rounded-full gap-2 text-slate-500 hover:text-slate-900 transition-colors">
-              <ArrowLeft className="h-4 w-4" /> Retour aux rapports
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 print:hidden">
+          <div className="space-y-4">
+            <Link href="/reports">
+              <Button variant="ghost" className="rounded-full gap-2 text-slate-500 hover:text-slate-900 transition-colors p-0 h-auto hover:bg-transparent">
+                <ArrowLeft className="h-4 w-4" /> Retour aux rapports
+              </Button>
+            </Link>
+            <h1 className="text-5xl font-black tracking-tighter text-slate-900 md:text-6xl leading-none">
+              Rapport <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-600 to-amber-900">Technique</span>
+            </h1>
+            <p className="text-slate-500 font-medium max-w-xl text-lg leading-relaxed">
+              Gestion et suivi des matériels, outillages et consommables techniques.
+            </p>
+          </div>
+          <div className="flex items-center gap-4">
+            <Button onClick={handlePrint} variant="outline" className="rounded-xl border-slate-200 font-bold shadow-sm h-14 px-8 hover:bg-slate-50">
+              <Printer className="mr-3 h-5 w-5" /> Imprimer
             </Button>
-          </Link>
-          <div className="flex gap-4">
-            <Button onClick={handlePrint} variant="outline" className="rounded-xl border-slate-200 font-bold shadow-sm h-12 px-6">
-              <Printer className="mr-2 h-4 w-4" /> Imprimer le rapport
-            </Button>
-            <Button onClick={handlePrint} className="bg-slate-900 text-white rounded-xl font-bold shadow-xl h-12 px-6 hover:bg-slate-800 transition-all border-none font-bold uppercase tracking-widest text-[11px]">
-              <Download className="mr-2 h-4 w-4" /> PDF
+            <Button onClick={handlePrint} className="bg-slate-900 text-white rounded-xl font-bold shadow-2xl h-14 px-8 hover:bg-slate-800 transition-all border-none uppercase tracking-widest text-xs">
+              <Download className="mr-3 h-5 w-5" /> Exporter PDF
             </Button>
           </div>
         </div>
 
-        <InstitutionalReportWrapper isPrinting={isPrinting} onAfterPrint={() => setIsPrinting(false)}>
-          {/* Main Report Container */}
-          <div id="printable-report" className="border-none shadow-2xl shadow-slate-200/60 rounded-2xl overflow-hidden bg-white/80 backdrop-blur-md print:shadow-none print:m-0 print:border-none">
-            <div className="p-12 md:p-16 space-y-12">
-              
-              {/* Reusable Institutional Header */}
-              <InstitutionalHeader 
-                title="Le point de la gestion des matériels et outillages techniques" 
-                period="Période du 1er au 28 Février 2026"
-              />
-
-            {/* Observation Note */}
-            <div className="bg-amber-50/50 border border-amber-100 rounded-xl p-6 flex items-start gap-4">
-              <div className="h-10 w-10 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
-                 <FileText className="h-5 w-5 text-amber-600" />
+        {/* Preview Card */}
+        <Card className="border-none shadow-2xl shadow-slate-200/60 rounded-[2.5rem] overflow-hidden bg-white/80 backdrop-blur-md group transition-all duration-500">
+          <CardContent className="p-0">
+            <div className="bg-slate-900 p-12 text-white flex justify-between items-center">
+              <div className="flex items-center gap-6">
+                <div className="h-20 w-20 rounded-3xl bg-white/10 flex items-center justify-center border border-white/10 group-hover:rotate-6 transition-transform">
+                  <Wrench className="h-10 w-10 text-amber-400" />
+                </div>
+                <div>
+                  <h2 className="text-3xl font-black tracking-tight">Inventaire Technique</h2>
+                  <p className="text-white/50 font-bold uppercase text-[10px] tracking-[0.2em] mt-1">Audit du matériel et outillage • Février 2026</p>
+                </div>
               </div>
-              <div>
-                 <p className="text-xs font-black uppercase text-amber-900 tracking-widest mb-1 italic">Note de Gestion</p>
-                 <p className="text-sm font-bold text-amber-700 italic">NB : Rien à signaler</p>
+              <div className="hidden lg:flex items-center gap-3 bg-white/5 px-6 py-4 rounded-2xl border border-white/5">
+                <FileText className="h-5 w-5 text-amber-500" />
+                <span className="text-xs font-black uppercase tracking-widest">Rapport Consolidé</span>
               </div>
             </div>
 
-            {/* Inventory Table */}
-            <div className="space-y-4">
-               <div className="flex items-center gap-3 mb-2">
-                  <Wrench className="h-5 w-5 text-slate-400" />
-                  <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight">Suivi des Stocks</h3>
-               </div>
-               
-               <div className="overflow-hidden rounded-2xl border border-slate-100 shadow-sm p-1">
-                 <Table>
-                   <TableHeader>
-                     <TableRow className="bg-slate-900 hover:bg-slate-900 border-none rounded-t-xl">
-                       <TableHead className="text-white font-black uppercase text-[10px] tracking-widest h-14 pl-8 rounded-tl-xl">Désignation</TableHead>
-                       <TableHead className="text-white font-black uppercase text-[10px] tracking-widest h-14 text-center">Stock Initial</TableHead>
-                       <TableHead className="text-white font-black uppercase text-[10px] tracking-widest h-14 text-center">Stock Entré</TableHead>
-                       <TableHead className="text-white font-black uppercase text-[10px] tracking-widest h-14 text-center">Stock Sorti</TableHead>
-                       <TableHead className="text-white font-black uppercase text-[10px] tracking-widest h-14 text-center pr-8 rounded-tr-xl">Stock Restant</TableHead>
-                     </TableRow>
-                   </TableHeader>
-                   <TableBody>
-                     {inventoryData.map((item, index) => (
-                       <TableRow key={index} className="hover:bg-slate-50 border-b border-slate-50 transition-colors">
-                         <TableCell className="font-bold text-slate-700 py-4 pl-8 text-sm">{item.name}</TableCell>
-                         <TableCell className="text-center font-black text-slate-900 text-sm bg-slate-50/40">{item.initial}</TableCell>
-                         <TableCell className="text-center font-bold text-emerald-600 text-sm">{item.entered}</TableCell>
-                         <TableCell className="text-center font-bold text-rose-500 text-sm">{item.exit}</TableCell>
-                         <TableCell className="text-center pr-8">
-                            <span className="inline-flex items-center justify-center h-8 w-12 rounded-lg bg-slate-900 text-white font-black text-xs shadow-md">
-                              {item.initial + item.entered - item.exit}
-                            </span>
-                         </TableCell>
-                       </TableRow>
-                     ))}
-                   </TableBody>
-                 </Table>
-               </div>
+            <div className="p-10">
+              <div className="overflow-hidden rounded-2xl border border-slate-100 bg-slate-50/30 p-1">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-white hover:bg-white border-b border-slate-100 h-20">
+                      <TableHead className="font-black uppercase text-[10px] tracking-widest text-slate-400 pl-10">Désignation</TableHead>
+                      <TableHead className="font-black uppercase text-[10px] tracking-widest text-slate-400 text-center">Initial</TableHead>
+                      <TableHead className="font-black uppercase text-[10px] tracking-widest text-slate-400 text-center">Entrées</TableHead>
+                      <TableHead className="font-black uppercase text-[10px] tracking-widest text-slate-400 text-center">Sorties</TableHead>
+                      <TableHead className="font-black uppercase text-[10px] tracking-widest text-slate-400 text-center pr-10">Stock Final</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {inventoryData.map((item, index) => (
+                      <TableRow key={index} className="hover:bg-white transition-colors border-b border-slate-50 group/row">
+                        <TableCell className="font-black text-slate-900 py-6 pl-10 text-sm uppercase tracking-tight">{item.name}</TableCell>
+                        <TableCell className="text-center font-bold text-slate-400 text-sm">{item.initial}</TableCell>
+                        <TableCell className="text-center font-black text-emerald-600 text-sm">{item.entered > 0 ? `+ ${item.entered}` : "---"}</TableCell>
+                        <TableCell className="text-center font-black text-rose-500 text-sm">{item.exit > 0 ? `- ${item.exit}` : "---"}</TableCell>
+                        <TableCell className="text-center pr-10">
+                           <span className="inline-flex items-center justify-center h-10 w-14 rounded-xl bg-slate-900 text-white font-black text-sm shadow-xl group-hover/row:scale-110 transition-transform">
+                             {item.initial + item.entered - item.exit}
+                           </span>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             </div>
+          </CardContent>
+        </Card>
 
-            {/* Reusable Institutional Footer */}
-            <InstitutionalFooter 
-              date="04/03/2026"
-              signatoryName="COULIBALY Hamadou"
-              signatoryTitle="Contrôleur Interne et Qualité, CNRCT"
-            />
-            </div>
-          </div>
-        </InstitutionalReportWrapper>
-
-        {/* Global CSS for Printing */}
-        <style jsx global>{`
-          @media print {
-            @page {
-              size: A4;
-              margin: 10mm;
-            }
-            /* Hide everything first */
-            body * {
-              visibility: hidden;
-            }
-            /* Show report and its children */
-            #printable-report, #printable-report * {
-              visibility: visible;
-            }
-            /* Positioning the report for print */
-            #printable-report {
-              position: absolute;
-              left: 0;
-              top: 0;
-              width: 100% !important;
-              margin: 0 !important;
-              padding: 0 !important;
-              box-shadow: none !important;
-              border: none !important;
-            }
-            /* Fix background colors for print */
-            .bg-slate-900 {
-              background-color: #0f172a !important;
-              -webkit-print-color-adjust: exact;
-            }
-            .bg-slate-50\/40 {
-               background-color: #f8fafc !important;
-               -webkit-print-color-adjust: exact;
-            }
-          }
-        `}</style>
+        {/* Standardized Official Report Component */}
+        {organizationSettings && (
+          <TechnicalOfficialReport 
+            items={inventoryData}
+            organizationSettings={organizationSettings}
+            period="Période du 1er au 28 Février 2026"
+            isPrinting={isPrinting}
+            onAfterPrint={() => setIsPrinting(false)}
+          />
+        )}
       </div>
     </PermissionGuard>
   );

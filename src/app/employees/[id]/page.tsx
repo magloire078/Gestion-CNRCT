@@ -19,6 +19,9 @@ import {
 import { AddHistoryEventSheet } from "@/components/employees/add-history-event-sheet";
 import { EmployeeHistoryTimeline } from "@/components/employees/employee-history-timeline";
 import { type EmployeeEvent } from "@/lib/data";
+import { EmployeeProfileReport } from "@/components/reports/employee-profile-report";
+import { getOrganizationSettings } from "@/services/organization-service";
+import type { OrganizationSettings } from "@/lib/data";
 import {
     Card,
     CardContent,
@@ -104,6 +107,8 @@ export default function EmployeeDetailPage() {
     const [eventToEdit, setEventToEdit] = useState<EmployeeEvent | null>(null);
     const [activeTab, setActiveTab] = useState("info");
     const [showSalary, setShowSalary] = useState(false);
+    const [isPrinting, setIsPrinting] = useState(false);
+    const [orgSettings, setOrgSettings] = useState<OrganizationSettings | null>(null);
     const [isPending, startTransition] = useTransition();
 
     const employeeId = params.id as string;
@@ -132,6 +137,7 @@ export default function EmployeeDetailPage() {
         })
         .catch(console.error)
         .finally(() => setLoading(false));
+        getOrganizationSettings().then(setOrgSettings);
     }, [employeeId, router, toast]);
 
     const handleRefreshHistory = async () => {
@@ -160,7 +166,7 @@ export default function EmployeeDetailPage() {
                 toast({ title: "Événement supprimé", description: "L'historique a été mis à jour." });
                 await handleRefreshHistory();
             } catch (error) {
-                toast({ variant: "destructive", title: "Erreur", description: "Impossible de supprimer l'événement." });
+                toast({ variant: "destructive", title: "Erreur", description: "Impossible d'annuler l'événement." });
             } finally {
                 setIsEventDeleteDialogOpen(false);
                 setEventToDelete(null);
@@ -306,7 +312,7 @@ export default function EmployeeDetailPage() {
                             <Button 
                                 variant="outline" 
                                 className="h-8 flex-1 md:w-12 rounded-lg border-white/10 bg-white/5 text-white hover:bg-white/10 shadow-lg font-black uppercase tracking-widest text-[9px]"
-                                onClick={() => window.print()}
+                                onClick={() => setIsPrinting(true)}
                             >
                                 <Download className="h-3.5 w-3.5" />
                             </Button>
@@ -663,10 +669,24 @@ export default function EmployeeDetailPage() {
                 isOpen={isEventDeleteDialogOpen}
                 onCloseAction={() => setIsEventDeleteDialogOpen(false)}
                 onConfirmAction={handleConfirmDeleteEvent}
-                title="Supprimer l'événement ?"
-                description="Cette action est irréversible et pourrait impacter les futurs bulletins de paie calculés à partir de cet historique."
-                confirmText={isPending ? "Suppression..." : "Supprimer"}
+                title="Annuler cet événement ?"
+                description="Cette action va retirer cet événement de l'historique et recalculer automatiquement la chaîne salariale pour maintenir la cohérence des données."
+                confirmText={isPending ? "Annulation..." : "Confirmer l'annulation"}
             />
+
+            {/* --- PRINT PORTAL --- */}
+            {employee && (
+                <EmployeeProfileReport 
+                    employee={employee}
+                    history={historyEvents}
+                    organizationSettings={orgSettings}
+                    isPrinting={isPrinting}
+                    onAfterPrint={() => setIsPrinting(false)}
+                    showSalary={canViewSalary}
+                    departmentName={deptName}
+                    directionName={directionName}
+                />
+            )}
         </div>
     );
 }

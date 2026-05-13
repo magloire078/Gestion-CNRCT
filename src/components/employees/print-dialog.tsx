@@ -1,11 +1,10 @@
-import React, { useState } from "react";
-import { ArrowUp, ArrowDown, GripVertical } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { ArrowUp, ArrowDown, GripVertical, Monitor, Layout, Maximize2, Minimize2, Printer, Settings, ListChecks, ArrowUpCircle, ArrowDownCircle, Info } from "lucide-react";
 import type { ColumnKeys } from "@/lib/constants/employee";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Printer, Settings, ListChecks, ArrowUpCircle, ArrowDownCircle, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
@@ -13,24 +12,29 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 interface PrintDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onPrint: (selectedColumns: ColumnKeys[]) => void;
+  onPrint: (selectedColumns: ColumnKeys[], orientation: 'portrait' | 'landscape') => void;
   allColumns: Partial<Record<ColumnKeys, string>>;
 }
 
 export function PrintDialog({ isOpen, onClose, onPrint, allColumns }: PrintDialogProps) {
-  const [selectedColumns, setSelectedColumns] = useState<Partial<Record<ColumnKeys, boolean>>>(
-    () => Object.keys(allColumns).reduce((acc, key) => {
-      acc[key as ColumnKeys] = true;
-      return acc;
-    }, {} as Partial<Record<ColumnKeys, boolean>>)
-  );
+  const [selectedColumns, setSelectedColumns] = useState<Partial<Record<ColumnKeys, boolean>>>({});
+  const [columnOrder, setColumnOrder] = useState<ColumnKeys[]>([]);
+  const [orientation, setOrientation] = useState<'portrait' | 'landscape'>('portrait');
 
-  const [columnOrder, setColumnOrder] = useState<ColumnKeys[]>(
-    () => Object.keys(allColumns) as ColumnKeys[]
-  );
+  // Sync state when allColumns changes (e.g. tab switch)
+  useEffect(() => {
+    const keys = Object.keys(allColumns) as ColumnKeys[];
+    setColumnOrder(keys);
+    setSelectedColumns(
+      keys.reduce((acc, key) => {
+        acc[key] = true;
+        return acc;
+      }, {} as Partial<Record<ColumnKeys, boolean>>)
+    );
+  }, [allColumns]);
 
   const handleCheckboxChange = (key: ColumnKeys) => {
-    setSelectedColumns((prev: Partial<Record<ColumnKeys, boolean>>) => ({ ...prev, [key]: !prev[key] }));
+    setSelectedColumns((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
   const moveColumn = (index: number, direction: 'up' | 'down') => {
@@ -44,44 +48,72 @@ export function PrintDialog({ isOpen, onClose, onPrint, allColumns }: PrintDialo
 
   const handleSelectAll = (checked: boolean) => {
     setSelectedColumns(
-      Object.keys(allColumns).reduce((acc, key) => {
-        acc[key as ColumnKeys] = checked;
+      columnOrder.reduce((acc, key) => {
+        acc[key] = checked;
         return acc;
       }, {} as Partial<Record<ColumnKeys, boolean>>)
-    )
-  }
+    );
+  };
 
   const handlePrintClick = () => {
-    // Return selected columns in the user-defined order
-    const selected = columnOrder.filter((key: ColumnKeys) => selectedColumns[key]);
+    const selected = columnOrder.filter((key) => selectedColumns[key]);
     if (selected.length > 0) {
-      onPrint(selected);
+      onPrint(selected, orientation);
     }
   };
 
-  const areAllSelected = Object.values(selectedColumns).every(Boolean);
+  const areAllSelected = columnOrder.length > 0 && columnOrder.every(key => selectedColumns[key]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-xl max-h-[90vh] overflow-hidden p-0 border-none bg-white/40 backdrop-blur-3xl shadow-3xl rounded-[3rem]">
-        <div className="absolute inset-0 bg-gradient-to-b from-blue-50/20 to-transparent pointer-events-none" />
+      <DialogContent className="sm:max-w-2xl w-[95vw] h-[85vh] sm:h-[80vh] flex flex-col overflow-hidden p-0 border-none bg-white shadow-3xl rounded-[2rem] sm:rounded-[2.5rem]">
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-50/50 to-white pointer-events-none" />
         
-        <DialogHeader className="p-10 pb-6 relative z-10">
-          <div className="flex items-center gap-4 mb-2">
-            <div className="h-10 w-10 rounded-xl bg-slate-900 flex items-center justify-center shadow-lg">
-              <Printer className="h-6 w-6 text-white" />
+        <DialogHeader className="p-5 sm:p-6 pb-2 relative z-10 shrink-0">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="h-12 w-12 rounded-2xl bg-slate-900 flex items-center justify-center shadow-xl shadow-slate-200">
+                <Printer className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <DialogTitle className="text-2xl font-black uppercase tracking-tight text-slate-900 leading-none mb-1">
+                  Rapport Institutionnel
+                </DialogTitle>
+                <DialogDescription className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                  Configuration de la mise en page et des données
+                </DialogDescription>
+              </div>
             </div>
-            <DialogTitle className="text-2xl font-black uppercase tracking-tight text-slate-900">
-              Paramètres d'impression
-            </DialogTitle>
+            
+            <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
+                <Button 
+                    variant={orientation === 'portrait' ? 'secondary' : 'ghost'}
+                    size="sm"
+                    onClick={() => setOrientation('portrait')}
+                    className={cn(
+                        "h-8 px-3 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all",
+                        orientation === 'portrait' ? "bg-white shadow-sm text-slate-900" : "text-slate-400"
+                    )}
+                >
+                    <Minimize2 className="h-3 w-3 mr-2" /> Portrait
+                </Button>
+                <Button 
+                    variant={orientation === 'landscape' ? 'secondary' : 'ghost'}
+                    size="sm"
+                    onClick={() => setOrientation('landscape')}
+                    className={cn(
+                        "h-8 px-3 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all",
+                        orientation === 'landscape' ? "bg-white shadow-sm text-slate-900" : "text-slate-400"
+                    )}
+                >
+                    <Maximize2 className="h-3 w-3 mr-2" /> Paysage
+                </Button>
+            </div>
           </div>
-          <DialogDescription className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-            Sélectionnez et réorganisez les colonnes du rapport institutionnel
-          </DialogDescription>
         </DialogHeader>
         
-        <div className="px-10 py-2 relative z-10">
-          <div className="flex items-center justify-between p-4 bg-slate-900/5 rounded-2xl border border-slate-900/10 mb-6">
+        <div className="px-6 sm:px-8 flex-1 flex flex-col min-h-0 relative z-10">
+          <div className="flex items-center justify-between p-3 bg-slate-900/5 rounded-xl border border-slate-900/10 mb-3 shrink-0">
             <div className="flex items-center space-x-4">
               <Checkbox
                 id="select-all"
@@ -90,58 +122,50 @@ export function PrintDialog({ isOpen, onClose, onPrint, allColumns }: PrintDialo
                 className="h-6 w-6 rounded-lg border-slate-300 data-[state=checked]:bg-slate-900"
               />
               <Label htmlFor="select-all" className="text-[11px] font-black uppercase tracking-widest text-slate-900 cursor-pointer">
-                Tout sélectionner
+                Toutes les colonnes ({columnOrder.filter(k => selectedColumns[k]).length} / {columnOrder.length})
               </Label>
             </div>
             <div className="flex items-center gap-2">
               <ListChecks className="h-4 w-4 text-slate-400" />
-              <span className="text-[9px] font-black uppercase text-slate-400 tracking-[0.2em]">Flux Global</span>
+              <span className="text-[9px] font-black uppercase text-slate-400 tracking-[0.2em]">Ordre Personnalisé</span>
             </div>
           </div>
 
-          <ScrollArea className="h-[400px] -mx-2 px-2">
-            <div className="space-y-3 pb-8">
-              {columnOrder.map((key: ColumnKeys, index: number) => (
+          <ScrollArea className="flex-1 -mx-8 px-8">
+            <div className="space-y-2 pb-10">
+              {columnOrder.map((key, index) => (
                 <div 
                   key={key} 
                   className={cn(
-                    "group flex items-center justify-between p-4 rounded-2xl border transition-all duration-300",
+                    "group flex items-center justify-between p-2.5 px-4 rounded-xl border transition-all duration-300",
                     selectedColumns[key] 
-                      ? "border-blue-200 bg-white/60 shadow-xl shadow-blue-500/5 opacity-100" 
-                      : "border-slate-100 bg-slate-50/30 opacity-60 grayscale"
+                      ? "border-slate-900/10 bg-white shadow-sm" 
+                      : "border-transparent bg-slate-50/50 opacity-60"
                   )}
                 >
                   <div className="flex items-center space-x-4">
                     <Checkbox
-                      id={key}
+                      id={`col-${key}`}
                       checked={selectedColumns[key]}
                       onCheckedChange={() => handleCheckboxChange(key)}
-                      className="h-5 w-5 rounded-lg border-slate-300 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 shadow-sm"
+                      className="h-5 w-5 rounded-lg border-slate-200 data-[state=checked]:bg-slate-900"
                     />
-                    <div className="flex flex-col">
-                      <Label 
-                        htmlFor={key} 
-                        className={cn(
-                          "text-[10px] font-black uppercase tracking-widest cursor-pointer",
-                          selectedColumns[key] ? "text-slate-900" : "text-slate-500"
-                        )}
-                      >
-                        {allColumns[key as ColumnKeys]}
-                      </Label>
-                      {selectedColumns[key] && (
-                        <div className="flex items-center gap-2 mt-1">
-                          <div className={cn("h-1 w-8 rounded-full", index < 2 ? "bg-emerald-400" : "bg-blue-400")} />
-                          <span className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">Pos: {index + 1}</span>
-                        </div>
+                    <Label 
+                      htmlFor={`col-${key}`} 
+                      className={cn(
+                        "text-xs font-bold uppercase tracking-tight cursor-pointer",
+                        selectedColumns[key] ? "text-slate-900" : "text-slate-400"
                       )}
-                    </div>
+                    >
+                      {allColumns[key]}
+                    </Label>
                   </div>
-                  
-                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+
+                  <div className="flex items-center gap-1 md:opacity-0 group-hover:opacity-100 transition-opacity">
                     <Button
                       size="icon"
                       variant="ghost"
-                      className="h-8 w-8 rounded-xl hover:bg-slate-100"
+                      className="h-8 w-8 rounded-lg hover:bg-slate-100"
                       disabled={index === 0}
                       onClick={() => moveColumn(index, 'up')}
                     >
@@ -150,13 +174,13 @@ export function PrintDialog({ isOpen, onClose, onPrint, allColumns }: PrintDialo
                     <Button
                       size="icon"
                       variant="ghost"
-                      className="h-8 w-8 rounded-xl hover:bg-slate-100"
+                      className="h-8 w-8 rounded-lg hover:bg-slate-100"
                       disabled={index === columnOrder.length - 1}
                       onClick={() => moveColumn(index, 'down')}
                     >
                       <ArrowDownCircle className="h-4 w-4 text-slate-600" />
                     </Button>
-                    <div className="ml-2 px-1 cursor-grab active:cursor-grabbing text-slate-200">
+                    <div className="ml-2 text-slate-200">
                       <GripVertical className="h-4 w-4" />
                     </div>
                   </div>
@@ -166,23 +190,23 @@ export function PrintDialog({ isOpen, onClose, onPrint, allColumns }: PrintDialo
           </ScrollArea>
         </div>
 
-        <DialogFooter className="p-10 bg-white/40 border-t border-white/20 backdrop-blur-md relative z-10 flex gap-4">
+        <DialogFooter className="p-5 sm:p-6 bg-white border-t border-slate-100 relative z-30 flex flex-row gap-3 sm:gap-4 shrink-0 shadow-[0_-10px_30px_rgba(0,0,0,0.05)]">
           <Button 
             type="button" 
-            variant="outline" 
+            variant="ghost" 
             onClick={onClose}
-            className="h-14 flex-1 rounded-2xl border-slate-200 bg-white font-black uppercase tracking-widest text-[10px] hover:bg-slate-50 shadow-lg"
+            className="h-12 flex-1 rounded-xl font-black uppercase tracking-widest text-[9px] sm:text-[10px] text-slate-400 hover:text-slate-900 hover:bg-slate-100"
           >
-            Annuler
+            Fermer
           </Button>
           <Button 
             type="button" 
             onClick={handlePrintClick} 
             disabled={!Object.values(selectedColumns).some(Boolean)}
-            className="h-14 flex-[2] rounded-2xl bg-slate-900 text-white font-black uppercase tracking-widest text-[11px] hover:bg-black shadow-2xl shadow-black/20 group"
+            className="h-12 flex-[2] rounded-xl bg-slate-900 text-white font-black uppercase tracking-widest text-[10px] sm:text-[11px] hover:bg-black shadow-2xl shadow-slate-900/20 group transition-all"
           >
-            <Printer className="mr-3 h-5 w-5 text-blue-400 group-hover:scale-110 transition-transform" />
-            Générer le rapport agent
+            <Printer className="mr-2 sm:mr-3 h-4 w-4 sm:h-5 sm:w-5 text-emerald-400 group-hover:scale-110 transition-transform" />
+            Générer le rapport
           </Button>
         </DialogFooter>
       </DialogContent>

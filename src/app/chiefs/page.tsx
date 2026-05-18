@@ -198,8 +198,8 @@ export default function ChiefsPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <h1 className="text-4xl font-black tracking-tight text-slate-900 flex items-center gap-3">
-            Authority Life Hub
-            <Badge className="bg-amber-500/10 text-amber-600 border-none px-3 py-1 text-xs font-black uppercase tracking-widest hidden sm:flex">Souveraineté</Badge>
+            Autorités Traditionnelles
+            <Badge className="bg-amber-500/10 text-amber-600 border-none px-3 py-1 text-xs font-black uppercase tracking-widest hidden sm:flex">RÉPERTOIRE</Badge>
           </h1>
           <p className="text-muted-foreground mt-2 font-medium">Répertoire intelligent et suivi de carrière des Autorités Traditionnelles.</p>
         </div>

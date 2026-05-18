@@ -1,0 +1,274 @@
+{
+  "Abidjan": {
+    "Abidjan": {
+      "Abobo": [],
+      "Adjame": [],
+      "Attecoube": [],
+      "Cocody": [],
+      "Koumassi": [],
+      "Marcory": [],
+      "Plateau": [],
+      "Port-Bouet": [],
+      "Treichville": [],
+      "Yopougon": [],
+      "Anyama": [
+        "Anyama",
+        "Ebimpé"
+      ],
+      "Bingerville": [
+        "Bingerville"
+      ],
+      "Brofodoume": [],
+      "Songon": [
+        "Songon"
+      ]
+    }
+  },
+  "Yamoussoukro": {
+    "Attiégouakro": {
+      "Attiégouakro": [
+        "Attiégouakro"
+      ],
+      "Lolobo (D'Attiegouakro)": []
+    },
+    "Yamoussoukro": {
+      "Yamoussoukro": [
+        "Yamoussoukro"
+      ],
+      "Kossou": []
+    }
+  },
+  "Iffou": {
+    "San-Pedro": {
+      "Doba": [],
+      "Dogbo": [],
+      "Gabiadji": [],
+      "Grand-Bereby": [],
+      "San-Pedro": []
+    },
+    "Tabou": {
+      "Dapo-Iboke": [],
+      "Djamandioke": [],
+      "Djouroutou": [],
+      "Grabo": [],
+      "Olodio": [],
+      "Tabou": []
+    },
+    "Buyo": {
+      "Buyo": [],
+      "Dapeoua": []
+    },
+    "Gueyo": {
+      "Dabouyo": [],
+      "Gueyo": []
+    },
+    "Meagui": {
+      "Gnamangui": [],
+      "Meagui": [],
+      "Oupoyo": []
+    },
+    "Soubre": {
+      "Grand-Zattry": [],
+      "Liliyo": [],
+      "Okrouyo": [],
+      "Soubre": []
+    },
+    "Fresco": {
+      "Dahiri": [],
+      "Fresco": [],
+      "Gbagbam": []
+    },
+    "Sassandra": {
+      "Dakpadou": [],
+      "Grihiri": [],
+      "Lobakuya": [],
+      "Medon": [],
+      "Sago": [],
+      "Sassandra": []
+    },
+    "Abengourou": {
+      "Abengourou": [],
+      "Amelekia": [],
+      "Aniassue": [],
+      "Ebilassokro": [],
+      "Niable": [],
+      "Yakasse-Feyasse": [],
+      "Zaranou": []
+    },
+    "Agnibilekrou": {
+      "Agnibilekrou": [],
+      "Akoboissue": [],
+      "Dame": [],
+      "Duffrebo": [],
+      "Tanguelan": []
+    },
+    "Bettie": {
+      "Bettie": [],
+      "Diamarakro": []
+    },
+    "Aboisso": {
+      "Aboisso": [],
+      "Adaou": [],
+      "Adjouan": [],
+      "Ayame": [],
+      "Bianouan": [],
+      "Kouakro": [],
+      "Mafere": [],
+      "Yaou": []
+    },
+    "Adiake": {
+      "Adiake": [],
+      "Assinie-Mafia": [],
+      "Etueboue": []
+    },
+    "Grand-Bassam": {
+      "Bongo": [],
+      "Bonoua": [],
+      "Grand-Bassam": []
+    },
+    "Tiapoum": {
+      "Noe": [],
+      "Nouamou": [],
+      "Tiapoum": []
+    },
+    "Gbeleban": {
+      "Gbeleban": [],
+      "Samango": [],
+      "Seydougou": []
+    },
+    "Madinani": {
+      "Fengolo": [],
+      "Madinani": [],
+      "N’Goloblasso": []
+    },
+    "Odienne": {
+      "Bako": [],
+      "Bougousso": [],
+      "Dioulatiedougou": [],
+      "Odienne": [],
+      "Tieme": []
+    },
+    "Samatiguila": {
+      "Kimbirila-Sud": [],
+      "Samatiguila": []
+    },
+    "Seguelon": {
+      "Gbongaha": [],
+      "Seguelon": []
+    },
+    "Kaniasso": {
+      "Goulia": [],
+      "Kaniasso": [],
+      "Mahandiana-Sokourani": []
+    },
+    "Minignan": {
+      "Kimbirila-Nord": [],
+      "Minignan": [],
+      "Sokoro": [],
+      "Tienko": []
+    },
+    "Gagnoa": {
+      "Bayota": [],
+      "Dahiepa-Kehi": [],
+      "Dignago": [],
+      "Dougroupalegonao": [],
+      "Doukouyo": [],
+      "Gagnoa": [],
+      "Galebre / Galebouo": [],
+      "Gnagbodougnoa": [],
+      "Guiberoua": [],
+      "Ouragahio": [],
+      "Serihio": [],
+      "Yopohue": []
+    },
+    "Oume": {
+      "Diegonefla": [],
+      "Guepahouo": [],
+      "Oume": [],
+      "Tonla": []
+    },
+    "Divo": {
+      "Chiepo": [],
+      "Didoko": [],
+      "Divo": [],
+      "Hire": [],
+      "Nebo": [],
+      "Ogoudou": [],
+      "Zego": []
+    },
+    "Guitry": {
+      "Dairo-Didizo": [],
+      "Guitry": [],
+      "Lauzoua": [],
+      "Yocoboue": []
+    },
+    "Lakota": {
+      "Djidji": [],
+      "Gagore": [],
+      "Goudouko": [],
+      "Lakota": [],
+      "Niambezaria": [],
+      "Zikisso": []
+    },
+    "Didievi": {
+      "Boli": [],
+      "Didievi": [],
+      "Molonou-Ble": [],
+      "Raviart": [],
+      "Tie-N’Diekro": []
+    },
+    "Djekanou": {
+      "Bonikro": [],
+      "Djekanou": []
+    },
+    "Tiebissou": {
+      "Lomokankro": [],
+      "Molonou": [],
+      "Tiebissou": [],
+      "Yakpabo-Sakassou": []
+    },
+    "Toumodi": {
+      "Angoda": [],
+      "Kokoumbo": [],
+      "Kpouebo": [],
+      "Toumodi": []
+    },
+    "Daoukro": {
+      "Daoukro": [
+        "Daoukro",
+        "Akpassanou",
+        "Ananda",
+        "N'Gattakro"
+      ],
+      "Ettrokro": [],
+      "N'Gattakro": [],
+      "Samanza": []
+    },
+    "M'Bahiakro": {
+      "Bonguera": [],
+      "Kondossou": [],
+      "M'Bahiakro": [
+        "M'Bahiakro",
+        "Bonguéra",
+        "Kondossou"
+      ]
+    },
+    "Ouelle": {
+      "Akpassanou": [],
+      "Ananda": [],
+      "Ouelle": []
+    },
+    "Prikro": {
+      "Anianou": [],
+      "Famienkro": [],
+      "Koffi-Amonkro": [],
+      "Nafana-Prikro": [],
+      "Prikro": [
+        "Prikro",
+        "Anianou",
+        "Famienkro",
+        "Nafana"
+      ]
+    }
+  }
+}

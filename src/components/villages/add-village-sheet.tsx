@@ -54,6 +54,12 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { LocationPicker } from "@/components/common/location-picker";
 import { Label } from "@/components/ui/label";
 
+const preprocessNumber = (val: any) => {
+    if (val === "" || val === undefined || val === null) return undefined;
+    const num = Number(val);
+    return isNaN(num) ? undefined : num;
+};
+
 const villageSchema = z.object({
     // Identité administrative
     name: z.string().min(2, "Le nom du village doit avoir au moins 2 caractères"),
@@ -66,15 +72,15 @@ const villageSchema = z.object({
     // Position SIG & Géo
     latitude: z.number().optional().nullable(),
     longitude: z.number().optional().nullable(),
-    altitude: z.preprocess((val) => val === "" ? undefined : Number(val), z.number().optional()),
-    distanceFromCapital: z.preprocess((val) => val === "" ? undefined : Number(val), z.number().optional()),
-    distanceFromChefLieu: z.preprocess((val) => val === "" ? undefined : Number(val), z.number().optional()),
+    altitude: z.preprocess(preprocessNumber, z.number().optional()),
+    distanceFromCapital: z.preprocess(preprocessNumber, z.number().optional()),
+    distanceFromChefLieu: z.preprocess(preprocessNumber, z.number().optional()),
     accessRoads: z.string().optional(),
 
     // Démographie
-    population: z.preprocess((val) => val === "" ? undefined : Number(val), z.number().optional()),
-    populationYear: z.preprocess((val) => val === "" ? undefined : Number(val), z.number().optional()),
-    numberOfHouseholds: z.preprocess((val) => val === "" ? undefined : Number(val), z.number().optional()),
+    population: z.preprocess(preprocessNumber, z.number().optional()),
+    populationYear: z.preprocess(preprocessNumber, z.number().optional()),
+    numberOfHouseholds: z.preprocess(preprocessNumber, z.number().optional()),
     mainEthnicGroups: z.string().optional(),
     languages: z.string().optional(),
 
@@ -171,15 +177,24 @@ export function AddVillageSheet() {
     async function onSubmit(values: VillageFormValues) {
         setIsSubmitting(true);
         try {
-            await addVillage({
+            const finalData = {
                 ...values,
-                latitude: values.latitude ?? undefined,
-                longitude: values.longitude ?? undefined,
+                latitude: values.latitude ?? null,
+                longitude: values.longitude ?? null,
                 mainEthnicGroups: values.mainEthnicGroups ? values.mainEthnicGroups.split(',').map(s => s.trim()).filter(Boolean) : [],
                 languages: values.languages ? values.languages.split(',').map(s => s.trim()).filter(Boolean) : [],
                 mainActivities: values.mainActivities ? values.mainActivities.split(',').map(s => s.trim()).filter(Boolean) : [],
                 mainCrops: values.mainCrops ? values.mainCrops.split(',').map(s => s.trim()).filter(Boolean) : [],
-            } as any);
+            };
+
+            // Nettoyage des undefined pour Firebase (Firebase rejette les valeurs undefined)
+            Object.keys(finalData).forEach(key => {
+                if ((finalData as any)[key] === undefined) {
+                    (finalData as any)[key] = null;
+                }
+            });
+
+            await addVillage(finalData as any);
             toast({
                 title: "Village ajouté",
                 description: `Le village ${values.name} a été créé avec succès.`,
@@ -197,6 +212,15 @@ export function AddVillageSheet() {
             setIsSubmitting(false);
         }
     }
+
+    const onError = (errors: any) => {
+        console.error("Validation Errors:", errors);
+        toast({
+            variant: "destructive",
+            title: "Champs invalides",
+            description: "Veuillez vérifier tous les onglets du formulaire, certains champs obligatoires ou formats sont invalides.",
+        });
+    };
 
     return (
         <Sheet open={open} onOpenChange={setOpen}>
@@ -232,7 +256,7 @@ export function AddVillageSheet() {
                     </div>
                 </SheetHeader>
                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col h-full">
+                    <form onSubmit={form.handleSubmit(onSubmit, onError)} className="flex flex-col h-full">
                         <ScrollArea className="flex-grow h-[calc(100vh-220px)] -mx-6 px-6">
                             <Accordion type="multiple" defaultValue={["admin"]} className="w-full h-full pb-8">
                                 {/* Administrative Section */}

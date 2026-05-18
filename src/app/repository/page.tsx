@@ -76,17 +76,13 @@ function formatBytes(bytes: number, decimals = 2) {
 }
 
 
+import { IVORIAN_REGIONS } from "@/constants/regions";
+
 const CATEGORIES: Document['category'][] = [
     'Actes Royaux', 'Procès-Verbaux', 'Rapports d\'Activité', 'Courriers', 'Communication', 'Autres'
 ];
 
-const REGIONS = [
-    "Abidjan", "Agnéby-Tiassa", "Bafing", "Bagoué", "Bélier", "Béré", "Bounkani", 
-    "Cavally", "Folon", "Gbeke", "Gboklè", "Goh", "Gontougo", "Grands-Ponts", 
-    "Guémon", "Hambol", "Haut-Sassandra", "Iffou", "Indénié-Djuablin", "Kabadougou", 
-    "Kavadougou", "Lôh-Djiboua", "Marahoué", "Mé", "N'Zi", "Nawa", "Poro", 
-    "Région des Ponts", "San-Pédro", "Sud-Comoé", "Tchologo", "Tonkpi", "Worodougou", "Zanzan"
-];
+const REGIONS = [...IVORIAN_REGIONS];
 
 const CATEGORY_COLORS: Record<string, string> = {
     'Actes Royaux': 'bg-amber-100 text-amber-700 border-amber-200',

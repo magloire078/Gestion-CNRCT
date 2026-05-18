@@ -55,6 +55,7 @@ import { IVORIAN_REGIONS } from "@/constants/regions";
 import { divisions } from "@/lib/ivory-coast-divisions";
 import Link from "next/link";
 import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { AddVillageSheet } from "@/components/villages/add-village-sheet";
@@ -63,6 +64,18 @@ import { VillagesOfficialReport } from "@/components/reports/villages-official-r
 import { PermissionGuard } from "@/components/auth/permission-guard";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
+import { PaginationControls } from "@/components/common/pagination-controls";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
+import { List, Settings } from "lucide-react";
+import { DataMigrationTool } from "@/components/maintenance/data-migration-tool";
+import { normalizeString, getOfficialRegion, getOfficialDepartment, getOfficialSubPrefecture } from "@/lib/normalization-utils";
 
 
 type SeatStatus = "all" | "occupied" | "vacant";
@@ -79,12 +92,16 @@ export default function VillagesPage() {
     const [selectedRegion, setSelectedRegion] = useState<string>("all");
     const [selectedDepartment, setSelectedDepartment] = useState<string>("all");
     const [selectedCommune, setSelectedCommune] = useState<string>("all");
-    const [seatStatus, setSeatStatus] = useState<SeatStatus>("all");
     const [activeTab, setActiveTab] = useState("all");
     const [quickViewVillage, setQuickViewVillage] = useState<{ village: Village, chief: Chief | null } | null>(null);
     const [printDate, setPrintDate] = useState("");
     const [isPrinting, setIsPrinting] = useState(false);
     const [isPending, startTransition] = useTransition();
+
+    const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(12);
+    const [showMaintenance, setShowMaintenance] = useState(false);
 
     // Fetch Data with Real-time Sync
     useEffect(() => {
@@ -151,15 +168,32 @@ export default function VillagesPage() {
         });
     }, [villages, chiefs]);
 
-    // Filtering Options logic
+    // Computed stats for filters
+    const filterStats = useMemo(() => {
+        const stats = {
+            regions: {} as Record<string, number>,
+            departments: {} as Record<string, number>,
+            communes: {} as Record<string, number>
+        };
+
+        villages.forEach(v => {
+            if (v.region) stats.regions[v.region] = (stats.regions[v.region] || 0) + 1;
+            if (v.department) stats.departments[v.department] = (stats.departments[v.department] || 0) + 1;
+            if (v.subPrefecture) stats.communes[v.subPrefecture] = (stats.communes[v.subPrefecture] || 0) + 1;
+            if (v.commune) stats.communes[v.commune] = (stats.communes[v.commune] || 0) + 1;
+        });
+
+        return stats;
+    }, [villages]);
+
     const departments = useMemo(() => {
         if (selectedRegion === "all") return [];
-        return Object.keys(divisions[selectedRegion] || {});
+        return Object.keys(divisions[selectedRegion] || {}).sort();
     }, [selectedRegion]);
 
     const communes = useMemo(() => {
         if (selectedRegion === "all" || selectedDepartment === "all") return [];
-        return Object.keys(divisions[selectedRegion]?.[selectedDepartment] || {});
+        return Object.keys(divisions[selectedRegion]?.[selectedDepartment] || {}).sort();
     }, [selectedRegion, selectedDepartment]);
 
     // Apply Filters
@@ -167,45 +201,77 @@ export default function VillagesPage() {
         return villageEntries.filter(entry => {
             const v = entry.village;
             const c = entry.currentChief;
-            
-            // Region Filter
-            if (selectedRegion !== "all" && v.region !== selectedRegion) return false;
-            
-            // Department Filter
-            if (selectedDepartment !== "all" && v.department !== selectedDepartment) return false;
-            
-            // Commune Filter
-            if (selectedCommune !== "all" && v.subPrefecture !== selectedCommune && v.commune !== selectedCommune) return false;
 
-            // Seat Status Filter
-            if (seatStatus === "occupied" && !c) return false;
-            if (seatStatus === "vacant" && c) return false;
-            
-            // Search Query
-            if (searchQuery) {
-                const query = searchQuery.toLowerCase();
-                const matchesVillage = v.name.toLowerCase().includes(query) || 
-                                     v.region.toLowerCase().includes(query) ||
-                                     v.department.toLowerCase().includes(query);
-                const matchesChief = c?.name?.toLowerCase().includes(query) || 
-                                   c?.CNRCTRegistrationNumber?.toLowerCase().includes(query);
-                
-                if (!matchesVillage && !matchesChief) return false;
+            // Search Filter
+            const searchLower = searchQuery.toLowerCase();
+            const matchesSearch = !searchQuery || 
+                v.name.toLowerCase().includes(searchLower) ||
+                v.region.toLowerCase().includes(searchLower) ||
+                v.department.toLowerCase().includes(searchLower) ||
+                (c && c.name && c.name.toLowerCase().includes(searchLower)) ||
+                (c && c.CNRCTRegistrationNumber && c.CNRCTRegistrationNumber.toLowerCase().includes(searchLower));
+
+            if (!matchesSearch) return false;
+
+            // Administrative Filters (using robust normalization)
+            if (selectedRegion !== "all") {
+                const officialVillageRegion = getOfficialRegion(v.region);
+                const officialSelectedRegion = getOfficialRegion(selectedRegion);
+                if (normalizeString(officialVillageRegion) !== normalizeString(officialSelectedRegion)) {
+                    return false;
+                }
             }
             
+            if (selectedDepartment !== "all") {
+                const officialVillageDept = getOfficialDepartment(v.region, v.department);
+                const officialSelectedDept = getOfficialDepartment(selectedRegion, selectedDepartment);
+                if (normalizeString(officialVillageDept) !== normalizeString(officialSelectedDept)) {
+                    return false;
+                }
+            }
+            
+            if (selectedCommune !== "all") {
+                const officialVillageSP = getOfficialSubPrefecture(v.region, v.department, v.subPrefecture || "");
+                const officialSelectedCommune = getOfficialSubPrefecture(selectedRegion, selectedDepartment, selectedCommune);
+                if (normalizeString(officialVillageSP) !== normalizeString(officialSelectedCommune)) {
+                    // Try matching commune field too
+                    const officialVillageCommune = getOfficialSubPrefecture(v.region, v.department, v.commune || "");
+                    if (normalizeString(officialVillageCommune) !== normalizeString(officialSelectedCommune)) {
+                        return false;
+                    }
+                }
+            }
+
+            // Status Filter (via Tabs)
+            if (activeTab === "vacant" && c) return false;
+            if (activeTab === "occupied" && !c) return false;
+
             return true;
         });
-    }, [villageEntries, searchQuery, selectedRegion, selectedDepartment, selectedCommune, seatStatus]);
+    }, [villageEntries, searchQuery, selectedRegion, selectedDepartment, selectedCommune, activeTab]);
+
+    // Pagination Logic
+    const paginatedVillages = useMemo(() => {
+        const start = (currentPage - 1) * itemsPerPage;
+        return filteredVillages.slice(start, start + itemsPerPage);
+    }, [filteredVillages, currentPage, itemsPerPage]);
+
+    const totalPages = Math.ceil(filteredVillages.length / itemsPerPage) || 1;
+
+    // Reset pagination when filters change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchQuery, selectedRegion, selectedDepartment, selectedCommune, activeTab]);
 
     const printSubtitle = useMemo(() => {
         let subtitle = `Total: ${filteredVillages.length} | Date: ${printDate}`;
         if (selectedRegion !== "all") subtitle += ` | Région: ${selectedRegion}`;
         if (selectedDepartment !== "all") subtitle += ` | Dept: ${selectedDepartment}`;
         if (selectedCommune !== "all") subtitle += ` | S/P: ${selectedCommune}`;
-        if (seatStatus !== "all") subtitle += ` | Statut: ${seatStatus === 'occupied' ? 'Occupés' : 'Vacants'}`;
+        if (activeTab !== "all") subtitle += ` | Statut: ${activeTab === 'occupied' ? 'Occupés' : 'Vacants'}`;
         if (searchQuery) subtitle += ` | Recherche: ${searchQuery}`;
         return subtitle;
-    }, [filteredVillages.length, printDate, selectedRegion, selectedDepartment, selectedCommune, seatStatus, searchQuery]);
+    }, [filteredVillages.length, printDate, selectedRegion, selectedDepartment, selectedCommune, activeTab, searchQuery]);
 
     const stats = useMemo(() => {
         const total = filteredVillages.length;
@@ -224,12 +290,40 @@ export default function VillagesPage() {
         };
     }, [filteredVillages]);
 
+    const territorySummary = useMemo(() => {
+        if (selectedRegion === "all") return null;
+
+        let deptCount = 0;
+        let spCount = 0;
+
+        if (selectedDepartment !== "all") {
+            deptCount = 1;
+            if (selectedCommune !== "all") {
+                spCount = 1;
+            } else {
+                spCount = Object.keys(divisions[selectedRegion]?.[selectedDepartment] || {}).length;
+            }
+        } else {
+            const depts = divisions[selectedRegion] || {};
+            deptCount = Object.keys(depts).length;
+            Object.values(depts).forEach(sps => {
+                spCount += Object.keys(sps).length;
+            });
+        }
+
+        return {
+            departments: deptCount,
+            subPrefectures: spCount,
+            villages: filteredVillages.length
+        };
+    }, [selectedRegion, selectedDepartment, selectedCommune, filteredVillages.length, divisions]);
+
     const clearFilters = () => {
         setSearchQuery("");
         setSelectedRegion("all");
         setSelectedDepartment("all");
         setSelectedCommune("all");
-        setSeatStatus("all");
+        setActiveTab("all");
     };
 
     const handlePrint = () => {
@@ -276,6 +370,30 @@ export default function VillagesPage() {
                         </div>
 
                         <div className="flex flex-col sm:flex-row gap-3">
+                            <div className="flex bg-white/5 backdrop-blur-xl border border-white/10 p-1 rounded-2xl h-14">
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => setViewMode('grid')}
+                                    className={cn(
+                                        "h-full w-12 rounded-xl transition-all",
+                                        viewMode === 'grid' ? "bg-amber-500 text-white shadow-lg" : "text-slate-400 hover:text-white"
+                                    )}
+                                >
+                                    <LayoutGrid className="h-5 w-5" />
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => setViewMode('list')}
+                                    className={cn(
+                                        "h-full w-12 rounded-xl transition-all",
+                                        viewMode === 'list' ? "bg-amber-500 text-white shadow-lg" : "text-slate-400 hover:text-white"
+                                    )}
+                                >
+                                    <List className="h-5 w-5" />
+                                </Button>
+                            </div>
                             <Button 
                                 variant="outline" 
                                 className="bg-white/5 border-white/10 text-white hover:bg-white/10 rounded-xl h-14 px-8 font-bold group"
@@ -285,7 +403,20 @@ export default function VillagesPage() {
                                 <Printer className="mr-2 h-5 w-5 group-hover:text-amber-500 transition-colors" />
                                 {settings ? "Imprimer la liste" : "Chargement..."}
                             </Button>
-                            <PermissionGuard permission="page:repository:view">
+                             <PermissionGuard permission="page:repository:view">
+                                {(user?.role?.name === 'ADMIN' || user?.email === 'magloire078@gmail.com') && (
+                                    <Button 
+                                        variant="outline" 
+                                        onClick={() => setShowMaintenance(!showMaintenance)}
+                                        className={cn(
+                                            "h-14 px-6 rounded-xl font-bold transition-all gap-2",
+                                            showMaintenance ? "bg-white text-slate-900" : "bg-white/5 border-white/10 text-white hover:bg-white/10"
+                                        )}
+                                    >
+                                        <Settings className="h-5 w-5" />
+                                        {showMaintenance ? "Fermer Maintenance" : "Maintenance"}
+                                    </Button>
+                                )}
                                 <AddVillageSheet />
                             </PermissionGuard>
                         </div>
@@ -374,122 +505,152 @@ export default function VillagesPage() {
             <div className="container mx-auto px-4 lg:px-8 -mt-10 print:hidden">
                 <Card className="rounded-xl border-none shadow-2xl shadow-slate-200/50 overflow-hidden bg-white/80 backdrop-blur-xl">
                     <CardContent className="p-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-6 items-end">
-                            {/* Search Input */}
-                            <div className="lg:col-span-4 group">
-                                <label className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3 block px-1">
-                                    Recherche par nom ou numéro
+                        <div className="flex flex-col lg:flex-row gap-6 items-end">
+                            {/* Status Tabs */}
+                            <div className="w-full lg:w-auto">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 block px-1">
+                                    Filtrage Rapide
                                 </label>
-                                <div className="relative">
-                                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-amber-500 transition-colors" />
-                                        <DebouncedInput
-                                            placeholder="Village, Chef, Matricule..."
-                                            value={searchQuery}
-                                            onChange={(val) => startTransition(() => setSearchQuery(val.toString()))}
-                                            className="pl-12 h-14 bg-slate-50 border-transparent focus:bg-white focus:ring-4 focus:ring-amber-500/10 rounded-lg text-lg transition-all font-medium"
-                                        />
+                                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                                    <TabsList className="bg-slate-100 p-1 h-14 rounded-xl w-full lg:w-auto">
+                                        <TabsTrigger value="all" className="rounded-lg px-6 font-bold data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm">
+                                            Tous ({villageEntries.length})
+                                        </TabsTrigger>
+                                        <TabsTrigger value="occupied" className="rounded-lg px-6 font-bold data-[state=active]:bg-emerald-500 data-[state=active]:text-white data-[state=active]:shadow-lg">
+                                            Occupés ({villageEntries.filter(e => e.currentChief).length})
+                                        </TabsTrigger>
+                                        <TabsTrigger value="vacant" className="rounded-lg px-6 font-bold data-[state=active]:bg-amber-500 data-[state=active]:text-white data-[state=active]:shadow-lg">
+                                            Vacants ({villageEntries.filter(e => !e.currentChief).length})
+                                        </TabsTrigger>
+                                    </TabsList>
+                                </Tabs>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-10 gap-6 items-end flex-1 w-full">
+                                {/* Search Input */}
+                                <div className="lg:col-span-4 group">
+                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3 block px-1">
+                                        Recherche par nom ou numéro
+                                    </label>
+                                    <div className="relative">
+                                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-amber-500 transition-colors" />
+                                            <DebouncedInput
+                                                placeholder="Village, Chef, Matricule..."
+                                                value={searchQuery}
+                                                onChange={(val) => setSearchQuery(val.toString())}
+                                                className="pl-12 h-14 bg-slate-50 border-transparent focus:bg-white focus:ring-4 focus:ring-amber-500/10 rounded-lg text-lg transition-all font-medium"
+                                            />
+                                    </div>
                                 </div>
-                            </div>
 
-                            {/* Region Filter */}
-                            <div className="lg:col-span-2">
-                                <label className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3 block px-1">
-                                    Région
-                                </label>
-                                <Select value={selectedRegion} onValueChange={(val) => startTransition(() => {
-                                    setSelectedRegion(val);
-                                    setSelectedDepartment("all");
-                                    setSelectedCommune("all");
-                                })}>
-                                    <SelectTrigger className="h-14 bg-slate-50 border-transparent rounded-lg font-bold">
-                                        <SelectValue placeholder="Région" />
-                                    </SelectTrigger>
-                                    <SelectContent className="rounded-lg border-slate-100">
-                                        <SelectItem value="all">Toutes les régions</SelectItem>
-                                        {IVORIAN_REGIONS.map(region => (
-                                            <SelectItem key={region} value={region}>{region}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-
-                            {/* Department Filter */}
-                            <div className="lg:col-span-2">
-                                <label className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3 block px-1">
-                                    Département
-                                </label>
-                                <Select 
-                                    value={selectedDepartment} 
-                                    onValueChange={(val) => startTransition(() => {
-                                        setSelectedDepartment(val);
+                                {/* Region Filter */}
+                                <div className="lg:col-span-2">
+                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3 block px-1">
+                                        Région
+                                    </label>
+                                    <Select value={selectedRegion} onValueChange={(val) => {
+                                        setSelectedRegion(val);
+                                        setSelectedDepartment("all");
                                         setSelectedCommune("all");
-                                    })}
-                                    disabled={selectedRegion === "all"}
-                                >
-                                    <SelectTrigger className="h-14 bg-slate-50 border-transparent rounded-lg font-bold">
-                                        <SelectValue placeholder="Département" />
-                                    </SelectTrigger>
-                                    <SelectContent className="rounded-lg border-slate-100">
-                                        <SelectItem value="all">Tous les dép.</SelectItem>
-                                        {departments.map(dept => (
-                                            <SelectItem key={dept} value={dept}>{dept}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
+                                    }}>
+                                        <SelectTrigger className="h-14 bg-slate-50 border-transparent rounded-lg font-bold">
+                                            <SelectValue placeholder="Région" />
+                                        </SelectTrigger>
+                                        <SelectContent className="rounded-lg border-slate-100">
+                                            <SelectItem value="all">Toutes les régions</SelectItem>
+                                            {Object.keys(divisions).sort().map(region => (
+                                                <SelectItem key={region} value={region}>
+                                                    {region} {filterStats.regions[region] ? `(${filterStats.regions[region]})` : ""}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
 
-                            {/* Commune Filter */}
-                            <div className="lg:col-span-2">
-                                <label className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3 block px-1">
-                                    S-Préf. / Commune
-                                </label>
-                                <Select 
-                                    value={selectedCommune} 
-                                    onValueChange={(val) => startTransition(() => setSelectedCommune(val))}
-                                    disabled={selectedDepartment === "all"}
-                                >
-                                    <SelectTrigger className="h-14 bg-slate-50 border-transparent rounded-lg font-bold">
-                                        <SelectValue placeholder="S-Préf." />
-                                    </SelectTrigger>
-                                    <SelectContent className="rounded-xl border-slate-100">
-                                        <SelectItem value="all">Toutes les s-préf.</SelectItem>
-                                        {communes.map(comm => (
-                                            <SelectItem key={comm} value={comm}>{comm}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
+                                {/* Department Filter */}
+                                <div className="lg:col-span-2">
+                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3 block px-1">
+                                        Département
+                                    </label>
+                                    <Select 
+                                        value={selectedDepartment} 
+                                        onValueChange={(val) => {
+                                            setSelectedDepartment(val);
+                                            setSelectedCommune("all");
+                                        }}
+                                        disabled={selectedRegion === "all"}
+                                    >
+                                        <SelectTrigger className="h-14 bg-slate-50 border-transparent rounded-lg font-bold">
+                                            <SelectValue placeholder="Département" />
+                                        </SelectTrigger>
+                                        <SelectContent className="rounded-lg border-slate-100">
+                                            <SelectItem value="all">Tous les dép.</SelectItem>
+                                            {departments.map(dept => (
+                                                <SelectItem key={dept} value={dept}>
+                                                    {dept} {filterStats.departments[dept] ? `(${filterStats.departments[dept]})` : ""}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
 
-                            {/* Seat Status Filter */}
-                            <div className="lg:col-span-2">
-                                <label className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3 block px-1">
-                                    Statut du trône
-                                </label>
-                                <Select value={seatStatus} onValueChange={(val: SeatStatus) => startTransition(() => setSeatStatus(val))}>
-                                    <SelectTrigger className="h-14 bg-slate-50 border-transparent rounded-lg font-bold">
-                                        <SelectValue placeholder="Filtrer" />
-                                    </SelectTrigger>
-                                    <SelectContent className="rounded-xl border-slate-100">
-                                        <SelectItem value="all">Tous les sièges</SelectItem>
-                                        <SelectItem value="occupied" className="text-green-600 font-bold">Occupés</SelectItem>
-                                        <SelectItem value="vacant" className="text-amber-600 font-bold">Vacances</SelectItem>
-                                    </SelectContent>
-                                </Select>
+                                {/* Commune Filter */}
+                                <div className="lg:col-span-2">
+                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3 block px-1">
+                                        S-Préf. / Commune
+                                    </label>
+                                    <Select 
+                                        value={selectedCommune} 
+                                        onValueChange={(val) => setSelectedCommune(val)}
+                                        disabled={selectedDepartment === "all"}
+                                    >
+                                        <SelectTrigger className="h-14 bg-slate-50 border-transparent rounded-lg font-bold">
+                                            <SelectValue placeholder="S-Préf." />
+                                        </SelectTrigger>
+                                        <SelectContent className="rounded-xl border-slate-100">
+                                            <SelectItem value="all">Toutes les s-préf.</SelectItem>
+                                            {communes.map(comm => (
+                                                <SelectItem key={comm} value={comm}>{comm}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
                             </div>
                         </div>
 
-                        {(searchQuery || selectedRegion !== "all" || seatStatus !== "all") && (
-                            <div className="flex items-center gap-4 mt-8 pt-6 border-t border-slate-100">
-                                <span className="text-sm font-bold text-slate-400 uppercase tracking-widest">Filtres actifs:</span>
-                                <div className="flex flex-wrap gap-2">
-                                    {selectedRegion !== "all" && <Badge variant="secondary" className="bg-slate-100 text-slate-700 font-bold px-3 py-1 rounded-md border-none">{selectedRegion}</Badge>}
-                                    {selectedDepartment !== "all" && <Badge variant="secondary" className="bg-slate-100 text-slate-700 font-bold px-3 py-1 rounded-md border-none">{selectedDepartment}</Badge>}
-                                    {selectedCommune !== "all" && <Badge variant="secondary" className="bg-slate-100 text-slate-700 font-bold px-3 py-1 rounded-md border-none">{selectedCommune}</Badge>}
-                                    {seatStatus !== "all" && <Badge variant="secondary" className="bg-amber-100 text-amber-700 font-bold px-3 py-1 rounded-md border-none">{seatStatus === "occupied" ? "Sièges Occupés" : "Vacance de Trône"}</Badge>}
-                                    <Button variant="ghost" size="sm" onClick={clearFilters} className="text-amber-600 hover:text-amber-700 font-black uppercase text-[10px] tracking-widest">
-                                        Réinitialiser
-                                    </Button>
+                        {(searchQuery || selectedRegion !== "all" || activeTab !== "all") && (
+                            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mt-8 pt-6 border-t border-slate-100">
+                                <div className="flex items-center gap-4 flex-wrap">
+                                    <span className="text-sm font-bold text-slate-400 uppercase tracking-widest shrink-0">Filtres actifs:</span>
+                                    <div className="flex flex-wrap gap-2">
+                                        {selectedRegion !== "all" && <Badge variant="secondary" className="bg-slate-100 text-slate-700 font-bold px-3 py-1 rounded-md border-none">{selectedRegion}</Badge>}
+                                        {selectedDepartment !== "all" && <Badge variant="secondary" className="bg-slate-100 text-slate-700 font-bold px-3 py-1 rounded-md border-none">{selectedDepartment}</Badge>}
+                                        {selectedCommune !== "all" && <Badge variant="secondary" className="bg-slate-100 text-slate-700 font-bold px-3 py-1 rounded-md border-none">{selectedCommune}</Badge>}
+                                        {activeTab !== "all" && <Badge variant="secondary" className="bg-amber-100 text-amber-700 font-bold px-3 py-1 rounded-md border-none">{activeTab === "occupied" ? "Sièges Occupés" : "Vacance de Trône"}</Badge>}
+                                        <Button variant="ghost" size="sm" onClick={clearFilters} className="text-amber-600 hover:text-amber-700 font-black uppercase text-[10px] tracking-widest">
+                                            Réinitialiser
+                                        </Button>
+                                    </div>
                                 </div>
+                                
+                                {territorySummary && (
+                                    <div className="flex items-center gap-6 bg-slate-50 border border-slate-100 px-6 py-3 rounded-2xl w-full lg:w-auto overflow-x-auto">
+                                        <div className="flex flex-col shrink-0">
+                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Départements</span>
+                                            <span className="text-lg font-black text-slate-700 leading-none">{territorySummary.departments}</span>
+                                        </div>
+                                        <div className="w-px h-8 bg-slate-200 shrink-0"></div>
+                                        <div className="flex flex-col shrink-0">
+                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Sous-préfectures</span>
+                                            <span className="text-lg font-black text-slate-700 leading-none">{territorySummary.subPrefectures}</span>
+                                        </div>
+                                        <div className="w-px h-8 bg-slate-200 shrink-0"></div>
+                                        <div className="flex flex-col shrink-0">
+                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Villages Inscrits</span>
+                                            <span className="text-lg font-black text-amber-600 leading-none">{territorySummary.villages}</span>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         )}
                     </CardContent>
@@ -514,23 +675,115 @@ export default function VillagesPage() {
                         ))}
                     </div>
                 ) : filteredVillages.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                        <AnimatePresence mode="popLayout">
-                            {filteredVillages.map((entry) => (
-                                <motion.div
-                                    key={entry.village.id}
-                                    layout
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, scale: 0.95 }}
-                                    transition={{ duration: 0.3 }}
-                                    onClick={() => setQuickViewVillage({ village: entry.village, chief: entry.currentChief })}
-                                    className="cursor-pointer"
-                                >
-                                    <VillageCard entry={entry} />
-                                </motion.div>
-                            ))}
-                        </AnimatePresence>
+                    <div className="space-y-12">
+                        {viewMode === 'grid' ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                                <AnimatePresence mode="popLayout">
+                                    {paginatedVillages.map((entry) => (
+                                        <motion.div
+                                            key={entry.village.id}
+                                            layout
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, scale: 0.95 }}
+                                            transition={{ duration: 0.3 }}
+                                            onClick={() => setQuickViewVillage({ village: entry.village, chief: entry.currentChief })}
+                                            className="cursor-pointer"
+                                        >
+                                            <VillageCard entry={entry} />
+                                        </motion.div>
+                                    ))}
+                                </AnimatePresence>
+                            </div>
+                        ) : (
+                            <Card className="rounded-[2.5rem] border-none shadow-2xl shadow-slate-200/50 overflow-hidden bg-white">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow className="hover:bg-transparent border-slate-100 bg-slate-50/50">
+                                            <TableHead className="w-16 text-center text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 py-6">ID</TableHead>
+                                            <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Localité / Sous-Préfecture</TableHead>
+                                            <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Région & Département</TableHead>
+                                            <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Autorité Actuelle</TableHead>
+                                            <TableHead className="w-40 text-center text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Infrastructures</TableHead>
+                                            <TableHead className="w-32 text-center text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Statut</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {paginatedVillages.map((entry, idx) => (
+                                            <TableRow 
+                                                key={entry.village.id} 
+                                                className="hover:bg-slate-50/80 transition-all border-slate-50 group cursor-pointer"
+                                                onClick={() => setQuickViewVillage({ village: entry.village, chief: entry.currentChief })}
+                                            >
+                                                <TableCell className="text-center">
+                                                    <span className="text-[10px] font-black text-slate-300">{(currentPage - 1) * itemsPerPage + idx + 1}</span>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="flex flex-col">
+                                                        <span className="font-black text-slate-900 text-sm tracking-tight leading-tight">{entry.village.name}</span>
+                                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{entry.village.subPrefecture || entry.village.commune}</span>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="flex flex-col">
+                                                        <span className="text-xs font-bold text-slate-600">{entry.village.region}</span>
+                                                        <span className="text-[10px] font-medium text-slate-400">{entry.village.department}</span>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    {entry.currentChief ? (
+                                                        <div className="flex items-center gap-3">
+                                                            <Avatar className="h-8 w-8 rounded-lg border border-slate-100 shadow-sm">
+                                                                <AvatarImage src={entry.currentChief.photoUrl} />
+                                                                <AvatarFallback className="bg-slate-100 text-slate-400 text-[10px] font-black">
+                                                                    {entry.currentChief.name.substring(0, 2).toUpperCase()}
+                                                                </AvatarFallback>
+                                                            </Avatar>
+                                                            <div className="flex flex-col">
+                                                                <span className="text-xs font-black text-slate-900 tracking-tight">{entry.currentChief.name}</span>
+                                                                <span className="text-[9px] font-mono text-slate-400">{entry.currentChief.CNRCTRegistrationNumber}</span>
+                                                            </div>
+                                                        </div>
+                                                    ) : (
+                                                        <span className="text-[10px] font-bold text-slate-300 italic uppercase tracking-widest">--- Néant ---</span>
+                                                    )}
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="flex justify-center gap-1.5 opacity-40 group-hover:opacity-100 transition-opacity">
+                                                        <Zap className={cn("h-3.5 w-3.5", entry.village.hasElectricity ? "text-amber-500 fill-amber-500" : "text-slate-200")} />
+                                                        <Droplets className={cn("h-3.5 w-3.5", entry.village.hasWater ? "text-blue-500 fill-blue-500" : "text-slate-200")} />
+                                                        <School className={cn("h-3.5 w-3.5", entry.village.hasSchool ? "text-indigo-500 fill-indigo-500" : "text-slate-200")} />
+                                                        <Activity className={cn("h-3.5 w-3.5", entry.village.hasHealthCenter ? "text-emerald-500 fill-emerald-500" : "text-slate-200")} />
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell className="text-center">
+                                                    {entry.currentChief ? (
+                                                        <Badge className="bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 border-none rounded-lg text-[9px] font-black uppercase tracking-widest px-3 py-1">
+                                                            Occupé
+                                                        </Badge>
+                                                    ) : (
+                                                        <Badge className="bg-amber-500/10 text-amber-600 hover:bg-amber-500/20 border-none rounded-lg text-[9px] font-black uppercase tracking-widest px-3 py-1 animate-pulse">
+                                                            Vacant
+                                                        </Badge>
+                                                    )}
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </Card>
+                        )}
+
+                        <div className="bg-white/80 backdrop-blur-xl border border-white p-6 rounded-[2rem] shadow-xl shadow-slate-200/20">
+                            <PaginationControls 
+                                currentPage={currentPage}
+                                totalPages={totalPages}
+                                onPageChange={setCurrentPage}
+                                itemsPerPage={itemsPerPage}
+                                onItemsPerPageChange={setItemsPerPage}
+                                totalItems={filteredVillages.length}
+                            />
+                        </div>
                     </div>
                  ) : (
                     <div className="bg-white rounded-xl p-8 text-center shadow-xl shadow-slate-200/50 border border-slate-50">
@@ -547,19 +800,51 @@ export default function VillagesPage() {
                     </div>
                 )}
 
-                {/* --- DIAGNOSTICS (Admin only) --- */}
-                {(user?.roleId === 'super-admin' || user?.email === 'magloire078@gmail.com') && (
-                    <div className="mt-8 p-4 bg-slate-900 text-slate-400 text-[10px] font-mono rounded-lg border border-slate-800">
-                        <div className="flex gap-4">
-                            <span>VILLAGES: {villages.length}</span>
-                            <span>CHIEFS: {chiefs.length}</span>
-                            <span>FILTERED: {filteredVillages.length}</span>
-                            <span>LOADING: {loading ? "YES" : "NO"}</span>
-                            <span>AUTH: {user?.email}</span>
+                {/* --- MAINTENANCE (Admin only) --- */}
+                {(user?.role?.name === 'ADMIN' || user?.email === 'magloire078@gmail.com') && (
+                    <div className="mt-8 space-y-4">
+                        <div className="p-4 bg-slate-900 text-white rounded-xl font-mono text-[10px] overflow-auto max-h-60 border border-slate-700">
+                            <h3 className="text-amber-500 font-black mb-2">DIAGNOSTIC DATA (ADMIN)</h3>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <p>TOTAL VILLAGES: {villages.length}</p>
+                                    <p>TOTAL CHIEFS: {chiefs.length}</p>
+                                    <p>NON-EMPTY REGIONS: {villages.filter(v => !!v.region).length}</p>
+                                    <p>NON-EMPTY DEPTS: {villages.filter(v => !!v.department).length}</p>
+                                    <p>NON-EMPTY SP: {villages.filter(v => !!v.subPrefecture).length}</p>
+                                    <p>NON-EMPTY NAMES: {villages.filter(v => !!v.name).length}</p>
+                                </div>
+                                <div>
+                                    <p>SELECTED REGION: {selectedRegion}</p>
+                                    {villages.length > 0 && (
+                                        <div className="mt-2 border-t border-slate-700 pt-2">
+                                            <p className="text-amber-400">RAW DATA SAMPLES (FIRST 10):</p>
+                                            <div className="space-y-1 mt-1">
+                                                {villages.slice(0, 10).map((v, i) => (
+                                                    <p key={v.id} className="text-[9px] border-b border-slate-800 pb-1">
+                                                        [{i}] {v.name} | R: &quot;{v.region}&quot; | D: &quot;{v.department}&quot; | SP: &quot;{v.subPrefecture}&quot; | SRC: &quot;{(v as any).source || ""}&quot;
+                                                    </p>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
                         </div>
+                        
+                        {showMaintenance && <DataMigrationTool />}
                     </div>
                 )}
             </div>
+
+            {quickViewVillage && (
+                <VillageQuickView
+                    village={quickViewVillage.village}
+                    currentChief={quickViewVillage.chief}
+                    open={!!quickViewVillage}
+                    onOpenChange={(open) => !open && setQuickViewVillage(null)}
+                />
+            )}
         </div>
     </PermissionGuard>
     );

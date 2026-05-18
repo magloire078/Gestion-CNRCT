@@ -27,6 +27,9 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useAuth } from "@/hooks/use-auth";
+import { Printer } from "lucide-react";
+import React, { useState } from "react";
+import { ChiefProfileReport } from "@/components/reports/chief-profile-report";
 
 interface ChiefQuickViewProps {
     chief: Chief | null;
@@ -44,6 +47,7 @@ export function ChiefQuickView({ chief, isOpen, onClose }: ChiefQuickViewProps) 
     
     const canReadCareer = hasPermission('chiefs-career:read');
     const canReadAudit = hasPermission('chiefs-audit:read');
+    const [isPrinting, setIsPrinting] = useState(false);
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -192,6 +196,14 @@ export function ChiefQuickView({ chief, isOpen, onClose }: ChiefQuickViewProps) 
                 
                 <div className="p-6 bg-white border-t border-slate-200 flex justify-end gap-3">
                     <button 
+                        onClick={() => setIsPrinting(true)}
+                        disabled={isPrinting}
+                        className="px-6 py-2.5 bg-white border border-slate-200 text-slate-700 text-xs font-black uppercase tracking-widest rounded-xl hover:bg-slate-50 transition-colors shadow-sm flex items-center gap-2"
+                    >
+                        <Printer className="h-4 w-4" />
+                        {isPrinting ? "Préparation..." : "Imprimer la Fiche"}
+                    </button>
+                    <button 
                         onClick={onClose}
                         className="px-6 py-2.5 bg-slate-900 text-white text-xs font-black uppercase tracking-widest rounded-xl hover:bg-slate-800 transition-colors shadow-lg shadow-slate-200"
                     >
@@ -199,6 +211,12 @@ export function ChiefQuickView({ chief, isOpen, onClose }: ChiefQuickViewProps) 
                     </button>
                 </div>
             </DialogContent>
+
+            <ChiefProfileReport 
+                chief={chief}
+                isPrinting={isPrinting}
+                onAfterPrint={() => setIsPrinting(false)}
+            />
         </Dialog>
     );
 }

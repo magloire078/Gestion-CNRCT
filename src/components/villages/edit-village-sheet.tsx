@@ -54,6 +54,12 @@ import { LocationPicker } from "@/components/common/location-picker";
 import { Label } from "@/components/ui/label";
 import { Village } from "@/types/village";
 
+const preprocessNumber = (val: any) => {
+    if (val === "" || val === undefined || val === null) return undefined;
+    const num = Number(val);
+    return isNaN(num) ? undefined : num;
+};
+
 const villageSchema = z.object({
     // Identité administrative
     name: z.string().min(2, "Le nom du village doit avoir au moins 2 caractères"),
@@ -66,15 +72,15 @@ const villageSchema = z.object({
     // Position SIG & Géo
     latitude: z.number().optional().nullable(),
     longitude: z.number().optional().nullable(),
-    altitude: z.preprocess((val) => val === "" ? undefined : Number(val), z.number().optional()),
-    distanceFromCapital: z.preprocess((val) => val === "" ? undefined : Number(val), z.number().optional()),
-    distanceFromChefLieu: z.preprocess((val) => val === "" ? undefined : Number(val), z.number().optional()),
+    altitude: z.preprocess(preprocessNumber, z.number().optional()),
+    distanceFromCapital: z.preprocess(preprocessNumber, z.number().optional()),
+    distanceFromChefLieu: z.preprocess(preprocessNumber, z.number().optional()),
     accessRoads: z.string().optional(),
 
     // Démographie
-    population: z.preprocess((val) => val === "" ? undefined : Number(val), z.number().optional()),
-    populationYear: z.preprocess((val) => val === "" ? undefined : Number(val), z.number().optional()),
-    numberOfHouseholds: z.preprocess((val) => val === "" ? undefined : Number(val), z.number().optional()),
+    population: z.preprocess(preprocessNumber, z.number().optional()),
+    populationYear: z.preprocess(preprocessNumber, z.number().optional()),
+    numberOfHouseholds: z.preprocess(preprocessNumber, z.number().optional()),
     mainEthnicGroups: z.string().optional(),
     languages: z.string().optional(),
 
@@ -127,13 +133,13 @@ export function EditVillageSheet({ village, open, onOpenChangeAction }: EditVill
             codeINS: village.codeINS || "",
             latitude: village.latitude ?? null,
             longitude: village.longitude ?? null,
-            altitude: village.altitude,
-            distanceFromCapital: village.distanceFromCapital,
-            distanceFromChefLieu: village.distanceFromChefLieu,
+            altitude: village.altitude || undefined,
+            distanceFromCapital: village.distanceFromCapital || undefined,
+            distanceFromChefLieu: village.distanceFromChefLieu || undefined,
             accessRoads: village.accessRoads || "",
-            population: village.population,
+            population: village.population || undefined,
             populationYear: village.populationYear || 2024,
-            numberOfHouseholds: village.numberOfHouseholds,
+            numberOfHouseholds: village.numberOfHouseholds || undefined,
             mainEthnicGroups: village.mainEthnicGroups?.join(", ") || "",
             languages: village.languages?.join(", ") || "",
             history: village.history || "",
@@ -168,13 +174,13 @@ export function EditVillageSheet({ village, open, onOpenChangeAction }: EditVill
                 codeINS: village.codeINS || "",
                 latitude: village.latitude ?? null,
                 longitude: village.longitude ?? null,
-                altitude: village.altitude,
-                distanceFromCapital: village.distanceFromCapital,
-                distanceFromChefLieu: village.distanceFromChefLieu,
+                altitude: village.altitude || undefined,
+                distanceFromCapital: village.distanceFromCapital || undefined,
+                distanceFromChefLieu: village.distanceFromChefLieu || undefined,
                 accessRoads: village.accessRoads || "",
-                population: village.population,
+                population: village.population || undefined,
                 populationYear: village.populationYear || 2024,
-                numberOfHouseholds: village.numberOfHouseholds,
+                numberOfHouseholds: village.numberOfHouseholds || undefined,
                 mainEthnicGroups: village.mainEthnicGroups?.join(", ") || "",
                 languages: village.languages?.join(", ") || "",
                 history: village.history || "",
@@ -227,11 +233,18 @@ export function EditVillageSheet({ village, open, onOpenChangeAction }: EditVill
                 languages: values.languages ? values.languages.split(",").map(s => s.trim()).filter(s => s !== "") : [],
                 mainActivities: values.mainActivities ? values.mainActivities.split(",").map(s => s.trim()).filter(s => s !== "") : [],
                 mainCrops: values.mainCrops ? values.mainCrops.split(",").map(s => s.trim()).filter(s => s !== "") : [],
-                latitude: values.latitude ?? undefined,
-                longitude: values.longitude ?? undefined,
+                latitude: values.latitude ?? null,
+                longitude: values.longitude ?? null,
             };
 
-            await updateVillage(village.id, finalData);
+            // Nettoyage des undefined pour Firebase (Firebase rejette les valeurs undefined)
+            Object.keys(finalData).forEach(key => {
+                if ((finalData as any)[key] === undefined) {
+                    (finalData as any)[key] = null;
+                }
+            });
+
+            await updateVillage(village.id, finalData as any);
             
             toast({
                 title: "Village mis à jour",
@@ -249,6 +262,15 @@ export function EditVillageSheet({ village, open, onOpenChangeAction }: EditVill
             setIsSubmitting(false);
         }
     }
+
+    const onError = (errors: any) => {
+        console.error("Validation Errors:", errors);
+        toast({
+            variant: "destructive",
+            title: "Champs invalides",
+            description: "Veuillez vérifier tous les onglets du formulaire, certains champs obligatoires ou formats sont invalides.",
+        });
+    };
 
     return (
         <Sheet open={open} onOpenChange={onOpenChangeAction}>
@@ -271,7 +293,7 @@ export function EditVillageSheet({ village, open, onOpenChangeAction }: EditVill
                     </div>
 
                     <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit)} className="flex-grow flex flex-col min-h-0">
+                        <form onSubmit={form.handleSubmit(onSubmit, onError)} className="flex-grow flex flex-col min-h-0">
                             <ScrollArea className="flex-grow px-8">
                                 <Accordion type="multiple" defaultValue={["admin"]} className="py-6 space-y-4">
                                     {/* Section 1: Administration */}
@@ -292,7 +314,7 @@ export function EditVillageSheet({ village, open, onOpenChangeAction }: EditVill
                                                 render={({ field }) => (
                                                     <FormItem>
                                                         <FormLabel className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Nom officiel de la localité</FormLabel>
-                                                        <FormControl><Input placeholder="Ex: Ebouassue" className="h-12 bg-slate-50/50 border-slate-100 rounded-xl focus:ring-blue-500" {...field} /></FormControl>
+                                                        <FormControl><Input placeholder="Ex: Ebouassue" className="h-12 bg-slate-50/50 border-slate-100 rounded-xl focus:ring-blue-500" {...field} value={field.value || ""} /></FormControl>
                                                         <FormMessage />
                                                     </FormItem>
                                                 )}
@@ -348,7 +370,7 @@ export function EditVillageSheet({ village, open, onOpenChangeAction }: EditVill
                                                     render={({ field }) => (
                                                         <FormItem>
                                                             <FormLabel className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Code INS</FormLabel>
-                                                            <FormControl><Input placeholder="Ex: CIV001" className="h-12 bg-slate-50/50 border-slate-100 rounded-xl" {...field} /></FormControl>
+                                                            <FormControl><Input placeholder="Ex: CIV001" className="h-12 bg-slate-50/50 border-slate-100 rounded-xl" {...field} value={field.value || ""} /></FormControl>
                                                             <FormMessage />
                                                         </FormItem>
                                                     )}
@@ -395,20 +417,20 @@ export function EditVillageSheet({ village, open, onOpenChangeAction }: EditVill
                                                 <FormField control={form.control} name="altitude" render={({ field }) => (
                                                     <FormItem>
                                                         <FormLabel className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Alt. (m)</FormLabel>
-                                                        <FormControl><Input type="number" {...field} className="h-12 bg-slate-50/50 rounded-xl" /></FormControl>
+                                                        <FormControl><Input type="number" {...field} value={field.value || ""} className="h-12 bg-slate-50/50 rounded-xl" /></FormControl>
                                                     </FormItem>
                                                 )} />
                                                 <FormField control={form.control} name="distanceFromCapital" render={({ field }) => (
                                                     <FormItem className="col-span-2">
                                                         <FormLabel className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Dist. Capitale (km)</FormLabel>
-                                                        <FormControl><Input type="number" {...field} className="h-12 bg-slate-50/50 rounded-xl" /></FormControl>
+                                                        <FormControl><Input type="number" {...field} value={field.value || ""} className="h-12 bg-slate-50/50 rounded-xl" /></FormControl>
                                                     </FormItem>
                                                 )} />
                                             </div>
                                             <FormField control={form.control} name="accessRoads" render={({ field }) => (
                                                 <FormItem>
                                                     <FormLabel className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Voies d'accès & État</FormLabel>
-                                                    <FormControl><Textarea placeholder="Ex: Bitumée en bon état, Piste carrossable..." className="min-h-[80px] bg-slate-50/50 rounded-xl resize-none" {...field} /></FormControl>
+                                                    <FormControl><Textarea placeholder="Ex: Bitumée en bon état, Piste carrossable..." className="min-h-[80px] bg-slate-50/50 rounded-xl resize-none" {...field} value={field.value || ""} /></FormControl>
                                                 </FormItem>
                                             )} />
                                         </AccordionContent>
@@ -430,26 +452,26 @@ export function EditVillageSheet({ village, open, onOpenChangeAction }: EditVill
                                                 <FormField control={form.control} name="population" render={({ field }) => (
                                                     <FormItem>
                                                         <FormLabel className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Population Totale</FormLabel>
-                                                        <FormControl><Input type="number" placeholder="Habitants" className="h-12 bg-slate-50/50 rounded-xl" {...field} /></FormControl>
+                                                        <FormControl><Input type="number" placeholder="Habitants" className="h-12 bg-slate-50/50 rounded-xl" {...field} value={field.value || ""} /></FormControl>
                                                     </FormItem>
                                                 )} />
                                                 <FormField control={form.control} name="populationYear" render={({ field }) => (
                                                     <FormItem>
                                                         <FormLabel className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Année Recens.</FormLabel>
-                                                        <FormControl><Input type="number" placeholder="Ex: 2024" className="h-12 bg-slate-50/50 rounded-xl" {...field} /></FormControl>
+                                                        <FormControl><Input type="number" placeholder="Ex: 2024" className="h-12 bg-slate-50/50 rounded-xl" {...field} value={field.value || ""} /></FormControl>
                                                     </FormItem>
                                                 )} />
                                             </div>
                                             <FormField control={form.control} name="mainEthnicGroups" render={({ field }) => (
                                                 <FormItem>
                                                     <FormLabel className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Ethnies majoritaires (séparées par virgule)</FormLabel>
-                                                    <FormControl><Input placeholder="Ex: Baoulé, Agni, Dioula..." className="h-12 bg-slate-50/50 rounded-xl" {...field} /></FormControl>
+                                                    <FormControl><Input placeholder="Ex: Baoulé, Agni, Dioula..." className="h-12 bg-slate-50/50 rounded-xl" {...field} value={field.value || ""} /></FormControl>
                                                 </FormItem>
                                             )} />
                                             <FormField control={form.control} name="languages" render={({ field }) => (
                                                 <FormItem>
                                                     <FormLabel className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Langues parlées</FormLabel>
-                                                    <FormControl><Input placeholder="Ex: Français, Baoulé..." className="h-12 bg-slate-50/50 rounded-xl" {...field} /></FormControl>
+                                                    <FormControl><Input placeholder="Ex: Français, Baoulé..." className="h-12 bg-slate-50/50 rounded-xl" {...field} value={field.value || ""} /></FormControl>
                                                 </FormItem>
                                             )} />
                                         </AccordionContent>
@@ -470,13 +492,13 @@ export function EditVillageSheet({ village, open, onOpenChangeAction }: EditVill
                                             <FormField control={form.control} name="history" render={({ field }) => (
                                                 <FormItem>
                                                     <FormLabel className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Bref aperçu historique</FormLabel>
-                                                    <FormControl><Textarea placeholder="Origine du village, fondateurs..." className="min-h-[100px] bg-slate-50/50 rounded-xl resize-none" {...field} /></FormControl>
+                                                    <FormControl><Textarea placeholder="Origine du village, fondateurs..." className="min-h-[100px] bg-slate-50/50 rounded-xl resize-none" {...field} value={field.value || ""} /></FormControl>
                                                 </FormItem>
                                             )} />
                                             <FormField control={form.control} name="customs" render={({ field }) => (
                                                 <FormItem>
                                                     <FormLabel className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Coutumes & Totems</FormLabel>
-                                                    <FormControl><Textarea placeholder="Interdits, lieux sacrés..." className="min-h-[100px] bg-slate-50/50 rounded-xl resize-none" {...field} /></FormControl>
+                                                    <FormControl><Textarea placeholder="Interdits, lieux sacrés..." className="min-h-[100px] bg-slate-50/50 rounded-xl resize-none" {...field} value={field.value || ""} /></FormControl>
                                                 </FormItem>
                                             )} />
                                         </AccordionContent>
@@ -497,13 +519,13 @@ export function EditVillageSheet({ village, open, onOpenChangeAction }: EditVill
                                             <FormField control={form.control} name="mainActivities" render={({ field }) => (
                                                 <FormItem>
                                                     <FormLabel className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Activités principales</FormLabel>
-                                                    <FormControl><Input placeholder="Ex: Agriculture, Commerce, Pêche..." className="h-12 bg-slate-50/50 rounded-xl" {...field} /></FormControl>
+                                                    <FormControl><Input placeholder="Ex: Agriculture, Commerce, Pêche..." className="h-12 bg-slate-50/50 rounded-xl" {...field} value={field.value || ""} /></FormControl>
                                                 </FormItem>
                                             )} />
                                             <FormField control={form.control} name="mainCrops" render={({ field }) => (
                                                 <FormItem>
                                                     <FormLabel className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Cultures majeures</FormLabel>
-                                                    <FormControl><Input placeholder="Ex: Cacao, Café, Hévéa, Igname..." className="h-12 bg-slate-50/50 rounded-xl" {...field} /></FormControl>
+                                                    <FormControl><Input placeholder="Ex: Cacao, Café, Hévéa, Igname..." className="h-12 bg-slate-50/50 rounded-xl" {...field} value={field.value || ""} /></FormControl>
                                                 </FormItem>
                                             )} />
                                         </AccordionContent>
@@ -550,7 +572,7 @@ export function EditVillageSheet({ village, open, onOpenChangeAction }: EditVill
                                             <FormField control={form.control} name="infrastructureNotes" render={({ field }) => (
                                                 <FormItem>
                                                     <FormLabel className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Notes sur l'état des infrastructures</FormLabel>
-                                                    <FormControl><Textarea placeholder="Besoin de réhabilitation, extension..." className="min-h-[80px] bg-slate-50/50 rounded-xl resize-none" {...field} /></FormControl>
+                                                    <FormControl><Textarea placeholder="Besoin de réhabilitation, extension..." className="min-h-[80px] bg-slate-50/50 rounded-xl resize-none" {...field} value={field.value || ""} /></FormControl>
                                                 </FormItem>
                                             )} />
                                         </AccordionContent>

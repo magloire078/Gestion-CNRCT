@@ -23,17 +23,13 @@ interface EditDocumentDialogProps {
     onOpenChange: (open: boolean) => void;
 }
 
+import { IVORIAN_REGIONS } from "@/constants/regions";
+
 const CATEGORIES: Document['category'][] = [
     'Actes Royaux', 'Procès-Verbaux', 'Rapports d\'Activité', 'Courriers', 'Communication', 'Autres'
 ];
 
-const REGIONS = [
-    "Abidjan", "Agnéby-Tiassa", "Bafing", "Bagoué", "Bélier", "Béré", "Bounkani", 
-    "Cavally", "Folon", "Gbeke", "Gboklè", "Goh", "Gontougo", "Grands-Ponts", 
-    "Guémon", "Hambol", "Haut-Sassandra", "Iffou", "Indénié-Djuablin", "Kabadougou", 
-    "Kavadougou", "Lôh-Djiboua", "Marahoué", "Mé", "N'Zi", "Nawa", "Poro", 
-    "Région des Ponts", "San-Pédro", "Sud-Comoé", "Tchologo", "Tonkpi", "Worodougou", "Zanzan"
-];
+const REGIONS = [...IVORIAN_REGIONS];
 
 export function EditDocumentDialog({ document, open, onOpenChange }: EditDocumentDialogProps) {
     const { toast } = useToast();

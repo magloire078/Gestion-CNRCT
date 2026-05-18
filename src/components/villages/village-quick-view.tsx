@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { Village } from "@/types/village";
 import { Chief } from "@/types/chief";
 import {
@@ -30,6 +31,9 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Printer } from "lucide-react";
+import { VillageProfileReport } from "@/components/reports/village-profile-report";
 
 interface VillageQuickViewProps {
     village: Village;
@@ -40,6 +44,7 @@ interface VillageQuickViewProps {
 
 export function VillageQuickView({ village, currentChief, open, onOpenChange }: VillageQuickViewProps) {
     const score = village.developmentScore || 0;
+    const [isPrinting, setIsPrinting] = React.useState(false);
     
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -51,17 +56,28 @@ export function VillageQuickView({ village, currentChief, open, onOpenChange }: 
                     {village.photoUrl && (
                         <img src={village.photoUrl} alt="" className="absolute inset-0 w-full h-full object-cover opacity-30" />
                     )}
-                    <div className="relative z-10">
-                        <Badge className="bg-amber-500 text-white mb-2 border-none font-black text-[9px] uppercase tracking-widest">Fiche Territoriale</Badge>
-                        <DialogTitle className="text-3xl font-black text-white uppercase tracking-tighter">{village.name}</DialogTitle>
-                        <DialogDescription className="text-slate-400 font-bold text-sm flex items-center gap-2">
-                            <MapPin className="h-3.5 w-3.5 text-amber-500" />
-                            {village.region} • {village.department} • {village.subPrefecture}
-                        </DialogDescription>
+                    <div className="relative z-10 flex justify-between items-start">
+                        <div>
+                            <Badge className="bg-amber-500 text-white mb-2 border-none font-black text-[9px] uppercase tracking-widest">Fiche Territoriale</Badge>
+                            <DialogTitle className="text-3xl font-black text-white uppercase tracking-tighter">{village.name}</DialogTitle>
+                            <DialogDescription className="text-slate-400 font-bold text-sm flex items-center gap-2">
+                                <MapPin className="h-3.5 w-3.5 text-amber-500" />
+                                {village.region} • {village.department} • {village.subPrefecture}
+                            </DialogDescription>
+                        </div>
+                        <Button 
+                            onClick={() => setIsPrinting(true)} 
+                            variant="outline" 
+                            disabled={isPrinting}
+                            className="bg-white/10 hover:bg-white/20 border-white/20 text-white shadow-xl shadow-black/20"
+                        >
+                            <Printer className="mr-2 h-4 w-4" />
+                            {isPrinting ? "Préparation..." : "Imprimer la Fiche"}
+                        </Button>
                     </div>
                 </div>
 
-                <div className="p-8 space-y-6">
+                <div className="p-8 space-y-6 print:hidden">
                     {/* IDL Section */}
                     <div className="bg-slate-50 rounded-[2rem] p-6 border border-slate-100">
                         <div className="flex justify-between items-center mb-4">
@@ -166,6 +182,14 @@ export function VillageQuickView({ village, currentChief, open, onOpenChange }: 
                     </div>
                 </div>
             </DialogContent>
+
+            {/* Fiche Officielle Imprimable */}
+            <VillageProfileReport 
+                village={village} 
+                currentChief={currentChief} 
+                isPrinting={isPrinting}
+                onAfterPrint={() => setIsPrinting(false)}
+            />
         </Dialog>
     );
 }

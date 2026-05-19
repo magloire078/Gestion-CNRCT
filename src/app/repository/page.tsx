@@ -48,7 +48,7 @@ import {
     DialogHeader, 
     DialogTitle, 
     DialogDescription,
-} from "@/components/ui/dialog";
+} from "@/components/ui/responsive-dialog";
 import { 
     LayoutGrid, 
     List, 

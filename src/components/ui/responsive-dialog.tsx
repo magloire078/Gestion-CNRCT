@@ -111,3 +111,15 @@ export function ResponsiveDialogDescription(
   const Description = isMobile ? SheetDescription : DialogDescription;
   return <Description {...props} />;
 }
+
+// Aliases pour faciliter la migration depuis @/components/ui/dialog :
+// les fichiers existants peuvent juste changer le chemin d'import.
+export {
+  ResponsiveDialog as Dialog,
+  ResponsiveDialogTrigger as DialogTrigger,
+  ResponsiveDialogContent as DialogContent,
+  ResponsiveDialogHeader as DialogHeader,
+  ResponsiveDialogFooter as DialogFooter,
+  ResponsiveDialogTitle as DialogTitle,
+  ResponsiveDialogDescription as DialogDescription,
+};

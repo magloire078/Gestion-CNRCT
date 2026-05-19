@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { ArrowUp, ArrowDown, GripVertical, Monitor, Layout, Maximize2, Minimize2, Printer, Settings, ListChecks, ArrowUpCircle, ArrowDownCircle, Info } from "lucide-react";
 import type { ColumnKeys } from "@/lib/constants/employee";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/responsive-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";

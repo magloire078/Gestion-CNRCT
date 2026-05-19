@@ -27,7 +27,7 @@ import { PermissionGuard } from "@/components/auth/permission-guard";
 import { BarcodeScanner } from "@/components/it-assets/barcode-scanner";
 import { PrintLabels } from "@/components/it-assets/print-labels";
 import { PrintSingleLabel } from "@/components/it-assets/print-single-label";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/responsive-dialog";
 import { PrintAssetsList } from "@/components/it-assets/print-assets-list";
 import { DebouncedInput } from "@/components/ui/debounced-input";
 

@@ -35,7 +35,7 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from "@/components/ui/dialog";
+} from "@/components/ui/responsive-dialog";
 import { Input } from "@/components/ui/input";
 import type { Employe, PayslipDetails, Department, Direction, Service, OrganizationSettings } from "@/lib/data";
 import { subscribeToEmployees, subscribeToEmployee, updateEmployee } from "@/services/employee-service";

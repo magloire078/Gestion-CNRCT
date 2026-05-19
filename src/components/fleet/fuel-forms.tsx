@@ -11,7 +11,7 @@ import {
     DialogTitle,
     DialogFooter,
     DialogDescription
-} from "@/components/ui/dialog";
+} from "@/components/ui/responsive-dialog";
 import {
     Form,
     FormControl,

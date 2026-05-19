@@ -28,7 +28,7 @@ import { cn } from "@/lib/utils";
 import { 
     Dialog, DialogContent, DialogHeader, DialogTitle, 
     DialogFooter, DialogDescription, DialogTrigger 
-} from "@/components/ui/dialog";
+} from "@/components/ui/responsive-dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";

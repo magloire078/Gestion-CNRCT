@@ -22,7 +22,7 @@ import {
   DialogTitle, 
   DialogDescription, 
   DialogFooter 
-} from "@/components/ui/dialog";
+} from "@/components/ui/responsive-dialog";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";

@@ -5,7 +5,7 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
-} from "@/components/ui/dialog";
+} from "@/components/ui/responsive-dialog";
 import { Button } from "@/components/ui/button";
 import { Download, ExternalLink, FileText, ImageIcon, Loader2, X } from "lucide-react";
 import type { Document } from "@/lib/data";

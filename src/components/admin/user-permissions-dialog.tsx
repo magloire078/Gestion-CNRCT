@@ -7,7 +7,7 @@ import {
     DialogDescription,
     DialogHeader,
     DialogTitle,
-} from "@/components/ui/dialog";
+} from "@/components/ui/responsive-dialog";
 import { PermissionsEditor } from "./permission-matrix";
 import { User } from "@/types/auth";
 import { ShieldAlert } from "lucide-react";

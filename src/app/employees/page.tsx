@@ -60,6 +60,7 @@ const statusVariantMap: Record<Status, "default" | "secondary" | "destructive" |
 
 import { allColumns, chiefColumns, type ColumnKeys } from "@/lib/constants/employee";
 import { DebouncedInput } from "@/components/ui/debounced-input";
+import { EmployeeCard } from "@/components/employees/employee-card";
 
 export default function EmployeesPage() {
   const [employees, setEmployees] = useState<Employe[]>([]);
@@ -681,7 +682,28 @@ export default function EmployeesPage() {
 
                     {error && <p className="text-destructive text-center py-4">{error}</p>}
 
-                    <div className="overflow-x-auto border rounded-xl shadow-inner bg-slate-50/20">
+                    {/* Mobile card view */}
+                    <div className="md:hidden space-y-2">
+                      {loading
+                        ? Array.from({ length: 5 }).map((_, i) => (
+                            <Skeleton key={i} className="h-24 w-full rounded-2xl" />
+                          ))
+                        : paginatedEmployees.map((employee, index) => (
+                            <EmployeeCard
+                              key={employee.id}
+                              employee={employee}
+                              index={(currentPage - 1) * itemsPerPage + index + 1}
+                              isGeoTab={isGeoTab}
+                              orgUnit={getEmployeeOrgUnit(employee)}
+                              avatarBgClass={getAvatarBgClass(employee.sexe)}
+                              onClick={() => router.push(`/employees/${employee.id}`)}
+                              onDelete={() => setDeleteTarget(employee)}
+                            />
+                          ))}
+                    </div>
+
+                    {/* Desktop table view */}
+                    <div className="hidden md:block overflow-x-auto border rounded-xl shadow-inner bg-slate-50/20">
                       <Table>
                         <TableHeader className="bg-slate-100/50">
                           <TableRow>

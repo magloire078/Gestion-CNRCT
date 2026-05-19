@@ -230,7 +230,7 @@ export function AddVillageSheet() {
                     Nouveau Village
                 </Button>
             </SheetTrigger>
-            <SheetContent className="sm:max-w-[700px]">
+            <SheetContent className="w-full sm:max-w-[700px]">
                 <SheetHeader className="mb-6">
                     <SheetTitle className="text-2xl font-black">Ajouter un village ou localité</SheetTitle>
                     <SheetDescription>

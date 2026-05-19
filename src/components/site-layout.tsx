@@ -82,6 +82,20 @@ import { cn } from "@/lib/utils";
 
 import { ALL_MENU_ITEMS, MenuItem, SubMenuItem } from "@/constants/navigation";
 
+// Utility to derive a human-readable page title from the current pathname
+const getPageTitle = (path: string): string | undefined => {
+  const purePath = path.split('?')[0];
+  for (const item of ALL_MENU_ITEMS) {
+    if (item.href && item.href.split('?')[0] === purePath) return item.label;
+    if (item.subItems) {
+      for (const sub of item.subItems) {
+        if (sub.href.split('?')[0] === purePath) return sub.label;
+      }
+    }
+  }
+  return undefined;
+};
+
 // Utility to find the required permission for a given path
 const getRequiredPermission = (path: string): string | undefined => {
   const purePath = path.split('?')[0];
@@ -170,12 +184,10 @@ function MobileBottomNav() {
 
   return (
     <div className="fixed bottom-0 left-0 z-50 w-full h-16 bg-white/70 backdrop-blur-xl border-t border-white/20 md:hidden print:hidden shadow-[0_-8px_30px_rgb(0,0,0,0.04)]">
-      <div className={cn(
-        "grid h-full mx-auto font-bold px-2",
-        visibleNavItems.length === 4 ? "grid-cols-5" :
-          visibleNavItems.length === 3 ? "grid-cols-4" :
-            visibleNavItems.length === 2 ? "grid-cols-3" : "grid-cols-2"
-      )}>
+      <div
+        className="grid h-full mx-auto font-bold px-2 gap-1"
+        style={{ gridTemplateColumns: `repeat(${visibleNavItems.length + 1}, minmax(0, 1fr))` }}
+      >
         {visibleNavItems.map((item) => (
           <Link
             key={item.href}
@@ -191,7 +203,7 @@ function MobileBottomNav() {
              )}>
               <item.icon className="w-5 h-5" />
             </div>
-            <span className="text-[8px] uppercase tracking-widest mt-1 font-black">{item.label}</span>
+            <span className="text-[10px] uppercase tracking-wider mt-1 font-bold">{item.label}</span>
           </Link>
         ))}
         <button
@@ -202,7 +214,7 @@ function MobileBottomNav() {
           <div className="p-1.5 hover:bg-slate-900/5 rounded-lg">
             <Menu className="w-5 h-5" />
           </div>
-          <span className="text-[8px] uppercase tracking-widest mt-1 font-black">Plus</span>
+          <span className="text-[10px] uppercase tracking-wider mt-1 font-bold">Plus</span>
         </button>
       </div>
     </div>
@@ -288,7 +300,9 @@ SidebarMenuItemComponent.displayName = "SidebarMenuItemComponent";
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const pathname = usePathname();
   const { user, loading, hasPermission, settings } = useAuth();
+  const pageTitle = React.useMemo(() => getPageTitle(pathname), [pathname]);
 
   React.useEffect(() => {
     if (settings) {
@@ -379,7 +393,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
             </div>
             <div className="flex flex-col overflow-hidden">
               <span className="text-sm font-black tracking-tight text-slate-900 uppercase">Gestion CNRCT</span>
-              <span className="text-[8px] text-slate-400 font-extrabold uppercase tracking-widest leading-tight">Plateforme Tactique</span>
+              <span className="text-[10px] text-slate-400 font-extrabold uppercase tracking-widest leading-tight">Plateforme Tactique</span>
             </div>
           </div>
         </SidebarHeader>
@@ -435,12 +449,17 @@ function AppLayout({ children }: { children: React.ReactNode }) {
         </SidebarFooter>
       </Sidebar>
       <SidebarInset className="bg-slate-50/20">
-        <header className="sticky top-0 z-40 flex h-16 items-center gap-4 bg-white/40 backdrop-blur-xl px-6 border-b border-white/20 print:hidden transition-all shadow-sm">
+        <header className="sticky top-0 z-40 flex h-14 md:h-16 items-center gap-4 bg-white/40 backdrop-blur-xl px-4 md:px-6 border-b border-white/20 print:hidden transition-all shadow-sm">
+          {pageTitle && (
+            <h1 className="text-sm md:text-base font-bold tracking-tight text-slate-900 truncate md:hidden">
+              {pageTitle}
+            </h1>
+          )}
           <div className="ml-auto flex items-center gap-4">
             <NotificationBell />
           </div>
         </header>
-        <main className="flex-1 p-6 md:p-8 mb-16 md:mb-0 relative z-10">
+        <main className="flex-1 p-3 sm:p-4 md:p-6 lg:p-8 mb-16 md:mb-0 relative z-10">
           <div className="mx-auto w-full max-w-7xl">
             <ProtectedPage>
               {children}

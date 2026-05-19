@@ -558,7 +558,63 @@ export default function RepositoryPage() {
                                         </div>
                                     ) : filteredDocuments.length > 0 ? (
                                         viewMode === 'table' ? (
-                                            <div className="bg-white rounded-3xl border border-slate-100 overflow-hidden shadow-sm">
+                                            <>
+                                            {/* Mobile: liste de cartes empilées */}
+                                            <div className="md:hidden space-y-2">
+                                                {filteredDocuments.map((doc, index) => (
+                                                    <div
+                                                        key={doc.id}
+                                                        onClick={() => { setSelectedDoc(doc); setIsPreviewOpen(true); }}
+                                                        className="group relative flex gap-3 rounded-2xl border border-slate-100 bg-white p-3 shadow-sm transition-all active:scale-[0.98] active:bg-slate-50 cursor-pointer"
+                                                    >
+                                                        <span className="absolute top-2 right-2 text-[10px] font-black text-slate-300 tabular-nums">#{index + 1}</span>
+                                                        <div className="h-12 w-12 rounded-xl bg-slate-50 flex items-center justify-center border border-slate-100 shrink-0">
+                                                            {getFileIcon(doc.fileName)}
+                                                        </div>
+                                                        <div className="flex-1 min-w-0 pr-6">
+                                                            <p className="font-bold text-sm text-slate-900 truncate">{doc.fileName}</p>
+                                                            <p className="text-[10px] text-slate-400 font-medium uppercase tracking-tight mt-0.5">
+                                                                {formatBytes(doc.fileSize)} · {(doc.fileName.split('.').pop() || '').toUpperCase()}
+                                                            </p>
+                                                            <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                                                                <Badge variant="outline" className={cn("text-[9px] font-black uppercase tracking-tight px-2 py-0.5 rounded-md border-0", CATEGORY_COLORS[doc.category || 'Autres'])}>
+                                                                    {doc.category || 'Non classé'}
+                                                                </Badge>
+                                                                <span className="text-[10px] font-bold text-slate-500">{doc.region || 'National'}</span>
+                                                                <span className="text-[10px] font-medium text-slate-400">· {format(parseISO(doc.uploadDate), 'dd/MM/yy', { locale: fr })}</span>
+                                                            </div>
+                                                        </div>
+                                                        <div className="shrink-0 self-center" onClick={(e) => e.stopPropagation()}>
+                                                            <DropdownMenu>
+                                                                <DropdownMenuTrigger asChild>
+                                                                    <Button variant="ghost" size="icon" className="h-11 w-11 rounded-xl hover:bg-slate-100" aria-label="Actions">
+                                                                        <MoreVertical className="h-5 w-5 text-slate-600" />
+                                                                    </Button>
+                                                                </DropdownMenuTrigger>
+                                                                <DropdownMenuContent align="end" className="w-56 p-2 rounded-2xl border-slate-100">
+                                                                    <DropdownMenuItem onSelect={() => { setSelectedDoc(doc); setIsEditOpen(true); }} className="rounded-xl font-medium">
+                                                                        <Pencil className="mr-2 h-4 w-4" /> Modifier métadonnées
+                                                                    </DropdownMenuItem>
+                                                                    <DropdownMenuItem asChild className="rounded-xl font-medium">
+                                                                        <Link href={doc.storageUrl} target="_blank" download={doc.fileName}>
+                                                                            <Download className="mr-2 h-4 w-4" /> Télécharger
+                                                                        </Link>
+                                                                    </DropdownMenuItem>
+                                                                    <div className="h-px bg-slate-100 my-2 px-2" />
+                                                                    <DropdownMenuItem
+                                                                        onSelect={() => { setSelectedDoc(doc); setIsDeleteDialogOpen(true); }}
+                                                                        className="text-red-500 rounded-xl font-bold focus:text-red-600 focus:bg-red-50"
+                                                                    >
+                                                                        <Trash2 className="mr-2 h-4 w-4" /> Supprimer du Vault
+                                                                    </DropdownMenuItem>
+                                                                </DropdownMenuContent>
+                                                            </DropdownMenu>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+
+                                            <div className="hidden md:block bg-white rounded-3xl border border-slate-100 overflow-hidden shadow-sm">
                                                 <Table>
                                                     <TableHeader>
                                                         <TableRow className="bg-slate-50/50 border-b-slate-100">
@@ -643,6 +699,7 @@ export default function RepositoryPage() {
                                                     </TableBody>
                                                 </Table>
                                             </div>
+                                            </>
                                         ) : (
                                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                                 {filteredDocuments.map((doc) => (

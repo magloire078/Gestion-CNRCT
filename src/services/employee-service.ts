@@ -6,7 +6,7 @@ import {
     type QuerySnapshot, type DocumentData, type QueryDocumentSnapshot, type DocumentSnapshot
 } from '@/lib/firebase';
 import type { Employe, Chief, Department } from '@/lib/data';
-import { db, storage } from '@/lib/firebase';
+import { db, storage, auth } from '@/lib/firebase';
 import { employeeSchema } from '@/lib/schemas/employee-schema';
 import { getOrganizationSettings } from './organization-service';
 import { getDepartments } from './department-service';
@@ -258,7 +258,15 @@ export async function getEmployees(): Promise<Employe[]> {
  */
 export async function getEmployeeDirectory(): Promise<Employe[]> {
     try {
-        const response = await fetch('/api/employees/directory');
+        const currentUser = auth.currentUser;
+        if (!currentUser) {
+            console.warn('[EmployeeService] No authenticated user, falling back to client-side fetch');
+            return await getEmployees();
+        }
+        const idToken = await currentUser.getIdToken();
+        const response = await fetch('/api/employees/directory', {
+            headers: { Authorization: `Bearer ${idToken}` },
+        });
         if (!response.ok) {
             // Log the error but fall back to client-side getEmployees
             console.warn('[EmployeeService] Directory API failed, falling back to client-side fetch');

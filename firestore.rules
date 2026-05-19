@@ -20,10 +20,8 @@ service cloud.firestore {
     // --- ROLE CHECKS (Zero/One Read optimized) ---
     
     function isSuperAdmin() {
-      return isSignedIn() && (
-        request.auth.token.email == 'magloire078@gmail.com' ||
-        getUserData().roleId in ['super-admin', 'LHcHyfBzile3r0vyFOFb', 'dirigeant-president']
-      );
+      return isSignedIn() &&
+        getUserData().roleId in ['super-admin', 'LHcHyfBzile3r0vyFOFb', 'dirigeant-president'];
     }
     
     // --- PERMISSION MATRIX HELPER (Synchronized with RESOURCES_CONFIG) ---
@@ -40,12 +38,6 @@ service cloud.firestore {
         (user.get(['resourcePermissions', res, act], null) == null && 
          user.roleId != null && 
          getRoleData(user.roleId).get(['resourcePermissions', res, act], null) == true);
-    }
-
-    // --- TEMPORARY DEBUG ACCESS ---
-    match /{document=**} {
-      allow read: if true;
-      allow write: if isSignedIn();
     }
 
     // --- SYSTEM & ADMIN ---

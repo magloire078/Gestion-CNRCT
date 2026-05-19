@@ -60,6 +60,7 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { AddVillageSheet } from "@/components/villages/add-village-sheet";
 import { VillageQuickView } from "@/components/villages/village-quick-view";
+import { VillageListCard } from "@/components/villages/village-list-card";
 import { VillagesOfficialReport } from "@/components/reports/villages-official-report";
 import { PermissionGuard } from "@/components/auth/permission-guard";
 import { useAuth } from "@/hooks/use-auth";
@@ -696,7 +697,21 @@ export default function VillagesPage() {
                                 </AnimatePresence>
                             </div>
                         ) : (
-                            <Card className="rounded-[2.5rem] border-none shadow-2xl shadow-slate-200/50 overflow-hidden bg-white">
+                          <>
+                            {/* Mobile list */}
+                            <div className="md:hidden space-y-2">
+                              {paginatedVillages.map((entry, idx) => (
+                                <VillageListCard
+                                  key={entry.village.id}
+                                  village={entry.village}
+                                  chief={entry.currentChief}
+                                  index={(currentPage - 1) * itemsPerPage + idx + 1}
+                                  onClick={() => setQuickViewVillage({ village: entry.village, chief: entry.currentChief })}
+                                />
+                              ))}
+                            </div>
+
+                            <Card className="hidden md:block rounded-[2.5rem] border-none shadow-2xl shadow-slate-200/50 overflow-hidden bg-white">
                                 <Table>
                                     <TableHeader>
                                         <TableRow className="hover:bg-transparent border-slate-100 bg-slate-50/50">
@@ -772,6 +787,7 @@ export default function VillagesPage() {
                                     </TableBody>
                                 </Table>
                             </Card>
+                          </>
                         )}
 
                         <div className="bg-white/80 backdrop-blur-xl border border-white p-6 rounded-[2rem] shadow-xl shadow-slate-200/20">

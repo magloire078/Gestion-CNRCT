@@ -166,6 +166,20 @@ export const InventoryTab = memo(({
                 <CardContent className="pt-6 px-0">
                     {error && <div className="p-8 text-center text-red-500 font-bold">{error}</div>}
                     
+                    {/* Mobile: always stacked cards (table déborde, grid trop dense) */}
+                    <div className="md:hidden space-y-3">
+                        {loading
+                            ? Array.from({ length: 5 }).map((_, i) => (
+                                <Card key={i} className="rounded-2xl border-slate-100">
+                                    <CardContent className="p-4">
+                                        <Skeleton className="h-32 w-full rounded-xl" />
+                                    </CardContent>
+                                </Card>
+                            ))
+                            : paginatedSupplies.map((supply) => renderSupplyCard(supply))}
+                    </div>
+
+                    <div className="hidden md:block">
                     {viewMode === 'table' ? (
                         <div className="rounded-xl border border-slate-100 overflow-hidden bg-white">
                             <Table>
@@ -209,6 +223,7 @@ export const InventoryTab = memo(({
                             ) : paginatedSupplies.map((supply) => renderSupplyCard(supply))}
                         </div>
                     )}
+                    </div>
 
                     {!loading && filteredSupplies.length === 0 && (
                         <div className="text-center py-32 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">

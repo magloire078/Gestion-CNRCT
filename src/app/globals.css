@@ -43,11 +43,6 @@
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
 
-    /* CNRCT Official Colors */
-    --cnrct-green: 156 100% 19%;
-    --cnrct-gold: 46 65% 52%;
-    --cnrct-ivory: 60 100% 97%;
-
     /* Borders & Inputs */
     --border: 220 20% 90%;
     --input: 220 20% 90%;
@@ -198,25 +193,6 @@
   .dark .glass-card {
     background: rgba(30, 41, 59, 0.4);
     border: 1px solid rgba(255, 255, 255, 0.1);
-  }
-
-  /* Premium Gradients */
-  .gradient-primary {
-    background: linear-gradient(135deg,
-        hsl(217, 91%, 60%) 0%,
-        hsl(262, 83%, 58%) 100%);
-  }
-
-  .gradient-secondary {
-    background: linear-gradient(135deg,
-        hsl(262, 83%, 58%) 0%,
-        hsl(217, 91%, 60%) 100%);
-  }
-
-  .gradient-accent {
-    background: linear-gradient(135deg,
-        hsl(14, 90%, 53%) 0%,
-        hsl(33, 94%, 55%) 100%);
   }
 
   .gradient-mesh {
@@ -611,26 +587,6 @@
     @apply bg-gradient-to-br from-sky-400/10 via-background to-background border-sky-400/20;
   }
 
-  /* Institutional Premium System */
-  .institutional-card {
-    @apply bg-card/40 backdrop-blur-md rounded-[2.5rem] border border-white/20 shadow-3xl;
-  }
-
-  .institutional-title {
-    @apply font-black uppercase tracking-tighter text-slate-900 leading-[0.9];
-  }
-
-  .institutional-badge {
-    @apply px-4 py-1 rounded-xl font-black uppercase tracking-widest text-[9px] shadow-lg;
-  }
-
-  .text-shadow-premium {
-    text-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  }
-
-  .text-shadow-premium-light {
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  }
 }
 
 /* Global Smooth Behavior */

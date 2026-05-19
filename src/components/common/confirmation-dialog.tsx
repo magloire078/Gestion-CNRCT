@@ -2,14 +2,14 @@
 "use client";
 
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogClose
-} from "@/components/ui/dialog";
+  ResponsiveDialog as Dialog,
+  ResponsiveDialogContent as DialogContent,
+  ResponsiveDialogDescription as DialogDescription,
+  ResponsiveDialogFooter as DialogFooter,
+  ResponsiveDialogHeader as DialogHeader,
+  ResponsiveDialogTitle as DialogTitle,
+} from "@/components/ui/responsive-dialog";
+import { DialogClose } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
 interface ConfirmationDialogProps {

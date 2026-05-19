@@ -1,14 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { 
-    Dialog, 
-    DialogContent, 
-    DialogHeader, 
-    DialogTitle, 
-    DialogDescription,
-    DialogFooter
-} from "@/components/ui/dialog";
+import {
+    ResponsiveDialog as Dialog,
+    ResponsiveDialogContent as DialogContent,
+    ResponsiveDialogHeader as DialogHeader,
+    ResponsiveDialogTitle as DialogTitle,
+    ResponsiveDialogDescription as DialogDescription,
+    ResponsiveDialogFooter as DialogFooter,
+} from "@/components/ui/responsive-dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";

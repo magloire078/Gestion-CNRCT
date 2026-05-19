@@ -4,12 +4,12 @@ import React from "react";
 import { Village } from "@/types/village";
 import { Chief } from "@/types/chief";
 import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogDescription,
-} from "@/components/ui/dialog";
+    ResponsiveDialog,
+    ResponsiveDialogContent,
+    ResponsiveDialogHeader,
+    ResponsiveDialogTitle,
+    ResponsiveDialogDescription,
+} from "@/components/ui/responsive-dialog";
 import { Badge } from "@/components/ui/badge";
 import { 
     MapPin, 
@@ -47,8 +47,8 @@ export function VillageQuickView({ village, currentChief, open, onOpenChange }: 
     const [isPrinting, setIsPrinting] = React.useState(false);
     
     return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[600px] rounded-[2.5rem] p-0 overflow-hidden border-none shadow-2xl bg-white">
+        <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+            <ResponsiveDialogContent className="sm:max-w-[600px] rounded-[2.5rem] p-0 overflow-hidden border-none shadow-2xl bg-white">
                 <div className="relative h-48 bg-slate-900 flex flex-col justify-end p-8">
                     <div className="absolute inset-0 opacity-20">
                         <div className="absolute inset-0 pattern-dots text-white"></div>
@@ -59,11 +59,11 @@ export function VillageQuickView({ village, currentChief, open, onOpenChange }: 
                     <div className="relative z-10 flex justify-between items-start">
                         <div>
                             <Badge className="bg-amber-500 text-white mb-2 border-none font-black text-[9px] uppercase tracking-widest">Fiche Territoriale</Badge>
-                            <DialogTitle className="text-3xl font-black text-white uppercase tracking-tighter">{village.name}</DialogTitle>
-                            <DialogDescription className="text-slate-400 font-bold text-sm flex items-center gap-2">
+                            <ResponsiveDialogTitle className="text-3xl font-black text-white uppercase tracking-tighter">{village.name}</ResponsiveDialogTitle>
+                            <ResponsiveDialogDescription className="text-slate-400 font-bold text-sm flex items-center gap-2">
                                 <MapPin className="h-3.5 w-3.5 text-amber-500" />
                                 {village.region} • {village.department} • {village.subPrefecture}
-                            </DialogDescription>
+                            </ResponsiveDialogDescription>
                         </div>
                         <Button 
                             onClick={() => setIsPrinting(true)} 
@@ -181,15 +181,15 @@ export function VillageQuickView({ village, currentChief, open, onOpenChange }: 
                         <span>Code INS: {village.codeINS || "N/A"}</span>
                     </div>
                 </div>
-            </DialogContent>
+            </ResponsiveDialogContent>
 
             {/* Fiche Officielle Imprimable */}
-            <VillageProfileReport 
-                village={village} 
-                currentChief={currentChief} 
+            <VillageProfileReport
+                village={village}
+                currentChief={currentChief}
                 isPrinting={isPrinting}
                 onAfterPrint={() => setIsPrinting(false)}
             />
-        </Dialog>
+        </ResponsiveDialog>
     );
 }

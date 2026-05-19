@@ -2,12 +2,12 @@
 
 import { Chief, ChiefCareerEvent } from "@/types/chief";
 import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogDescription,
-} from "@/components/ui/dialog";
+    ResponsiveDialog,
+    ResponsiveDialogContent,
+    ResponsiveDialogHeader,
+    ResponsiveDialogTitle,
+    ResponsiveDialogDescription,
+} from "@/components/ui/responsive-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { 
@@ -50,8 +50,8 @@ export function ChiefQuickView({ chief, isOpen, onClose }: ChiefQuickViewProps) 
     const [isPrinting, setIsPrinting] = useState(false);
 
     return (
-        <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-            <DialogContent className="max-w-2xl p-0 overflow-hidden border-none gap-0 bg-slate-50/95 backdrop-blur-2xl">
+        <ResponsiveDialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+            <ResponsiveDialogContent className="max-w-2xl p-0 overflow-hidden border-none gap-0 bg-slate-50/95 backdrop-blur-2xl">
                 {/* Header Profile Section */}
                 <div className={cn(
                     "relative p-8 text-white overflow-hidden",
@@ -82,9 +82,9 @@ export function ChiefQuickView({ chief, isOpen, onClose }: ChiefQuickViewProps) 
                                     </Badge>
                                 )}
                             </div>
-                            <DialogTitle className="text-3xl font-black tracking-tight leading-none uppercase">
+                            <ResponsiveDialogTitle className="text-3xl font-black tracking-tight leading-none uppercase">
                                 {chief.name}
-                            </DialogTitle>
+                            </ResponsiveDialogTitle>
                             <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-4 gap-y-1 text-white/70 text-sm font-medium">
                                 <div className="flex items-center gap-1.5">
                                     <MapPin className="h-4 w-4" />
@@ -210,14 +210,14 @@ export function ChiefQuickView({ chief, isOpen, onClose }: ChiefQuickViewProps) 
                         Quitter
                     </button>
                 </div>
-            </DialogContent>
+            </ResponsiveDialogContent>
 
-            <ChiefProfileReport 
+            <ChiefProfileReport
                 chief={chief}
                 isPrinting={isPrinting}
                 onAfterPrint={() => setIsPrinting(false)}
             />
-        </Dialog>
+        </ResponsiveDialog>
     );
 }
 

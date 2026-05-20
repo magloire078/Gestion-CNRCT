@@ -1,25 +1,46 @@
-
 export interface Division {
   [region: string]: {
     [department: string]: {
       [subPrefecture: string]: string[];
-    };
-  };
-}
+    }
 
 export const divisions: Division = {
   "Abidjan": {
     "Abidjan": {
-      "Abobo": [],
-      "Adjame": [],
-      "Attecoube": [],
-      "Cocody": [],
-      "Koumassi": [],
-      "Marcory": [],
-      "Plateau": [],
-      "Port-Bouet": [],
-      "Treichville": [],
-      "Yopougon": [],
+      "Abobo": [
+        "(Aucun village trouvé)"
+      ],
+      "Adjame": [
+        "(Aucun village trouvé)"
+      ],
+      "Attecoube": [
+        "(Aucun village trouvé)"
+      ],
+      "Cocody": [
+        "(Aucun village trouvé)"
+      ],
+      "Koumassi": [
+        "(Aucun village trouvé)"
+      ],
+      "Marcory": [
+        "(Aucun village trouvé)"
+      ],
+      "Plateau": [
+        "(Aucun village trouvé)"
+      ],
+      "Port-Bouet": [
+        "(Aucun village trouvé)"
+      ],
+      "Treichville": [
+        "(Aucun village trouvé)"
+      ],
+      "Yopougon": [
+        "Andokoi",
+        "Attié",
+        "Kouté",
+        "Niangon Adjamé",
+        "Niangon Lokoa"
+      ],
       "Anyama": [
         "Anyama",
         "Ebimpé"
@@ -27,7 +48,19 @@ export const divisions: Division = {
       "Bingerville": [
         "Bingerville"
       ],
-      "Brofodoume": [],
+      "Brofodoume": [
+        "Brofodoumé",
+        "Adjamé-Bingerville",
+        "Akouai Agban",
+        "Akouai Santai",
+        "Akouai-Comoe",
+        "Akouai-N'Gouan",
+        "Akouai-Té",
+        "Akouedo",
+        "Akouedo-Village",
+        "Akouedo-Adjamé",
+        "Akouedo-Bingerville"
+      ],
       "Songon": [
         "Songon"
       ]
@@ -35,8 +68,43 @@ export const divisions: Division = {
   },
   "Agnéby-Tiassa": {
     "Agboville": {
-      "Aboude": [],
-      "Ananguie": [],
+      "Aboude": [
+        "Aboudé-Mandéké",
+        "Aboudé-Adahou",
+        "Aboudé-Doumé",
+        "Aboudé-Kouadiokro",
+        "Aboudé-Kouamékro",
+        "Aboudé-Kouassikro",
+        "Aboudé-N'Guessankro"
+      ],
+      "Ananguie": [
+        "Ananguie",
+        "Adzopé-Douville",
+        "Ahua",
+        "Akouai-Agba",
+        "Akouai-Santai",
+        "Akouai-Zoukougbeu",
+        "Attinguié",
+        "Ayalo",
+        "Bécédi-Brignan",
+        "Bécédi-M'Brimbo",
+        "Bécédi-N'Gokro",
+        "Bécédi-Téfré",
+        "Bécédi-Yapo",
+        "Diapé",
+        "Gbolouville",
+        "Grand-Yapo",
+        "Kanga-N'Zianouan",
+        "Kanga-Yao",
+        "Kétesso",
+        "Kpass",
+        "M'Brimbo",
+        "N'Douci-Kouamékro",
+        "N'Guessankoi",
+        "N'Zianouan",
+        "Yapo-Kpa",
+        "Yapo-Yapo"
+      ],
       "Agboville": [
         "Agboville",
         "Ananguié",
@@ -1141,10 +1209,44 @@ export const divisions: Division = {
       "Gnamangui": [],
       "Méagui": [
         "Méagui",
+        "Méagui-Village",
+        "Abodagui",
+        "Adamagui",
+        "Ahoutouagui",
+        "Amaragui",
+        "Amoragui",
+        "Anagba",
+        "Angagui",
         "Gnamangui",
-        "Oupoyo"
+        "Gnititouagui",
+        "Gnititouagui 2",
+        "Guiré",
+        "Ipouagui",
+        "Kouadioagui",
+        "Kouakouagui",
+        "Oupoyo",
+        "Touagui",
+        "Touagui 2",
+        "Touanié",
+        "Walèbo"
       ],
-      "Oupoyo": []
+      "Oupoyo": [
+        "Oupoyo",
+        "Dahili",
+        "Gblétia",
+        "Gnakoragui",
+        "Gnipi 2",
+        "Guéagui",
+        "Guiré",
+        "Ipouagui",
+        "Koréagui",
+        "Koréagui 2",
+        "N'driagui",
+        "Oupagui",
+        "Petit-Bondoukou",
+        "Robert-Porte",
+        "Sérigbangan"
+      ]
     },
     "Soubré": {
       "Grand-Zattry": [],

@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "db:seed": "tsx src/scripts/seed-data.ts",
     "db:seed-assets": "tsx src/scripts/seed-assets.ts",
-    "db:correct-dates": "tsx src/scripts/correct-employee-departure-dates.ts"
+    "db:correct-dates": "tsx src/scripts/correct-employee-departure-dates.ts",
+    "db:populate-villages": "tsx src/scripts/populate-villages.ts"
   },
   "dependencies": {
     "@genkit-ai/google-genai": "1.31.0",

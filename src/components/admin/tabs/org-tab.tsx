@@ -103,7 +103,7 @@ export const OrgTab = memo(function OrgTab({
                         <div className="flex justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-all transform translate-x-4 group-hover:translate-x-0 duration-500">
                           <Tooltip>
                               <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl bg-white shadow-sm border border-white/60 hover:bg-slate-900 hover:text-white transition-all" onClick={() => onEditDeptAction(dept)}>
+                                <Button variant="ghost" size="icon" aria-label="Modifier le département" className="h-9 w-9 rounded-xl bg-white shadow-sm border border-white/60 hover:bg-slate-900 hover:text-white transition-all" onClick={() => onEditDeptAction(dept)}>
                                     <Pencil className="h-3.5 w-3.5" />
                                 </Button>
                               </TooltipTrigger>
@@ -111,7 +111,7 @@ export const OrgTab = memo(function OrgTab({
                           </Tooltip>
                           <Tooltip>
                               <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl bg-white shadow-sm border border-white/60 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition-all" onClick={() => onDeleteDeptAction(dept.id, dept.name)}>
+                                <Button variant="ghost" size="icon" aria-label="Supprimer le département" className="h-9 w-9 rounded-xl bg-white shadow-sm border border-white/60 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition-all" onClick={() => onDeleteDeptAction(dept.id, dept.name)}>
                                     <Trash2 className="h-3.5 w-3.5" />
                                 </Button>
                               </TooltipTrigger>
@@ -199,7 +199,7 @@ export const OrgTab = memo(function OrgTab({
                         <div className="flex justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-all transform translate-x-4 group-hover:translate-x-0 duration-500">
                           <Tooltip>
                               <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl bg-white shadow-sm border border-white/60 hover:bg-slate-900 hover:text-white transition-all" onClick={() => onEditDirAction(dir)}>
+                                <Button variant="ghost" size="icon" aria-label="Modifier la direction" className="h-9 w-9 rounded-xl bg-white shadow-sm border border-white/60 hover:bg-slate-900 hover:text-white transition-all" onClick={() => onEditDirAction(dir)}>
                                     <Pencil className="h-3.5 w-3.5" />
                                 </Button>
                               </TooltipTrigger>
@@ -207,7 +207,7 @@ export const OrgTab = memo(function OrgTab({
                           </Tooltip>
                           <Tooltip>
                               <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl bg-white shadow-sm border border-white/60 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition-all" onClick={() => onDeleteDirAction(dir.id, dir.name)}>
+                                <Button variant="ghost" size="icon" aria-label="Supprimer la direction" className="h-9 w-9 rounded-xl bg-white shadow-sm border border-white/60 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition-all" onClick={() => onDeleteDirAction(dir.id, dir.name)}>
                                     <Trash2 className="h-3.5 w-3.5" />
                                 </Button>
                               </TooltipTrigger>
@@ -300,7 +300,7 @@ export const OrgTab = memo(function OrgTab({
                           <div className="flex justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-all transform translate-x-4 group-hover:translate-x-0 duration-500">
                             <Tooltip>
                                 <TooltipTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl bg-white shadow-sm border border-white/60 hover:bg-slate-900 hover:text-white transition-all" onClick={() => onEditSvcAction(svc)}>
+                                    <Button variant="ghost" size="icon" aria-label="Modifier le service" className="h-9 w-9 rounded-xl bg-white shadow-sm border border-white/60 hover:bg-slate-900 hover:text-white transition-all" onClick={() => onEditSvcAction(svc)}>
                                         <Pencil className="h-3.5 w-3.5" />
                                     </Button>
                                 </TooltipTrigger>
@@ -308,7 +308,7 @@ export const OrgTab = memo(function OrgTab({
                             </Tooltip>
                             <Tooltip>
                                 <TooltipTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl bg-white shadow-sm border border-white/60 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition-all" onClick={() => onDeleteSvcAction(svc.id, svc.name)}>
+                                    <Button variant="ghost" size="icon" aria-label="Supprimer le service" className="h-9 w-9 rounded-xl bg-white shadow-sm border border-white/60 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition-all" onClick={() => onDeleteSvcAction(svc.id, svc.name)}>
                                         <Trash2 className="h-3.5 w-3.5" />
                                     </Button>
                                 </TooltipTrigger>

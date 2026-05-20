@@ -459,7 +459,13 @@ function AppLayout({ children }: { children: React.ReactNode }) {
             <NotificationBell />
           </div>
         </header>
-        <main className="flex-1 p-3 sm:p-4 md:p-6 lg:p-8 mb-16 md:mb-0 relative z-10">
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground focus:shadow-lg"
+        >
+          Aller au contenu principal
+        </a>
+        <main id="main-content" className="flex-1 p-3 sm:p-4 md:p-6 lg:p-8 mb-16 md:mb-0 relative z-10">
           <div className="mx-auto w-full max-w-7xl">
             <ProtectedPage>
               {children}

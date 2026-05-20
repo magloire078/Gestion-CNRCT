@@ -102,7 +102,7 @@ const UserRow = memo(({
         <div className="flex justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0 duration-300">
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg bg-white shadow-sm border border-white/60 hover:bg-blue-50 hover:text-blue-600 transition-all" onClick={() => onLinkUserAction(user)}>
+              <Button variant="ghost" size="icon" aria-label="Lier à un employé" className="h-8 w-8 rounded-lg bg-white shadow-sm border border-white/60 hover:bg-blue-50 hover:text-blue-600 transition-all" onClick={() => onLinkUserAction(user)}>
                 <Link2 className="h-3.5 w-3.5" />
               </Button>
             </TooltipTrigger>
@@ -110,7 +110,7 @@ const UserRow = memo(({
           </Tooltip>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg bg-white shadow-sm border border-white/60 hover:bg-slate-900 hover:text-white transition-all" onClick={() => onEditRoleAction(user)}>
+              <Button variant="ghost" size="icon" aria-label="Modifier le rôle de l'utilisateur" className="h-8 w-8 rounded-lg bg-white shadow-sm border border-white/60 hover:bg-slate-900 hover:text-white transition-all" onClick={() => onEditRoleAction(user)}>
                 <Pencil className="h-3.5 w-3.5" />
               </Button>
             </TooltipTrigger>
@@ -118,7 +118,7 @@ const UserRow = memo(({
           </Tooltip>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg bg-white shadow-sm border border-white/60 hover:bg-rose-50 hover:text-rose-600 transition-all" onClick={() => onDeleteUserAction(user.id, user.name)}>
+              <Button variant="ghost" size="icon" aria-label="Supprimer l'utilisateur" className="h-8 w-8 rounded-lg bg-white shadow-sm border border-white/60 hover:bg-rose-50 hover:text-rose-600 transition-all" onClick={() => onDeleteUserAction(user.id, user.name)}>
                 <Trash2 className="h-3.5 w-3.5" />
               </Button>
             </TooltipTrigger>

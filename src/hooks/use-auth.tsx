@@ -127,12 +127,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const hasPermission = React.useCallback((permission: string) => {
     if (loading || !user) return false;
     
-    // Super-admins/Dirigeants have all permissions (bypass by ID or by specific email for safety)
+    // Super-admins/Dirigeants ont toutes les permissions (vérifiés par roleId)
     if (
-      user.roleId === 'dirigeant-president' || 
-      user.roleId === 'super-admin' || 
-      user.roleId === 'LHcHyfBzile3r0vyFOFb' || // Super Administrateur ID
-      user.email === 'magloire078@gmail.com'
+      user.roleId === 'dirigeant-president' ||
+      user.roleId === 'super-admin' ||
+      user.roleId === 'LHcHyfBzile3r0vyFOFb' // Super Administrateur ID
     ) return true;
 
     // 1. Check legacy permissions array (always takes priority)

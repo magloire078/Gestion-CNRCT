@@ -83,7 +83,7 @@ type SeatStatus = "all" | "occupied" | "vacant";
 
 export default function VillagesPage() {
     // Data State
-    const { user, settings } = useAuth();
+    const { user, settings, hasPermission } = useAuth();
     const [villages, setVillages] = useState<Village[]>([]);
     const [chiefs, setChiefs] = useState<Chief[]>([]);
     const [loading, setLoading] = useState(true);
@@ -405,7 +405,7 @@ export default function VillagesPage() {
                                 {settings ? "Imprimer la liste" : "Chargement..."}
                             </Button>
                              <PermissionGuard permission="page:repository:view">
-                                {(user?.role?.name === 'ADMIN' || user?.email === 'magloire078@gmail.com') && (
+                                {hasPermission('admin:maintenance') && (
                                     <Button 
                                         variant="outline" 
                                         onClick={() => setShowMaintenance(!showMaintenance)}
@@ -817,7 +817,7 @@ export default function VillagesPage() {
                 )}
 
                 {/* --- MAINTENANCE (Admin only) --- */}
-                {(user?.role?.name === 'ADMIN' || user?.email === 'magloire078@gmail.com') && (
+                {hasPermission('admin:maintenance') && (
                     <div className="mt-8 space-y-4">
                         <div className="p-4 bg-slate-900 text-white rounded-xl font-mono text-[10px] overflow-auto max-h-60 border border-slate-700">
                             <h3 className="text-amber-500 font-black mb-2">DIAGNOSTIC DATA (ADMIN)</h3>

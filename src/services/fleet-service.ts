@@ -1,8 +1,9 @@
 
 
-import { collection, getDocs, addDoc, doc, setDoc, onSnapshot, Unsubscribe, query, orderBy, getDoc, updateDoc, deleteDoc } from '@/lib/firebase';
+import { collection, getDocs, addDoc, doc, setDoc, onSnapshot, Unsubscribe, query, orderBy, getDoc, updateDoc, deleteDoc, limit } from '@/lib/firebase';
 import type { Fleet } from '@/lib/data';
 import { db } from '@/lib/firebase';
+import { DEFAULT_QUERY_LIMIT } from '@/lib/firestore-utils';
 
 const fleetCollection = collection(db, 'fleet');
 
@@ -10,7 +11,7 @@ export function subscribeToVehicles(
     callback: (vehicles: Fleet[]) => void,
     onError: (error: Error) => void
 ): Unsubscribe {
-    const q = query(fleetCollection, orderBy("makeModel", "asc"));
+    const q = query(fleetCollection, orderBy("makeModel", "asc"), limit(DEFAULT_QUERY_LIMIT));
     const unsubscribe = onSnapshot(q, 
         (snapshot) => {
             const vehicles = snapshot.docs.map((doc: any) => ({
@@ -28,7 +29,7 @@ export function subscribeToVehicles(
 }
 
 export async function getVehicles(): Promise<Fleet[]> {
-  const snapshot = await getDocs(query(fleetCollection, orderBy("makeModel", "asc")));
+  const snapshot = await getDocs(query(fleetCollection, orderBy("makeModel", "asc"), limit(DEFAULT_QUERY_LIMIT)));
   return snapshot.docs.map((doc: any) => ({
     plate: doc.id,
     ...doc.data()

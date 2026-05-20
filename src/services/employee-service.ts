@@ -16,6 +16,7 @@ import { uploadToCloudinary } from '@/lib/cloudinary';
 import { recalculateSalaryChain, getEmployeeHistory } from './employee-history-service';
 
 import { FirestorePermissionError, FirestoreQuotaError, FirestoreTimeoutError } from '@/lib/errors';
+import { DEFAULT_QUERY_LIMIT } from '@/lib/firestore-utils';
 import { parseISO, addYears, format, isValid } from 'date-fns';
 import { divisions } from '@/lib/ivory-coast-divisions';
 
@@ -149,7 +150,7 @@ export function subscribeToEmployees(
     callback: (employees: Employe[]) => void,
     onError: (error: Error) => void
 ): Unsubscribe {
-    const q = query(employeesCollection, orderBy("lastName", "asc"), orderBy("firstName", "asc"));
+    const q = query(employeesCollection, orderBy("lastName", "asc"), orderBy("firstName", "asc"), limit(DEFAULT_QUERY_LIMIT));
     const unsubscribe = onSnapshot(q,
         (snapshot: QuerySnapshot<DocumentData>) => {
             const employees = snapshot.docs.map((doc: QueryDocumentSnapshot<DocumentData>) => {
@@ -237,7 +238,7 @@ export function subscribeToEmployee(
 }
 
 export async function getEmployees(): Promise<Employe[]> {
-    const q = query(employeesCollection, orderBy("lastName", "asc"), orderBy("firstName", "asc"));
+    const q = query(employeesCollection, orderBy("lastName", "asc"), orderBy("firstName", "asc"), limit(DEFAULT_QUERY_LIMIT));
     const snapshot = await getDocs(q);
     return snapshot.docs.map((doc: QueryDocumentSnapshot<DocumentData>) => {
         const data = { id: doc.id, ...doc.data() };

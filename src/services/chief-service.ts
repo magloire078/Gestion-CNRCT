@@ -5,6 +5,7 @@ import { uploadToCloudinary } from '@/lib/cloudinary';
 import type { Chief, ChiefRole } from '@/types/chief';
 import { db, storage } from '@/lib/firebase';
 import { FirestorePermissionError, FirestoreQuotaError, FirestoreTimeoutError } from '@/lib/errors';
+import { DEFAULT_QUERY_LIMIT } from '@/lib/firestore-utils';
 
 const chiefsCollection = collection(db, 'chiefs');
 
@@ -167,7 +168,7 @@ export function subscribeToChiefs(
     callback: (chiefs: Chief[]) => void,
     onError: (error: Error) => void
 ): Unsubscribe {
-    const q = query(chiefsCollection, orderBy("lastName", "asc"));
+    const q = query(chiefsCollection, orderBy("lastName", "asc"), limit(DEFAULT_QUERY_LIMIT));
     const unsubscribe = onSnapshot(q,
         (snapshot) => {
             const chiefs = snapshot.docs.map((doc: any) => ({
@@ -186,7 +187,7 @@ export function subscribeToChiefs(
 
 export async function getChiefs(): Promise<Chief[]> {
     await initializeDefaultChiefs();
-    const snapshot = await getDocs(query(chiefsCollection, orderBy("lastName", "asc")));
+    const snapshot = await getDocs(query(chiefsCollection, orderBy("lastName", "asc"), limit(DEFAULT_QUERY_LIMIT)));
     const chiefs = snapshot.docs.map((doc: any) => ({
         id: doc.id,
         ...doc.data()

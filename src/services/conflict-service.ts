@@ -1,8 +1,9 @@
 
 
-import { collection, getDocs, addDoc, onSnapshot, Unsubscribe, query, orderBy, doc, updateDoc, getDoc, deleteDoc } from '@/lib/firebase';
+import { collection, getDocs, addDoc, onSnapshot, Unsubscribe, query, orderBy, doc, updateDoc, getDoc, deleteDoc, limit } from '@/lib/firebase';
 import type { Conflict, ConflictComment, ConflictStatus } from '@/lib/data';
 import { db } from '@/lib/firebase';
+import { DEFAULT_QUERY_LIMIT } from '@/lib/firestore-utils';
 
 const conflictsCollection = collection(db, 'conflicts');
 
@@ -10,7 +11,7 @@ export function subscribeToConflicts(
     callback: (conflicts: Conflict[]) => void,
     onError: (error: Error) => void
 ): Unsubscribe {
-    const q = query(conflictsCollection, orderBy("reportedDate", "desc"));
+    const q = query(conflictsCollection, orderBy("reportedDate", "desc"), limit(DEFAULT_QUERY_LIMIT));
     const unsubscribe = onSnapshot(q,
         (snapshot) => {
             const conflicts = snapshot.docs.map((doc: any) => ({
@@ -28,7 +29,7 @@ export function subscribeToConflicts(
 }
 
 export async function getConflicts(): Promise<Conflict[]> {
-    const snapshot = await getDocs(query(conflictsCollection, orderBy("reportedDate", "desc")));
+    const snapshot = await getDocs(query(conflictsCollection, orderBy("reportedDate", "desc"), limit(DEFAULT_QUERY_LIMIT)));
     return snapshot.docs.map((doc: any) => ({
         id: doc.id,
         ...doc.data()

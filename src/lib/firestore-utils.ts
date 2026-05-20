@@ -6,6 +6,15 @@
 import { onSnapshot, type Query, type DocumentReference, type QuerySnapshot, type DocumentSnapshot, type FirestoreError } from 'firebase/firestore';
 
 /**
+ * Plafond défensif pour les requêtes Firestore qui chargent une collection entière
+ * en mémoire. Empêche l'app de tirer 50k+ documents et de faire exploser la facture.
+ * À utiliser comme `limit(DEFAULT_QUERY_LIMIT)` dans les services exposant des
+ * `getX()` / `subscribeToX()` non paginés. Idéalement, ces services devraient
+ * migrer vers une pagination par curseur (`startAfter`).
+ */
+export const DEFAULT_QUERY_LIMIT = 10000;
+
+/**
  * Version améliorée de onSnapshot qui supprime les erreurs de permissions en console
  * pendant la phase d'authentification initiale (premières secondes après le chargement).
  */

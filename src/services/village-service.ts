@@ -1,7 +1,8 @@
-import { collection, getDocs, addDoc, onSnapshot, Unsubscribe, query, orderBy, deleteDoc, doc, updateDoc, getDoc, where, setDoc } from '@/lib/firebase';
+import { collection, getDocs, addDoc, onSnapshot, Unsubscribe, query, orderBy, deleteDoc, doc, updateDoc, getDoc, where, setDoc, limit } from '@/lib/firebase';
 import { db } from '@/lib/firebase';
 import type { Village } from '@/types/village';
 import { FirestorePermissionError } from '@/lib/errors';
+import { DEFAULT_QUERY_LIMIT } from '@/lib/firestore-utils';
 
 const villagesCollection = collection(db, 'villages');
 
@@ -30,7 +31,7 @@ export const calculateDevelopmentScore = (village: Partial<Village>): number => 
 };
 
 export async function getVillages(): Promise<Village[]> {
-    const snapshot = await getDocs(query(villagesCollection, orderBy("name", "asc")));
+    const snapshot = await getDocs(query(villagesCollection, orderBy("name", "asc"), limit(DEFAULT_QUERY_LIMIT)));
     return snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() } as Village));
 }
 
@@ -122,7 +123,7 @@ export function subscribeToVillages(
     callback: (villages: Village[]) => void,
     onError?: (error: Error) => void
 ): Unsubscribe {
-    const q = query(villagesCollection, orderBy("name", "asc"));
+    const q = query(villagesCollection, orderBy("name", "asc"), limit(DEFAULT_QUERY_LIMIT));
     return onSnapshot(q, 
         (snapshot) => {
             const villages = snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() } as Village));

@@ -1,9 +1,10 @@
 
 
 import { db } from '@/lib/firebase';
-import { collection, getDocs, addDoc, onSnapshot, Unsubscribe, query, orderBy, doc, updateDoc, deleteDoc, writeBatch, increment, getDoc, where } from '@/lib/firebase';
+import { collection, getDocs, addDoc, onSnapshot, Unsubscribe, query, orderBy, doc, updateDoc, deleteDoc, writeBatch, increment, getDoc, where, limit } from '@/lib/firebase';
 import type { Supply, SupplyTransaction } from '@/lib/data';
 import { createNotification } from './notification-service';
+import { DEFAULT_QUERY_LIMIT } from '@/lib/firestore-utils';
 import { uploadToCloudinary } from '@/lib/cloudinary';
 
 const suppliesCollection = collection(db, 'supplies');
@@ -26,7 +27,7 @@ export function subscribeToSupplies(
     callback: (supplies: Supply[]) => void,
     onError: (error: Error) => void
 ): Unsubscribe {
-    const q = query(suppliesCollection, orderBy("name", "asc"));
+    const q = query(suppliesCollection, orderBy("name", "asc"), limit(DEFAULT_QUERY_LIMIT));
     const unsubscribe = onSnapshot(q,
         (snapshot) => {
             const supplies = snapshot.docs.map((doc: any) => ({
@@ -43,7 +44,7 @@ export function subscribeToSupplies(
     return unsubscribe;
 }
 export async function getSupplies(): Promise<Supply[]> {
-    const snapshot = await getDocs(query(suppliesCollection, orderBy("name", "asc")));
+    const snapshot = await getDocs(query(suppliesCollection, orderBy("name", "asc"), limit(DEFAULT_QUERY_LIMIT)));
     return snapshot.docs.map((doc: any) => ({
         id: doc.id,
         ...doc.data()
@@ -208,7 +209,7 @@ export function subscribeToSupplyTransactions(
     callback: (transactions: SupplyTransaction[]) => void,
     onError: (error: Error) => void
 ): Unsubscribe {
-    const q = query(transactionsCollection, orderBy("timestamp", "desc"));
+    const q = query(transactionsCollection, orderBy("timestamp", "desc"), limit(DEFAULT_QUERY_LIMIT));
     const unsubscribe = onSnapshot(q,
         (snapshot) => {
             const transactions = snapshot.docs.map((doc: any) => ({
@@ -226,7 +227,7 @@ export function subscribeToSupplyTransactions(
 }
 
 export async function getSupplyTransactions(): Promise<SupplyTransaction[]> {
-    const q = query(transactionsCollection, orderBy("timestamp", "desc"));
+    const q = query(transactionsCollection, orderBy("timestamp", "desc"), limit(DEFAULT_QUERY_LIMIT));
     const snapshot = await getDocs(q);
     return snapshot.docs.map((doc: any) => ({
         id: doc.id,

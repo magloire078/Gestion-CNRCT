@@ -6,6 +6,7 @@ import { db } from '@/lib/firebase';
 import { missionSchema } from '@/lib/schemas/mission-schema';
 import { createNotification } from './notification-service';
 import { FirestorePermissionError } from '@/lib/errors';
+import { DEFAULT_QUERY_LIMIT } from '@/lib/firestore-utils';
 
 const missionsCollection = collection(db, 'missions');
 const usersCollection = collection(db, 'users');
@@ -48,13 +49,14 @@ export function subscribeToMissions(
     employeeId?: string,
     isAdmin: boolean = false
 ): Unsubscribe {
-    let q = query(missionsCollection, orderBy("startDate", "desc"));
-    
+    let q = query(missionsCollection, orderBy("startDate", "desc"), limit(DEFAULT_QUERY_LIMIT));
+
     // If not admin and we have an employeeId, only show their missions
     if (!isAdmin && employeeId) {
-        q = query(missionsCollection, 
+        q = query(missionsCollection,
             where("participantIds", "array-contains", employeeId),
-            orderBy("startDate", "desc")
+            orderBy("startDate", "desc"),
+            limit(DEFAULT_QUERY_LIMIT)
         );
     }
 

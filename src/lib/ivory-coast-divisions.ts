@@ -1,4 +1,3 @@
-
 export interface Division {
   [region: string]: {
     [department: string]: {

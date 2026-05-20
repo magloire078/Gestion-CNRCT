@@ -5,6 +5,9 @@ import { collection, addDoc, onSnapshot, Unsubscribe, query, where, orderBy, wri
 import type { Notification, Employe } from '@/lib/data';
 import { getEmployees } from './employee-service';
 import { parseISO, differenceInMonths } from 'date-fns';
+import { createLogger } from '@/lib/logger';
+
+const log = createLogger('NotificationService');
 
 const notificationsCollection = collection(db, 'notifications');
 const usersCollection = collection(db, 'users');
@@ -37,7 +40,7 @@ async function createNotification(data: Omit<Notification, 'id' | 'isRead' | 'cr
             );
             await Promise.race([batchPromise, timeoutPromise]);
         } catch (error: any) {
-            console.error("Failed to create manager notifications:", error);
+            log.error('Failed to create manager notifications', { error });
             if (error.code === 'resource-exhausted') throw new FirestoreQuotaError();
         }
     } else {
@@ -53,7 +56,7 @@ async function createNotification(data: Omit<Notification, 'id' | 'isRead' | 'cr
             );
             await Promise.race([addPromise, timeoutPromise]);
         } catch (error: any) {
-            console.error("Failed to create single notification:", error);
+            log.error('Failed to create single notification', { error });
             if (error.code === 'resource-exhausted') throw new FirestoreQuotaError();
         }
     }
@@ -92,7 +95,7 @@ export function subscribeToNotifications(
         });
         updateCombinedAndSort();
     }, (error) => {
-        console.error(`[NotificationService] Error subscripting to user notifications for ${userId}:`, error);
+        log.error('Failed to subscribe to user notifications', { userId, error });
         onError(error);
     });
 
@@ -107,7 +110,7 @@ export function subscribeToNotifications(
         });
         updateCombinedAndSort();
     }, (error) => {
-        console.error(`[NotificationService] Error subscripting to global notifications:`, error);
+        log.error('Failed to subscribe to global notifications', { error });
         // Don't necessarily break the whole subscription if global alerts fail
         // but still notify the UI via onError
         onError(error);
@@ -179,7 +182,7 @@ export async function checkAndNotifyForUpcomingRetirements() {
                 batch.update(employeeDocRef, { retirementNotificationSent: true });
             }
         } catch (error) {
-            console.error(`Could not process retirement for employee ${employee.name} (ID: ${employee.id}):`, error);
+            log.error('Could not process retirement for employee', { name: employee.name, id: employee.id, error });
         }
     }
 
@@ -187,7 +190,7 @@ export async function checkAndNotifyForUpcomingRetirements() {
         await batch.commit();
 
     } catch (error) {
-        console.error("Failed to commit retirement notifications batch:", error);
+        log.error('Failed to commit retirement notifications batch', { error });
     }
 }
 export { createNotification };

@@ -87,15 +87,30 @@ service cloud.firestore {
     }
 
     match /payroll/{payrollId} {
-      allow read: if can('payroll', 'read') || (isSignedIn() && resource.data.employeeId == getUserData().get('employeeId', ''));
+      // Le check "own" exige que l'utilisateur ait un employeeId non vide,
+      // sinon une fiche de paie avec employeeId vide serait visible par
+      // n'importe quel utilisateur sans employeeId.
+      allow read: if can('payroll', 'read') || (
+        isSignedIn() &&
+        getUserData().get('employeeId', '') != '' &&
+        resource.data.employeeId == getUserData().employeeId
+      );
       allow create: if can('payroll', 'create');
       allow update: if can('payroll', 'update');
       allow delete: if can('payroll', 'delete');
     }
 
     match /leaves/{leaveId} {
-      allow read: if can('leaves', 'read') || (isSignedIn() && resource.data.employeeId == getUserData().get('employeeId', ''));
-      allow create: if can('leaves', 'create') || (isSignedIn() && request.resource.data.employeeId == getUserData().get('employeeId', ''));
+      allow read: if can('leaves', 'read') || (
+        isSignedIn() &&
+        getUserData().get('employeeId', '') != '' &&
+        resource.data.employeeId == getUserData().employeeId
+      );
+      allow create: if can('leaves', 'create') || (
+        isSignedIn() &&
+        getUserData().get('employeeId', '') != '' &&
+        request.resource.data.employeeId == getUserData().employeeId
+      );
       allow update: if can('leaves', 'update');
       allow delete: if can('leaves', 'delete');
     }
@@ -220,10 +235,19 @@ service cloud.firestore {
 
     // --- SYSTEM & METADATA ---
     
-    match /notifications/{id} { 
+    match /notifications/{id} {
       allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || resource.data.userId == 'all');
-      allow create, update: if isSignedIn();
-      allow delete: if isSignedIn();
+      // Le client peut créer une notification pour soi, pour un autre user
+      // ou en broadcast ('all'). Pas de contrainte forte ici car les
+      // notifications systèmes (ex: nouvelle demande de congé) sont créées
+      // depuis le client de l'émetteur vers le destinataire.
+      allow create: if isSignedIn();
+      // Update/delete réservés au destinataire (marquer comme lu, supprimer)
+      // ou au super-admin (modération).
+      allow update, delete: if isSignedIn() && (
+        resource.data.userId == request.auth.uid ||
+        isSuperAdmin()
+      );
     }
 
     match /tickets/{id} { 
@@ -243,9 +267,9 @@ service cloud.firestore {
     match /services/{id} { allow read: if isSignedIn(); allow write: if can('settings', 'update'); }
     match /conflict-types/{id} { allow read: if isSignedIn(); allow write: if can('settings', 'update'); }
     match /fuel_providers/{id} { allow read: if isSignedIn(); allow write: if can('settings', 'update'); }
-    match /supply_categories/{id} { 
-      allow read: if true; 
-      allow write: if can('supplies', 'update'); 
+    match /supply_categories/{id} {
+      allow read: if isSignedIn();
+      allow write: if can('supplies', 'update');
     }
   }
 }

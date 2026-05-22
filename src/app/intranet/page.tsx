@@ -153,7 +153,7 @@ function IntranetContent() {
     return (
         <div className="pb-20 space-y-12">
             {/* Immersive Welcome Section - Hyper-Premium Masterpiece */}
-            <div className="relative rounded-[2.5rem] bg-slate-950 px-10 py-16 overflow-hidden group shadow-[0_35px_60px_-15px_rgba(0,0,0,0.5)]">
+            <div className="relative rounded-[2.5rem] bg-slate-950 px-6 py-10 md:px-10 md:py-16 overflow-hidden group shadow-[0_35px_60px_-15px_rgba(0,0,0,0.5)]">
                 {/* Advanced Animated Gradients */}
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(59,130,246,0.25),transparent_50%)]" />
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_70%,rgba(99,102,241,0.2),transparent_50%)]" />
@@ -161,11 +161,11 @@ function IntranetContent() {
                 <div className="absolute -top-24 -left-24 h-64 w-64 bg-indigo-600/10 rounded-full blur-[80px]" />
                 
                 {/* Decorative Elements */}
-                <div className="absolute top-0 right-0 p-16 opacity-[0.03] rotate-12 transition-transform duration-[2000ms] group-hover:rotate-[25deg] group-hover:scale-110 pointer-events-none">
+                <div className="hidden md:block absolute top-0 right-0 p-16 opacity-[0.03] rotate-12 transition-transform duration-[2000ms] group-hover:rotate-[25deg] group-hover:scale-110 pointer-events-none">
                     <Rocket className="h-64 w-64 text-white" />
                 </div>
                 
-                <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-10">
+                <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6 md:gap-10">
                     <div className="flex items-center gap-10">
                         <div className="relative">
                             <div className="absolute -inset-2 bg-gradient-to-tr from-blue-600 via-indigo-400 to-emerald-500 rounded-[2rem] blur-xl opacity-20 group-hover:opacity-60 transition duration-1000" />

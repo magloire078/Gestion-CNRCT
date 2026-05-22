@@ -71,8 +71,13 @@ async function main() {
   console.log("Lecture du référentiel territorial...");
   let content = fs.readFileSync(FILE_PATH, 'utf8');
   
-  const interfaceMatch = content.match(/export interface Division \{[\s\S]*?\}/);
-  const interfaceStr = interfaceMatch ? interfaceMatch[0] : `export interface Division { [region: string]: { [department: string]: { [subPrefecture: string]: string[]; }; }; }`;
+  const interfaceStr = `export interface Division {
+  [region: string]: {
+    [department: string]: {
+      [subPrefecture: string]: string[];
+    };
+  };
+}`;
   
   const dataMatch = content.match(/export const divisions: Division = (\{[\s\S]*?\});\s*$/m);
   if (!dataMatch) {
@@ -123,12 +128,12 @@ async function main() {
           } catch (err: any) {
             console.error(`  -> Erreur: ${err.message}. Retries left: ${retries - 1}`);
             retries--;
-            await new Promise(r => setTimeout(r, 5000)); // wait 5s before retry
+            await new Promise(r => setTimeout(r, 15000)); // wait 15s before retry on error
           }
         }
 
-        // Wait 3 seconds to respect Gemini API free tier rate limits (15 RPM)
-        await new Promise(r => setTimeout(r, 4000));
+        // Wait 10 seconds to respect Gemini API free tier rate limits (max 15 RPM)
+        await new Promise(r => setTimeout(r, 10000));
       }
     }
   }

@@ -225,7 +225,7 @@ export async function addChief(chiefData: Omit<Chief, "id">, photoFile: File | n
     }
 
     const now = new Date().toISOString();
-    const finalChiefData = { 
+    const finalChiefData: any = { 
         ...chiefData, 
         photoUrl,
         meritPoints: calculateMeritPoints(chiefData),
@@ -234,6 +234,13 @@ export async function addChief(chiefData: Omit<Chief, "id">, photoFile: File | n
             updatedAt: now
         }
     };
+
+    Object.keys(finalChiefData).forEach(key => {
+        if (finalChiefData[key] === undefined) {
+            delete finalChiefData[key];
+        }
+    });
+
     try {
         await setDoc(docRef, finalChiefData);
         return { id: docRef.id, ...finalChiefData };

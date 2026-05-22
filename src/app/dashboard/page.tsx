@@ -3,6 +3,7 @@
 
 import { useState, useEffect, useMemo, useRef, useTransition } from 'react';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 import { useAuth } from '@/hooks/use-auth';
 import { useDashboardData } from '@/hooks/use-dashboard-data';
 import { useFormat } from '@/hooks/use-format';
@@ -35,11 +36,14 @@ import {
     ChevronRight,
     Zap,
     Scale,
-    BarChart3
+    BarChart3,
+    MapPin,
+    Tent
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { EmployeeDistributionChart } from '@/components/charts/employee-distribution-chart';
 import { AssetStatusChart } from '@/components/charts/asset-status-chart';
+import { ChiefsDistributionChart } from '@/components/charts/chiefs-distribution-chart';
 import { ConflictHeatmap } from '@/components/charts/conflict-heatmap';
 import { EmployeeActivityReport } from '@/components/reports/employee-activity-report';
 import { NewsFeed } from '@/components/news/news-feed';
@@ -65,9 +69,10 @@ interface StatCardProps {
     loading: boolean;
     color?: 'primary' | 'success' | 'warning' | 'info' | 'rose' | 'amber';
     trend?: { value: string, up: boolean };
+    index?: number;
 }
 
-const StatCard = ({ title, value, icon: Icon, description, href, loading, color = 'primary', trend }: StatCardProps) => {
+const StatCard = ({ title, value, icon: Icon, description, href, loading, color = 'primary', trend, index = 0 }: StatCardProps) => {
     const colorClasses: Record<string, string> = {
         primary: "bg-blue-600 text-white shadow-blue-500/20",
         success: "bg-emerald-500 text-white shadow-emerald-500/20",
@@ -87,33 +92,39 @@ const StatCard = ({ title, value, icon: Icon, description, href, loading, color 
     };
 
     const cardContent = (
-        <Card className="group relative overflow-hidden border-white/20 shadow-2xl bg-white/40 backdrop-blur-md rounded-[2.5rem] hover:-translate-y-2 transition-all duration-700">
-            <div className={cn("absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-100 transition-opacity duration-700", gradientClasses[color])} />
-            <div className={cn("absolute top-0 right-0 p-8 opacity-[0.03] transition-transform group-hover:scale-150 group-hover:opacity-[0.08] duration-1000 pointer-events-none")}>
-                <Icon className="h-32 w-32 rotate-12" />
-            </div>
-            <CardHeader className="flex flex-row items-center justify-between pb-3 relative z-10 px-8 pt-8">
-                <div className={cn("p-4 rounded-2xl shadow-xl transition-all duration-500 group-hover:scale-110 group-hover:rotate-6", colorClasses[color])}>
-                    <Icon className="h-6 w-6" />
+        <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: index * 0.1, ease: [0.22, 1, 0.36, 1] }}
+        >
+            <Card className="group relative overflow-hidden border-white/40 shadow-[0_8px_30px_rgb(0,0,0,0.04)] bg-white/60 backdrop-blur-2xl rounded-[2rem] hover:-translate-y-2 hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] hover:border-white/80 transition-all duration-500">
+                <div className={cn("absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-100 transition-opacity duration-700", gradientClasses[color])} />
+                <div className={cn("absolute top-0 right-0 p-8 opacity-[0.02] transition-transform group-hover:scale-150 group-hover:opacity-[0.06] duration-1000 pointer-events-none")}>
+                    <Icon className="h-32 w-32 rotate-12" />
                 </div>
-                {trend && (
-                    <div className={cn("flex items-center gap-1.5 text-[9px] font-black uppercase px-3 py-1 rounded-full border shadow-sm", trend.up ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-rose-50 text-rose-600 border-rose-100")}>
-                        {trend.value} <TrendingUp className={cn("h-3 w-3", !trend.up && "rotate-180")} />
+                <CardHeader className="flex flex-row items-center justify-between pb-3 relative z-10 px-8 pt-8">
+                    <div className={cn("p-3.5 rounded-2xl shadow-sm transition-all duration-500 group-hover:scale-110 group-hover:rotate-6", colorClasses[color])}>
+                        <Icon className="h-6 w-6" />
                     </div>
-                )}
-            </CardHeader>
-            <CardContent className="relative z-10 px-8 pb-8 pt-4">
-                <div className="flex flex-col">
-                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2 pl-0.5">{title}</span>
-                    {loading ? <Skeleton className="h-10 w-24 mt-2 rounded-lg" /> : (
-                        <div className="text-4xl font-black text-slate-900 tracking-tighter">
-                            {value}
+                    {trend && (
+                        <div className={cn("flex items-center gap-1.5 text-[9px] font-black uppercase px-3 py-1 rounded-full border shadow-sm backdrop-blur-md", trend.up ? "bg-emerald-500/10 text-emerald-700 border-emerald-500/20" : "bg-rose-500/10 text-rose-700 border-rose-500/20")}>
+                            {trend.value} <TrendingUp className={cn("h-3 w-3", !trend.up && "rotate-180")} />
                         </div>
                     )}
-                    {description && <p className="text-[10px] text-slate-400 font-bold mt-3 italic border-l-2 border-slate-200 pl-4">{description}</p>}
-                </div>
-            </CardContent>
-        </Card>
+                </CardHeader>
+                <CardContent className="relative z-10 px-8 pb-8 pt-4">
+                    <div className="flex flex-col">
+                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2 pl-0.5">{title}</span>
+                        {loading ? <Skeleton className="h-10 w-24 mt-2 rounded-lg bg-slate-200/50" /> : (
+                            <div className="text-4xl font-black text-slate-900 tracking-tighter">
+                                {value}
+                            </div>
+                        )}
+                        {description && <p className="text-[10px] text-slate-400 font-bold mt-3 italic border-l-2 border-slate-200 pl-4">{description}</p>}
+                    </div>
+                </CardContent>
+            </Card>
+        </motion.div>
     );
 
     if (href) return <Link href={href}>{cardContent}</Link>;
@@ -325,7 +336,13 @@ export default function DashboardPage() {
                                     value="stability" 
                                     className="px-0 py-4 h-auto rounded-none border-b-[5px] border-transparent data-[state=active]:border-slate-900 data-[state=active]:bg-transparent shadow-none text-[11px] font-black uppercase tracking-[0.25em] text-slate-400 data-[state=active]:text-slate-900 transition-all"
                                 >
-                                    Intégrité & Territoires
+                                    Intégrité & Sûreté
+                                </TabsTrigger>
+                                <TabsTrigger 
+                                    value="territory" 
+                                    className="px-0 py-4 h-auto rounded-none border-b-[5px] border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent shadow-none text-[11px] font-black uppercase tracking-[0.25em] text-slate-400 data-[state=active]:text-blue-600 transition-all"
+                                >
+                                    Territoires & Notabilités
                                 </TabsTrigger>
                             </TabsList>
                             <div className="flex items-center gap-8 text-[10px] font-black text-slate-400 uppercase tracking-widest opacity-60">
@@ -342,11 +359,11 @@ export default function DashboardPage() {
 
                         <TabsContent value="overview" className="space-y-12 focus-visible:outline-none focus-visible:ring-0">
                             {/* Key Performance Indicators Upgraded */}
-                            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
-                                <StatCard loading={loading} title="Effectifs Total" value={globalStats.activeEmployees.toString()} icon={Users} color="primary" trend={{ value: "+2.4%", up: true }} />
-                                <StatCard loading={loading} title="Conseil des Sages" value={globalStats.employees.filter(e => getEmployeeGroup(e, globalStats.departments) === 'directoire' && e.status === 'Actif').length.toString()} icon={Crown} color="amber" trend={{ value: "Stable", up: true }} />
-                                <StatCard loading={loading} title="Incidents SIG" value={globalStats.conflicts.filter(c => c.status !== 'Résolu').length.toString()} icon={AlertTriangle} color="rose" trend={{ value: "-4%", up: false }} description="Alertes territoriales actives" />
-                                <StatCard loading={loading} title="Pôles d'Action" value={globalStats.departments.length.toString()} icon={Building} color="info" trend={{ value: "+1", up: true }} />
+                            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+                                <StatCard index={0} loading={loading} title="Effectifs Total" value={globalStats.activeEmployees.toString()} icon={Users} color="primary" trend={{ value: "+2.4%", up: true }} />
+                                <StatCard index={1} loading={loading} title="Conseil des Sages" value={globalStats.employees.filter(e => getEmployeeGroup(e, globalStats.departments) === 'directoire' && e.status === 'Actif').length.toString()} icon={Crown} color="amber" trend={{ value: "Stable", up: true }} />
+                                <StatCard index={2} loading={loading} title="Incidents SIG" value={globalStats.conflicts.filter(c => c.status !== 'Résolu').length.toString()} icon={AlertTriangle} color="rose" trend={{ value: "-4%", up: false }} description="Alertes territoriales actives" />
+                                <StatCard index={3} loading={loading} title="Pôles d'Action" value={globalStats.departments.length.toString()} icon={Building} color="info" trend={{ value: "+1", up: true }} />
                             </div>
 
                             {/* Charts Section */}
@@ -680,6 +697,86 @@ export default function DashboardPage() {
                                         </Button>
                                     </Card>
                                 </div>
+                            </div>
+                            {/* End of Stability Content */}
+                        </TabsContent>
+
+                        <TabsContent value="territory" className="space-y-12 focus-visible:outline-none focus-visible:ring-0">
+                            {/* Territory High Level Stats */}
+                            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+                                <StatCard index={0} loading={loading} title="Total Autorités" value={globalStats.chiefs.toString()} icon={Crown} color="amber" trend={{ value: "Actif", up: true }} />
+                                <StatCard index={1} loading={loading} title="Villages Répertoriés" value={globalStats.villagesCount ? globalStats.villagesCount.toString() : "0"} icon={MapPin} color="primary" trend={{ value: "En cours", up: true }} description="Extraction BD" />
+                                <StatCard index={2} loading={loading} title="Chefs de Canton" value={globalStats.allChiefs.filter(c => c.role === 'Chef de canton').length.toString()} icon={Building} color="success" />
+                                <StatCard index={3} loading={loading} title="Rois & Prov." value={globalStats.allChiefs.filter(c => c.role === 'Roi' || c.role === 'Chef de province').length.toString()} icon={ShieldCheck} color="info" />
+                            </div>
+
+                            <div className="grid gap-10 lg:grid-cols-7">
+                                {/* Charts Section */}
+                                <Card className="lg:col-span-4 border-white/10 shadow-3xl bg-white/50 backdrop-blur-md rounded-[2.5rem] overflow-hidden">
+                                    <CardHeader className="p-8 pb-4">
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <CardTitle className="text-2xl font-black uppercase tracking-tight text-slate-900 flex items-center gap-4">
+                                                   <Crown className="h-6 w-6 text-amber-500" />
+                                                   Répartition par Grade
+                                                </CardTitle>
+                                                <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mt-1">Classification des autorités enregistrées</CardDescription>
+                                            </div>
+                                        </div>
+                                    </CardHeader>
+                                    <CardContent className="px-10 pb-10 pt-4">
+                                        <ChiefsDistributionChart />
+                                    </CardContent>
+                                </Card>
+
+                                {/* Latest Chiefs Added */}
+                                <Card className="lg:col-span-3 border-white/10 shadow-3xl bg-white/50 backdrop-blur-md rounded-[2.5rem] overflow-hidden flex flex-col">
+                                    <CardHeader className="bg-amber-500/10 border-b border-border/50 py-8 px-8">
+                                        <div className="flex items-center gap-4 mb-1">
+                                            <div className="h-10 w-10 rounded-xl bg-amber-500 flex items-center justify-center text-white shadow-lg">
+                                                <Tent className="h-5 w-5" />
+                                            </div>
+                                            <div>
+                                                <CardTitle className="text-xl font-black uppercase tracking-tight text-slate-900">Derniers Enregistrements</CardTitle>
+                                                <CardDescription className="font-bold text-[10px] uppercase tracking-widest text-amber-700">Autorités récemment ajoutées au registre</CardDescription>
+                                            </div>
+                                        </div>
+                                    </CardHeader>
+                                    <CardContent className="p-8 flex-1 overflow-y-auto no-scrollbar">
+                                        {loading ? <Skeleton className="h-64 w-full rounded-3xl" /> : (
+                                            globalStats.allChiefs.length > 0 ? (
+                                                <div className="space-y-4">
+                                                    {globalStats.allChiefs.sort((a, b) => (b.audit?.createdAt ? new Date(b.audit.createdAt).getTime() : 0) - (a.audit?.createdAt ? new Date(a.audit.createdAt).getTime() : 0)).slice(0, 5).map(chief => (
+                                                        <div key={chief.id} className="flex items-center gap-5 group p-3 hover:bg-white/60 rounded-2xl transition-all border border-transparent hover:border-white/40 shadow-sm hover:shadow-xl">
+                                                            <Avatar className="h-12 w-12 border-[2px] border-amber-200 shadow-xl">
+                                                                <AvatarImage src={chief.photoUrl} alt={chief.name} className="object-cover" />
+                                                                <AvatarFallback className="bg-amber-100 font-black text-amber-600 text-xs">{chief.name?.charAt(0)}</AvatarFallback>
+                                                            </Avatar>
+                                                            <div className="flex-1 min-w-0">
+                                                                <p className="font-black text-slate-900 group-hover:text-amber-600 transition-colors truncate text-sm uppercase tracking-tight">{chief.name}</p>
+                                                                <p className="text-[9px] text-amber-600 font-black uppercase tracking-[0.2em]">{chief.role}</p>
+                                                                <p className="text-[9px] text-slate-400 font-bold tracking-widest truncate">{chief.village} ({chief.subPrefecture})</p>
+                                                            </div>
+                                                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full opacity-0 group-hover:opacity-100 group-hover:bg-amber-500 group-hover:text-white transition-all" asChild>
+                                                                <Link href={`/chiefs/${chief.id}`}><ArrowUpRight className="h-4 w-4" /></Link>
+                                                            </Button>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <div className="h-full flex flex-col items-center justify-center text-slate-400 gap-4">
+                                                    <Tent className="h-10 w-10 opacity-20" />
+                                                    <p className="text-xs font-bold uppercase tracking-widest">Aucune autorité</p>
+                                                </div>
+                                            )
+                                        )}
+                                    </CardContent>
+                                    <div className="p-4 bg-slate-50 border-t border-slate-100">
+                                        <Button variant="outline" className="w-full text-[10px] uppercase font-black tracking-widest" asChild>
+                                            <Link href="/chiefs">Voir tout le registre</Link>
+                                        </Button>
+                                    </div>
+                                </Card>
                             </div>
                         </TabsContent>
                     </Tabs>

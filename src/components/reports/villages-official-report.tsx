@@ -110,7 +110,7 @@ export function VillagesOfficialReport({
                                 
                                 <table className="w-full border-collapse border-2 border-slate-900 text-[10px]">
                                     <thead>
-                                        <tr className="bg-slate-900 text-white uppercase font-black">
+                                        <tr className="bg-slate-900 text-white uppercase font-black print:bg-transparent print:text-slate-900 print:border-b-2 print:border-slate-900">
                                             <th className="p-3 w-[40px] text-center">N°</th>
                                             <th className="p-3 text-left">Localité / Sous-Préfecture</th>
                                             <th className="p-3 text-left">Département</th>

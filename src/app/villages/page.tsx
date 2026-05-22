@@ -1,6 +1,7 @@
 "use client";
-
-import { useState, useEffect, useMemo, useTransition } from "react";
+import { useState, useEffect, useMemo, useTransition, forwardRef } from "react";
+import Fuse from "fuse.js";
+import { TableVirtuoso, VirtuosoGrid } from "react-virtuoso";
 import { 
     Search, 
     Filter, 
@@ -156,7 +157,17 @@ export default function VillagesPage() {
     // Derived Data: Merge Villages and Chiefs
     const villageEntries = useMemo(() => {
         return villages.map(village => {
-            const villageChiefs = chiefs.filter(c => c.villageId === village.id);
+            const villageChiefs = chiefs.filter(c => {
+                if (c.villageId === village.id) return true;
+                if (!c.villageId && c.village) {
+                    const cVillageNorm = c.village.toLowerCase().trim();
+                    const vNameNorm = village.name.toLowerCase().trim();
+                    const cDeptNorm = (c.department || '').toLowerCase().trim();
+                    const vDeptNorm = (village.department || '').toLowerCase().trim();
+                    return cVillageNorm === vNameNorm && cDeptNorm === vDeptNorm;
+                }
+                return false;
+            });
             const currentChief = villageChiefs.find(c => c.status === 'actif' || c.status === 'a_vie') || null;
             const archivedChiefsCount = villageChiefs.filter(c => c.status === 'archive').length;
             
@@ -196,22 +207,34 @@ export default function VillagesPage() {
         return Object.keys(divisions[selectedRegion]?.[selectedDepartment] || {}).sort();
     }, [selectedRegion, selectedDepartment]);
 
+    // Fuse Instance for fuzzy searching
+    const fuseInstance = useMemo(() => {
+        return new Fuse(villageEntries, {
+            keys: [
+                { name: 'village.name', weight: 2 },
+                { name: 'village.region', weight: 1 },
+                { name: 'village.department', weight: 1 },
+                { name: 'currentChief.name', weight: 1.5 },
+                { name: 'currentChief.CNRCTRegistrationNumber', weight: 1 }
+            ],
+            threshold: 0.3,
+            ignoreLocation: true
+        });
+    }, [villageEntries]);
+
     // Apply Filters
     const filteredVillages = useMemo(() => {
-        return villageEntries.filter(entry => {
+        let baseEntries = villageEntries;
+
+        // 1. Search Filter (Fuzzy)
+        if (searchQuery.trim() !== '') {
+            const results = fuseInstance.search(searchQuery);
+            baseEntries = results.map(result => result.item);
+        }
+
+        return baseEntries.filter(entry => {
             const v = entry.village;
             const c = entry.currentChief;
-
-            // Search Filter
-            const searchLower = searchQuery.toLowerCase();
-            const matchesSearch = !searchQuery || 
-                v.name.toLowerCase().includes(searchLower) ||
-                v.region.toLowerCase().includes(searchLower) ||
-                v.department.toLowerCase().includes(searchLower) ||
-                (c && c.name && c.name.toLowerCase().includes(searchLower)) ||
-                (c && c.CNRCTRegistrationNumber && c.CNRCTRegistrationNumber.toLowerCase().includes(searchLower));
-
-            if (!matchesSearch) return false;
 
             // Administrative Filters (using robust normalization)
             if (selectedRegion !== "all") {
@@ -369,14 +392,14 @@ export default function VillagesPage() {
                             </div>
                         </div>
 
-                        <div className="flex flex-col sm:flex-row gap-3">
-                            <div className="flex bg-white/5 backdrop-blur-xl border border-white/10 p-1 rounded-2xl h-14">
+                        <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                            <div className="flex bg-white/5 backdrop-blur-xl border border-white/10 p-1 rounded-2xl h-14 w-full sm:w-auto">
                                 <Button
                                     variant="ghost"
                                     size="icon"
                                     onClick={() => setViewMode('grid')}
                                     className={cn(
-                                        "h-full w-12 rounded-xl transition-all",
+                                        "h-full flex-1 sm:w-12 rounded-xl transition-all",
                                         viewMode === 'grid' ? "bg-amber-500 text-white shadow-lg" : "text-slate-400 hover:text-white"
                                     )}
                                 >
@@ -387,7 +410,7 @@ export default function VillagesPage() {
                                     size="icon"
                                     onClick={() => setViewMode('list')}
                                     className={cn(
-                                        "h-full w-12 rounded-xl transition-all",
+                                        "h-full flex-1 sm:w-12 rounded-xl transition-all",
                                         viewMode === 'list' ? "bg-amber-500 text-white shadow-lg" : "text-slate-400 hover:text-white"
                                     )}
                                 >
@@ -396,7 +419,7 @@ export default function VillagesPage() {
                             </div>
                             <Button 
                                 variant="outline" 
-                                className="bg-white/5 border-white/10 text-white hover:bg-white/10 rounded-xl h-14 px-8 font-bold group"
+                                className="bg-white/5 border-white/10 text-white hover:bg-white/10 rounded-xl h-14 px-8 font-bold group w-full sm:w-auto"
                                 onClick={handlePrint}
                                 disabled={filteredVillages.length === 0 || !settings}
                             >
@@ -409,7 +432,7 @@ export default function VillagesPage() {
                                         variant="outline" 
                                         onClick={() => setShowMaintenance(!showMaintenance)}
                                         className={cn(
-                                            "h-14 px-6 rounded-xl font-bold transition-all gap-2",
+                                            "h-14 px-6 rounded-xl font-bold transition-all gap-2 w-full sm:w-auto",
                                             showMaintenance ? "bg-white text-slate-900" : "bg-white/5 border-white/10 text-white hover:bg-white/10"
                                         )}
                                     >
@@ -422,7 +445,7 @@ export default function VillagesPage() {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-12 bg-white/5 backdrop-blur-xl p-6 rounded-3xl border border-white/10 shadow-2xl shadow-black/50">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6 mt-8 md:mt-12 bg-white/5 backdrop-blur-xl p-4 md:p-6 rounded-3xl border border-white/10 shadow-2xl shadow-black/50">
                         <div className="space-y-2">
                             <div className="flex items-center gap-2 text-amber-400">
                                 <Zap className="h-4 w-4" />
@@ -512,14 +535,14 @@ export default function VillagesPage() {
                                     Filtrage Rapide
                                 </label>
                                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                                    <TabsList className="bg-slate-100 p-1 h-14 rounded-xl w-full lg:w-auto">
-                                        <TabsTrigger value="all" className="rounded-lg px-6 font-bold data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm">
+                                    <TabsList className="bg-slate-100 p-1 h-auto flex-wrap sm:flex-nowrap rounded-xl w-full lg:w-auto justify-start gap-1">
+                                        <TabsTrigger value="all" className="flex-1 sm:flex-none rounded-lg px-4 sm:px-6 py-2 font-bold data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm">
                                             Tous ({villageEntries.length})
                                         </TabsTrigger>
-                                        <TabsTrigger value="occupied" className="rounded-lg px-6 font-bold data-[state=active]:bg-emerald-500 data-[state=active]:text-white data-[state=active]:shadow-lg">
+                                        <TabsTrigger value="occupied" className="flex-1 sm:flex-none rounded-lg px-4 sm:px-6 py-2 font-bold data-[state=active]:bg-emerald-500 data-[state=active]:text-white data-[state=active]:shadow-lg">
                                             Occupés ({villageEntries.filter(e => e.currentChief).length})
                                         </TabsTrigger>
-                                        <TabsTrigger value="vacant" className="rounded-lg px-6 font-bold data-[state=active]:bg-amber-500 data-[state=active]:text-white data-[state=active]:shadow-lg">
+                                        <TabsTrigger value="vacant" className="flex-1 sm:flex-none rounded-lg px-4 sm:px-6 py-2 font-bold data-[state=active]:bg-amber-500 data-[state=active]:text-white data-[state=active]:shadow-lg">
                                             Vacants ({villageEntries.filter(e => !e.currentChief).length})
                                         </TabsTrigger>
                                     </TabsList>
@@ -677,113 +700,100 @@ export default function VillagesPage() {
                 ) : filteredVillages.length > 0 ? (
                     <div className="space-y-12">
                         {viewMode === 'grid' ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                                <AnimatePresence mode="popLayout">
-                                    {paginatedVillages.map((entry) => (
-                                        <motion.div
-                                            key={entry.village.id}
-                                            layout
-                                            initial={{ opacity: 0, y: 20 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            exit={{ opacity: 0, scale: 0.95 }}
-                                            transition={{ duration: 0.3 }}
-                                            onClick={() => setQuickViewVillage({ village: entry.village, chief: entry.currentChief })}
-                                            className="cursor-pointer"
-                                        >
-                                            <VillageCard entry={entry} />
-                                        </motion.div>
-                                    ))}
-                                </AnimatePresence>
-                            </div>
+                            <VirtuosoGrid
+                                useWindowScroll
+                                data={filteredVillages}
+                                listClassName="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
+                                itemContent={(index, entry) => (
+                                    <div 
+                                        key={entry.village.id}
+                                        onClick={() => setQuickViewVillage({ village: entry.village, chief: entry.currentChief })}
+                                        className="cursor-pointer h-full"
+                                    >
+                                        <VillageCard entry={entry} />
+                                    </div>
+                                )}
+                            />
                         ) : (
                             <Card className="rounded-[2.5rem] border-none shadow-2xl shadow-slate-200/50 overflow-hidden bg-white">
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow className="hover:bg-transparent border-slate-100 bg-slate-50/50">
-                                            <TableHead className="w-16 text-center text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 py-6">ID</TableHead>
-                                            <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Localité / Sous-Préfecture</TableHead>
-                                            <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Région & Département</TableHead>
-                                            <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Autorité Actuelle</TableHead>
-                                            <TableHead className="w-40 text-center text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Infrastructures</TableHead>
-                                            <TableHead className="w-32 text-center text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Statut</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {paginatedVillages.map((entry, idx) => (
-                                            <TableRow 
-                                                key={entry.village.id} 
-                                                className="hover:bg-slate-50/80 transition-all border-slate-50 group cursor-pointer"
-                                                onClick={() => setQuickViewVillage({ village: entry.village, chief: entry.currentChief })}
-                                            >
-                                                <TableCell className="text-center">
-                                                    <span className="text-[10px] font-black text-slate-300">{(currentPage - 1) * itemsPerPage + idx + 1}</span>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <div className="flex flex-col">
-                                                        <span className="font-black text-slate-900 text-sm tracking-tight leading-tight">{entry.village.name}</span>
-                                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{entry.village.subPrefecture || entry.village.commune}</span>
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <div className="flex flex-col">
-                                                        <span className="text-xs font-bold text-slate-600">{entry.village.region}</span>
-                                                        <span className="text-[10px] font-medium text-slate-400">{entry.village.department}</span>
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell>
-                                                    {entry.currentChief ? (
-                                                        <div className="flex items-center gap-3">
-                                                            <Avatar className="h-8 w-8 rounded-lg border border-slate-100 shadow-sm">
-                                                                <AvatarImage src={entry.currentChief.photoUrl} />
-                                                                <AvatarFallback className="bg-slate-100 text-slate-400 text-[10px] font-black">
-                                                                    {entry.currentChief.name.substring(0, 2).toUpperCase()}
-                                                                </AvatarFallback>
-                                                            </Avatar>
-                                                            <div className="flex flex-col">
-                                                                <span className="text-xs font-black text-slate-900 tracking-tight">{entry.currentChief.name}</span>
-                                                                <span className="text-[9px] font-mono text-slate-400">{entry.currentChief.CNRCTRegistrationNumber}</span>
-                                                            </div>
+                                <TableVirtuoso
+                                    useWindowScroll
+                                    data={filteredVillages}
+                                    components={{
+                                        Table: ({ style, ...props }) => <table {...props} style={{ ...style, width: "100%", borderCollapse: "collapse" }} className="w-full caption-bottom text-sm" />,
+                                        TableHead: forwardRef((props, ref) => <thead {...props} ref={ref as any} className="[&_tr]:border-b" />),
+                                        TableRow: (props) => <tr {...props} className="border-b transition-colors hover:bg-slate-50/80 data-[state=selected]:bg-muted border-slate-50 group cursor-pointer" />,
+                                        TableBody: forwardRef((props, ref) => <tbody {...props} ref={ref as any} className="[&_tr:last-child]:border-0" />),
+                                    }}
+                                    fixedHeaderContent={() => (
+                                        <tr className="hover:bg-transparent border-slate-100 bg-slate-50/50">
+                                            <th className="h-12 px-4 text-center align-middle font-medium text-muted-foreground w-16 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 py-6">ID</th>
+                                            <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Localité / Sous-Préfecture</th>
+                                            <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Région & Département</th>
+                                            <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Autorité Actuelle</th>
+                                            <th className="h-12 px-4 text-center align-middle font-medium text-muted-foreground w-40 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Infrastructures</th>
+                                            <th className="h-12 px-4 text-center align-middle font-medium text-muted-foreground w-32 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Statut</th>
+                                        </tr>
+                                    )}
+                                    itemContent={(index, entry) => (
+                                        <>
+                                            <td className="p-4 align-middle text-center" onClick={() => setQuickViewVillage({ village: entry.village, chief: entry.currentChief })}>
+                                                <span className="text-[10px] font-black text-slate-300">{index + 1}</span>
+                                            </td>
+                                            <td className="p-4 align-middle" onClick={() => setQuickViewVillage({ village: entry.village, chief: entry.currentChief })}>
+                                                <div className="flex flex-col">
+                                                    <span className="font-black text-slate-900 text-sm tracking-tight leading-tight">{entry.village.name}</span>
+                                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{entry.village.subPrefecture || entry.village.commune}</span>
+                                                </div>
+                                            </td>
+                                            <td className="p-4 align-middle" onClick={() => setQuickViewVillage({ village: entry.village, chief: entry.currentChief })}>
+                                                <div className="flex flex-col">
+                                                    <span className="text-xs font-bold text-slate-600">{entry.village.region}</span>
+                                                    <span className="text-[10px] font-medium text-slate-400">{entry.village.department}</span>
+                                                </div>
+                                            </td>
+                                            <td className="p-4 align-middle" onClick={() => setQuickViewVillage({ village: entry.village, chief: entry.currentChief })}>
+                                                {entry.currentChief ? (
+                                                    <div className="flex items-center gap-3">
+                                                        <Avatar className="h-8 w-8 rounded-lg border border-slate-100 shadow-sm">
+                                                            <AvatarImage src={entry.currentChief.photoUrl} />
+                                                            <AvatarFallback className="bg-slate-100 text-slate-400 text-[10px] font-black">
+                                                                {entry.currentChief.name.substring(0, 2).toUpperCase()}
+                                                            </AvatarFallback>
+                                                        </Avatar>
+                                                        <div className="flex flex-col">
+                                                            <span className="text-xs font-black text-slate-900 tracking-tight">{entry.currentChief.name}</span>
+                                                            <span className="text-[9px] font-mono text-slate-400">{entry.currentChief.CNRCTRegistrationNumber}</span>
                                                         </div>
-                                                    ) : (
-                                                        <span className="text-[10px] font-bold text-slate-300 italic uppercase tracking-widest">--- Néant ---</span>
-                                                    )}
-                                                </TableCell>
-                                                <TableCell>
-                                                    <div className="flex justify-center gap-1.5 opacity-40 group-hover:opacity-100 transition-opacity">
-                                                        <Zap className={cn("h-3.5 w-3.5", entry.village.hasElectricity ? "text-amber-500 fill-amber-500" : "text-slate-200")} />
-                                                        <Droplets className={cn("h-3.5 w-3.5", entry.village.hasWater ? "text-blue-500 fill-blue-500" : "text-slate-200")} />
-                                                        <School className={cn("h-3.5 w-3.5", entry.village.hasSchool ? "text-indigo-500 fill-indigo-500" : "text-slate-200")} />
-                                                        <Activity className={cn("h-3.5 w-3.5", entry.village.hasHealthCenter ? "text-emerald-500 fill-emerald-500" : "text-slate-200")} />
                                                     </div>
-                                                </TableCell>
-                                                <TableCell className="text-center">
-                                                    {entry.currentChief ? (
-                                                        <Badge className="bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 border-none rounded-lg text-[9px] font-black uppercase tracking-widest px-3 py-1">
-                                                            Occupé
-                                                        </Badge>
-                                                    ) : (
-                                                        <Badge className="bg-amber-500/10 text-amber-600 hover:bg-amber-500/20 border-none rounded-lg text-[9px] font-black uppercase tracking-widest px-3 py-1 animate-pulse">
-                                                            Vacant
-                                                        </Badge>
-                                                    )}
-                                                </TableCell>
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
+                                                ) : (
+                                                    <span className="text-[10px] font-bold text-slate-300 italic uppercase tracking-widest">--- Néant ---</span>
+                                                )}
+                                            </td>
+                                            <td className="p-4 align-middle" onClick={() => setQuickViewVillage({ village: entry.village, chief: entry.currentChief })}>
+                                                <div className="flex justify-center gap-1.5 opacity-40 group-hover:opacity-100 transition-opacity">
+                                                    <Zap className={cn("h-3.5 w-3.5", entry.village.hasElectricity ? "text-amber-500 fill-amber-500" : "text-slate-200")} />
+                                                    <Droplets className={cn("h-3.5 w-3.5", entry.village.hasWater ? "text-blue-500 fill-blue-500" : "text-slate-200")} />
+                                                    <School className={cn("h-3.5 w-3.5", entry.village.hasSchool ? "text-indigo-500 fill-indigo-500" : "text-slate-200")} />
+                                                    <Activity className={cn("h-3.5 w-3.5", entry.village.hasHealthCenter ? "text-emerald-500 fill-emerald-500" : "text-slate-200")} />
+                                                </div>
+                                            </td>
+                                            <td className="p-4 align-middle text-center" onClick={() => setQuickViewVillage({ village: entry.village, chief: entry.currentChief })}>
+                                                {entry.currentChief ? (
+                                                    <Badge className="bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 border-none rounded-lg text-[9px] font-black uppercase tracking-widest px-3 py-1">
+                                                        Occupé
+                                                    </Badge>
+                                                ) : (
+                                                    <Badge className="bg-amber-500/10 text-amber-600 hover:bg-amber-500/20 border-none rounded-lg text-[9px] font-black uppercase tracking-widest px-3 py-1 animate-pulse">
+                                                        Vacant
+                                                    </Badge>
+                                                )}
+                                            </td>
+                                        </>
+                                    )}
+                                />
                             </Card>
                         )}
-
-                        <div className="bg-white/80 backdrop-blur-xl border border-white p-6 rounded-[2rem] shadow-xl shadow-slate-200/20">
-                            <PaginationControls 
-                                currentPage={currentPage}
-                                totalPages={totalPages}
-                                onPageChange={setCurrentPage}
-                                itemsPerPage={itemsPerPage}
-                                onItemsPerPageChange={setItemsPerPage}
-                                totalItems={filteredVillages.length}
-                            />
-                        </div>
                     </div>
                  ) : (
                     <div className="bg-white rounded-xl p-8 text-center shadow-xl shadow-slate-200/50 border border-slate-50">

@@ -1,0 +1,582 @@
+[
+  {
+    "id": "dept-abidjan",
+    "region_id": "reg-abidjan",
+    "nom": "Abidjan"
+  },
+  {
+    "id": "dept-agboville",
+    "region_id": "reg-agnby-tiassa",
+    "nom": "Agboville"
+  },
+  {
+    "id": "dept-sikensi",
+    "region_id": "reg-agnby-tiassa",
+    "nom": "Sikensi"
+  },
+  {
+    "id": "dept-taabo",
+    "region_id": "reg-agnby-tiassa",
+    "nom": "Taabo"
+  },
+  {
+    "id": "dept-tiassal",
+    "region_id": "reg-agnby-tiassa",
+    "nom": "Tiassalé"
+  },
+  {
+    "id": "dept-koro",
+    "region_id": "reg-bafing",
+    "nom": "Koro"
+  },
+  {
+    "id": "dept-ouaninou",
+    "region_id": "reg-bafing",
+    "nom": "Ouaninou"
+  },
+  {
+    "id": "dept-touba",
+    "region_id": "reg-bafing",
+    "nom": "Touba"
+  },
+  {
+    "id": "dept-boundiali",
+    "region_id": "reg-bagou",
+    "nom": "Boundiali"
+  },
+  {
+    "id": "dept-kouto",
+    "region_id": "reg-bagou",
+    "nom": "Kouto"
+  },
+  {
+    "id": "dept-tengrla",
+    "region_id": "reg-bagou",
+    "nom": "Tengréla"
+  },
+  {
+    "id": "dept-didivi",
+    "region_id": "reg-blier",
+    "nom": "Didiévi"
+  },
+  {
+    "id": "dept-djkanou",
+    "region_id": "reg-blier",
+    "nom": "Djékanou"
+  },
+  {
+    "id": "dept-tibissou",
+    "region_id": "reg-blier",
+    "nom": "Tiébissou"
+  },
+  {
+    "id": "dept-toumodi",
+    "region_id": "reg-blier",
+    "nom": "Toumodi"
+  },
+  {
+    "id": "dept-dianra",
+    "region_id": "reg-br",
+    "nom": "Dianra"
+  },
+  {
+    "id": "dept-kounahiri",
+    "region_id": "reg-br",
+    "nom": "Kounahiri"
+  },
+  {
+    "id": "dept-mankono",
+    "region_id": "reg-br",
+    "nom": "Mankono"
+  },
+  {
+    "id": "dept-bouna",
+    "region_id": "reg-bounkani",
+    "nom": "Bouna"
+  },
+  {
+    "id": "dept-doropo",
+    "region_id": "reg-bounkani",
+    "nom": "Doropo"
+  },
+  {
+    "id": "dept-nassian",
+    "region_id": "reg-bounkani",
+    "nom": "Nassian"
+  },
+  {
+    "id": "dept-thini",
+    "region_id": "reg-bounkani",
+    "nom": "Téhini"
+  },
+  {
+    "id": "dept-blolquin",
+    "region_id": "reg-cavally",
+    "nom": "Bloléquin"
+  },
+  {
+    "id": "dept-guiglo",
+    "region_id": "reg-cavally",
+    "nom": "Guiglo"
+  },
+  {
+    "id": "dept-ta",
+    "region_id": "reg-cavally",
+    "nom": "Taï"
+  },
+  {
+    "id": "dept-toulepleu",
+    "region_id": "reg-cavally",
+    "nom": "Toulepleu"
+  },
+  {
+    "id": "dept-kaniasso",
+    "region_id": "reg-folon",
+    "nom": "Kaniasso"
+  },
+  {
+    "id": "dept-minignan",
+    "region_id": "reg-folon",
+    "nom": "Minignan"
+  },
+  {
+    "id": "dept-boumi",
+    "region_id": "reg-gbk",
+    "nom": "Béoumi"
+  },
+  {
+    "id": "dept-botro",
+    "region_id": "reg-gbk",
+    "nom": "Botro"
+  },
+  {
+    "id": "dept-bouak",
+    "region_id": "reg-gbk",
+    "nom": "Bouaké"
+  },
+  {
+    "id": "dept-sakassou",
+    "region_id": "reg-gbk",
+    "nom": "Sakassou"
+  },
+  {
+    "id": "dept-fresco",
+    "region_id": "reg-gbkl",
+    "nom": "Fresco"
+  },
+  {
+    "id": "dept-sassandra",
+    "region_id": "reg-gbkl",
+    "nom": "Sassandra"
+  },
+  {
+    "id": "dept-gagnoa",
+    "region_id": "reg-gh",
+    "nom": "Gagnoa"
+  },
+  {
+    "id": "dept-oum",
+    "region_id": "reg-gh",
+    "nom": "Oumé"
+  },
+  {
+    "id": "dept-bondoukou",
+    "region_id": "reg-gontougo",
+    "nom": "Bondoukou"
+  },
+  {
+    "id": "dept-koun-fao",
+    "region_id": "reg-gontougo",
+    "nom": "Koun-Fao"
+  },
+  {
+    "id": "dept-sandgu",
+    "region_id": "reg-gontougo",
+    "nom": "Sandégué"
+  },
+  {
+    "id": "dept-transua",
+    "region_id": "reg-gontougo",
+    "nom": "Transua"
+  },
+  {
+    "id": "dept-tanda",
+    "region_id": "reg-gontougo",
+    "nom": "Tanda"
+  },
+  {
+    "id": "dept-dabou",
+    "region_id": "reg-grands-ponts",
+    "nom": "Dabou"
+  },
+  {
+    "id": "dept-grand-lahou",
+    "region_id": "reg-grands-ponts",
+    "nom": "Grand-Lahou"
+  },
+  {
+    "id": "dept-jacqueville",
+    "region_id": "reg-grands-ponts",
+    "nom": "Jacqueville"
+  },
+  {
+    "id": "dept-bangolo",
+    "region_id": "reg-gumon",
+    "nom": "Bangolo"
+  },
+  {
+    "id": "dept-dukou",
+    "region_id": "reg-gumon",
+    "nom": "Duékoué"
+  },
+  {
+    "id": "dept-facobly",
+    "region_id": "reg-gumon",
+    "nom": "Facobly"
+  },
+  {
+    "id": "dept-kouibly",
+    "region_id": "reg-gumon",
+    "nom": "Kouibly"
+  },
+  {
+    "id": "dept-dabakala",
+    "region_id": "reg-hambol",
+    "nom": "Dabakala"
+  },
+  {
+    "id": "dept-katiola",
+    "region_id": "reg-hambol",
+    "nom": "Katiola"
+  },
+  {
+    "id": "dept-niakaramadougou",
+    "region_id": "reg-hambol",
+    "nom": "Niakaramadougou"
+  },
+  {
+    "id": "dept-niakaramandougou",
+    "region_id": "reg-hambol",
+    "nom": "Niakaramandougou"
+  },
+  {
+    "id": "dept-daloa",
+    "region_id": "reg-haut-sassandra",
+    "nom": "Daloa"
+  },
+  {
+    "id": "dept-issia",
+    "region_id": "reg-haut-sassandra",
+    "nom": "Issia"
+  },
+  {
+    "id": "dept-vavoua",
+    "region_id": "reg-haut-sassandra",
+    "nom": "Vavoua"
+  },
+  {
+    "id": "dept-zoukougbeu",
+    "region_id": "reg-haut-sassandra",
+    "nom": "Zoukougbeu"
+  },
+  {
+    "id": "dept-daoukro",
+    "region_id": "reg-iffou",
+    "nom": "Daoukro"
+  },
+  {
+    "id": "dept-mbahiakro",
+    "region_id": "reg-iffou",
+    "nom": "M'Bahiakro"
+  },
+  {
+    "id": "dept-prikro",
+    "region_id": "reg-iffou",
+    "nom": "Prikro"
+  },
+  {
+    "id": "dept-ouell",
+    "region_id": "reg-iffou",
+    "nom": "Ouellé"
+  },
+  {
+    "id": "dept-abengourou",
+    "region_id": "reg-indni-djuablin",
+    "nom": "Abengourou"
+  },
+  {
+    "id": "dept-agnibilkrou",
+    "region_id": "reg-indni-djuablin",
+    "nom": "Agnibilékrou"
+  },
+  {
+    "id": "dept-betti",
+    "region_id": "reg-indni-djuablin",
+    "nom": "Bettié"
+  },
+  {
+    "id": "dept-gblban",
+    "region_id": "reg-kabadougou",
+    "nom": "Gbéléban"
+  },
+  {
+    "id": "dept-madinani",
+    "region_id": "reg-kabadougou",
+    "nom": "Madinani"
+  },
+  {
+    "id": "dept-odienn",
+    "region_id": "reg-kabadougou",
+    "nom": "Odienné"
+  },
+  {
+    "id": "dept-samatiguila",
+    "region_id": "reg-kabadougou",
+    "nom": "Samatiguila"
+  },
+  {
+    "id": "dept-seguelon",
+    "region_id": "reg-kabadougou",
+    "nom": "Seguelon"
+  },
+  {
+    "id": "dept-sguelon",
+    "region_id": "reg-kabadougou",
+    "nom": "Séguelon"
+  },
+  {
+    "id": "dept-divo",
+    "region_id": "reg-lh-djiboua",
+    "nom": "Divo"
+  },
+  {
+    "id": "dept-guitry",
+    "region_id": "reg-lh-djiboua",
+    "nom": "Guitry"
+  },
+  {
+    "id": "dept-lakota",
+    "region_id": "reg-lh-djiboua",
+    "nom": "Lakota"
+  },
+  {
+    "id": "dept-bonon",
+    "region_id": "reg-marahou",
+    "nom": "Bonon"
+  },
+  {
+    "id": "dept-bouafl",
+    "region_id": "reg-marahou",
+    "nom": "Bouaflé"
+  },
+  {
+    "id": "dept-gohitafla",
+    "region_id": "reg-marahou",
+    "nom": "Gohitafla"
+  },
+  {
+    "id": "dept-sinfra",
+    "region_id": "reg-marahou",
+    "nom": "Sinfra"
+  },
+  {
+    "id": "dept-zunoula",
+    "region_id": "reg-marahou",
+    "nom": "Zuénoula"
+  },
+  {
+    "id": "dept-arrah",
+    "region_id": "reg-moronou",
+    "nom": "Arrah"
+  },
+  {
+    "id": "dept-bongouanou",
+    "region_id": "reg-moronou",
+    "nom": "Bongouanou"
+  },
+  {
+    "id": "dept-mbatto",
+    "region_id": "reg-moronou",
+    "nom": "M'Batto"
+  },
+  {
+    "id": "dept-buyo",
+    "region_id": "reg-nawa",
+    "nom": "Buyo"
+  },
+  {
+    "id": "dept-guyo",
+    "region_id": "reg-nawa",
+    "nom": "Guéyo"
+  },
+  {
+    "id": "dept-magui",
+    "region_id": "reg-nawa",
+    "nom": "Méagui"
+  },
+  {
+    "id": "dept-soubr",
+    "region_id": "reg-nawa",
+    "nom": "Soubré"
+  },
+  {
+    "id": "dept-gueyo",
+    "region_id": "reg-nawa",
+    "nom": "Gueyo"
+  },
+  {
+    "id": "dept-dikodougou",
+    "region_id": "reg-poro",
+    "nom": "Dikodougou"
+  },
+  {
+    "id": "dept-korhogo",
+    "region_id": "reg-poro",
+    "nom": "Korhogo"
+  },
+  {
+    "id": "dept-mbengue",
+    "region_id": "reg-poro",
+    "nom": "M'Bengue"
+  },
+  {
+    "id": "dept-sinmatiali",
+    "region_id": "reg-poro",
+    "nom": "Sinématiali"
+  },
+  {
+    "id": "dept-mbengu",
+    "region_id": "reg-poro",
+    "nom": "M'Bengué"
+  },
+  {
+    "id": "dept-san-pdro",
+    "region_id": "reg-san-pdro",
+    "nom": "San-Pédro"
+  },
+  {
+    "id": "dept-tabou",
+    "region_id": "reg-san-pdro",
+    "nom": "Tabou"
+  },
+  {
+    "id": "dept-aboisso",
+    "region_id": "reg-sud-como",
+    "nom": "Aboisso"
+  },
+  {
+    "id": "dept-adiak",
+    "region_id": "reg-sud-como",
+    "nom": "Adiaké"
+  },
+  {
+    "id": "dept-grand-bassam",
+    "region_id": "reg-sud-como",
+    "nom": "Grand-Bassam"
+  },
+  {
+    "id": "dept-tiapoum",
+    "region_id": "reg-sud-como",
+    "nom": "Tiapoum"
+  },
+  {
+    "id": "dept-ferkessdougou",
+    "region_id": "reg-tchologo",
+    "nom": "Ferkessédougou"
+  },
+  {
+    "id": "dept-kong",
+    "region_id": "reg-tchologo",
+    "nom": "Kong"
+  },
+  {
+    "id": "dept-ouangolodougou",
+    "region_id": "reg-tchologo",
+    "nom": "Ouangolodougou"
+  },
+  {
+    "id": "dept-biankouma",
+    "region_id": "reg-tonkpi",
+    "nom": "Biankouma"
+  },
+  {
+    "id": "dept-danan",
+    "region_id": "reg-tonkpi",
+    "nom": "Danané"
+  },
+  {
+    "id": "dept-man",
+    "region_id": "reg-tonkpi",
+    "nom": "Man"
+  },
+  {
+    "id": "dept-sipilou",
+    "region_id": "reg-tonkpi",
+    "nom": "Sipilou"
+  },
+  {
+    "id": "dept-zouan-hounien",
+    "region_id": "reg-tonkpi",
+    "nom": "Zouan-Hounien"
+  },
+  {
+    "id": "dept-logoual",
+    "region_id": "reg-tonkpi",
+    "nom": "Logoualé"
+  },
+  {
+    "id": "dept-kani",
+    "region_id": "reg-worodougou",
+    "nom": "Kani"
+  },
+  {
+    "id": "dept-sgula",
+    "region_id": "reg-worodougou",
+    "nom": "Séguéla"
+  },
+  {
+    "id": "dept-attigouakro",
+    "region_id": "reg-yamoussoukro",
+    "nom": "Attiégouakro"
+  },
+  {
+    "id": "dept-yamoussoukro",
+    "region_id": "reg-yamoussoukro",
+    "nom": "Yamoussoukro"
+  },
+  {
+    "id": "dept-dimbokro",
+    "region_id": "reg-nzi",
+    "nom": "Dimbokro"
+  },
+  {
+    "id": "dept-bocanda",
+    "region_id": "reg-nzi",
+    "nom": "Bocanda"
+  },
+  {
+    "id": "dept-kouassi-kouassikro",
+    "region_id": "reg-nzi",
+    "nom": "Kouassi-Kouassikro"
+  },
+  {
+    "id": "dept-adzop",
+    "region_id": "reg-m",
+    "nom": "Adzopé"
+  },
+  {
+    "id": "dept-akoup",
+    "region_id": "reg-m",
+    "nom": "Akoupé"
+  },
+  {
+    "id": "dept-alp",
+    "region_id": "reg-m",
+    "nom": "Alépé"
+  },
+  {
+    "id": "dept-yakass-attobrou",
+    "region_id": "reg-m",
+    "nom": "Yakassé-Attobrou"
+  }
+]

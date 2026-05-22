@@ -20,6 +20,10 @@ export type Chief = {
     role: ChiefRole;
     designationDate?: string;
     designationMode?: DesignationMode;
+    districtId?: string;
+    regionId?: string;
+    departmentId?: string;
+    subPrefectureId?: string;
     region: string;
     department: string;
     subPrefecture: string;

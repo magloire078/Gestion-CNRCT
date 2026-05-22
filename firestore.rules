@@ -43,10 +43,10 @@ service cloud.firestore {
     }
 
     // --- TEMPORARY DEBUG ACCESS ---
-    match /{document=**} {
-      allow read: if true;
-      allow write: if isSignedIn();
-    }
+    // match /{document=**} {
+    //   allow read: if true;
+    //   allow write: if isSignedIn();
+    // }
 
     // --- SYSTEM & ADMIN ---
     
@@ -124,19 +124,32 @@ service cloud.firestore {
     // --- LOCALITIES & TRADITIONS ---
     
     match /villages/{villageId} {
+      function isValidVillage() {
+        let data = request.resource.data;
+        return data.keys().hasAll(['name', 'department', 'region']) &&
+               data.name is string && data.name.size() > 0 &&
+               data.department is string && data.region is string;
+      }
+      
       allow read: if can('villages', 'read');
-      allow create: if can('villages', 'create');
-      allow update: if can('villages', 'update');
-      allow delete: if can('villages', 'delete');
+      allow create: if can('villages', 'create') && isValidVillage();
+      allow update: if can('villages', 'update') && isValidVillage();
+      allow delete: if can('villages', 'delete') && isSuperAdmin(); // Restrict deletion to super admin
     }
 
     match /chiefs/{chiefId} {
+      function isValidChief() {
+        let data = request.resource.data;
+        return data.keys().hasAll(['name', 'village']) &&
+               data.name is string && data.name.size() > 0;
+      }
+
       allow read: if can('chiefs', 'read');
-      allow create: if can('chiefs', 'create');
-      allow update: if can('chiefs', 'update') && 
+      allow create: if can('chiefs', 'create') && isValidChief();
+      allow update: if can('chiefs', 'update') && isValidChief() && 
                     (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['career']) || can('chiefs-career', 'update')) &&
                     (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['audit', 'meritPoints']) || can('chiefs-audit', 'update'));
-      allow delete: if can('chiefs', 'delete');
+      allow delete: if can('chiefs', 'delete') && isSuperAdmin(); // Restrict deletion to super admin
     }
 
     match /customs/{id} {

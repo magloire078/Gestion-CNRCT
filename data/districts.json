@@ -1,0 +1,72 @@
+[
+  {
+    "id": "dist-abidjan",
+    "nom": "Abidjan",
+    "type": "Autonome"
+  },
+  {
+    "id": "dist-yamoussoukro",
+    "nom": "Yamoussoukro",
+    "type": "Autonome"
+  },
+  {
+    "id": "dist-bas-sassandra",
+    "nom": "Bas-Sassandra",
+    "type": "Régional"
+  },
+  {
+    "id": "dist-como",
+    "nom": "Comoé",
+    "type": "Régional"
+  },
+  {
+    "id": "dist-dengul",
+    "nom": "Denguélé",
+    "type": "Régional"
+  },
+  {
+    "id": "dist-gh-djiboua",
+    "nom": "Gôh-Djiboua",
+    "type": "Régional"
+  },
+  {
+    "id": "dist-lacs",
+    "nom": "Lacs",
+    "type": "Régional"
+  },
+  {
+    "id": "dist-lagunes",
+    "nom": "Lagunes",
+    "type": "Régional"
+  },
+  {
+    "id": "dist-montagnes",
+    "nom": "Montagnes",
+    "type": "Régional"
+  },
+  {
+    "id": "dist-sassandra-marahou",
+    "nom": "Sassandra-Marahoué",
+    "type": "Régional"
+  },
+  {
+    "id": "dist-savanes",
+    "nom": "Savanes",
+    "type": "Régional"
+  },
+  {
+    "id": "dist-valle-du-bandama",
+    "nom": "Vallée du Bandama",
+    "type": "Régional"
+  },
+  {
+    "id": "dist-woroba",
+    "nom": "Woroba",
+    "type": "Régional"
+  },
+  {
+    "id": "dist-zanzan",
+    "nom": "Zanzan",
+    "type": "Régional"
+  }
+]

@@ -1,5 +1,3 @@
-
-
 "use client";
 
 import { useState, useRef, useMemo, useEffect } from "react";
@@ -25,20 +23,15 @@ import {
 import type { Chief, ChiefRole, DesignationMode, ChiefCareerEvent } from "@/types/chief";
 import { getChiefs } from "@/services/chief-service";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Upload } from "lucide-react";
+import { Upload, Plus, Trash2 as TrashIcon, ChevronRight, ChevronLeft, MapPin as PinIcon, ShieldCheck } from "lucide-react";
 import { Textarea } from "../ui/textarea";
 import { divisions } from "@/lib/ivory-coast-divisions";
 import { IVORIAN_REGIONS } from "@/constants/regions";
 import { ScrollArea } from "../ui/scroll-area";
 import { DebouncedInput } from "@/components/ui/debounced-input";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import { LocationPicker } from "@/components/common/location-picker";
-import { Plus, Trash2 as TrashIcon, Award, Medal, ShieldCheck, Clock, MapPin as PinIcon } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 interface AddChiefDialogProps {
   isOpen: boolean;
@@ -46,7 +39,18 @@ interface AddChiefDialogProps {
   onAddChiefAction: (chief: Omit<Chief, "id">, photoFile: File | null) => Promise<void>;
 }
 
+const STEPS = [
+  { id: 1, title: "Identité", description: "Informations de base et rôle" },
+  { id: 2, title: "Territoire", description: "Localisation et carte" },
+  { id: 3, title: "Culture & Contact", description: "Ethnie et coordonnées" },
+  { id: 4, title: "Carrière", description: "Légal et historique" }
+];
+
 export function AddChiefSheet({ isOpen, onCloseAction, onAddChiefAction }: AddChiefDialogProps) {
+  const [step, setStep] = useState(1);
+  const [direction, setDirection] = useState(1); // 1 for forward, -1 for backward
+
+  // --- Form States ---
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [title, setTitle] = useState("");
@@ -77,15 +81,11 @@ export function AddChiefSheet({ isOpen, onCloseAction, onAddChiefAction }: AddCh
 
   const [latitude, setLatitude] = useState<number | ''>('');
   const [longitude, setLongitude] = useState<number | ''>('');
-
   const [parentChiefId, setParentChiefId] = useState<string | null>(null);
-
   const [dateOfBirth, setDateOfBirth] = useState("");
   const [regencyStartDate, setRegencyStartDate] = useState("");
   const [regencyEndDate, setRegencyEndDate] = useState("");
   const [status, setStatus] = useState<Chief['status']>("actif");
-  
-  // Career Events State
   const [career, setCareer] = useState<ChiefCareerEvent[]>([]);
 
   const [allChiefs, setAllChiefs] = useState<Chief[]>([]);
@@ -99,11 +99,10 @@ export function AddChiefSheet({ isOpen, onCloseAction, onAddChiefAction }: AddCh
         try {
           const fetchedChiefs = await getChiefs();
           setAllChiefs(fetchedChiefs);
-        } catch (err) {
-          console.error("Failed to fetch chiefs list for parent selection", err);
-        }
+        } catch (err) {}
       }
       fetchChiefs();
+      setStep(1);
     }
   }, [isOpen]);
 
@@ -111,20 +110,16 @@ export function AddChiefSheet({ isOpen, onCloseAction, onAddChiefAction }: AddCh
   const subPrefectures = useMemo(() => selectedRegion && selectedDepartment && divisions[selectedRegion]?.[selectedDepartment] ? Object.keys(divisions[selectedRegion][selectedDepartment]) : [], [selectedRegion, selectedDepartment]);
   const villages = useMemo(() => selectedRegion && selectedDepartment && selectedSubPrefecture && divisions[selectedRegion]?.[selectedDepartment]?.[selectedSubPrefecture] ? divisions[selectedRegion][selectedDepartment][selectedSubPrefecture] : [], [selectedRegion, selectedDepartment, selectedSubPrefecture]);
 
-
   const resetForm = () => {
     setFirstName(""); setLastName(""); setTitle(""); setRole("Chef de Village"); setSexe(""); setPhone(""); setContact("");
     setBio(""); setPhotoFile(null); setPhotoPreview(`https://placehold.co/100x100.png`);
-    setSelectedRegion(""); setCustomRegion("");
-    setSelectedDepartment(""); setCustomDepartment("");
-    setSelectedSubPrefecture(""); setCustomSubPrefecture("");
-    setSelectedVillage(""); setCustomVillage("");
-    setLatitude(''); setLongitude('');
-    setParentChiefId(null); setDateOfBirth("");
+    setSelectedRegion(""); setCustomRegion(""); setSelectedDepartment(""); setCustomDepartment("");
+    setSelectedSubPrefecture(""); setCustomSubPrefecture(""); setSelectedVillage(""); setCustomVillage("");
+    setLatitude(''); setLongitude(''); setParentChiefId(null); setDateOfBirth("");
     setRegencyStartDate(""); setRegencyEndDate(""); setStatus("actif"); setError("");
     setDesignationDate(""); setDesignationMode(""); setEthnicGroup(""); setLanguages("");
     setCNRCTRegistrationNumber(""); setOfficialDocuments(""); setEmail(""); setAddress("");
-    setCareer([]);
+    setCareer([]); setStep(1);
     if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
@@ -138,53 +133,54 @@ export function AddChiefSheet({ isOpen, onCloseAction, onAddChiefAction }: AddCh
     if (file) {
       setPhotoFile(file);
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setPhotoPreview(reader.result as string);
-      };
+      reader.onloadend = () => setPhotoPreview(reader.result as string);
       reader.readAsDataURL(file);
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const nextStep = () => {
+    if (step === 1 && (!firstName || !lastName || !title)) {
+      setError("Veuillez remplir les champs obligatoires (Nom, Prénom, Titre).");
+      return;
+    }
+    setError("");
+    setDirection(1);
+    setStep(s => Math.min(s + 1, STEPS.length));
+  };
 
-    const finalRegion = selectedRegion === 'AUTRE' ? customRegion : selectedRegion;
-    const finalDepartment = selectedDepartment === 'AUTRE' ? customDepartment : selectedDepartment;
-    const finalSubPrefecture = selectedSubPrefecture === 'AUTRE' ? customSubPrefecture : selectedSubPrefecture;
-    const finalVillage = selectedVillage === 'AUTRE' ? customVillage : selectedVillage;
+  const prevStep = () => {
+    setError("");
+    setDirection(-1);
+    setStep(s => Math.max(s - 1, 1));
+  };
 
+  const handleSubmit = async () => {
     if (!firstName || !lastName || !title) {
-      setError("Veuillez remplir au moins les champs nom, prénom et titre.");
+      setError("Informations d'identité incomplètes.");
+      setStep(1);
       return;
     }
     setIsSubmitting(true);
     setError("");
     try {
+      const finalRegion = selectedRegion === 'AUTRE' ? customRegion : selectedRegion;
+      const finalDepartment = selectedDepartment === 'AUTRE' ? customDepartment : selectedDepartment;
+      const finalSubPrefecture = selectedSubPrefecture === 'AUTRE' ? customSubPrefecture : selectedSubPrefecture;
+      const finalVillage = selectedVillage === 'AUTRE' ? customVillage : selectedVillage;
+
       const chiefData: Omit<Chief, "id"> = {
         name: `${lastName} ${firstName}`.trim(),
-        firstName,
-        lastName,
-        title,
-        role,
+        firstName, lastName, title, role,
         designationDate: designationDate || undefined,
         designationMode: designationMode as DesignationMode,
         sexe: sexe as Chief['sexe'],
-        region: finalRegion,
-        department: finalDepartment,
-        subPrefecture: finalSubPrefecture,
-        village: finalVillage,
+        region: finalRegion, department: finalDepartment, subPrefecture: finalSubPrefecture, village: finalVillage,
         ethnicGroup: ethnicGroup || undefined,
         languages: languages ? languages.split(',').map(s => s.trim()) : undefined,
-        phone: phone || undefined,
-        contact,
-        email: email || undefined,
-        address: address || undefined,
+        phone: phone || undefined, contact, email: email || undefined, address: address || undefined,
         CNRCTRegistrationNumber: CNRCTRegistrationNumber || undefined,
         officialDocuments: officialDocuments || undefined,
-        status: status || 'actif',
-        bio,
-        career,
-        photoUrl: '', // This will be set by the service after upload
+        status: status || 'actif', bio, career, photoUrl: '',
       };
 
       if (parentChiefId) chiefData.parentChiefId = parentChiefId;
@@ -198,271 +194,289 @@ export function AddChiefSheet({ isOpen, onCloseAction, onAddChiefAction }: AddCh
       handleClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Échec de l'ajout du chef.");
-      console.error(err);
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  const slideVariants = {
+    hidden: (direction: number) => ({ x: direction > 0 ? '50%' : '-50%', opacity: 0 }),
+    visible: { x: 0, opacity: 1, transition: { type: "spring" as const, stiffness: 300, damping: 30 } },
+    exit: (direction: number) => ({ x: direction > 0 ? '-50%' : '50%', opacity: 0, transition: { duration: 0.2 } })
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open) handleClose(); }}>
-      <DialogContent className="sm:max-w-3xl">
-        <DialogHeader>
-          <DialogTitle>Ajouter un nouveau Chef</DialogTitle>
-          <DialogDescription>
-            Remplissez les détails ci-dessous pour ajouter une nouvelle autorité traditionnelle.
-          </DialogDescription>
-        </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <ScrollArea className="h-[65vh] p-1 -mr-6 pr-6">
-            <Accordion type="multiple" defaultValue={['item-1', 'item-2', 'item-3', 'item-4', 'item-5']} className="w-full">
-              <AccordionItem value="item-1">
-                <AccordionTrigger>Identité</AccordionTrigger>
-                <AccordionContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
-                    <div className="space-y-2 col-span-2 flex items-center gap-4">
-                      <Label>Photo</Label>
-                      <Avatar className="h-16 w-16"><AvatarImage src={photoPreview} alt="Aperçu de la photo" data-ai-hint="chief portrait" /><AvatarFallback>{lastName ? lastName.charAt(0) : 'C'}</AvatarFallback></Avatar>
-                      <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}><Upload className="mr-2 h-4 w-4" />Télécharger</Button>
-                      <Input ref={fileInputRef} type="file" className="hidden" accept="image/*" onChange={handlePhotoChange} />
+      <DialogContent className="sm:max-w-4xl p-0 overflow-hidden bg-slate-50 w-full max-h-[100dvh]">
+        <div className="flex flex-col md:flex-row h-[100dvh] md:h-[85vh] max-h-[100dvh] md:max-h-[800px]">
+          {/* Sidebar Wizard Navigation */}
+          <div className="w-full md:w-64 bg-white border-b md:border-r md:border-b-0 border-slate-100 p-4 md:p-6 shrink-0 flex flex-col justify-between">
+            <div>
+              <div className="hidden md:block mb-8">
+                <h2 className="text-xl font-black uppercase tracking-widest text-slate-900">Ajout Autorité</h2>
+                <p className="text-xs text-slate-500 mt-1 font-medium">Enregistrement au registre CNRCT</p>
+              </div>
+              <div className="flex flex-row md:flex-col justify-between md:justify-start space-y-0 md:space-y-6 overflow-x-auto no-scrollbar pb-2">
+                {STEPS.map((s, idx) => (
+                  <div key={s.id} className="flex flex-col md:flex-row items-center md:items-start gap-1 md:gap-4 flex-1 md:flex-none">
+                    <div className={cn(
+                      "flex items-center justify-center w-7 h-7 md:w-8 md:h-8 rounded-full border-2 text-[10px] md:text-xs font-black shrink-0 transition-all duration-300",
+                      step === s.id ? "bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-600/30" 
+                      : step > s.id ? "bg-emerald-500 border-emerald-500 text-white" : "bg-slate-50 border-slate-200 text-slate-400"
+                    )}>
+                      {step > s.id ? "✓" : s.id}
                     </div>
-                    <div><Label htmlFor="lastName">Nom</Label><DebouncedInput id="lastName" value={lastName} onChange={(val) => setLastName(val as string)} required /></div>
-                    <div><Label htmlFor="firstName">Prénom(s)</Label><DebouncedInput id="firstName" value={firstName} onChange={(val) => setFirstName(val as string)} required /></div>
-                    <div><Label htmlFor="title">Titre traditionnel</Label><DebouncedInput id="title" value={title} onChange={(val) => setTitle(val as string)} placeholder="Ex: Roi des N'zima" required /></div>
-                    <div><Label htmlFor="role">Rôle</Label><Select value={role} onValueChange={(v: ChiefRole) => setRole(v)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Roi">Roi</SelectItem><SelectItem value="Chef de province">Chef de province</SelectItem><SelectItem value="Chef de canton">Chef de canton</SelectItem><SelectItem value="Chef de tribu">Chef de tribu</SelectItem><SelectItem value="Chef de Village">Chef de Village</SelectItem></SelectContent></Select></div>
-                    <div><Label htmlFor="designationDate">Date de désignation</Label><Input id="designationDate" type="date" value={designationDate} onChange={e => setDesignationDate(e.target.value)} /></div>
-                    <div><Label htmlFor="designationMode">Mode de désignation</Label><Select value={designationMode} onValueChange={(v: DesignationMode) => setDesignationMode(v)}><SelectTrigger><SelectValue placeholder="Sélectionnez..." /></SelectTrigger><SelectContent><SelectItem value="Héritage">Héritage</SelectItem><SelectItem value="Élection">Élection</SelectItem><SelectItem value="Nomination coutumière">Nomination coutumière</SelectItem><SelectItem value="Autre">Autre</SelectItem></SelectContent></Select></div>
-                    <div><Label htmlFor="parentChief">Autorité Supérieure</Label><Select value={parentChiefId ?? 'none'} onValueChange={(v) => setParentChiefId(v === 'none' ? null : v)}><SelectTrigger><SelectValue placeholder="Aucun (optionnel)" /></SelectTrigger><SelectContent><SelectItem value="none">Aucun</SelectItem>{allChiefs.map(c => <SelectItem key={c.id} value={c.id}>{`${c.lastName || ''} ${c.firstName || ''}`} ({c.title})</SelectItem>)}</SelectContent></Select></div>
-                    <div><Label htmlFor="dateOfBirth">Date de Naissance</Label><Input id="dateOfBirth" type="date" value={dateOfBirth} onChange={(e) => setDateOfBirth(e.target.value)} /></div>
-                    <div><Label htmlFor="sexe">Sexe</Label><Select value={sexe} onValueChange={(value) => setSexe(value as Chief['sexe'])}><SelectTrigger><SelectValue placeholder="Sélectionnez..." /></SelectTrigger><SelectContent><SelectItem value="Homme">Homme</SelectItem><SelectItem value="Femme">Femme</SelectItem><SelectItem value="Autre">Autre</SelectItem></SelectContent></Select></div>
+                    <div className="flex flex-col pt-0 md:pt-1 text-center md:text-left">
+                      <span className={cn("text-[9px] md:text-sm font-bold uppercase tracking-wider line-clamp-1", step === s.id ? "text-slate-900" : step > s.id ? "text-slate-700" : "text-slate-400")}>
+                        {s.title}
+                      </span>
+                      <span className="hidden md:block text-[10px] text-slate-400">{s.description}</span>
+                    </div>
                   </div>
-                </AccordionContent>
-              </AccordionItem>
-              <AccordionItem value="item-2">
-                <AccordionTrigger>Localisation</AccordionTrigger>
-                <AccordionContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
-                    <div><Label htmlFor="region">Région</Label><Select value={selectedRegion} onValueChange={v => { setSelectedRegion(v); setSelectedDepartment(''); setSelectedSubPrefecture(''); setSelectedSubPrefecture(''); setSelectedVillage(''); }}><SelectTrigger><SelectValue placeholder="Sélectionnez une région..." /></SelectTrigger><SelectContent>{IVORIAN_REGIONS.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}<SelectItem value="AUTRE">Autre...</SelectItem></SelectContent></Select></div>
-                    {selectedRegion === 'AUTRE' && <div><Label htmlFor="customRegion">Nouvelle Région</Label><Input id="customRegion" value={customRegion} onChange={e => setCustomRegion(e.target.value)} placeholder="Nom de la nouvelle région" /></div>}
+                ))}
+              </div>
+            </div>
+            
+            <div className="hidden md:block mt-8 p-4 bg-slate-50 rounded-xl border border-slate-100">
+                <p className="text-[10px] text-slate-500 italic">"L'autorité traditionnelle est la garante de la cohésion sociale."</p>
+            </div>
+          </div>
 
-                    <div><Label htmlFor="department">Département</Label><Select value={selectedDepartment} onValueChange={v => { setSelectedDepartment(v); setSelectedSubPrefecture(''); setSelectedVillage(''); }} disabled={!selectedRegion || selectedRegion === 'AUTRE'}><SelectTrigger><SelectValue placeholder="Sélectionnez un département..." /></SelectTrigger><SelectContent>{departments.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}<SelectItem value="AUTRE">Autre...</SelectItem></SelectContent></Select></div>
-                    {selectedDepartment === 'AUTRE' && <div><Label htmlFor="customDepartment">Nouveau Dép.</Label><Input id="customDepartment" value={customDepartment} onChange={e => setCustomDepartment(e.target.value)} placeholder="Nom du nouveau département" /></div>}
+          {/* Form Content */}
+          <div className="flex-1 flex flex-col relative bg-white">
+            <DialogHeader className="p-6 border-b border-slate-100 bg-white z-10 shrink-0">
+              <DialogTitle className="text-xl">{STEPS[step-1].title}</DialogTitle>
+              <DialogDescription>{STEPS[step-1].description}</DialogDescription>
+            </DialogHeader>
 
-                    <div><Label htmlFor="subPrefecture">Sous-préfecture</Label><Select value={selectedSubPrefecture} onValueChange={v => { setSelectedSubPrefecture(v); setSelectedVillage(''); }} disabled={!selectedDepartment || selectedDepartment === 'AUTRE'}><SelectTrigger><SelectValue placeholder="Sélectionnez une sous-préfecture..." /></SelectTrigger><SelectContent>{subPrefectures.map(sp => <SelectItem key={sp} value={sp}>{sp}</SelectItem>)}<SelectItem value="AUTRE">Autre...</SelectItem></SelectContent></Select></div>
-                    {selectedSubPrefecture === 'AUTRE' && <div><Label htmlFor="customSubPrefecture">Nouv. S-préfecture</Label><Input id="customSubPrefecture" value={customSubPrefecture} onChange={e => setCustomSubPrefecture(e.target.value)} placeholder="Nom de la nouvelle sous-préfecture" /></div>}
-
-                    <div><Label htmlFor="village">Village/Commune</Label><Select value={selectedVillage} onValueChange={setSelectedVillage} disabled={!selectedSubPrefecture || selectedSubPrefecture === 'AUTRE'}><SelectTrigger><SelectValue placeholder="Sélectionnez un village..." /></SelectTrigger><SelectContent>{villages.map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}<SelectItem value="AUTRE">Autre...</SelectItem></SelectContent></Select></div>
-                    {selectedVillage === 'AUTRE' && <div><Label htmlFor="customVillage">Nouveau Village</Label><Input id="customVillage" value={customVillage} onChange={e => setCustomVillage(e.target.value)} placeholder="Nom du nouveau village" /></div>}
-
-                    <div className="col-span-2 pt-4 border-t border-slate-100 space-y-4">
-                        <div className="flex flex-col gap-1">
-                            <Label className="text-sm font-bold text-slate-700">Position Géographique (SIG)</Label>
-                            <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Sélectionnez la position sur la carte pour la cartographie</p>
-                        </div>
-                        
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                            <div className="lg:col-span-2">
-                                <LocationPicker 
-                                    onLocationSelectAction={(lat, lng) => {
-                                        setLatitude(lat);
-                                        setLongitude(lng);
-                                    }}
-                                    initialLat={latitude !== '' ? latitude : undefined}
-                                    initialLng={longitude !== '' ? longitude : undefined}
-                                    className="border shadow-sm rounded-xl bg-slate-50/50"
-                                />
+            <ScrollArea className="flex-1 p-6 relative">
+              <AnimatePresence mode="wait" custom={direction} initial={false}>
+                <motion.div
+                  key={step}
+                  custom={direction}
+                  variants={slideVariants}
+                  initial="hidden"
+                  animate="visible"
+                  exit="exit"
+                  className="space-y-6 pb-20"
+                >
+                  {/* STEP 1: Identité */}
+                  {step === 1 && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div className="col-span-1 md:col-span-2 p-6 bg-slate-50 border border-slate-100 rounded-2xl flex items-center gap-6">
+                            <Avatar className="h-24 w-24 border-4 border-white shadow-xl">
+                                <AvatarImage src={photoPreview} />
+                                <AvatarFallback className="text-xl bg-blue-50 text-blue-600 font-black">{lastName ? lastName.charAt(0) : 'C'}</AvatarFallback>
+                            </Avatar>
+                            <div className="space-y-2">
+                                <Label className="text-xs uppercase font-black tracking-widest text-slate-500">Portrait Officiel</Label>
+                                <div className="flex gap-3">
+                                    <Button type="button" variant="default" size="sm" onClick={() => fileInputRef.current?.click()} className="shadow-md">
+                                        <Upload className="mr-2 h-4 w-4" /> Parcourir...
+                                    </Button>
+                                    <Input ref={fileInputRef} type="file" className="hidden" accept="image/*" onChange={handlePhotoChange} />
+                                </div>
+                                <p className="text-[10px] text-slate-400">Format JPG ou PNG. Taille max 5MB.</p>
                             </div>
-                            <div className="flex flex-col gap-4">
-                                <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 space-y-4">
+                        </div>
+
+                        <div className="space-y-2"><Label>Nom <span className="text-red-500">*</span></Label><DebouncedInput value={lastName} onChange={(v) => setLastName(v as string)} placeholder="Ex: HOUPHOUËT" /></div>
+                        <div className="space-y-2"><Label>Prénom(s) <span className="text-red-500">*</span></Label><DebouncedInput value={firstName} onChange={(v) => setFirstName(v as string)} placeholder="Ex: Boigny" /></div>
+                        <div className="space-y-2"><Label>Titre traditionnel <span className="text-red-500">*</span></Label><DebouncedInput value={title} onChange={(v) => setTitle(v as string)} placeholder="Ex: Nanan, Awoula..." /></div>
+                        
+                        <div className="space-y-2">
+                            <Label>Niveau de Juridiction (Rôle) <span className="text-red-500">*</span></Label>
+                            <Select value={role} onValueChange={(v: ChiefRole) => setRole(v)}>
+                                <SelectTrigger className="h-10 bg-slate-50 border-slate-200 focus:ring-blue-500"><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="Roi" className="font-bold text-amber-700">Roi</SelectItem>
+                                    <SelectItem value="Chef de province">Chef de province</SelectItem>
+                                    <SelectItem value="Chef de canton">Chef de canton</SelectItem>
+                                    <SelectItem value="Chef de tribu">Chef de tribu</SelectItem>
+                                    <SelectItem value="Chef de Village">Chef de Village</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label>Sexe</Label>
+                            <Select value={sexe} onValueChange={(v) => setSexe(v as Chief['sexe'])}>
+                                <SelectTrigger className="h-10"><SelectValue placeholder="Sélectionnez..." /></SelectTrigger>
+                                <SelectContent><SelectItem value="Homme">Homme</SelectItem><SelectItem value="Femme">Femme</SelectItem><SelectItem value="Autre">Autre</SelectItem></SelectContent>
+                            </Select>
+                        </div>
+
+                        <div className="space-y-2"><Label>Date de Naissance</Label><Input type="date" value={dateOfBirth} onChange={(e) => setDateOfBirth(e.target.value)} /></div>
+                    </div>
+                  )}
+
+                  {/* STEP 2: Territoire & Carte */}
+                  {step === 2 && (
+                    <div className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label>Région</Label>
+                                <Select value={selectedRegion} onValueChange={v => { setSelectedRegion(v); setSelectedDepartment(''); setSelectedSubPrefecture(''); setSelectedVillage(''); }}>
+                                    <SelectTrigger><SelectValue placeholder="Sélectionnez..." /></SelectTrigger>
+                                    <SelectContent>{IVORIAN_REGIONS.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}<SelectItem value="AUTRE">Autre...</SelectItem></SelectContent>
+                                </Select>
+                                {selectedRegion === 'AUTRE' && <Input value={customRegion} onChange={e => setCustomRegion(e.target.value)} placeholder="Nom..." className="mt-2" />}
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label>Département</Label>
+                                <Select value={selectedDepartment} onValueChange={v => { setSelectedDepartment(v); setSelectedSubPrefecture(''); setSelectedVillage(''); }} disabled={!selectedRegion || selectedRegion === 'AUTRE'}>
+                                    <SelectTrigger><SelectValue placeholder="Sélectionnez..." /></SelectTrigger>
+                                    <SelectContent>{departments.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}<SelectItem value="AUTRE">Autre...</SelectItem></SelectContent>
+                                </Select>
+                                {selectedDepartment === 'AUTRE' && <Input value={customDepartment} onChange={e => setCustomDepartment(e.target.value)} placeholder="Nom..." className="mt-2" />}
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label>Sous-préfecture</Label>
+                                <Select value={selectedSubPrefecture} onValueChange={v => { setSelectedSubPrefecture(v); setSelectedVillage(''); }} disabled={!selectedDepartment || selectedDepartment === 'AUTRE'}>
+                                    <SelectTrigger><SelectValue placeholder="Sélectionnez..." /></SelectTrigger>
+                                    <SelectContent>{subPrefectures.map(sp => <SelectItem key={sp} value={sp}>{sp}</SelectItem>)}<SelectItem value="AUTRE">Autre...</SelectItem></SelectContent>
+                                </Select>
+                                {selectedSubPrefecture === 'AUTRE' && <Input value={customSubPrefecture} onChange={e => setCustomSubPrefecture(e.target.value)} placeholder="Nom..." className="mt-2" />}
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label>Village/Commune</Label>
+                                <Select value={selectedVillage} onValueChange={setSelectedVillage} disabled={!selectedSubPrefecture || selectedSubPrefecture === 'AUTRE'}>
+                                    <SelectTrigger><SelectValue placeholder="Sélectionnez..." /></SelectTrigger>
+                                    <SelectContent>{villages.map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}<SelectItem value="AUTRE">Autre...</SelectItem></SelectContent>
+                                </Select>
+                                {selectedVillage === 'AUTRE' && <Input value={customVillage} onChange={e => setCustomVillage(e.target.value)} placeholder="Nom..." className="mt-2" />}
+                            </div>
+                        </div>
+
+                        <div className="p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl space-y-4">
+                            <div>
+                                <Label className="text-sm font-black uppercase text-slate-700">Géolocalisation SIG</Label>
+                                <p className="text-[10px] text-slate-500">Placez le curseur sur la carte pour définir les coordonnées précises.</p>
+                            </div>
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                <div className="lg:col-span-2 overflow-hidden rounded-xl border-2 border-white shadow-lg">
+                                    <LocationPicker 
+                                        onLocationSelectAction={(lat, lng) => { setLatitude(lat); setLongitude(lng); }}
+                                        initialLat={latitude !== '' ? latitude : undefined}
+                                        initialLng={longitude !== '' ? longitude : undefined}
+                                    />
+                                </div>
+                                <div className="flex flex-col gap-4 justify-center">
                                     <div className="space-y-2">
-                                        <Label htmlFor="latitude" className="text-[10px] font-black uppercase text-slate-400">Latitude</Label>
-                                        <Input 
-                                            id="latitude" 
-                                            type="number" 
-                                            step="any" 
-                                            value={latitude} 
-                                            onChange={(e) => setLatitude(e.target.value === '' ? '' : parseFloat(e.target.value))} 
-                                            placeholder="0.000000"
-                                            className="bg-white border-slate-200 focus-visible:ring-blue-500/20"
-                                        />
+                                        <Label className="text-[10px] font-black uppercase text-slate-400">Latitude</Label>
+                                        <Input type="number" step="any" value={latitude} onChange={(e) => setLatitude(e.target.value === '' ? '' : parseFloat(e.target.value))} placeholder="0.000000" className="font-mono bg-white" />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="longitude" className="text-[10px] font-black uppercase text-slate-400">Longitude</Label>
-                                        <Input 
-                                            id="longitude" 
-                                            type="number" 
-                                            step="any" 
-                                            value={longitude} 
-                                            onChange={(e) => setLongitude(e.target.value === '' ? '' : parseFloat(e.target.value))} 
-                                            placeholder="0.000000"
-                                            className="bg-white border-slate-200 focus-visible:ring-blue-500/20"
-                                        />
+                                        <Label className="text-[10px] font-black uppercase text-slate-400">Longitude</Label>
+                                        <Input type="number" step="any" value={longitude} onChange={(e) => setLongitude(e.target.value === '' ? '' : parseFloat(e.target.value))} placeholder="0.000000" className="font-mono bg-white" />
                                     </div>
                                 </div>
-                                <p className="text-[10px] text-slate-400 italic">
-                                    Les coordonnées sont automatiquement synchronisées avec le marqueur sur la carte.
-                                </p>
                             </div>
                         </div>
                     </div>
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-              <AccordionItem value="item-3">
-                <AccordionTrigger>Affiliation Culturelle</AccordionTrigger>
-                <AccordionContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
-                    <div><Label htmlFor="ethnicGroup">Groupe ethnique</Label><DebouncedInput id="ethnicGroup" value={ethnicGroup} onChange={(val) => setEthnicGroup(val as string)} /></div>
-                    <div><Label htmlFor="languages">Langue(s) parlée(s)</Label><DebouncedInput id="languages" value={languages} onChange={(val) => setLanguages(val as string)} placeholder="Séparées par une virgule" /></div>
-                    <div className="col-span-2"><Label htmlFor="bio">Biographie / Us et coutumes</Label><Textarea id="bio" value={bio} onChange={(e) => setBio(e.target.value)} rows={3} placeholder="Brève biographie, historique, us et coutumes..." /></div>
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-              <AccordionItem value="item-4">
-                <AccordionTrigger>Contact</AccordionTrigger>
-                <AccordionContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
-                    <div><Label htmlFor="phone">Téléphone Principal</Label><DebouncedInput id="phone" type="text" value={phone} onChange={(val) => setPhone(val as string)} placeholder="Ex: +225 0700000000" /></div>
-                    <div><Label htmlFor="contact">Contact Secondaire / Autre</Label><DebouncedInput id="contact" type="text" value={contact} onChange={(val) => setContact(val as string)} /></div>
-                    <div><Label htmlFor="email">Adresse email</Label><DebouncedInput id="email" type="email" value={email} onChange={(val) => setEmail(val as string)} /></div>
-                    <div className="col-span-2"><Label htmlFor="address">Adresse postale</Label><Input id="address" value={address} onChange={e => setAddress(e.target.value)} /></div>
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-              <AccordionItem value="item-5">
-                <AccordionTrigger>Informations Légales</AccordionTrigger>
-                <AccordionContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
-                    <div><Label htmlFor="CNRCTRegistrationNumber">N° d'enregistrement CNRCT</Label><Input id="CNRCTRegistrationNumber" value={CNRCTRegistrationNumber} onChange={e => setCNRCTRegistrationNumber(e.target.value)} /></div>
-                    <div className="col-span-2"><Label htmlFor="officialDocuments">Documents officiels</Label><Textarea id="officialDocuments" value={officialDocuments} onChange={(e) => setOfficialDocuments(e.target.value)} rows={2} placeholder="Listez les décrets, arrêtés..." /></div>
-                    <div><Label htmlFor="regencyStartDate">Début de Régence</Label><Input id="regencyStartDate" type="date" value={regencyStartDate} onChange={(e) => setRegencyStartDate(e.target.value)} /></div>
-                    <div><Label htmlFor="regencyEndDate">Fin de Régence / Décès</Label><Input id="regencyEndDate" type="date" value={regencyEndDate} onChange={(e) => setRegencyEndDate(e.target.value)} /></div>
-                    <div>
-                      <Label htmlFor="status">Statut Actuel</Label>
-                      <Select value={status} onValueChange={(v) => setStatus(v as Chief['status'])}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Sélectionnez..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="actif">En Exercice (Actif)</SelectItem>
-                          <SelectItem value="a_vie">Régence à Vie</SelectItem>
-                          <SelectItem value="archive">Ancien / Archivé</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-              <AccordionItem value="item-6">
-                <AccordionTrigger>Parcours & Carrière</AccordionTrigger>
-                <AccordionContent>
-                  <div className="space-y-4 pt-4">
-                    <div className="flex items-center justify-between">
-                      <Label className="text-[10px] font-black uppercase text-slate-400">ÉVÉNEMENTS MARQUANTS</Label>
-                      <Button 
-                        type="button" 
-                        variant="outline" 
-                        size="sm" 
-                        className="h-8 rounded-lg text-[10px] font-black uppercase hover:bg-blue-50 hover:text-blue-600 transition-colors"
-                        onClick={() => setCareer([...career, { id: crypto.randomUUID(), date: "", title: "", type: "Intronisation", description: "" }])}
-                      >
-                        <Plus className="mr-1.5 h-3 w-3" /> Ajouter un événement
-                      </Button>
-                    </div>
+                  )}
 
-                    <div className="space-y-3">
-                      {career.length === 0 && (
-                        <div className="py-8 text-center border-2 border-dashed border-slate-100 rounded-2xl text-slate-400 text-xs italic">
-                          Aucun événement ajouté à la timeline.
+                  {/* STEP 3: Culture & Contact */}
+                  {step === 3 && (
+                    <div className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2"><Label>Groupe ethnique</Label><DebouncedInput value={ethnicGroup} onChange={(v) => setEthnicGroup(v as string)} placeholder="Ex: Akan, Baoulé..." /></div>
+                            <div className="space-y-2"><Label>Langue(s) parlée(s)</Label><DebouncedInput value={languages} onChange={(v) => setLanguages(v as string)} placeholder="Séparées par une virgule" /></div>
+                            <div className="col-span-2 space-y-2"><Label>Us, Coutumes & Biographie</Label><Textarea value={bio} onChange={(e) => setBio(e.target.value)} rows={4} placeholder="Brève biographie, historique de la chefferie, us et coutumes..." className="resize-none" /></div>
                         </div>
-                      )}
-                      {career.map((event, index) => (
-                        <div key={event.id} className="relative group p-4 bg-slate-50/50 rounded-2xl border border-slate-200/60 hover:border-blue-200 transition-all duration-300">
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            className="absolute -top-2 -right-2 h-7 w-7 rounded-full bg-white border border-slate-200 text-slate-400 hover:text-red-500 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
-                            onClick={() => setCareer(career.filter(e => e.id !== event.id))}
-                          >
-                            <TrashIcon className="h-3.5 w-3.5" />
-                          </Button>
 
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="h-px bg-slate-100 my-4" />
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2"><Label>Téléphone Principal</Label><DebouncedInput type="tel" inputMode="tel" value={phone} onChange={(v) => setPhone(v as string)} placeholder="+225 0700000000" /></div>
+                            <div className="space-y-2"><Label>Contact Secondaire</Label><DebouncedInput type="tel" inputMode="tel" value={contact} onChange={(v) => setContact(v as string)} placeholder="Assistant, Secrétaire..." /></div>
+                            <div className="space-y-2"><Label>Adresse email</Label><DebouncedInput type="email" value={email} onChange={(v) => setEmail(v as string)} placeholder="email@domaine.ci" /></div>
+                            <div className="space-y-2"><Label>Adresse postale</Label><Input value={address} onChange={e => setAddress(e.target.value)} placeholder="Boîte postale ou description..." /></div>
+                        </div>
+                    </div>
+                  )}
+
+                  {/* STEP 4: Carrière & Légal */}
+                  {step === 4 && (
+                    <div className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-5 bg-slate-50 border border-slate-100 rounded-2xl">
+                            <div className="space-y-2"><Label>N° d'enregistrement CNRCT</Label><Input value={CNRCTRegistrationNumber} onChange={e => setCNRCTRegistrationNumber(e.target.value)} className="bg-white font-mono" placeholder="Ex: CNRCT-2024-001" /></div>
                             <div className="space-y-2">
-                              <Label className="text-[9px] font-black uppercase text-slate-400">Type d'événement</Label>
-                              <Select value={event.type} onValueChange={(v) => {
-                                const newCareer = [...career];
-                                newCareer[index].type = v as any;
-                                setCareer(newCareer);
-                              }}>
-                                <SelectTrigger className="h-9 bg-white border-slate-200 text-xs font-bold">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="Intronisation" className="text-xs">Intronisation</SelectItem>
-                                  <SelectItem value="Médaille" className="text-xs">Médaille / Décoration</SelectItem>
-                                  <SelectItem value="Médiation" className="text-xs">Médiation de Conflit</SelectItem>
-                                  <SelectItem value="Mission" className="text-xs">Mission Officielle</SelectItem>
-                                  <SelectItem value="Autre" className="text-xs">Autre</SelectItem>
-                                </SelectContent>
-                              </Select>
+                                <Label>Statut Actuel</Label>
+                                <Select value={status} onValueChange={(v) => setStatus(v as Chief['status'])}>
+                                    <SelectTrigger className="bg-white"><SelectValue placeholder="Sélectionnez..." /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="actif">En Exercice (Actif)</SelectItem>
+                                        <SelectItem value="a_vie">Régence à Vie</SelectItem>
+                                        <SelectItem value="archive">Archivé / Décédé</SelectItem>
+                                    </SelectContent>
+                                </Select>
                             </div>
-                            <div className="space-y-2">
-                              <Label className="text-[9px] font-black uppercase text-slate-400">Date / Période</Label>
-                              <Input 
-                                className="h-9 bg-white border-slate-200 text-xs font-bold" 
-                                placeholder="ex: 12 Jan 2024" 
-                                value={event.date}
-                                onChange={(e) => {
-                                  const newCareer = [...career];
-                                  newCareer[index].date = e.target.value;
-                                  setCareer(newCareer);
-                                }}
-                              />
-                            </div>
-                            <div className="col-span-2 space-y-2">
-                              <Label className="text-[9px] font-black uppercase text-slate-400">Titre de l'événement</Label>
-                              <Input 
-                                className="h-9 bg-white border-slate-200 text-xs font-bold" 
-                                placeholder="ex: Médiation à Agboville"
-                                value={event.title}
-                                onChange={(e) => {
-                                  const newCareer = [...career];
-                                  newCareer[index].title = e.target.value;
-                                  setCareer(newCareer);
-                                }}
-                              />
-                            </div>
-                            <div className="col-span-2 space-y-2">
-                              <Label className="text-[9px] font-black uppercase text-slate-400">Description détaillée</Label>
-                              <Textarea 
-                                className="bg-white border-slate-200 text-xs font-medium min-h-[60px]" 
-                                placeholder="Précisez le contexte et l'impact..."
-                                value={event.description}
-                                onChange={(e) => {
-                                  const newCareer = [...career];
-                                  newCareer[index].description = e.target.value;
-                                  setCareer(newCareer);
-                                }}
-                              />
-                            </div>
-                          </div>
+                            <div className="space-y-2"><Label>Mode de désignation</Label><Select value={designationMode} onValueChange={(v: DesignationMode) => setDesignationMode(v)}><SelectTrigger className="bg-white"><SelectValue placeholder="Sélectionnez..." /></SelectTrigger><SelectContent><SelectItem value="Héritage">Héritage</SelectItem><SelectItem value="Élection">Élection</SelectItem><SelectItem value="Nomination coutumière">Nomination coutumière</SelectItem><SelectItem value="Autre">Autre</SelectItem></SelectContent></Select></div>
+                            <div className="space-y-2"><Label>Date de désignation</Label><Input type="date" value={designationDate} onChange={e => setDesignationDate(e.target.value)} className="bg-white" /></div>
+                            <div className="col-span-2 space-y-2"><Label>Documents officiels (Décrets, Arrêtés)</Label><Textarea value={officialDocuments} onChange={(e) => setOfficialDocuments(e.target.value)} rows={2} className="bg-white" placeholder="Références des arrêtés de nomination..." /></div>
                         </div>
-                      ))}
-                    </div>
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
-            {error && <p className="text-sm text-destructive text-center py-2">{error}</p>}
-          </ScrollArea>
 
-          <DialogFooter>
-            <DialogClose asChild><Button type="button" variant="outline" onClick={handleClose}>Annuler</Button></DialogClose>
-            <Button type="submit" disabled={isSubmitting}>{isSubmitting ? "Enregistrement..." : "Enregistrer"}</Button>
-          </DialogFooter>
-        </form>
+                        <div>
+                            <div className="flex items-center justify-between mb-4">
+                                <Label className="text-sm font-black uppercase text-slate-700">Chronologie de Carrière</Label>
+                                <Button type="button" variant="outline" size="sm" onClick={() => setCareer([...career, { id: crypto.randomUUID(), date: "", title: "", type: "Intronisation", description: "" }])} className="shadow-sm">
+                                    <Plus className="mr-2 h-4 w-4" /> Ajouter Événement
+                                </Button>
+                            </div>
+                            
+                            {career.length === 0 ? (
+                                <div className="p-8 text-center border-2 border-dashed border-slate-200 rounded-2xl text-slate-400 text-sm font-medium">Aucun événement ajouté au dossier.</div>
+                            ) : (
+                                <div className="space-y-4">
+                                    {career.map((event, index) => (
+                                        <div key={event.id} className="relative p-4 bg-white border border-slate-200 rounded-xl shadow-sm group">
+                                            <Button type="button" variant="ghost" size="icon" className="absolute -top-3 -right-3 h-8 w-8 rounded-full bg-red-50 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity border border-red-100" onClick={() => setCareer(career.filter(e => e.id !== event.id))}><TrashIcon className="h-4 w-4" /></Button>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                                <div className="space-y-1">
+                                                    <Label className="text-[10px] uppercase font-bold text-slate-400">Type</Label>
+                                                    <Select value={event.type} onValueChange={(v) => { const newCareer = [...career]; newCareer[index].type = v as any; setCareer(newCareer); }}>
+                                                        <SelectTrigger className="h-9 text-xs"><SelectValue /></SelectTrigger>
+                                                        <SelectContent><SelectItem value="Intronisation">Intronisation</SelectItem><SelectItem value="Médaille">Décoration</SelectItem><SelectItem value="Médiation">Médiation</SelectItem><SelectItem value="Mission">Mission</SelectItem><SelectItem value="Autre">Autre</SelectItem></SelectContent>
+                                                    </Select>
+                                                </div>
+                                                <div className="space-y-1"><Label className="text-[10px] uppercase font-bold text-slate-400">Date/Période</Label><Input className="h-9 text-xs" value={event.date} onChange={(e) => { const newCareer = [...career]; newCareer[index].date = e.target.value; setCareer(newCareer); }} /></div>
+                                                <div className="col-span-2 space-y-1"><Label className="text-[10px] uppercase font-bold text-slate-400">Titre</Label><Input className="h-9 text-xs" value={event.title} onChange={(e) => { const newCareer = [...career]; newCareer[index].title = e.target.value; setCareer(newCareer); }} /></div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                  )}
+
+                  {error && <p className="text-sm font-black text-red-500 bg-red-50 p-3 rounded-lg border border-red-100 mt-4">{error}</p>}
+                </motion.div>
+              </AnimatePresence>
+            </ScrollArea>
+
+            {/* Footer Navigation */}
+            <div className="p-4 border-t border-slate-100 bg-slate-50/80 backdrop-blur-md flex items-center justify-between z-10 shrink-0">
+                <Button type="button" variant="ghost" onClick={step === 1 ? handleClose : prevStep} className="font-bold text-slate-600">
+                    {step === 1 ? "Annuler" : <><ChevronLeft className="mr-2 h-4 w-4" /> Précédent</>}
+                </Button>
+                
+                {step < STEPS.length ? (
+                    <Button type="button" onClick={nextStep} className="bg-slate-900 hover:bg-slate-800 font-bold px-8 shadow-xl">
+                        Suivant <ChevronRight className="ml-2 h-4 w-4" />
+                    </Button>
+                ) : (
+                    <Button type="button" onClick={handleSubmit} disabled={isSubmitting} className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-8 shadow-xl shadow-blue-500/20">
+                        {isSubmitting ? "Création du Dossier..." : "Enregistrer le Chef"} <ShieldCheck className="ml-2 h-4 w-4" />
+                    </Button>
+                )}
+            </div>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   );

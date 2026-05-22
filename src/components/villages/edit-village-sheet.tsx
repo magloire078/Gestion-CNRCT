@@ -42,12 +42,7 @@ import { IVORIAN_REGIONS } from "@/constants/regions";
 import { divisions } from "@/lib/ivory-coast-divisions";
 import { calculateDevelopmentScore } from "@/services/village-service";
 import { Progress } from "@/components/ui/progress";
-import { 
-    Accordion,
-    AccordionContent,
-    AccordionItem,
-    AccordionTrigger,
-} from "@/components/ui/accordion";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { LocationPicker } from "@/components/common/location-picker";
@@ -274,8 +269,8 @@ export function EditVillageSheet({ village, open, onOpenChangeAction }: EditVill
 
     return (
         <Sheet open={open} onOpenChange={onOpenChangeAction}>
-            <SheetContent className="sm:max-w-[700px] p-0 border-none shadow-2xl">
-                <div className="flex flex-col h-full bg-slate-50/30">
+            <SheetContent className="sm:max-w-[700px] bg-white border-l-0 sm:border-l p-0 flex flex-col h-[100dvh] shadow-2xl">
+                <div className="flex flex-col h-full">
                     <div className="p-8 pb-4 bg-white border-b border-slate-100">
                         <div className="flex justify-between items-start mb-2">
                             <div>
@@ -293,21 +288,23 @@ export function EditVillageSheet({ village, open, onOpenChangeAction }: EditVill
                     </div>
 
                     <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit, onError)} className="flex-grow flex flex-col min-h-0">
-                            <ScrollArea className="flex-grow px-8">
-                                <Accordion type="multiple" defaultValue={["admin"]} className="py-6 space-y-4">
+                        <form onSubmit={form.handleSubmit(onSubmit, onError)} className="flex flex-col flex-1 overflow-hidden">
+                            <Tabs defaultValue="admin" className="w-full h-full flex flex-col">
+                                <div className="border-b border-slate-100 shrink-0 bg-white">
+                                    <TabsList className="w-full flex overflow-x-auto no-scrollbar justify-start bg-transparent p-0 h-auto rounded-none">
+                                        <TabsTrigger value="admin" className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:text-blue-700 data-[state=active]:bg-transparent data-[state=active]:shadow-none px-5 py-3.5 font-bold whitespace-nowrap text-slate-500 transition-colors">Identité</TabsTrigger>
+                                        <TabsTrigger value="geo" className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:text-blue-700 data-[state=active]:bg-transparent data-[state=active]:shadow-none px-5 py-3.5 font-bold whitespace-nowrap text-slate-500 transition-colors">SIG & Géo</TabsTrigger>
+                                        <TabsTrigger value="demography" className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:text-blue-700 data-[state=active]:bg-transparent data-[state=active]:shadow-none px-5 py-3.5 font-bold whitespace-nowrap text-slate-500 transition-colors">Démographie</TabsTrigger>
+                                        <TabsTrigger value="history" className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:text-blue-700 data-[state=active]:bg-transparent data-[state=active]:shadow-none px-5 py-3.5 font-bold whitespace-nowrap text-slate-500 transition-colors">Histoire</TabsTrigger>
+                                        <TabsTrigger value="economy" className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:text-blue-700 data-[state=active]:bg-transparent data-[state=active]:shadow-none px-5 py-3.5 font-bold whitespace-nowrap text-slate-500 transition-colors">Économie</TabsTrigger>
+                                        <TabsTrigger value="infra" className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:text-blue-700 data-[state=active]:bg-transparent data-[state=active]:shadow-none px-5 py-3.5 font-bold whitespace-nowrap text-slate-500 transition-colors">Infra.</TabsTrigger>
+                                        <TabsTrigger value="chief" className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:text-blue-700 data-[state=active]:bg-transparent data-[state=active]:shadow-none px-5 py-3.5 font-bold whitespace-nowrap text-slate-500 transition-colors">Autorité</TabsTrigger>
+                                    </TabsList>
+                                </div>
+                                <ScrollArea className="flex-1 px-8 pb-24">
                                     {/* Section 1: Administration */}
-                                    <AccordionItem value="admin" className="border-none bg-white rounded-3xl px-6 shadow-sm border border-slate-100/50">
-                                        <AccordionTrigger className="hover:no-underline py-6">
-                                            <div className="flex items-center gap-4">
-                                                <div className="p-2.5 bg-blue-50 rounded-2xl text-blue-600"><Building2 className="h-5 w-5" /></div>
-                                                <div className="text-left">
-                                                    <div className="font-black text-slate-900 text-sm uppercase tracking-tight">Identité Administrative</div>
-                                                    <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Localisation & Codes</div>
-                                                </div>
-                                            </div>
-                                        </AccordionTrigger>
-                                        <AccordionContent className="pb-8 space-y-5">
+                                    <TabsContent value="admin" className="mt-4 outline-none">
+                                        <div className="pt-4 space-y-4 h-full">
                                             <FormField
                                                 control={form.control}
                                                 name="name"
@@ -376,21 +373,13 @@ export function EditVillageSheet({ village, open, onOpenChangeAction }: EditVill
                                                     )}
                                                 />
                                             </div>
-                                        </AccordionContent>
-                                    </AccordionItem>
+                                        </div>
+                                    </TabsContent>
 
                                     {/* Section 2: Géographie & SIG */}
-                                    <AccordionItem value="geo" className="border-none bg-white rounded-3xl px-6 shadow-sm border border-slate-100/50">
-                                        <AccordionTrigger className="hover:no-underline py-6">
-                                            <div className="flex items-center gap-4">
-                                                <div className="p-2.5 bg-amber-50 rounded-2xl text-amber-600"><MapIcon className="h-5 w-5" /></div>
-                                                <div className="text-left">
-                                                    <div className="font-black text-slate-900 text-sm uppercase tracking-tight">Géographie & SIG</div>
-                                                    <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Coordonnées & Accès</div>
-                                                </div>
-                                            </div>
-                                        </AccordionTrigger>
-                                        <AccordionContent className="pb-8 space-y-6">
+                                    <TabsContent value="geo" className="mt-0 h-full flex-grow">
+                                        
+                                        <div className="pt-4 space-y-4 h-full">
                                             <div className="rounded-[2rem] overflow-hidden border border-slate-100 shadow-inner bg-slate-50">
                                                 <LocationPicker 
                                                     onLocationSelectAction={(lat, lng) => {
@@ -433,32 +422,24 @@ export function EditVillageSheet({ village, open, onOpenChangeAction }: EditVill
                                                     <FormControl><Textarea placeholder="Ex: Bitumée en bon état, Piste carrossable..." className="min-h-[80px] bg-slate-50/50 rounded-xl resize-none" {...field} value={field.value || ""} /></FormControl>
                                                 </FormItem>
                                             )} />
-                                        </AccordionContent>
-                                    </AccordionItem>
+                                        </div>
+                                    </TabsContent>
 
                                     {/* Section 3: Démographie & Peuplement */}
-                                    <AccordionItem value="demography" className="border-none bg-white rounded-3xl px-6 shadow-sm border border-slate-100/50">
-                                        <AccordionTrigger className="hover:no-underline py-6">
-                                            <div className="flex items-center gap-4">
-                                                <div className="p-2.5 bg-emerald-50 rounded-2xl text-emerald-600"><Users className="h-5 w-5" /></div>
-                                                <div className="text-left">
-                                                    <div className="font-black text-slate-900 text-sm uppercase tracking-tight">Démographie & Peuplement</div>
-                                                    <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Population & Ethnies</div>
-                                                </div>
-                                            </div>
-                                        </AccordionTrigger>
-                                        <AccordionContent className="pb-8 space-y-6">
+                                    <TabsContent value="demography" className="mt-0 h-full flex-grow">
+                                        
+                                        <div className="pt-4 space-y-4 h-full">
                                             <div className="grid grid-cols-2 gap-4">
                                                 <FormField control={form.control} name="population" render={({ field }) => (
                                                     <FormItem>
                                                         <FormLabel className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Population Totale</FormLabel>
-                                                        <FormControl><Input type="number" placeholder="Habitants" className="h-12 bg-slate-50/50 rounded-xl" {...field} value={field.value || ""} /></FormControl>
+                                                        <FormControl><Input type="number" inputMode="numeric" placeholder="Habitants" className="h-12 bg-slate-50/50 rounded-xl" {...field} value={field.value || ""} /></FormControl>
                                                     </FormItem>
                                                 )} />
                                                 <FormField control={form.control} name="populationYear" render={({ field }) => (
                                                     <FormItem>
                                                         <FormLabel className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Année Recens.</FormLabel>
-                                                        <FormControl><Input type="number" placeholder="Ex: 2024" className="h-12 bg-slate-50/50 rounded-xl" {...field} value={field.value || ""} /></FormControl>
+                                                        <FormControl><Input type="number" inputMode="numeric" placeholder="Ex: 2024" className="h-12 bg-slate-50/50 rounded-xl" {...field} value={field.value || ""} /></FormControl>
                                                     </FormItem>
                                                 )} />
                                             </div>
@@ -474,21 +455,13 @@ export function EditVillageSheet({ village, open, onOpenChangeAction }: EditVill
                                                     <FormControl><Input placeholder="Ex: Français, Baoulé..." className="h-12 bg-slate-50/50 rounded-xl" {...field} value={field.value || ""} /></FormControl>
                                                 </FormItem>
                                             )} />
-                                        </AccordionContent>
-                                    </AccordionItem>
+                                        </div>
+                                    </TabsContent>
 
                                     {/* Section 4: Histoire & Patrimoine */}
-                                    <AccordionItem value="history" className="border-none bg-white rounded-3xl px-6 shadow-sm border border-slate-100/50">
-                                        <AccordionTrigger className="hover:no-underline py-6">
-                                            <div className="flex items-center gap-4">
-                                                <div className="p-2.5 bg-purple-50 rounded-2xl text-purple-600"><Landmark className="h-5 w-5" /></div>
-                                                <div className="text-left">
-                                                    <div className="font-black text-slate-900 text-sm uppercase tracking-tight">Histoire & Patrimoine</div>
-                                                    <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Origines & Coutumes</div>
-                                                </div>
-                                            </div>
-                                        </AccordionTrigger>
-                                        <AccordionContent className="pb-8 space-y-6">
+                                    <TabsContent value="history" className="mt-0 h-full flex-grow">
+                                        
+                                        <div className="pt-4 space-y-4 h-full">
                                             <FormField control={form.control} name="history" render={({ field }) => (
                                                 <FormItem>
                                                     <FormLabel className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Bref aperçu historique</FormLabel>
@@ -501,21 +474,13 @@ export function EditVillageSheet({ village, open, onOpenChangeAction }: EditVill
                                                     <FormControl><Textarea placeholder="Interdits, lieux sacrés..." className="min-h-[100px] bg-slate-50/50 rounded-xl resize-none" {...field} value={field.value || ""} /></FormControl>
                                                 </FormItem>
                                             )} />
-                                        </AccordionContent>
-                                    </AccordionItem>
+                                        </div>
+                                    </TabsContent>
 
                                     {/* Section 5: Économie */}
-                                    <AccordionItem value="economy" className="border-none bg-white rounded-3xl px-6 shadow-sm border border-slate-100/50">
-                                        <AccordionTrigger className="hover:no-underline py-6">
-                                            <div className="flex items-center gap-4">
-                                                <div className="p-2.5 bg-rose-50 rounded-2xl text-rose-600"><Coins className="h-5 w-5" /></div>
-                                                <div className="text-left">
-                                                    <div className="font-black text-slate-900 text-sm uppercase tracking-tight">Économie Locale</div>
-                                                    <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Activités & Cultures</div>
-                                                </div>
-                                            </div>
-                                        </AccordionTrigger>
-                                        <AccordionContent className="pb-8 space-y-6">
+                                    <TabsContent value="economy" className="mt-0 h-full flex-grow">
+                                        
+                                        <div className="pt-4 space-y-4 h-full">
                                             <FormField control={form.control} name="mainActivities" render={({ field }) => (
                                                 <FormItem>
                                                     <FormLabel className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Activités principales</FormLabel>
@@ -528,21 +493,13 @@ export function EditVillageSheet({ village, open, onOpenChangeAction }: EditVill
                                                     <FormControl><Input placeholder="Ex: Cacao, Café, Hévéa, Igname..." className="h-12 bg-slate-50/50 rounded-xl" {...field} value={field.value || ""} /></FormControl>
                                                 </FormItem>
                                             )} />
-                                        </AccordionContent>
-                                    </AccordionItem>
+                                        </div>
+                                    </TabsContent>
 
                                     {/* Section 6: Infrastructures */}
-                                    <AccordionItem value="infra" className="border-none bg-white rounded-3xl px-6 shadow-sm border border-slate-100/50">
-                                        <AccordionTrigger className="hover:no-underline py-6">
-                                            <div className="flex items-center gap-4">
-                                                <div className="p-2.5 bg-indigo-50 rounded-2xl text-indigo-600"><Zap className="h-5 w-5" /></div>
-                                                <div className="text-left">
-                                                    <div className="font-black text-slate-900 text-sm uppercase tracking-tight">Infrastructures</div>
-                                                    <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Équipements & IDL</div>
-                                                </div>
-                                            </div>
-                                        </AccordionTrigger>
-                                        <AccordionContent className="pb-8 space-y-6">
+                                    <TabsContent value="infra" className="mt-0 h-full flex-grow">
+                                        
+                                        <div className="pt-4 space-y-4 h-full">
                                             <div className="grid grid-cols-1 gap-4">
                                                 {[
                                                     { id: "hasElectricity", label: "Électrification (CIE)", icon: Zap, color: "text-amber-500" },
@@ -575,10 +532,10 @@ export function EditVillageSheet({ village, open, onOpenChangeAction }: EditVill
                                                     <FormControl><Textarea placeholder="Besoin de réhabilitation, extension..." className="min-h-[80px] bg-slate-50/50 rounded-xl resize-none" {...field} value={field.value || ""} /></FormControl>
                                                 </FormItem>
                                             )} />
-                                        </AccordionContent>
-                                    </AccordionItem>
-                                </Accordion>
-                            </ScrollArea>
+                                        </div>
+                                    </TabsContent>
+                                </ScrollArea>
+                            </Tabs>
 
                             <div className="p-8 bg-white border-t border-slate-100 flex gap-4">
                                 <Button variant="outline" type="button" onClick={() => onOpenChangeAction(false)} className="flex-1 h-14 rounded-2xl font-black uppercase tracking-widest border-slate-200 text-slate-500 hover:bg-slate-50">

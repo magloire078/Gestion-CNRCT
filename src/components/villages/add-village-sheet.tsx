@@ -34,7 +34,7 @@ import {
     Building2, Droplets, Zap, School, Activity,
     Mountain, Landmark, Coins, Heart, ShoppingBag,
     Church, Info, Calendar, History,
-    Globe, FileText, Moon as Mosque
+    Globe, FileText, Moon as Mosque, Save
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
@@ -43,12 +43,7 @@ import { IVORIAN_REGIONS } from "@/constants/regions";
 import { divisions } from "@/lib/ivory-coast-divisions";
 import { calculateDevelopmentScore } from "@/services/village-service";
 import { Progress } from "@/components/ui/progress";
-import { 
-    Accordion,
-    AccordionContent,
-    AccordionItem,
-    AccordionTrigger,
-} from "@/components/ui/accordion";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { LocationPicker } from "@/components/common/location-picker";
@@ -225,20 +220,20 @@ export function AddVillageSheet() {
     return (
         <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
-                <Button variant="outline" className="rounded-xl h-14 px-8 font-bold border-slate-200 hover:bg-slate-50">
+                <Button variant="outline" className="rounded-xl h-14 px-8 font-bold border-slate-200 hover:bg-slate-50 w-full sm:w-auto">
                     <Plus className="mr-2 h-5 w-5" />
                     Nouveau Village
                 </Button>
             </SheetTrigger>
-            <SheetContent className="sm:max-w-[700px]">
-                <SheetHeader className="mb-6">
-                    <SheetTitle className="text-2xl font-black">Ajouter un village ou localité</SheetTitle>
-                    <SheetDescription>
-                        Remplissez l&apos;organisation administrative, les coordonnées SIG et les infrastructures pour l&apos;Observatoire Territorial.
+            <SheetContent className="sm:max-w-[700px] bg-white border-l-0 sm:border-l p-0 flex flex-col h-[100dvh]">
+                <SheetHeader className="px-6 pt-6 pb-2 border-b border-slate-100 shrink-0">
+                    <SheetTitle className="text-2xl font-black text-slate-900">Ajouter une localité</SheetTitle>
+                    <SheetDescription className="text-slate-500">
+                        Remplissez les informations pour l&apos;Observatoire Territorial.
                     </SheetDescription>
-                    <div className="flex items-center gap-3 bg-blue-50/50 p-4 rounded-2xl border border-blue-100/50 mb-6 group">
-                        <div className="bg-blue-600 p-2 rounded-xl text-white shadow-lg shadow-blue-200">
-                            <Activity className="h-5 w-5" />
+                    <div className="flex items-center gap-3 bg-blue-50/50 p-3 rounded-2xl border border-blue-100/50 mt-4">
+                        <div className="bg-blue-600 p-2 rounded-xl text-white shadow-md shadow-blue-200">
+                            <Activity className="h-4 w-4" />
                         </div>
                         <div className="flex-1">
                             <div className="flex justify-between items-center mb-1.5">
@@ -256,18 +251,26 @@ export function AddVillageSheet() {
                     </div>
                 </SheetHeader>
                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit, onError)} className="flex flex-col h-full">
-                        <ScrollArea className="flex-grow h-[calc(100vh-220px)] -mx-6 px-6">
-                            <Accordion type="multiple" defaultValue={["admin"]} className="w-full h-full pb-8">
+                    <form onSubmit={form.handleSubmit(onSubmit, onError)} className="flex flex-col flex-1 overflow-hidden">
+                        <Tabs defaultValue="admin" className="w-full h-full flex flex-col">
+                            <div className="border-b border-slate-100 shrink-0 bg-white">
+                                <TabsList className="w-full flex overflow-x-auto no-scrollbar justify-start bg-transparent p-0 h-auto rounded-none">
+                                    <TabsTrigger value="admin" className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:text-blue-700 data-[state=active]:bg-transparent data-[state=active]:shadow-none px-5 py-3.5 font-bold whitespace-nowrap text-slate-500 transition-colors">Identité</TabsTrigger>
+                                    <TabsTrigger value="sig" className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:text-blue-700 data-[state=active]:bg-transparent data-[state=active]:shadow-none px-5 py-3.5 font-bold whitespace-nowrap text-slate-500 transition-colors">SIG & Géo</TabsTrigger>
+                                    <TabsTrigger value="geo" className="hidden">SIG & Géo</TabsTrigger>
+                                    <TabsTrigger value="demography" className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:text-blue-700 data-[state=active]:bg-transparent data-[state=active]:shadow-none px-5 py-3.5 font-bold whitespace-nowrap text-slate-500 transition-colors">Démographie</TabsTrigger>
+                                    <TabsTrigger value="history" className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:text-blue-700 data-[state=active]:bg-transparent data-[state=active]:shadow-none px-5 py-3.5 font-bold whitespace-nowrap text-slate-500 transition-colors">Histoire</TabsTrigger>
+                                    <TabsTrigger value="economy" className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:text-blue-700 data-[state=active]:bg-transparent data-[state=active]:shadow-none px-5 py-3.5 font-bold whitespace-nowrap text-slate-500 transition-colors">Économie</TabsTrigger>
+                                    <TabsTrigger value="infrastructures" className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:text-blue-700 data-[state=active]:bg-transparent data-[state=active]:shadow-none px-5 py-3.5 font-bold whitespace-nowrap text-slate-500 transition-colors">Infra.</TabsTrigger>
+                                    <TabsTrigger value="chief" className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:text-blue-700 data-[state=active]:bg-transparent data-[state=active]:shadow-none px-5 py-3.5 font-bold whitespace-nowrap text-slate-500 transition-colors">Autorité</TabsTrigger>
+                                </TabsList>
+                            </div>
+                            
+                            <ScrollArea className="flex-1 px-6 pb-24">
                                 {/* Administrative Section */}
-                                <AccordionItem value="admin" className="border-slate-100">
-                                    <AccordionTrigger className="hover:no-underline py-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="p-2 bg-blue-50 rounded-lg"><Building2 className="h-5 w-5 text-blue-600" /></div>
-                                            <span className="font-bold text-slate-900">Identité Administrative</span>
-                                        </div>
-                                    </AccordionTrigger>
-                                    <AccordionContent className="pt-4 space-y-4">
+                                <TabsContent value="admin" className="mt-4 outline-none">
+                                    
+                                    <div className="pt-4 space-y-4 h-full">
                                         <FormField
                                             control={form.control}
                                             name="name"
@@ -357,18 +360,13 @@ export function AddVillageSheet() {
                                                 )}
                                             />
                                         </div>
-                                    </AccordionContent>
-                                </AccordionItem>
+                                    </div>
+                                </TabsContent>
 
                                 {/* SIG & Geographic Section */}
-                                <AccordionItem value="sig" className="border-slate-100">
-                                    <AccordionTrigger className="hover:no-underline py-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="p-2 bg-amber-50 rounded-lg"><MapPin className="h-5 w-5 text-amber-600" /></div>
-                                            <span className="font-bold text-slate-900">Position SIG & Carte</span>
-                                        </div>
-                                    </AccordionTrigger>
-                                    <AccordionContent className="pt-4 space-y-4">
+                                <TabsContent value="sig" className="mt-0 h-full flex-grow">
+                                    
+                                    <div className="pt-4 space-y-4 h-full">
                                         <div className="flex flex-col gap-4">
                                             <LocationPicker 
                                                 onLocationSelectAction={(lat, lng) => {
@@ -409,7 +407,7 @@ export function AddVillageSheet() {
                                                     render={({ field }) => (
                                                         <FormItem>
                                                             <FormLabel className="font-bold">Altitude (m)</FormLabel>
-                                                            <FormControl><Input type="number" placeholder="Ex: 250" className="h-11 rounded-lg" {...field} /></FormControl>
+                                                            <FormControl><Input type="number" inputMode="numeric" placeholder="Ex: 250" className="h-11 rounded-lg" {...field} /></FormControl>
                                                             <FormMessage />
                                                         </FormItem>
                                                     )}
@@ -442,7 +440,7 @@ export function AddVillageSheet() {
                                                     render={({ field }) => (
                                                         <FormItem>
                                                             <FormLabel className="font-bold">Dist. Capitale (km)</FormLabel>
-                                                            <FormControl><Input type="number" placeholder="Ex: 240" className="h-11 rounded-lg" {...field} /></FormControl>
+                                                            <FormControl><Input type="number" inputMode="numeric" placeholder="Ex: 240" className="h-11 rounded-lg" {...field} /></FormControl>
                                                             <FormMessage />
                                                         </FormItem>
                                                     )}
@@ -453,25 +451,20 @@ export function AddVillageSheet() {
                                                     render={({ field }) => (
                                                         <FormItem>
                                                             <FormLabel className="font-bold">Dist. Chef-Lieu (km)</FormLabel>
-                                                            <FormControl><Input type="number" placeholder="Ex: 15" className="h-11 rounded-lg" {...field} /></FormControl>
+                                                            <FormControl><Input type="number" inputMode="numeric" placeholder="Ex: 15" className="h-11 rounded-lg" {...field} /></FormControl>
                                                             <FormMessage />
                                                         </FormItem>
                                                     )}
                                                 />
                                             </div>
                                         </div>
-                                    </AccordionContent>
-                                </AccordionItem>
+                                    </div>
+                                </TabsContent>
 
                                 {/* Demography Section */}
-                                <AccordionItem value="demography" className="border-slate-100">
-                                    <AccordionTrigger className="hover:no-underline py-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="p-2 bg-emerald-50 rounded-lg"><Users className="h-5 w-5 text-emerald-600" /></div>
-                                            <span className="font-bold text-slate-900">Démographie & Peuplement</span>
-                                        </div>
-                                    </AccordionTrigger>
-                                    <AccordionContent className="pt-4 space-y-4">
+                                <TabsContent value="demography" className="mt-0 h-full flex-grow">
+                                    
+                                    <div className="pt-4 space-y-4 h-full">
                                         <div className="grid grid-cols-2 gap-4">
                                             <FormField
                                                 control={form.control}
@@ -479,7 +472,7 @@ export function AddVillageSheet() {
                                                 render={({ field }) => (
                                                     <FormItem>
                                                         <FormLabel className="font-bold">Nombre d'habitants</FormLabel>
-                                                        <FormControl><Input type="number" placeholder="Ex: 5000" className="h-11 rounded-lg" {...field} /></FormControl>
+                                                        <FormControl><Input type="number" inputMode="numeric" placeholder="Ex: 5000" className="h-11 rounded-lg" {...field} /></FormControl>
                                                         <FormMessage />
                                                     </FormItem>
                                                 )}
@@ -490,7 +483,7 @@ export function AddVillageSheet() {
                                                 render={({ field }) => (
                                                     <FormItem>
                                                         <FormLabel className="font-bold">Année Recensement</FormLabel>
-                                                        <FormControl><Input type="number" placeholder="Ex: 2024" className="h-11 rounded-lg" {...field} /></FormControl>
+                                                        <FormControl><Input type="number" inputMode="numeric" placeholder="Ex: 2024" className="h-11 rounded-lg" {...field} /></FormControl>
                                                         <FormMessage />
                                                     </FormItem>
                                                 )}
@@ -502,7 +495,7 @@ export function AddVillageSheet() {
                                             render={({ field }) => (
                                                 <FormItem>
                                                     <FormLabel className="font-bold">Nombre de Ménages (Estimé)</FormLabel>
-                                                    <FormControl><Input type="number" placeholder="Ex: 850" className="h-11 rounded-lg" {...field} /></FormControl>
+                                                    <FormControl><Input type="number" inputMode="numeric" placeholder="Ex: 850" className="h-11 rounded-lg" {...field} /></FormControl>
                                                     <FormMessage />
                                                 </FormItem>
                                             )}
@@ -531,18 +524,13 @@ export function AddVillageSheet() {
                                                 )}
                                             />
                                         </div>
-                                    </AccordionContent>
-                                </AccordionItem>
+                                    </div>
+                                </TabsContent>
 
                                 {/* History & Culture Section */}
-                                <AccordionItem value="history" className="border-slate-100">
-                                    <AccordionTrigger className="hover:no-underline py-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="p-2 bg-amber-50 rounded-lg"><History className="h-5 w-5 text-amber-600" /></div>
-                                            <span className="font-bold text-slate-900">Mémoire & Patrimoine Culturel</span>
-                                        </div>
-                                    </AccordionTrigger>
-                                    <AccordionContent className="pt-4 space-y-4">
+                                <TabsContent value="history" className="mt-0 h-full flex-grow">
+                                    
+                                    <div className="pt-4 space-y-4 h-full">
                                         <FormField
                                             control={form.control}
                                             name="history"
@@ -589,18 +577,13 @@ export function AddVillageSheet() {
                                                 )}
                                             />
                                         </div>
-                                    </AccordionContent>
-                                </AccordionItem>
+                                    </div>
+                                </TabsContent>
 
                                 {/* Economy Section */}
-                                <AccordionItem value="economy" className="border-slate-100">
-                                    <AccordionTrigger className="hover:no-underline py-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="p-2 bg-blue-50 rounded-lg"><Coins className="h-5 w-5 text-blue-600" /></div>
-                                            <span className="font-bold text-slate-900">Économie & Ressources</span>
-                                        </div>
-                                    </AccordionTrigger>
-                                    <AccordionContent className="pt-4 space-y-4">
+                                <TabsContent value="economy" className="mt-0 h-full flex-grow">
+                                    
+                                    <div className="pt-4 space-y-4 h-full">
                                         <FormField
                                             control={form.control}
                                             name="mainActivities"
@@ -634,18 +617,13 @@ export function AddVillageSheet() {
                                                 </FormItem>
                                             )}
                                         />
-                                    </AccordionContent>
-                                </AccordionItem>
+                                    </div>
+                                </TabsContent>
 
                                 {/* Infrastructures Section */}
-                                <AccordionItem value="infrastructures" className="border-slate-100">
-                                    <AccordionTrigger className="hover:no-underline py-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="p-2 bg-indigo-50 rounded-lg"><Zap className="h-5 w-5 text-indigo-600" /></div>
-                                            <span className="font-bold text-slate-900">Infrastructures & Équipements</span>
-                                        </div>
-                                    </AccordionTrigger>
-                                    <AccordionContent className="pt-4 space-y-6">
+                                <TabsContent value="infrastructures" className="mt-0 h-full flex-grow">
+                                    
+                                    <div className="pt-4 space-y-4 h-full">
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-slate-50/50 rounded-xl border border-slate-100">
                                             <FormField
                                                 control={form.control}
@@ -748,18 +726,13 @@ export function AddVillageSheet() {
                                                 </FormItem>
                                             )}
                                         />
-                                    </AccordionContent>
-                                </AccordionItem>
+                                    </div>
+                                </TabsContent>
 
                                 {/* Chefferie Section */}
-                                <AccordionItem value="chief" className="border-none">
-                                    <AccordionTrigger className="hover:no-underline py-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="p-2 bg-slate-100 rounded-lg"><Landmark className="h-5 w-5 text-slate-600" /></div>
-                                            <span className="font-bold text-slate-900">Autorité Traditionnelle</span>
-                                        </div>
-                                    </AccordionTrigger>
-                                    <AccordionContent className="pt-4 space-y-4">
+                                <TabsContent value="chief" className="mt-0 h-full flex-grow">
+                                    
+                                    <div className="pt-4 space-y-4 h-full">
                                         <FormField
                                             control={form.control}
                                             name="chiefTitle"
@@ -784,23 +757,21 @@ export function AddVillageSheet() {
                                             <Info className="h-4 w-4 inline mr-2 mb-1" />
                                             Le nom du chef et son statut détaillé doivent être gérés via le module "Chefferie" une fois le village créé.
                                         </div>
-                                    </AccordionContent>
-                                </AccordionItem>
-                            </Accordion>
-                        </ScrollArea>
+                                    </div>
+                                </TabsContent>
+                            </ScrollArea>
+                        </Tabs>
 
-                        <div className="flex justify-end gap-3 pt-6 mt-6 border-t bg-white relative z-10 p-2">
-                            <Button variant="ghost" type="button" onClick={() => setOpen(false)} className="rounded-xl h-12 font-bold px-8">
-                                Annuler
-                            </Button>
-                            <Button type="submit" disabled={isSubmitting} className="rounded-xl h-12 font-bold px-8 bg-slate-900 border-none hover:bg-slate-800">
+                        <div className="absolute bottom-0 left-0 right-0 p-4 bg-white border-t border-slate-100 shadow-[0_-10px_20px_rgba(0,0,0,0.02)]">
+                            <Button 
+                                type="submit" 
+                                disabled={isSubmitting} 
+                                className="w-full h-14 rounded-xl font-black text-sm uppercase tracking-widest bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-600/20 active:scale-[0.98] transition-all"
+                            >
                                 {isSubmitting ? (
-                                    <>
-                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                        Enregistrement...
-                                    </>
+                                    <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Enregistrement...</>
                                 ) : (
-                                    "Enregistrer la localité"
+                                    <><Save className="mr-2 h-5 w-5" /> Enregistrer la localité</>
                                 )}
                             </Button>
                         </div>

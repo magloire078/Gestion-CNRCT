@@ -1,0 +1,7349 @@
+[
+  {
+    "id": "sp-abobo",
+    "departement_id": "dept-abidjan",
+    "nom": "Abobo",
+    "localites": [
+      "(Aucun village trouvé)"
+    ]
+  },
+  {
+    "id": "sp-adjame",
+    "departement_id": "dept-abidjan",
+    "nom": "Adjame",
+    "localites": [
+      "(Aucun village trouvé)"
+    ]
+  },
+  {
+    "id": "sp-attecoube",
+    "departement_id": "dept-abidjan",
+    "nom": "Attecoube",
+    "localites": [
+      "(Aucun village trouvé)"
+    ]
+  },
+  {
+    "id": "sp-cocody",
+    "departement_id": "dept-abidjan",
+    "nom": "Cocody",
+    "localites": []
+  },
+  {
+    "id": "sp-koumassi",
+    "departement_id": "dept-abidjan",
+    "nom": "Koumassi",
+    "localites": []
+  },
+  {
+    "id": "sp-marcory",
+    "departement_id": "dept-abidjan",
+    "nom": "Marcory",
+    "localites": []
+  },
+  {
+    "id": "sp-plateau",
+    "departement_id": "dept-abidjan",
+    "nom": "Plateau",
+    "localites": []
+  },
+  {
+    "id": "sp-port-bouet",
+    "departement_id": "dept-abidjan",
+    "nom": "Port-Bouet",
+    "localites": []
+  },
+  {
+    "id": "sp-treichville",
+    "departement_id": "dept-abidjan",
+    "nom": "Treichville",
+    "localites": []
+  },
+  {
+    "id": "sp-yopougon",
+    "departement_id": "dept-abidjan",
+    "nom": "Yopougon",
+    "localites": [
+      "Andokoi",
+      "Attié",
+      "Kouté",
+      "Niangon Adjamé",
+      "Niangon Lokoa"
+    ]
+  },
+  {
+    "id": "sp-anyama",
+    "departement_id": "dept-abidjan",
+    "nom": "Anyama",
+    "localites": [
+      "Anyama",
+      "Ebimpé"
+    ]
+  },
+  {
+    "id": "sp-bingerville",
+    "departement_id": "dept-abidjan",
+    "nom": "Bingerville",
+    "localites": [
+      "Bingerville"
+    ]
+  },
+  {
+    "id": "sp-brofodoume",
+    "departement_id": "dept-abidjan",
+    "nom": "Brofodoume",
+    "localites": [
+      "Brofodoumé",
+      "Adjamé-Bingerville",
+      "Akouai Agban",
+      "Akouai Santai",
+      "Akouai-Comoe",
+      "Akouai-N'Gouan",
+      "Akouai-Té",
+      "Akouedo",
+      "Akouedo-Village",
+      "Akouedo-Adjamé",
+      "Akouedo-Bingerville"
+    ]
+  },
+  {
+    "id": "sp-songon",
+    "departement_id": "dept-abidjan",
+    "nom": "Songon",
+    "localites": [
+      "Songon"
+    ]
+  },
+  {
+    "id": "sp-aboude",
+    "departement_id": "dept-agboville",
+    "nom": "Aboude",
+    "localites": [
+      "Aboudé-Mandéké",
+      "Aboudé-Adahou",
+      "Aboudé-Doumé",
+      "Aboudé-Kouadiokro",
+      "Aboudé-Kouamékro",
+      "Aboudé-Kouassikro",
+      "Aboudé-N'Guessankro"
+    ]
+  },
+  {
+    "id": "sp-ananguie",
+    "departement_id": "dept-agboville",
+    "nom": "Ananguie",
+    "localites": [
+      "Ananguie",
+      "Adzopé-Douville",
+      "Ahua",
+      "Akouai-Agba",
+      "Akouai-Santai",
+      "Akouai-Zoukougbeu",
+      "Attinguié",
+      "Ayalo",
+      "Bécédi-Brignan",
+      "Bécédi-M'Brimbo",
+      "Bécédi-N'Gokro",
+      "Bécédi-Téfré",
+      "Bécédi-Yapo",
+      "Diapé",
+      "Gbolouville",
+      "Grand-Yapo",
+      "Kanga-N'Zianouan",
+      "Kanga-Yao",
+      "Kétesso",
+      "Kpass",
+      "M'Brimbo",
+      "N'Douci-Kouamékro",
+      "N'Guessankoi",
+      "N'Zianouan",
+      "Yapo-Kpa",
+      "Yapo-Yapo"
+    ]
+  },
+  {
+    "id": "sp-agboville",
+    "departement_id": "dept-agboville",
+    "nom": "Agboville",
+    "localites": [
+      "Agboville-Village",
+      "Aboudé",
+      "Adahou",
+      "Agou (limite)",
+      "Ananguié",
+      "Angaho",
+      "Armébé",
+      "Arrah-Secteur",
+      "Azaguié (limite)",
+      "Bécédi",
+      "Biti",
+      "Boli",
+      "Chépo",
+      "Diangokro-Sud",
+      "Ery-Makouguié",
+      "Gbofia",
+      "Grand-Morié",
+      "Grand-Yapo",
+      "Loviguié",
+      "Massandji",
+      "N'Gattakro",
+      "Offoumpo",
+      "Oress-Krobou",
+      "Rubino",
+      "Ségbéhoa-Lagunes"
+    ]
+  },
+  {
+    "id": "sp-attobrou",
+    "departement_id": "dept-agboville",
+    "nom": "Attobrou",
+    "localites": [
+      "Attobrou",
+      "Adomkro",
+      "Ahua",
+      "Aké-Béfiat",
+      "Aké-Liwa",
+      "Aké-M'Brimbo"
+    ]
+  },
+  {
+    "id": "sp-azaguie",
+    "departement_id": "dept-agboville",
+    "nom": "Azaguie",
+    "localites": [
+      "Azaguié M'Bromé",
+      "Azaguié Gare",
+      "Azaguié-Ahua",
+      "Azaguié-Blida",
+      "Azaguié-Broussan",
+      "Azaguié-Makouguié",
+      "Azaguié-N'Guessankoi",
+      "Azaguié-N'Douci",
+      "Azaguié-N'Gattakoi",
+      "Azaguié-N'Gouan",
+      "Azaguié-N'Gouandi"
+    ]
+  },
+  {
+    "id": "sp-cechi",
+    "departement_id": "dept-agboville",
+    "nom": "Cechi",
+    "localites": [
+      "Céchi",
+      "Adomkro",
+      "Attiékoi",
+      "Bécédi-Brignan",
+      "Bécédi-Anon",
+      "Bécédi-M'brou",
+      "Bécédi-Tépassa",
+      "Bécédi-Yapo",
+      "Gbolouville",
+      "Grand-Yapo",
+      "Kanga-Nianzé",
+      "Kanga-Nianvo",
+      "Kanga-Yao",
+      "Kétékré",
+      "Kpaïbo",
+      "M'brou",
+      "N'guessankoi",
+      "N'gokro",
+      "N'gouandi",
+      "N'zianouan",
+      "Yapo-Kpaïbo"
+    ]
+  },
+  {
+    "id": "sp-grand-morie",
+    "departement_id": "dept-agboville",
+    "nom": "Grand-Morie",
+    "localites": [
+      "Grand-Morie",
+      "Petit-Morie",
+      "N'Guessankoi",
+      "N'Doffi-Kouamékro",
+      "N'Doffi-Ahoua",
+      "N'Doffi-Kouassikro",
+      "N'Doffi-Kouadio",
+      "N'Doffi-Kouakou",
+      "N'Doffi-Kouassi",
+      "N'Doffi-Kouamé"
+    ]
+  },
+  {
+    "id": "sp-guessiguie",
+    "departement_id": "dept-agboville",
+    "nom": "Guessiguie",
+    "localites": []
+  },
+  {
+    "id": "sp-loviguie",
+    "departement_id": "dept-agboville",
+    "nom": "Loviguie",
+    "localites": [
+      "Loviguie",
+      "Adonkoua",
+      "Ahoutoué",
+      "Akouai-N'gbessan",
+      "Attiékoi",
+      "Bécédi-Brignan",
+      "Bécédi-Anon",
+      "Bécédi-M'brou",
+      "Bécédi-N'douci",
+      "Bécédi-Yapo",
+      "Grand-Yapo",
+      "Kédjé-M'brou",
+      "Kédjé-N'douci",
+      "Kédjé-Yapo",
+      "Kpaïbo",
+      "M'brou",
+      "N'douci",
+      "Yapo-Kpaïbo"
+    ]
+  },
+  {
+    "id": "sp-oress-krobou",
+    "departement_id": "dept-agboville",
+    "nom": "Oress-Krobou",
+    "localites": []
+  },
+  {
+    "id": "sp-rubino",
+    "departement_id": "dept-agboville",
+    "nom": "Rubino",
+    "localites": [
+      "Rubino",
+      "Alloko-Koffikro",
+      "Amian-Koffikro",
+      "Andianou",
+      "Assikasso-Sud",
+      "Dadié-Kouassikro",
+      "Goli",
+      "Kondrokro",
+      "N'Gatta-Kouassikro",
+      "N'Gbin",
+      "Ségbéhoa",
+      "Soko",
+      "Wawrenou"
+    ]
+  },
+  {
+    "id": "sp-aboud",
+    "departement_id": "dept-agboville",
+    "nom": "Aboudé",
+    "localites": [
+      "Aboudé-Mandéké",
+      "Aboudé-Kouassikro",
+      "Attécoubé-Secteur",
+      "Gnamanou",
+      "Kpapekou-Lagunes",
+      "N'Gatta-Koffikro",
+      "Saria-Lagunes"
+    ]
+  },
+  {
+    "id": "sp-anangui",
+    "departement_id": "dept-agboville",
+    "nom": "Ananguié",
+    "localites": [
+      "Ananguié",
+      "Akakro",
+      "Bodocipa",
+      "Diégonépa-Lagunes",
+      "Gnagboya",
+      "Godélilié",
+      "Kpétoua",
+      "Saoua"
+    ]
+  },
+  {
+    "id": "sp-grand-mori",
+    "departement_id": "dept-agboville",
+    "nom": "Grand-Morié",
+    "localites": [
+      "Grand-Morié",
+      "Azaguié-Blé",
+      "Ggata-Agboville",
+      "Gnamandji",
+      "Grobonou-Dan",
+      "Kani",
+      "Roa",
+      "Zaroko"
+    ]
+  },
+  {
+    "id": "sp-gomon",
+    "departement_id": "dept-sikensi",
+    "nom": "Gomon",
+    "localites": [
+      "Gomon"
+    ]
+  },
+  {
+    "id": "sp-sikensi",
+    "departement_id": "dept-sikensi",
+    "nom": "Sikensi",
+    "localites": [
+      "Sikensi-Village",
+      "Abié",
+      "Badasso",
+      "Bakanou",
+      "Bécédi 2",
+      "Braffouéby",
+      "Elibou",
+      "Gomon",
+      "Katadji",
+      "Sahuyé",
+      "Soublaké"
+    ]
+  },
+  {
+    "id": "sp-pacobo",
+    "departement_id": "dept-taabo",
+    "nom": "Pacobo",
+    "localites": []
+  },
+  {
+    "id": "sp-taabo",
+    "departement_id": "dept-taabo",
+    "nom": "Taabo",
+    "localites": [
+      "Taabo-Village",
+      "Ahondo",
+      "Kotiessou",
+      "Léléblé",
+      "Pacobo",
+      "Right-Bank-Taabo",
+      "Ségbéhoa-Sud",
+      "Taabo-Cité"
+    ]
+  },
+  {
+    "id": "sp-gbolouville",
+    "departement_id": "dept-tiassal",
+    "nom": "Gbolouville",
+    "localites": []
+  },
+  {
+    "id": "sp-morokro",
+    "departement_id": "dept-tiassal",
+    "nom": "Morokro",
+    "localites": [
+      "Morokro",
+      "Abou-Secteur",
+      "Goliou",
+      "Grand-Gaza",
+      "Kpoda",
+      "Niouboua"
+    ]
+  },
+  {
+    "id": "sp-ndouci",
+    "departement_id": "dept-tiassal",
+    "nom": "N'Douci",
+    "localites": [
+      "N'Douci",
+      "Abeve",
+      "Boussoué",
+      "Diégonépa",
+      "Gnagbodougnoa",
+      "Gnamanou",
+      "Godélilié",
+      "Kpétoua",
+      "Kodrobo",
+      "Kouadiokro",
+      "Sakihoro",
+      "Toa"
+    ]
+  },
+  {
+    "id": "sp-tiassal",
+    "departement_id": "dept-tiassal",
+    "nom": "Tiassalé",
+    "localites": [
+      "Tiassalé-Village",
+      "Ahua",
+      "Akakro 2",
+      "Allokokro",
+      "Amian-Kouassikro",
+      "Batélébré",
+      "Binao",
+      "Boli-Tiassalé",
+      "Botindé",
+      "Ggata-Tiassalé",
+      "Kpapekou",
+      "Morokro",
+      "N'Zidan",
+      "Right-Bank-Tiassalé",
+      "Sago-Secteur",
+      "Ségbéhoa-Nord",
+      "Sikensi (limite)",
+      "Taabo-Secteur",
+      "Tow"
+    ]
+  },
+  {
+    "id": "sp-booko",
+    "departement_id": "dept-koro",
+    "nom": "Booko",
+    "localites": [
+      "Booko",
+      "Abou-Secteur",
+      "Goliou",
+      "Grand-Gaza",
+      "Kpoda",
+      "Niouboua"
+    ]
+  },
+  {
+    "id": "sp-borotou",
+    "departement_id": "dept-koro",
+    "nom": "Borotou",
+    "localites": [
+      "Borotou",
+      "Diégonépa",
+      "Gnagbodougnoa",
+      "Gnamanou",
+      "Godélilié",
+      "Kpétoua",
+      "Kodrobo",
+      "Kouadiokro",
+      "Sakihoro",
+      "Toa"
+    ]
+  },
+  {
+    "id": "sp-koro",
+    "departement_id": "dept-koro",
+    "nom": "Koro",
+    "localites": [
+      "Koro-Village",
+      "Booko (limite)",
+      "Borotou (limite)",
+      "Kaniasso-Secteur",
+      "Mahandiana",
+      "Right-Bank-Koro",
+      "Ségbéhoa-Koro",
+      "Sokourani-Koro",
+      "Tiékorodougou-Koro"
+    ]
+  },
+  {
+    "id": "sp-mahandougou",
+    "departement_id": "dept-koro",
+    "nom": "Mahandougou",
+    "localites": [
+      "Mahandougou",
+      "Bako",
+      "Bako-Sokoura",
+      "Bako-Tienko",
+      "Bako-Tienko-Sokoura",
+      "Bako-Tienko-Tienko",
+      "Bako-Tienko-Tienko-Sokoura",
+      "Bako-Tienko-Tienko-Tienko",
+      "Bako-Tienko-Tienko-Tienko-Sokoura",
+      "Bako-Tienko-Tienko-Tienko-Tienko",
+      "Bako-Tienko-Tienko-Tienko-Tienko-Sokoura",
+      "Bako-Tienko-Tienko-Tienko-Tienko-Tienko",
+      "Bako-Tienko-Tienko-Tienko-Tienko-Tienko-Sokoura",
+      "Bako-Tienko-Tienko-Tienko-Tienko-Tienko-Tienko",
+      "Bako-Tienko-Tienko-Tienko-Tienko-Tienko-Tienko-Sokoura",
+      "Bako-Tienko-Tienko-Tienko-Tienko-Tienko-Tienko-Tienko",
+      "Bako-Tienko-Tienko-Tienko-Tienko-Tienko-Tienko-Tienko-Sokoura",
+      "Bako-Tienko-Tienko-Tienko-Tienko-Tienko-Tienko-Tienko-Tienko",
+      "Bako-Tienko-Tienko-Tienko-Tienko-Tienko-Tienko-Tienko-Tienko-Sokoura"
+    ]
+  },
+  {
+    "id": "sp-niokosso",
+    "departement_id": "dept-koro",
+    "nom": "Niokosso",
+    "localites": [
+      "Niokosso",
+      "Koro-Koro",
+      "Massala",
+      "Séguéla-Koro",
+      "Tienko"
+    ]
+  },
+  {
+    "id": "sp-gbelo",
+    "departement_id": "dept-ouaninou",
+    "nom": "Gbelo",
+    "localites": [
+      "Gbelo",
+      "Kouana",
+      "Koué",
+      "Koué-Koura",
+      "Koué-Sokoura",
+      "Koué-Yassouba",
+      "Koué-Zoukoura"
+    ]
+  },
+  {
+    "id": "sp-gouekan",
+    "departement_id": "dept-ouaninou",
+    "nom": "Gouekan",
+    "localites": [
+      "Gouékan",
+      "Gbélo",
+      "Gbélo-Koulin",
+      "Gbélo-Sokourala",
+      "Gouana",
+      "Kpata",
+      "Kpata-Koulin",
+      "Kpata-Sokourala",
+      "Mahapleu",
+      "Mahapleu-Koulin",
+      "Mahapleu-Sokourala",
+      "N'Gouana",
+      "N'Gouana-Koulin",
+      "N'Gouana-Sokourala",
+      "Tiéfinzo",
+      "Tiéfinzo-Koulin",
+      "Tiéfinzo-Sokourala"
+    ]
+  },
+  {
+    "id": "sp-koonan",
+    "departement_id": "dept-ouaninou",
+    "nom": "Koonan",
+    "localites": [
+      "Koonan",
+      "Akakro 2",
+      "Goliou",
+      "Grand-Gaza",
+      "Kpoda",
+      "Niouboua"
+    ]
+  },
+  {
+    "id": "sp-ouaninou",
+    "departement_id": "dept-ouaninou",
+    "nom": "Ouaninou",
+    "localites": [
+      "Ouaninou-Village",
+      "Gbélo (limite)",
+      "Gouela",
+      "Koonan (limite)",
+      "Mahandougou",
+      "Saboudougou (limite)",
+      "Santa (limite)",
+      "Seydougou-Ouaninou"
+    ]
+  },
+  {
+    "id": "sp-saboudougou",
+    "departement_id": "dept-ouaninou",
+    "nom": "Saboudougou",
+    "localites": [
+      "Saboudougou",
+      "Diégonépa",
+      "Gnagbodougnoa",
+      "Gnamanou",
+      "Godélilié",
+      "Kpétoua",
+      "Kodrobo",
+      "Kouadiokro",
+      "Sakihoro",
+      "Toa"
+    ]
+  },
+  {
+    "id": "sp-santa-de-ouaninou",
+    "departement_id": "dept-ouaninou",
+    "nom": "Santa (De Ouaninou)",
+    "localites": [
+      "Santa",
+      "Gbélo",
+      "Gbéna",
+      "Gbézian",
+      "Gouana",
+      "Kouana",
+      "Kouéni",
+      "Kouézo",
+      "Kouyé",
+      "Mahapleu",
+      "Nion",
+      "San",
+      "Séla",
+      "Tiéla"
+    ]
+  },
+  {
+    "id": "sp-gblo",
+    "departement_id": "dept-ouaninou",
+    "nom": "Gbélo",
+    "localites": [
+      "Gbélo",
+      "Kabala",
+      "Kohoma",
+      "Niamana",
+      "Ouaragahio-Secteur",
+      "Right-Bank-Gbélo"
+    ]
+  },
+  {
+    "id": "sp-santa",
+    "departement_id": "dept-ouaninou",
+    "nom": "Santa",
+    "localites": [
+      "Santa",
+      "Alloko-Santa",
+      "N'Gatta-Koffikro",
+      "Saria-Santa"
+    ]
+  },
+  {
+    "id": "sp-dioman",
+    "departement_id": "dept-touba",
+    "nom": "Dioman",
+    "localites": [
+      "Dioman",
+      "Koro-Secteur",
+      "Kourouba",
+      "Nafana",
+      "Right-Bank-Dioman",
+      "Sémé"
+    ]
+  },
+  {
+    "id": "sp-foungbesso",
+    "departement_id": "dept-touba",
+    "nom": "Foungbesso",
+    "localites": [
+      "Foungbesso",
+      "Diégonépa-Bafing",
+      "Ggata-Foungbesso",
+      "Gnamandji",
+      "Grobonou-Dan",
+      "Kani",
+      "Roa",
+      "Zaroko"
+    ]
+  },
+  {
+    "id": "sp-guinteguela",
+    "departement_id": "dept-touba",
+    "nom": "Guinteguela",
+    "localites": [
+      "(Aucun village trouvé)"
+    ]
+  },
+  {
+    "id": "sp-touba",
+    "departement_id": "dept-touba",
+    "nom": "Touba",
+    "localites": [
+      "Touba-Village",
+      "Alloko-Koffikro (Campement)",
+      "Bafin",
+      "Dioman (limite)",
+      "Foungbesso (limite)",
+      "Ganan-Bafing",
+      "Gblétia-Bafing",
+      "Ggata-Touba",
+      "Gnamandji",
+      "Guintéguéla (limite)",
+      "Kamalo-Secteur",
+      "Koro-Secteur",
+      "Massala-Ouest",
+      "Right-Bank-Bafing",
+      "Ségbéhoa-Nord",
+      "Sifié-Secteur",
+      "Sokourani",
+      "Sombadougou",
+      "Tougousso",
+      "Washington-Bafing"
+    ]
+  },
+  {
+    "id": "sp-guintgula",
+    "departement_id": "dept-touba",
+    "nom": "Guintéguéla",
+    "localites": [
+      "Guintéguéla",
+      "Abou-Secteur",
+      "Goliou",
+      "Grand-Gaza",
+      "Kpoda",
+      "Niouboua"
+    ]
+  },
+  {
+    "id": "sp-baya",
+    "departement_id": "dept-boundiali",
+    "nom": "Baya",
+    "localites": [
+      "Baya",
+      "Gbon",
+      "Kaniéré",
+      "Kounoumon",
+      "N'Déou",
+      "N'Ganon",
+      "N'Golokaha",
+      "N'Goumon",
+      "N'Goumon-Sokourala",
+      "N'Goumon-Tienko",
+      "N'Goumon-Tienko-Sokourala"
+    ]
+  },
+  {
+    "id": "sp-boundiali",
+    "departement_id": "dept-boundiali",
+    "nom": "Boundiali",
+    "localites": [
+      "Boundiali-Village",
+      "Alloko-Koffikro (Campement)",
+      "Ganaoni (limite)",
+      "Ggata-Boundiali",
+      "Gnamandji",
+      "Kasséré (limite)",
+      "Kébi-Bagoué",
+      "Kolia (limite)",
+      "N'Golo-Koffikro",
+      "Right-Bank-Bagoué",
+      "Ségbéhoa-Nord",
+      "Soko",
+      "Wawrenou"
+    ]
+  },
+  {
+    "id": "sp-ganaoni",
+    "departement_id": "dept-boundiali",
+    "nom": "Ganaoni",
+    "localites": [
+      "Ganaoni",
+      "Diégonépa-Bagoué",
+      "Ggata-Ganaoni",
+      "Gnamandji",
+      "Grobonou-Dan",
+      "Kani",
+      "Roa",
+      "Zaroko"
+    ]
+  },
+  {
+    "id": "sp-kassere",
+    "departement_id": "dept-boundiali",
+    "nom": "Kassere",
+    "localites": [
+      "Kassere",
+      "Kaniéné",
+      "Kounahiri",
+      "N'golodougou",
+      "N'golokaha"
+    ]
+  },
+  {
+    "id": "sp-siempurgo",
+    "departement_id": "dept-boundiali",
+    "nom": "Siempurgo",
+    "localites": [
+      "(Aucun village trouvé)"
+    ]
+  },
+  {
+    "id": "sp-kassr",
+    "departement_id": "dept-boundiali",
+    "nom": "Kasséré",
+    "localites": [
+      "Kasséré",
+      "Abou-Secteur",
+      "Goliou",
+      "Grand-Gaza",
+      "Kpoda",
+      "Niouboua"
+    ]
+  },
+  {
+    "id": "sp-kolia",
+    "departement_id": "dept-boundiali",
+    "nom": "Kolia",
+    "localites": [
+      "Kolia",
+      "Akakro-Bagoué",
+      "Gnamandji",
+      "Grobonou-Dan",
+      "Kani",
+      "Roa",
+      "Zaroko"
+    ]
+  },
+  {
+    "id": "sp-blessegue",
+    "departement_id": "dept-kouto",
+    "nom": "Blessegue",
+    "localites": []
+  },
+  {
+    "id": "sp-gbon",
+    "departement_id": "dept-kouto",
+    "nom": "Gbon",
+    "localites": [
+      "Gbon",
+      "Bodocipa-Nord",
+      "Diégonépa",
+      "Gnagbodougnoa",
+      "Gnamanou",
+      "Godélilié",
+      "Kpétoua",
+      "Kodrobo",
+      "Kouadiokro",
+      "Sakihoro",
+      "Toa"
+    ]
+  },
+  {
+    "id": "sp-kolia",
+    "departement_id": "dept-kouto",
+    "nom": "Kolia",
+    "localites": []
+  },
+  {
+    "id": "sp-kouto",
+    "departement_id": "dept-kouto",
+    "nom": "Kouto",
+    "localites": [
+      "Kouto-Village",
+      "Blessingué (limite)",
+      "Gblétia-Bagoué",
+      "Gbon (limite)",
+      "Right-Bank-Kouto",
+      "Ségbéhoa-Kouto",
+      "Sokourani",
+      "Tiékorodougou-Ouest"
+    ]
+  },
+  {
+    "id": "sp-sianhala",
+    "departement_id": "dept-kouto",
+    "nom": "Sianhala",
+    "localites": []
+  },
+  {
+    "id": "sp-blessingu",
+    "departement_id": "dept-kouto",
+    "nom": "Blessingué",
+    "localites": [
+      "Blessingué",
+      "Abou-Secteur",
+      "Goliou",
+      "Grand-Gaza",
+      "Kpoda",
+      "Niouboua"
+    ]
+  },
+  {
+    "id": "sp-debete",
+    "departement_id": "dept-tengrla",
+    "nom": "Debete",
+    "localites": [
+      "Debete",
+      "Kaniéné",
+      "Kouroumadougou",
+      "N'Golokaha",
+      "N'Gouan",
+      "N'Gouana",
+      "N'Gouana-Sokourani",
+      "N'Gouana-Toumou",
+      "N'Gouana-Yérékoro",
+      "N'Gouana-Zanfara",
+      "N'Gouana-Zanfara-Sokourani",
+      "N'Gouana-Zanfara-Toumou",
+      "N'Gouana-Zanfara-Yérékoro"
+    ]
+  },
+  {
+    "id": "sp-kanakono",
+    "departement_id": "dept-tengrla",
+    "nom": "Kanakono",
+    "localites": [
+      "Kanakono",
+      "Diégonépa",
+      "Gnagbodougnoa",
+      "Gnamanou",
+      "Godélilié",
+      "Kpétoua",
+      "Kodrobo",
+      "Kouadiokro",
+      "Sakihoro",
+      "Toa"
+    ]
+  },
+  {
+    "id": "sp-papara",
+    "departement_id": "dept-tengrla",
+    "nom": "Papara",
+    "localites": [
+      "Papara",
+      "Alloko-Papara",
+      "N'Gatta-Koffikro",
+      "Saria-Papara"
+    ]
+  },
+  {
+    "id": "sp-tengrla",
+    "departement_id": "dept-tengrla",
+    "nom": "Tengréla",
+    "localites": [
+      "Tengréla-Village",
+      "Kanakono (limite)",
+      "Papara (limite)",
+      "Right-Bank-Tengréla",
+      "Ségbéhoa-Tengréla"
+    ]
+  },
+  {
+    "id": "sp-boli",
+    "departement_id": "dept-didivi",
+    "nom": "Boli",
+    "localites": [
+      "Boli",
+      "Attégouakro-Secteur",
+      "Ggata",
+      "Gnamandji",
+      "Grobonou-Dan",
+      "Kani",
+      "Roa",
+      "Zaroko"
+    ]
+  },
+  {
+    "id": "sp-didivi",
+    "departement_id": "dept-didivi",
+    "nom": "Didiévi",
+    "localites": [
+      "Didiévi-Village",
+      "Allokokro",
+      "Attokro",
+      "Boli",
+      "Goliou",
+      "Kofikro",
+      "Kpapekou-Secteur",
+      "N'Gran",
+      "Polonou",
+      "Right-Bank-Didiévi",
+      "Ségbéhoa",
+      "Yaakro"
+    ]
+  },
+  {
+    "id": "sp-molonou-ble",
+    "departement_id": "dept-didivi",
+    "nom": "Molonou-Ble",
+    "localites": [
+      "Molonou-Blé",
+      "Kouakou-Kouamékro",
+      "Kouassikro",
+      "Kouassi-N'Guessankro",
+      "N'Gattakro",
+      "N'Guessankro",
+      "N'Zikro",
+      "Sokorokro",
+      "Tiébissou",
+      "Yobouékro",
+      "Zouakro"
+    ]
+  },
+  {
+    "id": "sp-raviart",
+    "departement_id": "dept-didivi",
+    "nom": "Raviart",
+    "localites": [
+      "(Aucun village trouvé)"
+    ]
+  },
+  {
+    "id": "sp-tie-ndiekro",
+    "departement_id": "dept-didivi",
+    "nom": "Tie-N’Diekro",
+    "localites": []
+  },
+  {
+    "id": "sp-molonou-bl",
+    "departement_id": "dept-didivi",
+    "nom": "Molonou-Blé",
+    "localites": [
+      "Molonou",
+      "Akakro-Blé",
+      "Bodocipa",
+      "Diégonépa",
+      "Gnagboya",
+      "Gnamanou",
+      "Godélilié",
+      "Kpétoua",
+      "Saoua",
+      "Saria"
+    ]
+  },
+  {
+    "id": "sp-bonikro",
+    "departement_id": "dept-djkanou",
+    "nom": "Bonikro",
+    "localites": []
+  },
+  {
+    "id": "sp-djkanou",
+    "departement_id": "dept-djkanou",
+    "nom": "Djékanou",
+    "localites": [
+      "Djékanou-Village",
+      "Assabonou",
+      "Booré",
+      "Diambo 2",
+      "Ggata-Djékanou",
+      "Kokumbo (limite)",
+      "Tolou-Djékanou"
+    ]
+  },
+  {
+    "id": "sp-kokumbo",
+    "departement_id": "dept-djkanou",
+    "nom": "Kokumbo",
+    "localites": [
+      "Kokumbo",
+      "Akakro 2",
+      "Kimoukro",
+      "Kpouèbo 2",
+      "N'Gatta-Koffikro",
+      "Ségbéhoa-Sud"
+    ]
+  },
+  {
+    "id": "sp-lomokankro",
+    "departement_id": "dept-tibissou",
+    "nom": "Lomokankro",
+    "localites": []
+  },
+  {
+    "id": "sp-molonou",
+    "departement_id": "dept-tibissou",
+    "nom": "Molonou",
+    "localites": [
+      "Molonou",
+      "Kouakro",
+      "Kouamékro",
+      "Kouassikro",
+      "N'Gattakro",
+      "N'Guessankro",
+      "N'Zianouan",
+      "Sokorékro",
+      "Tiéplé"
+    ]
+  },
+  {
+    "id": "sp-tibissou",
+    "departement_id": "dept-tibissou",
+    "nom": "Tiébissou",
+    "localites": [
+      "Tiébissou-Village",
+      "Ahougnansou",
+      "Akoti",
+      "Assansou",
+      "Bofia",
+      "Gbomizambo",
+      "Kondé-Yaokro",
+      "Minankro",
+      "N'Gattadolikro",
+      "Prollo-Secteur",
+      "Sakiaré (limite)",
+      "Taki-Kouassikro",
+      "Yakpalo"
+    ]
+  },
+  {
+    "id": "sp-yakpabo-sakassou",
+    "departement_id": "dept-tibissou",
+    "nom": "Yakpabo-Sakassou",
+    "localites": []
+  },
+  {
+    "id": "sp-lomokro",
+    "departement_id": "dept-tibissou",
+    "nom": "Lomokro",
+    "localites": [
+      "Lomokro",
+      "Abrikro",
+      "Dozo-Secteur",
+      "Goli-Secteur",
+      "Kpékro",
+      "N'Gbin"
+    ]
+  },
+  {
+    "id": "sp-angoda",
+    "departement_id": "dept-toumodi",
+    "nom": "Angoda",
+    "localites": [
+      "Angoda",
+      "Gbofia",
+      "Kpové-Village",
+      "Lomo-Nord",
+      "N'Gattakro",
+      "Poungbè",
+      "Sahabo",
+      "Yaakro"
+    ]
+  },
+  {
+    "id": "sp-kokoumbo",
+    "departement_id": "dept-toumodi",
+    "nom": "Kokoumbo",
+    "localites": []
+  },
+  {
+    "id": "sp-kpouebo",
+    "departement_id": "dept-toumodi",
+    "nom": "Kpouebo",
+    "localites": []
+  },
+  {
+    "id": "sp-toumodi",
+    "departement_id": "dept-toumodi",
+    "nom": "Toumodi",
+    "localites": [
+      "Toumodi-Village",
+      "Abli",
+      "Agbagnansou",
+      "Ahua",
+      "Akakro",
+      "Angoda (limite)",
+      "Assounvoué",
+      "Benzokro",
+      "Binava",
+      "Kpouèbo (limite)",
+      "Lomo",
+      "Mougnan",
+      "Ouaouakro",
+      "Pokoukro",
+      "Sakassou-Secteur"
+    ]
+  },
+  {
+    "id": "sp-kpoubo",
+    "departement_id": "dept-toumodi",
+    "nom": "Kpouèbo",
+    "localites": [
+      "Kpouèbo",
+      "Assakra",
+      "Diambo",
+      "Goli",
+      "Koda",
+      "Kpohi",
+      "N'Gban-Kouassikro",
+      "Pokou-Kouassikro"
+    ]
+  },
+  {
+    "id": "sp-dianra",
+    "departement_id": "dept-dianra",
+    "nom": "Dianra",
+    "localites": [
+      "Dianra-Village",
+      "Dianra-Village 2",
+      "Right-Bank-Dianra",
+      "Ségbéhoa-Dianra",
+      "Sokourani",
+      "Tiékorodougou-Nord"
+    ]
+  },
+  {
+    "id": "sp-dianra-village",
+    "departement_id": "dept-dianra",
+    "nom": "Dianra-Village",
+    "localites": []
+  },
+  {
+    "id": "sp-kongasso",
+    "departement_id": "dept-kounahiri",
+    "nom": "Kongasso",
+    "localites": [
+      "Kongasso",
+      "Diégonépa",
+      "Gnagbodougnoa",
+      "Gnamanou",
+      "Godélilié",
+      "Kpétoua",
+      "Kodrobo",
+      "Kouadiokro",
+      "Sakihoro",
+      "Toa"
+    ]
+  },
+  {
+    "id": "sp-kounahiri",
+    "departement_id": "dept-kounahiri",
+    "nom": "Kounahiri",
+    "localites": [
+      "Kounahiri-Village",
+      "Kongasso (limite)",
+      "Wan-Secteur",
+      "Mona-Secteur",
+      "Right-Bank-Béré",
+      "Ségbéhoa-Kounahiri"
+    ]
+  },
+  {
+    "id": "sp-bouandougou",
+    "departement_id": "dept-mankono",
+    "nom": "Bouandougou",
+    "localites": [
+      "Bouandougou",
+      "Diégonépa-Béré",
+      "Ggata-Bouandougou",
+      "Gnamandji",
+      "Grobonou-Dan",
+      "Kani",
+      "Roa",
+      "Zaroko"
+    ]
+  },
+  {
+    "id": "sp-mankono",
+    "departement_id": "dept-mankono",
+    "nom": "Mankono",
+    "localites": [
+      "Mankono-Village",
+      "Alloko-Koffikro (Campement)",
+      "Bouandougou (limite)",
+      "Marandallah (limite)",
+      "Sarhala (limite)",
+      "Tiéningboué (limite)",
+      "Tomono",
+      "Ggata-Mankono",
+      "Gnamandji",
+      "Ségbéhoa-Nord",
+      "Soko",
+      "Wawrenou"
+    ]
+  },
+  {
+    "id": "sp-marandalah",
+    "departement_id": "dept-mankono",
+    "nom": "Marandalah",
+    "localites": []
+  },
+  {
+    "id": "sp-sarhala",
+    "departement_id": "dept-mankono",
+    "nom": "Sarhala",
+    "localites": [
+      "Sarhala",
+      "Akakro-Kaniga",
+      "Gnamandji",
+      "Grobonou-Dan",
+      "Kani",
+      "Roa",
+      "Zaroko"
+    ]
+  },
+  {
+    "id": "sp-tieningboue",
+    "departement_id": "dept-mankono",
+    "nom": "Tieningboue",
+    "localites": []
+  },
+  {
+    "id": "sp-marandallah",
+    "departement_id": "dept-mankono",
+    "nom": "Marandallah",
+    "localites": [
+      "Marandallah",
+      "Abou-Secteur",
+      "Goliou",
+      "Grand-Gaza",
+      "Kpoda",
+      "Niouboua"
+    ]
+  },
+  {
+    "id": "sp-tiningbou",
+    "departement_id": "dept-mankono",
+    "nom": "Tiéningboué",
+    "localites": [
+      "Tiéningboué",
+      "Bodocipa-Nord",
+      "Diégonépa",
+      "Gnagbodougnoa",
+      "Gnamanou",
+      "Godélilié",
+      "Kpétoua",
+      "Kodrobo",
+      "Kouadiokro",
+      "Sakihoro",
+      "Toa"
+    ]
+  },
+  {
+    "id": "sp-bouko",
+    "departement_id": "dept-bouna",
+    "nom": "Bouko",
+    "localites": [
+      "Bouko",
+      "Diégonépa-Bounkani",
+      "Ggata-Bouko",
+      "Gnamandji",
+      "Grobonou-Dan",
+      "Kani",
+      "Roa",
+      "Zaroko"
+    ]
+  },
+  {
+    "id": "sp-bouna",
+    "departement_id": "dept-bouna",
+    "nom": "Bouna",
+    "localites": [
+      "Bouna-Village",
+      "Alloko-Koffikro (Campement)",
+      "Bouko (limite)",
+      "Ggata-Bouna",
+      "Gnamandji",
+      "N'Golo-Koffikro",
+      "Ondéfidouo (limite)",
+      "Right-Bank-Bounkani",
+      "Ségbéhoa-Nord",
+      "Soko-Bouna",
+      "Vonkoro (poste frontière Ghana)",
+      "Wawrenou",
+      "Youtou"
+    ]
+  },
+  {
+    "id": "sp-ondefidouo",
+    "departement_id": "dept-bouna",
+    "nom": "Ondefidouo",
+    "localites": []
+  },
+  {
+    "id": "sp-youndouo",
+    "departement_id": "dept-bouna",
+    "nom": "Youndouo",
+    "localites": []
+  },
+  {
+    "id": "sp-ondfidouo",
+    "departement_id": "dept-bouna",
+    "nom": "Ondéfidouo",
+    "localites": [
+      "Ondéfidouo",
+      "Abou-Secteur",
+      "Goliou",
+      "Grand-Gaza",
+      "Kpoda",
+      "Niouboua"
+    ]
+  },
+  {
+    "id": "sp-danoa",
+    "departement_id": "dept-doropo",
+    "nom": "Danoa",
+    "localites": []
+  },
+  {
+    "id": "sp-doropo",
+    "departement_id": "dept-doropo",
+    "nom": "Doropo",
+    "localites": [
+      "Doropo-Village",
+      "Danoa (limite)",
+      "Gblétia-Bounkani",
+      "Kalamon (limite)",
+      "Niamoué (limite)",
+      "Right-Bank-Doropo",
+      "Ségbéhoa-Doropo",
+      "Sokourani",
+      "Tiékorodougou-Est"
+    ]
+  },
+  {
+    "id": "sp-kalamon",
+    "departement_id": "dept-doropo",
+    "nom": "Kalamon",
+    "localites": [
+      "Kalamon",
+      "Abou-Secteur",
+      "Goliou",
+      "Grand-Gaza",
+      "Kpoda",
+      "Niouboua"
+    ]
+  },
+  {
+    "id": "sp-niamoue",
+    "departement_id": "dept-doropo",
+    "nom": "Niamoue",
+    "localites": []
+  },
+  {
+    "id": "sp-niamou",
+    "departement_id": "dept-doropo",
+    "nom": "Niamoué",
+    "localites": [
+      "Niamoué",
+      "Bodocipa-Nord",
+      "Diégonépa",
+      "Gnagbodougnoa",
+      "Gnamanou",
+      "Godélilié",
+      "Kpétoua",
+      "Kodrobo",
+      "Kouadiokro",
+      "Sakihoro",
+      "Toa"
+    ]
+  },
+  {
+    "id": "sp-bogofa",
+    "departement_id": "dept-nassian",
+    "nom": "Bogofa",
+    "localites": []
+  },
+  {
+    "id": "sp-kakpin",
+    "departement_id": "dept-nassian",
+    "nom": "Kakpin",
+    "localites": []
+  },
+  {
+    "id": "sp-kotouba",
+    "departement_id": "dept-nassian",
+    "nom": "Kotouba",
+    "localites": []
+  },
+  {
+    "id": "sp-nassian",
+    "departement_id": "dept-nassian",
+    "nom": "Nassian",
+    "localites": [
+      "Nassian-Village",
+      "Bogofa (limite)",
+      "Kakpin (limite)",
+      "Sominassé (limite)",
+      "Right-Bank-Nassian",
+      "Ségbéhoa-Nassian",
+      "Tiékorodougou-Ouest"
+    ]
+  },
+  {
+    "id": "sp-sominasse",
+    "departement_id": "dept-nassian",
+    "nom": "Sominasse",
+    "localites": []
+  },
+  {
+    "id": "sp-sominass",
+    "departement_id": "dept-nassian",
+    "nom": "Sominassé",
+    "localites": [
+      "Sominassé",
+      "Diégonépa",
+      "Gnagbodougnoa",
+      "Gnamanou",
+      "Godélilié",
+      "Kpétoua",
+      "Kodrobo",
+      "Kouadiokro",
+      "Sakihoro",
+      "Toa"
+    ]
+  },
+  {
+    "id": "sp-gogo",
+    "departement_id": "dept-thini",
+    "nom": "Gogo",
+    "localites": []
+  },
+  {
+    "id": "sp-thini",
+    "departement_id": "dept-thini",
+    "nom": "Téhini",
+    "localites": [
+      "Téhini-Village",
+      "Alloko-Téhini",
+      "Ggata-Téhini",
+      "Gnamandji",
+      "Kani",
+      "N'Gatta-Koffikro",
+      "Roa",
+      "Saria-Téhini",
+      "Zaroko"
+    ]
+  },
+  {
+    "id": "sp-tougbo",
+    "departement_id": "dept-thini",
+    "nom": "Tougbo",
+    "localites": []
+  },
+  {
+    "id": "sp-blolquin",
+    "departement_id": "dept-blolquin",
+    "nom": "Bloléquin",
+    "localites": [
+      "Bloléquin-Village",
+      "Diboké (limite)",
+      "Doké (limite)",
+      "Goya",
+      "Right-Bank-Bloléquin",
+      "Ségbéhoa-Bloléquin",
+      "Sokourani",
+      "Tiékorodougou-Est",
+      "Zeaglo"
+    ]
+  },
+  {
+    "id": "sp-diboke",
+    "departement_id": "dept-blolquin",
+    "nom": "Diboke",
+    "localites": []
+  },
+  {
+    "id": "sp-doke",
+    "departement_id": "dept-blolquin",
+    "nom": "Doke",
+    "localites": []
+  },
+  {
+    "id": "sp-tinhou",
+    "departement_id": "dept-blolquin",
+    "nom": "Tinhou",
+    "localites": []
+  },
+  {
+    "id": "sp-zeaglo",
+    "departement_id": "dept-blolquin",
+    "nom": "Zeaglo",
+    "localites": []
+  },
+  {
+    "id": "sp-dibok",
+    "departement_id": "dept-blolquin",
+    "nom": "Diboké",
+    "localites": [
+      "Diboké",
+      "Abou-Secteur",
+      "Goliou",
+      "Grand-Gaza",
+      "Kpoda",
+      "Niouboua"
+    ]
+  },
+  {
+    "id": "sp-dok",
+    "departement_id": "dept-blolquin",
+    "nom": "Doké",
+    "localites": [
+      "Doké",
+      "Bodocipa-Nord",
+      "Diégonépa",
+      "Gnagbodougnoa",
+      "Gnamanou",
+      "Godélilié",
+      "Kpétoua",
+      "Kodrobo",
+      "Kouadiokro",
+      "Sakihoro",
+      "Toa"
+    ]
+  },
+  {
+    "id": "sp-bedy-goazon",
+    "departement_id": "dept-guiglo",
+    "nom": "Bedy-Goazon",
+    "localites": []
+  },
+  {
+    "id": "sp-guiglo",
+    "departement_id": "dept-guiglo",
+    "nom": "Guiglo",
+    "localites": [
+      "Guiglo-Village",
+      "Alloko-Koffikro (Campement)",
+      "Béoué",
+      "Bédiala-Secteur",
+      "Diégonépa-Cavally",
+      "Domobly",
+      "Gblétia-Guiglo",
+      "Ggata-Guiglo",
+      "Gnamandji",
+      "Kaade (limite)",
+      "Nizahon",
+      "Right-Bank-Cavally",
+      "Ségbéhoa-Nord",
+      "Soko",
+      "Wawrenou",
+      "Zagna"
+    ]
+  },
+  {
+    "id": "sp-kaade",
+    "departement_id": "dept-guiglo",
+    "nom": "Kaade",
+    "localites": [
+      "Kaade",
+      "Diégonépa-Guiglo",
+      "Ggata-Kaade",
+      "Gnamandji",
+      "Grobonou-Dan",
+      "Kani",
+      "Roa",
+      "Zaroko"
+    ]
+  },
+  {
+    "id": "sp-nizahon",
+    "departement_id": "dept-guiglo",
+    "nom": "Nizahon",
+    "localites": [
+      "Nizahon",
+      "Abou-Secteur",
+      "Goliou",
+      "Grand-Gaza",
+      "Kpoda",
+      "Niouboua"
+    ]
+  },
+  {
+    "id": "sp-ta",
+    "departement_id": "dept-ta",
+    "nom": "Taï",
+    "localites": [
+      "Taï-Village",
+      "Zagné (limite)",
+      "Right-Bank-Taï",
+      "Ségbéhoa-Taï"
+    ]
+  },
+  {
+    "id": "sp-zagne",
+    "departement_id": "dept-ta",
+    "nom": "Zagne",
+    "localites": []
+  },
+  {
+    "id": "sp-zagn",
+    "departement_id": "dept-ta",
+    "nom": "Zagné",
+    "localites": [
+      "Zagné",
+      "Gblétia-Taï",
+      "Gnamanou",
+      "Godélilié",
+      "Kpétoua",
+      "Saoua"
+    ]
+  },
+  {
+    "id": "sp-bakoubly",
+    "departement_id": "dept-toulepleu",
+    "nom": "Bakoubly",
+    "localites": [
+      "Bakoubly",
+      "Abou-Secteur",
+      "Goliou",
+      "Grand-Gaza",
+      "Kpoda",
+      "Niouboua"
+    ]
+  },
+  {
+    "id": "sp-meo",
+    "departement_id": "dept-toulepleu",
+    "nom": "Meo",
+    "localites": []
+  },
+  {
+    "id": "sp-nezobly",
+    "departement_id": "dept-toulepleu",
+    "nom": "Nezobly",
+    "localites": [
+      "Nezobly",
+      "Alloko-Nezobly",
+      "N'Gatta-Koffikro",
+      "Saria-Nezobly"
+    ]
+  },
+  {
+    "id": "sp-pehe",
+    "departement_id": "dept-toulepleu",
+    "nom": "Pehe",
+    "localites": []
+  },
+  {
+    "id": "sp-tiobly",
+    "departement_id": "dept-toulepleu",
+    "nom": "Tiobly",
+    "localites": [
+      "Tiobly",
+      "Diégonépa",
+      "Gnagbodougnoa",
+      "Gnamanou",
+      "Godélilié",
+      "Kpétoua",
+      "Kodrobo",
+      "Kouadiokro",
+      "Sakihoro",
+      "Toa"
+    ]
+  },
+  {
+    "id": "sp-toulepleu",
+    "departement_id": "dept-toulepleu",
+    "nom": "Toulepleu",
+    "localites": [
+      "Toulepleu-Village",
+      "Bakoubly (limite)",
+      "Méo (limite)",
+      "Nezobly (limite)",
+      "Right-Bank-Toulepleu",
+      "Ségbéhoa-Toulepleu",
+      "Tiékorodougou-Ouest",
+      "Tiobly (limite)"
+    ]
+  },
+  {
+    "id": "sp-mo",
+    "departement_id": "dept-toulepleu",
+    "nom": "Méo",
+    "localites": [
+      "Méo",
+      "Bodocipa-Nord",
+      "Diégonépa",
+      "Gnagbodougnoa",
+      "Gnamanou",
+      "Godélilié",
+      "Kpétoua",
+      "Kodrobo",
+      "Kouadiokro",
+      "Sakihoro",
+      "Toa"
+    ]
+  },
+  {
+    "id": "sp-goulia",
+    "departement_id": "dept-kaniasso",
+    "nom": "Goulia",
+    "localites": [
+      "(Aucun village trouvé)"
+    ]
+  },
+  {
+    "id": "sp-kaniasso",
+    "departement_id": "dept-kaniasso",
+    "nom": "Kaniasso",
+    "localites": [
+      "Kaniasso-Village",
+      "Bamako-Cité (Campement)",
+      "Gangan",
+      "Gblétia-Folon",
+      "Gbon-Secteur",
+      "Kébi-Folon",
+      "Mahandiana",
+      "Right-Bank-Kaniasso",
+      "Ségbéhoa-Kaniasso",
+      "Sokourani",
+      "Tiékorodougou-Ouest"
+    ]
+  },
+  {
+    "id": "sp-mahandiana-sokourani",
+    "departement_id": "dept-kaniasso",
+    "nom": "Mahandiana-Sokourani",
+    "localites": [
+      "(Aucun village trouvé)"
+    ]
+  },
+  {
+    "id": "sp-kimbirila-nord",
+    "departement_id": "dept-minignan",
+    "nom": "Kimbirila-Nord",
+    "localites": [
+      "Kimbirila-Nord",
+      "Bougousso",
+      "Dialakoro",
+      "Dougba",
+      "Farandougou",
+      "Kolon",
+      "Samango"
+    ]
+  },
+  {
+    "id": "sp-minignan",
+    "departement_id": "dept-minignan",
+    "nom": "Minignan",
+    "localites": [
+      "Minignan-Village",
+      "Banandjé",
+      "Boudiou",
+      "Dioulatiédougou-Secteur",
+      "Goulia (limite)",
+      "Goullon",
+      "Kimbirila-Nord (limite)",
+      "Lingo",
+      "Mahandougou",
+      "Nabagala",
+      "Right-Bank-Folon",
+      "Ségbéhoa-Nord",
+      "Sokourani-Folon",
+      "Sombadougou",
+      "Tienko (limite)",
+      "Tokala",
+      "Zéguetila"
+    ]
+  },
+  {
+    "id": "sp-sokoro",
+    "departement_id": "dept-minignan",
+    "nom": "Sokoro",
+    "localites": []
+  },
+  {
+    "id": "sp-tienko",
+    "departement_id": "dept-minignan",
+    "nom": "Tienko",
+    "localites": [
+      "Tienko",
+      "Alloko-Tienko",
+      "Diégonépa-Folon",
+      "Ggata-Tienko",
+      "Gnamandji",
+      "Grobonou-Dan",
+      "Kani",
+      "Roa",
+      "Zaroko"
+    ]
+  },
+  {
+    "id": "sp-goulia",
+    "departement_id": "dept-minignan",
+    "nom": "Goulia",
+    "localites": [
+      "Goulia",
+      "Kani-Secteur",
+      "Kourouba-Folon",
+      "Missamahana",
+      "Nafana-Folon",
+      "Sémé-Nord",
+      "Turco"
+    ]
+  },
+  {
+    "id": "sp-ando-kekrenou",
+    "departement_id": "dept-boumi",
+    "nom": "Ando-Kekrenou",
+    "localites": []
+  },
+  {
+    "id": "sp-boumi",
+    "departement_id": "dept-boumi",
+    "nom": "Béoumi",
+    "localites": [
+      "Béoumi-Village",
+      "Aka-Koffikro",
+      "Alloko-Koffikro 2",
+      "Angoda-Secteur",
+      "Bodou",
+      "Central-Kossou",
+      "Diégonépa",
+      "Gnagbodougnoa",
+      "Gnamanou",
+      "Godélilié",
+      "Kpétoua",
+      "Kodrobo",
+      "Kondrobo",
+      "Kouadiokro",
+      "Marabadiassa (limite)",
+      "Sakihoro",
+      "Toa-Béoumi"
+    ]
+  },
+  {
+    "id": "sp-bodokro",
+    "departement_id": "dept-boumi",
+    "nom": "Bodokro",
+    "localites": []
+  },
+  {
+    "id": "sp-kondrobo",
+    "departement_id": "dept-boumi",
+    "nom": "Kondrobo",
+    "localites": []
+  },
+  {
+    "id": "sp-lolobo-de-beoumi",
+    "departement_id": "dept-boumi",
+    "nom": "Lolobo (De Beoumi)",
+    "localites": []
+  },
+  {
+    "id": "sp-marabadiassa",
+    "departement_id": "dept-boumi",
+    "nom": "Marabadiassa",
+    "localites": [
+      "Marabadiassa",
+      "Akakro-Kodè",
+      "Gnamandji",
+      "Grobonou-Dan",
+      "Kani",
+      "Roa",
+      "Zaroko"
+    ]
+  },
+  {
+    "id": "sp-nguessankro-de-beoumi",
+    "departement_id": "dept-boumi",
+    "nom": "N'Guessankro (De Beoumi)",
+    "localites": []
+  },
+  {
+    "id": "sp-botro",
+    "departement_id": "dept-botro",
+    "nom": "Botro",
+    "localites": [
+      "Botro-Village",
+      "Abrikro",
+      "Diabo (limite)",
+      "Diangokro-Secteur",
+      "Elinso",
+      "Ggata-Botro",
+      "Kangrassou",
+      "Krofo",
+      "Lomo-Nord",
+      "N'Gattakro",
+      "N'Zida",
+      "Right-Bank-Botro",
+      "Ségbéhoa-Nord"
+    ]
+  },
+  {
+    "id": "sp-diabo",
+    "departement_id": "dept-botro",
+    "nom": "Diabo",
+    "localites": [
+      "Diabo",
+      "Adiékro-Diabo",
+      "Agbaou",
+      "Kondrokro",
+      "N'Gatta-Koffikro",
+      "Saria-Diabo"
+    ]
+  },
+  {
+    "id": "sp-krofoinsou",
+    "departement_id": "dept-botro",
+    "nom": "Krofoinsou",
+    "localites": []
+  },
+  {
+    "id": "sp-languibonou",
+    "departement_id": "dept-botro",
+    "nom": "Languibonou",
+    "localites": [
+      "(Aucun village trouvé)"
+    ]
+  },
+  {
+    "id": "sp-bouak",
+    "departement_id": "dept-bouak",
+    "nom": "Bouaké",
+    "localites": [
+      "Bouaké-Village",
+      "Ahoko",
+      "Ahounou",
+      "Ahougnansou",
+      "Akakro",
+      "Alloko-Koffikro",
+      "Angoua-Kouassikro",
+      "Assengou",
+      "Assié-Kouamékro",
+      "Bamoro",
+      "Belakro",
+      "Bounda",
+      "Brobo (limite)",
+      "Diabo (limite)",
+      "Djebonoua (limite)",
+      "Gbofia-Gbêkê",
+      "Kahankro",
+      "Kami",
+      "Kango",
+      "Kondrokro",
+      "Kouassikro",
+      "N'Gattakro",
+      "N'Zikro",
+      "Olihio",
+      "Ségbéhoa-Centre",
+      "Soko",
+      "Solou-Gbêkê",
+      "Tieplé",
+      "Wawrenou"
+    ]
+  },
+  {
+    "id": "sp-bounda",
+    "departement_id": "dept-bouak",
+    "nom": "Bounda",
+    "localites": []
+  },
+  {
+    "id": "sp-brobo",
+    "departement_id": "dept-bouak",
+    "nom": "Brobo",
+    "localites": [
+      "Brobo",
+      "Abou-Secteur",
+      "Attakro",
+      "Bodocipa-Gbêkê",
+      "Diégonépa-Est",
+      "Ggata-Brobo",
+      "Gnamandji",
+      "Grobonou-Dan",
+      "Kani",
+      "Roa",
+      "Zaroko"
+    ]
+  },
+  {
+    "id": "sp-djebonoua",
+    "departement_id": "dept-bouak",
+    "nom": "Djebonoua",
+    "localites": [
+      "Djebonoua",
+      "Adiékro",
+      "Assanou",
+      "Assèkro",
+      "Gnamanou",
+      "Kpapekou-Gbêkê",
+      "Lengbré",
+      "N'Gatta-Koffikro",
+      "Saria-Gbêkê",
+      "Toa"
+    ]
+  },
+  {
+    "id": "sp-mamini",
+    "departement_id": "dept-bouak",
+    "nom": "Mamini",
+    "localites": []
+  },
+  {
+    "id": "sp-ayaou-sran",
+    "departement_id": "dept-sakassou",
+    "nom": "Ayaou-Sran",
+    "localites": [
+      "Ayaou-Sran",
+      "Akakro 2",
+      "Goliou",
+      "Grand-Gaza",
+      "Kpoda",
+      "Niouboua"
+    ]
+  },
+  {
+    "id": "sp-dibri-assirikro",
+    "departement_id": "dept-sakassou",
+    "nom": "Dibri-Assirikro",
+    "localites": []
+  },
+  {
+    "id": "sp-sakassou",
+    "departement_id": "dept-sakassou",
+    "nom": "Sakassou",
+    "localites": [
+      "Sakassou-Village",
+      "Agba-Kouassikro",
+      "Ahua",
+      "Akoti",
+      "Allokokro",
+      "Amian-Kouassikro",
+      "Andianou",
+      "Assandrè",
+      "Assrikro",
+      "Dadié-Kouassikro",
+      "Goli",
+      "Kanguélilié",
+      "Kpéprou",
+      "N'Gatta-Kouassikro",
+      "N'Gbin",
+      "Right-Bank-Sakassou",
+      "Ségbéhoa-Ouest",
+      "Soko-Sakassou",
+      "Tow"
+    ]
+  },
+  {
+    "id": "sp-toumodi-sakassou",
+    "departement_id": "dept-sakassou",
+    "nom": "Toumodi-Sakassou",
+    "localites": []
+  },
+  {
+    "id": "sp-dahiri",
+    "departement_id": "dept-fresco",
+    "nom": "Dahiri",
+    "localites": [
+      "Dahiri",
+      "Abou-Secteur",
+      "Goliou",
+      "Grand-Gaza",
+      "Kpoda",
+      "Niouboua"
+    ]
+  },
+  {
+    "id": "sp-fresco",
+    "departement_id": "dept-fresco",
+    "nom": "Fresco",
+    "localites": [
+      "Fresco-Village",
+      "Dahiri (limite)",
+      "Gblétia-Gboklè",
+      "Kosso",
+      "Right-Bank-Fresco",
+      "Ségbéhoa-Lagune",
+      "Sokourani-Mer",
+      "Tiékorodougou-Sud",
+      "Zégban"
+    ]
+  },
+  {
+    "id": "sp-gbagbam",
+    "departement_id": "dept-fresco",
+    "nom": "Gbagbam",
+    "localites": []
+  },
+  {
+    "id": "sp-dakpadou",
+    "departement_id": "dept-sassandra",
+    "nom": "Dakpadou",
+    "localites": [
+      "Dakpadou",
+      "Diégonépa-Gboklè",
+      "Ggata-Dakpadou",
+      "Gnamandji",
+      "Grobonou-Dan",
+      "Kani",
+      "Roa",
+      "Zaroko"
+    ]
+  },
+  {
+    "id": "sp-grihiri",
+    "departement_id": "dept-sassandra",
+    "nom": "Grihiri",
+    "localites": [
+      "Grihiri",
+      "Baléko",
+      "Gbazi",
+      "Goliou",
+      "Grand-Gaza",
+      "Kpoda",
+      "Niouboua"
+    ]
+  },
+  {
+    "id": "sp-lobakuya",
+    "departement_id": "dept-sassandra",
+    "nom": "Lobakuya",
+    "localites": []
+  },
+  {
+    "id": "sp-medon",
+    "departement_id": "dept-sassandra",
+    "nom": "Medon",
+    "localites": []
+  },
+  {
+    "id": "sp-sago",
+    "departement_id": "dept-sassandra",
+    "nom": "Sago",
+    "localites": [
+      "Sago",
+      "Akakro",
+      "Bohico",
+      "Diégonépa",
+      "Gnagbodougnoa",
+      "Gobro",
+      "Kpapekou",
+      "Niaprahio",
+      "Right-Bank"
+    ]
+  },
+  {
+    "id": "sp-sassandra",
+    "departement_id": "dept-sassandra",
+    "nom": "Sassandra",
+    "localites": [
+      "Sassandra-Village",
+      "Alloko-Koffikro (Campement)",
+      "Arokpa",
+      "Bassa",
+      "Dakpadou (limite)",
+      "Ggata-Sassandra",
+      "Gnamandji",
+      "Grihio",
+      "Louga",
+      "Lélébly",
+      "Medon",
+      "N'Golo-Koffikro",
+      "Pauly",
+      "Right-Bank-Gboklè",
+      "Ségbéhoa-Mer",
+      "Soko",
+      "Saliédou",
+      "Wawrenou"
+    ]
+  },
+  {
+    "id": "sp-bayota",
+    "departement_id": "dept-gagnoa",
+    "nom": "Bayota",
+    "localites": [
+      "Bayota",
+      "Diégonépa-Gagnoa",
+      "Ggata-Bayota",
+      "Gnamandji",
+      "Grobonou-Dan",
+      "Kani",
+      "Roa",
+      "Zaroko"
+    ]
+  },
+  {
+    "id": "sp-dahiepa-kehi",
+    "departement_id": "dept-gagnoa",
+    "nom": "Dahiepa-Kehi",
+    "localites": []
+  },
+  {
+    "id": "sp-dignago",
+    "departement_id": "dept-gagnoa",
+    "nom": "Dignago",
+    "localites": [
+      "Dignago",
+      "Biakou",
+      "Bognoa 2",
+      "Bréji",
+      "Dodjagnoa",
+      "Gnagbodougnoa (limite)",
+      "Gnamanou",
+      "Kpoda",
+      "Niakpalégnoa 2",
+      "Serihio (limite)",
+      "Tagbayo",
+      "Zégo"
+    ]
+  },
+  {
+    "id": "sp-dougroupalegonao",
+    "departement_id": "dept-gagnoa",
+    "nom": "Dougroupalegonao",
+    "localites": []
+  },
+  {
+    "id": "sp-doukouyo",
+    "departement_id": "dept-gagnoa",
+    "nom": "Doukouyo",
+    "localites": [
+      "Doukouyo",
+      "Afridouhouo",
+      "Créméhouo",
+      "Digbeugnoa",
+      "Dikouéhipalégnoa",
+      "Djedjedigbeupa",
+      "Djétéhoa",
+      "Dobrépa",
+      "Totihi",
+      "Wiwihio"
+    ]
+  },
+  {
+    "id": "sp-gagnoa",
+    "departement_id": "dept-gagnoa",
+    "nom": "Gagnoa",
+    "localites": [
+      "Gagnoa-Village",
+      "Alloko-Koffikro (Campement)",
+      "Baoulé-Koffikro",
+      "Bayota (limite)",
+      "Bédiala-Secteur",
+      "Diégonépa (limite)",
+      "Dougroupalégnoa (limite)",
+      "Galebré (limite)",
+      "Ggata-Gagnoa",
+      "Gnamandji",
+      "Guibéroua (limite)",
+      "Kpapekou",
+      "Mahibouo",
+      "N'Golo-Koffikro",
+      "Ouragahio (limite)",
+      "Right-Bank-Gôh",
+      "Ségbéhoa-Centre",
+      "Soko",
+      "Tipadipa",
+      "Wawrenou",
+      "Yopohé"
+    ]
+  },
+  {
+    "id": "sp-galebre-galebouo",
+    "departement_id": "dept-gagnoa",
+    "nom": "Galebre / Galebouo",
+    "localites": []
+  },
+  {
+    "id": "sp-gnagbodougnoa",
+    "departement_id": "dept-gagnoa",
+    "nom": "Gnagbodougnoa",
+    "localites": [
+      "Gnagbodougnoa",
+      "Abohio",
+      "Adjéhipalégnoa",
+      "Gnamagnoa",
+      "Gnamakoa",
+      "Gnigbéhoa",
+      "Godélilié",
+      "Koussépa",
+      "Sakihoro",
+      "Toa"
+    ]
+  },
+  {
+    "id": "sp-guiberoua",
+    "departement_id": "dept-gagnoa",
+    "nom": "Guiberoua",
+    "localites": []
+  },
+  {
+    "id": "sp-ouragahio",
+    "departement_id": "dept-gagnoa",
+    "nom": "Ouragahio",
+    "localites": [
+      "Ouragahio",
+      "Bodocipa-Sud",
+      "Diégonépa",
+      "Gnagbodougnoa",
+      "Gnamanou",
+      "Godélilié",
+      "Kpétoua",
+      "Kodrobo",
+      "Kouadiokro",
+      "Sakihoro",
+      "Toa"
+    ]
+  },
+  {
+    "id": "sp-serihio",
+    "departement_id": "dept-gagnoa",
+    "nom": "Serihio",
+    "localites": []
+  },
+  {
+    "id": "sp-yopohue",
+    "departement_id": "dept-gagnoa",
+    "nom": "Yopohue",
+    "localites": []
+  },
+  {
+    "id": "sp-guibroua",
+    "departement_id": "dept-gagnoa",
+    "nom": "Guibéroua",
+    "localites": [
+      "Guibéroua",
+      "Alloko-Guibéroua",
+      "N'Gatta-Koffikro",
+      "Saria-Guibéroua"
+    ]
+  },
+  {
+    "id": "sp-galbr",
+    "departement_id": "dept-gagnoa",
+    "nom": "Galébré",
+    "localites": [
+      "Galébré",
+      "Gôgôhio",
+      "Gragbalilié",
+      "Kpétoua 2",
+      "Noumouzié",
+      "Onahio",
+      "Solou",
+      "Souourou"
+    ]
+  },
+  {
+    "id": "sp-dougroupalgnoa",
+    "departement_id": "dept-gagnoa",
+    "nom": "Dougroupalégnoa",
+    "localites": [
+      "Dougroupalégnoa",
+      "Akakro-Bété",
+      "Gnamandji",
+      "Grobonou-Dan",
+      "Kani",
+      "Roa",
+      "Zaroko"
+    ]
+  },
+  {
+    "id": "sp-srihio",
+    "departement_id": "dept-gagnoa",
+    "nom": "Sérihio",
+    "localites": [
+      "Sérihio",
+      "Bamo",
+      "Diabouo",
+      "Djaté",
+      "Dobé",
+      "Dodougnoa",
+      "Gôgôhio",
+      "Logouata",
+      "Mayoutou",
+      "Niaprahio"
+    ]
+  },
+  {
+    "id": "sp-yopohu",
+    "departement_id": "dept-gagnoa",
+    "nom": "Yopohué",
+    "localites": [
+      "Yopohué",
+      "Bréhi",
+      "Dahiépa",
+      "Dalilié",
+      "Diégonépa",
+      "Djérégoué",
+      "Guéhipalégnoa",
+      "Kpogrobouo",
+      "Sika",
+      "Tiépa"
+    ]
+  },
+  {
+    "id": "sp-dahipa-khi",
+    "departement_id": "dept-gagnoa",
+    "nom": "Dahiépa-Kéhi",
+    "localites": [
+      "Dahiépa-Kéhi",
+      "Ahizabré",
+      "Atonihio",
+      "Badiepa",
+      "Bagasséhoa",
+      "Bahompa",
+      "Balayo",
+      "Kehi",
+      "Logouata"
+    ]
+  },
+  {
+    "id": "sp-digonpa",
+    "departement_id": "dept-gagnoa",
+    "nom": "Diégonépa",
+    "localites": [
+      "Diégonépa",
+      "Abou-Secteur",
+      "Goliou",
+      "Grand-Gaza",
+      "Kpoda",
+      "Niouboua"
+    ]
+  },
+  {
+    "id": "sp-galebr",
+    "departement_id": "dept-gagnoa",
+    "nom": "Galebré",
+    "localites": [
+      "Galebré",
+      "Bodocipa-Nord",
+      "Diégonépa",
+      "Gnagbodougnoa",
+      "Gnamanou",
+      "Godélilié",
+      "Kpétoua",
+      "Kodrobo",
+      "Kouadiokro",
+      "Sakihoro",
+      "Toa"
+    ]
+  },
+  {
+    "id": "sp-diegonefla",
+    "departement_id": "dept-oum",
+    "nom": "Diegonefla",
+    "localites": []
+  },
+  {
+    "id": "sp-guepahouo",
+    "departement_id": "dept-oum",
+    "nom": "Guepahouo",
+    "localites": [
+      "Guepahouo",
+      "Abou-Secteur",
+      "Goliou",
+      "Grand-Gaza",
+      "Kpoda",
+      "Niouboua"
+    ]
+  },
+  {
+    "id": "sp-oum",
+    "departement_id": "dept-oum",
+    "nom": "Oumé",
+    "localites": [
+      "Oumé-Village",
+      "Diégonépa-Est",
+      "Diégonépa-Oumé",
+      "Gblétia-Oumé",
+      "Guepahouo (limite)",
+      "Kokoumbo-Secteur",
+      "Morokro-Secteur",
+      "Right-Bank-Oumé",
+      "Ségbéhoa-Est",
+      "Sokourani",
+      "Tiékorodougou-Est",
+      "Tonla (limite)"
+    ]
+  },
+  {
+    "id": "sp-tonla",
+    "departement_id": "dept-oum",
+    "nom": "Tonla",
+    "localites": [
+      "Tonla",
+      "Diégonépa",
+      "Gnagbodougnoa",
+      "Gnamanou",
+      "Godélilié",
+      "Kpétoua",
+      "Kodrobo",
+      "Kouadiokro",
+      "Sakihoro",
+      "Toa"
+    ]
+  },
+  {
+    "id": "sp-appimandoum",
+    "departement_id": "dept-bondoukou",
+    "nom": "Appimandoum",
+    "localites": [
+      "Appimandoum",
+      "Assuéfry",
+      "Bondo",
+      "Borokouadi",
+      "Dadiassé",
+      "Gouméré",
+      "Krébénou",
+      "N'Gattakro",
+      "Pinda",
+      "Soko"
+    ]
+  },
+  {
+    "id": "sp-pinda-boroko",
+    "departement_id": "dept-bondoukou",
+    "nom": "Pinda-Boroko",
+    "localites": []
+  },
+  {
+    "id": "sp-bondo",
+    "departement_id": "dept-bondoukou",
+    "nom": "Bondo",
+    "localites": []
+  },
+  {
+    "id": "sp-bondoukou",
+    "departement_id": "dept-bondoukou",
+    "nom": "Bondoukou",
+    "localites": [
+      "Bondoukou-Village",
+      "Alloko-Koffikro (Campement)",
+      "Appimandoum",
+      "Bondo-Secteur",
+      "Ggata-Bondoukou",
+      "Gnamandji",
+      "Gouméré (limite)",
+      "Laoudi-Ba (limite)",
+      "N'Golo-Koffikro",
+      "Right-Bank-Zanzan",
+      "Ségbéhoa-Nord",
+      "Soko (poste frontière)",
+      "Sorobango (limite)",
+      "Taoudi (limite)",
+      "Wawrenou",
+      "Yézimala"
+    ]
+  },
+  {
+    "id": "sp-goumere",
+    "departement_id": "dept-bondoukou",
+    "nom": "Goumere",
+    "localites": []
+  },
+  {
+    "id": "sp-laoudi-ba",
+    "departement_id": "dept-bondoukou",
+    "nom": "Laoudi-Ba",
+    "localites": [
+      "Laoudi-Ba",
+      "Abou-Secteur",
+      "Goliou",
+      "Grand-Gaza",
+      "Kpoda",
+      "Niouboua"
+    ]
+  },
+  {
+    "id": "sp-sapli-sepingo",
+    "departement_id": "dept-bondoukou",
+    "nom": "Sapli-Sepingo",
+    "localites": []
+  },
+  {
+    "id": "sp-sorobango",
+    "departement_id": "dept-bondoukou",
+    "nom": "Sorobango",
+    "localites": [
+      "Sorobango",
+      "Akakro-Zanzan",
+      "Gnamandji",
+      "Grobonou-Dan",
+      "Kani",
+      "Roa",
+      "Zaroko"
+    ]
+  },
+  {
+    "id": "sp-tabagne",
+    "departement_id": "dept-bondoukou",
+    "nom": "Tabagne",
+    "localites": []
+  },
+  {
+    "id": "sp-tagadi",
+    "departement_id": "dept-bondoukou",
+    "nom": "Tagadi",
+    "localites": []
+  },
+  {
+    "id": "sp-taoudi",
+    "departement_id": "dept-bondoukou",
+    "nom": "Taoudi",
+    "localites": [
+      "Taoudi",
+      "Bodocipa-Nord",
+      "Diégonépa",
+      "Gnagbodougnoa",
+      "Gnamanou",
+      "Godélilié",
+      "Kpétoua",
+      "Kodrobo",
+      "Kouadiokro",
+      "Sakihoro",
+      "Toa"
+    ]
+  },
+  {
+    "id": "sp-yezimala",
+    "departement_id": "dept-bondoukou",
+    "nom": "Yezimala",
+    "localites": []
+  },
+  {
+    "id": "sp-goumr",
+    "departement_id": "dept-bondoukou",
+    "nom": "Gouméré",
+    "localites": [
+      "Gouméré",
+      "Diégonépa-Zanzan",
+      "Ggata-Gouméré",
+      "Gnamandji",
+      "Grobonou-Dan",
+      "Kani",
+      "Roa",
+      "Zaroko"
+    ]
+  },
+  {
+    "id": "sp-boahia",
+    "departement_id": "dept-koun-fao",
+    "nom": "Boahia",
+    "localites": []
+  },
+  {
+    "id": "sp-kokomian",
+    "departement_id": "dept-koun-fao",
+    "nom": "Kokomian",
+    "localites": []
+  },
+  {
+    "id": "sp-kouassi-datekro",
+    "departement_id": "dept-koun-fao",
+    "nom": "Kouassi-Datekro",
+    "localites": [
+      "Akakro",
+      "Assoumba",
+      "Bofoin",
+      "Bokoré",
+      "Kouakou-Koffikro",
+      "Kouamé-Koffikro",
+      "Kouassi-Datekro",
+      "Kouassikro",
+      "Kouman-Kouassikro",
+      "N'Guessankro",
+      "Pinda-Kouassikro",
+      "Sérébou",
+      "Tanda-Kouassikro",
+      "Tiéplé"
+    ]
+  },
+  {
+    "id": "sp-koun-fao",
+    "departement_id": "dept-koun-fao",
+    "nom": "Koun-Fao",
+    "localites": [
+      "Koun-Fao-Village",
+      "Kouassi-Datékro (limite)",
+      "Right-Bank-Koun",
+      "Ségbéhoa-Koun",
+      "Tiékorodougou-Ouest"
+    ]
+  },
+  {
+    "id": "sp-tankesse",
+    "departement_id": "dept-koun-fao",
+    "nom": "Tankesse",
+    "localites": [
+      "Tankesse",
+      "Assuétia",
+      "Bokoré",
+      "Kouassia-Kouman",
+      "Kouassi-N'Dawa",
+      "Kouman-Kouassikro",
+      "Kouman-Tchè",
+      "Koumassi",
+      "Koumassi-Kouman",
+      "Koumassi-N'Guessankro",
+      "N'Dawa",
+      "N'Dawa-Kouassikro",
+      "N'Dawa-Kouman",
+      "N'Dawa-Koumassi",
+      "N'Dawa-Koumassikro",
+      "N'Dawa-Tchè",
+      "N'Guessankro",
+      "N'Guessankro-Kouman",
+      "N'Guessankro-Koumassi",
+      "N'Guessankro-Tchè",
+      "Tchè",
+      "Tchè-Kouassikro",
+      "Tchè-Kouman",
+      "Tchè-Koumassi",
+      "Tchè-N'Guessankro"
+    ]
+  },
+  {
+    "id": "sp-tienkoikro",
+    "departement_id": "dept-koun-fao",
+    "nom": "Tienkoikro",
+    "localites": [
+      "Aboudou-Kouassikro",
+      "Adom-Kouassikro",
+      "Akakro",
+      "Akossikro",
+      "Assoumankro",
+      "Attien-Kouassikro",
+      "Bofia",
+      "Broukro",
+      "Dadiékro",
+      "Diékro",
+      "Gbangbo",
+      "Gbangbo-Kouassikro",
+      "Kofikro",
+      "Kouakou-Kouassikro",
+      "Kouamékro",
+      "Kouassikro",
+      "N'Guessankro",
+      "N'Zianouan",
+      "Prikro",
+      "Sérébou",
+      "Sérébou-Kouassikro",
+      "Sérébou-N'Guessankro",
+      "Sérébou-Tiékro",
+      "Tiékro",
+      "Tienkoikro",
+      "Yobouakro"
+    ]
+  },
+  {
+    "id": "sp-kouassi-datkro",
+    "departement_id": "dept-koun-fao",
+    "nom": "Kouassi-Datékro",
+    "localites": [
+      "Kouassi-Datékro",
+      "Diégonépa",
+      "Gnagbodougnoa",
+      "Gnamanou",
+      "Godélilié",
+      "Kpétoua",
+      "Kodrobo",
+      "Kouadiokro",
+      "Sakihoro",
+      "Toa"
+    ]
+  },
+  {
+    "id": "sp-bandakagni-tomora",
+    "departement_id": "dept-sandgu",
+    "nom": "Bandakagni-Tomora",
+    "localites": [
+      "Bandakagni-Tomora",
+      "Kouassidougou",
+      "Kouadio-Kouassikro",
+      "Kouakou-Kouassikro",
+      "Kouamé-Kouassikro",
+      "Kouman-Kouassikro",
+      "Koumassi",
+      "Koumassi-Kouassikro",
+      "Koumassi-Tomora",
+      "Koumassi-Yao"
+    ]
+  },
+  {
+    "id": "sp-dimandougou",
+    "departement_id": "dept-sandgu",
+    "nom": "Dimandougou",
+    "localites": []
+  },
+  {
+    "id": "sp-sandgu",
+    "departement_id": "dept-sandgu",
+    "nom": "Sandégué",
+    "localites": [
+      "Sandégué-Village",
+      "Alloko-Sandégué",
+      "N'Gatta-Koffikro",
+      "Saria-Sandégué"
+    ]
+  },
+  {
+    "id": "sp-yorobodi",
+    "departement_id": "dept-sandgu",
+    "nom": "Yorobodi",
+    "localites": []
+  },
+  {
+    "id": "sp-assufry",
+    "departement_id": "dept-transua",
+    "nom": "Assuéfry",
+    "localites": [
+      "Assuéfry",
+      "Diégonépa",
+      "Gnagbodougnoa",
+      "Gnamanou",
+      "Godélilié",
+      "Kpétoua",
+      "Kodrobo",
+      "Kouadiokro",
+      "Sakihoro",
+      "Toa"
+    ]
+  },
+  {
+    "id": "sp-kouassi-niaguini",
+    "departement_id": "dept-transua",
+    "nom": "Kouassi-Niaguini",
+    "localites": [
+      "Kouassi-Niaguini",
+      "Aboudou-Kouassikro",
+      "Adom-Kouassikro",
+      "Akakro",
+      "Akobouakro",
+      "Assuikro",
+      "Attiekro",
+      "Bofoin",
+      "Dadi-Kouassikro"
+    ]
+  },
+  {
+    "id": "sp-transua",
+    "departement_id": "dept-transua",
+    "nom": "Transua",
+    "localites": [
+      "Transua-Village",
+      "Assuéfry (limite)",
+      "Right-Bank-Transua"
+    ]
+  },
+  {
+    "id": "sp-amanvi",
+    "departement_id": "dept-tanda",
+    "nom": "Amanvi",
+    "localites": [
+      "Amanvi",
+      "Abou-Secteur",
+      "Goliou",
+      "Grand-Gaza",
+      "Kpoda",
+      "Niouboua"
+    ]
+  },
+  {
+    "id": "sp-diamba",
+    "departement_id": "dept-tanda",
+    "nom": "Diamba",
+    "localites": [
+      "Diamba",
+      "Bodocipa-Nord",
+      "Diégonépa",
+      "Gnagbodougnoa",
+      "Gnamanou",
+      "Godélilié",
+      "Kpétoua",
+      "Kodrobo",
+      "Kouadiokro",
+      "Sakihoro",
+      "Toa"
+    ]
+  },
+  {
+    "id": "sp-tanda",
+    "departement_id": "dept-tanda",
+    "nom": "Tanda",
+    "localites": [
+      "Tanda-Village",
+      "Amanvi (limite)",
+      "Diamba (limite)",
+      "Gblétia-Zanzan",
+      "Right-Bank-Tanda",
+      "Ségbéhoa-Tanda",
+      "Sokourani",
+      "Tiékorodougou-Est"
+    ]
+  },
+  {
+    "id": "sp-tchedio",
+    "departement_id": "dept-tanda",
+    "nom": "Tchedio",
+    "localites": []
+  },
+  {
+    "id": "sp-dabou",
+    "departement_id": "dept-dabou",
+    "nom": "Dabou",
+    "localites": [
+      "Dabou-Village",
+      "Agneby",
+      "Ahua",
+      "Akradi",
+      "Allaba",
+      "Bodou",
+      "Bouboury",
+      "Cosrou",
+      "Débrimou",
+      "Gbougbo",
+      "Kanda",
+      "Lopou (limite)",
+      "Mooussou",
+      "N'Gattakro",
+      "Orbaff",
+      "Pass",
+      "Ségbéhoa-Grands-Ponts",
+      "Toupah",
+      "Vieil-Ayou"
+    ]
+  },
+  {
+    "id": "sp-lopou",
+    "departement_id": "dept-dabou",
+    "nom": "Lopou",
+    "localites": [
+      "Lopou",
+      "Alloko-Koffikro",
+      "Amian-Koffikro",
+      "Andianou",
+      "Dadié-Kouassikro",
+      "Goli",
+      "Kondrokro",
+      "N'Gatta-Kouassikro",
+      "N'Gbin",
+      "Ségbéhoa",
+      "Soko",
+      "Wawrenou"
+    ]
+  },
+  {
+    "id": "sp-toupah",
+    "departement_id": "dept-dabou",
+    "nom": "Toupah",
+    "localites": [
+      "Toupah",
+      "Abou-Secteur",
+      "Goliou",
+      "Grand-Gaza",
+      "Kpoda",
+      "Niouboua"
+    ]
+  },
+  {
+    "id": "sp-ahouanou",
+    "departement_id": "dept-grand-lahou",
+    "nom": "Ahouanou",
+    "localites": []
+  },
+  {
+    "id": "sp-bacanda",
+    "departement_id": "dept-grand-lahou",
+    "nom": "Bacanda",
+    "localites": []
+  },
+  {
+    "id": "sp-ebonou",
+    "departement_id": "dept-grand-lahou",
+    "nom": "Ebonou",
+    "localites": []
+  },
+  {
+    "id": "sp-grand-lahou",
+    "departement_id": "dept-grand-lahou",
+    "nom": "Grand-Lahou",
+    "localites": [
+      "Grand-Lahou-Village",
+      "Agba",
+      "Ahounan",
+      "Bakanda",
+      "Braffedon",
+      "Diangokro-Secteur",
+      "Elinso",
+      "Ggata-Lahou",
+      "Groguida",
+      "Irobo",
+      "Lahou-Kpanda",
+      "Liboli",
+      "Nandibo",
+      "N'Zida",
+      "Right-Bank-Lahou",
+      "Ségbéhoa-Sud",
+      "Tiégba"
+    ]
+  },
+  {
+    "id": "sp-toukouzou",
+    "departement_id": "dept-grand-lahou",
+    "nom": "Toukouzou",
+    "localites": []
+  },
+  {
+    "id": "sp-irobo",
+    "departement_id": "dept-grand-lahou",
+    "nom": "Irobo",
+    "localites": [
+      "Irobo",
+      "Akakro-Lahou",
+      "Gnamandji",
+      "Grobonou-Dan",
+      "Kani",
+      "Roa",
+      "Zaroko"
+    ]
+  },
+  {
+    "id": "sp-nzida",
+    "departement_id": "dept-grand-lahou",
+    "nom": "N'Zida",
+    "localites": [
+      "N'Zida",
+      "Diégonépa",
+      "Gnagbodougnoa",
+      "Gnamanou",
+      "Godélilié",
+      "Kpétoua",
+      "Kodrobo",
+      "Kouadiokro",
+      "Sakihoro",
+      "Toa"
+    ]
+  },
+  {
+    "id": "sp-attoutou",
+    "departement_id": "dept-jacqueville",
+    "nom": "Attoutou",
+    "localites": []
+  },
+  {
+    "id": "sp-jacqueville",
+    "departement_id": "dept-jacqueville",
+    "nom": "Jacqueville",
+    "localites": [
+      "Jacqueville-Village",
+      "Abreby",
+      "Addah",
+      "Avagou",
+      "Bobolo-Lagune",
+      "Grand-Jack",
+      "M'Bokrou",
+      "N'Djem",
+      "Right-Bank-Jacqueville",
+      "Sassako-Bégnini",
+      "Taboth",
+      "Tolou"
+    ]
+  },
+  {
+    "id": "sp-bangolo",
+    "departement_id": "dept-bangolo",
+    "nom": "Bangolo",
+    "localites": [
+      "Bangolo-Village",
+      "Bléniméouin (limite)",
+      "Diéouzon (limite)",
+      "Guinglo-Gbéan (limite)",
+      "Right-Bank-Bangolo",
+      "Ségbéhoa-Bangolo",
+      "Sokourani",
+      "Tiékorodougou-Est",
+      "Zou (limite)"
+    ]
+  },
+  {
+    "id": "sp-beoue-zibiao",
+    "departement_id": "dept-bangolo",
+    "nom": "Beoue-Zibiao",
+    "localites": [
+      "Béoué-Zibiao",
+      "Béoué-Dibiao",
+      "Béoué-Koulin",
+      "Béoué-Tépo",
+      "Béoué-Zibiao 2",
+      "Béoué-Zibiao 3",
+      "Béoué-Zibiao 4",
+      "Béoué-Zibiao 5",
+      "Béoué-Zibiao 6",
+      "Béoué-Zibiao 7",
+      "Béoué-Zibiao 8",
+      "Béoué-Zibiao 9",
+      "Béoué-Zibiao 10",
+      "Béoué-Zibiao 11",
+      "Béoué-Zibiao 12",
+      "Béoué-Zibiao 13",
+      "Béoué-Zibiao 14"
+    ]
+  },
+  {
+    "id": "sp-blenimeouin",
+    "departement_id": "dept-bangolo",
+    "nom": "Blenimeouin",
+    "localites": []
+  },
+  {
+    "id": "sp-dieouzon",
+    "departement_id": "dept-bangolo",
+    "nom": "Dieouzon",
+    "localites": []
+  },
+  {
+    "id": "sp-gohouo-zagna",
+    "departement_id": "dept-bangolo",
+    "nom": "Gohouo-Zagna",
+    "localites": []
+  },
+  {
+    "id": "sp-guinglo-tahouake",
+    "departement_id": "dept-bangolo",
+    "nom": "Guinglo-Tahouake",
+    "localites": []
+  },
+  {
+    "id": "sp-kahin-zarabaon",
+    "departement_id": "dept-bangolo",
+    "nom": "Kahin-Zarabaon",
+    "localites": []
+  },
+  {
+    "id": "sp-zeo",
+    "departement_id": "dept-bangolo",
+    "nom": "Zeo",
+    "localites": []
+  },
+  {
+    "id": "sp-zou",
+    "departement_id": "dept-bangolo",
+    "nom": "Zou",
+    "localites": [
+      "Zou",
+      "Diégonépa",
+      "Gnagbodougnoa",
+      "Gnamanou",
+      "Godélilié",
+      "Kpétoua",
+      "Kodrobo",
+      "Kouadiokro",
+      "Sakihoro",
+      "Toa"
+    ]
+  },
+  {
+    "id": "sp-blnimouin",
+    "departement_id": "dept-bangolo",
+    "nom": "Bléniméouin",
+    "localites": [
+      "Bléniméouin",
+      "Abou-Secteur",
+      "Goliou",
+      "Grand-Gaza",
+      "Kpoda",
+      "Niouboua"
+    ]
+  },
+  {
+    "id": "sp-diouzon",
+    "departement_id": "dept-bangolo",
+    "nom": "Diéouzon",
+    "localites": [
+      "Diéouzon",
+      "Bodocipa-Nord",
+      "Diégonépa",
+      "Gnagbodougnoa",
+      "Gnamanou",
+      "Godélilié",
+      "Kpétoua",
+      "Kodrobo",
+      "Kouadiokro",
+      "Sakihoro",
+      "Toa"
+    ]
+  },
+  {
+    "id": "sp-guinglo-gban",
+    "departement_id": "dept-bangolo",
+    "nom": "Guinglo-Gbéan",
+    "localites": [
+      "Guinglo-Gbéan",
+      "Alloko-Guinglo",
+      "N'Gatta-Koffikro",
+      "Saria-Guinglo"
+    ]
+  },
+  {
+    "id": "sp-bagohouo",
+    "departement_id": "dept-dukou",
+    "nom": "Bagohouo",
+    "localites": [
+      "Bagohouo",
+      "Diégonépa-Duékoué",
+      "Ggata-Bagohouo",
+      "Gnamandji",
+      "Grobonou-Dan",
+      "Kani",
+      "Roa",
+      "Zaroko"
+    ]
+  },
+  {
+    "id": "sp-dukou",
+    "departement_id": "dept-dukou",
+    "nom": "Duékoué",
+    "localites": [
+      "Duékoué-Village",
+      "Alloko-Koffikro (Campement)",
+      "Bagohouo (limite)",
+      "Diégonépa-Guémon",
+      "Fengolo",
+      "Gblétia-Duékoué",
+      "Ggata-Duékoué",
+      "Gnamandji",
+      "Guéhiébly (limite)",
+      "N'Golo-Koffikro",
+      "Right-Bank-Guémon",
+      "Ségbéhoa-Nord",
+      "Soko",
+      "Wawrenou"
+    ]
+  },
+  {
+    "id": "sp-gbapleu",
+    "departement_id": "dept-dukou",
+    "nom": "Gbapleu",
+    "localites": []
+  },
+  {
+    "id": "sp-guehiebly",
+    "departement_id": "dept-dukou",
+    "nom": "Guehiebly",
+    "localites": []
+  },
+  {
+    "id": "sp-guezon-duekoue",
+    "departement_id": "dept-dukou",
+    "nom": "Guezon-Duekoue",
+    "localites": []
+  },
+  {
+    "id": "sp-guhibly",
+    "departement_id": "dept-dukou",
+    "nom": "Guéhiébly",
+    "localites": [
+      "Guéhiébly",
+      "Abou-Secteur",
+      "Goliou",
+      "Grand-Gaza",
+      "Kpoda",
+      "Niouboua"
+    ]
+  },
+  {
+    "id": "sp-facobly",
+    "departement_id": "dept-facobly",
+    "nom": "Facobly",
+    "localites": [
+      "Facobly-Village",
+      "Kouan-Secteur",
+      "Right-Bank-Facobly",
+      "Ségbéhoa-Facobly",
+      "Tiékorodougou-Ouest"
+    ]
+  },
+  {
+    "id": "sp-guezon-de-facobly",
+    "departement_id": "dept-facobly",
+    "nom": "Guezon (De Facobly)",
+    "localites": [
+      "Bably",
+      "Béoué",
+      "Gbéibly",
+      "Gbézon",
+      "Guézon",
+      "Guézon-Nézon",
+      "Kouibly",
+      "Nézon",
+      "Péhé",
+      "Séably",
+      "Séizon",
+      "Tiably",
+      "Tiobly"
+    ]
+  },
+  {
+    "id": "sp-koua",
+    "departement_id": "dept-facobly",
+    "nom": "Koua",
+    "localites": [
+      "Koua",
+      "Béoué",
+      "Guinglo-Koulin",
+      "Koulin-Houyé",
+      "Koulin-Moyé",
+      "Koulin-Zoué",
+      "Koulin-Zouho"
+    ]
+  },
+  {
+    "id": "sp-semien",
+    "departement_id": "dept-facobly",
+    "nom": "Semien",
+    "localites": []
+  },
+  {
+    "id": "sp-tieny-siably",
+    "departement_id": "dept-facobly",
+    "nom": "Tieny-Siably",
+    "localites": []
+  },
+  {
+    "id": "sp-kouan",
+    "departement_id": "dept-facobly",
+    "nom": "Kouan",
+    "localites": [
+      "Kouan",
+      "Diégonépa",
+      "Gnagbodougnoa",
+      "Gnamanou",
+      "Godélilié",
+      "Kpétoua",
+      "Kodrobo",
+      "Kouadiokro",
+      "Sakihoro",
+      "Toa"
+    ]
+  },
+  {
+    "id": "sp-kouibly",
+    "departement_id": "dept-kouibly",
+    "nom": "Kouibly",
+    "localites": [
+      "Kouibly-Village",
+      "Alloko-Kouibly",
+      "Ggata-Kouibly",
+      "Gnamandji",
+      "Kani",
+      "N'Gatta-Koffikro",
+      "Roa",
+      "Saria-Kouibly",
+      "Zaroko"
+    ]
+  },
+  {
+    "id": "sp-nidrou",
+    "departement_id": "dept-kouibly",
+    "nom": "Nidrou",
+    "localites": []
+  },
+  {
+    "id": "sp-ouyably-gnondrou",
+    "departement_id": "dept-kouibly",
+    "nom": "Ouyably-Gnondrou",
+    "localites": []
+  },
+  {
+    "id": "sp-totrodrou",
+    "departement_id": "dept-kouibly",
+    "nom": "Totrodrou",
+    "localites": []
+  },
+  {
+    "id": "sp-bassawa",
+    "departement_id": "dept-dabakala",
+    "nom": "Bassawa",
+    "localites": [
+      "Bassawa",
+      "Akakro-Djimini",
+      "Gnamandji",
+      "Grobonou-Dan",
+      "Kani",
+      "Roa",
+      "Zaroko"
+    ]
+  },
+  {
+    "id": "sp-bonieredougou",
+    "departement_id": "dept-dabakala",
+    "nom": "Bonieredougou",
+    "localites": [
+      "Bonieredougou",
+      "Gbanadougou",
+      "Gbanassodougou",
+      "Gbondougou",
+      "Kouroukounadougou",
+      "N'Gbadougou",
+      "N'Gbondougou",
+      "N'Gorodougou",
+      "N'Gouandougou",
+      "N'Gouroudougou",
+      "N'Guessedougou",
+      "N'Guessodougou",
+      "N'Guinadougou",
+      "N'Guissidougou",
+      "N'Guissodougou",
+      "N'Guitidougou",
+      "N'Guitodougou"
+    ]
+  },
+  {
+    "id": "sp-dabakala",
+    "departement_id": "dept-dabakala",
+    "nom": "Dabakala",
+    "localites": [
+      "Dabakala-Village",
+      "Allokokro",
+      "Amian-Kouassikro",
+      "Bassawa (limite)",
+      "Boni-Dabakala",
+      "Boli",
+      "Bornon",
+      "Deffré",
+      "Foumbolo (limite)",
+      "Ggata-Dabakala",
+      "Kpapekou",
+      "My",
+      "Nafana",
+      "Right-Bank-Dabakala",
+      "Ségbéhoa-Est",
+      "Soko",
+      "Tall",
+      "Tendéné",
+      "Tow",
+      "Wollo"
+    ]
+  },
+  {
+    "id": "sp-foumbolo",
+    "departement_id": "dept-dabakala",
+    "nom": "Foumbolo",
+    "localites": [
+      "Foumbolo",
+      "Abou-Secteur",
+      "Goliou",
+      "Grand-Gaza",
+      "Kpoda",
+      "Niouboua"
+    ]
+  },
+  {
+    "id": "sp-niemene",
+    "departement_id": "dept-dabakala",
+    "nom": "Niemene",
+    "localites": [
+      "Békora",
+      "Kourouma",
+      "N'Ganon",
+      "N'Golodougou",
+      "N'Golo-Dioulasso",
+      "N'Golo-Sokoura",
+      "N'Gorla",
+      "N'Gouan",
+      "N'Guessankro",
+      "N'Guingui",
+      "Niéméné"
+    ]
+  },
+  {
+    "id": "sp-satama-sokoro",
+    "departement_id": "dept-dabakala",
+    "nom": "Satama-Sokoro",
+    "localites": [
+      "Satama-Sokoro",
+      "Kourouma",
+      "N'Golo",
+      "Tiékorodougou"
+    ]
+  },
+  {
+    "id": "sp-satama-sokoura",
+    "departement_id": "dept-dabakala",
+    "nom": "Satama-Sokoura",
+    "localites": []
+  },
+  {
+    "id": "sp-sokala-sobara",
+    "departement_id": "dept-dabakala",
+    "nom": "Sokala-Sobara",
+    "localites": [
+      "Sokala-Sobara",
+      "Kourouma",
+      "Kourouma-Sokala",
+      "Kourouma-Sobara"
+    ]
+  },
+  {
+    "id": "sp-tendene-bambarasso",
+    "departement_id": "dept-dabakala",
+    "nom": "Tendene-Bambarasso",
+    "localites": [
+      "Bambarasso",
+      "Bongono",
+      "Kafolo",
+      "Kafolo-Sokoura",
+      "Kafolo-Sokoura-Koro",
+      "Kafolo-Sokoura-N'Golo",
+      "Kafolo-Sokoura-Sokoura",
+      "Kafolo-Sokoura-Sokoura-Koro",
+      "Kafolo-Sokoura-Sokoura-N'Golo",
+      "Kouroumassi",
+      "Kouroumassi-Koro",
+      "Kouroumassi-N'Golo",
+      "Kouroumassi-Sokoura",
+      "Kouroumassi-Sokoura-Koro",
+      "Kouroumassi-Sokoura-N'Golo",
+      "Kouroumassi-Sokoura-Sokoura",
+      "Kouroumassi-Sokoura-Sokoura-Koro",
+      "Kouroumassi-Sokoura-Sokoura-N'Golo",
+      "Tendene",
+      "Tendene-Koro",
+      "Tendene-N'Golo",
+      "Tendene-Sokoura",
+      "Tendene-Sokoura-Koro",
+      "Tendene-Sokoura-N'Golo",
+      "Tendene-Sokoura-Sokoura",
+      "Tendene-Sokoura-Sokoura-Koro",
+      "Tendene-Sokoura-Sokoura-N'Golo"
+    ]
+  },
+  {
+    "id": "sp-yaossedougou",
+    "departement_id": "dept-dabakala",
+    "nom": "Yaossedougou",
+    "localites": []
+  },
+  {
+    "id": "sp-fronan",
+    "departement_id": "dept-katiola",
+    "nom": "Fronan",
+    "localites": [
+      "Fronan",
+      "Dari",
+      "Ggata-Fronan",
+      "Gnamandji",
+      "Grobonou-Dan",
+      "Kani",
+      "Roa",
+      "Zaroko"
+    ]
+  },
+  {
+    "id": "sp-katiola",
+    "departement_id": "dept-katiola",
+    "nom": "Katiola",
+    "localites": [
+      "Katiola-Village",
+      "Alloko-Koffikro (Campement)",
+      "Befi",
+      "Kadiolo-Secteur",
+      "Kiohan",
+      "Kofiplé",
+      "Konankro",
+      "Logbonou",
+      "N'Gattakro",
+      "Nikolo",
+      "Ségbéhoa-Sud",
+      "Solou-Hambol",
+      "Timbe (limite)",
+      "Torgokaha",
+      "Touro"
+    ]
+  },
+  {
+    "id": "sp-timbe",
+    "departement_id": "dept-katiola",
+    "nom": "Timbe",
+    "localites": [
+      "Timbe",
+      "Bodocipa-Nord",
+      "Diégonépa",
+      "Gnagbodougnoa",
+      "Gnamanou",
+      "Godélilié",
+      "Kpétoua",
+      "Kodrobo",
+      "Kouadiokro",
+      "Sakihoro",
+      "Toa"
+    ]
+  },
+  {
+    "id": "sp-arikokaha",
+    "departement_id": "dept-niakaramadougou",
+    "nom": "Arikokaha",
+    "localites": []
+  },
+  {
+    "id": "sp-badikaha",
+    "departement_id": "dept-niakaramadougou",
+    "nom": "Badikaha",
+    "localites": []
+  },
+  {
+    "id": "sp-niakaramadougou",
+    "departement_id": "dept-niakaramadougou",
+    "nom": "Niakaramadougou",
+    "localites": []
+  },
+  {
+    "id": "sp-niedekaha",
+    "departement_id": "dept-niakaramadougou",
+    "nom": "Niedekaha",
+    "localites": []
+  },
+  {
+    "id": "sp-tafire",
+    "departement_id": "dept-niakaramadougou",
+    "nom": "Tafire",
+    "localites": []
+  },
+  {
+    "id": "sp-tortiya",
+    "departement_id": "dept-niakaramadougou",
+    "nom": "Tortiya",
+    "localites": []
+  },
+  {
+    "id": "sp-niakaramandougou",
+    "departement_id": "dept-niakaramandougou",
+    "nom": "Niakaramandougou",
+    "localites": [
+      "Niakaramandougou-Village",
+      "Agboville-Nord",
+      "Arikokaha (limite)",
+      "Badikaha (limite)",
+      "Diangokro-Secteur",
+      "Elinso",
+      "Ggata-Niakara",
+      "Kanawolo",
+      "Kouto-Secteur",
+      "Langbré-Nord",
+      "N'Zida",
+      "Ouangolodougou-Secteur",
+      "Right-Bank-Niakara",
+      "Ségbéhoa-Nord",
+      "Tafiré (limite)",
+      "Tortiya (limite)"
+    ]
+  },
+  {
+    "id": "sp-tafir",
+    "departement_id": "dept-niakaramandougou",
+    "nom": "Tafiré",
+    "localites": [
+      "Tafiré",
+      "Alloko-Tafiré",
+      "Badikaha",
+      "N'Gatta-Koffikro",
+      "Saria-Tafiré"
+    ]
+  },
+  {
+    "id": "sp-tortiya",
+    "departement_id": "dept-niakaramandougou",
+    "nom": "Tortiya",
+    "localites": [
+      "Tortiya",
+      "Gblétia-Hambol",
+      "Gnamanou",
+      "Godélilié",
+      "Kpétoua",
+      "Saoua"
+    ]
+  },
+  {
+    "id": "sp-bediala",
+    "departement_id": "dept-daloa",
+    "nom": "Bediala",
+    "localites": [
+      "Bédiala",
+      "Guéya",
+      "Kouamé-Kouassikro",
+      "Kouassikro",
+      "Kouétinfla",
+      "Kouya",
+      "Niamien-Kouassikro",
+      "Niouboua",
+      "Zoukougbeu"
+    ]
+  },
+  {
+    "id": "sp-daloa",
+    "departement_id": "dept-daloa",
+    "nom": "Daloa",
+    "localites": [
+      "Daloa-Ville/Village",
+      "Alloko-Koffikro (Campement)",
+      "Bédiala (limite)",
+      "Gadouan (limite)",
+      "Ggata-Daloa",
+      "Gnamandji",
+      "Gonaté (limite)",
+      "N'Golo-Koffikro",
+      "Right-Bank-Sassandra",
+      "Ségbéhoa-Centre",
+      "Soko",
+      "Wawrenou",
+      "Zaïbo (limite)"
+    ]
+  },
+  {
+    "id": "sp-gadouan",
+    "departement_id": "dept-daloa",
+    "nom": "Gadouan",
+    "localites": [
+      "Gadouan",
+      "Abou-Secteur",
+      "Goliou",
+      "Grand-Gaza",
+      "Kpoda",
+      "Niouboua"
+    ]
+  },
+  {
+    "id": "sp-gboguhe",
+    "departement_id": "dept-daloa",
+    "nom": "Gboguhe",
+    "localites": []
+  },
+  {
+    "id": "sp-gonate",
+    "departement_id": "dept-daloa",
+    "nom": "Gonate",
+    "localites": []
+  },
+  {
+    "id": "sp-zabo",
+    "departement_id": "dept-daloa",
+    "nom": "Zaïbo",
+    "localites": [
+      "Zaïbo",
+      "Bodocipa-Nord",
+      "Diégonépa",
+      "Gnagbodougnoa",
+      "Gnamanou",
+      "Godélilié",
+      "Kpétoua",
+      "Kodrobo",
+      "Kouadiokro",
+      "Sakihoro",
+      "Toa"
+    ]
+  },
+  {
+    "id": "sp-bdiala",
+    "departement_id": "dept-daloa",
+    "nom": "Bédiala",
+    "localites": [
+      "Bédiala",
+      "Diégonépa-Sassandra",
+      "Ggata-Bédiala",
+      "Gnamandji",
+      "Grobonou-Dan",
+      "Kani",
+      "Roa",
+      "Zaroko"
+    ]
+  },
+  {
+    "id": "sp-gonat",
+    "departement_id": "dept-daloa",
+    "nom": "Gonaté",
+    "localites": [
+      "Gonaté",
+      "Akakro-Bété",
+      "Gnamandji",
+      "Grobonou-Dan",
+      "Kani",
+      "Roa",
+      "Zaroko"
+    ]
+  },
+  {
+    "id": "sp-boguedia",
+    "departement_id": "dept-issia",
+    "nom": "Boguedia",
+    "localites": []
+  },
+  {
+    "id": "sp-iboguhe",
+    "departement_id": "dept-issia",
+    "nom": "Iboguhe",
+    "localites": []
+  },
+  {
+    "id": "sp-issia",
+    "departement_id": "dept-issia",
+    "nom": "Issia",
+    "localites": [
+      "Issia-Village",
+      "Boguédia (limite)",
+      "Gblétia-Sassandra",
+      "Iboguhé (limite)",
+      "Namané (limite)",
+      "Right-Bank-Issia",
+      "Ségbéhoa-Issia",
+      "Saïoua (limite)",
+      "Sokourani",
+      "Tiékorodougou-Est"
+    ]
+  },
+  {
+    "id": "sp-nahio",
+    "departement_id": "dept-issia",
+    "nom": "Nahio",
+    "localites": []
+  },
+  {
+    "id": "sp-namane",
+    "departement_id": "dept-issia",
+    "nom": "Namane",
+    "localites": []
+  },
+  {
+    "id": "sp-saoua",
+    "departement_id": "dept-issia",
+    "nom": "Saïoua",
+    "localites": [
+      "Saïoua",
+      "Alloko-Saïoua",
+      "N'Gatta-Koffikro",
+      "Saria-Saïoua"
+    ]
+  },
+  {
+    "id": "sp-tapeguia",
+    "departement_id": "dept-issia",
+    "nom": "Tapeguia",
+    "localites": []
+  },
+  {
+    "id": "sp-bogudia",
+    "departement_id": "dept-issia",
+    "nom": "Boguédia",
+    "localites": [
+      "Boguédia",
+      "Abou-Secteur",
+      "Goliou",
+      "Grand-Gaza",
+      "Kpoda",
+      "Niouboua"
+    ]
+  },
+  {
+    "id": "sp-iboguh",
+    "departement_id": "dept-issia",
+    "nom": "Iboguhé",
+    "localites": [
+      "Iboguhé",
+      "Bodocipa-Sud",
+      "Diégonépa",
+      "Gnagbodougnoa",
+      "Gnamanou",
+      "Godélilié",
+      "Kpétoua",
+      "Kodrobo",
+      "Kouadiokro",
+      "Sakihoro",
+      "Toa"
+    ]
+  },
+  {
+    "id": "sp-bazra-nattis",
+    "departement_id": "dept-vavoua",
+    "nom": "Bazra-Nattis",
+    "localites": []
+  },
+  {
+    "id": "sp-dananon",
+    "departement_id": "dept-vavoua",
+    "nom": "Dananon",
+    "localites": []
+  },
+  {
+    "id": "sp-dania",
+    "departement_id": "dept-vavoua",
+    "nom": "Dania",
+    "localites": [
+      "Dania",
+      "Diégonépa",
+      "Gnagbodougnoa",
+      "Gnamanou",
+      "Godélilié",
+      "Kpétoua",
+      "Kodrobo",
+      "Kouadiokro",
+      "Sakihoro",
+      "Toa"
+    ]
+  },
+  {
+    "id": "sp-kettro-bassam",
+    "departement_id": "dept-vavoua",
+    "nom": "Kettro-Bassam",
+    "localites": []
+  },
+  {
+    "id": "sp-seitifla",
+    "departement_id": "dept-vavoua",
+    "nom": "Seitifla",
+    "localites": []
+  },
+  {
+    "id": "sp-vavoua",
+    "departement_id": "dept-vavoua",
+    "nom": "Vavoua",
+    "localites": [
+      "Vavoua-Village",
+      "Bazra-Nattis (limite)",
+      "Dania (limite)",
+      "Kétro-Bassam (limite)",
+      "Right-Bank-Vavoua",
+      "Ségbéhoa-Vavoua",
+      "Tiékorodougou-Nord"
+    ]
+  },
+  {
+    "id": "sp-domangbeu",
+    "departement_id": "dept-zoukougbeu",
+    "nom": "Domangbeu",
+    "localites": []
+  },
+  {
+    "id": "sp-gregbeu",
+    "departement_id": "dept-zoukougbeu",
+    "nom": "Gregbeu",
+    "localites": []
+  },
+  {
+    "id": "sp-guessabo",
+    "departement_id": "dept-zoukougbeu",
+    "nom": "Guessabo",
+    "localites": []
+  },
+  {
+    "id": "sp-zoukougbeu",
+    "departement_id": "dept-zoukougbeu",
+    "nom": "Zoukougbeu",
+    "localites": [
+      "Zoukougbeu-Village",
+      "Alloko-Zoukougbeu",
+      "Ggata-Zoukougbeu",
+      "Gnamandji",
+      "Kani",
+      "N'Gatta-Koffikro",
+      "Roa",
+      "Saria-Zoukougbeu",
+      "Zaroko"
+    ]
+  },
+  {
+    "id": "sp-daoukro",
+    "departement_id": "dept-daoukro",
+    "nom": "Daoukro",
+    "localites": [
+      "Daoukro-Village",
+      "Abidjan-Kouassikro",
+      "Agni-Assikasso",
+      "Ahougnanou",
+      "Akakro",
+      "Allokokro",
+      "Amian-Kouassikro",
+      "Anoumaba (limite)",
+      "Assanekro",
+      "Benanou",
+      "Dengbé",
+      "Diangokro-Secteur",
+      "Ettrokro (limite)",
+      "Ggata-Daoukro",
+      "Koutoukro",
+      "Lekikro",
+      "N'Gattakro",
+      "Ouellé-Secteur",
+      "Pepressou",
+      "Samanza",
+      "Ségbéhoa-Est"
+    ]
+  },
+  {
+    "id": "sp-ettrokro",
+    "departement_id": "dept-daoukro",
+    "nom": "Ettrokro",
+    "localites": [
+      "Ettrokro",
+      "Amoakro",
+      "Assikasso",
+      "Ekra-Koffikro",
+      "Gnamanou",
+      "Kpapekou-Iffou",
+      "N'Gatta-Koffikro",
+      "Saria-Iffou"
+    ]
+  },
+  {
+    "id": "sp-samanza",
+    "departement_id": "dept-daoukro",
+    "nom": "Samanza",
+    "localites": [
+      "Samanza",
+      "Akakro 2",
+      "Bodocipa",
+      "Diégonépa-Iffou",
+      "Gnagboya",
+      "Godélilié",
+      "Kpétoua",
+      "Saoua"
+    ]
+  },
+  {
+    "id": "sp-mbahiakro",
+    "departement_id": "dept-mbahiakro",
+    "nom": "M'Bahiakro",
+    "localites": [
+      "M'Bahiakro-Village",
+      "Agba-Kouassikro",
+      "Alloko-Koffikro",
+      "Amian-Koffikro",
+      "Andianou",
+      "Bonguéra (limite)",
+      "Dangou",
+      "Dadié-Kouassikro",
+      "Goli",
+      "Kondrokro",
+      "Kouassi-Kouassikro (limite)",
+      "N'Gatta-Kouassikro",
+      "N'Gbin",
+      "N'Zikro",
+      "Ségbéhoa",
+      "Soko",
+      "Wawrenou"
+    ]
+  },
+  {
+    "id": "sp-bongura",
+    "departement_id": "dept-mbahiakro",
+    "nom": "Bonguéra",
+    "localites": [
+      "Bonguéra",
+      "Abou-Secteur",
+      "Goliou",
+      "Grand-Gaza",
+      "Kpoda",
+      "Niouboua"
+    ]
+  },
+  {
+    "id": "sp-prikro",
+    "departement_id": "dept-prikro",
+    "nom": "Prikro",
+    "localites": [
+      "Prikro-Village",
+      "Abidjan-Prikro",
+      "Allokokro",
+      "Anianou",
+      "Assikasso-Nord",
+      "Boli-Prikro",
+      "Famienkro",
+      "Ggata-Prikro",
+      "Koffikro",
+      "Kpapekou",
+      "Nafana",
+      "Right-Bank-Prikro",
+      "Ségbéhoa-Nord",
+      "Tow"
+    ]
+  },
+  {
+    "id": "sp-famienkro",
+    "departement_id": "dept-prikro",
+    "nom": "Famienkro",
+    "localites": [
+      "Famienkro",
+      "Akakro-Prikro",
+      "Gnamandji",
+      "Grobonou-Dan",
+      "Kani",
+      "Roa",
+      "Zaroko"
+    ]
+  },
+  {
+    "id": "sp-ouell",
+    "departement_id": "dept-ouell",
+    "nom": "Ouellé",
+    "localites": [
+      "Ouellé-Village",
+      "Akakro-Ouellé",
+      "Alloko-Koffikro",
+      "Amian-Koffikro",
+      "Ananda",
+      "Assolo",
+      "Baléko",
+      "Diégonépa",
+      "Gnagbodougnoa",
+      "Gnamanou",
+      "Godélilié",
+      "Kpétoua",
+      "Kodrobo",
+      "Kouadiokro",
+      "Sakihoro",
+      "Toa"
+    ]
+  },
+  {
+    "id": "sp-ananda",
+    "departement_id": "dept-ouell",
+    "nom": "Ananda",
+    "localites": [
+      "Ananda",
+      "Ggata-Ouellé",
+      "Gnamandji",
+      "Grobonou-Dan",
+      "Kani",
+      "Roa",
+      "Zaroko"
+    ]
+  },
+  {
+    "id": "sp-abengourou",
+    "departement_id": "dept-abengourou",
+    "nom": "Abengourou",
+    "localites": [
+      "Abengourou-Village",
+      "Adaou",
+      "Adonikro",
+      "Agnizankro",
+      "Akoizankro",
+      "Amélékia",
+      "Aniassué",
+      "Appoisso",
+      "Appoueba",
+      "Assehoun",
+      "Assièkro",
+      "Bédiékro",
+      "Bossématié",
+      "Ebilassokro",
+      "Ehuikro",
+      "Kodjinan",
+      "Koitienkro",
+      "Niablé (limite)",
+      "Ségbéhoa-Est",
+      "Yakassé-Féeyassé",
+      "Zaranou"
+    ]
+  },
+  {
+    "id": "sp-amelekia",
+    "departement_id": "dept-abengourou",
+    "nom": "Amelekia",
+    "localites": []
+  },
+  {
+    "id": "sp-aniassue",
+    "departement_id": "dept-abengourou",
+    "nom": "Aniassue",
+    "localites": []
+  },
+  {
+    "id": "sp-ebilassokro",
+    "departement_id": "dept-abengourou",
+    "nom": "Ebilassokro",
+    "localites": []
+  },
+  {
+    "id": "sp-niable",
+    "departement_id": "dept-abengourou",
+    "nom": "Niable",
+    "localites": []
+  },
+  {
+    "id": "sp-yakasse-feyasse",
+    "departement_id": "dept-abengourou",
+    "nom": "Yakasse-Feyasse",
+    "localites": []
+  },
+  {
+    "id": "sp-zaranou",
+    "departement_id": "dept-abengourou",
+    "nom": "Zaranou",
+    "localites": []
+  },
+  {
+    "id": "sp-amlkia",
+    "departement_id": "dept-abengourou",
+    "nom": "Amélékia",
+    "localites": [
+      "Amélékia",
+      "Alloko-Koffikro",
+      "Amian-Koffikro",
+      "Andianou",
+      "Dadié-Kouassikro",
+      "Goli",
+      "Kondrokro",
+      "N'Gatta-Kouassikro",
+      "N'Gbin",
+      "Soko",
+      "Wawrenou"
+    ]
+  },
+  {
+    "id": "sp-aniassu",
+    "departement_id": "dept-abengourou",
+    "nom": "Aniassué",
+    "localites": [
+      "Aniassué",
+      "Abou-Secteur",
+      "Goliou",
+      "Grand-Gaza",
+      "Kpoda",
+      "Niouboua"
+    ]
+  },
+  {
+    "id": "sp-niabl",
+    "departement_id": "dept-abengourou",
+    "nom": "Niablé",
+    "localites": [
+      "Niablé",
+      "Diégonépa-Est",
+      "Ggata-Niablé",
+      "Gnamandji",
+      "Grobonou-Dan",
+      "Kani",
+      "Roa",
+      "Zaroko"
+    ]
+  },
+  {
+    "id": "sp-agnibilkrou",
+    "departement_id": "dept-agnibilkrou",
+    "nom": "Agnibilékrou",
+    "localites": [
+      "Agnibilékrou-Village",
+      "Akadamé",
+      "Akoko",
+      "Assofou",
+      "Assuéfry (limite)",
+      "Duffrébo",
+      "Kétesso",
+      "Kongodja",
+      "N'Ggasso",
+      "Right-Bank-Agnibilékrou",
+      "Ségbéhoa-Nord",
+      "Tanguelan",
+      "Yobouakro"
+    ]
+  },
+  {
+    "id": "sp-akoboissue",
+    "departement_id": "dept-agnibilkrou",
+    "nom": "Akoboissue",
+    "localites": []
+  },
+  {
+    "id": "sp-dame",
+    "departement_id": "dept-agnibilkrou",
+    "nom": "Dame",
+    "localites": []
+  },
+  {
+    "id": "sp-duffrebo",
+    "departement_id": "dept-agnibilkrou",
+    "nom": "Duffrebo",
+    "localites": []
+  },
+  {
+    "id": "sp-tanguelan",
+    "departement_id": "dept-agnibilkrou",
+    "nom": "Tanguelan",
+    "localites": [
+      "Tanguelan",
+      "Diégonépa",
+      "Gnagbodougnoa",
+      "Gnamanou",
+      "Godélilié",
+      "Kpétoua",
+      "Kodrobo",
+      "Kouadiokro",
+      "Sakihoro",
+      "Toa"
+    ]
+  },
+  {
+    "id": "sp-duffrbo",
+    "departement_id": "dept-agnibilkrou",
+    "nom": "Duffrébo",
+    "localites": [
+      "Duffrébo",
+      "Akakro-Djuablin",
+      "Gnamandji",
+      "Grobonou-Dan",
+      "Kani",
+      "Roa",
+      "Zaroko"
+    ]
+  },
+  {
+    "id": "sp-betti",
+    "departement_id": "dept-betti",
+    "nom": "Bettié",
+    "localites": [
+      "Bettié-Village",
+      "Abradinou",
+      "Akrébi",
+      "Attokro",
+      "Biéby-Secteur",
+      "Diangokro-Sud",
+      "Elinso",
+      "Ggata-Bettié",
+      "Kossonoukro",
+      "Right-Bank-Bettié",
+      "Ségbéhoa-Sud"
+    ]
+  },
+  {
+    "id": "sp-diamarakro",
+    "departement_id": "dept-betti",
+    "nom": "Diamarakro",
+    "localites": []
+  },
+  {
+    "id": "sp-gblban",
+    "departement_id": "dept-gblban",
+    "nom": "Gbéléban",
+    "localites": [
+      "Gbéléban-Village",
+      "Baala",
+      "Badiola",
+      "Gbadi",
+      "Gblétia-Nord",
+      "Gouela",
+      "Mahandougou",
+      "Odienné-Secteur",
+      "Seydougou (limite)"
+    ]
+  },
+  {
+    "id": "sp-samango",
+    "departement_id": "dept-gblban",
+    "nom": "Samango",
+    "localites": []
+  },
+  {
+    "id": "sp-seydougou",
+    "departement_id": "dept-gblban",
+    "nom": "Seydougou",
+    "localites": [
+      "Seydougou",
+      "Kabala",
+      "Kohoma",
+      "Niamana",
+      "Ouaragahio-Secteur",
+      "Right-Bank-Seydougou"
+    ]
+  },
+  {
+    "id": "sp-fengolo",
+    "departement_id": "dept-madinani",
+    "nom": "Fengolo",
+    "localites": []
+  },
+  {
+    "id": "sp-madinani",
+    "departement_id": "dept-madinani",
+    "nom": "Madinani",
+    "localites": [
+      "Madinani-Village",
+      "Fengolo",
+      "Gbon-Secteur",
+      "Kabala",
+      "Kokoun",
+      "N'Golo-Kadiolo",
+      "Ngoloblasso",
+      "Right-Bank-Madinani",
+      "Ségbéhoa-Est",
+      "Tori",
+      "Touroni"
+    ]
+  },
+  {
+    "id": "sp-ngoloblasso",
+    "departement_id": "dept-madinani",
+    "nom": "N’Goloblasso",
+    "localites": []
+  },
+  {
+    "id": "sp-bako",
+    "departement_id": "dept-odienn",
+    "nom": "Bako",
+    "localites": []
+  },
+  {
+    "id": "sp-bougousso",
+    "departement_id": "dept-odienn",
+    "nom": "Bougousso",
+    "localites": []
+  },
+  {
+    "id": "sp-dioulatiedougou",
+    "departement_id": "dept-odienn",
+    "nom": "Dioulatiedougou",
+    "localites": []
+  },
+  {
+    "id": "sp-odienn",
+    "departement_id": "dept-odienn",
+    "nom": "Odienné",
+    "localites": [
+      "Odienné-Village",
+      "Alloko-Koffikro (Campement)",
+      "Banankoro",
+      "Bassékodougou",
+      "Bembasso",
+      "Dioulatiédougou (limite)",
+      "Gbansolo",
+      "Gbo",
+      "Goulia (limite)",
+      "Kimbirila-Sud",
+      "Logouana",
+      "Massala",
+      "N'Golo-Koffikro",
+      "Odienné-Rural",
+      "Samatiguila (limite)",
+      "Ségbéhoa-Nord",
+      "Sirana",
+      "Sokourani",
+      "Syllakoro",
+      "Tougousso",
+      "Washington"
+    ]
+  },
+  {
+    "id": "sp-tieme",
+    "departement_id": "dept-odienn",
+    "nom": "Tieme",
+    "localites": []
+  },
+  {
+    "id": "sp-dioulatidougou",
+    "departement_id": "dept-odienn",
+    "nom": "Dioulatiédougou",
+    "localites": [
+      "Dioulatiédougou",
+      "Koro-Secteur",
+      "Kourouba",
+      "Nafana",
+      "Right-Bank-Kaba",
+      "Sémé"
+    ]
+  },
+  {
+    "id": "sp-kimbirila-sud",
+    "departement_id": "dept-odienn",
+    "nom": "Kimbirila-Sud",
+    "localites": [
+      "Kimbirila-Sud",
+      "Diégonépa-Nord",
+      "Ggata-Kimbirila",
+      "Gnamandji",
+      "Grobonou-Dan",
+      "Kani",
+      "Roa",
+      "Zaroko"
+    ]
+  },
+  {
+    "id": "sp-kimbirila-sud",
+    "departement_id": "dept-samatiguila",
+    "nom": "Kimbirila-Sud",
+    "localites": []
+  },
+  {
+    "id": "sp-samatiguila",
+    "departement_id": "dept-samatiguila",
+    "nom": "Samatiguila",
+    "localites": [
+      "Samatiguila-Village",
+      "Bindou",
+      "Kébi",
+      "Koriani",
+      "Mahandiana-Sokourani",
+      "Right-Bank-Samatiguila",
+      "Ségbéhoa-Samatiguila",
+      "Tiékorodougou"
+    ]
+  },
+  {
+    "id": "sp-gbongaha",
+    "departement_id": "dept-seguelon",
+    "nom": "Gbongaha",
+    "localites": []
+  },
+  {
+    "id": "sp-seguelon",
+    "departement_id": "dept-seguelon",
+    "nom": "Seguelon",
+    "localites": []
+  },
+  {
+    "id": "sp-sguelon",
+    "departement_id": "dept-sguelon",
+    "nom": "Séguelon",
+    "localites": [
+      "Séguelon-Village",
+      "Alloko-Séguelon",
+      "Bodocipa-Nord",
+      "Diégonépa",
+      "Gnagbodougnoa",
+      "Gnamanou",
+      "Godélilié",
+      "Kpétoua",
+      "Kodrobo",
+      "Kouadiokro",
+      "Sakihoro",
+      "Toa"
+    ]
+  },
+  {
+    "id": "sp-chiepo",
+    "departement_id": "dept-divo",
+    "nom": "Chiepo",
+    "localites": []
+  },
+  {
+    "id": "sp-didoko",
+    "departement_id": "dept-divo",
+    "nom": "Didoko",
+    "localites": [
+      "Didoko",
+      "Abou-Secteur",
+      "Goliou",
+      "Grand-Gaza",
+      "Kpoda",
+      "Niouboua"
+    ]
+  },
+  {
+    "id": "sp-divo",
+    "departement_id": "dept-divo",
+    "nom": "Divo",
+    "localites": [
+      "Divo-Village",
+      "Alloko-Koffikro (Campement)",
+      "Chiépo (limite)",
+      "Didoko (limite)",
+      "Diégonépa-Lôh",
+      "Ggata-Divo",
+      "Gnamandji",
+      "Hiré (limite)",
+      "N'Golo-Koffikro",
+      "Ogoudou (limite)",
+      "Right-Bank-Djiboua",
+      "Ségbéhoa-Sud",
+      "Soko",
+      "Wawrenou",
+      "Zégo"
+    ]
+  },
+  {
+    "id": "sp-hire",
+    "departement_id": "dept-divo",
+    "nom": "Hire",
+    "localites": []
+  },
+  {
+    "id": "sp-nebo",
+    "departement_id": "dept-divo",
+    "nom": "Nebo",
+    "localites": [
+      "Nebo",
+      "Braboré",
+      "Diégonépa",
+      "Gnagbodougnoa",
+      "Gnakoubouo",
+      "Godélilié",
+      "Logorou",
+      "Sinfra-Campement"
+    ]
+  },
+  {
+    "id": "sp-ogoudou",
+    "departement_id": "dept-divo",
+    "nom": "Ogoudou",
+    "localites": [
+      "Ogoudou",
+      "Bodocipa-Nord",
+      "Diégonépa",
+      "Gnagbodougnoa",
+      "Gnamanou",
+      "Godélilié",
+      "Kpétoua",
+      "Kodrobo",
+      "Kouadiokro",
+      "Sakihoro",
+      "Toa"
+    ]
+  },
+  {
+    "id": "sp-zego",
+    "departement_id": "dept-divo",
+    "nom": "Zego",
+    "localites": []
+  },
+  {
+    "id": "sp-hir",
+    "departement_id": "dept-divo",
+    "nom": "Hiré",
+    "localites": [
+      "Hiré",
+      "Akakro-Dida",
+      "Gnamandji",
+      "Grobonou-Dan",
+      "Kani",
+      "Roa",
+      "Zaroko"
+    ]
+  },
+  {
+    "id": "sp-chipo",
+    "departement_id": "dept-divo",
+    "nom": "Chiépo",
+    "localites": [
+      "Chiépo",
+      "Diégonépa-Divo",
+      "Ggata-Chiépo",
+      "Gnamandji",
+      "Grobonou-Dan",
+      "Kani",
+      "Roa",
+      "Zaroko"
+    ]
+  },
+  {
+    "id": "sp-dairo-didizo",
+    "departement_id": "dept-guitry",
+    "nom": "Dairo-Didizo",
+    "localites": []
+  },
+  {
+    "id": "sp-guitry",
+    "departement_id": "dept-guitry",
+    "nom": "Guitry",
+    "localites": [
+      "Guitry-Village",
+      "Dairo-Didoko (limite)",
+      "Ggata-Guitry",
+      "Gnamandji",
+      "Kani",
+      "N'Gatta-Koffikro",
+      "Roa",
+      "Saria-Guitry",
+      "Zaroko"
+    ]
+  },
+  {
+    "id": "sp-lauzoua",
+    "departement_id": "dept-guitry",
+    "nom": "Lauzoua",
+    "localites": []
+  },
+  {
+    "id": "sp-yocoboue",
+    "departement_id": "dept-guitry",
+    "nom": "Yocoboue",
+    "localites": []
+  },
+  {
+    "id": "sp-dairo-didoko",
+    "departement_id": "dept-guitry",
+    "nom": "Dairo-Didoko",
+    "localites": [
+      "Dairo-Didoko",
+      "Diégonépa",
+      "Gnagbodougnoa",
+      "Gnamanou",
+      "Godélilié",
+      "Kpétoua",
+      "Kodrobo",
+      "Kouadiokro",
+      "Sakihoro",
+      "Toa"
+    ]
+  },
+  {
+    "id": "sp-djidji",
+    "departement_id": "dept-lakota",
+    "nom": "Djidji",
+    "localites": [
+      "Djidji",
+      "Abou-Secteur",
+      "Goliou",
+      "Grand-Gaza",
+      "Kpoda",
+      "Niouboua"
+    ]
+  },
+  {
+    "id": "sp-gagore",
+    "departement_id": "dept-lakota",
+    "nom": "Gagore",
+    "localites": []
+  },
+  {
+    "id": "sp-goudouko",
+    "departement_id": "dept-lakota",
+    "nom": "Goudouko",
+    "localites": [
+      "Goudouko",
+      "Bodocipa-Nord",
+      "Diégonépa",
+      "Gnagbodougnoa",
+      "Gnamanou",
+      "Godélilié",
+      "Kpétoua",
+      "Kodrobo",
+      "Kouadiokro",
+      "Sakihoro",
+      "Toa"
+    ]
+  },
+  {
+    "id": "sp-lakota",
+    "departement_id": "dept-lakota",
+    "nom": "Lakota",
+    "localites": [
+      "Lakota-Village",
+      "Djidji (limite)",
+      "Gblétia-Djiboua",
+      "Gbon-Secteur",
+      "Goudouko (limite)",
+      "Niambézaria (limite)",
+      "Right-Bank-Lakota",
+      "Ségbéhoa-Lakota",
+      "Sokourani",
+      "Tiékorodougou-Ouest"
+    ]
+  },
+  {
+    "id": "sp-niambezaria",
+    "departement_id": "dept-lakota",
+    "nom": "Niambezaria",
+    "localites": []
+  },
+  {
+    "id": "sp-zikisso",
+    "departement_id": "dept-lakota",
+    "nom": "Zikisso",
+    "localites": []
+  },
+  {
+    "id": "sp-niambzaria",
+    "departement_id": "dept-lakota",
+    "nom": "Niambézaria",
+    "localites": [
+      "Niambézaria",
+      "Alloko-Niambé",
+      "N'Gatta-Koffikro",
+      "Saria-Niambé"
+    ]
+  },
+  {
+    "id": "sp-bonon",
+    "departement_id": "dept-bonon",
+    "nom": "Bonon",
+    "localites": [
+      "Bonon",
+      "Zaguiéta"
+    ]
+  },
+  {
+    "id": "sp-zaguieta",
+    "departement_id": "dept-bonon",
+    "nom": "Zaguieta",
+    "localites": []
+  },
+  {
+    "id": "sp-begbessou",
+    "departement_id": "dept-bouafl",
+    "nom": "Begbessou",
+    "localites": []
+  },
+  {
+    "id": "sp-bouafl",
+    "departement_id": "dept-bouafl",
+    "nom": "Bouaflé",
+    "localites": [
+      "Bouaflé-Village",
+      "Alloko-Koffikro (Campement)",
+      "Begbessou",
+      "Bonon (limite)",
+      "Ggata-Bouaflé",
+      "Gnamandji",
+      "N'Golo-Koffikro",
+      "Pakouabo (limite)",
+      "Right-Bank-Marahoué",
+      "Ségbéhoa-Centre",
+      "Soko",
+      "Tibéita",
+      "Wawrenou",
+      "Zaguiéta"
+    ]
+  },
+  {
+    "id": "sp-ndouffoukankro",
+    "departement_id": "dept-bouafl",
+    "nom": "N'Douffoukankro",
+    "localites": []
+  },
+  {
+    "id": "sp-pakouabo",
+    "departement_id": "dept-bouafl",
+    "nom": "Pakouabo",
+    "localites": [
+      "Pakouabo",
+      "Abou-Secteur",
+      "Goliou",
+      "Grand-Gaza",
+      "Kpoda",
+      "Niouboua"
+    ]
+  },
+  {
+    "id": "sp-tibeita",
+    "departement_id": "dept-bouafl",
+    "nom": "Tibeita",
+    "localites": []
+  },
+  {
+    "id": "sp-bonon",
+    "departement_id": "dept-bouafl",
+    "nom": "Bonon",
+    "localites": [
+      "Bonon",
+      "Diégonépa-Marahoué",
+      "Ggata-Bonon",
+      "Gnamandji",
+      "Grobonou-Dan",
+      "Kani",
+      "Roa",
+      "Zaroko"
+    ]
+  },
+  {
+    "id": "sp-gohitafla",
+    "departement_id": "dept-gohitafla",
+    "nom": "Gohitafla",
+    "localites": []
+  },
+  {
+    "id": "sp-iriefla",
+    "departement_id": "dept-gohitafla",
+    "nom": "Iriefla",
+    "localites": []
+  },
+  {
+    "id": "sp-maminigui",
+    "departement_id": "dept-gohitafla",
+    "nom": "Maminigui",
+    "localites": []
+  },
+  {
+    "id": "sp-bazre",
+    "departement_id": "dept-sinfra",
+    "nom": "Bazre",
+    "localites": []
+  },
+  {
+    "id": "sp-kononfla",
+    "departement_id": "dept-sinfra",
+    "nom": "Kononfla",
+    "localites": [
+      "Kononfla",
+      "Bodocipa-Sud",
+      "Diégonépa",
+      "Gnagbodougnoa",
+      "Gnamanou",
+      "Godélilié",
+      "Kpétoua",
+      "Kodrobo",
+      "Kouadiokro",
+      "Sakihoro",
+      "Toa"
+    ]
+  },
+  {
+    "id": "sp-kouetinfla",
+    "departement_id": "dept-sinfra",
+    "nom": "Kouetinfla",
+    "localites": []
+  },
+  {
+    "id": "sp-sinfra",
+    "departement_id": "dept-sinfra",
+    "nom": "Sinfra",
+    "localites": [
+      "Sinfra-Village",
+      "Bazré (limite)",
+      "Gblétia-Marahoué",
+      "Kononfla (limite)",
+      "Kouétinfla",
+      "Right-Bank-Sinfra",
+      "Ségbéhoa-Sinfra",
+      "Sokourani",
+      "Tiékorodougou-Est"
+    ]
+  },
+  {
+    "id": "sp-bazr",
+    "departement_id": "dept-sinfra",
+    "nom": "Bazré",
+    "localites": [
+      "Bazré",
+      "Abou-Secteur",
+      "Goliou",
+      "Grand-Gaza",
+      "Kpoda",
+      "Niouboua"
+    ]
+  },
+  {
+    "id": "sp-kanzra",
+    "departement_id": "dept-zunoula",
+    "nom": "Kanzra",
+    "localites": []
+  },
+  {
+    "id": "sp-voueboufla",
+    "departement_id": "dept-zunoula",
+    "nom": "Voueboufla",
+    "localites": []
+  },
+  {
+    "id": "sp-zanzra",
+    "departement_id": "dept-zunoula",
+    "nom": "Zanzra",
+    "localites": []
+  },
+  {
+    "id": "sp-zunoula",
+    "departement_id": "dept-zunoula",
+    "nom": "Zuénoula",
+    "localites": [
+      "Zuénoula-Village",
+      "Gohitafla (limite)",
+      "Kanzra",
+      "Maminigui",
+      "Right-Bank-Zuénoula",
+      "Ségbéhoa-Zuénoula",
+      "Tiékorodougou-Nord",
+      "Vouéboufla"
+    ]
+  },
+  {
+    "id": "sp-gohitafla",
+    "departement_id": "dept-zunoula",
+    "nom": "Gohitafla",
+    "localites": [
+      "Gohitafla",
+      "Diégonépa",
+      "Gnagbodougnoa",
+      "Gnamanou",
+      "Godélilié",
+      "Kpétoua",
+      "Kodrobo",
+      "Kouadiokro",
+      "Sakihoro",
+      "Toa"
+    ]
+  },
+  {
+    "id": "sp-arrah",
+    "departement_id": "dept-arrah",
+    "nom": "Arrah",
+    "localites": [
+      "Arrah-Village",
+      "Abongoua-Arrah",
+      "Alloko-Koffikro",
+      "Amian-Koffikro",
+      "Andianou",
+      "Assikasso-Nord",
+      "Bonguéra-Secteur",
+      "Dadié-Kouassikro",
+      "Goli",
+      "Kondrokro",
+      "Kotobi (limite)",
+      "Kouassi-Kouassikro",
+      "N'Gatta-Kouassikro",
+      "N'Gbin",
+      "Ségbéhoa",
+      "Soko",
+      "Wawrenou"
+    ]
+  },
+  {
+    "id": "sp-kotobi",
+    "departement_id": "dept-arrah",
+    "nom": "Kotobi",
+    "localites": [
+      "Kotobi",
+      "Abou-Secteur",
+      "Goliou",
+      "Grand-Gaza",
+      "Kpoda",
+      "Niouboua"
+    ]
+  },
+  {
+    "id": "sp-kregbe",
+    "departement_id": "dept-arrah",
+    "nom": "Kregbe",
+    "localites": []
+  },
+  {
+    "id": "sp-ande",
+    "departement_id": "dept-bongouanou",
+    "nom": "Ande",
+    "localites": []
+  },
+  {
+    "id": "sp-assie-koumassi",
+    "departement_id": "dept-bongouanou",
+    "nom": "Assie-Koumassi",
+    "localites": []
+  },
+  {
+    "id": "sp-bongouanou",
+    "departement_id": "dept-bongouanou",
+    "nom": "Bongouanou",
+    "localites": [
+      "Bongouanou-Village",
+      "Abongoua",
+      "Agba-Kouassikro",
+      "Ahounan",
+      "Akakro",
+      "Allokokro",
+      "Amian-Kouassikro",
+      "Andé (limite)",
+      "Anoumaba",
+      "Assié-Kouamékro",
+      "Assikasso",
+      "Banabo",
+      "Bouadikro",
+      "Diangokro-Secteur",
+      "Elinso",
+      "Ggata-Bongouanou",
+      "Kangrassou",
+      "Kotobi",
+      "N'Gattakro",
+      "N'Zikro",
+      "Ségbéhoa-Moronou"
+    ]
+  },
+  {
+    "id": "sp-nguessankro-bongouanou",
+    "departement_id": "dept-bongouanou",
+    "nom": "N’Guessankro-Bongouanou",
+    "localites": []
+  },
+  {
+    "id": "sp-and",
+    "departement_id": "dept-bongouanou",
+    "nom": "Andé",
+    "localites": [
+      "Andé",
+      "Agboville-Secteur",
+      "Amoakro",
+      "Ekra-Koffikro",
+      "Gnamanou",
+      "Kpapekou-Moronou",
+      "N'Gatta-Koffikro",
+      "Saria-Moronou"
+    ]
+  },
+  {
+    "id": "sp-anoumaba",
+    "departement_id": "dept-bongouanou",
+    "nom": "Anoumaba",
+    "localites": [
+      "Anoumaba",
+      "Akakro 2",
+      "Bodocipa",
+      "Diégonépa-Moronou",
+      "Gnagboya",
+      "Godélilié",
+      "Kpétoua",
+      "Saoua"
+    ]
+  },
+  {
+    "id": "sp-anoumaba",
+    "departement_id": "dept-mbatto",
+    "nom": "Anoumaba",
+    "localites": []
+  },
+  {
+    "id": "sp-assahara",
+    "departement_id": "dept-mbatto",
+    "nom": "Assahara",
+    "localites": []
+  },
+  {
+    "id": "sp-mbatto",
+    "departement_id": "dept-mbatto",
+    "nom": "M'Batto",
+    "localites": [
+      "M'Batto-Village",
+      "Ahua",
+      "Allokokro",
+      "Anianou",
+      "Assikasso-Sud",
+      "Boli-M'Batto",
+      "Diangokro",
+      "Ggata-M'Batto",
+      "Koffikro",
+      "Kpapekou",
+      "N'Zidan",
+      "Right-Bank-M'Batto",
+      "Ségbéhoa-Sud",
+      "Tiémélékro (limite)",
+      "Tow"
+    ]
+  },
+  {
+    "id": "sp-tiemelekro",
+    "departement_id": "dept-mbatto",
+    "nom": "Tiemelekro",
+    "localites": []
+  },
+  {
+    "id": "sp-timlkro",
+    "departement_id": "dept-mbatto",
+    "nom": "Tiémélékro",
+    "localites": [
+      "Tiémélékro",
+      "Akakro-M'Batto",
+      "Gnamandji",
+      "Grobonou-Dan",
+      "Kani",
+      "Roa",
+      "Zaroko"
+    ]
+  },
+  {
+    "id": "sp-buyo",
+    "departement_id": "dept-buyo",
+    "nom": "Buyo",
+    "localites": [
+      "Buyo-Village",
+      "Gblétia-Nawa",
+      "Gbon-Secteur",
+      "Right-Bank-Buyo",
+      "Ségbéhoa-Buyo",
+      "Tiékorodougou-Ouest"
+    ]
+  },
+  {
+    "id": "sp-dapeoua",
+    "departement_id": "dept-buyo",
+    "nom": "Dapeoua",
+    "localites": []
+  },
+  {
+    "id": "sp-gnagboya",
+    "departement_id": "dept-buyo",
+    "nom": "Gnagboya",
+    "localites": [
+      "Gnagboya",
+      "Bellevue",
+      "Dozon",
+      "Gbaléko 3",
+      "Gnamanou",
+      "Kpapan",
+      "Léléblé",
+      "Mayakoffi",
+      "Toa"
+    ]
+  },
+  {
+    "id": "sp-dabouyo",
+    "departement_id": "dept-guyo",
+    "nom": "Dabouyo",
+    "localites": [
+      "Dabouyo",
+      "Béyo",
+      "Boli",
+      "Gbaléko",
+      "Gbazi",
+      "Goliou",
+      "Grand-Gaza",
+      "Kpapekou",
+      "Léléboua",
+      "Niouboua"
+    ]
+  },
+  {
+    "id": "sp-guyo",
+    "departement_id": "dept-guyo",
+    "nom": "Guéyo",
+    "localites": [
+      "Guéyo-Village",
+      "Baléko",
+      "Bodocipa",
+      "Diégonépa",
+      "Digbampalégnoa",
+      "Gnagboya",
+      "Gnamakoa",
+      "Godélilié",
+      "Kpétoua",
+      "Logbo",
+      "Niaprahio",
+      "N'Zikro",
+      "Saoua",
+      "Saria",
+      "Tagbayo",
+      "Zégo"
+    ]
+  },
+  {
+    "id": "sp-gnamangui",
+    "departement_id": "dept-magui",
+    "nom": "Gnamangui",
+    "localites": []
+  },
+  {
+    "id": "sp-magui",
+    "departement_id": "dept-magui",
+    "nom": "Méagui",
+    "localites": [
+      "Méagui-Village",
+      "Ggata-Méagui",
+      "Gnith",
+      "Hana",
+      "Klonou",
+      "Oupoyo (limite)",
+      "Right-Bank-Méagui",
+      "Ségbéhoa-Méagui",
+      "Sokourani",
+      "Touagui"
+    ]
+  },
+  {
+    "id": "sp-oupoyo",
+    "departement_id": "dept-magui",
+    "nom": "Oupoyo",
+    "localites": [
+      "Oupoyo",
+      "Dahili",
+      "Gblétia",
+      "Gnakoragui",
+      "Gnipi 2",
+      "Guéagui",
+      "Guiré",
+      "Ipouagui",
+      "Koréagui",
+      "Koréagui 2",
+      "N'driagui",
+      "Oupagui",
+      "Petit-Bondoukou",
+      "Robert-Porte",
+      "Sérigbangan"
+    ]
+  },
+  {
+    "id": "sp-grand-zattry",
+    "departement_id": "dept-soubr",
+    "nom": "Grand-Zattry",
+    "localites": [
+      "Grand-Zattry",
+      "Diégonépa-Nawa",
+      "Ggata-Zattry",
+      "Gnamandji",
+      "Grobonou-Dan",
+      "Kani",
+      "Roa",
+      "Zaroko"
+    ]
+  },
+  {
+    "id": "sp-liliyo",
+    "departement_id": "dept-soubr",
+    "nom": "Liliyo",
+    "localites": [
+      "Liliyo",
+      "Abou-Secteur",
+      "Goliou",
+      "Grand-Gaza",
+      "Kpoda",
+      "Niouboua"
+    ]
+  },
+  {
+    "id": "sp-okrouyo",
+    "departement_id": "dept-soubr",
+    "nom": "Okrouyo",
+    "localites": [
+      "Okrouyo",
+      "Akakro-Nawa",
+      "Gnamandji",
+      "Grobonou-Dan",
+      "Kani",
+      "Roa",
+      "Zaroko"
+    ]
+  },
+  {
+    "id": "sp-soubr",
+    "departement_id": "dept-soubr",
+    "nom": "Soubré",
+    "localites": [
+      "Soubré-Village",
+      "Alloko-Koffikro (Campement)",
+      "Grand-Zattry (limite)",
+      "Kpotè",
+      "Lessiri",
+      "Liliyo (limite)",
+      "Okrouyo (limite)",
+      "Oupoyo (limite)",
+      "Petit-Bouaké",
+      "Right-Bank-Nawa",
+      "Ségbéhoa-Sud",
+      "Soko",
+      "Wawrenou",
+      "Yabayo"
+    ]
+  },
+  {
+    "id": "sp-mayo",
+    "departement_id": "dept-soubr",
+    "nom": "Mayo",
+    "localites": [
+      "Mayo",
+      "Bécédi",
+      "Djidji",
+      "Gbaléko 2",
+      "Gnamangui",
+      "Iboguhé",
+      "Inagbehi",
+      "Koda",
+      "Kpapekou",
+      "Loboville",
+      "M'batto-Secteur",
+      "Niaprahio 2"
+    ]
+  },
+  {
+    "id": "sp-gueyo",
+    "departement_id": "dept-gueyo",
+    "nom": "Gueyo",
+    "localites": [
+      "Gueyo-Village",
+      "Alloko-Gueyo",
+      "N'Gatta-Koffikro",
+      "Saria-Gueyo"
+    ]
+  },
+  {
+    "id": "sp-boron",
+    "departement_id": "dept-dikodougou",
+    "nom": "Boron",
+    "localites": [
+      "Boron",
+      "Diégonépa",
+      "Gnagbodougnoa",
+      "Gnamanou",
+      "Godélilié",
+      "Kpétoua",
+      "Kodrobo",
+      "Kouadiokro",
+      "Sakihoro",
+      "Toa"
+    ]
+  },
+  {
+    "id": "sp-dikodougou",
+    "departement_id": "dept-dikodougou",
+    "nom": "Dikodougou",
+    "localites": [
+      "Dikodougou-Village",
+      "Boron (limite)",
+      "Guiembé (limite)",
+      "Right-Bank-Dikodougou",
+      "Ségbéhoa-Dikodougou"
+    ]
+  },
+  {
+    "id": "sp-guiembe",
+    "departement_id": "dept-dikodougou",
+    "nom": "Guiembe",
+    "localites": []
+  },
+  {
+    "id": "sp-guiemb",
+    "departement_id": "dept-dikodougou",
+    "nom": "Guiembé",
+    "localites": [
+      "Guiembé",
+      "Alloko-Guiembé",
+      "N'Gatta-Koffikro",
+      "Saria-Guiembé"
+    ]
+  },
+  {
+    "id": "sp-dassoungboho",
+    "departement_id": "dept-korhogo",
+    "nom": "Dassoungboho",
+    "localites": []
+  },
+  {
+    "id": "sp-kanoroba",
+    "departement_id": "dept-korhogo",
+    "nom": "Kanoroba",
+    "localites": []
+  },
+  {
+    "id": "sp-karakoro",
+    "departement_id": "dept-korhogo",
+    "nom": "Karakoro",
+    "localites": [
+      "Karakoro",
+      "Abou-Secteur",
+      "Goliou",
+      "Grand-Gaza",
+      "Kpoda",
+      "Niouboua"
+    ]
+  },
+  {
+    "id": "sp-kiemou",
+    "departement_id": "dept-korhogo",
+    "nom": "Kiemou",
+    "localites": []
+  },
+  {
+    "id": "sp-kombolokoura",
+    "departement_id": "dept-korhogo",
+    "nom": "Kombolokoura",
+    "localites": []
+  },
+  {
+    "id": "sp-komborodougou",
+    "departement_id": "dept-korhogo",
+    "nom": "Komborodougou",
+    "localites": [
+      "Komborodougou",
+      "Bodocipa-Nord",
+      "Diégonépa",
+      "Gnagbodougnoa",
+      "Gnamanou",
+      "Godélilié",
+      "Kpétoua",
+      "Kodrobo",
+      "Kouadiokro",
+      "Sakihoro",
+      "Toa"
+    ]
+  },
+  {
+    "id": "sp-koni",
+    "departement_id": "dept-korhogo",
+    "nom": "Koni",
+    "localites": []
+  },
+  {
+    "id": "sp-korhogo",
+    "departement_id": "dept-korhogo",
+    "nom": "Korhogo",
+    "localites": [
+      "Korhogo-Village",
+      "Alloko-Koffikro (Campement)",
+      "Dassoungboho",
+      "Diégonépa-Nord",
+      "Ggata-Korhogo",
+      "Gnamandji",
+      "Koni",
+      "Karakoro (limite)",
+      "Kiémou (limite)",
+      "Komborodougou (limite)",
+      "Lataha (limite)",
+      "N'Golo-Koffikro",
+      "Niofoin (limite)",
+      "Right-Bank-Poro",
+      "Ségbéhoa-Nord",
+      "Shonlo",
+      "Soko",
+      "Sohouo",
+      "Tioroniaradougou (limite)",
+      "Wawrenou"
+    ]
+  },
+  {
+    "id": "sp-lataha",
+    "departement_id": "dept-korhogo",
+    "nom": "Lataha",
+    "localites": [
+      "Lataha",
+      "N'Gatta-Koffikro",
+      "Saria-Lataha"
+    ]
+  },
+  {
+    "id": "sp-nafoun",
+    "departement_id": "dept-korhogo",
+    "nom": "Nafoun",
+    "localites": []
+  },
+  {
+    "id": "sp-napieleodougou",
+    "departement_id": "dept-korhogo",
+    "nom": "Napieleodougou",
+    "localites": []
+  },
+  {
+    "id": "sp-nganon",
+    "departement_id": "dept-korhogo",
+    "nom": "N'Ganon",
+    "localites": []
+  },
+  {
+    "id": "sp-niofoin",
+    "departement_id": "dept-korhogo",
+    "nom": "Niofoin",
+    "localites": [
+      "Niofoin",
+      "Alloko-Niofoin",
+      "Diégonépa",
+      "Gnagbodougnoa",
+      "Gnamanou",
+      "Godélilié",
+      "Kpétoua",
+      "Kodrobo",
+      "Kouadiokro",
+      "Sakihoro",
+      "Toa"
+    ]
+  },
+  {
+    "id": "sp-sirasso",
+    "departement_id": "dept-korhogo",
+    "nom": "Sirasso",
+    "localites": []
+  },
+  {
+    "id": "sp-sohouo",
+    "departement_id": "dept-korhogo",
+    "nom": "Sohouo",
+    "localites": []
+  },
+  {
+    "id": "sp-tioroniaradougou",
+    "departement_id": "dept-korhogo",
+    "nom": "Tioroniaradougou",
+    "localites": [
+      "Tioroniaradougou",
+      "Diégonépa",
+      "Gnagbodougnoa",
+      "Gnamanou",
+      "Godélilié",
+      "Kpétoua",
+      "Kodrobo",
+      "Kouadiokro",
+      "Sakihoro",
+      "Toa"
+    ]
+  },
+  {
+    "id": "sp-kimou",
+    "departement_id": "dept-korhogo",
+    "nom": "Kiémou",
+    "localites": [
+      "Kiémou",
+      "Akakro-Sénoufo",
+      "Gnamandji",
+      "Grobonou-Dan",
+      "Kani",
+      "Roa",
+      "Zaroko"
+    ]
+  },
+  {
+    "id": "sp-bougou",
+    "departement_id": "dept-mbengue",
+    "nom": "Bougou",
+    "localites": []
+  },
+  {
+    "id": "sp-katiali",
+    "departement_id": "dept-mbengue",
+    "nom": "Katiali",
+    "localites": []
+  },
+  {
+    "id": "sp-katogo",
+    "departement_id": "dept-mbengue",
+    "nom": "Katogo",
+    "localites": []
+  },
+  {
+    "id": "sp-mbengue",
+    "departement_id": "dept-mbengue",
+    "nom": "M'Bengue",
+    "localites": []
+  },
+  {
+    "id": "sp-bahouakaha",
+    "departement_id": "dept-sinmatiali",
+    "nom": "Bahouakaha",
+    "localites": []
+  },
+  {
+    "id": "sp-kagbolodougou",
+    "departement_id": "dept-sinmatiali",
+    "nom": "Kagbolodougou",
+    "localites": [
+      "Kagbolodougou",
+      "Abou-Secteur",
+      "Goliou",
+      "Grand-Gaza",
+      "Kpoda",
+      "Niouboua"
+    ]
+  },
+  {
+    "id": "sp-sediego",
+    "departement_id": "dept-sinmatiali",
+    "nom": "Sediego",
+    "localites": []
+  },
+  {
+    "id": "sp-sinmatiali",
+    "departement_id": "dept-sinmatiali",
+    "nom": "Sinématiali",
+    "localites": [
+      "Sinématiali-Village",
+      "Kagbolodougou (limite)",
+      "Right-Bank-Sinématiali",
+      "Ségbéhoa-Sinématiali",
+      "Sokourani-Est"
+    ]
+  },
+  {
+    "id": "sp-mbengu",
+    "departement_id": "dept-mbengu",
+    "nom": "M'Bengué",
+    "localites": [
+      "M'Bengué-Village",
+      "Bougou (limite)",
+      "Katogo (limite)",
+      "Right-Bank-M'Bengué",
+      "Ségbéhoa-M'Bengué",
+      "Tiékorodougou-Nord"
+    ]
+  },
+  {
+    "id": "sp-bougou",
+    "departement_id": "dept-mbengu",
+    "nom": "Bougou",
+    "localites": [
+      "Bougou",
+      "Diégonépa",
+      "Gnagbodougnoa",
+      "Gnamanou",
+      "Godélilié",
+      "Kpétoua",
+      "Kodrobo",
+      "Kouadiokro",
+      "Sakihoro",
+      "Toa"
+    ]
+  },
+  {
+    "id": "sp-katogo",
+    "departement_id": "dept-mbengu",
+    "nom": "Katogo",
+    "localites": [
+      "Katogo",
+      "Abou-Secteur",
+      "Goliou",
+      "Grand-Gaza",
+      "Kpoda",
+      "Niouboua"
+    ]
+  },
+  {
+    "id": "sp-doba",
+    "departement_id": "dept-san-pdro",
+    "nom": "Doba",
+    "localites": [
+      "Doba",
+      "Diégonépa-SanPédro",
+      "Ggata-Doba",
+      "Gnamandji",
+      "Grobonou-Dan",
+      "Kani",
+      "Roa",
+      "Zaroko"
+    ]
+  },
+  {
+    "id": "sp-dogbo",
+    "departement_id": "dept-san-pdro",
+    "nom": "Dogbo",
+    "localites": []
+  },
+  {
+    "id": "sp-gabiadji",
+    "departement_id": "dept-san-pdro",
+    "nom": "Gabiadji",
+    "localites": [
+      "Gabiadji",
+      "Abou-Secteur",
+      "Goliou",
+      "Grand-Gaza",
+      "Kpoda",
+      "Niouboua"
+    ]
+  },
+  {
+    "id": "sp-grand-bereby",
+    "departement_id": "dept-san-pdro",
+    "nom": "Grand-Bereby",
+    "localites": []
+  },
+  {
+    "id": "sp-san-pdro",
+    "departement_id": "dept-san-pdro",
+    "nom": "San-Pédro",
+    "localites": [
+      "San-Pédro-Ville/Village",
+      "Alloko-Koffikro (Campement)",
+      "Baba",
+      "Doba (limite)",
+      "Dogbo",
+      "Gabiadji (limite)",
+      "Grand-Béréby (limite)",
+      "Kounou",
+      "Mapri",
+      "Nero-Mer",
+      "N'Golo-Koffikro",
+      "Right-Bank-SanPédro",
+      "Ségbéhoa-Littoral",
+      "Soko",
+      "Wawrenou"
+    ]
+  },
+  {
+    "id": "sp-grand-brby",
+    "departement_id": "dept-san-pdro",
+    "nom": "Grand-Béréby",
+    "localites": [
+      "Grand-Béréby",
+      "Akakro-Kroumen",
+      "Boubélé",
+      "Mani",
+      "Rock-Town",
+      "Taki"
+    ]
+  },
+  {
+    "id": "sp-touih",
+    "departement_id": "dept-san-pdro",
+    "nom": "Touih",
+    "localites": [
+      "Touih",
+      "Berkani",
+      "Dozon",
+      "Gbagnégnoa",
+      "Gnakoragui",
+      "Kounouko",
+      "Léléblé",
+      "Sinfra-Campement"
+    ]
+  },
+  {
+    "id": "sp-dapo-iboke",
+    "departement_id": "dept-tabou",
+    "nom": "Dapo-Iboke",
+    "localites": []
+  },
+  {
+    "id": "sp-djamandioke",
+    "departement_id": "dept-tabou",
+    "nom": "Djamandioke",
+    "localites": []
+  },
+  {
+    "id": "sp-djouroutou",
+    "departement_id": "dept-tabou",
+    "nom": "Djouroutou",
+    "localites": []
+  },
+  {
+    "id": "sp-grabo",
+    "departement_id": "dept-tabou",
+    "nom": "Grabo",
+    "localites": [
+      "Grabo",
+      "Bodocipa-Nord",
+      "Diégonépa",
+      "Gnagbodougnoa",
+      "Gnamanou",
+      "Godélilié",
+      "Kpétoua",
+      "Kodrobo",
+      "Kouadiokro",
+      "Sakihoro",
+      "Toa"
+    ]
+  },
+  {
+    "id": "sp-olodio",
+    "departement_id": "dept-tabou",
+    "nom": "Olodio",
+    "localites": [
+      "Olodio",
+      "Alloko-Olodio",
+      "N'Gatta-Koffikro",
+      "Saria-Olodio"
+    ]
+  },
+  {
+    "id": "sp-tabou",
+    "departement_id": "dept-tabou",
+    "nom": "Tabou",
+    "localites": [
+      "Tabou-Village",
+      "Bliéron",
+      "Dapo",
+      "Djamadjoké (limite)",
+      "Grabo (limite)",
+      "Olodio (limite)",
+      "Para",
+      "Right-Bank-Tabou",
+      "Ségbéhoa-Frontière",
+      "Tolou"
+    ]
+  },
+  {
+    "id": "sp-doba",
+    "departement_id": "dept-tabou",
+    "nom": "Doba",
+    "localites": [
+      "Doba",
+      "Béoué",
+      "Cavally-Secteur",
+      "Gnan-Kouamékro",
+      "Hiné",
+      "Jean-Kouamékro",
+      "Kablaké 2",
+      "Para-Secteur"
+    ]
+  },
+  {
+    "id": "sp-djamadjok",
+    "departement_id": "dept-tabou",
+    "nom": "Djamadjoké",
+    "localites": [
+      "Djamadjoké",
+      "Abou-Secteur",
+      "Goliou",
+      "Grand-Gaza",
+      "Kpoda",
+      "Niouboua"
+    ]
+  },
+  {
+    "id": "sp-aboisso",
+    "departement_id": "dept-aboisso",
+    "nom": "Aboisso",
+    "localites": [
+      "Aboisso-Village",
+      "Adaou",
+      "Adaou-Koffikro",
+      "Agniassikasso",
+      "Ahigbé-Koffikro",
+      "Aka-Koffikro",
+      "Akakro",
+      "Allokokro",
+      "Amélékia-Secteur",
+      "Ayamé (limite)",
+      "Bakro",
+      "Baffia",
+      "Biaka",
+      "Bianouan (limite)",
+      "Ebikro-N'Zikro",
+      "Eboué",
+      "Ketesso-Secteur",
+      "Kouakro",
+      "Krinjabo",
+      "Mabel",
+      "Mouyassué",
+      "N'Gattakro",
+      "Ségbéhoa-Sud",
+      "Soubré-Secteur",
+      "Yaou"
+    ]
+  },
+  {
+    "id": "sp-adaou",
+    "departement_id": "dept-aboisso",
+    "nom": "Adaou",
+    "localites": []
+  },
+  {
+    "id": "sp-adjouan",
+    "departement_id": "dept-aboisso",
+    "nom": "Adjouan",
+    "localites": []
+  },
+  {
+    "id": "sp-ayame",
+    "departement_id": "dept-aboisso",
+    "nom": "Ayame",
+    "localites": []
+  },
+  {
+    "id": "sp-bianouan",
+    "departement_id": "dept-aboisso",
+    "nom": "Bianouan",
+    "localites": [
+      "Bianouan",
+      "Akakro-Sanwi",
+      "Gnamandji",
+      "Grobonou-Dan",
+      "Kani",
+      "Roa",
+      "Zaroko"
+    ]
+  },
+  {
+    "id": "sp-kouakro",
+    "departement_id": "dept-aboisso",
+    "nom": "Kouakro",
+    "localites": [
+      "Kouakro",
+      "Diégonépa",
+      "Gnagbodougnoa",
+      "Gnamanou",
+      "Godélilié",
+      "Kpétoua",
+      "Kodrobo",
+      "Kouadiokro",
+      "Sakihoro",
+      "Toa"
+    ]
+  },
+  {
+    "id": "sp-mafere",
+    "departement_id": "dept-aboisso",
+    "nom": "Mafere",
+    "localites": []
+  },
+  {
+    "id": "sp-yaou",
+    "departement_id": "dept-aboisso",
+    "nom": "Yaou",
+    "localites": []
+  },
+  {
+    "id": "sp-ayam",
+    "departement_id": "dept-aboisso",
+    "nom": "Ayamé",
+    "localites": [
+      "Ayamé",
+      "Abou-Secteur",
+      "Goliou",
+      "Grand-Gaza",
+      "Kpoda",
+      "Niouboua",
+      "Yaou 2"
+    ]
+  },
+  {
+    "id": "sp-adiak",
+    "departement_id": "dept-adiak",
+    "nom": "Adiaké",
+    "localites": [
+      "Adiaké-Village",
+      "Assinie-Mafia (limite)",
+      "Angboulou",
+      "Assoko",
+      "Etuessika",
+      "Ggata-Adiaké",
+      "Kakoukro",
+      "Melekoukro",
+      "Right-Bank-Adiaké",
+      "Ségbéhoa-Lagune"
+    ]
+  },
+  {
+    "id": "sp-assinie-mafia",
+    "departement_id": "dept-adiak",
+    "nom": "Assinie-Mafia",
+    "localites": [
+      "Assinie-Mafia",
+      "Assinie-France",
+      "Essouman",
+      "Mabian"
+    ]
+  },
+  {
+    "id": "sp-etueboue",
+    "departement_id": "dept-adiak",
+    "nom": "Etueboue",
+    "localites": []
+  },
+  {
+    "id": "sp-bongo",
+    "departement_id": "dept-grand-bassam",
+    "nom": "Bongo",
+    "localites": []
+  },
+  {
+    "id": "sp-bonoua",
+    "departement_id": "dept-grand-bassam",
+    "nom": "Bonoua",
+    "localites": [
+      "Bonoua",
+      "Adiaho",
+      "Adjouan",
+      "Bécédi",
+      "Larabia 2",
+      "Yaou-Bonoua"
+    ]
+  },
+  {
+    "id": "sp-grand-bassam",
+    "departement_id": "dept-grand-bassam",
+    "nom": "Grand-Bassam",
+    "localites": [
+      "Grand-Bassam-Village",
+      "Azuretti",
+      "Bonoua (limite)",
+      "Ebrah",
+      "Gbofia-Bassam",
+      "Imperial",
+      "Larabia",
+      "Modeste",
+      "Moossou",
+      "Mondoukou",
+      "Ségbéhoa-Bassam",
+      "Vitré 1 & 2"
+    ]
+  },
+  {
+    "id": "sp-noe",
+    "departement_id": "dept-tiapoum",
+    "nom": "Noe",
+    "localites": []
+  },
+  {
+    "id": "sp-nouamou",
+    "departement_id": "dept-tiapoum",
+    "nom": "Nouamou",
+    "localites": []
+  },
+  {
+    "id": "sp-tiapoum",
+    "departement_id": "dept-tiapoum",
+    "nom": "Tiapoum",
+    "localites": [
+      "Tiapoum-Village",
+      "Edjambo",
+      "Frambo",
+      "Noé (poste frontière)",
+      "Nouamou",
+      "Tanoé"
+    ]
+  },
+  {
+    "id": "sp-ferkessdougou",
+    "departement_id": "dept-ferkessdougou",
+    "nom": "Ferkessédougou",
+    "localites": [
+      "Ferkessédougou-Village",
+      "Alloko-Koffikro (Campement)",
+      "Badikaha-Secteur",
+      "Diégonépa-Est",
+      "Ggata-Ferké",
+      "Gnamandji",
+      "Koumbala (limite)",
+      "N'Golo-Koffikro",
+      "Right-Bank-Tchologo",
+      "Ségbéhoa-Nord",
+      "Shonlo",
+      "Soko",
+      "Togoniaradougou",
+      "Wawrenou"
+    ]
+  },
+  {
+    "id": "sp-koumbala",
+    "departement_id": "dept-ferkessdougou",
+    "nom": "Koumbala",
+    "localites": [
+      "Koumbala",
+      "Abou-Secteur",
+      "Goliou",
+      "Grand-Gaza",
+      "Kpoda",
+      "Niouboua"
+    ]
+  },
+  {
+    "id": "sp-togoniere",
+    "departement_id": "dept-ferkessdougou",
+    "nom": "Togoniere",
+    "localites": []
+  },
+  {
+    "id": "sp-bilimono",
+    "departement_id": "dept-kong",
+    "nom": "Bilimono",
+    "localites": []
+  },
+  {
+    "id": "sp-kong",
+    "departement_id": "dept-kong",
+    "nom": "Kong",
+    "localites": [
+      "Kong-Village",
+      "Bilimono",
+      "Nafana-Kong",
+      "Right-Bank-Kong",
+      "Ségbéhoa-Kong",
+      "Sikolo (limite)",
+      "Tiékorodougou-Est"
+    ]
+  },
+  {
+    "id": "sp-nafanade-kong",
+    "departement_id": "dept-kong",
+    "nom": "Nafana(De Kong)",
+    "localites": []
+  },
+  {
+    "id": "sp-sikolo",
+    "departement_id": "dept-kong",
+    "nom": "Sikolo",
+    "localites": [
+      "Sikolo",
+      "Abou-Secteur",
+      "Goliou",
+      "Grand-Gaza",
+      "Kpoda",
+      "Niouboua"
+    ]
+  },
+  {
+    "id": "sp-diawala",
+    "departement_id": "dept-ouangolodougou",
+    "nom": "Diawala",
+    "localites": [
+      "Diawala",
+      "Akakro-Nord",
+      "Gnamandji",
+      "Grobonou-Dan",
+      "Kani",
+      "Roa",
+      "Zaroko"
+    ]
+  },
+  {
+    "id": "sp-kaouara",
+    "departement_id": "dept-ouangolodougou",
+    "nom": "Kaouara",
+    "localites": [
+      "Kaouara",
+      "Bodocipa-Nord",
+      "Diégonépa",
+      "Gnagbodougnoa",
+      "Gnamanou",
+      "Godélilié",
+      "Kpétoua",
+      "Kodrobo",
+      "Kouadiokro",
+      "Sakihoro",
+      "Toa"
+    ]
+  },
+  {
+    "id": "sp-nielle",
+    "departement_id": "dept-ouangolodougou",
+    "nom": "Nielle",
+    "localites": []
+  },
+  {
+    "id": "sp-ouangolodougou",
+    "departement_id": "dept-ouangolodougou",
+    "nom": "Ouangolodougou",
+    "localites": [
+      "Ouangolodougou-Village",
+      "Kaouara (limite)",
+      "Niellé (limite)",
+      "Diawala (limite)",
+      "Toumoukoro (limite)",
+      "Right-Bank-Ouangolo",
+      "Ségbéhoa-Ouangolo",
+      "Sokourani-Nord"
+    ]
+  },
+  {
+    "id": "sp-toumoukoro",
+    "departement_id": "dept-ouangolodougou",
+    "nom": "Toumoukoro",
+    "localites": [
+      "Toumoukoro",
+      "Alloko-Toumoukoro",
+      "Diégonépa",
+      "Gnagbodougnoa",
+      "Gnamanou",
+      "Godélilié",
+      "Kpétoua",
+      "Kodrobo",
+      "Kouadiokro",
+      "Sakihoro",
+      "Toa"
+    ]
+  },
+  {
+    "id": "sp-niell",
+    "departement_id": "dept-ouangolodougou",
+    "nom": "Niellé",
+    "localites": [
+      "Niellé",
+      "N'Gatta-Koffikro",
+      "Saria-Niellé"
+    ]
+  },
+  {
+    "id": "sp-biankouma",
+    "departement_id": "dept-biankouma",
+    "nom": "Biankouma",
+    "localites": [
+      "Biankouma-Village",
+      "Blapleu (limite)",
+      "Gbon-Secteur",
+      "Goba (limite)",
+      "Gnanlé (limite)",
+      "Kanta",
+      "Kpata-Tourakro",
+      "Santa (limite)",
+      "Right-Bank-Biankouma",
+      "Ségbéhoa-Biankouma",
+      "Tiékorodougou-Ouest"
+    ]
+  },
+  {
+    "id": "sp-blapleu",
+    "departement_id": "dept-biankouma",
+    "nom": "Blapleu",
+    "localites": [
+      "Blapleu",
+      "Abou-Secteur",
+      "Goliou",
+      "Grand-Gaza",
+      "Kpoda",
+      "Niouboua"
+    ]
+  },
+  {
+    "id": "sp-gbangbegouine",
+    "departement_id": "dept-biankouma",
+    "nom": "Gbangbegouine",
+    "localites": []
+  },
+  {
+    "id": "sp-gbonne",
+    "departement_id": "dept-biankouma",
+    "nom": "Gbonne",
+    "localites": []
+  },
+  {
+    "id": "sp-gouine",
+    "departement_id": "dept-biankouma",
+    "nom": "Gouine",
+    "localites": []
+  },
+  {
+    "id": "sp-kpata",
+    "departement_id": "dept-biankouma",
+    "nom": "Kpata",
+    "localites": []
+  },
+  {
+    "id": "sp-santa-biankouma",
+    "departement_id": "dept-biankouma",
+    "nom": "Santa-Biankouma",
+    "localites": []
+  },
+  {
+    "id": "sp-goba",
+    "departement_id": "dept-biankouma",
+    "nom": "Goba",
+    "localites": [
+      "Goba",
+      "Bodocipa-Nord",
+      "Diégonépa",
+      "Gnagbodougnoa",
+      "Gnamanou",
+      "Godélilié",
+      "Kpétoua",
+      "Kodrobo",
+      "Kouadiokro",
+      "Sakihoro",
+      "Toa"
+    ]
+  },
+  {
+    "id": "sp-gnanl",
+    "departement_id": "dept-biankouma",
+    "nom": "Gnanlé",
+    "localites": [
+      "Gnanlé",
+      "Alloko-Gnanlé",
+      "N'Gatta-Koffikro",
+      "Saria-Gnanlé"
+    ]
+  },
+  {
+    "id": "sp-santa",
+    "departement_id": "dept-biankouma",
+    "nom": "Santa",
+    "localites": [
+      "Santa",
+      "Diégonépa",
+      "Gnagbodougnoa",
+      "Gnamanou",
+      "Godélilié",
+      "Kpétoua",
+      "Kodrobo",
+      "Kouadiokro",
+      "Sakihoro",
+      "Toa"
+    ]
+  },
+  {
+    "id": "sp-daleu",
+    "departement_id": "dept-danan",
+    "nom": "Daleu",
+    "localites": [
+      "Daleu",
+      "Abou-Secteur",
+      "Goliou",
+      "Grand-Gaza",
+      "Kpoda",
+      "Niouboua"
+    ]
+  },
+  {
+    "id": "sp-danan",
+    "departement_id": "dept-danan",
+    "nom": "Danané",
+    "localites": [
+      "Danané-Village",
+      "Daleu (limite)",
+      "Gblétia-Tonkpi",
+      "Kouan-Houlé (limite)",
+      "Mahapleu (limite)",
+      "Right-Bank-Danané",
+      "Ségbéhoa-Danané",
+      "Seileu",
+      "Sokourani",
+      "Tiékorodougou-Est"
+    ]
+  },
+  {
+    "id": "sp-gbon-houye",
+    "departement_id": "dept-danan",
+    "nom": "Gbon-Houye",
+    "localites": []
+  },
+  {
+    "id": "sp-kouan-houle",
+    "departement_id": "dept-danan",
+    "nom": "Kouan-Houle",
+    "localites": []
+  },
+  {
+    "id": "sp-mahapleu",
+    "departement_id": "dept-danan",
+    "nom": "Mahapleu",
+    "localites": [
+      "Mahapleu",
+      "Gblétia-Danané",
+      "Gnamanou",
+      "Godélilié",
+      "Kpétoua",
+      "Saoua"
+    ]
+  },
+  {
+    "id": "sp-seileu",
+    "departement_id": "dept-danan",
+    "nom": "Seileu",
+    "localites": []
+  },
+  {
+    "id": "sp-zonneu",
+    "departement_id": "dept-danan",
+    "nom": "Zonneu",
+    "localites": []
+  },
+  {
+    "id": "sp-kouan-houl",
+    "departement_id": "dept-danan",
+    "nom": "Kouan-Houlé",
+    "localites": [
+      "Kouan-Houlé",
+      "Bodocipa-Nord",
+      "Diégonépa",
+      "Gnagbodougnoa",
+      "Gnamanou",
+      "Godélilié",
+      "Kpétoua",
+      "Kodrobo",
+      "Kouadiokro",
+      "Sakihoro",
+      "Toa"
+    ]
+  },
+  {
+    "id": "sp-bogouine",
+    "departement_id": "dept-man",
+    "nom": "Bogouine",
+    "localites": []
+  },
+  {
+    "id": "sp-fagnampleu",
+    "departement_id": "dept-man",
+    "nom": "Fagnampleu",
+    "localites": []
+  },
+  {
+    "id": "sp-gbangbegouine-yati",
+    "departement_id": "dept-man",
+    "nom": "Gbangbegouine Yati",
+    "localites": []
+  },
+  {
+    "id": "sp-logouale",
+    "departement_id": "dept-man",
+    "nom": "Logouale",
+    "localites": []
+  },
+  {
+    "id": "sp-man",
+    "departement_id": "dept-man",
+    "nom": "Man",
+    "localites": [
+      "Man-Village",
+      "Alloko-Koffikro (Campement)",
+      "Bogouiné (limite)",
+      "Diégonépa-Ouest",
+      "Fagnampleu",
+      "Gbangbégouiné (limite)",
+      "Ggata-Man",
+      "Gnamandji",
+      "Gotongouiné",
+      "Kiélé",
+      "N'Golo-Koffikro",
+      "Podiagouiné",
+      "Right-Bank-Tonkpi",
+      "Sangouiné (limite)",
+      "Ségbéhoa-Nord",
+      "Soko",
+      "Wawrenou",
+      "Yapleu",
+      "Zagoué"
+    ]
+  },
+  {
+    "id": "sp-podiagouine",
+    "departement_id": "dept-man",
+    "nom": "Podiagouine",
+    "localites": []
+  },
+  {
+    "id": "sp-sandougou-soba",
+    "departement_id": "dept-man",
+    "nom": "Sandougou-Soba",
+    "localites": []
+  },
+  {
+    "id": "sp-sangouine",
+    "departement_id": "dept-man",
+    "nom": "Sangouine",
+    "localites": []
+  },
+  {
+    "id": "sp-yapleu",
+    "departement_id": "dept-man",
+    "nom": "Yapleu",
+    "localites": []
+  },
+  {
+    "id": "sp-zagoue",
+    "departement_id": "dept-man",
+    "nom": "Zagoue",
+    "localites": []
+  },
+  {
+    "id": "sp-ziogouine",
+    "departement_id": "dept-man",
+    "nom": "Ziogouine",
+    "localites": []
+  },
+  {
+    "id": "sp-bogouin",
+    "departement_id": "dept-man",
+    "nom": "Bogouiné",
+    "localites": [
+      "Bogouiné",
+      "Diégonépa-Man",
+      "Ggata-Bogouiné",
+      "Gnamandji",
+      "Grobonou-Dan",
+      "Kani",
+      "Roa",
+      "Zaroko"
+    ]
+  },
+  {
+    "id": "sp-gbangbgouin",
+    "departement_id": "dept-man",
+    "nom": "Gbangbégouiné",
+    "localites": [
+      "Gbangbégouiné",
+      "Abou-Secteur",
+      "Goliou",
+      "Grand-Gaza",
+      "Kpoda",
+      "Niouboua"
+    ]
+  },
+  {
+    "id": "sp-sangouin",
+    "departement_id": "dept-man",
+    "nom": "Sangouiné",
+    "localites": [
+      "Sangouiné",
+      "Akakro-Dan",
+      "Gnamandji",
+      "Grobonou-Dan",
+      "Kani",
+      "Roa",
+      "Zaroko"
+    ]
+  },
+  {
+    "id": "sp-sipilou",
+    "departement_id": "dept-sipilou",
+    "nom": "Sipilou",
+    "localites": [
+      "Sipilou-Village",
+      "Bloma",
+      "Ggata-Sipilou",
+      "Gnamandji",
+      "Kani",
+      "N'Gatta-Koffikro",
+      "Roa",
+      "Saria-Sipilou",
+      "Zaroko"
+    ]
+  },
+  {
+    "id": "sp-yorodougou",
+    "departement_id": "dept-sipilou",
+    "nom": "Yorodougou",
+    "localites": []
+  },
+  {
+    "id": "sp-banneu",
+    "departement_id": "dept-zouan-hounien",
+    "nom": "Banneu",
+    "localites": [
+      "Banneu",
+      "Diégonépa",
+      "Gnagbodougnoa",
+      "Gnamanou",
+      "Godélilié",
+      "Kpétoua",
+      "Kodrobo",
+      "Kouadiokro",
+      "Sakihoro",
+      "Toa"
+    ]
+  },
+  {
+    "id": "sp-bin-houye",
+    "departement_id": "dept-zouan-hounien",
+    "nom": "Bin-Houye",
+    "localites": []
+  },
+  {
+    "id": "sp-goulaleu",
+    "departement_id": "dept-zouan-hounien",
+    "nom": "Goulaleu",
+    "localites": []
+  },
+  {
+    "id": "sp-teapleu",
+    "departement_id": "dept-zouan-hounien",
+    "nom": "Teapleu",
+    "localites": [
+      "Teapleu",
+      "Abou-Secteur",
+      "Goliou",
+      "Grand-Gaza",
+      "Kpoda",
+      "Niouboua"
+    ]
+  },
+  {
+    "id": "sp-yelleu",
+    "departement_id": "dept-zouan-hounien",
+    "nom": "Yelleu",
+    "localites": []
+  },
+  {
+    "id": "sp-zouan-hounien",
+    "departement_id": "dept-zouan-hounien",
+    "nom": "Zouan-Hounien",
+    "localites": [
+      "Zouan-Hounien-Village",
+      "Banneu (limite)",
+      "Bin-Houyé (limite)",
+      "Teapleu (limite)",
+      "Right-Bank-Zouan",
+      "Ségbéhoa-Zouan"
+    ]
+  },
+  {
+    "id": "sp-bin-houy",
+    "departement_id": "dept-zouan-hounien",
+    "nom": "Bin-Houyé",
+    "localites": [
+      "Bin-Houyé",
+      "Alloko-Bin",
+      "N'Gatta-Koffikro",
+      "Saria-Bin"
+    ]
+  },
+  {
+    "id": "sp-logoual",
+    "departement_id": "dept-logoual",
+    "nom": "Logoualé",
+    "localites": [
+      "Logoualé-Village",
+      "Ggata-Logoualé",
+      "Gnamandji",
+      "Grobonou-Dan",
+      "Kani",
+      "Roa",
+      "Zaroko"
+    ]
+  },
+  {
+    "id": "sp-djibrosso",
+    "departement_id": "dept-kani",
+    "nom": "Djibrosso",
+    "localites": [
+      "Djibrosso",
+      "Abou-Secteur",
+      "Goliou",
+      "Grand-Gaza",
+      "Kpoda",
+      "Niouboua"
+    ]
+  },
+  {
+    "id": "sp-fadiadougou",
+    "departement_id": "dept-kani",
+    "nom": "Fadiadougou",
+    "localites": [
+      "Fadiadougou",
+      "Akakro 2",
+      "Goliou",
+      "Grand-Gaza",
+      "Kpoda",
+      "Niouboua"
+    ]
+  },
+  {
+    "id": "sp-kani",
+    "departement_id": "dept-kani",
+    "nom": "Kani",
+    "localites": [
+      "Kani-Village",
+      "Djibrosso (limite)",
+      "Fadiadougou (limite)",
+      "Gbêkê-Secteur",
+      "Gblétia-Woroba",
+      "Gbon-Secteur",
+      "Kébi-Woroba",
+      "Mahandiana",
+      "Morondo (limite)",
+      "Right-Bank-Kani",
+      "Ségbéhoa-Kani",
+      "Sokourani",
+      "Tiékorodougou-Est"
+    ]
+  },
+  {
+    "id": "sp-morondo",
+    "departement_id": "dept-kani",
+    "nom": "Morondo",
+    "localites": [
+      "Morondo",
+      "Diégonépa",
+      "Gnagbodougnoa",
+      "Gnamanou",
+      "Godélilié",
+      "Kpétoua",
+      "Kodrobo",
+      "Kouadiokro",
+      "Sakihoro",
+      "Toa"
+    ]
+  },
+  {
+    "id": "sp-bobi",
+    "departement_id": "dept-sgula",
+    "nom": "Bobi",
+    "localites": [
+      "Bobi",
+      "Diégonépa-Woroba",
+      "Ggata-Bobi",
+      "Gnamandji",
+      "Grobonou-Dan",
+      "Kani",
+      "Roa",
+      "Zaroko"
+    ]
+  },
+  {
+    "id": "sp-diarabana",
+    "departement_id": "dept-sgula",
+    "nom": "Diarabana",
+    "localites": [
+      "Diarabana",
+      "Abou-Secteur",
+      "Goliou",
+      "Grand-Gaza",
+      "Kpoda",
+      "Niouboua"
+    ]
+  },
+  {
+    "id": "sp-dualla",
+    "departement_id": "dept-sgula",
+    "nom": "Dualla",
+    "localites": [
+      "Dualla",
+      "Akakro-Koyaka",
+      "Gnamandji",
+      "Grobonou-Dan",
+      "Kani",
+      "Roa",
+      "Zaroko"
+    ]
+  },
+  {
+    "id": "sp-kamalo",
+    "departement_id": "dept-sgula",
+    "nom": "Kamalo",
+    "localites": [
+      "Kamalo",
+      "Diégonépa",
+      "Gnagbodougnoa",
+      "Gnamanou",
+      "Godélilié",
+      "Kpétoua",
+      "Kodrobo",
+      "Kouadiokro",
+      "Sakihoro",
+      "Toa"
+    ]
+  },
+  {
+    "id": "sp-massala",
+    "departement_id": "dept-sgula",
+    "nom": "Massala",
+    "localites": [
+      "Massala",
+      "Bodocipa-Nord",
+      "Diégonépa",
+      "Gnagbodougnoa",
+      "Gnamanou",
+      "Godélilié",
+      "Kpétoua",
+      "Kodrobo",
+      "Kouadiokro",
+      "Sakihoro",
+      "Toa"
+    ]
+  },
+  {
+    "id": "sp-sgula",
+    "departement_id": "dept-sgula",
+    "nom": "Séguéla",
+    "localites": [
+      "Séguéla-Village",
+      "Adjéhipalégnoa (Campement)",
+      "Badiola",
+      "Bagasséhoa (Secteur)",
+      "Bemba",
+      "Bobi (limite)",
+      "Diarabana (limite)",
+      "Dioulatiédougou-Est",
+      "Dualla (limite)",
+      "Ganan",
+      "Gbazi-Woroba",
+      "Ggata-Séguéla",
+      "Gnamandji",
+      "Kamalo (limite)",
+      "Kani-Secteur",
+      "Massala (limite)",
+      "N'Golo-Koffikro",
+      "Ségbéhoa-Nord",
+      "Sifié (limite)",
+      "Soko",
+      "Sifié-Rural",
+      "Suisso",
+      "Wawrenou"
+    ]
+  },
+  {
+    "id": "sp-sifie",
+    "departement_id": "dept-sgula",
+    "nom": "Sifie",
+    "localites": []
+  },
+  {
+    "id": "sp-worofla",
+    "departement_id": "dept-sgula",
+    "nom": "Worofla",
+    "localites": []
+  },
+  {
+    "id": "sp-sifi",
+    "departement_id": "dept-sgula",
+    "nom": "Sifié",
+    "localites": [
+      "Sifié",
+      "Alloko-Sifié",
+      "N'Gatta-Koffikro",
+      "Saria-Sifié"
+    ]
+  },
+  {
+    "id": "sp-attigouakro",
+    "departement_id": "dept-attigouakro",
+    "nom": "Attiégouakro",
+    "localites": [
+      "Attiégouakro"
+    ]
+  },
+  {
+    "id": "sp-lolobo-dattiegouakro",
+    "departement_id": "dept-attigouakro",
+    "nom": "Lolobo (D'Attiegouakro)",
+    "localites": []
+  },
+  {
+    "id": "sp-yamoussoukro",
+    "departement_id": "dept-yamoussoukro",
+    "nom": "Yamoussoukro",
+    "localites": [
+      "Yamoussoukro"
+    ]
+  },
+  {
+    "id": "sp-kossou",
+    "departement_id": "dept-yamoussoukro",
+    "nom": "Kossou",
+    "localites": []
+  },
+  {
+    "id": "sp-dimbokro",
+    "departement_id": "dept-dimbokro",
+    "nom": "Dimbokro",
+    "localites": [
+      "Dimbokro-Village",
+      "Abigui",
+      "Ahua",
+      "Ahounan",
+      "Akambonou",
+      "Amian-Kouassikro",
+      "Andianou",
+      "Angouakro",
+      "Booré-Aboisso",
+      "Diangokro (limite)",
+      "Didié-Kouassikro",
+      "Ediakro",
+      "Kangrassou",
+      "Koffi-Ahoussoukro",
+      "Koloko",
+      "Kpégro",
+      "Krokokro",
+      "N'Gam",
+      "N'Zikro",
+      "Tangoumansou",
+      "Troumabo",
+      "Wawrenou"
+    ]
+  },
+  {
+    "id": "sp-abigui",
+    "departement_id": "dept-dimbokro",
+    "nom": "Abigui",
+    "localites": [
+      "Abigui",
+      "Agba-Kouassikro",
+      "Ediakro 2",
+      "Ggata-Abigui",
+      "Langba",
+      "N'Gattakro",
+      "Pokoukro",
+      "Toa"
+    ]
+  },
+  {
+    "id": "sp-diangokro",
+    "departement_id": "dept-dimbokro",
+    "nom": "Diangokro",
+    "localites": [
+      "Diangokro",
+      "Adou-Koffikro",
+      "Assamouan",
+      "Bériaboukro",
+      "Elinso",
+      "Gbofia-Est",
+      "N'Zidan",
+      "Right-Bank-Diangokro",
+      "Ségbéhoa-N'Zi"
+    ]
+  },
+  {
+    "id": "sp-bocanda",
+    "departement_id": "dept-bocanda",
+    "nom": "Bocanda",
+    "localites": [
+      "Bocanda-Village",
+      "Agba-Kouassikro",
+      "Ahali",
+      "Aka-Kouassikro",
+      "Allokokro",
+      "Amian-Koffikro",
+      "Andianou 2",
+      "Assika-Koulalého",
+      "Bengassou",
+      "Diégonépa-Nord",
+      "Gnaliépa-N'Zi",
+      "Gnamanou",
+      "Goli",
+      "Koliakro",
+      "Konan-Kokorekro",
+      "Kouadiokro",
+      "Kpapekou-N'Zi",
+      "Mahounou",
+      "N'Gatta-Koffikro",
+      "N'Gbin-Bocanda",
+      "Saria",
+      "Ségbéhoa",
+      "Susu",
+      "Tefredji",
+      "Zégo"
+    ]
+  },
+  {
+    "id": "sp-bengassou",
+    "departement_id": "dept-bocanda",
+    "nom": "Bengassou",
+    "localites": [
+      "Bengassou",
+      "Alloko-Koffikro",
+      "Bonikro",
+      "Gnamakoa",
+      "Kpétoua",
+      "N'Gatta-Kouassikro",
+      "N'Zikro"
+    ]
+  },
+  {
+    "id": "sp-kouadioblkro",
+    "departement_id": "dept-bocanda",
+    "nom": "Kouadioblékro",
+    "localites": [
+      "Kouadioblékro",
+      "Abou-Secteur",
+      "Goliou",
+      "Grand-Gaza",
+      "Kpoda",
+      "Niouboua"
+    ]
+  },
+  {
+    "id": "sp-kouassi-kouassikro",
+    "departement_id": "dept-kouassi-kouassikro",
+    "nom": "Kouassi-Kouassikro",
+    "localites": [
+      "Kouassi-Kouassikro",
+      "Allokokro 2",
+      "Assanou",
+      "Bodocipa",
+      "Diégonépa 2",
+      "Gnagboya",
+      "Godélilié",
+      "Kofikro",
+      "Kpapekou 2",
+      "M'Bahiakro-Secteur",
+      "N'Gran",
+      "Polonou"
+    ]
+  },
+  {
+    "id": "sp-mbahiakro-secteur",
+    "departement_id": "dept-kouassi-kouassikro",
+    "nom": "M'Bahiakro-Secteur",
+    "localites": [
+      "Boli-N'Zi",
+      "Ggata-Nord",
+      "Gnamandji",
+      "Grobonou-Dan",
+      "Kani",
+      "Roa",
+      "Zaroko"
+    ]
+  },
+  {
+    "id": "sp-adzop",
+    "departement_id": "dept-adzop",
+    "nom": "Adzopé",
+    "localites": [
+      "Adzopé-Village",
+      "Adonkoi",
+      "Agbaou",
+      "Ahéoua",
+      "Ananguié (Médi)",
+      "Annépé",
+      "Assikoi",
+      "Biasso",
+      "Bouapé",
+      "Duquesne-Cremona",
+      "Massandji",
+      "Miadzin",
+      "Moapé",
+      "N'Gassan",
+      "N'Gattakro",
+      "N'Zikro",
+      "Ségbéhoa-Mé"
+    ]
+  },
+  {
+    "id": "sp-agou",
+    "departement_id": "dept-adzop",
+    "nom": "Agou",
+    "localites": [
+      "Agou",
+      "Aboudé-Secteur",
+      "Amoakro",
+      "Diangokro-Est",
+      "Ekra-Koffikro",
+      "Gnamanou",
+      "Kpapekou-Mé",
+      "N'Gatta-Koffikro",
+      "Saria-Mé"
+    ]
+  },
+  {
+    "id": "sp-assikoi",
+    "departement_id": "dept-adzop",
+    "nom": "Assikoi",
+    "localites": [
+      "Assikoi",
+      "Akakro",
+      "Bodocipa",
+      "Diégonépa-Mé",
+      "Gnagboya",
+      "Godélilié",
+      "Kpétoua",
+      "Saoua"
+    ]
+  },
+  {
+    "id": "sp-akoup",
+    "departement_id": "dept-akoup",
+    "nom": "Akoupé",
+    "localites": [
+      "Akoupé-Village",
+      "Afféry (limite)",
+      "Agbaou-Akoupé",
+      "Alloko-Koffikro",
+      "Amian-Koffikro",
+      "Andianou",
+      "Bacon",
+      "Bécouéfin",
+      "Dadié-Kouassikro",
+      "Goli",
+      "Kodioussou",
+      "Kondrokro",
+      "N'Gatta-Kouassikro",
+      "N'Gbin",
+      "Ségbéhoa",
+      "Soko",
+      "Wawrenou"
+    ]
+  },
+  {
+    "id": "sp-affry",
+    "departement_id": "dept-akoup",
+    "nom": "Afféry",
+    "localites": [
+      "Afféry",
+      "Abou-Secteur",
+      "Goliou",
+      "Grand-Gaza",
+      "Kpoda",
+      "Niouboua"
+    ]
+  },
+  {
+    "id": "sp-bacon",
+    "departement_id": "dept-akoup",
+    "nom": "Bacon",
+    "localites": [
+      "Bacon",
+      "Ggata-Akoupé",
+      "Gnamandji",
+      "Grobonou-Dan",
+      "Kani",
+      "Roa",
+      "Zaroko"
+    ]
+  },
+  {
+    "id": "sp-alp",
+    "departement_id": "dept-alp",
+    "nom": "Alépé",
+    "localites": [
+      "Alépé-Village",
+      "Ahoutou",
+      "Akouré",
+      "Allokokro",
+      "Amian-Kouassikro",
+      "Andou-M'Batto",
+      "Angoda-Secteur",
+      "Biasso-Sud",
+      "Danguira",
+      "Ggata-Alépé",
+      "Grand-Alépé",
+      "Kpapekou",
+      "M'Batto-Bouaké",
+      "Memni",
+      "Monga",
+      "Montezo",
+      "N'Zidan",
+      "Right-Bank-Alépé",
+      "Ségbéhoa-Sud"
+    ]
+  },
+  {
+    "id": "sp-danguira",
+    "departement_id": "dept-alp",
+    "nom": "Danguira",
+    "localites": [
+      "Danguira",
+      "Akakro-Alépé",
+      "Gnamandji",
+      "Grobonou-Dan",
+      "Kani",
+      "Roa",
+      "Zaroko"
+    ]
+  },
+  {
+    "id": "sp-memni",
+    "departement_id": "dept-alp",
+    "nom": "Memni",
+    "localites": [
+      "Memni",
+      "Diégonépa",
+      "Gnagbodougnoa",
+      "Gnamanou",
+      "Godélilié",
+      "Kpétoua",
+      "Kodrobo",
+      "Kouadiokro",
+      "Sakihoro",
+      "Toa"
+    ]
+  },
+  {
+    "id": "sp-yakass-attobrou",
+    "departement_id": "dept-yakass-attobrou",
+    "nom": "Yakassé-Attobrou",
+    "localites": [
+      "Yakassé-Attobrou",
+      "Abongoua",
+      "Biéby",
+      "Diangokro-Secteur",
+      "Elinso",
+      "Fieassé",
+      "Ggata-Yakassé",
+      "Kangrassou",
+      "N'Gattakro",
+      "N'Zikro",
+      "Ségbéhoa-Nord"
+    ]
+  }
+]

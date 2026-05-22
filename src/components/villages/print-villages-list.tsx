@@ -70,11 +70,11 @@ export function PrintVillagesList({ villages, organizationSettings, subtitle }: 
                             
                             <table className="w-full border-collapse border-2 border-slate-900 text-[10px]">
                                 <thead>
-                                    <tr className="bg-slate-900 text-white uppercase font-black">
-                                        <th className="p-3 text-left border-r border-slate-700">Localité (Village/Commune)</th>
-                                        <th className="p-3 text-left border-r border-slate-700">Département / Sous-Préfecture</th>
-                                        <th className="p-3 text-left border-r border-slate-700">Autorité Traditionnelle (Chef)</th>
-                                        <th className="p-3 w-[150px] text-center border-r border-slate-700">Matricule CNRCT</th>
+                                    <tr className="bg-slate-900 text-white uppercase font-black print:bg-transparent print:text-slate-900 print:border-b-2 print:border-slate-900">
+                                        <th className="p-3 text-left border-r border-slate-700 print:border-slate-300">Localité (Village/Commune)</th>
+                                        <th className="p-3 text-left border-r border-slate-700 print:border-slate-300">Département / Sous-Préfecture</th>
+                                        <th className="p-3 text-left border-r border-slate-700 print:border-slate-300">Autorité Traditionnelle (Chef)</th>
+                                        <th className="p-3 w-[150px] text-center border-r border-slate-700 print:border-slate-300">Matricule CNRCT</th>
                                         <th className="p-3 w-[120px] text-center">Statut Siège</th>
                                     </tr>
                                 </thead>

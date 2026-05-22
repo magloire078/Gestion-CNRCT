@@ -40,7 +40,9 @@ const STATUS_OPTIONS: { label: string; value: ConflictStatus; color: string; ico
     { label: "Ouvert", value: "Ouvert", color: "bg-slate-100 text-slate-700", icon: Clock },
     { label: "En Médiation", value: "En médiation", color: "bg-blue-100 text-blue-700", icon: MessageSquare },
     { label: "Résolu", value: "Résolu", color: "bg-emerald-100 text-emerald-700", icon: ShieldCheck },
-    { label: "Classé sans suite", value: "Classé sans suite", color: "bg-red-100 text-red-700", icon: AlertTriangle },
+    { label: "Classé sans suite", value: "Classé sans suite", color: "bg-slate-100 text-slate-700", icon: AlertTriangle },
+    { label: "À la justice", value: "Escaladé à la justice", color: "bg-purple-100 text-purple-700", icon: Gavel },
+    { label: "En appel", value: "En appel", color: "bg-amber-100 text-amber-700", icon: History },
 ];
 
 export function ConflictDetailSheet({ conflict, open, onOpenChange }: ConflictDetailSheetProps) {

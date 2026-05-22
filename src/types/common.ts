@@ -42,7 +42,7 @@ export type ConflictTypeData = {
     name: string;
 };
 
-export const conflictStatuses = ["Ouvert", "En médiation", "Résolu", "Classé sans suite"] as const;
+export const conflictStatuses = ["Ouvert", "En médiation", "Résolu", "Classé sans suite", "Escaladé à la justice", "En appel"] as const;
 export type ConflictStatus = typeof conflictStatuses[number];
 
 export const conflictTypeVariantMap: Record<ConflictType, "default" | "secondary" | "outline" | "destructive"> = {

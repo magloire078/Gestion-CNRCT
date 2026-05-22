@@ -435,12 +435,19 @@ function AppLayout({ children }: { children: React.ReactNode }) {
         </SidebarFooter>
       </Sidebar>
       <SidebarInset className="bg-slate-50/20">
-        <header className="sticky top-0 z-40 flex h-16 items-center gap-4 bg-white/40 backdrop-blur-xl px-6 border-b border-white/20 print:hidden transition-all shadow-sm">
+        <header className="sticky top-0 z-40 flex h-16 items-center justify-between gap-4 bg-white/80 backdrop-blur-xl px-4 md:px-6 border-b border-slate-200/50 print:hidden transition-all shadow-sm">
+          <div className="flex items-center gap-2 md:hidden">
+            <Avatar className="h-8 w-8 rounded-lg border-2 border-white shadow-sm">
+              <AvatarImage src={settings?.mainLogoUrl} alt={settings?.organizationName} />
+              <AvatarFallback className="bg-slate-900 text-white"><Building2 className="size-4" /></AvatarFallback>
+            </Avatar>
+            <span className="text-sm font-black tracking-tight text-slate-900 uppercase">Gestion CNRCT</span>
+          </div>
           <div className="ml-auto flex items-center gap-4">
             <NotificationBell />
           </div>
         </header>
-        <main className="flex-1 p-6 md:p-8 mb-16 md:mb-0 relative z-10">
+        <main className="flex-1 p-4 md:p-8 mb-20 md:mb-0 relative z-10">
           <div className="mx-auto w-full max-w-7xl">
             <ProtectedPage>
               {children}

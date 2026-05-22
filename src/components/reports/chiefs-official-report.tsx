@@ -98,7 +98,7 @@ export function ChiefsOfficialReport({
                                 
                                 <table className="w-full border-collapse border-2 border-slate-900 text-[10px]">
                                     <thead>
-                                        <tr className="bg-slate-900 text-white uppercase font-black">
+                                        <tr className="bg-slate-900 text-white uppercase font-black print:bg-transparent print:text-slate-900 print:border-b-2 print:border-slate-900">
                                             <th className="p-3 w-[40px] text-center border-r border-slate-700">N°</th>
                                             <th className="p-3 text-left border-r border-slate-700">Identité & Titre</th>
                                             <th className="p-3 text-left border-r border-slate-700">Circonscription (S-P / Dept)</th>

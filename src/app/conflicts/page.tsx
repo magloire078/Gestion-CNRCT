@@ -84,7 +84,9 @@ const statusVariantMap: Record<Status, string> = {
     "Ouvert": "bg-slate-100 text-slate-700 hover:bg-slate-100",
     "En médiation": "bg-blue-100 text-blue-700 hover:bg-blue-100",
     "Résolu": "bg-emerald-100 text-emerald-700 hover:bg-emerald-100",
-    "Classé sans suite": "bg-red-100 text-red-700 hover:bg-red-100",
+    "Classé sans suite": "bg-slate-100 text-slate-700 hover:bg-slate-100",
+    "Escaladé à la justice": "bg-purple-100 text-purple-700 hover:bg-purple-100",
+    "En appel": "bg-amber-100 text-amber-700 hover:bg-amber-100",
 };
 
 export default function ConflictsPage() {

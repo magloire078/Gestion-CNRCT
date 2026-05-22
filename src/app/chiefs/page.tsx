@@ -1,6 +1,8 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, forwardRef } from "react";
+import Fuse from "fuse.js";
+import { TableVirtuoso, VirtuosoGrid } from "react-virtuoso";
 import { 
     PlusCircle, Search, MoreHorizontal, Eye, 
     Pencil, Trash2, Download, Crown, 
@@ -60,6 +62,8 @@ import { cn } from "@/lib/utils";
 import { PermissionGuard } from "@/components/auth/permission-guard";
 import { ChiefCard } from "@/components/chiefs/chief-card";
 import { ChiefQuickView } from "@/components/chiefs/chief-quick-view";
+import { ChiefsMapWrapper } from "@/components/map/map-wrapper";
+import { Map as MapIcon } from "lucide-react";
 
 export default function ChiefsPage() {
   const [chiefs, setChiefs] = useState<Chief[]>([]);
@@ -70,7 +74,7 @@ export default function ChiefsPage() {
   const { toast } = useToast();
   const { hasPermission } = useAuth();
   const [deleteTarget, setDeleteTarget] = useState<Chief | null>(null);
-  const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
+  const [viewMode, setViewMode] = useState<'grid' | 'table' | 'map'>('grid');
 
   const [selectedRole, setSelectedRole] = useState<string>("all");
   const [selectedRegion, setSelectedRegion] = useState<string>("all");
@@ -151,25 +155,37 @@ export default function ChiefsPage() {
     setIsQuickViewOpen(true);
   };
 
+  // Fuse Instance for fuzzy searching
+  const fuseInstance = useMemo(() => {
+    return new Fuse(chiefs, {
+      keys: [
+        { name: 'name', weight: 2 },
+        { name: 'region', weight: 1 },
+        { name: 'village', weight: 1 },
+        { name: 'title', weight: 1 }
+      ],
+      threshold: 0.3,
+      ignoreLocation: true
+    });
+  }, [chiefs]);
+
   const filteredChiefs = useMemo(() => {
-    return chiefs.filter((chief) => {
-      const matchesSearch = (chief.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            (chief.region || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            (chief.village || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            (chief.title || '').toLowerCase().includes(searchTerm.toLowerCase());
-                            
+    let baseChiefs = chiefs;
+
+    // 1. Search Filter (Fuzzy)
+    if (searchTerm.trim() !== '') {
+      const results = fuseInstance.search(searchTerm);
+      baseChiefs = results.map(result => result.item);
+    }
+
+    return baseChiefs.filter((chief) => {
       const matchesRole = selectedRole === 'all' || chief.role === selectedRole;
       const matchesRegion = selectedRegion === 'all' || chief.region === selectedRegion;
       const matchesStatus = selectedStatus === 'all' || (chief.status || 'actif') === selectedStatus;
       
-      return matchesSearch && matchesRole && matchesRegion && matchesStatus;
+      return matchesRole && matchesRegion && matchesStatus;
     });
-  }, [chiefs, searchTerm, selectedRole, selectedRegion, selectedStatus]);
-
-  const paginatedChiefs = useMemo(() => {
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    return filteredChiefs.slice(startIndex, startIndex + itemsPerPage);
-  }, [filteredChiefs, currentPage, itemsPerPage]);
+  }, [chiefs, fuseInstance, searchTerm, selectedRole, selectedRegion, selectedStatus]);
 
   const totalPages = Math.ceil(filteredChiefs.length / itemsPerPage);
 
@@ -203,11 +219,11 @@ export default function ChiefsPage() {
           </h1>
           <p className="text-muted-foreground mt-2 font-medium">Répertoire intelligent et suivi de carrière des Autorités Traditionnelles.</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
           {canExport && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="rounded-lg h-10 shadow-sm border-slate-200 font-bold">
+                <Button variant="outline" className="w-full sm:w-auto rounded-lg h-10 shadow-sm border-slate-200 font-bold">
                   <Download className="mr-2 h-4 w-4 text-slate-400" />
                   Exporter
                 </Button>
@@ -227,7 +243,7 @@ export default function ChiefsPage() {
               </DropdownMenuContent>
             </DropdownMenu>
           )}
-          <Button onClick={() => setIsSheetOpen(true)} className="bg-slate-900 hover:bg-slate-800 rounded-lg h-10 px-6 font-bold shadow-xl shadow-slate-200">
+          <Button onClick={() => setIsSheetOpen(true)} className="w-full sm:w-auto bg-slate-900 hover:bg-slate-800 rounded-lg h-10 px-6 font-bold shadow-xl shadow-slate-200">
             <PlusCircle className="mr-2 h-5 w-5" />
             Ajouter un Chef
           </Button>
@@ -344,32 +360,43 @@ export default function ChiefsPage() {
                         </Select>
                     </div>
 
-                    <div className="flex items-center gap-3 w-full lg:w-auto">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
                         <div className="relative group flex-grow lg:w-[280px]">
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
                             <Input
                                 placeholder="Rechercher..."
-                                className="pl-11 h-10 rounded-lg border-none bg-white shadow-inner focus:ring-slate-900"
+                                className="pl-11 h-10 rounded-lg border-none bg-white shadow-inner focus:ring-slate-900 w-full"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
                         </div>
-                        <div className="flex items-center p-1 bg-white rounded-lg shadow-inner border border-slate-100 shrink-0">
+                        <div className="flex items-center justify-center p-1 bg-white rounded-lg shadow-inner border border-slate-100 shrink-0 w-full sm:w-auto">
                         <Button 
                             variant={viewMode === 'grid' ? 'default' : 'ghost'} 
                             size="icon" 
-                            className={cn("h-9 w-9 rounded-lg transition-all", viewMode === 'grid' ? "bg-slate-900 shadow-md" : "text-slate-400")}
+                            className={cn("h-9 w-9 rounded-lg transition-all", viewMode === 'grid' ? "bg-slate-900 shadow-md" : "text-slate-400 hover:text-slate-900")}
                             onClick={() => setViewMode('grid')}
+                            title="Vue Grille"
                         >
                             <Grid2X2 className="h-4 w-4" />
                         </Button>
                         <Button 
                             variant={viewMode === 'table' ? 'default' : 'ghost'} 
                             size="icon" 
-                            className={cn("h-9 w-9 rounded-lg transition-all", viewMode === 'table' ? "bg-slate-900 shadow-md" : "text-slate-400")}
+                            className={cn("h-9 w-9 rounded-lg transition-all", viewMode === 'table' ? "bg-slate-900 shadow-md" : "text-slate-400 hover:text-slate-900")}
                             onClick={() => setViewMode('table')}
+                            title="Vue Tableau"
                         >
                             <List className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                            variant={viewMode === 'map' ? 'default' : 'ghost'} 
+                            size="icon" 
+                            className={cn("h-9 w-9 rounded-lg transition-all", viewMode === 'map' ? "bg-slate-900 shadow-md" : "text-slate-400 hover:text-slate-900")}
+                            onClick={() => setViewMode('map')}
+                            title="Vue Carte (SIG)"
+                        >
+                            <MapIcon className="h-4 w-4" />
                         </Button>
                     </div>
                 </div>
@@ -381,114 +408,109 @@ export default function ChiefsPage() {
           {error && <div className="p-12 text-center text-red-500 font-black uppercase tracking-widest">{error}</div>}
 
           {viewMode === 'grid' ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                <AnimatePresence mode="popLayout">
-                  {loading ? (
-                      Array.from({ length: 8 }).map((_, i) => (
-                          <div key={i} className="h-[280px] rounded-2xl bg-slate-50 animate-pulse border border-slate-100 shadow-sm" />
-                      ))
-                  ) : paginatedChiefs.map((chief) => (
-                      <ChiefCard 
-                        key={chief.id} 
-                        chief={chief} 
-                        onClick={() => handleShowQuickView(chief)} 
-                      />
-                  ))}
-                </AnimatePresence>
+              <VirtuosoGrid
+                useWindowScroll
+                data={filteredChiefs}
+                listClassName="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+                itemContent={(index, chief) => (
+                    <ChiefCard 
+                      key={chief.id} 
+                      chief={chief} 
+                      onClick={() => handleShowQuickView(chief)} 
+                    />
+                )}
+              />
+          ) : viewMode === 'map' ? (
+              <div className="rounded-[2rem] border-4 border-slate-100/50 shadow-inner overflow-hidden relative">
+                  <div className="absolute top-4 left-4 z-10 bg-white/90 backdrop-blur-md px-4 py-2 rounded-xl shadow-lg border border-slate-200">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Autorités Visibles : <span className="text-slate-900">{filteredChiefs.length}</span></p>
+                  </div>
+                  <ChiefsMapWrapper 
+                      chiefs={filteredChiefs} 
+                      onChiefClick={handleShowQuickView} 
+                      height="600px"
+                  />
               </div>
           ) : (
-             <div className="overflow-x-auto rounded-xl border border-slate-100 shadow-inner">
-                <Table>
-                    <TableHeader className="bg-slate-50/50">
-                        <TableRow className="border-slate-100 hover:bg-transparent">
-                            <TableHead className="w-12 text-center text-[10px] font-black uppercase tracking-widest text-slate-400">#</TableHead>
-                            <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-400">Portrait & Dignitaire</TableHead>
-                            <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-400">Fonction</TableHead>
-                            <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-400">Localisation</TableHead>
-                            <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-400">Coordonnées</TableHead>
-                            <TableHead className="w-20 text-right"></TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {loading ? (
-                            Array.from({ length: 5 }).map((_, i) => (
-                                <TableRow key={i} className="border-slate-50">
-                                    <TableCell><Skeleton className="h-4 w-4 mx-auto" /></TableCell>
-                                    <TableCell>
-                                        <div className="flex items-center gap-3">
-                                            <Skeleton className="h-10 w-10 rounded-full" />
-                                            <div className="space-y-2">
-                                                <Skeleton className="h-3 w-32" />
-                                                <Skeleton className="h-2 w-48" />
-                                            </div>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell><Skeleton className="h-6 w-24 rounded-full" /></TableCell>
-                                    <TableCell><Skeleton className="h-4 w-40" /></TableCell>
-                                    <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                                    <TableCell><Skeleton className="h-8 w-8 ml-auto" /></TableCell>
-                                </TableRow>
-                            ))
-                        ) : paginatedChiefs.map((chief, index) => (
-                            <TableRow key={chief.id} className="group hover:bg-slate-50/50 border-slate-50 transition-colors">
-                                <TableCell className="text-center font-mono text-[10px] text-slate-300">{(currentPage - 1) * itemsPerPage + index + 1}</TableCell>
-                                <TableCell>
-                                    <div className="flex items-center gap-4">
-                                        <Avatar className="h-11 w-11 border-2 border-white shadow-sm">
-                                            <AvatarImage src={chief.photoUrl} alt={chief.name} />
-                                            <AvatarFallback className="bg-slate-100 text-slate-400 font-bold">{chief.lastName?.charAt(0)}</AvatarFallback>
-                                        </Avatar>
-                                        <div className="flex flex-col">
-                                            <span className="font-black text-slate-900 group-hover:text-blue-600 transition-colors">{chief.name}</span>
-                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{chief.title}</span>
-                                        </div>
-                                    </div>
-                                </TableCell>
-                                <TableCell>
-                                    <Badge variant="secondary" className="px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider">{chief.role}</Badge>
-                                </TableCell>
-                                <TableCell>
+             <div className="rounded-xl border border-slate-100 shadow-inner overflow-hidden bg-white">
+                <TableVirtuoso
+                    useWindowScroll
+                    data={filteredChiefs}
+                    components={{
+                        Table: ({ style, ...props }) => <table {...props} style={{ ...style, width: "100%", borderCollapse: "collapse" }} className="w-full caption-bottom text-sm" />,
+                        TableHead: forwardRef((props, ref) => <thead {...props} ref={ref as any} className="[&_tr]:border-b bg-slate-50/50" />),
+                        TableRow: (props) => <tr {...props} className="group hover:bg-slate-50/50 border-slate-50 transition-colors border-b" />,
+                        TableBody: forwardRef((props, ref) => <tbody {...props} ref={ref as any} className="[&_tr:last-child]:border-0" />),
+                    }}
+                    fixedHeaderContent={() => (
+                        <tr className="border-slate-100 hover:bg-transparent">
+                            <th className="h-12 px-4 align-middle text-center text-[10px] font-black uppercase tracking-widest text-slate-400 w-12">#</th>
+                            <th className="h-12 px-4 align-middle text-left text-[10px] font-black uppercase tracking-widest text-slate-400">Portrait & Dignitaire</th>
+                            <th className="h-12 px-4 align-middle text-left text-[10px] font-black uppercase tracking-widest text-slate-400">Fonction</th>
+                            <th className="h-12 px-4 align-middle text-left text-[10px] font-black uppercase tracking-widest text-slate-400">Localisation</th>
+                            <th className="h-12 px-4 align-middle text-left text-[10px] font-black uppercase tracking-widest text-slate-400">Coordonnées</th>
+                            <th className="h-12 px-4 align-middle text-right w-20"></th>
+                        </tr>
+                    )}
+                    itemContent={(index, chief) => (
+                        <>
+                            <td className="p-4 align-middle text-center font-mono text-[10px] text-slate-300">{index + 1}</td>
+                            <td className="p-4 align-middle">
+                                <div className="flex items-center gap-4">
+                                    <Avatar className="h-11 w-11 border-2 border-white shadow-sm">
+                                        <AvatarImage src={chief.photoUrl} alt={chief.name} />
+                                        <AvatarFallback className="bg-slate-100 text-slate-400 font-bold">{chief.lastName?.charAt(0)}</AvatarFallback>
+                                    </Avatar>
                                     <div className="flex flex-col">
-                                        <span className="text-xs font-bold text-slate-600">{chief.village}</span>
-                                        <span className="text-[10px] text-slate-400">{chief.region} / {chief.department}</span>
+                                        <span className="font-black text-slate-900 group-hover:text-blue-600 transition-colors">{chief.name}</span>
+                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{chief.title}</span>
                                     </div>
-                                </TableCell>
-                                <TableCell className="text-xs font-medium text-slate-500 italic">{chief.phone || chief.contact || "—"}</TableCell>
-                                <TableCell className="text-right">
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full opacity-30 group-hover:opacity-100 transition-all">
-                                                <MoreHorizontal className="h-4 w-4" />
-                                            </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end" className="w-48 rounded-lg shadow-2xl border-slate-100">
-                                            <DropdownMenuLabel className="text-[10px] font-black text-slate-400 uppercase px-3 py-2">Commanderies</DropdownMenuLabel>
-                                            <DropdownMenuSeparator />
-                                            <DropdownMenuItem asChild className="rounded-lg m-1 cursor-pointer">
-                                                <Link href={`/chiefs/${chief.id}`} className="flex items-center">
-                                                    <Eye className="mr-2 h-4 w-4 text-blue-500" /> Dossier Individuel
-                                                </Link>
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem asChild className="rounded-lg m-1 cursor-pointer">
-                                                <Link href={`/chiefs/${chief.id}/edit`} className="flex items-center">
-                                                    <Pencil className="mr-2 h-4 w-4 text-amber-500" /> Modifier la Fiche
-                                                </Link>
-                                            </DropdownMenuItem>
-                                            <DropdownMenuSeparator />
-                                            <DropdownMenuItem onClick={() => setDeleteTarget(chief)} className="rounded-lg m-1 cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50">
-                                                <Trash2 className="mr-2 h-4 w-4" /> Retirer du Registre
-                                            </DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
+                                </div>
+                            </td>
+                            <td className="p-4 align-middle">
+                                <Badge variant="secondary" className="px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider">{chief.role}</Badge>
+                            </td>
+                            <td className="p-4 align-middle">
+                                <div className="flex flex-col">
+                                    <span className="text-xs font-bold text-slate-600">{chief.village}</span>
+                                    <span className="text-[10px] text-slate-400">{chief.region} / {chief.department}</span>
+                                </div>
+                            </td>
+                            <td className="p-4 align-middle text-xs font-medium text-slate-500 italic">{chief.phone || chief.contact || "—"}</td>
+                            <td className="p-4 align-middle text-right">
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full opacity-30 group-hover:opacity-100 transition-all">
+                                            <MoreHorizontal className="h-4 w-4" />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end" className="w-48 rounded-lg shadow-2xl border-slate-100">
+                                        <DropdownMenuLabel className="text-[10px] font-black text-slate-400 uppercase px-3 py-2">Commanderies</DropdownMenuLabel>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuItem asChild className="rounded-lg m-1 cursor-pointer">
+                                            <Link href={`/chiefs/${chief.id}`} className="flex items-center">
+                                                <Eye className="mr-2 h-4 w-4 text-blue-500" /> Dossier Individuel
+                                            </Link>
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem asChild className="rounded-lg m-1 cursor-pointer">
+                                            <Link href={`/chiefs/${chief.id}/edit`} className="flex items-center">
+                                                <Pencil className="mr-2 h-4 w-4 text-amber-500" /> Modifier la Fiche
+                                            </Link>
+                                        </DropdownMenuItem>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuItem onClick={() => setDeleteTarget(chief)} className="rounded-lg m-1 cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50">
+                                            <Trash2 className="mr-2 h-4 w-4" /> Retirer du Registre
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </td>
+                        </>
+                    )}
+                />
              </div>
           )}
 
-          {!loading && paginatedChiefs.length === 0 && (
+          {!loading && filteredChiefs.length === 0 && (
             <div className="py-16 text-center rounded-2xl bg-slate-50 border-2 border-dashed border-slate-200">
                 <div className="h-20 w-20 bg-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl">
                     <UserCircle2 className="h-10 w-10 text-slate-200" />
@@ -499,18 +521,7 @@ export default function ChiefsPage() {
           )}
         </CardContent>
 
-        {totalPages > 1 && (
-          <CardFooter className="bg-slate-50/50 border-t border-slate-100 p-8">
-            <PaginationControls
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={setCurrentPage}
-              itemsPerPage={itemsPerPage}
-              onItemsPerPageChange={setItemsPerPage}
-              totalItems={filteredChiefs.length}
-            />
-          </CardFooter>
-        )}
+
       </Card>
 
       <ChiefQuickView

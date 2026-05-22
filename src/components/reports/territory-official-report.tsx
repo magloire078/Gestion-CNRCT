@@ -103,7 +103,7 @@ export function TerritoryOfficialReport({
                                 
                                 <table className="w-full border-collapse border-2 border-slate-900 text-[10px]">
                                     <thead>
-                                        <tr className="bg-slate-900 text-white uppercase font-black text-center">
+                                        <tr className="bg-slate-900 text-white uppercase font-black text-center print:bg-transparent print:text-slate-900 print:border-b-2 print:border-slate-900">
                                             <th className="p-3 text-left border-r border-slate-700">Nom de la Localité</th>
                                             <th className="p-3 text-left border-r border-slate-700">S-Préfecture / Département</th>
                                             <th className="p-3 w-[80px] border-r border-slate-700">Population</th>

@@ -8,14 +8,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogClose,
-} from "@/components/ui/dialog";
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetClose,
+} from "@/components/ui/sheet";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Select,
   SelectContent,
@@ -188,17 +188,18 @@ export function AddConflictSheet({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
-        <form onSubmit={handleSubmit}>
-          <DialogHeader>
-            <DialogTitle>Signaler un nouveau conflit</DialogTitle>
-            <DialogDescription>
-              Remplissez les détails ci-dessous pour enregistrer un nouveau conflit.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-6">
+    <Sheet open={isOpen} onOpenChange={(open) => !open && handleClose()}>
+      <SheetContent className="sm:max-w-4xl p-0 flex flex-col h-[100dvh] bg-white border-l-0 sm:border-l">
+        <SheetHeader className="px-6 pt-6 pb-4 border-b border-slate-100 shrink-0">
+          <SheetTitle className="text-2xl font-black text-slate-900">Signaler un nouveau conflit</SheetTitle>
+          <SheetDescription className="text-slate-500">
+            Remplissez les détails ci-dessous pour enregistrer un nouveau conflit.
+          </SheetDescription>
+        </SheetHeader>
+        
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+          <ScrollArea className="flex-1">
+            <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Colonne Gauche */}
             <div className="space-y-4">
                <div className="space-y-2">
@@ -450,24 +451,25 @@ export function AddConflictSheet({
             </div>
 
             {error && (
-              <div className="md:col-span-2 p-3 rounded-lg bg-destructive/5 border border-destructive/10 text-center text-sm text-destructive font-medium">
+              <div className="md:col-span-2 p-3 rounded-lg bg-rose-50 border border-rose-100 text-center text-sm text-rose-600 font-bold">
                 {error}
               </div>
             )}
-          </div>
+            </div>
+          </ScrollArea>
 
-          <DialogFooter className="gap-2 pt-2 border-t border-primary/5">
-            <DialogClose asChild>
-              <Button type="button" variant="ghost" onClick={handleClose}>
+          <div className="shrink-0 p-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 mt-auto">
+            <SheetClose asChild>
+              <Button type="button" variant="outline" onClick={handleClose} className="rounded-xl font-bold">
                 Annuler
               </Button>
-            </DialogClose>
-            <Button type="submit" className="min-w-[150px]" disabled={isSubmitting || loadingInitialData}>
+            </SheetClose>
+            <Button type="submit" className="rounded-xl font-bold min-w-[150px] shadow-lg shadow-primary/20" disabled={isSubmitting || loadingInitialData}>
               {isSubmitting ? "Enregistrement..." : "Enregistrer le signalement"}
             </Button>
-          </DialogFooter>
+          </div>
         </form>
-      </DialogContent>
-    </Dialog>
+      </SheetContent>
+    </Sheet>
   );
 }

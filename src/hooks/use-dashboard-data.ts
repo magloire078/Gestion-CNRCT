@@ -11,7 +11,9 @@ import { getOrganizationSettings } from "@/services/organization-service";
 import { subscribeToChiefs } from "@/services/chief-service";
 import { subscribeToDepartments } from "@/services/department-service";
 import { subscribeToConflicts } from "@/services/conflict-service";
+import { subscribeToVillages } from "@/services/village-service";
 import type { Conflict } from "@/types/common";
+import type { Village } from "@/types/village";
 import { parseISO, differenceInYears, isAfter, isBefore, isWithinInterval, startOfDay, format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { DEFAULT_ROLE_PERMISSIONS } from "@/types/permissions";
@@ -26,6 +28,8 @@ export function useDashboardData(user: User | null) {
         missionsInProgress: 0,
         chiefs: 0,
         conflicts: [] as Conflict[],
+        villages: [] as Village[],
+        villagesCount: 0,
     });
     const [personalStats, setPersonalStats] = useState({
         leaveBalance: null as number | null,
@@ -156,6 +160,15 @@ export function useDashboardData(user: User | null) {
                     setGlobalStats(prev => ({ ...prev, conflicts }));
                 }, console.error));
             }
+
+            await new Promise(resolve => setTimeout(resolve, 50));
+            if (!isMounted) return;
+
+            // TODO: Ensure permission check for villages if necessary. Currently readable by authenticated users in UI context.
+            unsubscribers.push(subscribeToVillages(villages => {
+                if (!isMounted) return;
+                setGlobalStats(prev => ({ ...prev, villages, villagesCount: villages.length }));
+            }, console.error));
 
             // --- Leaves Tracking (Global) ---
             const canReadGlobalLeaves = hasPermission('leaves', 'read');

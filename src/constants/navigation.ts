@@ -80,9 +80,9 @@ export const ALL_MENU_ITEMS: MenuItem[] = [
     icon: MapIcon,
     permission: "page:mapping:view",
     subItems: [
-      { href: "/employees?filter=directoire", label: "Membres du Directoire", icon: Building, permission: "page:employees:view" },
-      { href: "/employees?filter=regional", label: "Comités Régionaux", icon: Globe, permission: "page:employees:view" },
-      { href: "/employees?filter=all-geo", label: "Directoire & Régionale", icon: Globe, permission: "page:employees:view" },
+      { href: "/map", label: "SIG National (Rois & Chefs)", icon: Crown, permission: "page:chiefs:view" },
+      { href: "/mapping", label: "Cartographie des Conflits", icon: Scale, permission: "page:mapping:view" },
+      { href: "/employees?filter=all-geo", label: "Bureaux Régionaux", icon: Globe, permission: "page:employees:view" },
     ]
   },
   {

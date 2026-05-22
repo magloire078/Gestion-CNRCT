@@ -11,14 +11,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-    DialogFooter,
-    DialogClose
-} from "@/components/ui/dialog";
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetHeader,
+    SheetTitle,
+    SheetClose,
+} from "@/components/ui/sheet";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import {
     Select,
@@ -112,28 +112,29 @@ export function EditConflictSheet({ isOpen, onCloseAction, onUpdateConflictActio
     if (!conflict) return null;
 
     return (
-        <Dialog open={isOpen} onOpenChange={onCloseAction}>
-            <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
-                <form onSubmit={handleSave}>
-                    <DialogHeader>
-                        <div className="flex items-center gap-3 mb-2">
-                            <DialogTitle className="text-2xl">Modifier le Conflit</DialogTitle>
-                            {conflict.trackingId && (
-                                <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-100 font-black tracking-tighter">
-                                    {conflict.trackingId}
-                                </Badge>
-                            )}
-                        </div>
-                        <DialogDescription>Mettez à jour les détails du conflit à <span className="font-semibold text-primary">{conflict.village}</span>.</DialogDescription>
-                    </DialogHeader>
+        <Sheet open={isOpen} onOpenChange={onCloseAction}>
+            <SheetContent className="sm:max-w-4xl p-0 flex flex-col h-[100dvh] bg-white border-l-0 sm:border-l">
+                <SheetHeader className="px-6 pt-6 pb-4 border-b border-slate-100 shrink-0 text-left">
+                    <div className="flex items-center gap-3 mb-2">
+                        <SheetTitle className="text-2xl font-black text-slate-900">Modifier le Conflit</SheetTitle>
+                        {conflict.trackingId && (
+                            <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-100 font-black tracking-tighter">
+                                {conflict.trackingId}
+                            </Badge>
+                        )}
+                    </div>
+                    <SheetDescription className="text-slate-500">Mettez à jour les détails du conflit à <span className="font-semibold text-primary">{conflict.village}</span>.</SheetDescription>
+                </SheetHeader>
 
-                    {loading ? (
-                        <div className="flex flex-col items-center justify-center py-12 space-y-4">
-                            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                            <p className="text-sm text-muted-foreground">Chargement des détails...</p>
-                        </div>
-                    ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-6">
+                <form onSubmit={handleSave} className="flex flex-col flex-1 overflow-hidden">
+                    <ScrollArea className="flex-1">
+                        {loading ? (
+                            <div className="flex flex-col items-center justify-center py-12 space-y-4">
+                                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                                <p className="text-sm text-muted-foreground">Chargement des détails...</p>
+                            </div>
+                        ) : (
+                            <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                             {/* Colonne Gauche */}
                             <div className="space-y-4">
                                 <div className="space-y-2">
@@ -424,22 +425,23 @@ export function EditConflictSheet({ isOpen, onCloseAction, onUpdateConflictActio
                     )}
 
                     {error && (
-                        <div className="p-3 mb-4 rounded-lg bg-destructive/5 border border-destructive/10 text-center text-sm text-destructive font-medium">
+                        <div className="mx-6 p-3 mb-4 rounded-lg bg-rose-50 border border-rose-100 text-center text-sm text-rose-600 font-bold">
                             {error}
                         </div>
                     )}
+                    </ScrollArea>
 
-                    <DialogFooter className="gap-2 pt-2 border-t border-primary/5">
-                        <DialogClose asChild>
-                            <Button type="button" variant="ghost">Annuler</Button>
-                        </DialogClose>
-                        <Button type="submit" className="min-w-[150px]" disabled={isSaving || loading}>
+                    <div className="shrink-0 p-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 mt-auto">
+                        <SheetClose asChild>
+                            <Button type="button" variant="outline" className="rounded-xl font-bold">Annuler</Button>
+                        </SheetClose>
+                        <Button type="submit" className="min-w-[150px] rounded-xl font-bold shadow-lg shadow-primary/20" disabled={isSaving || loading}>
                             {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                             Enregistrer les modifications
                         </Button>
-                    </DialogFooter>
+                    </div>
                 </form>
-            </DialogContent>
-        </Dialog>
+            </SheetContent>
+        </Sheet>
     );
 }

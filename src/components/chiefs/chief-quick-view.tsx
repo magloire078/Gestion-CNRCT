@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
     Calendar, 
     MapPin, 
@@ -97,100 +98,150 @@ export function ChiefQuickView({ chief, isOpen, onClose }: ChiefQuickViewProps) 
                             </div>
                         </div>
                         
-                        <div className="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/10 text-center min-w-[100px]">
-                            <Award className={cn("h-6 w-6 mx-auto mb-1", meritPoints > 70 ? "text-amber-400" : "text-blue-400")} />
-                            <div className="text-2xl font-black text-white">{meritPoints}</div>
-                            <div className="text-[9px] uppercase font-black text-white/50 tracking-tighter">Points de Mérite</div>
+                        <div className="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/20 text-center min-w-[110px] shadow-2xl">
+                            <Award className={cn("h-8 w-8 mx-auto mb-2", meritPoints > 70 ? "text-amber-400" : "text-blue-400")} />
+                            <div className="text-3xl font-black text-white">{meritPoints}</div>
+                            <div className="text-[10px] uppercase font-black text-white/70 tracking-widest mt-1">Mérites</div>
                         </div>
                     </div>
                 </div>
 
                 <ScrollArea className="max-h-[70vh]">
-                    <div className="p-8 space-y-8">
-                        {/* Bio / Overview */}
-                        <section className="space-y-3">
-                            <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                                <FileText className="h-3 w-3" />
-                                BIOGRAPHIE & MISSION
-                            </h4>
-                            <p className="text-slate-600 text-sm leading-relaxed font-medium bg-white p-4 rounded-2xl border border-slate-200/60 shadow-sm">
-                                {chief.bio || "Aucune information biographique disponible pour le moment."}
-                            </p>
-                        </section>
+                    <div className="p-8">
+                        <Tabs defaultValue="profil" className="w-full">
+                            <TabsList className="grid w-full grid-cols-3 bg-slate-100/80 rounded-2xl p-1.5 border border-slate-200/50 mb-8">
+                                <TabsTrigger value="profil" className="text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:text-blue-700 data-[state=active]:shadow-md transition-all rounded-xl py-3">
+                                    Profil & Contact
+                                </TabsTrigger>
+                                <TabsTrigger value="carriere" className="text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:text-blue-700 data-[state=active]:shadow-md transition-all rounded-xl py-3">
+                                    Parcours & Carrière
+                                </TabsTrigger>
+                                <TabsTrigger value="territoire" className="text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:text-blue-700 data-[state=active]:shadow-md transition-all rounded-xl py-3">
+                                    Administration
+                                </TabsTrigger>
+                            </TabsList>
 
-                        {/* Career Timeline */}
-                        {canReadCareer && (
-                            <section className="space-y-4">
-                                <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                                    <History className="h-3 w-3" />
-                                    PARCOURS DE L&apos;AUTORITÉ
-                                </h4>
-                                
-                                <div className="relative space-y-6 before:absolute before:left-[17px] before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200">
-                                    {career.length > 0 ? (
-                                        career.map((event, index) => (
-                                            <div key={event.id} className="relative pl-10">
-                                                <div className="absolute left-0 top-1 h-9 w-9 bg-white rounded-xl border border-slate-200 shadow-sm flex items-center justify-center z-10 transition-transform hover:scale-110">
-                                                    {getEventIcon(event.type)}
+                            <TabsContent value="profil" className="space-y-8 focus-visible:outline-none mt-0">
+                                <section className="space-y-4">
+                                    <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
+                                        <FileText className="h-4 w-4" /> BIOGRAPHIE OFFICIELLE
+                                    </h4>
+                                    <div className="bg-white p-6 rounded-2xl border border-slate-200/60 shadow-sm relative overflow-hidden">
+                                        <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
+                                            <ShieldCheck className="h-32 w-32 rotate-12" />
+                                        </div>
+                                        <p className="text-slate-700 text-sm leading-loose font-medium relative z-10">
+                                            {chief.bio || "Aucune information biographique n'a été versée au dossier pour cette autorité."}
+                                        </p>
+                                    </div>
+                                </section>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                    <div className="space-y-4">
+                                        <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400">COORDONNÉES</h4>
+                                        <div className="space-y-3">
+                                            {chief.phone && (
+                                                <div className="flex items-center gap-4 text-sm text-slate-700 font-black bg-white p-4 rounded-xl border border-slate-200/60 shadow-sm hover:border-blue-300 transition-colors">
+                                                    <div className="h-8 w-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600"><Phone className="h-4 w-4" /></div>
+                                                    {chief.phone}
                                                 </div>
-                                                <div className="bg-white p-4 rounded-2xl border border-slate-200/60 shadow-sm hover:border-blue-400/50 transition-colors">
-                                                    <div className="flex justify-between items-start mb-1">
-                                                        <h5 className="font-black text-slate-900 text-sm">{event.title}</h5>
-                                                        <span className="text-[10px] font-bold text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full ring-1 ring-slate-100">
-                                                            {event.date}
-                                                        </span>
-                                                    </div>
-                                                    <p className="text-slate-500 text-xs leading-relaxed">{event.description}</p>
+                                            )}
+                                            {chief.email && (
+                                                <div className="flex items-center gap-4 text-sm text-slate-700 font-black bg-white p-4 rounded-xl border border-slate-200/60 shadow-sm hover:border-blue-300 transition-colors">
+                                                    <div className="h-8 w-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600"><Mail className="h-4 w-4" /></div>
+                                                    {chief.email}
                                                 </div>
-                                            </div>
-                                        ))
-                                    ) : (
-                                        <div className="pl-10 text-slate-400 italic text-sm py-2">
-                                            Aucun événement répertorié dans la timeline officielle.
+                                            )}
                                         </div>
-                                    )}
-                                </div>
-                            </section>
-                        )}
-
-                        <Separator className="bg-slate-200/60" />
-
-                        {/* Additional Info Grid */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                            <div className="space-y-3">
-                                <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400">CONTACTS OFFICIELS</h4>
-                                <div className="space-y-2">
-                                    {chief.phone && (
-                                        <div className="flex items-center gap-3 text-sm text-slate-600 font-bold bg-white p-3 rounded-xl border border-slate-200/60">
-                                            <Phone className="h-4 w-4 text-blue-500" />
-                                            {chief.phone}
-                                        </div>
-                                    )}
-                                    {chief.email && (
-                                        <div className="flex items-center gap-3 text-sm text-slate-600 font-bold bg-white p-3 rounded-xl border border-slate-200/60">
-                                            <Mail className="h-4 w-4 text-blue-500" />
-                                            {chief.email}
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                            
-                            <div className="space-y-3">
-                                <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400">ADMINISTRATION</h4>
-                                <div className="space-y-2">
-                                    {canReadAudit && (
-                                        <div className="flex items-center gap-3 text-sm text-slate-600 font-bold bg-white p-3 rounded-xl border border-slate-200/60">
-                                            <Calendar className="h-4 w-4 text-blue-500" />
-                                            Inscrit le {chief.audit?.createdAt ? format(new Date(chief.audit.createdAt), 'dd MMMM yyyy', { locale: fr }) : "N/A"}
-                                        </div>
-                                    )}
-                                    <div className="flex items-center gap-3 text-sm text-slate-400 font-bold bg-white/50 p-3 rounded-xl border border-dashed border-slate-200/60">
-                                        <ShieldCheck className="h-4 w-4" />
-                                        ID: {chief.id.substring(0, 8)}...
                                     </div>
                                 </div>
-                            </div>
-                        </div>
+                            </TabsContent>
+
+                            <TabsContent value="carriere" className="space-y-8 focus-visible:outline-none mt-0">
+                                {canReadCareer ? (
+                                    <section className="space-y-6">
+                                        <div className="relative space-y-8 before:absolute before:left-[23px] before:top-4 before:bottom-4 before:w-1 before:bg-slate-100 before:rounded-full">
+                                            {career.length > 0 ? (
+                                                career.map((event, index) => (
+                                                    <div key={event.id} className="relative pl-14 group">
+                                                        <div className="absolute left-0 top-1 h-12 w-12 bg-white rounded-2xl border-2 border-slate-200 shadow-lg flex items-center justify-center z-10 transition-transform duration-500 group-hover:scale-110 group-hover:border-blue-400 group-hover:text-blue-600">
+                                                            {getEventIcon(event.type)}
+                                                        </div>
+                                                        <div className="bg-white p-5 rounded-2xl border border-slate-200/60 shadow-sm group-hover:shadow-xl group-hover:border-blue-200 transition-all duration-500">
+                                                            <div className="flex justify-between items-start mb-2">
+                                                                <h5 className="font-black text-slate-900 text-base uppercase tracking-tight">{event.title}</h5>
+                                                                <span className="text-[10px] font-black text-blue-700 bg-blue-50 px-3 py-1 rounded-lg border border-blue-100 uppercase tracking-widest">
+                                                                    {event.date}
+                                                                </span>
+                                                            </div>
+                                                            <p className="text-slate-500 text-sm leading-relaxed font-medium">{event.description}</p>
+                                                        </div>
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <div className="pl-14 text-slate-400 italic font-medium py-8 flex items-center gap-4">
+                                                    <div className="h-12 w-12 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center">
+                                                        <History className="h-5 w-5 opacity-30" />
+                                                    </div>
+                                                    Aucun événement répertorié dans la timeline officielle.
+                                                </div>
+                                            )}
+                                        </div>
+                                    </section>
+                                ) : (
+                                    <div className="py-12 text-center text-slate-400 font-bold uppercase tracking-widest text-[10px]">
+                                        Accès restreint. Habilitation insuffisante.
+                                    </div>
+                                )}
+                            </TabsContent>
+
+                            <TabsContent value="territoire" className="space-y-8 focus-visible:outline-none mt-0">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200/60 space-y-4">
+                                        <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2 mb-4">
+                                            <MapPin className="h-4 w-4" /> Zone de Juridiction
+                                        </h4>
+                                        <div className="space-y-4">
+                                            <div>
+                                                <div className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Village / Localité</div>
+                                                <div className="text-base font-black text-slate-900">{chief.village || "Non spécifié"}</div>
+                                            </div>
+                                            <Separator className="bg-slate-200" />
+                                            <div>
+                                                <div className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Sous-Préfecture</div>
+                                                <div className="text-base font-black text-slate-900">{chief.subPrefecture}</div>
+                                            </div>
+                                            <Separator className="bg-slate-200" />
+                                            <div>
+                                                <div className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Région</div>
+                                                <div className="text-base font-black text-slate-900">{chief.region}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200/60 space-y-4">
+                                        <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2 mb-4">
+                                            <ShieldCheck className="h-4 w-4" /> Métadonnées
+                                        </h4>
+                                        <div className="space-y-4">
+                                            <div>
+                                                <div className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">ID Système</div>
+                                                <code className="text-xs font-bold text-slate-600 bg-white px-2 py-1 rounded border border-slate-200">{chief.id}</code>
+                                            </div>
+                                            <Separator className="bg-slate-200" />
+                                            {canReadAudit && (
+                                                <div>
+                                                    <div className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Date d'Immatriculation</div>
+                                                    <div className="text-sm font-black text-slate-900">
+                                                        {chief.audit?.createdAt ? format(new Date(chief.audit.createdAt), 'dd MMMM yyyy à HH:mm', { locale: fr }) : "Information non disponible"}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            </TabsContent>
+                        </Tabs>
                     </div>
                 </ScrollArea>
                 

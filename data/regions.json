@@ -1,0 +1,200 @@
+[
+  {
+    "id": "reg-abidjan",
+    "district_id": "dist-abidjan",
+    "nom": "Abidjan",
+    "chef_lieu": "Abidjan"
+  },
+  {
+    "id": "reg-agnby-tiassa",
+    "district_id": "dist-lagunes",
+    "nom": "Agnéby-Tiassa",
+    "chef_lieu": "Agboville"
+  },
+  {
+    "id": "reg-bafing",
+    "district_id": "dist-woroba",
+    "nom": "Bafing",
+    "chef_lieu": "Koro"
+  },
+  {
+    "id": "reg-bagou",
+    "district_id": "dist-savanes",
+    "nom": "Bagoué",
+    "chef_lieu": "Boundiali"
+  },
+  {
+    "id": "reg-blier",
+    "district_id": "dist-lacs",
+    "nom": "Bélier",
+    "chef_lieu": "Didiévi"
+  },
+  {
+    "id": "reg-br",
+    "district_id": "dist-woroba",
+    "nom": "Béré",
+    "chef_lieu": "Dianra"
+  },
+  {
+    "id": "reg-bounkani",
+    "district_id": "dist-zanzan",
+    "nom": "Bounkani",
+    "chef_lieu": "Bouna"
+  },
+  {
+    "id": "reg-cavally",
+    "district_id": "dist-montagnes",
+    "nom": "Cavally",
+    "chef_lieu": "Bloléquin"
+  },
+  {
+    "id": "reg-folon",
+    "district_id": "dist-dengul",
+    "nom": "Folon",
+    "chef_lieu": "Kaniasso"
+  },
+  {
+    "id": "reg-gbk",
+    "district_id": "dist-valle-du-bandama",
+    "nom": "Gbêkê",
+    "chef_lieu": "Béoumi"
+  },
+  {
+    "id": "reg-gbkl",
+    "district_id": "dist-bas-sassandra",
+    "nom": "Gbôklé",
+    "chef_lieu": "Fresco"
+  },
+  {
+    "id": "reg-gh",
+    "district_id": "dist-gh-djiboua",
+    "nom": "Gôh",
+    "chef_lieu": "Gagnoa"
+  },
+  {
+    "id": "reg-gontougo",
+    "district_id": "dist-zanzan",
+    "nom": "Gontougo",
+    "chef_lieu": "Bondoukou"
+  },
+  {
+    "id": "reg-grands-ponts",
+    "district_id": "dist-lagunes",
+    "nom": "Grands-Ponts",
+    "chef_lieu": "Dabou"
+  },
+  {
+    "id": "reg-gumon",
+    "district_id": "dist-montagnes",
+    "nom": "Guémon",
+    "chef_lieu": "Bangolo"
+  },
+  {
+    "id": "reg-hambol",
+    "district_id": "dist-valle-du-bandama",
+    "nom": "Hambol",
+    "chef_lieu": "Dabakala"
+  },
+  {
+    "id": "reg-haut-sassandra",
+    "district_id": "dist-sassandra-marahou",
+    "nom": "Haut-Sassandra",
+    "chef_lieu": "Daloa"
+  },
+  {
+    "id": "reg-iffou",
+    "district_id": "dist-lacs",
+    "nom": "Iffou",
+    "chef_lieu": "Daoukro"
+  },
+  {
+    "id": "reg-indni-djuablin",
+    "district_id": "dist-como",
+    "nom": "Indénié-Djuablin",
+    "chef_lieu": "Abengourou"
+  },
+  {
+    "id": "reg-kabadougou",
+    "district_id": "dist-dengul",
+    "nom": "Kabadougou",
+    "chef_lieu": "Gbéléban"
+  },
+  {
+    "id": "reg-lh-djiboua",
+    "district_id": "dist-gh-djiboua",
+    "nom": "Lôh-Djiboua",
+    "chef_lieu": "Divo"
+  },
+  {
+    "id": "reg-marahou",
+    "district_id": "dist-sassandra-marahou",
+    "nom": "Marahoué",
+    "chef_lieu": "Bonon"
+  },
+  {
+    "id": "reg-moronou",
+    "district_id": "dist-lacs",
+    "nom": "Moronou",
+    "chef_lieu": "Arrah"
+  },
+  {
+    "id": "reg-nawa",
+    "district_id": "dist-bas-sassandra",
+    "nom": "Nawa",
+    "chef_lieu": "Buyo"
+  },
+  {
+    "id": "reg-poro",
+    "district_id": "dist-savanes",
+    "nom": "Poro",
+    "chef_lieu": "Dikodougou"
+  },
+  {
+    "id": "reg-san-pdro",
+    "district_id": "dist-bas-sassandra",
+    "nom": "San-Pédro",
+    "chef_lieu": "San-Pédro"
+  },
+  {
+    "id": "reg-sud-como",
+    "district_id": "dist-como",
+    "nom": "Sud-Comoé",
+    "chef_lieu": "Aboisso"
+  },
+  {
+    "id": "reg-tchologo",
+    "district_id": "dist-savanes",
+    "nom": "Tchologo",
+    "chef_lieu": "Ferkessédougou"
+  },
+  {
+    "id": "reg-tonkpi",
+    "district_id": "dist-montagnes",
+    "nom": "Tonkpi",
+    "chef_lieu": "Biankouma"
+  },
+  {
+    "id": "reg-worodougou",
+    "district_id": "dist-woroba",
+    "nom": "Worodougou",
+    "chef_lieu": "Kani"
+  },
+  {
+    "id": "reg-yamoussoukro",
+    "district_id": "dist-yamoussoukro",
+    "nom": "Yamoussoukro",
+    "chef_lieu": "Attiégouakro"
+  },
+  {
+    "id": "reg-nzi",
+    "district_id": "dist-lacs",
+    "nom": "N'Zi",
+    "chef_lieu": "Dimbokro"
+  },
+  {
+    "id": "reg-m",
+    "district_id": "dist-lagunes",
+    "nom": "Mé",
+    "chef_lieu": "Adzopé"
+  }
+]

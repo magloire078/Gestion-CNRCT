@@ -24,7 +24,7 @@ export function PrintConflictsList({ conflicts, organizationSettings, subtitle }
                 <div className="mt-8">
                     <table className="w-full text-[10px] border-collapse border-2 border-black">
                         <thead>
-                            <tr className="bg-slate-900 text-white uppercase font-black text-center border-b-2 border-black">
+                            <tr className="bg-slate-900 text-white uppercase font-black text-center border-b-2 border-black print:bg-transparent print:text-slate-900">
                                 <th className="border border-slate-700 py-3 px-1 w-10">N°</th>
                                 <th className="border border-slate-700 py-3 px-1 w-24">Date Sign.</th>
                                 <th className="border border-slate-700 py-3 px-1">Localité / Région</th>
@@ -131,7 +131,7 @@ export function PrintConflictDetail({ conflict, organizationSettings, isPrinting
 
                     <div className="grid grid-cols-1 gap-8">
                         <div>
-                            <h3 className="bg-slate-900 text-white px-4 py-2 font-black border-l-4 border-primary uppercase text-xs">I. Résumé Détaillé des Faits</h3>
+                            <h3 className="bg-slate-900 text-white px-4 py-2 font-black border-l-4 border-primary uppercase text-xs print:bg-transparent print:text-slate-900 print:border-b-2 print:border-l-0">I. Résumé Détaillé des Faits</h3>
                             <div className="mt-4 text-justify leading-relaxed p-6 border-2 border-black bg-white min-h-[150px] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                                 {conflict.description}
                             </div>
@@ -139,13 +139,13 @@ export function PrintConflictDetail({ conflict, organizationSettings, isPrinting
 
                         <div className="grid grid-cols-2 gap-8">
                             <div>
-                                <h3 className="bg-slate-900 text-white px-4 py-2 font-black border-l-4 border-primary uppercase text-xs">II. Acteurs & Parties</h3>
+                                <h3 className="bg-slate-900 text-white px-4 py-2 font-black border-l-4 border-primary uppercase text-xs print:bg-transparent print:text-slate-900 print:border-b-2 print:border-l-0">II. Acteurs & Parties</h3>
                                 <div className="mt-4 p-4 border-2 border-black italic text-slate-700 min-h-[80px]">
                                     {conflict.parties || "Non identifiés précisément dans ce dossier."}
                                 </div>
                             </div>
                             <div>
-                                <h3 className="bg-slate-900 text-white px-4 py-2 font-black border-l-4 border-primary uppercase text-xs">III. Impacts Identifiés</h3>
+                                <h3 className="bg-slate-900 text-white px-4 py-2 font-black border-l-4 border-primary uppercase text-xs print:bg-transparent print:text-slate-900 print:border-b-2 print:border-l-0">III. Impacts Identifiés</h3>
                                 <div className="mt-4 p-4 border-2 border-black text-slate-700 min-h-[80px]">
                                     {conflict.impact || "Impact non encore évalué par le médiateur."}
                                 </div>
@@ -153,7 +153,7 @@ export function PrintConflictDetail({ conflict, organizationSettings, isPrinting
                         </div>
 
                         <div>
-                            <h3 className="bg-slate-900 text-white px-4 py-2 font-black border-l-4 border-primary uppercase text-xs">IV. Rapport de Médiation & Résolution</h3>
+                            <h3 className="bg-slate-900 text-white px-4 py-2 font-black border-l-4 border-primary uppercase text-xs print:bg-transparent print:text-slate-900 print:border-b-2 print:border-l-0">IV. Rapport de Médiation & Résolution</h3>
                             <div className="mt-4 border-2 border-black overflow-hidden bg-white">
                                 {conflict.status === 'Résolu' ? (
                                     <div className="p-6 bg-emerald-50">
@@ -174,7 +174,7 @@ export function PrintConflictDetail({ conflict, organizationSettings, isPrinting
                         </div>
 
                         <div>
-                            <h3 className="bg-slate-900 text-white px-4 py-2 font-black border-l-4 border-primary uppercase text-xs">V. Journal des Événements</h3>
+                            <h3 className="bg-slate-900 text-white px-4 py-2 font-black border-l-4 border-primary uppercase text-xs print:bg-transparent print:text-slate-900 print:border-b-2 print:border-l-0">V. Journal des Événements</h3>
                             <div className="mt-4 space-y-4">
                                 {(conflict.comments || []).slice(0, 5).map((comment, idx) => (
                                     <div key={idx} className="flex gap-4 items-start border-b border-slate-100 pb-3 last:border-0 italic">

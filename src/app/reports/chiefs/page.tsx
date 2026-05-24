@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ChiefsOfficialReport } from "@/components/reports/chiefs-official-report";
+import { ChiefsStatisticsReport } from "@/components/reports/chiefs-statistics-report";
 import { getOrganizationSettings } from "@/services/organization-service";
 import type { OrganizationSettings } from "@/lib/data";
 import {
@@ -61,6 +62,7 @@ export default function ChiefsReportsPage() {
     const [searchTerm, setSearchTerm] = useState("");
     const [viewMode, setViewMode] = useState<"list" | "map">("map");
     const [isPrinting, setIsPrinting] = useState(false);
+    const [isPrintingStats, setIsPrintingStats] = useState(false);
     const [orgSettings, setOrgSettings] = useState<OrganizationSettings | null>(null);
     const [isPending, startTransition] = useTransition();
 
@@ -196,10 +198,30 @@ export default function ChiefsReportsPage() {
                             </div>
 
                             <div className="flex items-center gap-3">
-                                <Button onClick={() => setIsPrinting(true)} variant="outline" className="rounded-2xl h-14 px-6 shadow-xl border-white/10 bg-white/5 text-white font-bold hover:bg-white/10">
-                                    <Printer className="mr-2 h-5 w-5" />
-                                    Imprimer
-                                </Button>
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="outline" className="rounded-2xl h-14 px-6 shadow-xl border-white/10 bg-white/5 text-white font-bold hover:bg-white/10">
+                                            <Printer className="mr-2 h-5 w-5" />
+                                            Imprimer
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end" className="w-56 rounded-[1.5rem] shadow-2xl p-2 bg-white/95 backdrop-blur-xl border-slate-100">
+                                        <DropdownMenuLabel className="px-4 py-3 text-[10px] uppercase font-black text-slate-400 tracking-widest">Options d'impression</DropdownMenuLabel>
+                                        <DropdownMenuSeparator className="bg-slate-100" />
+                                        <DropdownMenuItem onClick={() => setIsPrinting(true)} className="gap-3 cursor-pointer rounded-xl py-3 px-4 focus:bg-slate-50">
+                                            <div className="h-8 w-8 rounded-lg bg-blue-50 flex items-center justify-center">
+                                                <Users className="h-4 w-4 text-blue-600" />
+                                            </div>
+                                            <span className="font-bold text-slate-700 text-sm">Registre Nominatif</span>
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => setIsPrintingStats(true)} className="gap-3 cursor-pointer rounded-xl py-3 px-4 focus:bg-slate-50">
+                                            <div className="h-8 w-8 rounded-lg bg-amber-50 flex items-center justify-center">
+                                                <BarChart3 className="h-4 w-4 text-amber-600" />
+                                            </div>
+                                            <span className="font-bold text-slate-700 text-sm">Rapport Statistique</span>
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
                                         <Button className="bg-gradient-to-br from-[#D4AF37] to-[#B8972F] hover:from-[#B8972F] hover:to-[#D4AF37] text-slate-950 rounded-2xl h-14 px-8 font-black shadow-2xl shadow-[#D4AF37]/30 border-none transition-all duration-500 hover:scale-[1.02] active:scale-[0.98]">
@@ -421,7 +443,7 @@ export default function ChiefsReportsPage() {
                     )}
                 </div>
 
-                {/* --- PRINT PORTAL --- */}
+                {/* --- PRINT PORTALS --- */}
                 <ChiefsOfficialReport 
                     chiefs={chiefs}
                     organizationSettings={orgSettings}
@@ -433,6 +455,18 @@ export default function ChiefsReportsPage() {
                         villages: stats.villages
                     }}
                     subtitle={viewMode === 'map' ? "Vue Cartographique" : "Liste Nominative"}
+                />
+
+                <ChiefsStatisticsReport 
+                    chiefs={chiefs}
+                    organizationSettings={orgSettings}
+                    isPrinting={isPrintingStats}
+                    onAfterPrint={() => setIsPrintingStats(false)}
+                    stats={{
+                        total: stats.total,
+                        regions: stats.regions,
+                        villages: stats.villages
+                    }}
                 />
             </div>
         </PermissionGuard>

@@ -18,7 +18,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { getChief, updateChief } from "@/services/chief-service";
-import type { Chief, ChiefRole, DesignationMode, ChiefCareerEvent } from "@/types/chief";
+import type { Chief, ChiefRole, DesignationMode, ChiefCareerEvent, Predecessor } from "@/types/chief";
 import { divisions } from "@/lib/ivory-coast-divisions";
 import { IVORIAN_REGIONS } from "@/constants/regions";
 import { LocationPicker } from "@/components/common/location-picker";
@@ -55,6 +55,8 @@ export default function EditChiefPage() {
     const [officialDocuments, setOfficialDocuments] = useState("");
     const [bio, setBio] = useState("");
     const [career, setCareer] = useState<ChiefCareerEvent[]>([]);
+    const [predecessors, setPredecessors] = useState<Predecessor[]>([]);
+    const [throneAccessionDate, setThroneAccessionDate] = useState("");
     const [photoUrl, setPhotoUrl] = useState("");
     const [photoFile, setPhotoFile] = useState<File | null>(null);
     const [photoPreview, setPhotoPreview] = useState("");
@@ -92,6 +94,8 @@ export default function EditChiefPage() {
                     setOfficialDocuments(data.officialDocuments || "");
                     setBio(data.bio || "");
                     setCareer(data.career || []);
+                    setPredecessors(data.predecessors || []);
+                    setThroneAccessionDate(data.throneAccessionDate || "");
                     setPhotoUrl(data.photoUrl || "");
                     setPhotoPreview(data.photoUrl || "");
                     
@@ -184,7 +188,10 @@ export default function EditChiefPage() {
                 officialDocuments: officialDocuments || undefined,
                 bio,
                 career,
+                predecessors,
             };
+
+            if (throneAccessionDate) updateData.throneAccessionDate = throneAccessionDate;
 
             if (latitude !== '') updateData.latitude = Number(latitude);
             if (longitude !== '') updateData.longitude = Number(longitude);
@@ -366,7 +373,9 @@ export default function EditChiefPage() {
                                             <SelectContent><SelectItem value="Héritage">Héritage</SelectItem><SelectItem value="Élection">Élection</SelectItem><SelectItem value="Nomination coutumière">Nomination coutumière</SelectItem><SelectItem value="Autre">Autre</SelectItem></SelectContent>
                                         </Select>
                                     </div>
-                                    <div className="col-span-2 space-y-2"><Label>Documents Officiels (Arrêtés, Décrets)</Label><Textarea value={officialDocuments} onChange={e => setOfficialDocuments(e.target.value)} rows={2} /></div>
+                                    <div className="space-y-2"><Label>Date de Désignation</Label><Input type="date" value={designationDate} onChange={e => setDesignationDate(e.target.value)} /></div>
+                                    <div className="space-y-2"><Label>Date d'accession au Trône</Label><Input type="date" value={throneAccessionDate} onChange={e => setThroneAccessionDate(e.target.value)} /></div>
+                                    <div className="col-span-1 md:col-span-2 space-y-2"><Label>Documents Officiels (Arrêtés, Décrets)</Label><Textarea value={officialDocuments} onChange={e => setOfficialDocuments(e.target.value)} rows={2} /></div>
                                 </AccordionContent>
                             </AccordionItem>
 
@@ -472,6 +481,32 @@ export default function EditChiefPage() {
                                                         </div>
                                                     </div>
                                                 ))}
+                                            </div>
+
+                                            <div className="pt-4 border-t border-slate-100">
+                                                <div className="flex items-center justify-between mb-4">
+                                                    <Label className="text-[10px] font-black uppercase text-slate-400">GÉNÉALOGIE / PRÉDÉCESSEURS</Label>
+                                                    <Button type="button" variant="outline" size="sm" onClick={() => setPredecessors([...predecessors, { id: crypto.randomUUID(), name: "", period: "", notes: "" }])} className="h-8 rounded-lg text-[10px] font-black uppercase hover:bg-blue-50 hover:text-blue-600 transition-colors">
+                                                        <Plus className="mr-1.5 h-3 w-3" /> Ajouter Prédécesseur
+                                                    </Button>
+                                                </div>
+                                                
+                                                {predecessors.length === 0 ? (
+                                                    <div className="py-8 text-center border-2 border-dashed border-slate-100 rounded-2xl text-slate-400 text-xs italic">Aucun prédécesseur renseigné.</div>
+                                                ) : (
+                                                    <div className="space-y-4">
+                                                        {predecessors.map((pred, index) => (
+                                                            <div key={pred.id} className="relative p-4 bg-white border border-slate-200 rounded-xl shadow-sm group">
+                                                                <Button type="button" variant="ghost" size="icon" className="absolute -top-3 -right-3 h-8 w-8 rounded-full bg-red-50 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity border border-red-100" onClick={() => setPredecessors(predecessors.filter(p => p.id !== pred.id))}><TrashIcon className="h-4 w-4" /></Button>
+                                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                                                    <div className="col-span-2 space-y-1"><Label className="text-[10px] uppercase font-bold text-slate-400">Nom du Prédécesseur</Label><Input className="h-9 text-xs" value={pred.name} onChange={(e) => { const newPreds = [...predecessors]; newPreds[index].name = e.target.value; setPredecessors(newPreds); }} placeholder="Ex: Nanan Kouamé..." /></div>
+                                                                    <div className="space-y-1"><Label className="text-[10px] uppercase font-bold text-slate-400">Période de Règne</Label><Input className="h-9 text-xs" value={pred.period} onChange={(e) => { const newPreds = [...predecessors]; newPreds[index].period = e.target.value; setPredecessors(newPreds); }} placeholder="Ex: 1990 - 2010" /></div>
+                                                                    <div className="space-y-1"><Label className="text-[10px] uppercase font-bold text-slate-400">Notes</Label><Input className="h-9 text-xs" value={pred.notes || ''} onChange={(e) => { const newPreds = [...predecessors]; newPreds[index].notes = e.target.value; setPredecessors(newPreds); }} placeholder="Décès, etc." /></div>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     </AccordionContent>

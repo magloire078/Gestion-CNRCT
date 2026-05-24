@@ -42,6 +42,7 @@ export function ChiefQuickView({ chief, isOpen, onClose }: ChiefQuickViewProps) 
     if (!chief) return null;
 
     const career = chief.career || [];
+    const predecessors = chief.predecessors || [];
     const meritPoints = chief.meritPoints || 0;
     const isHighAuthority = ["Roi", "Chef de province", "Chef de canton"].includes(chief.role);
     const { hasPermission } = useAuth();
@@ -114,7 +115,7 @@ export function ChiefQuickView({ chief, isOpen, onClose }: ChiefQuickViewProps) 
                                     Profil & Contact
                                 </TabsTrigger>
                                 <TabsTrigger value="carriere" className="text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:text-blue-700 data-[state=active]:shadow-md transition-all rounded-xl py-3">
-                                    Parcours & Carrière
+                                    Historique & Carrière
                                 </TabsTrigger>
                                 <TabsTrigger value="territoire" className="text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:text-blue-700 data-[state=active]:shadow-md transition-all rounded-xl py-3">
                                     Administration
@@ -193,6 +194,24 @@ export function ChiefQuickView({ chief, isOpen, onClose }: ChiefQuickViewProps) 
                                         Accès restreint. Habilitation insuffisante.
                                     </div>
                                 )}
+
+                                {/* Lignée / Prédécesseurs */}
+                                {predecessors.length > 0 && (
+                                    <section className="space-y-4 pt-6 border-t border-slate-200">
+                                        <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
+                                            <History className="h-4 w-4" /> GÉNÉALOGIE & PRÉDÉCESSEURS
+                                        </h4>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            {predecessors.map((pred) => (
+                                                <div key={pred.id} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-center space-y-1">
+                                                    <div className="font-black text-slate-800 text-sm">{pred.name}</div>
+                                                    <div className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded w-max">Règne : {pred.period}</div>
+                                                    {pred.notes && <div className="text-xs text-slate-500 mt-1">{pred.notes}</div>}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </section>
+                                )}
                             </TabsContent>
 
                             <TabsContent value="territoire" className="space-y-8 focus-visible:outline-none mt-0">
@@ -221,9 +240,25 @@ export function ChiefQuickView({ chief, isOpen, onClose }: ChiefQuickViewProps) 
 
                                     <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200/60 space-y-4">
                                         <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2 mb-4">
-                                            <ShieldCheck className="h-4 w-4" /> Métadonnées
+                                            <ShieldCheck className="h-4 w-4" /> Informations Légales
                                         </h4>
                                         <div className="space-y-4">
+                                            {chief.designationDate && (
+                                                <div>
+                                                    <div className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Date de Désignation</div>
+                                                    <div className="text-sm font-black text-slate-900">{format(new Date(chief.designationDate), 'dd MMMM yyyy', { locale: fr })}</div>
+                                                </div>
+                                            )}
+                                            {chief.throneAccessionDate && (
+                                                <>
+                                                    <Separator className="bg-slate-200" />
+                                                    <div>
+                                                        <div className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Date d'Accession au Trône</div>
+                                                        <div className="text-sm font-black text-blue-700">{format(new Date(chief.throneAccessionDate), 'dd MMMM yyyy', { locale: fr })}</div>
+                                                    </div>
+                                                </>
+                                            )}
+                                            <Separator className="bg-slate-200" />
                                             <div>
                                                 <div className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">ID Système</div>
                                                 <code className="text-xs font-bold text-slate-600 bg-white px-2 py-1 rounded border border-slate-200">{chief.id}</code>

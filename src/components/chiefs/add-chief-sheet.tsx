@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { Chief, ChiefRole, DesignationMode, ChiefCareerEvent } from "@/types/chief";
+import type { Chief, ChiefRole, DesignationMode, ChiefCareerEvent, Predecessor } from "@/types/chief";
 import { getChiefs } from "@/services/chief-service";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Upload, Plus, Trash2 as TrashIcon, ChevronRight, ChevronLeft, MapPin as PinIcon, ShieldCheck } from "lucide-react";
@@ -87,6 +87,8 @@ export function AddChiefSheet({ isOpen, onCloseAction, onAddChiefAction }: AddCh
   const [regencyEndDate, setRegencyEndDate] = useState("");
   const [status, setStatus] = useState<Chief['status']>("actif");
   const [career, setCareer] = useState<ChiefCareerEvent[]>([]);
+  const [predecessors, setPredecessors] = useState<Predecessor[]>([]);
+  const [throneAccessionDate, setThroneAccessionDate] = useState("");
 
   const [allChiefs, setAllChiefs] = useState<Chief[]>([]);
   const [error, setError] = useState("");
@@ -119,7 +121,7 @@ export function AddChiefSheet({ isOpen, onCloseAction, onAddChiefAction }: AddCh
     setRegencyStartDate(""); setRegencyEndDate(""); setStatus("actif"); setError("");
     setDesignationDate(""); setDesignationMode(""); setEthnicGroup(""); setLanguages("");
     setCNRCTRegistrationNumber(""); setOfficialDocuments(""); setEmail(""); setAddress("");
-    setCareer([]); setStep(1);
+    setCareer([]); setPredecessors([]); setThroneAccessionDate(""); setStep(1);
     if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
@@ -180,8 +182,10 @@ export function AddChiefSheet({ isOpen, onCloseAction, onAddChiefAction }: AddCh
         phone: phone || undefined, contact, email: email || undefined, address: address || undefined,
         CNRCTRegistrationNumber: CNRCTRegistrationNumber || undefined,
         officialDocuments: officialDocuments || undefined,
-        status: status || 'actif', bio, career, photoUrl: '',
+        status: status || 'actif', bio, career, predecessors, photoUrl: '',
       };
+
+      if (throneAccessionDate) chiefData.throneAccessionDate = throneAccessionDate;
 
       if (parentChiefId) chiefData.parentChiefId = parentChiefId;
       if (latitude !== '') chiefData.latitude = Number(latitude);
@@ -417,7 +421,8 @@ export function AddChiefSheet({ isOpen, onCloseAction, onAddChiefAction }: AddCh
                             </div>
                             <div className="space-y-2"><Label>Mode de désignation</Label><Select value={designationMode} onValueChange={(v: DesignationMode) => setDesignationMode(v)}><SelectTrigger className="bg-white"><SelectValue placeholder="Sélectionnez..." /></SelectTrigger><SelectContent><SelectItem value="Héritage">Héritage</SelectItem><SelectItem value="Élection">Élection</SelectItem><SelectItem value="Nomination coutumière">Nomination coutumière</SelectItem><SelectItem value="Autre">Autre</SelectItem></SelectContent></Select></div>
                             <div className="space-y-2"><Label>Date de désignation</Label><Input type="date" value={designationDate} onChange={e => setDesignationDate(e.target.value)} className="bg-white" /></div>
-                            <div className="col-span-2 space-y-2"><Label>Documents officiels (Décrets, Arrêtés)</Label><Textarea value={officialDocuments} onChange={(e) => setOfficialDocuments(e.target.value)} rows={2} className="bg-white" placeholder="Références des arrêtés de nomination..." /></div>
+                            <div className="space-y-2"><Label>Date d'accession au Trône</Label><Input type="date" value={throneAccessionDate} onChange={e => setThroneAccessionDate(e.target.value)} className="bg-white" /></div>
+                            <div className="col-span-1 space-y-2"><Label>Documents officiels (Décrets, Arrêtés)</Label><Textarea value={officialDocuments} onChange={(e) => setOfficialDocuments(e.target.value)} rows={2} className="bg-white" placeholder="Références des arrêtés de nomination..." /></div>
                         </div>
 
                         <div>
@@ -445,6 +450,32 @@ export function AddChiefSheet({ isOpen, onCloseAction, onAddChiefAction }: AddCh
                                                 </div>
                                                 <div className="space-y-1"><Label className="text-[10px] uppercase font-bold text-slate-400">Date/Période</Label><Input className="h-9 text-xs" value={event.date} onChange={(e) => { const newCareer = [...career]; newCareer[index].date = e.target.value; setCareer(newCareer); }} /></div>
                                                 <div className="col-span-2 space-y-1"><Label className="text-[10px] uppercase font-bold text-slate-400">Titre</Label><Input className="h-9 text-xs" value={event.title} onChange={(e) => { const newCareer = [...career]; newCareer[index].title = e.target.value; setCareer(newCareer); }} /></div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        <div>
+                            <div className="flex items-center justify-between mb-4">
+                                <Label className="text-sm font-black uppercase text-slate-700">Généalogie / Prédécesseurs</Label>
+                                <Button type="button" variant="outline" size="sm" onClick={() => setPredecessors([...predecessors, { id: crypto.randomUUID(), name: "", period: "", notes: "" }])} className="shadow-sm">
+                                    <Plus className="mr-2 h-4 w-4" /> Ajouter Prédécesseur
+                                </Button>
+                            </div>
+                            
+                            {predecessors.length === 0 ? (
+                                <div className="p-8 text-center border-2 border-dashed border-slate-200 rounded-2xl text-slate-400 text-sm font-medium">Aucun prédécesseur renseigné.</div>
+                            ) : (
+                                <div className="space-y-4">
+                                    {predecessors.map((pred, index) => (
+                                        <div key={pred.id} className="relative p-4 bg-white border border-slate-200 rounded-xl shadow-sm group">
+                                            <Button type="button" variant="ghost" size="icon" className="absolute -top-3 -right-3 h-8 w-8 rounded-full bg-red-50 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity border border-red-100" onClick={() => setPredecessors(predecessors.filter(p => p.id !== pred.id))}><TrashIcon className="h-4 w-4" /></Button>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                                <div className="col-span-2 space-y-1"><Label className="text-[10px] uppercase font-bold text-slate-400">Nom du Prédécesseur</Label><Input className="h-9 text-xs" value={pred.name} onChange={(e) => { const newPreds = [...predecessors]; newPreds[index].name = e.target.value; setPredecessors(newPreds); }} placeholder="Ex: Nanan Kouamé..." /></div>
+                                                <div className="space-y-1"><Label className="text-[10px] uppercase font-bold text-slate-400">Période de Règne</Label><Input className="h-9 text-xs" value={pred.period} onChange={(e) => { const newPreds = [...predecessors]; newPreds[index].period = e.target.value; setPredecessors(newPreds); }} placeholder="Ex: 1990 - 2010" /></div>
+                                                <div className="space-y-1"><Label className="text-[10px] uppercase font-bold text-slate-400">Notes (Motif fin, lien)</Label><Input className="h-9 text-xs" value={pred.notes || ''} onChange={(e) => { const newPreds = [...predecessors]; newPreds[index].notes = e.target.value; setPredecessors(newPreds); }} placeholder="Décès, Père du chef actuel..." /></div>
                                             </div>
                                         </div>
                                     ))}

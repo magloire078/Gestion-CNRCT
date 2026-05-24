@@ -11,6 +11,13 @@ export type ChiefCareerEvent = {
     type: ChiefCareerEventType;
 };
 
+export type Predecessor = {
+    id: string;
+    name: string;
+    period: string; // e.g. "1990 - 2010"
+    notes?: string;
+};
+
 export type Chief = {
     id: string;
     name: string;
@@ -19,6 +26,7 @@ export type Chief = {
     title: string;
     role: ChiefRole;
     designationDate?: string;
+    throneAccessionDate?: string;
     designationMode?: DesignationMode;
     districtId?: string;
     regionId?: string;
@@ -52,6 +60,7 @@ export type Chief = {
     
     // Authority Life Hub fields
     career?: ChiefCareerEvent[];
+    predecessors?: Predecessor[];
     meritPoints?: number;
     audit?: {
         createdAt: string;

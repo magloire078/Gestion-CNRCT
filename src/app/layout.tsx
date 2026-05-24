@@ -14,6 +14,9 @@ import type { Viewport } from 'next';
 
 export const viewport: Viewport = {
   themeColor: '#2C3E50',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
 };
 
 export async function generateMetadata(): Promise<Metadata> {

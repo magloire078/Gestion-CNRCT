@@ -164,10 +164,14 @@ export function useDashboardData(user: User | null) {
             await new Promise(resolve => setTimeout(resolve, 50));
             if (!isMounted) return;
 
-            // TODO: Ensure permission check for villages if necessary. Currently readable by authenticated users in UI context.
             unsubscribers.push(subscribeToVillages(villages => {
                 if (!isMounted) return;
-                setGlobalStats(prev => ({ ...prev, villages, villagesCount: villages.length }));
+                const actualVillages = villages.filter(v => v.type !== 'campement');
+                setGlobalStats(prev => ({ 
+                    ...prev, 
+                    villages, 
+                    villagesCount: actualVillages.length 
+                }));
             }, console.error));
 
             // --- Leaves Tracking (Global) ---

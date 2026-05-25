@@ -421,16 +421,16 @@ export default function EmployeesPage() {
         <div className="flex flex-col gap-4 main-content">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-2">
             <div>
-              <h1 className="text-3xl md:text-4xl font-black uppercase tracking-tighter text-slate-900 leading-none">
+              <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-slate-900 leading-none">
                 {pageTitle}
               </h1>
               <div className="flex items-center gap-4 mt-3">
                 <div className="flex items-center gap-2 bg-slate-900 text-white px-3 py-1 rounded-full shadow-lg shadow-slate-900/10">
                   <Shield className="h-3 w-3" />
-                  <span className="text-xs font-black uppercase tracking-widest text-white/90">Registre National RH</span>
+                  <span className="text-sm md:text-xs font-black uppercase tracking-widest text-white/90">Registre National RH</span>
                 </div>
                 <span className="h-3 w-px bg-slate-200" />
-                <span className="text-slate-500 font-bold uppercase text-xs tracking-[0.2em] flex items-center gap-2">
+                <span className="text-slate-500 font-bold uppercase text-sm md:text-xs tracking-[0.2em] flex items-center gap-2">
                   <Globe className="h-3 w-3" /> Administration Centrale
                 </span>
               </div>
@@ -438,7 +438,7 @@ export default function EmployeesPage() {
             <div className="flex flex-wrap items-center gap-2">
               <Button 
                 variant="outline" 
-                className="h-11 px-4 rounded-lg border-slate-200 bg-white/20 backdrop-blur-xl shadow-sm font-black uppercase tracking-widest text-xs hover:bg-white hover:scale-105 transition-all"
+                className="h-11 px-4 rounded-lg border-slate-200 bg-white/20 backdrop-blur-xl shadow-sm font-black uppercase tracking-widest text-sm md:text-xs hover:bg-white hover:scale-105 transition-all"
                 onClick={() => setTimeout(() => setIsPrintDialogOpen(true), 50)}
               >
                 <Printer className="mr-2 h-3.5 w-3.5 text-blue-600" />
@@ -447,22 +447,22 @@ export default function EmployeesPage() {
               {canExport && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="h-11 px-4 rounded-lg border-slate-200 bg-white/20 backdrop-blur-xl shadow-sm font-black uppercase tracking-widest text-xs hover:bg-white transition-all">
+                    <Button variant="outline" className="h-11 px-4 rounded-lg border-slate-200 bg-white/20 backdrop-blur-xl shadow-sm font-black uppercase tracking-widest text-sm md:text-xs hover:bg-white transition-all">
                       <Download className="mr-2 h-3.5 w-3.5 text-emerald-600" />
                       Exporter
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56 p-2 rounded-xl border-white/20 bg-white/90 backdrop-blur-xl shadow-2xl">
-                    <DropdownMenuLabel className="text-xs font-black uppercase text-slate-400 p-2">Formats Systèmes</DropdownMenuLabel>
-                    <DropdownMenuItem onSelect={() => setTimeout(handleExportCsv, 50)} className="rounded-lg font-bold p-2 text-sm">CSV (Excel)</DropdownMenuItem>
-                    <DropdownMenuItem onSelect={() => setTimeout(handleExportJson, 50)} className="rounded-lg font-bold p-2 text-sm">JSON</DropdownMenuItem>
-                    <DropdownMenuItem onSelect={() => setTimeout(handleExportSql, 50)} className="rounded-lg font-bold p-2 text-sm">SQL</DropdownMenuItem>
+                    <DropdownMenuLabel className="text-sm md:text-xs font-black uppercase text-slate-400 p-2">Formats Systèmes</DropdownMenuLabel>
+                    <DropdownMenuItem onSelect={() => setTimeout(handleExportCsv, 50)} className="rounded-lg font-bold p-2 text-base md:text-sm">CSV (Excel)</DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => setTimeout(handleExportJson, 50)} className="rounded-lg font-bold p-2 text-base md:text-sm">JSON</DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => setTimeout(handleExportSql, 50)} className="rounded-lg font-bold p-2 text-base md:text-sm">SQL</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               )}
               <Button 
                 onClick={() => setTimeout(() => setIsAddSheetOpen(true), 50)} 
-                className="h-11 px-6 rounded-lg bg-slate-900 shadow-xl shadow-slate-900/10 font-black uppercase tracking-widest text-xs hover:bg-black active:scale-95 transition-all text-white border-t border-white/10"
+                className="h-11 px-6 rounded-lg bg-slate-900 shadow-xl shadow-slate-900/10 font-black uppercase tracking-widest text-sm md:text-xs hover:bg-black active:scale-95 transition-all text-white border-t border-white/10"
               >
                 <PlusCircle className="mr-2 h-4 w-4 text-emerald-400" />
                 Intégrer Agent
@@ -485,10 +485,10 @@ export default function EmployeesPage() {
                       <stat.icon className={cn("h-5 w-5", stat.color)} />
                     </div>
                     <div>
-                      <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-500 mb-0.5">{stat.label}</p>
+                      <p className="text-sm md:text-xs font-black uppercase tracking-[0.2em] text-slate-500 mb-0.5">{stat.label}</p>
                       <div className="flex items-baseline gap-1.5">
                         <span className="text-2xl font-black text-slate-900 tracking-tighter">{stat.value}</span>
-                        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{stat.sub}</span>
+                        <span className="text-sm md:text-xs font-bold text-slate-400 uppercase tracking-widest">{stat.sub}</span>
                       </div>
                     </div>
                   </div>
@@ -501,21 +501,21 @@ export default function EmployeesPage() {
             <TabsList className="bg-white/20 backdrop-blur-xl border border-white/20 p-1 rounded-xl shadow-xl shadow-slate-200/50 flex h-auto overflow-x-auto no-scrollbar gap-1 mb-6">
               {!isGeoTab && (
                 <>
-                  <TabsTrigger value="all" className="rounded-2xl px-6 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-xs transition-all">Effectif Global</TabsTrigger>
-                  <TabsTrigger value="directoire" className="rounded-2xl px-6 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-xs transition-all">Directoire</TabsTrigger>
-                  <TabsTrigger value="personnel-siege" className="rounded-2xl px-6 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-xs transition-all">Personnel Siège</TabsTrigger>
-                  <TabsTrigger value="chauffeur-directoire" className="rounded-2xl px-6 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-xs transition-all">Chauffeurs</TabsTrigger>
-                  <TabsTrigger value="regional" className="rounded-2xl px-6 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-xs transition-all">Comités Régionaux</TabsTrigger>
+                  <TabsTrigger value="all" className="rounded-2xl px-6 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-sm md:text-xs transition-all">Effectif Global</TabsTrigger>
+                  <TabsTrigger value="directoire" className="rounded-2xl px-6 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-sm md:text-xs transition-all">Directoire</TabsTrigger>
+                  <TabsTrigger value="personnel-siege" className="rounded-2xl px-6 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-sm md:text-xs transition-all">Personnel Siège</TabsTrigger>
+                  <TabsTrigger value="chauffeur-directoire" className="rounded-2xl px-6 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-sm md:text-xs transition-all">Chauffeurs</TabsTrigger>
+                  <TabsTrigger value="regional" className="rounded-2xl px-6 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-sm md:text-xs transition-all">Comités Régionaux</TabsTrigger>
                 </>
               )}
               {isGeoTab && (
                 <>
-                  <TabsTrigger value="all-geo" className="rounded-2xl px-8 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-xs transition-all">Membres Géo-localisés</TabsTrigger>
-                  <TabsTrigger value="directoire" className="rounded-2xl px-8 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-xs transition-all">Directoire</TabsTrigger>
-                  <TabsTrigger value="regional" className="rounded-2xl px-8 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-xs transition-all">Comités Régionaux</TabsTrigger>
+                  <TabsTrigger value="all-geo" className="rounded-2xl px-8 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-sm md:text-xs transition-all">Membres Géo-localisés</TabsTrigger>
+                  <TabsTrigger value="directoire" className="rounded-2xl px-8 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-sm md:text-xs transition-all">Directoire</TabsTrigger>
+                  <TabsTrigger value="regional" className="rounded-2xl px-8 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-sm md:text-xs transition-all">Comités Régionaux</TabsTrigger>
                 </>
               )}
-              <TabsTrigger value="analytics" className="rounded-2xl px-6 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-xs transition-all gap-2">
+              <TabsTrigger value="analytics" className="rounded-2xl px-6 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-sm md:text-xs transition-all gap-2">
                 <BarChart3 className="h-4 w-4" /> Synthèse
               </TabsTrigger>
             </TabsList>
@@ -535,7 +535,7 @@ export default function EmployeesPage() {
                 <Card className="border-none bg-white/20 backdrop-blur-xl rounded-xl shadow-2xl border border-white/20 overflow-hidden mb-6">
                   <CardHeader className="py-5 px-6 border-b border-white/10 bg-slate-50/10">
                     <CardTitle className="text-2xl font-black uppercase tracking-tight text-slate-900">Registre du Personnel</CardTitle>
-                    <CardDescription className="text-xs font-bold uppercase tracking-widest text-slate-500 mt-1">
+                    <CardDescription className="text-sm md:text-xs font-bold uppercase tracking-widest text-slate-500 mt-1">
                       Gestion administrative et tactique des collaborateurs
                     </CardDescription>
                   </CardHeader>
@@ -551,13 +551,13 @@ export default function EmployeesPage() {
                             setCurrentPage(1);
                           })}
                         >
-                          <SelectTrigger className="h-10 flex-1 min-w-[180px] rounded-lg border-slate-200 bg-white font-black uppercase text-xs tracking-widest">
+                          <SelectTrigger className="h-10 flex-1 min-w-[180px] rounded-lg border-slate-200 bg-white font-black uppercase text-sm md:text-xs tracking-widest">
                             <SelectValue placeholder="Région" />
                           </SelectTrigger>
                           <SelectContent className="rounded-lg border-slate-100 shadow-2xl">
-                            <SelectItem value="all" className="font-bold py-2.5 uppercase text-xs tracking-widest">Toutes les régions</SelectItem>
+                            <SelectItem value="all" className="font-bold py-2.5 uppercase text-sm md:text-xs tracking-widest">Toutes les régions</SelectItem>
                             {Object.keys(divisions).sort().map(reg => (
-                              <SelectItem key={reg} value={reg} className="font-bold py-2.5 uppercase text-xs tracking-widest">{reg}</SelectItem>
+                              <SelectItem key={reg} value={reg} className="font-bold py-2.5 uppercase text-sm md:text-xs tracking-widest">{reg}</SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
@@ -571,13 +571,13 @@ export default function EmployeesPage() {
                           })}
                           disabled={regionFilter === 'all'}
                         >
-                          <SelectTrigger className="h-10 flex-1 min-w-[180px] rounded-lg border-slate-200 bg-white font-black uppercase text-xs tracking-widest">
+                          <SelectTrigger className="h-10 flex-1 min-w-[180px] rounded-lg border-slate-200 bg-white font-black uppercase text-sm md:text-xs tracking-widest">
                             <SelectValue placeholder="Département" />
                           </SelectTrigger>
                           <SelectContent className="rounded-lg border-slate-100 shadow-2xl">
-                            <SelectItem value="all" className="font-bold py-2.5 uppercase text-xs tracking-widest">Tous les départements</SelectItem>
+                            <SelectItem value="all" className="font-bold py-2.5 uppercase text-sm md:text-xs tracking-widest">Tous les départements</SelectItem>
                             {Object.keys(divisions[regionFilter] || {}).sort().map(dep => (
-                              <SelectItem key={dep} value={dep} className="font-bold py-2.5 uppercase text-xs tracking-widest">{dep}</SelectItem>
+                              <SelectItem key={dep} value={dep} className="font-bold py-2.5 uppercase text-sm md:text-xs tracking-widest">{dep}</SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
@@ -586,7 +586,7 @@ export default function EmployeesPage() {
                           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
                           <DebouncedInput
                             placeholder="RECHERCHER PAR VILLAGE..."
-                            className="h-10 pl-10 rounded-lg border-slate-200 bg-white font-black text-xs tracking-widest"
+                            className="h-10 pl-10 rounded-lg border-slate-200 bg-white font-black text-sm md:text-xs tracking-widest"
                             value={villageFilter}
                             onChange={(val) => startTransition(() => {
                               const sVal = String(val);
@@ -603,7 +603,7 @@ export default function EmployeesPage() {
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
                         <DebouncedInput
                           placeholder="IDENTIFICATION AGENT / MATRICULE..."
-                          className="h-10 pl-10 rounded-lg border-slate-200 bg-white font-black text-xs tracking-widest shadow-sm focus:bg-white transition-all"
+                          className="h-10 pl-10 rounded-lg border-slate-200 bg-white font-black text-sm md:text-xs tracking-widest shadow-sm focus:bg-white transition-all"
                           value={searchTerm}
                           onChange={(val) => startTransition(() => {
                             const sVal = String(val);
@@ -618,12 +618,12 @@ export default function EmployeesPage() {
                           setDepartmentFilter(val);
                           setCurrentPage(1);
                         })}>
-                          <SelectTrigger className="h-10 flex-1 min-w-[180px] rounded-lg border-slate-200 bg-white font-black uppercase text-xs tracking-widest">
+                          <SelectTrigger className="h-10 flex-1 min-w-[180px] rounded-lg border-slate-200 bg-white font-black uppercase text-sm md:text-xs tracking-widest">
                             <SelectValue placeholder="Section / Département" />
                           </SelectTrigger>
                           <SelectContent className="rounded-lg border-slate-100 shadow-2xl">
-                            <SelectItem value="all" className="font-bold py-2.5 uppercase text-xs tracking-widest">Tous les départements</SelectItem>
-                            {departments.map(dep => <SelectItem key={dep.id} value={dep.id} className="font-bold py-2.5 uppercase text-xs tracking-widest">{dep.name}</SelectItem>)}
+                            <SelectItem value="all" className="font-bold py-2.5 uppercase text-sm md:text-xs tracking-widest">Tous les départements</SelectItem>
+                            {departments.map(dep => <SelectItem key={dep.id} value={dep.id} className="font-bold py-2.5 uppercase text-sm md:text-xs tracking-widest">{dep.name}</SelectItem>)}
                           </SelectContent>
                         </Select>
                       )}
@@ -632,14 +632,14 @@ export default function EmployeesPage() {
                         setStatusFilter(val);
                         setCurrentPage(1);
                       })}>
-                        <SelectTrigger className="h-10 flex-1 min-w-[150px] rounded-lg border-slate-200 bg-white font-black uppercase text-xs tracking-widest text-slate-900 shadow-sm">
+                        <SelectTrigger className="h-10 flex-1 min-w-[150px] rounded-lg border-slate-200 bg-white font-black uppercase text-sm md:text-xs tracking-widest text-slate-900 shadow-sm">
                           <SelectValue placeholder="Statut Actuel" />
                         </SelectTrigger>
                         <SelectContent className="rounded-lg border-slate-100 shadow-2xl">
-                          <SelectItem value="all" className="font-bold py-2.5 uppercase text-xs tracking-widest">Tous les statuts</SelectItem>
-                          <SelectItem value="Actif" className="font-bold py-2.5 uppercase text-xs tracking-widest text-emerald-600">Actif</SelectItem>
-                          <SelectItem value="En congé" className="font-bold py-2.5 uppercase text-xs tracking-widest text-blue-600">En congé</SelectItem>
-                          <SelectItem value="Retraité" className="font-bold py-2.5 uppercase text-xs tracking-widest text-slate-500">Retraité</SelectItem>
+                          <SelectItem value="all" className="font-bold py-2.5 uppercase text-sm md:text-xs tracking-widest">Tous les statuts</SelectItem>
+                          <SelectItem value="Actif" className="font-bold py-2.5 uppercase text-sm md:text-xs tracking-widest text-emerald-600">Actif</SelectItem>
+                          <SelectItem value="En congé" className="font-bold py-2.5 uppercase text-sm md:text-xs tracking-widest text-blue-600">En congé</SelectItem>
+                          <SelectItem value="Retraité" className="font-bold py-2.5 uppercase text-sm md:text-xs tracking-widest text-slate-500">Retraité</SelectItem>
                         </SelectContent>
                       </Select>
 
@@ -647,13 +647,13 @@ export default function EmployeesPage() {
                         setSexeFilter(val);
                         setCurrentPage(1);
                       })}>
-                        <SelectTrigger className="h-10 w-[140px] rounded-lg border-slate-200 bg-white font-black uppercase text-xs tracking-widest text-slate-900 shadow-sm">
+                        <SelectTrigger className="h-10 w-[140px] rounded-lg border-slate-200 bg-white font-black uppercase text-sm md:text-xs tracking-widest text-slate-900 shadow-sm">
                           <SelectValue placeholder="Genre" />
                         </SelectTrigger>
                         <SelectContent className="rounded-lg border-slate-100 shadow-2xl">
-                          <SelectItem value="all" className="font-bold py-2.5 uppercase text-xs tracking-widest">Tous</SelectItem>
-                          <SelectItem value="Homme" className="font-bold py-2.5 uppercase text-xs tracking-widest">Homme</SelectItem>
-                          <SelectItem value="Femme" className="font-bold py-2.5 uppercase text-xs tracking-widest">Femme</SelectItem>
+                          <SelectItem value="all" className="font-bold py-2.5 uppercase text-sm md:text-xs tracking-widest">Tous</SelectItem>
+                          <SelectItem value="Homme" className="font-bold py-2.5 uppercase text-sm md:text-xs tracking-widest">Homme</SelectItem>
+                          <SelectItem value="Femme" className="font-bold py-2.5 uppercase text-sm md:text-xs tracking-widest">Femme</SelectItem>
                         </SelectContent>
                       </Select>
 
@@ -662,20 +662,20 @@ export default function EmployeesPage() {
                         setSortBy(newSortBy);
                         setSortOrder(newSortOrder);
                       }}>
-                        <SelectTrigger className="h-10 w-[220px] rounded-lg border-slate-900 bg-slate-900 text-white font-black uppercase text-xs tracking-widest shadow-lg">
+                        <SelectTrigger className="h-10 w-[220px] rounded-lg border-slate-900 bg-slate-900 text-white font-black uppercase text-sm md:text-xs tracking-widest shadow-lg">
                           <SelectValue placeholder="Trier par" />
                         </SelectTrigger>
                         <SelectContent className="rounded-lg border-slate-100 shadow-2xl">
-                          <SelectItem value="name-asc" className="font-bold py-3 uppercase text-xs tracking-widest">Nom (ALPHA A-Z)</SelectItem>
-                          <SelectItem value="name-desc" className="font-bold py-3 uppercase text-xs tracking-widest">Nom (ALPHA Z-A)</SelectItem>
-                          <SelectItem value="matricule-asc" className="font-bold py-3 uppercase text-xs tracking-widest">Matricule (CROISSANT)</SelectItem>
-                          <SelectItem value="Date_Naissance-asc" className="font-bold py-3 uppercase text-xs tracking-widest">Âge (PLUS ÂGÉ)</SelectItem>
-                          {isGeoTab && <SelectItem value="Region-asc" className="font-bold py-3 uppercase text-xs tracking-widest">Région (A-Z)</SelectItem>}
+                          <SelectItem value="name-asc" className="font-bold py-3 uppercase text-sm md:text-xs tracking-widest">Nom (ALPHA A-Z)</SelectItem>
+                          <SelectItem value="name-desc" className="font-bold py-3 uppercase text-sm md:text-xs tracking-widest">Nom (ALPHA Z-A)</SelectItem>
+                          <SelectItem value="matricule-asc" className="font-bold py-3 uppercase text-sm md:text-xs tracking-widest">Matricule (CROISSANT)</SelectItem>
+                          <SelectItem value="Date_Naissance-asc" className="font-bold py-3 uppercase text-sm md:text-xs tracking-widest">Âge (PLUS ÂGÉ)</SelectItem>
+                          {isGeoTab && <SelectItem value="Region-asc" className="font-bold py-3 uppercase text-sm md:text-xs tracking-widest">Région (A-Z)</SelectItem>}
                         </SelectContent>
                       </Select>
                     </div>
 
-                    <div className="mb-4 text-sm text-muted-foreground">
+                    <div className="mb-4 text-base md:text-sm text-muted-foreground">
                       {filteredEmployees.length} résultat(s) trouvé(s).
                     </div>
 
@@ -744,38 +744,38 @@ export default function EmployeesPage() {
                                 <TableCell>
                                   <Avatar className="h-10 w-10 border-2 border-white shadow-sm transition-transform group-hover:scale-110">
                                     <AvatarImage src={employee.photoUrl || ''} alt={employee.name} className="object-cover" />
-                                    <AvatarFallback className={cn("font-black text-sm", getAvatarBgClass(employee.sexe))}>
+                                    <AvatarFallback className={cn("font-black text-base md:text-sm", getAvatarBgClass(employee.sexe))}>
                                       {(employee.lastName || '').charAt(0)}{(employee.firstName || '').charAt(0)}
                                     </AvatarFallback>
                                   </Avatar>
                                 </TableCell>
                                 <TableCell>
                                   <div className="flex flex-col">
-                                    <span className="font-black text-slate-900 uppercase tracking-tight text-sm group-hover:text-blue-600 transition-colors">
+                                    <span className="font-black text-slate-900 uppercase tracking-tight text-base md:text-sm group-hover:text-blue-600 transition-colors">
                                       {`${employee.lastName || ''} ${employee.firstName || ''}`.trim()}
                                     </span>
                                     {isGeoTab ? (
-                                      <span className="text-sm font-bold text-slate-400 uppercase tracking-widest mt-0.5">{employee.Village}</span>
+                                      <span className="text-base md:text-sm font-bold text-slate-400 uppercase tracking-widest mt-0.5">{employee.Village}</span>
                                     ) : (
-                                      <span className="text-sm font-bold text-slate-400 uppercase tracking-widest mt-0.5">{employee.poste}</span>
+                                      <span className="text-base md:text-sm font-bold text-slate-400 uppercase tracking-widest mt-0.5">{employee.poste}</span>
                                     )}
                                   </div>
                                 </TableCell>
-                                <TableCell className="font-black text-xs text-slate-500">{employee.matricule}</TableCell>
+                                <TableCell className="font-black text-sm md:text-xs text-slate-500">{employee.matricule}</TableCell>
                                 
                                 {isGeoTab ? (
                                   <>
-                                    <TableCell className="text-xs truncate max-w-[150px] font-bold text-slate-700">{employee.poste}</TableCell>
-                                    <TableCell className="text-xs font-black uppercase tracking-tighter text-slate-500">{employee.Region}</TableCell>
-                                    <TableCell className="text-xs font-bold text-slate-500">{employee.Departement}</TableCell>
-                                    <TableCell className="text-xs">{employee.subPrefecture}</TableCell>
-                                    <TableCell className="text-sm uppercase font-black tracking-widest text-slate-400">{employee.Num_Decision}</TableCell>
+                                    <TableCell className="text-sm md:text-xs truncate max-w-[150px] font-bold text-slate-700">{employee.poste}</TableCell>
+                                    <TableCell className="text-sm md:text-xs font-black uppercase tracking-tighter text-slate-500">{employee.Region}</TableCell>
+                                    <TableCell className="text-sm md:text-xs font-bold text-slate-500">{employee.Departement}</TableCell>
+                                    <TableCell className="text-sm md:text-xs">{employee.subPrefecture}</TableCell>
+                                    <TableCell className="text-base md:text-sm uppercase font-black tracking-widest text-slate-400">{employee.Num_Decision}</TableCell>
                                   </>
                                 ) : (
                                   <>
-                                    <TableCell className="text-xs font-bold text-slate-500 truncate max-w-[150px]">{getEmployeeOrgUnit(employee)}</TableCell>
+                                    <TableCell className="text-sm md:text-xs font-bold text-slate-500 truncate max-w-[150px]">{getEmployeeOrgUnit(employee)}</TableCell>
                                     <TableCell>
-                                        <Badge variant={statusVariantMap[employee.status as Status] || 'default'} className="font-black text-xs uppercase tracking-widest rounded-lg px-3 py-1 border-none shadow-sm">
+                                        <Badge variant={statusVariantMap[employee.status as Status] || 'default'} className="font-black text-sm md:text-xs uppercase tracking-widest rounded-lg px-3 py-1 border-none shadow-sm">
                                           {employee.status}
                                         </Badge>
                                     </TableCell>
@@ -793,7 +793,7 @@ export default function EmployeesPage() {
                                       </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end" className="w-56 p-2 rounded-2xl border-white/20 bg-white/90 backdrop-blur-xl shadow-2xl">
-                                      <DropdownMenuLabel className="px-3 py-2 font-black uppercase text-xs tracking-[0.2em] text-slate-400">Actions Dossier</DropdownMenuLabel>
+                                      <DropdownMenuLabel className="px-3 py-2 font-black uppercase text-sm md:text-xs tracking-[0.2em] text-slate-400">Actions Dossier</DropdownMenuLabel>
                                       <DropdownMenuItem asChild className="rounded-xl font-bold py-2.5 px-3 focus:bg-slate-100 cursor-pointer">
                                         <Link href={`/employees/${employee.id}`}>
                                           <Eye className="mr-2 h-4 w-4 text-blue-500" /> Profil Complet
@@ -823,7 +823,7 @@ export default function EmployeesPage() {
                     {!loading && filteredEmployees.length === 0 && (
                       <div className="text-center py-20 bg-slate-50/50 rounded-2xl border-2 border-dashed mt-4">
                         <Users2 className="h-12 w-12 text-slate-200 mx-auto mb-4" />
-                        <p className="text-slate-400 font-bold uppercase tracking-[0.2em] text-sm">Aucun collaborateur identifié pour ce périmètre.</p>
+                        <p className="text-slate-400 font-bold uppercase tracking-[0.2em] text-base md:text-sm">Aucun collaborateur identifié pour ce périmètre.</p>
                       </div>
                     )}
                   </CardContent>

@@ -38,6 +38,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import dynamic from 'next/dynamic';
 import { subscribeToChiefs } from "@/services/chief-service";
 import type { Chief } from "@/lib/data";
@@ -60,6 +67,7 @@ export default function ChiefsReportsPage() {
     const [chiefs, setChiefs] = useState<Chief[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
+    const [roleFilter, setRoleFilter] = useState("all");
     const [viewMode, setViewMode] = useState<"list" | "map">("map");
     const [isPrinting, setIsPrinting] = useState(false);
     const [isPrintingStats, setIsPrintingStats] = useState(false);
@@ -99,14 +107,31 @@ export default function ChiefsReportsPage() {
     }, [chiefs]);
 
     const filteredChiefs = useMemo(() => {
-        return chiefs.filter(c => 
-            (c.lastName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-            (c.firstName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-            (c.region || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-            (c.title || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-            (c.village || '').toLowerCase().includes(searchTerm.toLowerCase())
-        );
-    }, [chiefs, searchTerm]);
+        return chiefs.filter(c => {
+            const matchesSearch = (c.lastName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                (c.firstName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                (c.region || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                (c.title || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                (c.village || '').toLowerCase().includes(searchTerm.toLowerCase());
+            
+            const chiefRole = (c.role || c.title || '').toLowerCase();
+            const matchesRole = roleFilter === 'all' 
+                ? true 
+                : roleFilter === 'village' 
+                    ? chiefRole.includes('village')
+                    : roleFilter === 'tribu'
+                    ? chiefRole.includes('tribu')
+                    : roleFilter === 'canton'
+                    ? chiefRole.includes('canton')
+                    : roleFilter === 'province'
+                    ? chiefRole.includes('province')
+                    : roleFilter === 'roi'
+                    ? chiefRole.includes('roi') || chiefRole.includes('royaume')
+                    : true;
+
+            return matchesSearch && matchesRole;
+        });
+    }, [chiefs, searchTerm, roleFilter]);
 
     const handleExportCsv = () => {
         const csv = Papa.unparse(chiefs.map(c => ({
@@ -352,12 +377,25 @@ export default function ChiefsReportsPage() {
                                                 placeholder="Rechercher par nom, titre ou localité..." 
                                                 value={searchTerm}
                                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                                className="pl-14 w-[400px] h-16 rounded-2xl border-none bg-slate-100 font-medium text-slate-700 placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-[#D4AF37]/50 shadow-inner"
+                                                className="pl-14 w-[300px] h-16 rounded-2xl border-none bg-slate-100 font-medium text-slate-700 placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-[#D4AF37]/50 shadow-inner"
                                             />
                                         </div>
-                                        <Button variant="outline" className="rounded-2xl h-16 w-16 p-0 border-slate-100 bg-white shadow-xl hover:bg-slate-50 group">
-                                            <Filter className="h-5 w-5 text-slate-400 group-hover:text-slate-900 transition-colors" />
-                                        </Button>
+                                        <Select value={roleFilter} onValueChange={setRoleFilter}>
+                                            <SelectTrigger className="w-[220px] h-16 rounded-2xl border-none bg-slate-100 font-bold text-slate-700 focus:ring-2 focus:ring-[#D4AF37]/50 shadow-inner">
+                                                <div className="flex items-center gap-2">
+                                                    <Filter className="h-4 w-4 text-slate-400" />
+                                                    <SelectValue placeholder="Filtrer par rôle" />
+                                                </div>
+                                            </SelectTrigger>
+                                            <SelectContent className="rounded-2xl border-none shadow-2xl font-bold">
+                                                <SelectItem value="all">Toutes les autorités</SelectItem>
+                                                <SelectItem value="roi">Rois</SelectItem>
+                                                <SelectItem value="province">Chefs de Province</SelectItem>
+                                                <SelectItem value="canton">Chefs de Canton</SelectItem>
+                                                <SelectItem value="tribu">Chefs de Tribu</SelectItem>
+                                                <SelectItem value="village">Chefs de Village</SelectItem>
+                                            </SelectContent>
+                                        </Select>
                                     </div>
                                 </div>
                             </CardHeader>

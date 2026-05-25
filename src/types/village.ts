@@ -11,6 +11,10 @@ export type Village = {
     commune?: string; // Commune if different from subPrefecture
     codeINS?: string; // Code de l'Institut National de la Statistique
 
+    // Classification
+    type?: 'village' | 'campement';
+
+
     // Situation géographique
     latitude?: number;
     longitude?: number;

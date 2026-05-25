@@ -37,6 +37,7 @@ import { Progress } from "@/components/ui/progress";
 import { OrganizationSettings } from "@/types/common";
 import Papa from "papaparse";
 import { cn } from "@/lib/utils";
+import { updateDoc, doc, writeBatch, db } from "@/lib/firebase";
 
 import { PermissionGuard } from "@/components/auth/permission-guard";
 
@@ -45,6 +46,7 @@ export default function TerritoryReportPage() {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
     const [regionFilter, setRegionFilter] = useState("all");
+    const [typeFilter, setTypeFilter] = useState<"all" | "village" | "campement">("village");
     const [isPrinting, setIsPrinting] = useState(false);
     const [orgSettings, setOrgSettings] = useState<OrganizationSettings | null>(null);
 
@@ -76,9 +78,13 @@ export default function TerritoryReportPage() {
                                  v.subPrefecture.toLowerCase().includes(searchTerm.toLowerCase()) ||
                                  v.department.toLowerCase().includes(searchTerm.toLowerCase());
             const matchesRegion = regionFilter === "all" || v.region === regionFilter;
-            return matchesSearch && matchesRegion;
+            
+            const vType = v.type || "village"; // default to village
+            const matchesType = typeFilter === "all" || vType === typeFilter;
+
+            return matchesSearch && matchesRegion && matchesType;
         });
-    }, [villages, searchTerm, regionFilter]);
+    }, [villages, searchTerm, regionFilter, typeFilter]);
 
     const stats = useMemo(() => {
         if (filteredVillages.length === 0) return {
@@ -125,6 +131,56 @@ export default function TerritoryReportPage() {
         document.body.removeChild(link);
     };
 
+    const handleClassifyCampements = async () => {
+        try {
+            if (!confirm("Voulez-vous vraiment lancer la classification de toutes les localités ?")) return;
+            setLoading(true);
+            
+            let campementCount = 0;
+            let villageCount = 0;
+            let batches = [];
+            let currentBatch = writeBatch(db);
+            let operationsInCurrentBatch = 0;
+
+            for (const v of villages) {
+                const name = v.name || '';
+                const isCampement = 
+                    /campement|cpt\b/i.test(name) || 
+                    /\b[1-9]\b$/.test(name.trim()) ||
+                    /\b(I|II|III|IV|V|VI)\b$/.test(name.trim());
+
+                if (isCampement && v.type !== 'campement') {
+                    const docRef = doc(db, 'villages', v.id);
+                    currentBatch.update(docRef, { type: 'campement' });
+                    campementCount++;
+                    operationsInCurrentBatch++;
+                } else if (!isCampement && v.type !== 'village') {
+                    const docRef = doc(db, 'villages', v.id);
+                    currentBatch.update(docRef, { type: 'village' });
+                    villageCount++;
+                    operationsInCurrentBatch++;
+                }
+
+                if (operationsInCurrentBatch === 490) {
+                    batches.push(currentBatch);
+                    currentBatch = writeBatch(db);
+                    operationsInCurrentBatch = 0;
+                }
+            }
+            if (operationsInCurrentBatch > 0) batches.push(currentBatch);
+
+            for (const b of batches) await b.commit();
+            alert(`Succès ! ${campementCount} campements identifiés et ${villageCount} villages mis à jour.`);
+            // Recharge la page
+            window.location.reload();
+        } catch (error) {
+            console.error(error);
+            alert("Erreur: " + error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     if (loading) {
         return (
             <div className="flex flex-col gap-6 p-8">
@@ -155,6 +211,10 @@ export default function TerritoryReportPage() {
                         </p>
                     </div>
                     <div className="flex items-center gap-3">
+                        <Button variant="outline" onClick={handleClassifyCampements} className="rounded-2xl h-14 px-6 border-slate-200 bg-white/50 backdrop-blur-sm shadow-xl font-black text-slate-600 hover:bg-slate-100 transition-all text-xs">
+                            <Zap className="mr-2 h-4 w-4 text-purple-500" /> 
+                            Classifier Campements
+                        </Button>
                         <Button variant="outline" onClick={handleExportCsv} className="rounded-2xl h-14 px-6 border-slate-200 bg-white/50 backdrop-blur-sm shadow-xl shadow-slate-200/20 font-black text-slate-600 hover:bg-white transition-all text-sm">
                             <Download className="mr-2 h-4 w-4 text-amber-500" /> 
                             Exporter CSV
@@ -304,9 +364,44 @@ export default function TerritoryReportPage() {
                                                 : "text-slate-400 hover:text-slate-600 hover:bg-slate-100/50"
                                         )}
                                     >
-                                        {reg === "all" ? "TOUS" : reg}
+                                        {reg === "all" ? "TOUTES RÉGIONS" : reg}
                                     </button>
                                 ))}
+                            </div>
+                            <div className="flex items-center bg-slate-50 p-1.5 rounded-2xl border border-slate-100 shadow-inner">
+                                <button
+                                    onClick={() => setTypeFilter("village")}
+                                    className={cn(
+                                        "px-5 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all",
+                                        typeFilter === "village" 
+                                            ? "bg-white text-amber-600 shadow-md ring-1 ring-slate-100" 
+                                            : "text-slate-400 hover:text-slate-600 hover:bg-slate-100/50"
+                                    )}
+                                >
+                                    Villages
+                                </button>
+                                <button
+                                    onClick={() => setTypeFilter("campement")}
+                                    className={cn(
+                                        "px-5 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all",
+                                        typeFilter === "campement" 
+                                            ? "bg-white text-rose-600 shadow-md ring-1 ring-slate-100" 
+                                            : "text-slate-400 hover:text-slate-600 hover:bg-slate-100/50"
+                                    )}
+                                >
+                                    Campements
+                                </button>
+                                <button
+                                    onClick={() => setTypeFilter("all")}
+                                    className={cn(
+                                        "px-5 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all",
+                                        typeFilter === "all" 
+                                            ? "bg-white text-slate-900 shadow-md ring-1 ring-slate-100" 
+                                            : "text-slate-400 hover:text-slate-600 hover:bg-slate-100/50"
+                                    )}
+                                >
+                                    Tous
+                                </button>
                             </div>
                         </div>
                     </CardHeader>

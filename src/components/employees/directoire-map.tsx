@@ -171,7 +171,7 @@ export const DirectoireMap: React.FC<DirectoireMapProps> = ({
                 const count = cluster.getChildCount();
                 return L.divIcon({
                     html: `<div class="flex items-center justify-center w-14 h-14 rounded-full bg-emerald-900/10 backdrop-blur-xl border border-emerald-900/20 shadow-2xl">
-                             <div class="flex items-center justify-center w-11 h-11 rounded-full bg-emerald-900 text-white font-black text-xs shadow-lg">
+                             <div class="flex items-center justify-center w-11 h-11 rounded-full bg-emerald-900 text-white font-black text-sm md:text-xs shadow-lg">
                                ${count}
                              </div>
                            </div>`,
@@ -220,14 +220,14 @@ export const DirectoireMap: React.FC<DirectoireMapProps> = ({
                             <div class="relative w-14 h-14 rounded-full border-2 border-white/60 shadow-[0_15px_30px_-5px_rgba(0,0,0,0.3)] overflow-hidden bg-emerald-950/20 transform transition-all duration-500 group-hover:scale-125 group-hover:-translate-y-4 group-hover:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.5)]">
                                 ${member.photo 
                                     ? `<img src="${member.photo}" class="w-full h-full object-cover" />`
-                                    : `<div class="w-full h-full flex items-center justify-center bg-emerald-900 text-white"><span class="text-xs font-black capitalize">${(member.name || "?")[0]}</span></div>`
+                                    : `<div class="w-full h-full flex items-center justify-center bg-emerald-900 text-white"><span class="text-sm md:text-xs font-black capitalize">${(member.name || "?")[0]}</span></div>`
                                 }
                                 ${showStatus && member.isActive 
                                     ? `<div class="absolute bottom-1 right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full shadow-lg"></div>` 
                                     : ''
                                 }
                             </div>
-                            <div class="mt-2 px-3 py-1 bg-slate-900 text-white text-[9px] font-black rounded-xl shadow-2xl whitespace-nowrap uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:translate-y-0 translate-y-2">
+                            <div class="mt-2 px-3 py-1 bg-slate-900 text-white text-base md:text-sm font-black rounded-xl shadow-2xl whitespace-nowrap uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:translate-y-0 translate-y-2">
                                 ${member.name}
                             </div>
                         </div>
@@ -248,10 +248,10 @@ export const DirectoireMap: React.FC<DirectoireMapProps> = ({
                     </div>
                     <div class="pt-8 p-4 space-y-3">
                         <div class="border-b border-white/5 pb-1.5">
-                            <h4 class="text-[10px] font-black text-white uppercase tracking-tight leading-none">${member.name}</h4>
+                            <h4 class="text-base font-black text-white uppercase tracking-tight leading-none">${member.name}</h4>
                             <div class="flex items-center gap-1.5 mt-1">
                                 <div class="h-1 w-1 rounded-full bg-emerald-500"></div>
-                                <p class="text-[7px] text-emerald-400 font-black uppercase tracking-widest opacity-80">${member.role}</p>
+                                <p class="text-sm md:text-xs text-emerald-400 font-black uppercase tracking-widest opacity-80">${member.role}</p>
                             </div>
                         </div>
                         
@@ -261,8 +261,8 @@ export const DirectoireMap: React.FC<DirectoireMapProps> = ({
                                     <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path><circle cx="12" cy="10" r="3"></circle></svg>
                                 </div>
                                 <div>
-                                    <p class="text-[6px] font-black text-slate-500 uppercase tracking-widest leading-none">Région</p>
-                                    <p class="text-[8px] font-black text-slate-200 uppercase tracking-tight mt-0.5">${member.region}</p>
+                                    <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest leading-none">Région</p>
+                                    <p class="text-sm md:text-xs font-black text-slate-200 uppercase tracking-tight mt-0.5">${member.region}</p>
                                 </div>
                             </div>
                             
@@ -271,13 +271,13 @@ export const DirectoireMap: React.FC<DirectoireMapProps> = ({
                                     <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
                                 </div>
                                 <div>
-                                    <p class="text-[6px] font-black text-slate-500 uppercase tracking-widest leading-none">Localité</p>
-                                    <p class="text-[8px] font-bold text-slate-300 uppercase tracking-tight mt-0.5">${member.locality}</p>
+                                    <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest leading-none">Localité</p>
+                                    <p class="text-sm md:text-xs font-bold text-slate-300 uppercase tracking-tight mt-0.5">${member.locality}</p>
                                 </div>
                             </div>
                         </div>
                         <div class="pt-1">
-                             <div class="w-full py-1.5 bg-emerald-600/30 rounded-md text-center text-[7px] font-black uppercase tracking-[0.2em] hover:bg-emerald-600/50 transition-colors cursor-pointer border border-emerald-500/20 text-emerald-100">
+                             <div class="w-full py-1.5 bg-emerald-600/30 rounded-md text-center text-sm md:text-xs font-black uppercase tracking-[0.2em] hover:bg-emerald-600/50 transition-colors cursor-pointer border border-emerald-500/20 text-emerald-100">
                                 Dossier
                              </div>
                         </div>
@@ -325,16 +325,16 @@ export const DirectoireMap: React.FC<DirectoireMapProps> = ({
                         </div>
                         <div className="pr-6 border-r border-emerald-900/20">
                             <h2 className="text-lg font-black text-slate-900 uppercase tracking-tighter leading-tight">{title}</h2>
-                            <p className="text-[9px] font-black text-emerald-700 uppercase tracking-[0.2em] leading-none mt-1">{subtitle}</p>
+                            <p className="text-base md:text-sm font-black text-emerald-700 uppercase tracking-[0.2em] leading-none mt-1">{subtitle}</p>
                         </div>
                         <div className="flex items-center gap-5">
                             <div className="text-left">
                                 <span className="block text-xl font-black text-slate-900 leading-none">{members.length}</span>
-                                <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none">Effectif Déployé</span>
+                                <span className="text-sm md:text-xs font-black text-slate-400 uppercase tracking-widest leading-none">Effectif Déployé</span>
                             </div>
                             <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-100/50 rounded-full border border-emerald-200">
                                 <div className="h-2 w-2 rounded-full bg-emerald-600 animate-pulse" />
-                                <span className="text-[8px] font-black text-emerald-800 uppercase tracking-widest">Surveillance Active</span>
+                                <span className="text-sm md:text-xs font-black text-emerald-800 uppercase tracking-widest">Surveillance Active</span>
                             </div>
                         </div>
                     </div>
@@ -360,7 +360,7 @@ export const DirectoireMap: React.FC<DirectoireMapProps> = ({
                 <div className="absolute inset-0 z-10 flex items-center justify-center bg-muted/20 backdrop-blur-sm">
                     <div className="text-center">
                         <Loader2 className="h-10 w-10 animate-spin text-[#D4AF37] mx-auto mb-4" />
-                        <p className="text-xs font-black text-slate-500 uppercase tracking-widest">Initialisation de la carte...</p>
+                        <p className="text-sm md:text-xs font-black text-slate-500 uppercase tracking-widest">Initialisation de la carte...</p>
                     </div>
                 </div>
             )}

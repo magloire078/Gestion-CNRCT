@@ -213,9 +213,9 @@ export default function ChiefsPage() {
       {/* Dynamic Hero Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h1 className="text-4xl font-black tracking-tight text-slate-900 flex items-center gap-3">
+          <h1 className="text-3xl md:text-5xl font-black tracking-tight text-slate-900 flex items-center gap-3">
             Autorités Traditionnelles
-            <Badge className="bg-amber-500/10 text-amber-600 border-none px-3 py-1 text-xs font-black uppercase tracking-widest hidden sm:flex">RÉPERTOIRE</Badge>
+            <Badge className="bg-amber-500/10 text-amber-600 border-none px-3 py-1 text-sm md:text-xs font-black uppercase tracking-widest hidden sm:flex">RÉPERTOIRE</Badge>
           </h1>
           <p className="text-muted-foreground mt-2 font-medium">Répertoire intelligent et suivi de carrière des Autorités Traditionnelles.</p>
         </div>
@@ -229,7 +229,7 @@ export default function ChiefsPage() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48 rounded-lg shadow-2xl">
-                <DropdownMenuLabel className="text-sm uppercase font-black text-slate-400">Format d'export</DropdownMenuLabel>
+                <DropdownMenuLabel className="text-base md:text-sm uppercase font-black text-slate-400">Format d'export</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleExportCsv} className="gap-2 cursor-pointer rounded-lg">
                     <FileSpreadsheet className="h-4 w-4 text-emerald-500" /> CSV Excel
@@ -261,7 +261,7 @@ export default function ChiefsPage() {
                       <Badge variant="secondary" className="bg-slate-50 text-slate-900 border-none font-bold">CNRCT</Badge>
                   </div>
                   <h3 className="text-3xl font-black text-slate-900">{stats.total}</h3>
-                  <p className="text-sm text-slate-500 font-bold uppercase tracking-wider mt-1">Autorités répertoriées</p>
+                  <p className="text-base md:text-sm text-slate-500 font-bold uppercase tracking-wider mt-1">Autorités répertoriées</p>
               </CardContent>
           </Card>
 
@@ -274,7 +274,7 @@ export default function ChiefsPage() {
                       <Badge variant="secondary" className="bg-amber-50 text-amber-700 border-none font-bold">Souverains</Badge>
                   </div>
                   <h3 className="text-3xl font-black text-slate-900">{stats.highLevel}</h3>
-                  <p className="text-sm text-slate-500 font-bold uppercase tracking-wider mt-1">Rois & Provinces</p>
+                  <p className="text-base md:text-sm text-slate-500 font-bold uppercase tracking-wider mt-1">Rois & Provinces</p>
               </CardContent>
           </Card>
 
@@ -287,7 +287,7 @@ export default function ChiefsPage() {
                       <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 border-none font-bold">Rayonnement</Badge>
                   </div>
                   <h3 className="text-3xl font-black text-slate-900">{stats.regions}</h3>
-                  <p className="text-sm text-slate-500 font-bold uppercase tracking-wider mt-1">Régions couvertes</p>
+                  <p className="text-base md:text-sm text-slate-500 font-bold uppercase tracking-wider mt-1">Régions couvertes</p>
               </CardContent>
           </Card>
 
@@ -300,7 +300,7 @@ export default function ChiefsPage() {
                       <Badge variant="secondary" className="bg-indigo-50 text-indigo-700 border-none font-bold">Actifs</Badge>
                   </div>
                   <h3 className="text-3xl font-black text-slate-900">{stats.total > 0 ? ((stats.active / stats.total) * 100).toFixed(0) : 0}%</h3>
-                  <p className="text-sm text-slate-500 font-bold uppercase tracking-wider mt-1">Conformité Administrative</p>
+                  <p className="text-base md:text-sm text-slate-500 font-bold uppercase tracking-wider mt-1">Conformité Administrative</p>
               </CardContent>
           </Card>
       </div>
@@ -423,7 +423,7 @@ export default function ChiefsPage() {
           ) : viewMode === 'map' ? (
               <div className="rounded-[2rem] border-4 border-slate-100/50 shadow-inner overflow-hidden relative">
                   <div className="absolute top-4 left-4 z-10 bg-white/90 backdrop-blur-md px-4 py-2 rounded-xl shadow-lg border border-slate-200">
-                      <p className="text-sm font-black uppercase tracking-widest text-slate-500">Autorités Visibles : <span className="text-slate-900">{filteredChiefs.length}</span></p>
+                      <p className="text-base md:text-sm font-black uppercase tracking-widest text-slate-500">Autorités Visibles : <span className="text-slate-900">{filteredChiefs.length}</span></p>
                   </div>
                   <ChiefsMapWrapper 
                       chiefs={filteredChiefs} 
@@ -437,24 +437,24 @@ export default function ChiefsPage() {
                     useWindowScroll
                     data={filteredChiefs}
                     components={{
-                        Table: ({ style, ...props }) => <table {...props} style={{ ...style, width: "100%", borderCollapse: "collapse" }} className="w-full caption-bottom text-sm" />,
+                        Table: ({ style, ...props }) => <table {...props} style={{ ...style, width: "100%", borderCollapse: "collapse" }} className="w-full caption-bottom text-base md:text-sm" />,
                         TableHead: forwardRef((props, ref) => <thead {...props} ref={ref as any} className="[&_tr]:border-b bg-slate-50/50" />),
                         TableRow: (props) => <tr {...props} className="group hover:bg-slate-50/50 border-slate-50 transition-colors border-b" />,
                         TableBody: forwardRef((props, ref) => <tbody {...props} ref={ref as any} className="[&_tr:last-child]:border-0" />),
                     }}
                     fixedHeaderContent={() => (
                         <tr className="border-slate-100 hover:bg-transparent">
-                            <th className="h-12 px-4 align-middle text-center text-sm font-black uppercase tracking-widest text-slate-400 w-12">#</th>
-                            <th className="h-12 px-4 align-middle text-left text-sm font-black uppercase tracking-widest text-slate-400">Portrait & Dignitaire</th>
-                            <th className="h-12 px-4 align-middle text-left text-sm font-black uppercase tracking-widest text-slate-400">Fonction</th>
-                            <th className="h-12 px-4 align-middle text-left text-sm font-black uppercase tracking-widest text-slate-400">Localisation</th>
-                            <th className="h-12 px-4 align-middle text-left text-sm font-black uppercase tracking-widest text-slate-400">Coordonnées</th>
+                            <th className="h-12 px-4 align-middle text-center text-base md:text-sm font-black uppercase tracking-widest text-slate-400 w-12">#</th>
+                            <th className="h-12 px-4 align-middle text-left text-base md:text-sm font-black uppercase tracking-widest text-slate-400">Portrait & Dignitaire</th>
+                            <th className="h-12 px-4 align-middle text-left text-base md:text-sm font-black uppercase tracking-widest text-slate-400">Fonction</th>
+                            <th className="h-12 px-4 align-middle text-left text-base md:text-sm font-black uppercase tracking-widest text-slate-400">Localisation</th>
+                            <th className="h-12 px-4 align-middle text-left text-base md:text-sm font-black uppercase tracking-widest text-slate-400">Coordonnées</th>
                             <th className="h-12 px-4 align-middle text-right w-20"></th>
                         </tr>
                     )}
                     itemContent={(index, chief) => (
                         <>
-                            <td className="p-4 align-middle text-center font-mono text-sm text-slate-300">{index + 1}</td>
+                            <td className="p-4 align-middle text-center font-mono text-base md:text-sm text-slate-300">{index + 1}</td>
                             <td className="p-4 align-middle">
                                 <div className="flex items-center gap-4">
                                     <Avatar className="h-11 w-11 border-2 border-white shadow-sm">
@@ -463,20 +463,20 @@ export default function ChiefsPage() {
                                     </Avatar>
                                     <div className="flex flex-col">
                                         <span className="font-black text-slate-900 group-hover:text-blue-600 transition-colors">{chief.name}</span>
-                                        <span className="text-sm font-bold text-slate-400 uppercase tracking-widest">{chief.title}</span>
+                                        <span className="text-base md:text-sm font-bold text-slate-400 uppercase tracking-widest">{chief.title}</span>
                                     </div>
                                 </div>
                             </td>
                             <td className="p-4 align-middle">
-                                <Badge variant="secondary" className="px-2 py-0.5 rounded-lg text-sm font-black uppercase tracking-wider">{chief.role}</Badge>
+                                <Badge variant="secondary" className="px-2 py-0.5 rounded-lg text-base md:text-sm font-black uppercase tracking-wider">{chief.role}</Badge>
                             </td>
                             <td className="p-4 align-middle">
                                 <div className="flex flex-col">
-                                    <span className="text-xs font-bold text-slate-600">{chief.village}</span>
-                                    <span className="text-sm text-slate-400">{chief.region} / {chief.department}</span>
+                                    <span className="text-sm md:text-xs font-bold text-slate-600">{chief.village}</span>
+                                    <span className="text-base md:text-sm text-slate-400">{chief.region} / {chief.department}</span>
                                 </div>
                             </td>
-                            <td className="p-4 align-middle text-xs font-medium text-slate-500 italic">{chief.phone || chief.contact || "—"}</td>
+                            <td className="p-4 align-middle text-sm md:text-xs font-medium text-slate-500 italic">{chief.phone || chief.contact || "—"}</td>
                             <td className="p-4 align-middle text-right">
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
@@ -485,7 +485,7 @@ export default function ChiefsPage() {
                                         </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end" className="w-48 rounded-lg shadow-2xl border-slate-100">
-                                        <DropdownMenuLabel className="text-sm font-black text-slate-400 uppercase px-3 py-2">Commanderies</DropdownMenuLabel>
+                                        <DropdownMenuLabel className="text-base md:text-sm font-black text-slate-400 uppercase px-3 py-2">Commanderies</DropdownMenuLabel>
                                         <DropdownMenuSeparator />
                                         <DropdownMenuItem asChild className="rounded-lg m-1 cursor-pointer">
                                             <Link href={`/chiefs/${chief.id}`} className="flex items-center">
@@ -516,7 +516,7 @@ export default function ChiefsPage() {
                     <UserCircle2 className="h-10 w-10 text-slate-200" />
                 </div>
                 <h3 className="text-xl font-black text-slate-800 uppercase tracking-tighter">Aucune Autorité Répertoriée</h3>
-                <p className="text-slate-400 text-sm italic mt-2">Votre recherche ne correspond à aucun profil dans notre base de données nationale.</p>
+                <p className="text-slate-400 text-base md:text-sm italic mt-2">Votre recherche ne correspond à aucun profil dans notre base de données nationale.</p>
             </div>
           )}
         </CardContent>

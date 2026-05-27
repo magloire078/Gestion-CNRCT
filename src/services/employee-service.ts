@@ -187,7 +187,7 @@ export function subscribeToDirectoireMembers(
                 and(where("matricule", ">=", "DIR"), where("matricule", "<=", "DIR\uf8ff")),
                 and(where("matricule", ">=", "PRE"), where("matricule", "<=", "PRE\uf8ff")),
                 and(where("matricule", ">=", "D 0"), where("matricule", "<=", "D 0\uf8ff")),
-                where("poste", "in", ['Membre du Directoire', 'Président', 'Secrétaire Général'])
+                where("poste", "in", ['Membre du Directoire', 'Président', 'Secrétaire Général', 'Directrice de Cabinet', 'Directrice de cabinet', 'Directeur de cabinet', 'Directeur de Cabinet'])
             )
         )
     );
@@ -605,7 +605,7 @@ export async function getDirectoireMembers(): Promise<Employe[]> {
                     and(where('matricule', '>=', 'DIR'), where('matricule', '<=', 'DIR\uf8ff')),
                     and(where('matricule', '>=', 'PRE'), where('matricule', '<=', 'PRE\uf8ff')),
                     and(where('matricule', '>=', 'D 0'), where('matricule', '<=', 'D 0\uf8ff')),
-                    where('poste', 'in', ['Membre du Directoire', 'Président', 'Secrétaire Général'])
+                    where('poste', 'in', ['Membre du Directoire', 'Président', 'Secrétaire Général', 'Directrice de Cabinet', 'Directrice de cabinet', 'Directeur de cabinet', 'Directeur de Cabinet'])
                 )
             )
         );

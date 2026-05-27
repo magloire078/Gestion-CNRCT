@@ -270,8 +270,8 @@ export function VillagesOfficialReport({
                     </div>
 
                     <InstitutionalFooter 
-                        signatoryName="NANAN AHOUA KOUASSI III"
-                        signatoryTitle="Directeur de l'Observatoire National, CNRCT"
+                        signatoryName={organizationSettings?.globalSignatoryName || "NANAN AHOUA KOUASSI III"}
+                        signatoryTitle={organizationSettings?.globalSignatoryTitle || "Directeur de l'Observatoire National, CNRCT"}
                         showCertification={true}
                     />
                 </div>

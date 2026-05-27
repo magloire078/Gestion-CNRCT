@@ -7,7 +7,7 @@ import {
     PlusCircle, Search, Loader2, List, Map, 
     MoreHorizontal, Pencil, Eye, Trash2, 
     Printer, Settings2, TrendingUp, ShieldAlert,
-    AlertTriangle, CheckCircle2, History
+    AlertTriangle, CheckCircle2, History, FileText
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -336,436 +336,353 @@ export default function ConflictsPage() {
 
     return (
         <PermissionGuard permission="page:conflicts:view">
-            <div className="flex flex-col gap-6">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-2">
-                    <div className="space-y-1">
-                        <Badge variant="outline" className="text-[10px] font-black uppercase tracking-[0.3em] text-primary border-primary/20 bg-primary/5 px-3 py-1 rounded-full shadow-sm">
-                            Observatoire National
-                        </Badge>
-                        <h1 className="text-5xl font-black text-slate-900 tracking-tighter flex items-center gap-4 italic">
-                            Gestion des Conflits <div className="h-10 w-1 bg-slate-200 rounded-full rotate-12" /> <ShieldAlert className="h-10 w-10 text-rose-500 drop-shadow-lg" />
-                        </h1>
-                        <p className="text-slate-500 font-medium max-w-2xl text-sm leading-relaxed border-l-2 border-slate-100 pl-4 mt-2">
-                            Dispositif stratégique de veille et de médiation communautaire. 
-                            <span className="text-primary font-black ml-1 uppercase text-[10px] tracking-widest bg-primary/5 px-2 py-0.5 rounded">Digital Audit Trail enabled</span>
-                        </p>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-3">
-                        <div className="flex items-center gap-2 p-1 bg-slate-100 rounded-xl mr-2">
-                            <Button 
-                                variant={activeTab === "list" ? "secondary" : "ghost"} 
-                                size="sm" 
-                                className={cn("h-8 rounded-lg font-bold text-xs", activeTab === "list" && "shadow-sm")}
-                                onClick={() => setActiveTab("list")}
-                            >
-                                <List className="mr-2 h-3.5 w-3.5" /> Liste
-                            </Button>
-                            <Button 
-                                variant={activeTab === "map" ? "secondary" : "ghost"} 
-                                size="sm" 
-                                className={cn("h-8 rounded-lg font-bold text-xs", activeTab === "map" && "shadow-sm")}
-                                onClick={() => setActiveTab("map")}
-                            >
-                                <Map className="mr-2 h-3.5 w-3.5" /> Carte
-                            </Button>
-                        </div>
-
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="outline" className="rounded-xl font-bold h-11 border-slate-200">
-                                    <Printer className="mr-2 h-4 w-4" /> Rapports
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-56 rounded-xl">
-                                <DropdownMenuItem onClick={handlePrint}>
-                                    <List className="mr-2 h-4 w-4" /> Imprimer la liste filtrée
-                                </DropdownMenuItem>
-                                <Link href="/conflicts/analytics">
-                                    <DropdownMenuItem>
-                                        <TrendingUp className="mr-2 h-4 w-4" /> Statistiques & Analyses
-                                    </DropdownMenuItem>
-                                </Link>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-
-                        <Button onClick={() => setIsAddSheetOpen(true)} className="rounded-xl font-bold h-11 shadow-lg shadow-primary/20">
-                            <PlusCircle className="mr-2 h-4 w-4" /> Nouveau Dossier
-                        </Button>
-                    </div>
-                </div>
-
-                {!loading && conflicts && <ConflictStatsCards conflicts={filteredConflicts} />}
+            <div className="flex flex-col gap-6 pb-4 h-[calc(100vh-6rem)] px-4 lg:px-8 pt-6">
                 
-                <Tabs value={activeTab} onValueChange={setActiveTab}>
-                    <TabsContent value="list" className="mt-0 focus-visible:ring-0">
-                        <Card className="border-none shadow-xl shadow-slate-100 rounded-[2rem] overflow-hidden bg-white">
-                        <CardHeader className="bg-slate-50/80 backdrop-blur-md border-b border-slate-100 p-8">
-                            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-8">
-                                <div className="space-y-2">
-                                    <div className="flex items-center gap-3">
-                                        <div className="h-2 w-12 bg-slate-900 rounded-full" />
-                                        <CardTitle className="text-2xl font-black text-slate-900 uppercase tracking-tighter">Registre des Litiges</CardTitle>
-                                    </div>
-                                    <CardDescription className="font-bold text-slate-400 italic text-sm">
-                                        Exploration et arbitrage des dossiers de médiation communautaire.
+                {isPrintingList && (
+                    <ConflictsOfficialReport 
+                        conflicts={filteredConflicts} 
+                        organizationSettings={settings}
+                        isPrinting={isPrintingList}
+                        onAfterPrint={() => setIsPrintingList(false)}
+                        stats={conflictStats}
+                    />
+                )}
+                
+                {printingConflict && (
+                    <div className="print-only">
+                        <PrintConflictDetail 
+                            conflict={printingConflict} 
+                            organizationSettings={settings} 
+                        />
+                    </div>
+                )}
+                
+                <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-2xl overflow-hidden flex-1 flex flex-col min-h-0">
+                    <CardHeader className="bg-slate-50/50 border-b border-slate-100 p-5 shrink-0">
+                        <div className="flex flex-col xl:flex-row xl:items-start justify-between gap-6 w-full">
+                            <div className="flex items-center gap-4 shrink-0">
+                                <div className="h-10 w-10 rounded-lg bg-rose-500 flex items-center justify-center shadow-lg shadow-rose-500/20">
+                                    <ShieldAlert className="h-6 w-6 text-white" />
+                                </div>
+                                <div>
+                                    <CardTitle className="text-xl">Gestion des Conflits</CardTitle>
+                                    <CardDescription>
+                                        <span className="flex items-center gap-1.5">
+                                            <Badge variant="outline" className="text-[9px] font-black uppercase tracking-widest text-primary border-primary/20 bg-primary/5 px-1.5 py-0 rounded">
+                                                Audit Trail Enabled
+                                            </Badge>
+                                            Registre des litiges et de la médiation.
+                                        </span>
                                     </CardDescription>
                                 </div>
-                                <div className="flex flex-wrap items-center gap-4">
-                                    <div className="relative group w-full md:w-96">
-                                        <div className="absolute inset-0 bg-slate-900/5 rounded-2xl blur-lg group-hover:bg-slate-900/10 transition-all duration-500" />
-                                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-hover:text-slate-900 transition-colors z-10" />
+                            </div>
+                            
+                            <div className="flex flex-col lg:flex-row flex-wrap items-center gap-4 w-full xl:w-auto justify-start xl:justify-end">
+                                <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto justify-start xl:justify-end">
+                                    <Select value={selectedYear} onValueChange={setSelectedYear}>
+                                        <SelectTrigger className="w-full sm:w-auto min-w-[120px] h-10 rounded-lg bg-white border-slate-200">
+                                            <SelectValue placeholder="Année" />
+                                        </SelectTrigger>
+                                        <SelectContent className="rounded-lg border-slate-100">
+                                            <SelectItem value="Tous">Toutes Années</SelectItem>
+                                            {availableYears.map(year => (
+                                                <SelectItem key={year} value={year}>{year}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    
+                                    <Select value={selectedRegion} onValueChange={setSelectedRegion}>
+                                        <SelectTrigger className="w-full sm:w-auto min-w-[140px] h-10 rounded-lg bg-white border-slate-200">
+                                            <SelectValue placeholder="Région" />
+                                        </SelectTrigger>
+                                        <SelectContent className="rounded-lg border-slate-100">
+                                            <SelectItem value="Tous">Toutes Régions</SelectItem>
+                                            {regions.map(region => (
+                                                <SelectItem key={region} value={region}>{region}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
+                                    <div className="relative group flex-grow lg:w-[280px]">
+                                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
                                         <Input
-                                            placeholder="Rechercher un village, un médiateur..."
-                                            className="relative pl-12 h-14 rounded-2xl bg-white border-slate-100 focus:border-slate-900 focus:ring-0 transition-all font-black text-xs uppercase tracking-widest shadow-sm z-10"
+                                            placeholder="Village, médiateur..."
+                                            className="pl-11 h-10 rounded-lg border-slate-200 bg-white shadow-inner focus:ring-slate-900 w-full"
                                             value={searchTerm}
                                             onChange={(e) => setSearchTerm(e.target.value)}
                                         />
                                     </div>
-                                    <div className="flex items-center gap-3">
-                                        <Select value={selectedYear} onValueChange={setSelectedYear}>
-                                            <SelectTrigger className="w-[140px] h-14 rounded-2xl border-slate-100 bg-white font-black text-[10px] uppercase tracking-widest shadow-sm hover:border-slate-900 transition-all">
-                                                <div className="flex items-center gap-2">
-                                                    <History className="h-3.5 w-3.5 text-slate-400" />
-                                                    <SelectValue placeholder="Année" />
-                                                </div>
-                                            </SelectTrigger>
-                                            <SelectContent className="rounded-2xl border-slate-100 shadow-2xl">
-                                                <SelectItem value="Tous" className="font-black text-[10px] uppercase">Toutes Années</SelectItem>
-                                                {availableYears.map(year => (
-                                                    <SelectItem key={year} value={year} className="font-bold">{year}</SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                        <Select value={selectedRegion} onValueChange={setSelectedRegion}>
-                                            <SelectTrigger className="w-[200px] h-14 rounded-2xl border-slate-100 bg-white font-black text-[10px] uppercase tracking-widest shadow-sm hover:border-slate-900 transition-all">
-                                                <div className="flex items-center gap-2">
-                                                    <Map className="h-3.5 w-3.5 text-slate-400" />
-                                                    <SelectValue placeholder="Région" />
-                                                </div>
-                                            </SelectTrigger>
-                                            <SelectContent className="rounded-2xl border-slate-100 shadow-2xl">
-                                                <SelectItem value="Tous" className="font-black text-[10px] uppercase">Toutes Régions</SelectItem>
-                                                {regions.map(region => (
-                                                    <SelectItem key={region} value={region} className="font-bold">{region}</SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
+                                    <div className="flex items-center justify-center p-1 bg-white rounded-lg shadow-inner border border-slate-100 shrink-0 w-full sm:w-auto">
+                                        <Button 
+                                            variant={activeTab === 'list' ? 'default' : 'ghost'} 
+                                            size="icon" 
+                                            className={cn("h-9 w-9 rounded-lg transition-all", activeTab === 'list' ? "bg-slate-900 shadow-md text-white" : "text-slate-400 hover:text-slate-900")}
+                                            onClick={() => setActiveTab('list')}
+                                        >
+                                            <List className="h-4 w-4" />
+                                        </Button>
+                                        <Button 
+                                            variant={activeTab === 'map' ? 'default' : 'ghost'} 
+                                            size="icon" 
+                                            className={cn("h-9 w-9 rounded-lg transition-all", activeTab === 'map' ? "bg-slate-900 shadow-md text-white" : "text-slate-400 hover:text-slate-900")}
+                                            onClick={() => setActiveTab('map')}
+                                        >
+                                            <Map className="h-4 w-4" />
+                                        </Button>
                                     </div>
                                 </div>
                             </div>
-                        </CardHeader>
-                            <CardContent className="p-0">
-                                {error && (
-                                    <div className="m-8 p-4 bg-rose-50 border border-rose-100 rounded-2xl flex items-center gap-3 text-rose-600">
-                                        <AlertTriangle className="h-5 w-5" />
-                                        <p className="text-sm font-bold">{error}</p>
-                                    </div>
-                                )}
+                        </div>
 
-                                {isPending ? (
-                                    <div className="h-[400px] flex flex-col items-center justify-center gap-4 text-slate-400">
+                        {/* Actions & Stats Row */}
+                        <div className="flex flex-wrap items-center justify-between gap-4 mt-4 pt-4 border-t border-slate-100">
+                            <div className="flex flex-wrap items-center gap-3">
+                                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 rounded-lg text-slate-700 text-xs font-bold shadow-sm">
+                                    <FileText className="h-3.5 w-3.5" /> Total: {conflictStats.total}
+                                </div>
+                                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 rounded-lg text-emerald-700 text-xs font-bold shadow-sm">
+                                    <CheckCircle2 className="h-3.5 w-3.5" /> Résolus: {conflictStats.resolved}
+                                </div>
+                                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 rounded-lg text-blue-700 text-xs font-bold shadow-sm">
+                                    <History className="h-3.5 w-3.5" /> Médiation: {conflictStats.mediation}
+                                </div>
+                                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 rounded-lg text-rose-700 text-xs font-bold shadow-sm">
+                                    <AlertTriangle className="h-3.5 w-3.5" /> Ouverts: {conflictStats.open}
+                                </div>
+                            </div>
+
+                            <div className="flex items-center gap-3 w-full sm:w-auto">
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="outline" size="sm" className="h-9 font-bold bg-white text-slate-600 w-full sm:w-auto">
+                                            <Printer className="mr-2 h-4 w-4" /> Rapports
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end" className="w-56 rounded-lg">
+                                        <DropdownMenuItem onClick={handlePrint} className="cursor-pointer">
+                                            <List className="mr-2 h-4 w-4" /> Imprimer la liste
+                                        </DropdownMenuItem>
+                                        <Link href="/conflicts/analytics">
+                                            <DropdownMenuItem className="cursor-pointer">
+                                                <TrendingUp className="mr-2 h-4 w-4" /> Statistiques
+                                            </DropdownMenuItem>
+                                        </Link>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                                <Button size="sm" onClick={() => setIsAddSheetOpen(true)} className="h-9 rounded-lg font-bold shadow-md w-full sm:w-auto">
+                                    <PlusCircle className="mr-2 h-4 w-4" /> Nouveau Dossier
+                                </Button>
+                            </div>
+                        </div>
+                    </CardHeader>
+
+                    <CardContent className="p-0 flex-1 min-h-0 relative overflow-hidden">
+                        {error && (
+                            <div className="m-5 p-4 bg-rose-50 border border-rose-100 rounded-xl flex items-center gap-3 text-rose-600">
+                                <AlertTriangle className="h-5 w-5" />
+                                <p className="text-sm font-bold">{error}</p>
+                            </div>
+                        )}
+
+                        <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
+                            <TabsContent value="list" className="mt-0 h-full flex flex-col focus-visible:ring-0">
+                                {isPending || loading ? (
+                                    <div className="h-full flex flex-col items-center justify-center gap-4 text-slate-400">
                                         <Loader2 className="h-10 w-10 animate-spin opacity-20" />
                                         <p className="text-xs font-bold uppercase tracking-widest">Mise à jour...</p>
                                     </div>
                                 ) : (
-                                    <>
-                                        <div className="hidden md:block">
-                                            <Table>
-                                                <TableHeader className="bg-slate-50/50">
-                                                    <TableRow className="hover:bg-transparent border-b border-slate-100">
-                                                        <TableHead className="w-16 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 text-center py-6">Réf.</TableHead>
-                                                        <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Localité & Région</TableHead>
-                                                        <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Nature du Dossier</TableHead>
-                                                        <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Date Signalement</TableHead>
-                                                        <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Médiateur Assigné</TableHead>
-                                                        <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Statut</TableHead>
-                                                        <TableHead className="w-24 text-right pr-10"></TableHead>
-                                                    </TableRow>
-                                                </TableHeader>
-                                                <TableBody>
-                                                    {loading ? (
-                                                        Array.from({ length: 5 }).map((_, i) => (
-                                                            <TableRow key={i} className="border-b border-slate-50">
-                                                                <TableCell><Skeleton className="h-4 w-4 mx-auto rounded" /></TableCell>
-                                                                <TableCell><Skeleton className="h-10 w-48 rounded-xl" /></TableCell>
-                                                                <TableCell><Skeleton className="h-6 w-32 rounded-full" /></TableCell>
-                                                                <TableCell><Skeleton className="h-4 w-24 rounded" /></TableCell>
-                                                                <TableCell><Skeleton className="h-4 w-32 rounded" /></TableCell>
-                                                                <TableCell><Skeleton className="h-7 w-24 rounded-full" /></TableCell>
-                                                                <TableCell className="pr-10"><Skeleton className="h-10 w-10 ml-auto rounded-xl" /></TableCell>
-                                                            </TableRow>
-                                                        ))
-                                                    ) : (
-                                                        paginatedConflicts.map((conflict, index) => (
-                                                            <TableRow key={conflict.id} className="group border-b border-slate-50 hover:bg-slate-50/30 transition-all duration-300">
-                                                                <TableCell className="text-center">
-                                                                    <span className="text-[10px] font-black text-slate-300 tabular-nums bg-slate-50 px-2 py-1 rounded-lg group-hover:bg-white group-hover:text-slate-900 transition-colors">
-                                                                        #{String((currentPage - 1) * itemsPerPage + index + 1).padStart(3, '0')}
-                                                                    </span>
-                                                                </TableCell>
-                                                                <TableCell>
-                                                                    <div className="flex flex-col gap-0.5">
-                                                                        <span className="font-black text-slate-900 text-sm tracking-tight group-hover:translate-x-1 transition-transform duration-300">{conflict.village}</span>
-                                                                        <div className="flex items-center gap-1.5">
-                                                                            <Map className="h-2.5 w-2.5 text-slate-400" />
-                                                                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{conflict.region || 'National'}</span>
-                                                                        </div>
-                                                                    </div>
-                                                                </TableCell>
-                                                                <TableCell>
-                                                                    <Badge variant="outline" className={cn(
-                                                                        "text-[9px] font-black uppercase tracking-widest border-none px-2.5 py-1 rounded-lg shadow-sm",
-                                                                         (conflictTypeVariantMap as any)[conflict.type] === 'destructive' ? "bg-rose-50 text-rose-600 shadow-rose-100/50" :
-                                                                         (conflictTypeVariantMap as any)[conflict.type] === 'warning' ? "bg-amber-50 text-amber-600 shadow-amber-100/50" : "bg-indigo-50 text-indigo-600 shadow-indigo-100/50"
-                                                                    )}>
-                                                                        {conflict.type}
-                                                                    </Badge>
-                                                                </TableCell>
-                                                                <TableCell>
+                                    <div className="flex-1 overflow-auto bg-white">
+                                        <Table className="relative w-full">
+                                            <TableHeader className="bg-slate-50/90 backdrop-blur-sm sticky top-0 z-10 shadow-sm">
+                                                <TableRow className="hover:bg-transparent border-slate-100">
+                                                    <TableHead className="w-16 text-[10px] font-black uppercase tracking-widest text-slate-500 text-center py-4">Réf.</TableHead>
+                                                    <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-500">Localité & Région</TableHead>
+                                                    <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-500">Nature du Dossier</TableHead>
+                                                    <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-500">Date</TableHead>
+                                                    <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-500">Médiateur</TableHead>
+                                                    <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-500">Statut</TableHead>
+                                                    <TableHead className="w-16 text-right pr-6"></TableHead>
+                                                </TableRow>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {paginatedConflicts.length > 0 ? (
+                                                    paginatedConflicts.map((conflict, index) => (
+                                                        <TableRow key={conflict.id} className="group border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
+                                                            <TableCell className="text-center">
+                                                                <span className="text-[10px] font-mono font-bold text-slate-400">
+                                                                    #{String((currentPage - 1) * itemsPerPage + index + 1).padStart(3, '0')}
+                                                                </span>
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                <div className="flex flex-col gap-0.5">
                                                                     <div className="flex items-center gap-2">
-                                                                        <History className="h-3 w-3 text-slate-300" />
-                                                                        <span className="text-[11px] font-bold text-slate-500 italic">
-                                                                            {conflict.reportedDate ? (
-                                                                                (() => {
-                                                                                    const d = parseISO(conflict.reportedDate);
-                                                                                    return isValid(d) ? format(d, 'dd MMM yyyy', { locale: fr }) : conflict.reportedDate;
-                                                                                })()
-                                                                            ) : '-'}
-                                                                        </span>
+                                                                        <span className="font-bold text-slate-900 text-sm">{conflict.village}</span>
+                                                                        {(!conflict.status || conflict.status === 'Ouvert') && (
+                                                                            <span className="flex items-center gap-1 bg-rose-50 text-rose-600 px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-widest">
+                                                                                <AlertTriangle className="h-2 w-2" /> Urgent
+                                                                            </span>
+                                                                        )}
                                                                     </div>
-                                                                </TableCell>
-                                                                <TableCell>
-                                                                    <div className="flex items-center gap-2">
-                                                                        <div className="h-6 w-6 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-[10px] font-black text-slate-500">
-                                                                            {conflict.mediatorName?.charAt(0) || '?'}
-                                                                        </div>
-                                                                        <span className="text-xs font-black text-slate-700 tracking-tight">
-                                                                            {conflict.mediatorName || 'Non assigné'}
-                                                                        </span>
+                                                                    <div className="flex items-center gap-1.5">
+                                                                        <Map className="h-2.5 w-2.5 text-slate-400" />
+                                                                        <span className="text-[10px] font-medium text-slate-500">{conflict.region || 'National'}</span>
                                                                     </div>
-                                                                </TableCell>
-                                                                <TableCell>
-                                                                    <div className={cn(
-                                                                        "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm",
-                                                                        conflict.status === 'Résolu' ? "bg-emerald-50 text-emerald-600 border border-emerald-100" :
-                                                                        conflict.status === 'En médiation' ? "bg-indigo-50 text-indigo-600 border border-indigo-100" : "bg-rose-50 text-rose-600 border border-rose-100"
-                                                                    )}>
-                                                                        <span className={cn(
-                                                                            "h-1.5 w-1.5 rounded-full",
-                                                                            conflict.status === 'Résolu' ? "bg-emerald-500" :
-                                                                            conflict.status === 'En médiation' ? "bg-indigo-500 animate-pulse" : "bg-rose-500"
-                                                                        )} />
-                                                                        {conflict.status || 'Ouvert'}
-                                                                    </div>
-                                                                </TableCell>
-                                                                <TableCell className="text-right pr-10">
-                                                                    <DropdownMenu>
-                                                                        <DropdownMenuTrigger asChild>
-                                                                            <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 transition-all">
-                                                                                <MoreHorizontal className="h-5 w-5 text-slate-400" />
-                                                                            </Button>
-                                                                        </DropdownMenuTrigger>
-                                                                        <DropdownMenuContent align="end" className="w-64 p-2 rounded-2xl border-slate-100 shadow-2xl bg-white/95 backdrop-blur-xl">
-                                                                            <DropdownMenuItem onSelect={() => handleViewDetails(conflict)} className="p-3 rounded-xl font-black text-xs uppercase tracking-widest cursor-pointer hover:bg-slate-50 transition-colors">
-                                                                                <div className="h-8 w-8 rounded-lg bg-blue-50 flex items-center justify-center mr-3">
-                                                                                    <Eye className="h-4 w-4 text-blue-600" />
-                                                                                </div>
-                                                                                Consulter le dossier
-                                                                            </DropdownMenuItem>
-                                                                            <DropdownMenuItem onSelect={() => handlePrintIndividual(conflict)} className="p-3 rounded-xl font-black text-xs uppercase tracking-widest cursor-pointer hover:bg-slate-50 transition-colors">
-                                                                                <div className="h-8 w-8 rounded-lg bg-slate-50 flex items-center justify-center mr-3">
-                                                                                    <Printer className="h-4 w-4 text-slate-600" />
-                                                                                </div>
-                                                                                Imprimer la fiche
-                                                                            </DropdownMenuItem>
-                                                                            {canEdit && (
-                                                                                <DropdownMenuItem onSelect={() => handleEditClick(conflict)} className="p-3 rounded-xl font-black text-xs uppercase tracking-widest cursor-pointer hover:bg-slate-50 transition-colors text-amber-600">
-                                                                                    <div className="h-8 w-8 rounded-lg bg-amber-50 flex items-center justify-center mr-3">
-                                                                                        <Pencil className="h-4 w-4 text-amber-600" />
-                                                                                    </div>
-                                                                                    Modifier les données
-                                                                                </DropdownMenuItem>
-                                                                            )}
-                                                                            {canDelete && (
-                                                                                <>
-                                                                                    <div className="h-px bg-slate-100 my-2" />
-                                                                                    <DropdownMenuItem
-                                                                                        onSelect={() => handleDeleteClick(conflict)}
-                                                                                        className="p-3 rounded-xl font-black text-xs uppercase tracking-widest cursor-pointer hover:bg-rose-50 text-rose-500 transition-colors"
-                                                                                    >
-                                                                                        <div className="h-8 w-8 rounded-lg bg-rose-50 flex items-center justify-center mr-3">
-                                                                                            <Trash2 className="h-4 w-4 text-rose-600" />
-                                                                                        </div>
-                                                                                        Supprimer
-                                                                                    </DropdownMenuItem>
-                                                                                </>
-                                                                            )}
-                                                                        </DropdownMenuContent>
-                                                                    </DropdownMenu>
-                                                                </TableCell>
-                                                            </TableRow>
-                                                        ))
-                                                    )}
-                                                </TableBody>
-                                            </Table>
-                                        </div>
-
-                                        <div className="grid grid-cols-1 gap-4 p-4 md:hidden">
-                                            {loading ? (
-                                                Array.from({ length: 3 }).map((_, i) => (
-                                                    <Skeleton key={i} className="h-48 w-full rounded-2xl" />
-                                                ))
-                                            ) : (
-                                                paginatedConflicts.map((conflict) => (
-                                                    <Card key={conflict.id} className="border-none shadow-sm rounded-2xl overflow-hidden bg-slate-50/50">
-                                                        <CardHeader className="pb-2">
-                                                            <div className="flex justify-between items-start">
-                                                                <div>
-                                                                    <h3 className="font-black text-slate-900">{conflict.village}</h3>
-                                                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{conflict.region || '-'}</p>
                                                                 </div>
+                                                            </TableCell>
+                                                            <TableCell>
                                                                 <Badge variant="outline" className={cn(
-                                                                    "text-[9px] font-black uppercase border-none",
-                                                                    conflict.status === 'Résolu' ? "bg-emerald-50 text-emerald-600" :
-                                                                    conflict.status === 'En médiation' ? "bg-blue-50 text-blue-600" : "bg-rose-50 text-rose-600"
+                                                                    "text-[10px] font-bold border-none px-2 py-0.5 rounded-md",
+                                                                    (conflictTypeVariantMap as any)[conflict.type] === 'destructive' ? "bg-rose-50 text-rose-700" :
+                                                                    (conflictTypeVariantMap as any)[conflict.type] === 'warning' ? "bg-amber-50 text-amber-700" : "bg-indigo-50 text-indigo-700"
+                                                                )}>
+                                                                    {conflict.type}
+                                                                </Badge>
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                <span className="text-xs text-slate-600">
+                                                                    {conflict.reportedDate ? (
+                                                                        (() => {
+                                                                            const d = parseISO(conflict.reportedDate);
+                                                                            return isValid(d) ? format(d, 'dd MMM yyyy', { locale: fr }) : conflict.reportedDate;
+                                                                        })()
+                                                                    ) : '-'}
+                                                                </span>
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                <div className="flex items-center gap-2">
+                                                                    <div className="h-6 w-6 rounded-md bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-500">
+                                                                        {conflict.mediatorName?.charAt(0) || '?'}
+                                                                    </div>
+                                                                    <span className="text-xs font-medium text-slate-700">
+                                                                        {conflict.mediatorName || 'Non assigné'}
+                                                                    </span>
+                                                                </div>
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                <Badge className={cn(
+                                                                    "px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider",
+                                                                    conflict.status === 'Résolu' ? "bg-emerald-500 text-white" :
+                                                                    conflict.status === 'En médiation' ? "bg-blue-500 text-white" : "bg-rose-500 text-white"
                                                                 )}>
                                                                     {conflict.status || 'Ouvert'}
                                                                 </Badge>
+                                                            </TableCell>
+                                                            <TableCell className="text-right pr-6">
+                                                                <DropdownMenu>
+                                                                    <DropdownMenuTrigger asChild>
+                                                                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                            <MoreHorizontal className="h-4 w-4" />
+                                                                        </Button>
+                                                                    </DropdownMenuTrigger>
+                                                                    <DropdownMenuContent align="end" className="w-48 rounded-lg">
+                                                                        <DropdownMenuItem onSelect={() => handleViewDetails(conflict)} className="cursor-pointer">
+                                                                            <Eye className="mr-2 h-4 w-4 text-slate-400" /> Consulter
+                                                                        </DropdownMenuItem>
+                                                                        <DropdownMenuItem onSelect={() => handlePrintIndividual(conflict)} className="cursor-pointer">
+                                                                            <Printer className="mr-2 h-4 w-4 text-slate-400" /> Imprimer
+                                                                        </DropdownMenuItem>
+                                                                        {canEdit && (
+                                                                            <DropdownMenuItem onSelect={() => handleEditClick(conflict)} className="cursor-pointer text-amber-600">
+                                                                                <Pencil className="mr-2 h-4 w-4" /> Modifier
+                                                                            </DropdownMenuItem>
+                                                                        )}
+                                                                        {canDelete && (
+                                                                            <DropdownMenuItem onSelect={() => handleDeleteClick(conflict)} className="cursor-pointer text-rose-600">
+                                                                                <Trash2 className="mr-2 h-4 w-4" /> Supprimer
+                                                                            </DropdownMenuItem>
+                                                                        )}
+                                                                    </DropdownMenuContent>
+                                                                </DropdownMenu>
+                                                            </TableCell>
+                                                        </TableRow>
+                                                    ))
+                                                ) : (
+                                                    <TableRow>
+                                                        <TableCell colSpan={7} className="h-64 text-center">
+                                                            <div className="flex flex-col items-center justify-center text-slate-400">
+                                                                <ShieldAlert className="h-10 w-10 mb-4 opacity-20" />
+                                                                <p className="text-sm font-medium">Aucun conflit trouvé pour ces critères.</p>
                                                             </div>
-                                                        </CardHeader>
-                                                        <CardContent className="space-y-3 pb-4">
-                                                            <p className="text-xs text-slate-600 leading-relaxed line-clamp-2 italic">
-                                                                "{conflict.description}"
-                                                            </p>
-                                                            <div className="flex items-center justify-between text-[10px] font-bold text-slate-400">
-                                                                <span className="flex items-center gap-1"><History className="h-3 w-3" /> {conflict.reportedDate}</span>
-                                                                <span className="bg-white px-2 py-0.5 rounded border border-slate-100">{conflict.type}</span>
-                                                            </div>
-                                                            <div className="flex gap-2 pt-2">
-                                                                <Button size="sm" className="flex-1 rounded-lg h-9 font-bold" onClick={() => handleViewDetails(conflict)}>Consulter</Button>
-                                                                <Button size="sm" variant="outline" className="h-9 w-9 p-0 rounded-lg" onClick={() => handlePrintIndividual(conflict)}><Printer className="h-4 w-4" /></Button>
-                                                            </div>
-                                                        </CardContent>
-                                                    </Card>
-                                                ))
-                                            )}
-                                        </div>
-                                        
-                                        {!loading && paginatedConflicts.length === 0 && (
-                                            <div className="h-[300px] flex flex-col items-center justify-center text-slate-400 p-8 text-slate-400">
-                                                <Search className="h-12 w-12 mb-4 opacity-10" />
-                                                <p className="font-bold text-sm uppercase tracking-widest text-center">Aucun dossier ne correspond aux critères.</p>
-                                            </div>
-                                        )}
-                                    </>
-                                )}
-                            </CardContent>
-                            {totalPages > 1 && !isPending && (
-                                <CardFooter className="bg-slate-50/30 border-t border-slate-100 p-6">
-                                    <PaginationControls
-                                        currentPage={currentPage}
-                                        totalPages={totalPages}
-                                        onPageChange={setCurrentPage}
-                                        itemsPerPage={itemsPerPage}
-                                        onItemsPerPageChange={setItemsPerPage}
-                                        totalItems={filteredConflicts.length}
-                                    />
-                                </CardFooter>
-                            )}
-                        </Card>
-                    </TabsContent>
-                    <TabsContent value="map" className="mt-0 focus-visible:ring-0">
-                        <Card className="border-none shadow-xl shadow-slate-100 rounded-[2rem] overflow-hidden bg-white">
-                            <div className="h-[800px] w-full relative">
-                                {isPending && (
-                                    <div className="absolute inset-0 bg-white/50 backdrop-blur-sm z-[100] flex items-center justify-center">
-                                        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+                                                        </TableCell>
+                                                    </TableRow>
+                                                )}
+                                            </TableBody>
+                                        </Table>
                                     </div>
                                 )}
-                                <GISMap
-                                    conflicts={filteredConflicts}
-                                    chiefs={chiefs || []}
+                                
+                                {/* Pagination pinned to bottom */}
+                                {totalPages > 1 && (
+                                    <div className="border-t border-slate-100 p-4 bg-slate-50/50 shrink-0">
+                                        <PaginationControls 
+                                            currentPage={currentPage} 
+                                            totalPages={totalPages} 
+                                            onPageChange={setCurrentPage} 
+                                            itemsPerPage={itemsPerPage}
+                                            onItemsPerPageChange={setItemsPerPage}
+                                            totalItems={filteredConflicts.length}
+                                        />
+                                    </div>
+                                )}
+                            </TabsContent>
+                            
+                            <TabsContent value="map" className="mt-0 h-full border-0 focus-visible:ring-0">
+                                <GISMap 
+                                    chiefs={chiefs || []} 
+                                    conflicts={filteredConflicts} 
                                     heritage={heritageItems || []}
-                                    onAddPoint={(lat, lng) => {
-                                        toast({
-                                            title: "Point SIG sélectionné",
-                                            description: `Coordonnées: ${lat.toFixed(6)}, ${lng.toFixed(6)}`,
-                                        });
-                                    }}
                                 />
-                            </div>
-                        </Card>
-                    </TabsContent>
-                </Tabs>
-
-                <ConflictDetailSheet 
-                    open={isDetailsOpen}
-                    conflict={selectedConflictForDetails}
-                    onOpenChange={setIsDetailsOpen}
-                />
-
-                <AddConflictSheet
-                    isOpen={isAddSheetOpen}
-                    onCloseAction={() => setIsAddSheetOpen(false)}
-                    onAddConflictAction={handleAddConflict}
-                    availableTypes={allConflictTypes}
-                />
-                
-                {editingConflict && (
-                    <EditConflictSheet
-                        isOpen={isEditSheetOpen}
-                        onCloseAction={() => setIsEditSheetOpen(false)}
-                        onUpdateConflictAction={handleUpdateConflict}
-                        conflict={editingConflict}
-                        availableTypes={allConflictTypes}
-                    />
-                )}
-
-                <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-                    <AlertDialogContent>
-                        <AlertDialogHeader>
-                            <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                Êtes-vous sûr de vouloir supprimer définitivement le signalement de conflit à <span className="font-bold">{conflictToDelete?.village}</span> ? Cette action est irréversible.
-                            </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                            <AlertDialogCancel disabled={isDeleting}>Annuler</AlertDialogCancel>
-                            <AlertDialogAction
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    handleDeleteConfirm();
-                                }}
-                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                disabled={isDeleting}
-                            >
-                                {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}
-                                Supprimer
-                            </AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
-
-                {isPrintingList && (
-                    <ConflictsOfficialReport 
-                        conflicts={filteredConflicts} 
-                        organizationSettings={settings} 
-                        subtitle={`Périmètre: ${selectedRegion === 'Tous' ? 'National' : selectedRegion} | ${selectedConflictType === 'Tous' ? 'Toutes Natures' : selectedConflictType}`}
-                        stats={conflictStats}
-                        isPrinting={isPrintingList}
-                        onAfterPrint={() => setIsPrintingList(false)}
-                    />
-                )}
-
-                {printingConflict && (
-                    <PrintConflictDetail 
-                        conflict={printingConflict} 
-                        organizationSettings={settings} 
-                        isPrinting={!!printingConflict}
-                        onAfterPrint={() => setPrintingConflict(null)}
-                    />
-                )}
+                            </TabsContent>
+                        </Tabs>
+                    </CardContent>
+                </Card>
             </div>
+
+            <AddConflictSheet
+                isOpen={isAddSheetOpen}
+                onCloseAction={() => setIsAddSheetOpen(false)}
+                onAddConflictAction={handleAddConflict}
+                availableTypes={allConflictTypes}
+            />
+
+            <EditConflictSheet
+                isOpen={isEditSheetOpen}
+                onCloseAction={() => setIsEditSheetOpen(false)}
+                conflict={editingConflict}
+                onUpdateConflictAction={handleUpdateConflict}
+                availableTypes={allConflictTypes}
+            />
+
+            <ConflictDetailSheet
+                open={isDetailsOpen}
+                onOpenChange={setIsDetailsOpen}
+                conflict={selectedConflictForDetails}
+            />
+
+            <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                <AlertDialogContent className="rounded-2xl">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Êtes-vous sûr de vouloir supprimer ce dossier ? Cette action est irréversible.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={isDeleting} className="rounded-xl">Annuler</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={(e) => { e.preventDefault(); handleDeleteConfirm(); }}
+                            disabled={isDeleting}
+                            className="bg-rose-500 hover:bg-rose-600 rounded-xl font-bold"
+                        >
+                            {isDeleting ? "Suppression..." : "Supprimer"}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </PermissionGuard>
     );
 }
+

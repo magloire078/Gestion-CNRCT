@@ -91,6 +91,9 @@ export type OrganizationSettings = {
     mainLogoUrl: string;
     secondaryLogoUrl: string;
     faviconUrl: string;
+    globalSignatoryName?: string;
+    globalSignatoryTitle?: string;
+    showRegionalSignatories?: boolean;
 };
 
 export type Notification = {

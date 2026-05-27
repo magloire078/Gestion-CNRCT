@@ -45,6 +45,8 @@ import { EmployeeDistributionChart } from '@/components/charts/employee-distribu
 import { AssetStatusChart } from '@/components/charts/asset-status-chart';
 import { ChiefsDistributionChart } from '@/components/charts/chiefs-distribution-chart';
 import { ConflictHeatmap } from '@/components/charts/conflict-heatmap';
+import { VillagesDistributionChart } from '@/components/charts/villages-distribution-chart';
+import { LeavesTrackingChart } from '@/components/charts/leaves-tracking-chart';
 import { EmployeeActivityReport } from '@/components/reports/employee-activity-report';
 import { NewsFeed } from '@/components/news/news-feed';
 import type { Employe, Leave, Asset, Fleet, OrganizationSettings, Chief, Department, Mission, Evaluation } from '@/lib/data';
@@ -233,6 +235,8 @@ export default function DashboardPage() {
         loading,
         seniorityAnniversaries,
         birthdayAnniversaries,
+        employeesOnLeave,
+        allRawLeaves,
         upcomingRetirements,
         selectedAnniversaryMonth,
         setSelectedAnniversaryMonth,
@@ -461,6 +465,24 @@ export default function DashboardPage() {
                         </TabsContent>
 
                         <TabsContent value="alerts" className="space-y-12 focus-visible:outline-none focus-visible:ring-0">
+                            {/* Leaves tracking full width */}
+                            <Card className="border-white/10 shadow-3xl bg-white/50 backdrop-blur-md rounded-[2.5rem] overflow-hidden">
+                                <CardHeader className="p-8 pb-4">
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <CardTitle className="text-2xl font-black uppercase tracking-tight text-slate-900 flex items-center gap-4">
+                                               <CalendarOff className="h-6 w-6 text-indigo-500" />
+                                               Suivi des Congés
+                                            </CardTitle>
+                                            <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mt-1">Historique mensuel des absences</CardDescription>
+                                        </div>
+                                    </div>
+                                </CardHeader>
+                                <CardContent className="px-10 pb-10 pt-4">
+                                    <LeavesTrackingChart leaves={allRawLeaves} />
+                                </CardContent>
+                            </Card>
+
                             <div className="grid gap-10 md:grid-cols-2">
                                 <Card className="border-white/10 shadow-3xl bg-white/50 backdrop-blur-md rounded-[2.5rem] overflow-hidden">
                                     <CardHeader className="p-10 border-b border-border/50 bg-primary/5">
@@ -729,8 +751,26 @@ export default function DashboardPage() {
                                     </CardContent>
                                 </Card>
 
+                                {/* Villages Distribution Chart */}
+                                <Card className="lg:col-span-7 border-white/10 shadow-3xl bg-white/50 backdrop-blur-md rounded-[2.5rem] overflow-hidden mt-6">
+                                    <CardHeader className="p-8 pb-4">
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <CardTitle className="text-2xl font-black uppercase tracking-tight text-slate-900 flex items-center gap-4">
+                                                   <MapPin className="h-6 w-6 text-primary" />
+                                                   Implantation Territoriale
+                                                </CardTitle>
+                                                <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mt-1">Répartition des Villages et Campements par Département</CardDescription>
+                                            </div>
+                                        </div>
+                                    </CardHeader>
+                                    <CardContent className="px-10 pb-10 pt-4">
+                                        <VillagesDistributionChart villages={globalStats.villages} />
+                                    </CardContent>
+                                </Card>
+
                                 {/* Latest Chiefs Added */}
-                                <Card className="lg:col-span-3 border-white/10 shadow-3xl bg-white/50 backdrop-blur-md rounded-[2.5rem] overflow-hidden flex flex-col">
+                                <Card className="lg:col-span-3 border-white/10 shadow-3xl bg-white/50 backdrop-blur-md rounded-[2.5rem] overflow-hidden flex flex-col mt-6">
                                     <CardHeader className="bg-amber-500/10 border-b border-border/50 py-8 px-8">
                                         <div className="flex items-center gap-4 mb-1">
                                             <div className="h-10 w-10 rounded-xl bg-amber-500 flex items-center justify-center text-white shadow-lg">

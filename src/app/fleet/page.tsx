@@ -48,7 +48,8 @@ import Link from "next/link";
 import { PermissionGuard } from "@/components/auth/permission-guard";
 import { FleetOfficialReport } from "@/components/reports/fleet-official-report";
 import { getOrganizationSettings } from "@/services/organization-service";
-import { Printer } from "lucide-react";
+import { Printer, Download } from "lucide-react";
+import { exportToExcel } from "@/lib/export-utils";
 import { cn } from "@/lib/utils";
 import type { OrganizationSettings } from "@/lib/data";
 
@@ -159,6 +160,19 @@ export default function FleetPage() {
     setIsPrinting(true);
   };
 
+  const handleExportXlsx = () => {
+    const data = filteredVehicles.map((vehicle: any) => ({
+      Immatriculation: vehicle.plate,
+      MarqueModèle: vehicle.makeModel,
+      AssignéÀ: vehicle.assignedTo,
+      Statut: vehicle.status,
+      ProchainEntretien: vehicle.maintenanceDue,
+      DernierEntretien: vehicle.lastMaintenance || ''
+    }));
+    exportToExcel(data, 'Export_Flotte_Automobile');
+    toast({ title: "Exportation Excel", description: "Le fichier Excel a été généré avec succès." });
+  };
+
   return (
     <PermissionGuard permission="page:fleet:view">
       <div className={cn("flex flex-col gap-6 pb-12", isPrinting && "hidden")}>
@@ -188,6 +202,14 @@ export default function FleetPage() {
             >
               <Printer className="mr-3 h-5 w-5 text-blue-500" />
               Rapport Officiel
+            </Button>
+            <Button
+              onClick={handleExportXlsx}
+              variant="outline"
+              className="h-14 px-6 rounded-[1.5rem] border-slate-200 bg-white/50 backdrop-blur-md font-black uppercase tracking-widest text-[11px] hover:bg-slate-100 active:scale-95 transition-all text-slate-600"
+            >
+              <Download className="mr-3 h-5 w-5 text-emerald-500" />
+              Exporter Excel
             </Button>
             <Button
               onClick={() => setIsAddSheetOpen(true)}

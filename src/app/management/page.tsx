@@ -126,15 +126,15 @@ function ManagementHubContent() {
                     </p>
                 </div>
 
-                <div className="flex items-center gap-4">
-                    <div className="relative group flex-1 min-w-[300px]">
+                <div className="flex items-center gap-3 sm:gap-4 w-full lg:w-auto">
+                    <div className="relative group flex-1 min-w-0 lg:min-w-[300px]">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
                         <Input 
                             placeholder="Rechercher partout (Action, Membre, Actif)..." 
-                            className="pl-12 h-14 rounded-xl border-none shadow-xl shadow-slate-200/50 bg-white ring-0 focus-visible:ring-2 focus-visible:ring-indigo-600/20 font-medium"
+                            className="pl-12 h-14 rounded-xl border-none shadow-xl shadow-slate-200/50 bg-white ring-0 focus-visible:ring-2 focus-visible:ring-indigo-600/20 font-medium w-full text-sm"
                         />
                     </div>
-                    <Button variant="outline" className="h-14 w-14 rounded-xl border-none shadow-xl shadow-slate-200 flex items-center justify-center bg-white group">
+                    <Button variant="outline" className="h-14 w-14 shrink-0 rounded-xl border-none shadow-xl shadow-slate-200 flex items-center justify-center bg-white group">
                         <Bell className="h-6 w-6 text-slate-400 group-hover:text-indigo-600 transition-colors" />
                     </Button>
                 </div>

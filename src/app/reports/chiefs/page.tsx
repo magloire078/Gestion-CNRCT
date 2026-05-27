@@ -5,7 +5,9 @@ import {
     Crown, Map as MapIcon, Users, Building2,
     Download, Printer, Search, Filter,
     FileSpreadsheet, FileJson, BarChart3,
-    MapPin, Home, Info, Compass
+    MapPin, Home, Info, Compass,
+    AlertTriangle, CheckCircle2, TrendingUp,
+    Skull, Scale, LogOut, RefreshCw, FileText
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ChiefsOfficialReport } from "@/components/reports/chiefs-official-report";
@@ -47,7 +49,9 @@ import {
 } from "@/components/ui/select";
 import dynamic from 'next/dynamic';
 import { subscribeToChiefs } from "@/services/chief-service";
+import { getVillages } from "@/services/village-service";
 import type { Chief } from "@/lib/data";
+import type { Village } from "@/types/village";
 import Papa from "papaparse";
 import { cn } from "@/lib/utils";
 import { PermissionGuard } from "@/components/auth/permission-guard";
@@ -65,10 +69,11 @@ export default function ChiefsReportsPage() {
     const { canSeeGovernanceStatus } = usePermissions();
     const showStatus = canSeeGovernanceStatus();
     const [chiefs, setChiefs] = useState<Chief[]>([]);
+    const [villages, setVillages] = useState<Village[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
     const [roleFilter, setRoleFilter] = useState("all");
-    const [viewMode, setViewMode] = useState<"list" | "map">("map");
+    const [viewMode, setViewMode] = useState<"list" | "map" | "analytics">("map");
     const [isPrinting, setIsPrinting] = useState(false);
     const [isPrintingStats, setIsPrintingStats] = useState(false);
     const [orgSettings, setOrgSettings] = useState<OrganizationSettings | null>(null);
@@ -76,6 +81,7 @@ export default function ChiefsReportsPage() {
 
     useEffect(() => {
         getOrganizationSettings().then(setOrgSettings);
+        getVillages().then(setVillages);
         const unsubscribe = subscribeToChiefs(
             (data) => {
                 setChiefs(data);
@@ -90,21 +96,58 @@ export default function ChiefsReportsPage() {
     }, []);
 
     const stats = useMemo(() => {
-        const regions = new Set(chiefs.map(c => c.region)).size;
-        const villages = new Set(chiefs.map(c => c.village)).size;
+        const activeChiefs = chiefs.filter(c => c.status !== 'archive');
+        const archivedChiefs = chiefs.filter(c => c.status === 'archive');
+        const regionsCount = new Set(chiefs.map(c => c.region)).size;
+        const villagesCount = new Set(chiefs.map(c => c.village)).size;
         const regionGroups = chiefs.reduce((acc, c) => {
             const reg = c.region || 'Inconnue';
             acc[reg] = (acc[reg] || 0) + 1;
             return acc;
         }, {} as Record<string, number>);
 
+        // Archive reason breakdown
+        const archiveReasons = archivedChiefs.reduce((acc, c) => {
+            const reason = c.archiveReason || 'Non spécifié';
+            acc[reason] = (acc[reason] || 0) + 1;
+            return acc;
+        }, {} as Record<string, number>);
+
+        // Role distribution (active only)
+        const roleDistribution = activeChiefs.reduce((acc, c) => {
+            const role = c.role || 'Autre';
+            acc[role] = (acc[role] || 0) + 1;
+            return acc;
+        }, {} as Record<string, number>);
+
         return {
             total: chiefs.length,
-            regions,
-            villages,
-            regionGroups
+            active: activeChiefs.length,
+            archived: archivedChiefs.length,
+            regions: regionsCount,
+            villages: villagesCount,
+            regionGroups,
+            archiveReasons,
+            roleDistribution
         };
     }, [chiefs]);
+
+    // Analytics: vacances par région
+    const vacancyAnalytics = useMemo(() => {
+        const allRegions = [...new Set([...villages.map(v => v.region), ...chiefs.map(c => c.region)].filter(Boolean))].sort();
+        return allRegions.map(region => {
+            const regionVillages = villages.filter(v => v.region === region && v.type !== 'campement');
+            const coveredVillageIds = new Set(
+                chiefs
+                    .filter(c => (c.status === 'actif' || c.status === 'a_vie') && c.region === region && c.villageId)
+                    .map(c => c.villageId!)
+            );
+            const activeChiefsInRegion = chiefs.filter(c => (c.status === 'actif' || c.status === 'a_vie') && c.region === region).length;
+            const vacantVillages = regionVillages.filter(v => !coveredVillageIds.has(v.id)).length;
+            const coverageRate = regionVillages.length > 0 ? Math.round((coveredVillageIds.size / regionVillages.length) * 100) : 0;
+            return { region, totalVillages: regionVillages.length, coveredVillages: coveredVillageIds.size, vacantVillages, activeChiefs: activeChiefsInRegion, coverageRate };
+        }).sort((a, b) => b.vacantVillages - a.vacantVillages);
+    }, [villages, chiefs]);
 
     const filteredChiefs = useMemo(() => {
         return chiefs.filter(c => {
@@ -220,6 +263,19 @@ export default function ChiefsReportsPage() {
                                 >
                                     <Users className="mr-2 h-4 w-4" /> Liste
                                 </Button>
+                                <Button 
+                                    variant="ghost"
+                                    className={cn(
+                                        "rounded-xl h-12 px-6 font-bold transition-all duration-300", 
+                                        viewMode === "analytics" 
+                                            ? "bg-emerald-400 text-slate-950 shadow-lg hover:bg-emerald-300" 
+                                            : "text-slate-400 hover:text-white hover:bg-white/5"
+                                    )}
+                                    onClick={() => startTransition(() => setViewMode("analytics"))}
+                                    disabled={isPending}
+                                >
+                                    <BarChart3 className="mr-2 h-4 w-4" /> Analyse
+                                </Button>
                             </div>
 
                             <div className="flex items-center gap-3">
@@ -280,12 +336,13 @@ export default function ChiefsReportsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     {[
                         { 
-                            label: "Membres total", 
-                            value: stats.total, 
+                            label: "Chefs Actifs", 
+                            value: stats.active, 
                             icon: Crown, 
                             color: "#D4AF37", 
                             bg: "bg-[#D4AF37]/5", 
-                            tag: "Autorités" 
+                            tag: "En fonction",
+                            sub: `${stats.archived} archivés`
                         },
                         { 
                             label: "Régions Couvertes", 
@@ -293,23 +350,26 @@ export default function ChiefsReportsPage() {
                             icon: Compass, 
                             color: "#6366f1", 
                             bg: "bg-indigo-50", 
-                            tag: "Géo-Data" 
+                            tag: "Géo-Data",
+                            sub: `Sur ${vacancyAnalytics.length} régions`
                         },
                         { 
-                            label: "Villages Représentés", 
+                            label: "Villages avec Chef", 
                             value: stats.villages, 
                             icon: Home, 
-                            color: "#f59e0b", 
-                            bg: "bg-amber-50", 
-                            tag: "Localités" 
+                            color: "#10b981", 
+                            bg: "bg-emerald-50", 
+                            tag: "Localités",
+                            sub: `${villages.filter(v => v.type !== 'campement' && !v.currentChiefId).length} vacants`
                         },
                         { 
-                            label: "Moyenne par Région", 
-                            value: (stats.total / (stats.regions || 1)).toFixed(1), 
-                            icon: BarChart3, 
-                            color: "#0f172a", 
-                            bg: "bg-slate-100", 
-                            tag: "Densité" 
+                            label: "Vacances Critiques", 
+                            value: vacancyAnalytics.filter(r => r.vacantVillages > 0).length, 
+                            icon: AlertTriangle, 
+                            color: "#f59e0b", 
+                            bg: "bg-amber-50", 
+                            tag: "Alertes",
+                            sub: "Régions avec vacances"
                         }
                     ].map((stat, i) => (
                         <Card key={i} className="group relative border-none shadow-xl shadow-slate-200/40 rounded-[2rem] overflow-hidden bg-white hover:scale-[1.02] transition-all duration-500">
@@ -326,6 +386,7 @@ export default function ChiefsReportsPage() {
                                 <div className="space-y-1">
                                     <h3 className="text-4xl font-black text-slate-950 tracking-tighter">{stat.value}</h3>
                                     <p className="text-[11px] text-slate-400 font-bold uppercase tracking-[0.15em]">{stat.label}</p>
+                                    {stat.sub && <p className="text-[10px] text-slate-400 font-bold mt-2">{stat.sub}</p>}
                                 </div>
                             </CardContent>
                         </Card>
@@ -335,7 +396,168 @@ export default function ChiefsReportsPage() {
 
                 {/* Content Area */}
                 <div className="space-y-8">
-                    {viewMode === "map" ? (
+                    {viewMode === "analytics" ? (
+                        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            {/* Vacancy by region */}
+                            <Card className="border-none shadow-2xl rounded-[2.5rem] overflow-hidden bg-white">
+                                <CardHeader className="p-10 border-b border-slate-50">
+                                    <div className="flex items-center gap-6">
+                                        <div className="h-16 w-16 rounded-2xl bg-slate-900 flex items-center justify-center shadow-2xl">
+                                            <AlertTriangle className="h-8 w-8 text-amber-400" />
+                                        </div>
+                                        <div>
+                                            <CardTitle className="text-3xl font-black text-slate-950 tracking-tight">Vacances du Trône par Région</CardTitle>
+                                            <p className="text-slate-400 font-black uppercase text-[10px] tracking-[0.3em] mt-2">Villages sans chef actif — couverture chefferie</p>
+                                        </div>
+                                    </div>
+                                </CardHeader>
+                                <CardContent className="p-8 space-y-4">
+                                    {vacancyAnalytics.map(({ region, totalVillages, coveredVillages, vacantVillages, activeChiefs, coverageRate }) => (
+                                        <div key={region} className="group p-5 rounded-2xl bg-slate-50 hover:bg-white hover:shadow-md transition-all duration-300 border border-transparent hover:border-slate-100">
+                                            <div className="flex flex-wrap items-center justify-between gap-4 mb-3">
+                                                <div className="flex items-center gap-3">
+                                                    <div className={cn(
+                                                        "h-2.5 w-2.5 rounded-full",
+                                                        vacantVillages === 0 ? 'bg-emerald-500' : vacantVillages > 5 ? 'bg-red-500 animate-pulse' : 'bg-amber-500'
+                                                    )} />
+                                                    <span className="font-black text-slate-900 uppercase tracking-tight text-sm">{region}</span>
+                                                </div>
+                                                <div className="flex items-center gap-3">
+                                                    <span className="text-[10px] font-black uppercase text-slate-400">{activeChiefs} chefs actifs</span>
+                                                    {vacantVillages > 0 ? (
+                                                        <Badge className="bg-red-50 text-red-600 border-none font-black text-[9px] uppercase tracking-widest px-3">
+                                                            {vacantVillages} vacant{vacantVillages > 1 ? 's' : ''}
+                                                        </Badge>
+                                                    ) : (
+                                                        <Badge className="bg-emerald-50 text-emerald-600 border-none font-black text-[9px] uppercase tracking-widest px-3 flex items-center gap-1">
+                                                            <CheckCircle2 className="h-3 w-3" />Couvert
+                                                        </Badge>
+                                                    )}
+                                                    <Badge className="bg-slate-100 text-slate-600 border-none font-black text-[10px] uppercase tracking-widest px-3">{coverageRate}%</Badge>
+                                                </div>
+                                            </div>
+                                            {/* Progress bar */}
+                                            <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+                                                <div
+                                                    className={cn(
+                                                        "h-full rounded-full transition-all duration-700",
+                                                        coverageRate >= 80 ? 'bg-emerald-500' : coverageRate >= 50 ? 'bg-amber-400' : 'bg-red-500'
+                                                    )}
+                                                    style={{ width: `${coverageRate}%` }}
+                                                />
+                                            </div>
+                                            <div className="flex justify-between mt-1.5">
+                                                <span className="text-[9px] font-bold text-slate-400">{coveredVillages} villages couverts</span>
+                                                <span className="text-[9px] font-bold text-slate-400">{totalVillages} villages total</span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </CardContent>
+                            </Card>
+
+                            {/* Role distribution + Archive reasons */}
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                {/* Role distribution */}
+                                <Card className="border-none shadow-2xl rounded-[2.5rem] overflow-hidden bg-white">
+                                    <CardHeader className="p-8 border-b border-slate-50">
+                                        <div className="flex items-center gap-4">
+                                            <div className="h-12 w-12 rounded-xl bg-[#D4AF37]/10 flex items-center justify-center">
+                                                <Crown className="h-6 w-6 text-[#D4AF37]" />
+                                            </div>
+                                            <div>
+                                                <CardTitle className="text-xl font-black text-slate-950">Répartition par Rang</CardTitle>
+                                                <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mt-1">Chefs actifs uniquement</p>
+                                            </div>
+                                        </div>
+                                    </CardHeader>
+                                    <CardContent className="p-8 space-y-4">
+                                        {Object.entries(stats.roleDistribution)
+                                            .sort((a, b) => b[1] - a[1])
+                                            .map(([role, count]) => {
+                                                const pct = Math.round((count / (stats.active || 1)) * 100);
+                                                const colors: Record<string, string> = {
+                                                    'Roi': 'bg-amber-500',
+                                                    'Chef de province': 'bg-purple-500',
+                                                    'Chef de canton': 'bg-blue-500',
+                                                    'Chef de tribu': 'bg-teal-500',
+                                                    'Chef de Village': 'bg-slate-500',
+                                                };
+                                                return (
+                                                    <div key={role} className="space-y-2">
+                                                        <div className="flex items-center justify-between">
+                                                            <span className="text-[11px] font-black uppercase text-slate-700">{role}</span>
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-[10px] font-bold text-slate-400">{count}</span>
+                                                                <Badge className="bg-slate-100 text-slate-600 border-none text-[9px] font-black">{pct}%</Badge>
+                                                            </div>
+                                                        </div>
+                                                        <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                                                            <div className={cn('h-full rounded-full transition-all duration-700', colors[role] || 'bg-slate-400')} style={{ width: `${pct}%` }} />
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                    </CardContent>
+                                </Card>
+
+                                {/* Archive reasons */}
+                                <Card className="border-none shadow-2xl rounded-[2.5rem] overflow-hidden bg-white">
+                                    <CardHeader className="p-8 border-b border-slate-50">
+                                        <div className="flex items-center gap-4">
+                                            <div className="h-12 w-12 rounded-xl bg-slate-100 flex items-center justify-center">
+                                                <TrendingUp className="h-6 w-6 text-slate-500" />
+                                            </div>
+                                            <div>
+                                                <CardTitle className="text-xl font-black text-slate-950">Motifs de Fin de Règne</CardTitle>
+                                                <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mt-1">{stats.archived} chefs archivés</p>
+                                            </div>
+                                        </div>
+                                    </CardHeader>
+                                    <CardContent className="p-8 space-y-4">
+                                        {stats.archived === 0 ? (
+                                            <div className="flex flex-col items-center gap-3 py-8 text-center">
+                                                <CheckCircle2 className="h-10 w-10 text-emerald-300" />
+                                                <p className="text-sm font-black text-slate-400">Aucun chef archivé</p>
+                                            </div>
+                                        ) : (
+                                            Object.entries(stats.archiveReasons)
+                                                .sort((a, b) => b[1] - a[1])
+                                                .map(([reason, count]) => {
+                                                    const pct = Math.round((count / (stats.archived || 1)) * 100);
+                                                    const reasonConfig: Record<string, { icon: any; color: string; bar: string }> = {
+                                                        'Décès': { icon: Skull, color: 'text-slate-500', bar: 'bg-slate-400' },
+                                                        'Déchéance': { icon: Scale, color: 'text-red-500', bar: 'bg-red-400' },
+                                                        'Démission': { icon: LogOut, color: 'text-blue-500', bar: 'bg-blue-400' },
+                                                        'Succession générationnelle': { icon: RefreshCw, color: 'text-purple-500', bar: 'bg-purple-400' },
+                                                        'Autre': { icon: FileText, color: 'text-slate-400', bar: 'bg-slate-300' },
+                                                        'Non spécifié': { icon: Info, color: 'text-slate-300', bar: 'bg-slate-200' },
+                                                    };
+                                                    const cfg = reasonConfig[reason] || reasonConfig['Autre'];
+                                                    const Icon = cfg.icon;
+                                                    return (
+                                                        <div key={reason} className="space-y-2">
+                                                            <div className="flex items-center justify-between">
+                                                                <div className="flex items-center gap-2">
+                                                                    <Icon className={cn('h-4 w-4', cfg.color)} />
+                                                                    <span className="text-[11px] font-black uppercase text-slate-700">{reason}</span>
+                                                                </div>
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className="text-[10px] font-bold text-slate-400">{count}</span>
+                                                                    <Badge className="bg-slate-100 text-slate-600 border-none text-[9px] font-black">{pct}%</Badge>
+                                                                </div>
+                                                            </div>
+                                                            <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                                                                <div className={cn('h-full rounded-full transition-all duration-700', cfg.bar)} style={{ width: `${pct}%` }} />
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })
+                                        )}
+                                    </CardContent>
+                                </Card>
+                            </div>
+                        </div>
+                    ) : viewMode === "map" ? (
                         <div className="group relative">
                             <div className="absolute -inset-1 bg-gradient-to-r from-[#D4AF37]/20 to-transparent rounded-[2.5rem] blur-xl opacity-50 transition duration-1000 group-hover:opacity-100" />
                             <Card className="relative border-none shadow-2xl rounded-[2.5rem] overflow-hidden bg-white">

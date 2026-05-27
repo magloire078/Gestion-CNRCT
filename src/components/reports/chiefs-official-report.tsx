@@ -134,34 +134,36 @@ export function ChiefsOfficialReport({
                                     <RegionSynthesisTable region={region} chiefs={regionChiefs} />
 
                                     {/* Espaces pour les représentants institutionnels */}
-                                    <div className="mt-4 mb-4 bg-slate-50 border border-slate-200 p-4 rounded-xl break-inside-avoid">
-                                        <h4 className="text-[10px] font-black uppercase text-slate-700 tracking-widest mb-3 border-b border-slate-200 pb-2">Représentations Institutionnelles - Région {region}</h4>
-                                        <div className="space-y-4">
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-[10px] font-bold text-slate-600 uppercase w-64 shrink-0">Membre du Directoire Régional :</span>
-                                                <div className="flex-1 border-b-2 border-dotted border-slate-400 mt-2"></div>
-                                            </div>
-                                            
-                                            <div className="pt-2">
-                                                <span className="text-[10px] font-bold text-slate-600 uppercase block mb-3">Membres des Comités Régionaux (Assemblée Générale) :</span>
-                                                <div className="grid grid-cols-2 gap-x-8 gap-y-4 pl-4">
-                                                    {Array.from(uniqueDepts).sort().map(dept => (
-                                                        <div key={dept} className="flex flex-col gap-2">
-                                                            <span className="text-[9px] font-black text-slate-500 uppercase">Dép. {dept}</span>
-                                                            <div className="flex items-center gap-2 pl-2">
-                                                                <span className="text-[9px] font-bold text-slate-400 shrink-0">1.</span>
-                                                                <div className="flex-1 border-b-2 border-dotted border-slate-400 mt-2"></div>
+                                    {organizationSettings?.showRegionalSignatories !== false && (
+                                        <div className="mt-4 mb-4 bg-slate-50 border border-slate-200 p-4 rounded-xl break-inside-avoid">
+                                            <h4 className="text-[10px] font-black uppercase text-slate-700 tracking-widest mb-3 border-b border-slate-200 pb-2">Représentations Institutionnelles - Région {region}</h4>
+                                            <div className="space-y-4">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-[10px] font-bold text-slate-600 uppercase w-64 shrink-0">Membre du Directoire Régional :</span>
+                                                    <div className="flex-1 border-b-2 border-dotted border-slate-400 mt-2"></div>
+                                                </div>
+                                                
+                                                <div className="pt-2">
+                                                    <span className="text-[10px] font-bold text-slate-600 uppercase block mb-3">Membres des Comités Régionaux (Assemblée Générale) :</span>
+                                                    <div className="grid grid-cols-2 gap-x-8 gap-y-4 pl-4">
+                                                        {Array.from(uniqueDepts).sort().map(dept => (
+                                                            <div key={dept} className="flex flex-col gap-2">
+                                                                <span className="text-[9px] font-black text-slate-500 uppercase">Dép. {dept}</span>
+                                                                <div className="flex items-center gap-2 pl-2">
+                                                                    <span className="text-[9px] font-bold text-slate-400 shrink-0">1.</span>
+                                                                    <div className="flex-1 border-b-2 border-dotted border-slate-400 mt-2"></div>
+                                                                </div>
+                                                                <div className="flex items-center gap-2 pl-2">
+                                                                    <span className="text-[9px] font-bold text-slate-400 shrink-0">2.</span>
+                                                                    <div className="flex-1 border-b-2 border-dotted border-slate-400 mt-2"></div>
+                                                                </div>
                                                             </div>
-                                                            <div className="flex items-center gap-2 pl-2">
-                                                                <span className="text-[9px] font-bold text-slate-400 shrink-0">2.</span>
-                                                                <div className="flex-1 border-b-2 border-dotted border-slate-400 mt-2"></div>
-                                                            </div>
-                                                        </div>
-                                                    ))}
+                                                        ))}
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
+                                    )}
                                     
                                     <table className="w-full border-collapse border-2 border-slate-900 text-[10px]">
                                     <thead>
@@ -284,8 +286,8 @@ export function ChiefsOfficialReport({
                     </div>
 
                     <InstitutionalFooter 
-                        signatoryName="KASSI Kouamé"
-                        signatoryTitle="Chef de Service Gouvernance et Territoires"
+                        signatoryName={organizationSettings?.globalSignatoryName || "NANAN AHOUA KOUASSI III"}
+                        signatoryTitle={organizationSettings?.globalSignatoryTitle || "Directeur de l'Observatoire National, CNRCT"}
                         showCertification={true}
                     />
                 </div>

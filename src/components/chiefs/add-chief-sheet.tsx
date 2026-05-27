@@ -55,6 +55,8 @@ export function AddChiefSheet({ isOpen, onCloseAction, onAddChiefAction }: AddCh
   const [lastName, setLastName] = useState("");
   const [title, setTitle] = useState("");
   const [role, setRole] = useState<ChiefRole>("Chef de Village");
+  const [additionalRoles, setAdditionalRoles] = useState<ChiefRole[]>([]);
+  const [cnrctAffiliation, setCnrctAffiliation] = useState<Chief['cnrctAffiliation']>("Aucune");
   const [designationDate, setDesignationDate] = useState("");
   const [designationMode, setDesignationMode] = useState<DesignationMode | "">("");
   const [ethnicGroup, setEthnicGroup] = useState("");
@@ -113,7 +115,7 @@ export function AddChiefSheet({ isOpen, onCloseAction, onAddChiefAction }: AddCh
   const villages = useMemo(() => selectedRegion && selectedDepartment && selectedSubPrefecture && divisions[selectedRegion]?.[selectedDepartment]?.[selectedSubPrefecture] ? divisions[selectedRegion][selectedDepartment][selectedSubPrefecture] : [], [selectedRegion, selectedDepartment, selectedSubPrefecture]);
 
   const resetForm = () => {
-    setFirstName(""); setLastName(""); setTitle(""); setRole("Chef de Village"); setSexe(""); setPhone(""); setContact("");
+    setFirstName(""); setLastName(""); setTitle(""); setRole("Chef de Village"); setAdditionalRoles([]); setCnrctAffiliation("Aucune"); setSexe(""); setPhone(""); setContact("");
     setBio(""); setPhotoFile(null); setPhotoPreview(`https://placehold.co/100x100.png`);
     setSelectedRegion(""); setCustomRegion(""); setSelectedDepartment(""); setCustomDepartment("");
     setSelectedSubPrefecture(""); setCustomSubPrefecture(""); setSelectedVillage(""); setCustomVillage("");
@@ -173,6 +175,7 @@ export function AddChiefSheet({ isOpen, onCloseAction, onAddChiefAction }: AddCh
       const chiefData: Omit<Chief, "id"> = {
         name: `${lastName} ${firstName}`.trim(),
         firstName, lastName, title, role,
+        additionalRoles: additionalRoles.length > 0 ? additionalRoles : undefined,
         designationDate: designationDate || undefined,
         designationMode: designationMode as DesignationMode,
         sexe: sexe as Chief['sexe'],
@@ -181,6 +184,7 @@ export function AddChiefSheet({ isOpen, onCloseAction, onAddChiefAction }: AddCh
         languages: languages ? languages.split(',').map(s => s.trim()) : undefined,
         phone: phone || undefined, contact, email: email || undefined, address: address || undefined,
         CNRCTRegistrationNumber: CNRCTRegistrationNumber || undefined,
+        cnrctAffiliation: cnrctAffiliation !== "Aucune" ? cnrctAffiliation : undefined,
         officialDocuments: officialDocuments || undefined,
         status: status || 'actif', bio, career, predecessors, photoUrl: '',
       };
@@ -211,8 +215,8 @@ export function AddChiefSheet({ isOpen, onCloseAction, onAddChiefAction }: AddCh
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open) handleClose(); }}>
-      <DialogContent className="sm:max-w-4xl p-0 overflow-hidden bg-slate-50 w-full max-h-[100dvh]">
-        <div className="flex flex-col md:flex-row h-[100dvh] md:h-[85vh] max-h-[100dvh] md:max-h-[800px]">
+      <DialogContent className="sm:max-w-4xl p-0 overflow-hidden bg-slate-50 w-full h-[100dvh] sm:h-auto max-h-[100dvh] sm:max-h-[85vh]">
+        <div className="flex flex-col md:flex-row h-full">
           {/* Sidebar Wizard Navigation */}
           <div className="w-full md:w-64 bg-white border-b md:border-r md:border-b-0 border-slate-100 p-4 md:p-6 shrink-0 flex flex-col justify-between">
             <div>
@@ -247,13 +251,13 @@ export function AddChiefSheet({ isOpen, onCloseAction, onAddChiefAction }: AddCh
           </div>
 
           {/* Form Content */}
-          <div className="flex-1 flex flex-col relative bg-white">
+          <div className="flex-1 flex flex-col relative bg-white overflow-hidden min-h-0">
             <DialogHeader className="p-6 border-b border-slate-100 bg-white z-10 shrink-0">
               <DialogTitle className="text-xl">{STEPS[step-1].title}</DialogTitle>
               <DialogDescription>{STEPS[step-1].description}</DialogDescription>
             </DialogHeader>
 
-            <ScrollArea className="flex-1 p-6 relative">
+            <ScrollArea className="flex-1 p-6 relative h-full">
               <AnimatePresence mode="wait" custom={direction} initial={false}>
                 <motion.div
                   key={step}
@@ -289,8 +293,8 @@ export function AddChiefSheet({ isOpen, onCloseAction, onAddChiefAction }: AddCh
                         <div className="space-y-2"><Label>Titre traditionnel <span className="text-red-500">*</span></Label><DebouncedInput value={title} onChange={(v) => setTitle(v as string)} placeholder="Ex: Nanan, Awoula..." /></div>
                         
                         <div className="space-y-2">
-                            <Label>Niveau de Juridiction (Rôle) <span className="text-red-500">*</span></Label>
-                            <Select value={role} onValueChange={(v: ChiefRole) => setRole(v)}>
+                            <Label>Niveau de Juridiction (Rôle Principal) <span className="text-red-500">*</span></Label>
+                            <Select value={role} onValueChange={(v: ChiefRole) => { setRole(v); setAdditionalRoles(additionalRoles.filter(r => r !== v)); }}>
                                 <SelectTrigger className="h-10 bg-slate-50 border-slate-200 focus:ring-blue-500"><SelectValue /></SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="Roi" className="font-bold text-amber-700">Roi</SelectItem>
@@ -300,6 +304,34 @@ export function AddChiefSheet({ isOpen, onCloseAction, onAddChiefAction }: AddCh
                                     <SelectItem value="Chef de Village">Chef de Village</SelectItem>
                                 </SelectContent>
                             </Select>
+                        </div>
+
+                        <div className="space-y-2 md:col-span-2">
+                            <Label>Casquettes Supplémentaires (Optionnel)</Label>
+                            <p className="text-[10px] text-slate-500">Si l'autorité cumule plusieurs fonctions (ex: Chef de village ET Chef de tribu)</p>
+                            <div className="flex flex-wrap gap-2 mt-2">
+                                {(["Roi", "Chef de province", "Chef de canton", "Chef de tribu", "Chef de Village"] as ChiefRole[]).filter(r => r !== role).map(r => (
+                                    <button
+                                        key={r}
+                                        type="button"
+                                        onClick={() => {
+                                            if (additionalRoles.includes(r)) {
+                                                setAdditionalRoles(additionalRoles.filter(ar => ar !== r));
+                                            } else {
+                                                setAdditionalRoles([...additionalRoles, r]);
+                                            }
+                                        }}
+                                        className={cn(
+                                            "px-3 py-1.5 rounded-full text-xs font-bold border transition-colors",
+                                            additionalRoles.includes(r) 
+                                                ? "bg-blue-100 text-blue-700 border-blue-300" 
+                                                : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+                                        )}
+                                    >
+                                        {r}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
 
                         <div className="space-y-2">
@@ -416,6 +448,17 @@ export function AddChiefSheet({ isOpen, onCloseAction, onAddChiefAction }: AddCh
                                         <SelectItem value="actif">En Exercice (Actif)</SelectItem>
                                         <SelectItem value="a_vie">Régence à Vie</SelectItem>
                                         <SelectItem value="archive">Archivé / Décédé</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Affiliation CNRCT</Label>
+                                <Select value={cnrctAffiliation} onValueChange={(v) => setCnrctAffiliation(v as Chief['cnrctAffiliation'])}>
+                                    <SelectTrigger className="bg-white"><SelectValue placeholder="Aucune" /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="Aucune">Aucune</SelectItem>
+                                        <SelectItem value="Directoire">Directoire</SelectItem>
+                                        <SelectItem value="Comité Régional">Comité Régional</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>

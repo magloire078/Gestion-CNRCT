@@ -122,8 +122,10 @@ export default function ChiefProfilePage() {
                     Retour
                 </Button>
                 <div className="flex gap-2">
-                    <Button variant="outline" size="sm" className="hidden sm:flex">
-                        <Printer className="mr-2 h-4 w-4" /> Imprimer la fiche
+                    <Button variant="outline" size="sm" className="hidden sm:flex" asChild>
+                        <Link href={`/chiefs/${id}/print`} target="_blank">
+                            <Printer className="mr-2 h-4 w-4" /> Imprimer la fiche
+                        </Link>
                     </Button>
                     <Button size="sm" asChild className="bg-slate-900 border-none">
                         <Link href={`/chiefs/${id}/edit`}>

@@ -1,0 +1,476 @@
+[
+  {
+    "id": "roy-sanwi",
+    "nom": "Royaume Sanwi",
+    "region_id": "reg-sud-comohe",
+    "capitale_traditionnelle": "Krindjabo",
+    "peuple": "Agni Sanwi",
+    "souverain": {
+      "nom_trone": "Sa Majesté Nanan Amon N’Douffou V",
+      "nom_civil": "Enan Amon",
+      "statut": "Roi du Sanwi",
+      "date_intronisation": "2005-08-04"
+    },
+    "coordonnees_siege": {
+      "departement": "Aboisso",
+      "sous_prefecture": "Aboisso (Centrale)",
+      "latitude": 5.485,
+      "longitude": -3.208
+    }
+  },
+  {
+    "id": "roy-indenie",
+    "nom": "Royaume de l'Indénié",
+    "region_id": "reg-indenie-djuablin",
+    "capitale_traditionnelle": "Abengourou",
+    "peuple": "Agni Indénié",
+    "souverain": {
+      "nom_trone": "Sa Majesté Nanan Boa Kouassi III",
+      "nom_civil": "Boa Kouassi",
+      "statut": "Roi de l'Indénié",
+      "date_intronisation": "1997-12-14"
+    },
+    "coordonnees_siege": {
+      "departement": "Abengourou",
+      "sous_prefecture": "Abengourou (Centrale)",
+      "latitude": 6.729,
+      "longitude": -3.496
+    }
+  },
+  {
+    "id": "roy-baule",
+    "nom": "Royaume Baoulé",
+    "region_id": "reg-gbeheke",
+    "capitale_traditionnelle": "Sakassou",
+    "peuple": "Baoulé",
+    "souverain": {
+      "nom_trone": "Sa Majesté Nanan Akoua Boni II",
+      "nom_civil": "Reine Mère / Régente",
+      "statut": "Reine du Royaume Baoulé",
+      "date_intronisation": "2016-11-28"
+    },
+    "coordonnees_siege": {
+      "departement": "Sakassou",
+      "sous_prefecture": "Sakassou (Centrale)",
+      "latitude": 7.454,
+      "longitude": -5.292
+    }
+  },
+  {
+    "id": "roy-bouna",
+    "nom": "Royaume de Bouna",
+    "region_id": "reg-bounkani",
+    "capitale_traditionnelle": "Bouna",
+    "peuple": "Koulango",
+    "souverain": {
+      "nom_trone": "Sa Majesté Nanan Jarra Korognidi II",
+      "nom_civil": "Kouassi Djarra",
+      "statut": "Roi de Bouna",
+      "date_intronisation": "2022-10-15"
+    },
+    "coordonnees_siege": {
+      "departement": "Bouna",
+      "sous_prefecture": "Bouna (Centrale)",
+      "latitude": 9.269,
+      "longitude": -3
+    }
+  },
+  {
+    "id": "roy-moronou",
+    "nom": "Royaume du Moronou",
+    "region_id": "reg-moronou",
+    "capitale_traditionnelle": "Bongouanou",
+    "peuple": "Agni Moronou",
+    "souverain": {
+      "nom_trone": "Sa Majesté Nanan Tehoua II",
+      "nom_civil": "Bouadou Tehoua",
+      "statut": "Roi du Moronou",
+      "date_intronisation": "2018-04-21"
+    },
+    "coordonnees_siege": {
+      "departement": "Bongouanou",
+      "sous_prefecture": "Bongouanou (Centrale)",
+      "latitude": 6.649,
+      "longitude": -4.204
+    }
+  },
+  {
+    "id": "roy-nzima-bassam",
+    "nom": "Royaume des N'Zima Kotoko",
+    "region_id": "reg-sud-comohe",
+    "capitale_traditionnelle": "Grand-Bassam",
+    "peuple": "N'Zima Kotoko (Akan)",
+    "souverain": {
+      "nom_trone": "Sa Majesté Awoulaé Amon Paul Désiré Tanoé",
+      "statut": "Roi des N'Zima Kotoko & Président de la CNRCT",
+      "date_intronisation": "2003-05-23"
+    },
+    "coordonnees_siege": {
+      "departement": "Grand-Bassam",
+      "sous_prefecture": "Grand-Bassam (Centrale)",
+      "latitude": 5.211,
+      "longitude": -3.738
+    }
+  },
+  {
+    "id": "roy-djuablin",
+    "nom": "Royaume du Djuablin",
+    "region_id": "reg-indenie-djuablin",
+    "capitale_traditionnelle": "Agnibilékrou",
+    "peuple": "Agni Djuablin",
+    "souverain": {
+      "nom_trone": "Sa Majesté Nanan Agnini Bilé II",
+      "nom_civil": "Agnini Bilé",
+      "statut": "Roi du Djuablin",
+      "date_intronisation": ""
+    },
+    "coordonnees_siege": {
+      "departement": "Agnibilékrou",
+      "sous_prefecture": "Agnibilékrou (Centrale)",
+      "latitude": 7.131,
+      "longitude": -3.203
+    }
+  },
+  {
+    "id": "roy-aboure-bonoua",
+    "nom": "Royaume Abouré Ehivet",
+    "region_id": "reg-sud-comohe",
+    "capitale_traditionnelle": "Bonoua",
+    "peuple": "Abouré",
+    "souverain": {
+      "nom_trone": "Sa Majesté Awoulae Kacou Venance",
+      "nom_civil": "Miessan Kacou Venance",
+      "statut": "Roi des Abouré Ehivet",
+      "date_intronisation": ""
+    },
+    "coordonnees_siege": {
+      "departement": "Grand-Bassam",
+      "sous_prefecture": "Bonoua (Centrale)",
+      "latitude": 5.271,
+      "longitude": -3.595
+    }
+  },
+  {
+    "id": "roy-essouman",
+    "nom": "Royaume des Essouman",
+    "region_id": "reg-sud-comohe",
+    "capitale_traditionnelle": "Assinie-Mafia",
+    "peuple": "Essouman (Akan)",
+    "souverain": {
+      "nom_trone": "Sa Majesté Awoulae Fian Mossou V",
+      "nom_civil": "Fian Mossou",
+      "statut": "Roi des Essouman",
+      "date_intronisation": ""
+    },
+    "coordonnees_siege": {
+      "departement": "Adiaké",
+      "sous_prefecture": "Assinie-Mafia (Centrale)",
+      "latitude": 5.122,
+      "longitude": -3.277
+    }
+  },
+  {
+    "id": "roy-koulango-nassian",
+    "nom": "Royaume Koulango de Nassian",
+    "region_id": "reg-bounkani",
+    "capitale_traditionnelle": "Nassian",
+    "peuple": "Koulango de Nassian",
+    "souverain": {
+      "nom_trone": "Sa Majesté Nanan Dagbolo Koumbinkanssa",
+      "nom_civil": "Koumbinkanssa",
+      "statut": "Roi de Nassian",
+      "date_intronisation": ""
+    },
+    "coordonnees_siege": {
+      "departement": "Nassian",
+      "sous_prefecture": "Nassian (Centrale)",
+      "latitude": 8.441,
+      "longitude": -3.475
+    }
+  },
+  {
+    "id": "roy-nzima-adiake",
+    "nom": "Royaume N'Zima Adouvlais",
+    "region_id": "reg-sud-comohe",
+    "capitale_traditionnelle": "Tiapoum",
+    "peuple": "N'Zima Adouvlais",
+    "souverain": {
+      "nom_trone": "Sa Majesté Awoulae Amon Koutouas II",
+      "nom_civil": "Amon Koutouas",
+      "statut": "Roi des N'Zima Adouvlais",
+      "date_intronisation": ""
+    },
+    "coordonnees_siege": {
+      "departement": "Tiapoum",
+      "sous_prefecture": "Tiapoum (Centrale)",
+      "latitude": 5.143,
+      "longitude": -3.016
+    }
+  },
+  {
+    "id": "roy-ehotile",
+    "nom": "Royaume Éhotilé",
+    "region_id": "reg-sud-comohe",
+    "capitale_traditionnelle": "Adiaké",
+    "peuple": "Éhotilé",
+    "souverain": {
+      "nom_trone": "Sa Majesté Nanan Koutoua IV",
+      "nom_civil": "Koutoua",
+      "statut": "Roi des Éhotilé",
+      "date_intronisation": ""
+    },
+    "coordonnees_siege": {
+      "departement": "Adiaké",
+      "sous_prefecture": "Adiaké (Centrale)",
+      "latitude": 5.286,
+      "longitude": -3.303
+    }
+  },
+  {
+    "id": "roy-djimini",
+    "nom": "Royaume Djimini",
+    "region_id": "reg-hambol",
+    "capitale_traditionnelle": "Dabakala",
+    "peuple": "Djimini",
+    "souverain": {
+      "nom_trone": "Sa Majesté Nanan Lamine Coulibaly",
+      "nom_civil": "Lamine Coulibaly",
+      "statut": "Roi du Pays Djimini",
+      "date_intronisation": ""
+    },
+    "coordonnees_siege": {
+      "departement": "Dabakala",
+      "sous_prefecture": "Dabakala (Centrale)",
+      "latitude": 8.366,
+      "longitude": -4.428
+    }
+  },
+  {
+    "id": "roy-baoule-faafoue",
+    "nom": "Royaume des Baoulé Faafoué",
+    "region_id": "reg-gbeheke",
+    "capitale_traditionnelle": "Bouaké",
+    "peuple": "Baoulé Faafoué",
+    "souverain": {
+      "nom_trone": "Sa Majesté Nanan Totokra III",
+      "nom_civil": "Totokra",
+      "statut": "Roi des Faafoué",
+      "date_intronisation": ""
+    },
+    "coordonnees_siege": {
+      "departement": "Bouaké",
+      "sous_prefecture": "Bouaké (Centrale)",
+      "latitude": 7.693,
+      "longitude": -5.03
+    }
+  },
+  {
+    "id": "chefferie-abbey",
+    "nom": "Chefferie Suprême des Abbey",
+    "region_id": "reg-agneby-tiassa",
+    "capitale_traditionnelle": "Agboville",
+    "peuple": "Abbey",
+    "souverain": {
+      "nom_trone": "Sa Majesté Nanan N'Dori Joseph",
+      "nom_civil": "N'Dori Joseph",
+      "statut": "Roi / Chef Suprême des Abbey",
+      "date_intronisation": ""
+    },
+    "coordonnees_siege": {
+      "departement": "Agboville",
+      "sous_prefecture": "Agboville (Centrale)",
+      "latitude": 5.928,
+      "longitude": -4.213
+    }
+  },
+  {
+    "id": "roy-abron-gyaman",
+    "nom": "Royaume Abron (Gyaman)",
+    "region_id": "reg-gontougo",
+    "capitale_traditionnelle": "Amanvi",
+    "peuple": "Abron",
+    "souverain": {
+      "nom_trone": "Sa Majesté Nanan Adingra Kouassi Agyemane",
+      "nom_civil": "Kobenan Adingra Adjoumane",
+      "statut": "Roi des Abron",
+      "date_intronisation": ""
+    },
+    "coordonnees_siege": {
+      "departement": "Tanda",
+      "sous_prefecture": "Amanvi (Centrale)",
+      "latitude": 7.801,
+      "longitude": -3.167
+    }
+  },
+  {
+    "id": "roy-kong",
+    "nom": "Royaume de Kong",
+    "region_id": "reg-tchologo",
+    "capitale_traditionnelle": "Kong",
+    "peuple": "Malinké / Dioula",
+    "souverain": {
+      "nom_trone": "Sa Majesté Nanan Fakafissa Ouattara",
+      "nom_civil": "Ouattara Saïd",
+      "statut": "Roi de Kong",
+      "date_intronisation": ""
+    },
+    "coordonnees_siege": {
+      "departement": "Kong",
+      "sous_prefecture": "Kong (Centrale)",
+      "latitude": 9.149,
+      "longitude": -4.614
+    }
+  },
+  {
+    "id": "roy-aboure-moossou",
+    "nom": "Royaume Abouré Ehivé de Moossou",
+    "region_id": "reg-sud-comohe",
+    "capitale_traditionnelle": "Moossou",
+    "peuple": "Abouré Ehivé",
+    "souverain": {
+      "nom_trone": "Sa Majesté Awoulaé Tanoé Kanga Assoumou",
+      "nom_civil": "Kanga Assoumou",
+      "statut": "Roi des Abouré Ehivé",
+      "date_intronisation": ""
+    },
+    "coordonnees_siege": {
+      "departement": "Grand-Bassam",
+      "sous_prefecture": "Grand-Bassam (Centrale)",
+      "latitude": 5.205,
+      "longitude": -3.744
+    }
+  },
+  {
+    "id": "roy-koulango-barabo",
+    "nom": "Royaume Koulango du Barabo",
+    "region_id": "reg-gontougo",
+    "capitale_traditionnelle": "Sandégué",
+    "peuple": "Koulango",
+    "souverain": {
+      "nom_trone": "Sa Majesté Nanan Dagbolo Yeboua",
+      "nom_civil": "Dagbolo Yeboua",
+      "statut": "Roi du Barabo",
+      "date_intronisation": ""
+    },
+    "coordonnees_siege": {
+      "departement": "Sandégué",
+      "sous_prefecture": "Sandégué (Centrale)",
+      "latitude": 8.167,
+      "longitude": -3.567
+    }
+  },
+  {
+    "id": "roy-allaran",
+    "nom": "Royaume des Allaran",
+    "region_id": "reg-belier",
+    "capitale_traditionnelle": "Kokumbo",
+    "peuple": "Baoulé Allaran",
+    "souverain": {
+      "nom_trone": "Sa Majesté Nanan Ndri Kpassandji II",
+      "nom_civil": "Ndri Kpassandji",
+      "statut": "Roi des Allaran",
+      "date_intronisation": ""
+    },
+    "coordonnees_siege": {
+      "departement": "Toumodi",
+      "sous_prefecture": "Kokumbo (Centrale)",
+      "latitude": 6.402,
+      "longitude": -5.197
+    }
+  },
+  {
+    "id": "roy-wawole",
+    "nom": "Royaume de Sakassou-Wawolé",
+    "region_id": "reg-belier",
+    "capitale_traditionnelle": "Tiébissou",
+    "peuple": "Baoulé Wawolé",
+    "souverain": {
+      "nom_trone": "Sa Majesté Nanan Yao Baourou II",
+      "nom_civil": "Yao Baourou",
+      "statut": "Roi du Wawolé",
+      "date_intronisation": ""
+    },
+    "coordonnees_siege": {
+      "departement": "Tiébissou",
+      "sous_prefecture": "Tiébissou (Centrale)",
+      "latitude": 7.159,
+      "longitude": -5.221
+    }
+  },
+  {
+    "id": "roy-avikam-lahou",
+    "nom": "Royaume Avikam de Grand-Lahou",
+    "region_id": "reg-grands-ponts",
+    "capitale_traditionnelle": "Grand-Lahou",
+    "peuple": "Avikam",
+    "souverain": {
+      "nom_trone": "Sa Majesté Awoulaé Papa Ier",
+      "nom_civil": "Papa",
+      "statut": "Roi des Avikam",
+      "date_intronisation": ""
+    },
+    "coordonnees_siege": {
+      "departement": "Grand-Lahou",
+      "sous_prefecture": "Grand-Lahou (Centrale)",
+      "latitude": 5.137,
+      "longitude": -5.023
+    }
+  },
+  {
+    "id": "roy-baoule-ngban",
+    "nom": "Royaume Baoulé N'Gban",
+    "region_id": "reg-belier",
+    "capitale_traditionnelle": "Angoda",
+    "peuple": "Baoulé N'Gban",
+    "souverain": {
+      "nom_trone": "Sa Majesté Nanan Boigny N'Dri III",
+      "nom_civil": "Boigny N'Dri",
+      "statut": "Roi des N'Gban",
+      "date_intronisation": ""
+    },
+    "coordonnees_siege": {
+      "departement": "Djékanou",
+      "sous_prefecture": "Angoda (Centrale)",
+      "latitude": 6.516,
+      "longitude": -5.083
+    }
+  },
+  {
+    "id": "roy-nafana-baribo",
+    "nom": "Royauté des Baribo (Nafana)",
+    "region_id": "reg-gontougo",
+    "capitale_traditionnelle": "Bondoukou",
+    "peuple": "Nafana",
+    "souverain": {
+      "nom_trone": "Sa Majesté Nanan Sian",
+      "nom_civil": "Sian",
+      "statut": "Roi / Chef Suprême des Nafana",
+      "date_intronisation": ""
+    },
+    "coordonnees_siege": {
+      "departement": "Bondoukou",
+      "sous_prefecture": "Bondoukou (Centrale)",
+      "latitude": 8.04,
+      "longitude": -2.8
+    }
+  },
+  {
+    "id": "roy-agni-ngaty",
+    "nom": "Royaume Agni N'Gaty",
+    "region_id": "reg-sud-comohe",
+    "capitale_traditionnelle": "Noé",
+    "peuple": "Agni N'Gaty",
+    "souverain": {
+      "nom_trone": "Sa Majesté Nanan Ahizi II",
+      "nom_civil": "Ahizi",
+      "statut": "Roi des Agni N'Gaty",
+      "date_intronisation": ""
+    },
+    "coordonnees_siege": {
+      "departement": "Tiapoum",
+      "sous_prefecture": "Noé (Centrale)",
+      "latitude": 5.289,
+      "longitude": -2.883
+    }
+  }
+]

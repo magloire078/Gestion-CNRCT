@@ -354,7 +354,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
   if (!user) {
     return (
       <div className="flex h-screen w-full">
-        <main className="flex-1 p-4 sm:p-6 sm:pt-0">
+        <main className="flex-1 p-4 sm:p-6 sm:pt-0 w-full max-w-[100vw] overflow-x-hidden">
           <div className="mx-auto w-full max-w-7xl">
             <ProtectedPage>
               {children}
@@ -447,7 +447,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
             <NotificationBell />
           </div>
         </header>
-        <main className="flex-1 p-4 md:p-8 mb-20 md:mb-0 relative z-10">
+        <main className="flex-1 p-4 md:p-8 mb-20 md:mb-0 relative z-10 w-full max-w-[100vw] overflow-x-hidden">
           <div className="mx-auto w-full max-w-7xl">
             <ProtectedPage>
               {children}

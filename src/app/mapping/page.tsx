@@ -24,6 +24,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { PermissionGuard } from "@/components/auth/permission-guard";
+import kingdomsData from '@/data/kingdoms.json';
 
 // Dynamically import the map component to avoid SSR issues
 const GISMap = dynamic(() => import('@/components/common/gis-map-v3').then(m => m.GISMap), {
@@ -222,6 +223,7 @@ export default function MappingPage() {
                     chiefs={chiefs} 
                     conflicts={filteredConflicts}
                     heritage={heritageItems}
+                    kingdoms={kingdomsData}
                     selectedId={selectedChiefId}
                     onMarkerClick={(id) => setSelectedChiefId(id)}
                     onAddPoint={(lat, lng) => {

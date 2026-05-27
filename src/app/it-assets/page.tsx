@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { subscribeToAssets, addAsset, deleteAsset } from "@/services/asset-service";
 import { getOrganizationSettings } from "@/services/organization-service";
+import { exportToExcel } from "@/lib/export-utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { ConfirmationDialog } from "@/components/common/confirmation-dialog";
@@ -229,6 +230,27 @@ export default function ItAssetsPage() {
     toast({ title: "Exportation CSV réussie" });
   };
 
+  const handleExportXlsx = () => {
+    if (filteredAssets.length === 0) {
+      toast({ variant: "destructive", title: "Aucune donnée à exporter" });
+      return;
+    }
+    const data = filteredAssets.map((asset: any) => ({
+      NumeroInventaire: asset.tag,
+      Type: asset.type,
+      TypeOrdinateur: asset.typeOrdinateur || '',
+      Fabricant: asset.fabricant || '',
+      Modele: asset.modele || '',
+      NumeroDeSerie: asset.numeroDeSerie || '',
+      AssignéÀ: asset.assignedTo,
+      Statut: asset.status,
+      AdresseIP: asset.ipAddress || '',
+      MdpAdmin: asset.password || ''
+    }));
+    exportToExcel(data, 'Export_Actifs_Info');
+    toast({ title: "Exportation Excel réussie" });
+  };
+
   const handleExportJson = () => {
     if (filteredAssets.length === 0) {
       toast({ variant: "destructive", title: "Aucune donnée à exporter" });
@@ -314,6 +336,7 @@ export default function ItAssetsPage() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={handleExportXlsx} className="font-bold text-emerald-600">Exporter en Excel</DropdownMenuItem>
                   <DropdownMenuItem onClick={handleExportCsv}>Exporter en CSV</DropdownMenuItem>
                   <DropdownMenuItem onClick={handleExportJson}>Exporter en JSON</DropdownMenuItem>
                   <DropdownMenuItem onClick={handleExportSql}>Exporter en SQL</DropdownMenuItem>

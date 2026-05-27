@@ -7,10 +7,10 @@ import {
     ArrowLeft, MapPin, Users, 
     Landmark, Globe, History, 
     Loader2, ChevronRight, School,
-    Plus, Coffee, Info, Camera,
+    Plus, Info,
     Home, Droplets, Zap, Shield,
     Pencil, Coins, Heart, Moon as Mosque,
-    ShoppingBag, Church
+    ShoppingBag, Church, Crown, Skull, Scale, LogOut, RefreshCw, FileText, Calendar, User
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -70,10 +70,10 @@ export default function VillageDetailPage() {
                 );
                 setHeritage(villageHeritage);
 
-                // Fetch chiefs
+                // Fetch all chiefs linked to this village (active + archived)
                 unsubscribeChiefs = subscribeToChiefs(
                     (allChiefs) => {
-                        setChiefs(allChiefs.filter(c => c.villageId === id));
+                        setChiefs(allChiefs.filter(c => c.villageId === id || c.village?.toLowerCase() === villageData?.name?.toLowerCase()));
                     },
                     (error) => console.error("Error subscribing to chiefs:", error)
                 );
@@ -179,12 +179,232 @@ export default function VillageDetailPage() {
                 </div>
 
                 <Tabs defaultValue="overview" className="space-y-8">
-                    <TabsList className="bg-slate-100 p-1.5 rounded-2xl w-full md:w-fit overflow-x-auto">
+                    <TabsList className="bg-slate-100 p-1.5 rounded-2xl w-full md:w-fit overflow-x-auto flex">
                         <TabsTrigger value="overview" className="rounded-xl font-black text-[10px] uppercase tracking-widest px-6 data-[state=active]:bg-white data-[state=active]:shadow-sm">Aperçu & Stats</TabsTrigger>
+                        <TabsTrigger value="chefferie" className="rounded-xl font-black text-[10px] uppercase tracking-widest px-6 data-[state=active]:bg-white data-[state=active]:shadow-sm flex items-center gap-2">
+                            <Crown className="h-3 w-3" />Chefferie
+                            {chiefs.length > 0 && <span className="bg-amber-500 text-white text-[8px] font-black rounded-full h-4 w-4 flex items-center justify-center">{chiefs.length}</span>}
+                        </TabsTrigger>
                         <TabsTrigger value="heritage" className="rounded-xl font-black text-[10px] uppercase tracking-widest px-6 data-[state=active]:bg-white data-[state=active]:shadow-sm">Patrimoine & Culture</TabsTrigger>
                         <TabsTrigger value="history" className="rounded-xl font-black text-[10px] uppercase tracking-widest px-6 data-[state=active]:bg-white data-[state=active]:shadow-sm">Histoire Locale</TabsTrigger>
                         <TabsTrigger value="infrastructure" className="rounded-xl font-black text-[10px] uppercase tracking-widest px-6 data-[state=active]:bg-white data-[state=active]:shadow-sm">Infrastructure</TabsTrigger>
                     </TabsList>
+
+                    {/* ── CHEFFERIE & SUCCESSION TAB ── */}
+                    <TabsContent value="chefferie" className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                            {/* Stats sidebar */}
+                            <div className="space-y-6">
+                                <div className="rounded-[2rem] bg-slate-900 text-white p-8 space-y-6 shadow-2xl relative overflow-hidden">
+                                    <div className="absolute top-0 right-0 p-6 opacity-5"><Crown className="h-28 w-28" /></div>
+                                    <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Trône de {village.name}</h3>
+                                    {activeChief ? (
+                                        <div className="space-y-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="h-14 w-14 rounded-2xl bg-amber-500 flex items-center justify-center text-xl font-black shadow-xl">
+                                                    {activeChief.photoUrl && !activeChief.photoUrl.includes('dicebear') ? (
+                                                        <img src={activeChief.photoUrl} alt={activeChief.name} className="h-14 w-14 rounded-2xl object-cover" />
+                                                    ) : activeChief.name.charAt(0)}
+                                                </div>
+                                                <div>
+                                                    <p className="text-[9px] font-black uppercase tracking-widest text-amber-400">Chef actuel</p>
+                                                    <p className="text-sm font-black text-white leading-tight">{activeChief.name}</p>
+                                                    <p className="text-[9px] text-slate-400 font-bold">{activeChief.title}</p>
+                                                </div>
+                                            </div>
+                                            {activeChief.throneAccessionDate && (
+                                                <div className="flex items-center gap-2 bg-white/5 rounded-xl p-3">
+                                                    <Calendar className="h-4 w-4 text-amber-400 shrink-0" />
+                                                    <div>
+                                                        <p className="text-[8px] font-black uppercase text-slate-500">Intronisé le</p>
+                                                        <p className="text-xs font-bold text-white">{new Date(activeChief.throneAccessionDate).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                                                    </div>
+                                                </div>
+                                            )}
+                                            <Link href={`/chiefs/${activeChief.id}`}>
+                                                <button className="w-full mt-2 h-10 rounded-xl bg-amber-500 hover:bg-amber-400 text-white text-[10px] font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-2">
+                                                    <User className="h-4 w-4" />Voir le dossier
+                                                </button>
+                                            </Link>
+                                        </div>
+                                    ) : (
+                                        <div className="flex flex-col items-center gap-3 py-4">
+                                            <div className="h-14 w-14 rounded-2xl bg-white/5 flex items-center justify-center">
+                                                <Crown className="h-7 w-7 text-slate-600" />
+                                            </div>
+                                            <p className="text-[10px] font-black uppercase tracking-widest text-amber-400 text-center">Vacance du trône</p>
+                                            <p className="text-[9px] text-slate-500 font-bold text-center">Aucun chef actif pour cette localité</p>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Summary stats */}
+                                <div className="rounded-[2rem] bg-white shadow-xl p-8 space-y-4">
+                                    <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Statistiques</h3>
+                                    <div className="space-y-3">
+                                        <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50">
+                                            <span className="text-[10px] font-black uppercase text-slate-500">Total chefs</span>
+                                            <span className="text-lg font-black text-slate-900">{chiefs.length}</span>
+                                        </div>
+                                        <div className="flex items-center justify-between p-3 rounded-xl bg-emerald-50">
+                                            <span className="text-[10px] font-black uppercase text-emerald-600">Actifs</span>
+                                            <span className="text-lg font-black text-emerald-700">{chiefs.filter(c => c.status === 'actif' || c.status === 'a_vie').length}</span>
+                                        </div>
+                                        <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50">
+                                            <span className="text-[10px] font-black uppercase text-slate-500">Archivés</span>
+                                            <span className="text-lg font-black text-slate-700">{chiefs.filter(c => c.status === 'archive').length}</span>
+                                        </div>
+                                        {village.successionMode && (
+                                            <div className="flex items-center gap-2 p-3 rounded-xl bg-amber-50 border border-amber-100">
+                                                <RefreshCw className="h-4 w-4 text-amber-500 shrink-0" />
+                                                <span className="text-[9px] font-black uppercase text-amber-700">{village.successionMode}</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Timeline */}
+                            <div className="lg:col-span-2">
+                                <div className="rounded-[2rem] bg-white shadow-xl p-8">
+                                    <div className="flex items-center justify-between mb-8">
+                                        <div>
+                                            <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight">Frise des Règnes</h3>
+                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Chronologie de la chefferie traditionnelle</p>
+                                        </div>
+                                        <History className="h-6 w-6 text-slate-200" />
+                                    </div>
+
+                                    {chiefs.length === 0 ? (
+                                        <div className="flex flex-col items-center gap-4 py-16 text-center">
+                                            <div className="h-20 w-20 rounded-[2rem] bg-slate-50 flex items-center justify-center">
+                                                <Crown className="h-10 w-10 text-slate-200" />
+                                            </div>
+                                            <h4 className="font-black text-slate-900 uppercase tracking-tight">Aucun chef enregistré</h4>
+                                            <p className="text-sm text-slate-400 font-medium max-w-xs">Liez un chef à ce village depuis la page des chefs ou via le bouton d'édition.</p>
+                                        </div>
+                                    ) : (
+                                        <div className="relative">
+                                            {/* Vertical line */}
+                                            <div className="absolute left-6 top-4 bottom-4 w-0.5 bg-gradient-to-b from-amber-400 via-slate-200 to-slate-100" />
+
+                                            <div className="space-y-6">
+                                                {[...chiefs].sort((a, b) => {
+                                                    // Active/a_vie first, then by throneAccessionDate desc
+                                                    const aActive = a.status === 'actif' || a.status === 'a_vie';
+                                                    const bActive = b.status === 'actif' || b.status === 'a_vie';
+                                                    if (aActive && !bActive) return -1;
+                                                    if (!aActive && bActive) return 1;
+                                                    const aDate = a.archiveDate || a.throneAccessionDate || '';
+                                                    const bDate = b.archiveDate || b.throneAccessionDate || '';
+                                                    return bDate.localeCompare(aDate);
+                                                }).map((chief, index) => {
+                                                    const isActive = chief.status === 'actif' || chief.status === 'a_vie';
+                                                    const archiveIcons: Record<string, { icon: any; color: string; label: string }> = {
+                                                        'Décès': { icon: Skull, color: 'text-slate-500', label: 'Décès' },
+                                                        'Déchéance': { icon: Scale, color: 'text-red-500', label: 'Déchéance' },
+                                                        'Démission': { icon: LogOut, color: 'text-blue-500', label: 'Démission' },
+                                                        'Succession générationnelle': { icon: RefreshCw, color: 'text-purple-500', label: 'Succession' },
+                                                        'Autre': { icon: FileText, color: 'text-slate-400', label: 'Autre' },
+                                                    };
+                                                    const archiveInfo = chief.archiveReason ? archiveIcons[chief.archiveReason] : null;
+                                                    const ArchiveIcon = archiveInfo?.icon;
+
+                                                    return (
+                                                        <div key={chief.id} className="flex gap-6 group">
+                                                            {/* Timeline dot */}
+                                                            <div className={cn(
+                                                                "relative z-10 h-12 w-12 shrink-0 rounded-2xl flex items-center justify-center shadow-lg transition-transform group-hover:scale-110",
+                                                                isActive ? 'bg-amber-500 shadow-amber-200' : 'bg-slate-100'
+                                                            )}>
+                                                                {chief.photoUrl && !chief.photoUrl.includes('dicebear') ? (
+                                                                    <img src={chief.photoUrl} alt={chief.name} className="h-12 w-12 rounded-2xl object-cover" />
+                                                                ) : (
+                                                                    <span className={cn("text-lg font-black", isActive ? 'text-white' : 'text-slate-400')}>
+                                                                        {chief.name.charAt(0)}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+
+                                                            {/* Card */}
+                                                            <div className={cn(
+                                                                "flex-1 rounded-2xl p-5 border transition-all duration-300 group-hover:shadow-md",
+                                                                isActive ? 'bg-amber-50 border-amber-100' : 'bg-slate-50 border-slate-100'
+                                                            )}>
+                                                                <div className="flex flex-wrap items-start justify-between gap-3">
+                                                                    <div>
+                                                                        <div className="flex items-center gap-2 flex-wrap">
+                                                                            <p className="text-sm font-black text-slate-900 uppercase">{chief.name}</p>
+                                                                            {isActive ? (
+                                                                                <span className="inline-flex items-center gap-1 bg-emerald-100 text-emerald-700 text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full">
+                                                                                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                                                                    En fonction
+                                                                                </span>
+                                                                            ) : (
+                                                                                <span className="inline-flex items-center gap-1 bg-slate-200 text-slate-500 text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full">
+                                                                                    Archivé
+                                                                                </span>
+                                                                            )}
+                                                                        </div>
+                                                                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{chief.title || chief.role}</p>
+                                                                    </div>
+                                                                    <Link href={`/chiefs/${chief.id}`}>
+                                                                        <button className="h-8 px-3 rounded-xl bg-white border border-slate-200 text-[9px] font-black uppercase text-slate-600 hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-all flex items-center gap-1.5">
+                                                                            <User className="h-3 w-3" />Dossier
+                                                                        </button>
+                                                                    </Link>
+                                                                </div>
+
+                                                                {/* Dates */}
+                                                                <div className="flex flex-wrap gap-3 mt-4">
+                                                                    {chief.throneAccessionDate && (
+                                                                        <div className="flex items-center gap-1.5 text-[9px] font-bold text-slate-500">
+                                                                            <Calendar className="h-3 w-3 text-amber-500" />
+                                                                            <span className="uppercase tracking-widest">Depuis:</span>
+                                                                            <span className="font-black text-slate-700">{new Date(chief.throneAccessionDate).toLocaleDateString('fr-FR')}</span>
+                                                                        </div>
+                                                                    )}
+                                                                    {chief.archiveDate && (
+                                                                        <div className="flex items-center gap-1.5 text-[9px] font-bold text-slate-500">
+                                                                            <Calendar className="h-3 w-3 text-slate-400" />
+                                                                            <span className="uppercase tracking-widest">Fin:</span>
+                                                                            <span className="font-black text-slate-700">{new Date(chief.archiveDate).toLocaleDateString('fr-FR')}</span>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+
+                                                                {/* Archive reason */}
+                                                                {archiveInfo && ArchiveIcon && (
+                                                                    <div className="mt-3 flex items-center gap-2 bg-white rounded-xl p-3 border border-slate-100">
+                                                                        <ArchiveIcon className={cn("h-4 w-4 shrink-0", archiveInfo.color)} />
+                                                                        <div>
+                                                                            <p className="text-[8px] font-black uppercase tracking-widest text-slate-400">Motif de fin de règne</p>
+                                                                            <p className="text-[10px] font-black text-slate-700">{chief.archiveReason}</p>
+                                                                        </div>
+                                                                        {chief.archiveNote && (
+                                                                            <p className="ml-auto text-[9px] text-slate-400 italic font-medium max-w-[12rem] text-right line-clamp-2">{chief.archiveNote}</p>
+                                                                        )}
+                                                                    </div>
+                                                                )}
+
+                                                                {/* Designation mode */}
+                                                                {chief.designationMode && (
+                                                                    <div className="mt-2 flex items-center gap-1.5">
+                                                                        <span className="text-[8px] font-black uppercase tracking-widest text-slate-400">Mode:</span>
+                                                                        <span className="text-[9px] font-black text-slate-600 bg-white rounded-lg px-2 py-0.5 border border-slate-100">{chief.designationMode}</span>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </TabsContent>
 
                     <TabsContent value="overview" className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

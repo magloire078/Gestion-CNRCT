@@ -68,9 +68,12 @@ export function ChiefsStatisticsReport({
 
             const stat = grouped[key];
             
+            // Helper to check if a chief has a specific role (main or additional)
+            const hasRole = (roleToCheck: string) => chief.role === roleToCheck || chief.additionalRoles?.includes(roleToCheck as any);
+
             // Unique villages count. For simplicity, we count chiefs with role "Chef de Village" as a proxy, 
             // or we could track unique village names. Let's count chiefs who are 'Chef de Village'.
-            if (chief.role === "Chef de Village") stat.villagesCount++;
+            if (hasRole("Chef de Village")) stat.villagesCount++;
             
             // Chefs en exercice (Actifs ou À vie)
             if (chief.status === "actif" || chief.status === "a_vie" || !chief.status) {
@@ -78,9 +81,9 @@ export function ChiefsStatisticsReport({
             }
 
             if (chief.sexe === "Femme") stat.femaleChiefsCount++;
-            if (chief.role === "Chef de canton") stat.cantonChiefsCount++;
-            if (chief.role === "Chef de tribu") stat.tribeChiefsCount++;
-            if (chief.role === "Roi" || chief.role === "Chef de province") stat.kingsCount++; // Including kings and provinces
+            if (hasRole("Chef de canton")) stat.cantonChiefsCount++;
+            if (hasRole("Chef de tribu")) stat.tribeChiefsCount++;
+            if (hasRole("Roi") || hasRole("Chef de province")) stat.kingsCount++; // Including kings and provinces
         });
 
         // Convert to array and sort

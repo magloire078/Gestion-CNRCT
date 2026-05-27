@@ -69,6 +69,7 @@ export const ALL_MENU_ITEMS: MenuItem[] = [
     icon: Landmark,
     permission: "page:organization-chart:view",
     subItems: [
+      { href: "/institution", label: "Présentation Visuelle", icon: Building2, permission: "page:organization-chart:view" },
       { href: "/organization-chart", label: "Organigramme", icon: Network, permission: "page:organization-chart:view" },
       { href: "/employees?filter=directoire", label: "Bureau du Directoire", icon: Building, permission: "page:employees:view" },
       { href: "/employees?filter=regional", label: "Comités Régionaux", icon: Globe, permission: "page:employees:view" },
@@ -116,6 +117,7 @@ export const ALL_MENU_ITEMS: MenuItem[] = [
     permission: "page:villages:view",
     subItems: [
       { href: "/chiefs", label: "Rois & Chefs", icon: Crown, permission: "page:chiefs:view" },
+      { href: "/kingdoms", label: "Grands Royaumes", icon: Crown, permission: "page:chiefs:view" },
       { href: "/villages", label: "Villages", icon: MapPin, permission: "page:villages:view" },
     ]
   },

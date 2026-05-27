@@ -36,7 +36,9 @@ export async function GET() {
         poste: data.poste || '',
         photoUrl: data.photoUrl || '',
         status: data.status,
-        departmentId: data.departmentId || ''
+        departmentId: data.departmentId || '',
+        Region: data.Region || '',
+        Departement: data.Departement || ''
       };
     });
 

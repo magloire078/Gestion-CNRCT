@@ -41,18 +41,18 @@ export function RegionalCommittees({
   const selected = filteredCommittees[selectedRegionIndex];
 
   return (
-    <section id="regional-committees" className="py-16 bg-white border-t border-primary/5 scroll-mt-24 overflow-hidden">
+    <section id="regional-committees" className="py-12 bg-white border-t border-primary/5 scroll-mt-24 overflow-hidden">
       <div className="container mx-auto px-4">
         <div className="text-center mb-10 max-w-3xl mx-auto">
           <Badge variant="outline" className="mb-4 border-[#006039]/20 text-[#006039] uppercase tracking-[0.2em] px-4 py-1.5 text-[10px] font-bold">Réseau Territorial</Badge>
-          <h2 className="text-4xl md:text-5xl font-black mb-6 text-[#1a1a1a]">31 Comités Régionaux et 2 Districts (Abidjan et Yamoussoukro)</h2>
+          <h2 className="text-4xl md:text-5xl font-black mb-6 text-[#1a1a1a]">31 Regions et 2 Districts (Abidjan et Yamoussoukro)</h2>
           <p className="text-muted-foreground text-lg leading-relaxed font-light">
             La Chambre assure une présence continue sur l'ensemble du territoire national à travers ses relais régionaux, garantissant ainsi une <span className="text-[#006039] font-medium">médiation de proximité</span>.
           </p>
         </div>
 
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-20 gap-4">
+          <div className="flex flex-col items-center justify-center py-12 gap-4">
             <Loader2 className="h-10 w-10 text-[#006039] animate-spin" />
             <p className="text-sm text-muted-foreground">Chargement du réseau territorial...</p>
           </div>
@@ -108,11 +108,11 @@ export function RegionalCommittees({
               ) : (
                 <Card className="border-none shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] bg-white overflow-hidden rounded-[3rem] min-h-[600px] flex flex-col group/card">
                   {/* Card Header with Region Banner */}
-                  <div className="h-48 bg-[#006039] relative flex items-center px-12 overflow-hidden">
-                    <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/natural-paper.png')] opacity-20" />
-                    <div className="absolute inset-0 bg-gradient-to-r from-[#006039] via-[#006039]/90 to-transparent" />
+                  <div className="h-48 bg-slate-900 relative flex items-center px-12 overflow-hidden">
+                    <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/natural-paper.png')] opacity-10 mix-blend-luminosity" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-slate-900 via-slate-900/90 to-transparent" />
                     <div className="relative z-10">
-                      <Badge className="bg-[#D4AF37] text-white border-none mb-3 px-3 uppercase text-[9px] tracking-[0.2em] font-black">Region</Badge>
+                      <Badge className="bg-amber-500 text-white border-none mb-3 px-3 uppercase text-[9px] tracking-[0.2em] font-black">Region</Badge>
                       <h3 className="text-4xl md:text-5xl font-black text-white tracking-tighter">{cleanRegionName(selected.region)}</h3>
                     </div>
                     <Users className="absolute right-[-20px] bottom-[-20px] w-64 h-64 text-white opacity-5 pointer-events-none group-hover/card:scale-110 transition-transform duration-1000" />

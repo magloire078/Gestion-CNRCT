@@ -15,13 +15,14 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Separator } from "@/components/ui/separator";
 import { Upload, Loader2, Save, Building2, Globe, Heart } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { Separator } from "@/components/ui/separator";
-import { getOrganizationSettings, saveOrganizationName, uploadOrganizationFile } from "@/services/organization-service";
+import { getOrganizationSettings, saveOrganizationName, uploadOrganizationFile, saveSignatorySettings } from "@/services/organization-service";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { OrganizationSettings } from "@/lib/data";
 import { Progress } from "@/components/ui/progress";
+import { Checkbox } from "@/components/ui/checkbox";
 
 
 type FileType = 'mainLogo' | 'secondaryLogo' | 'favicon';
@@ -46,6 +47,14 @@ function OrganizationSettingsContent() {
     const [initialName, setInitialName] = useState("");
     const [isSavingName, setIsSavingName] = useState(false);
 
+    const [signatoryName, setSignatoryName] = useState("");
+    const [initialSignatoryName, setInitialSignatoryName] = useState("");
+    const [signatoryTitle, setSignatoryTitle] = useState("");
+    const [initialSignatoryTitle, setInitialSignatoryTitle] = useState("");
+    const [showRegional, setShowRegional] = useState(true);
+    const [initialShowRegional, setInitialShowRegional] = useState(true);
+    const [isSavingSignatory, setIsSavingSignatory] = useState(false);
+
     const [files, setFiles] = useState<Record<FileType, FileState>>({
         mainLogo: { file: null, preview: "" },
         secondaryLogo: { file: null, preview: "" },
@@ -69,6 +78,13 @@ function OrganizationSettingsContent() {
                     secondaryLogo: { file: null, preview: loadedSettings.secondaryLogoUrl },
                     favicon: { file: null, preview: loadedSettings.faviconUrl },
                 });
+                
+                setSignatoryName(loadedSettings.globalSignatoryName || "NANAN AHOUA KOUASSI III");
+                setInitialSignatoryName(loadedSettings.globalSignatoryName || "NANAN AHOUA KOUASSI III");
+                setSignatoryTitle(loadedSettings.globalSignatoryTitle || "Directeur de l'Observatoire National, CNRCT");
+                setInitialSignatoryTitle(loadedSettings.globalSignatoryTitle || "Directeur de l'Observatoire National, CNRCT");
+                setShowRegional(loadedSettings.showRegionalSignatories !== undefined ? loadedSettings.showRegionalSignatories : true);
+                setInitialShowRegional(loadedSettings.showRegionalSignatories !== undefined ? loadedSettings.showRegionalSignatories : true);
                 console.log("Secondary Logo Preview State Set To:", loadedSettings.secondaryLogoUrl);
             } catch (error) {
                 console.error("Failed to load organization settings:", error);
@@ -116,6 +132,21 @@ function OrganizationSettingsContent() {
             toast({ variant: "destructive", title: "Erreur", description: "Impossible de sauvegarder le nom." });
         } finally {
             setIsSavingName(false);
+        }
+    };
+
+    const handleSaveSignatory = async () => {
+        setIsSavingSignatory(true);
+        try {
+            await saveSignatorySettings(signatoryName, signatoryTitle, showRegional);
+            setInitialSignatoryName(signatoryName);
+            setInitialSignatoryTitle(signatoryTitle);
+            setInitialShowRegional(showRegional);
+            toast({ title: "Paramètres d'impression mis à jour" });
+        } catch (error) {
+            toast({ variant: "destructive", title: "Erreur", description: "Impossible de sauvegarder les paramètres." });
+        } finally {
+            setIsSavingSignatory(false);
         }
     };
 
@@ -191,6 +222,38 @@ function OrganizationSettingsContent() {
                     <Button onClick={handleSaveName} disabled={isSavingName || name === initialName}>
                         {isSavingName ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                         Enregistrer le nom
+                    </Button>
+                </CardFooter>
+            </Card>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle>Documents Officiels</CardTitle>
+                    <CardDescription>Personnalisez les signataires apparaissant sur les rapports imprimés.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="grid w-full gap-1.5">
+                        <Label htmlFor="sig-name">Nom du Signataire Principal</Label>
+                        <Input id="sig-name" value={signatoryName} onChange={e => setSignatoryName(e.target.value)} placeholder="ex: NANAN AHOUA KOUASSI III" />
+                    </div>
+                    <div className="grid w-full gap-1.5">
+                        <Label htmlFor="sig-title">Titre du Signataire Principal</Label>
+                        <Input id="sig-title" value={signatoryTitle} onChange={e => setSignatoryTitle(e.target.value)} placeholder="ex: Directeur de l'Observatoire National" />
+                    </div>
+                    <div className="flex items-center space-x-2 pt-2">
+                        <Checkbox id="show-regional" checked={showRegional} onCheckedChange={(checked) => setShowRegional(checked as boolean)} />
+                        <Label htmlFor="show-regional" className="font-normal cursor-pointer leading-tight">
+                            Afficher les espaces de signature pour les Comités Régionaux (Rapports Autorités)
+                        </Label>
+                    </div>
+                </CardContent>
+                <CardFooter>
+                    <Button 
+                        onClick={handleSaveSignatory} 
+                        disabled={isSavingSignatory || (signatoryName === initialSignatoryName && signatoryTitle === initialSignatoryTitle && showRegional === initialShowRegional)}
+                    >
+                        {isSavingSignatory ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                        Enregistrer les signataires
                     </Button>
                 </CardFooter>
             </Card>

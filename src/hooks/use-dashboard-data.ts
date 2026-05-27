@@ -320,6 +320,7 @@ export function useDashboardData(user: User | null) {
         seniorityAnniversaries,
         birthdayAnniversaries,
         employeesOnLeave,
+        allRawLeaves,
         upcomingRetirements,
         selectedAnniversaryMonth,
         setSelectedAnniversaryMonth,

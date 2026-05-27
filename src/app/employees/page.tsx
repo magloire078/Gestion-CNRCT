@@ -22,11 +22,12 @@ import { AddEmployeeSheet } from "@/components/employees/add-employee-sheet";
 import { PrintDialog } from "@/components/employees/print-dialog";
 import { subscribeToEmployees, addEmployee, deleteEmployee, getEmployeeGroup, getOrganizationalUnits } from "@/services/employee-service";
 import { getOrganizationSettings } from "@/services/organization-service";
+import { exportToExcel } from "@/lib/export-utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import Papa from "papaparse";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -309,6 +310,35 @@ export default function EmployeesPage() {
     toast({ title: "Exportation CSV réussie" });
   };
 
+  const handleExportXlsx = () => {
+    const getDepartmentName = (id?: string) => departments.find(d => d.id === id)?.name || '';
+    const data = filteredEmployees.map((emp: any) => ({
+      Matricule: emp.matricule,
+      Nom: emp.lastName,
+      Prenom: emp.firstName,
+      Sexe: emp.sexe || '',
+      TypePersonnel: emp.calculatedGroup || '',
+      Poste: emp.poste,
+      Département: getDepartmentName(emp.departmentId),
+      Statut: emp.status,
+      CNPS: emp.CNPS ? 'Oui' : 'Non',
+      DateEmbauche: emp.dateEmbauche || '',
+      DateNaissance: emp.Date_Naissance || '',
+      LieuNaissance: emp.Lieu_Naissance || '',
+      Ethnie: emp.Ethnie || '',
+      Village: emp.Village || '',
+      Contact: emp.contact || '',
+      Email: emp.email,
+      TypeContrat: emp.TypeContrat || '',
+      DateFinContrat: emp.DateFinContrat || '',
+      SalaireNet: emp.SalaireNet || '',
+      NumCompte: emp.NumCompteBancaire || '',
+      Banque: emp.Banque || ''
+    }));
+    exportToExcel(data, 'Export_Employes');
+    toast({ title: "Exportation Excel", description: "Le fichier Excel a été généré avec succès." });
+  };
+
   const handleExportJson = () => {
     if (filteredEmployees.length === 0) {
       toast({ variant: "destructive", title: "Aucune donnée à exporter" });
@@ -424,7 +454,7 @@ export default function EmployeesPage() {
               <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-slate-900 leading-none">
                 {pageTitle}
               </h1>
-              <div className="flex items-center gap-4 mt-3">
+              <div className="flex flex-wrap items-center gap-2 md:gap-4 mt-3">
                 <div className="flex items-center gap-2 bg-slate-900 text-white px-3 py-1 rounded-full shadow-lg shadow-slate-900/10">
                   <Shield className="h-3 w-3" />
                   <span className="text-sm md:text-xs font-black uppercase tracking-widest text-white/90">Registre National RH</span>
@@ -453,8 +483,13 @@ export default function EmployeesPage() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56 p-2 rounded-xl border-white/20 bg-white/90 backdrop-blur-xl shadow-2xl">
+                    <DropdownMenuLabel className="text-sm md:text-xs font-black uppercase text-slate-400 p-2">Formats d'Export</DropdownMenuLabel>
+                    <DropdownMenuItem onSelect={() => setTimeout(handleExportXlsx, 50)} className="rounded-lg font-bold p-2 text-base md:text-sm text-emerald-700 bg-emerald-50 mb-1">
+                      Excel (.xlsx)
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
                     <DropdownMenuLabel className="text-sm md:text-xs font-black uppercase text-slate-400 p-2">Formats Systèmes</DropdownMenuLabel>
-                    <DropdownMenuItem onSelect={() => setTimeout(handleExportCsv, 50)} className="rounded-lg font-bold p-2 text-base md:text-sm">CSV (Excel)</DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => setTimeout(handleExportCsv, 50)} className="rounded-lg font-bold p-2 text-base md:text-sm">CSV</DropdownMenuItem>
                     <DropdownMenuItem onSelect={() => setTimeout(handleExportJson, 50)} className="rounded-lg font-bold p-2 text-base md:text-sm">JSON</DropdownMenuItem>
                     <DropdownMenuItem onSelect={() => setTimeout(handleExportSql, 50)} className="rounded-lg font-bold p-2 text-base md:text-sm">SQL</DropdownMenuItem>
                   </DropdownMenuContent>
@@ -681,7 +716,7 @@ export default function EmployeesPage() {
 
                     {error && <p className="text-destructive text-center py-4">{error}</p>}
 
-                    <div className="overflow-x-auto border rounded-xl shadow-inner bg-slate-50/20">
+                    <div className="overflow-x-auto border rounded-xl shadow-inner bg-slate-50/20 w-full max-w-full">
                       <Table>
                         <TableHeader className="bg-slate-100/50">
                           <TableRow>

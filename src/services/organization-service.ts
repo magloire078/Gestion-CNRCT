@@ -19,7 +19,10 @@ export async function getOrganizationSettings(): Promise<OrganizationSettings> {
             organizationName: 'La Chambre des Rois et des Chefs Traditionnels de Côte d’Ivoire',
             mainLogoUrl: defaultMainLogoUrl,
             secondaryLogoUrl: defaultSecondaryLogoUrl,
-            faviconUrl: defaultMainLogoUrl
+            faviconUrl: defaultMainLogoUrl,
+            globalSignatoryName: "NANAN AHOUA KOUASSI III",
+            globalSignatoryTitle: "Directeur de l'Observatoire National, CNRCT",
+            showRegionalSignatories: true
         };
     }
 
@@ -43,6 +46,9 @@ export async function getOrganizationSettings(): Promise<OrganizationSettings> {
                 mainLogoUrl,
                 secondaryLogoUrl,
                 faviconUrl: data.faviconUrl || mainLogoUrl || '',
+                globalSignatoryName: data.globalSignatoryName || "NANAN AHOUA KOUASSI III",
+                globalSignatoryTitle: data.globalSignatoryTitle || "Directeur de l'Observatoire National, CNRCT",
+                showRegionalSignatories: data.showRegionalSignatories !== undefined ? data.showRegionalSignatories : true
             };
         }
     } catch (e) {
@@ -54,12 +60,27 @@ export async function getOrganizationSettings(): Promise<OrganizationSettings> {
         organizationName: 'La Chambre des Rois et des Chefs Traditionnels de Côte d’Ivoire',
         mainLogoUrl: defaultMainLogoUrl,
         secondaryLogoUrl: defaultSecondaryLogoUrl,
-        faviconUrl: defaultMainLogoUrl // Use main logo as default favicon
+        faviconUrl: defaultMainLogoUrl, // Use main logo as default favicon
+        globalSignatoryName: "NANAN AHOUA KOUASSI III",
+        globalSignatoryTitle: "Directeur de l'Observatoire National, CNRCT",
+        showRegionalSignatories: true
     };
 }
 
 export async function saveOrganizationName(name: string): Promise<void> {
     await setDoc(settingsDocRef, { organizationName: name }, { merge: true });
+}
+
+export async function saveSignatorySettings(
+    globalSignatoryName: string, 
+    globalSignatoryTitle: string, 
+    showRegionalSignatories: boolean
+): Promise<void> {
+    await setDoc(settingsDocRef, { 
+        globalSignatoryName, 
+        globalSignatoryTitle, 
+        showRegionalSignatories 
+    }, { merge: true });
 }
 
 export async function uploadOrganizationFile(

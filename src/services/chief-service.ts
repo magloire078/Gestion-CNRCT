@@ -2,7 +2,7 @@
 
 import { collection, getDocs, addDoc, onSnapshot, Unsubscribe, query, orderBy, deleteDoc, doc, updateDoc, getDoc, writeBatch, where, setDoc, limit } from '@/lib/firebase';
 import { uploadToCloudinary } from '@/lib/cloudinary';
-import type { Chief, ChiefRole } from '@/types/chief';
+import type { Chief, ChiefRole, ChiefArchiveReason } from '@/types/chief';
 import { db, storage } from '@/lib/firebase';
 import { FirestorePermissionError, FirestoreQuotaError, FirestoreTimeoutError } from '@/lib/errors';
 
@@ -377,4 +377,146 @@ export async function deleteChief(id: string): Promise<void> {
         }
         throw error;
     }
+}
+
+import kingdomsData from '@/data/kingdoms.json';
+
+export async function injectKingdomsAsChiefs(): Promise<number> {
+    const chiefsToInject: Omit<Chief, 'id'>[] = kingdomsData.map(kingdom => {
+        let namePart = kingdom.souverain.nom_trone;
+        if (namePart.startsWith("Sa Majesté ")) {
+            namePart = namePart.replace("Sa Majesté ", "");
+        }
+        
+        return {
+            name: namePart.toUpperCase(),
+            lastName: (kingdom.souverain.nom_civil || "").split(' ')[0] || namePart.split(' ')[0],
+            firstName: (kingdom.souverain.nom_civil || "").split(' ').slice(1).join(' ') || namePart.split(' ').slice(1).join(' '),
+            title: "SA MAJESTÉ",
+            role: "Roi",
+            cnrctAffiliation: "Directoire",
+            designationDate: kingdom.souverain.date_intronisation,
+            throneAccessionDate: kingdom.souverain.date_intronisation,
+            region: kingdom.region_id,
+            department: kingdom.coordonnees_siege.departement.toUpperCase(),
+            subPrefecture: kingdom.coordonnees_siege.sous_prefecture.toUpperCase(),
+            village: kingdom.capitale_traditionnelle.toUpperCase(),
+            ethnicGroup: kingdom.peuple,
+            contact: "",
+            phone: "",
+            bio: `${kingdom.souverain.statut}. Intronisé le ${kingdom.souverain.date_intronisation}. Siège du ${kingdom.nom}.`,
+            photoUrl: "https://api.dicebear.com/7.x/initials/svg?seed=ROI&backgroundColor=d97706&fontFamily=Arial",
+        } as Omit<Chief, 'id'>;
+    });
+
+    return await batchAddChiefs(chiefsToInject);
+}
+
+// ─── Succession & Liaison Chef ↔ Village ───────────────────────────────────
+
+export interface SuccessionData {
+    reason: ChiefArchiveReason;
+    archiveDate: string;    // ISO date string
+    archiveNote?: string;
+}
+
+/**
+ * Lie atomiquement un chef à un village.
+ * - Archive l'ancien chef actif du village (garde son villageId pour l'historique)
+ * - Délie le nouveau chef de son éventuel ancien village
+ * - Active le nouveau chef sur le village cible
+ * - Met à jour village.currentChiefId
+ */
+export async function linkChiefToVillage(
+    chief: Chief,
+    village: { id: string; name: string; region: string; department: string; subPrefecture: string },
+    succession?: SuccessionData
+): Promise<void> {
+    const batch = writeBatch(db);
+    const now = new Date().toISOString();
+
+    // 1. Archiver l'ancien chef actif du village (s'il existe et n'est pas le même)
+    if (village.id) {
+        const villagesCol = collection(db, 'villages');
+        const villageSnap = await getDoc(doc(db, 'villages', village.id));
+        const currentChiefId = villageSnap.exists() ? villageSnap.data().currentChiefId : null;
+
+        if (currentChiefId && currentChiefId !== chief.id) {
+            const oldChiefRef = doc(db, 'chiefs', currentChiefId);
+            const archiveUpdate: Partial<Chief> = {
+                status: 'archive',
+                archiveDate: succession?.archiveDate || now,
+                archiveReason: succession?.reason || 'Autre',
+                archiveNote: succession?.archiveNote,
+            };
+            // Nettoyage des undefined
+            Object.keys(archiveUpdate).forEach(k => {
+                if ((archiveUpdate as any)[k] === undefined) delete (archiveUpdate as any)[k];
+            });
+            batch.update(oldChiefRef, { ...archiveUpdate, 'audit.updatedAt': now });
+        }
+    }
+
+    // 2. Délier le nouveau chef de son ancien village (si différent)
+    if (chief.villageId && chief.villageId !== village.id) {
+        const oldVillageRef = doc(db, 'villages', chief.villageId);
+        batch.update(oldVillageRef, { currentChiefId: null, 'audit.updatedAt': now });
+    }
+
+    // 3. Activer le nouveau chef sur le nouveau village
+    const newChiefRef = doc(db, 'chiefs', chief.id);
+    batch.update(newChiefRef, {
+        villageId: village.id,
+        village: village.name,
+        region: village.region,
+        department: village.department,
+        subPrefecture: village.subPrefecture,
+        status: 'actif',
+        // Réinitialiser les champs d'archivage si le chef était archivé
+        archiveReason: null,
+        archiveDate: null,
+        archiveNote: null,
+        'audit.updatedAt': now,
+    });
+
+    // 4. Mettre à jour le village avec le nouveau currentChiefId
+    const villageRef = doc(db, 'villages', village.id);
+    batch.update(villageRef, {
+        currentChiefId: chief.id,
+        updatedAt: now,
+    });
+
+    await batch.commit();
+}
+
+/**
+ * Délie un chef de son village sans affecter de remplaçant (siège vacant).
+ * Archive le chef avec le motif fourni.
+ */
+export async function unlinkChiefFromVillage(
+    chief: Chief,
+    succession: SuccessionData
+): Promise<void> {
+    if (!chief.villageId) return;
+    const batch = writeBatch(db);
+    const now = new Date().toISOString();
+
+    // Archiver le chef
+    const chiefRef = doc(db, 'chiefs', chief.id);
+    batch.update(chiefRef, {
+        status: 'archive',
+        archiveDate: succession.archiveDate,
+        archiveReason: succession.reason,
+        archiveNote: succession.archiveNote || null,
+        'audit.updatedAt': now,
+    });
+
+    // Vider le currentChiefId du village
+    const villageRef = doc(db, 'villages', chief.villageId);
+    batch.update(villageRef, {
+        currentChiefId: null,
+        updatedAt: now,
+    });
+
+    await batch.commit();
 }

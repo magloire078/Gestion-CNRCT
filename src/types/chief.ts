@@ -1,5 +1,6 @@
 export type ChiefRole = "Roi" | "Chef de province" | "Chef de canton" | "Chef de tribu" | "Chef de Village";
 export type DesignationMode = "Héritage" | "Élection" | "Nomination coutumière" | "Autre";
+export type ChiefArchiveReason = "Décès" | "Déchéance" | "Démission" | "Succession générationnelle" | "Autre";
 
 export type ChiefCareerEventType = "Intronisation" | "Médaille" | "Médiation" | "Mission" | "Autre";
 
@@ -25,6 +26,8 @@ export type Chief = {
     firstName?: string;
     title: string;
     role: ChiefRole;
+    additionalRoles?: ChiefRole[];
+    cnrctAffiliation?: 'Directoire' | 'Comité Régional' | 'Aucune';
     designationDate?: string;
     throneAccessionDate?: string;
     designationMode?: DesignationMode;
@@ -57,6 +60,10 @@ export type Chief = {
     regencyEndDate?: string;
     villageId?: string;
     status?: 'actif' | 'archive' | 'a_vie';
+    // Succession / archivage
+    archiveReason?: ChiefArchiveReason;
+    archiveDate?: string;    // Date de fin effective du règne
+    archiveNote?: string;    // Contexte libre (ex: "Fils aîné désigné")
     
     // Authority Life Hub fields
     career?: ChiefCareerEvent[];

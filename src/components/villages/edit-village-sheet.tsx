@@ -288,8 +288,8 @@ export function EditVillageSheet({ village, open, onOpenChangeAction }: EditVill
                     </div>
 
                     <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit, onError)} className="flex flex-col flex-1 overflow-hidden">
-                            <Tabs defaultValue="admin" className="w-full h-full flex flex-col">
+                        <form onSubmit={form.handleSubmit(onSubmit, onError)} className="flex flex-col flex-1 overflow-hidden min-h-0">
+                            <Tabs defaultValue="admin" className="w-full h-full flex flex-col overflow-hidden min-h-0">
                                 <div className="border-b border-slate-100 shrink-0 bg-white">
                                     <TabsList className="w-full flex overflow-x-auto no-scrollbar justify-start bg-transparent p-0 h-auto rounded-none">
                                         <TabsTrigger value="admin" className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:text-blue-700 data-[state=active]:bg-transparent data-[state=active]:shadow-none px-5 py-3.5 font-bold whitespace-nowrap text-slate-500 transition-colors">Identité</TabsTrigger>
@@ -301,7 +301,7 @@ export function EditVillageSheet({ village, open, onOpenChangeAction }: EditVill
                                         <TabsTrigger value="chief" className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:text-blue-700 data-[state=active]:bg-transparent data-[state=active]:shadow-none px-5 py-3.5 font-bold whitespace-nowrap text-slate-500 transition-colors">Autorité</TabsTrigger>
                                     </TabsList>
                                 </div>
-                                <ScrollArea className="flex-1 px-8 pb-24">
+                                <ScrollArea className="flex-1 px-8 pb-24 h-full">
                                     {/* Section 1: Administration */}
                                     <TabsContent value="admin" className="mt-4 outline-none">
                                         <div className="pt-4 space-y-4 h-full">

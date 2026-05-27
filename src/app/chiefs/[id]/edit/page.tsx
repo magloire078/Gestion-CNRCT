@@ -42,6 +42,8 @@ export default function EditChiefPage() {
     const [lastName, setLastName] = useState("");
     const [title, setTitle] = useState("");
     const [role, setRole] = useState<ChiefRole>("Chef de Village");
+    const [additionalRoles, setAdditionalRoles] = useState<ChiefRole[]>([]);
+    const [cnrctAffiliation, setCnrctAffiliation] = useState<Chief['cnrctAffiliation']>("Aucune");
     const [designationDate, setDesignationDate] = useState("");
     const [designationMode, setDesignationMode] = useState<DesignationMode | "">("");
     const [sexe, setSexe] = useState<Chief['sexe'] | "">("");
@@ -81,6 +83,8 @@ export default function EditChiefPage() {
                     setLastName(data.lastName || "");
                     setTitle(data.title || "");
                     setRole(data.role || "Chef de Village");
+                    setAdditionalRoles(data.additionalRoles || []);
+                    setCnrctAffiliation(data.cnrctAffiliation || "Aucune");
                     setDesignationDate(data.designationDate || "");
                     setDesignationMode(data.designationMode || "");
                     setSexe(data.sexe || "");
@@ -171,6 +175,8 @@ export default function EditChiefPage() {
                 lastName,
                 title,
                 role,
+                additionalRoles: additionalRoles.length > 0 ? additionalRoles : undefined,
+                cnrctAffiliation: cnrctAffiliation !== "Aucune" ? cnrctAffiliation : undefined,
                 designationDate: designationDate || undefined,
                 designationMode: (designationMode || undefined) as DesignationMode,
                 sexe: (sexe || undefined) as Chief['sexe'],
@@ -263,8 +269,8 @@ export default function EditChiefPage() {
                                     <div className="space-y-2"><Label>Nom</Label><Input value={lastName} onChange={e => setLastName(e.target.value)} required /></div>
                                     <div className="space-y-2"><Label>Prénom(s)</Label><Input value={firstName} onChange={e => setFirstName(e.target.value)} required /></div>
                                     <div className="space-y-2"><Label>Titre Officiel</Label><Input value={title} onChange={e => setTitle(e.target.value)} required /></div>
-                                    <div className="space-y-2"><Label>Rôle Traditionnel</Label>
-                                        <Select value={role} onValueChange={(v) => setRole(v as ChiefRole)}>
+                                    <div className="space-y-2"><Label>Rôle Traditionnel (Principal)</Label>
+                                        <Select value={role} onValueChange={(v) => { setRole(v as ChiefRole); setAdditionalRoles(additionalRoles.filter(r => r !== v)); }}>
                                             <SelectTrigger><SelectValue /></SelectTrigger>
                                             <SelectContent>
                                                 <SelectItem value="Roi">Roi</SelectItem>
@@ -274,6 +280,27 @@ export default function EditChiefPage() {
                                                 <SelectItem value="Chef de Village">Chef de Village</SelectItem>
                                             </SelectContent>
                                         </Select>
+                                    </div>
+                                    <div className="space-y-2 md:col-span-2">
+                                        <Label>Casquettes Supplémentaires (Optionnel)</Label>
+                                        <div className="flex flex-wrap gap-2 mt-2">
+                                            {(["Roi", "Chef de province", "Chef de canton", "Chef de tribu", "Chef de Village"] as ChiefRole[]).filter(r => r !== role).map(r => (
+                                                <button
+                                                    key={r}
+                                                    type="button"
+                                                    onClick={() => {
+                                                        if (additionalRoles.includes(r)) {
+                                                            setAdditionalRoles(additionalRoles.filter(ar => ar !== r));
+                                                        } else {
+                                                            setAdditionalRoles([...additionalRoles, r]);
+                                                        }
+                                                    }}
+                                                    className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-colors ${additionalRoles.includes(r) ? 'bg-blue-100 text-blue-700 border-blue-300' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}
+                                                >
+                                                    {r}
+                                                </button>
+                                            ))}
+                                        </div>
                                     </div>
                                     <div className="space-y-2"><Label>Sexe</Label>
                                         <Select value={sexe} onValueChange={(v) => setSexe(v as Chief['sexe'])}>
@@ -367,6 +394,17 @@ export default function EditChiefPage() {
                                 <AccordionTrigger className="hover:no-underline"><div className="flex items-center gap-2 font-bold text-slate-700 text-sm uppercase tracking-widest"><Shield className="h-4 w-4" /> Administration</div></AccordionTrigger>
                                 <AccordionContent className="pt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="space-y-2"><Label>N° Enregistrement CNRCT</Label><Input value={CNRCTRegistrationNumber} onChange={e => setCNRCTRegistrationNumber(e.target.value)} /></div>
+                                    <div className="space-y-2">
+                                        <Label>Affiliation CNRCT</Label>
+                                        <Select value={cnrctAffiliation} onValueChange={(v) => setCnrctAffiliation(v as Chief['cnrctAffiliation'])}>
+                                            <SelectTrigger><SelectValue placeholder="Aucune" /></SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="Aucune">Aucune</SelectItem>
+                                                <SelectItem value="Directoire">Directoire</SelectItem>
+                                                <SelectItem value="Comité Régional">Comité Régional</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
                                     <div className="space-y-2"><Label>Mode de Désignation</Label>
                                         <Select value={designationMode} onValueChange={(v) => setDesignationMode(v as DesignationMode)}>
                                             <SelectTrigger><SelectValue /></SelectTrigger>

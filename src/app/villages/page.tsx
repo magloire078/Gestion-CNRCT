@@ -22,7 +22,10 @@ import {
     Zap,
     Droplets,
     School,
-    Activity
+    Activity,
+    ShieldCheck,
+    Edit2,
+    Trash2
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Input } from "@/components/ui/input";
@@ -63,6 +66,7 @@ import { AddVillageSheet } from "@/components/villages/add-village-sheet";
 import { VillageQuickView } from "@/components/villages/village-quick-view";
 import { VillagesOfficialReport } from "@/components/reports/villages-official-report";
 import { PermissionGuard } from "@/components/auth/permission-guard";
+import { LinkChiefVillageSheet } from "@/components/common/link-chief-village-sheet";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 import { PaginationControls } from "@/components/common/pagination-controls";
@@ -103,6 +107,9 @@ export default function VillagesPage() {
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(12);
     const [showMaintenance, setShowMaintenance] = useState(false);
+
+    // Link sheet state
+    const [linkSheetEntry, setLinkSheetEntry] = useState<VillageEntry | null>(null);
 
     // Fetch Data with Real-time Sync
     useEffect(() => {
@@ -355,232 +362,114 @@ export default function VillagesPage() {
 
     return (
         <PermissionGuard permission="page:villages:view">
-            <div className="min-h-screen bg-slate-50/50">
-            {/* Print View Component (Only mounted during print) */}
-            {isPrinting && (
-                <VillagesOfficialReport 
-                    villages={filteredVillages} 
-                    organizationSettings={settings} 
-                    subtitle={printSubtitle}
-                    isPrinting={isPrinting}
-                    onAfterPrint={() => setIsPrinting(false)}
-                    stats={stats}
-                />
-            )}
-
-            {/* Villages Header Section */}
-            <div className="relative overflow-hidden bg-slate-900 py-12 print:hidden">
-                <div className="absolute inset-0 opacity-10">
-                    <div className="absolute inset-0 pattern-dots-lg text-white"></div>
-                </div>
-                
-                <div className="container relative mx-auto px-4 lg:px-8">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                        <div className="flex items-center gap-5">
-                            <div className="h-20 w-20 rounded-[2rem] bg-amber-500 flex items-center justify-center shadow-2xl shadow-amber-500/20 rotate-3">
-                                <Building2 className="h-10 w-10 text-white -rotate-3" />
-                            </div>
-                            <div className="space-y-1">
-                                <h1 className="text-4xl font-black tracking-tight text-white uppercase italic leading-none">
-                                    Localités <span className="text-amber-500 italic">&</span> Autorités
-                                </h1>
-                                <p className="text-slate-400 font-bold flex items-center gap-2">
-                                    <Badge variant="outline" className="bg-white/5 text-slate-300 font-black border-white/10 uppercase tracking-widest text-[10px]">RÉPERTOIRE NATIONAL</Badge>
-                                    <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
-                                    Observatoire Territorial
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-                            <div className="flex bg-white/5 backdrop-blur-xl border border-white/10 p-1 rounded-2xl h-14 w-full sm:w-auto">
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={() => setViewMode('grid')}
-                                    className={cn(
-                                        "h-full flex-1 sm:w-12 rounded-xl transition-all",
-                                        viewMode === 'grid' ? "bg-amber-500 text-white shadow-lg" : "text-slate-400 hover:text-white"
-                                    )}
-                                >
-                                    <LayoutGrid className="h-5 w-5" />
-                                </Button>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={() => setViewMode('list')}
-                                    className={cn(
-                                        "h-full flex-1 sm:w-12 rounded-xl transition-all",
-                                        viewMode === 'list' ? "bg-amber-500 text-white shadow-lg" : "text-slate-400 hover:text-white"
-                                    )}
-                                >
-                                    <List className="h-5 w-5" />
-                                </Button>
-                            </div>
-                            <Button 
-                                variant="outline" 
-                                className="bg-white/5 border-white/10 text-white hover:bg-white/10 rounded-xl h-14 px-8 font-bold group w-full sm:w-auto"
-                                onClick={handlePrint}
-                                disabled={filteredVillages.length === 0 || !settings}
-                            >
-                                <Printer className="mr-2 h-5 w-5 group-hover:text-amber-500 transition-colors" />
-                                {settings ? "Imprimer la liste" : "Chargement..."}
-                            </Button>
-                             <PermissionGuard permission="page:repository:view">
-                                {(user?.role?.name === 'ADMIN' || user?.email === 'magloire078@gmail.com') && (
-                                    <Button 
-                                        variant="outline" 
-                                        onClick={() => setShowMaintenance(!showMaintenance)}
-                                        className={cn(
-                                            "h-14 px-6 rounded-xl font-bold transition-all gap-2 w-full sm:w-auto",
-                                            showMaintenance ? "bg-white text-slate-900" : "bg-white/5 border-white/10 text-white hover:bg-white/10"
-                                        )}
-                                    >
-                                        <Settings className="h-5 w-5" />
-                                        {showMaintenance ? "Fermer Maintenance" : "Maintenance"}
-                                    </Button>
-                                )}
-                                <AddVillageSheet />
-                            </PermissionGuard>
-                        </div>
+            <div className="flex flex-col gap-8 pb-20 h-full min-h-screen">
+                {/* Dynamic Hero Header */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div>
+                        <h1 className="text-3xl md:text-5xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-3">
+                            Localités & Infrastructures
+                            <Badge className="bg-amber-500/10 text-amber-600 border-none px-3 py-1 text-sm md:text-xs font-black uppercase tracking-widest hidden sm:flex">RÉPERTOIRE</Badge>
+                        </h1>
+                        <p className="text-muted-foreground mt-2 font-medium">Répertoire officiel des villages et suivi de l'occupation des chaises.</p>
                     </div>
-
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6 mt-8 md:mt-12 bg-white/5 backdrop-blur-xl p-4 md:p-6 rounded-3xl border border-white/10 shadow-2xl shadow-black/50">
-                        <div className="space-y-2">
-                            <div className="flex items-center gap-2 text-amber-400">
-                                <Zap className="h-4 w-4" />
-                                <span className="text-[10px] font-black uppercase tracking-widest">Électrification</span>
-                            </div>
-                            <div className="flex items-end gap-2">
-                                <span className="text-3xl font-black text-white leading-none">{stats.electricity.toFixed(0)}%</span>
-                                <Progress 
-                                    value={stats.electricity} 
-                                    className="h-1.5 bg-white/10" 
-                                    indicatorClassName="bg-amber-400"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="space-y-2">
-                            <div className="flex items-center gap-2 text-blue-400">
-                                <Droplets className="h-4 w-4" />
-                                <span className="text-[10px] font-black uppercase tracking-widest">Eau Potable</span>
-                            </div>
-                            <div className="flex items-end gap-2">
-                                <span className="text-3xl font-black text-white leading-none">{stats.water.toFixed(0)}%</span>
-                                <Progress 
-                                    value={stats.water} 
-                                    className="h-1.5 bg-white/10" 
-                                    indicatorClassName="bg-blue-400"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="space-y-2">
-                            <div className="flex items-center gap-2 text-indigo-400">
-                                <School className="h-4 w-4" />
-                                <span className="text-[10px] font-black uppercase tracking-widest">Éducation</span>
-                            </div>
-                            <div className="flex items-end gap-2">
-                                <span className="text-3xl font-black text-white leading-none">{stats.school.toFixed(0)}%</span>
-                                <Progress 
-                                    value={stats.school} 
-                                    className="h-1.5 bg-white/10" 
-                                    indicatorClassName="bg-indigo-400"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="space-y-2">
-                            <div className="flex items-center gap-2 text-emerald-400">
-                                <Activity className="h-4 w-4" />
-                                <span className="text-[10px] font-black uppercase tracking-widest">Santé</span>
-                            </div>
-                            <div className="flex items-end gap-2">
-                                <span className="text-3xl font-black text-white leading-none">{stats.health.toFixed(0)}%</span>
-                                <Progress 
-                                    value={stats.health} 
-                                    className="h-1.5 bg-white/10" 
-                                    indicatorClassName="bg-emerald-400"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="space-y-2">
-                            <div className="flex items-center gap-2 text-rose-400">
-                                <Building2 className="h-4 w-4" />
-                                <span className="text-[10px] font-black uppercase tracking-widest">Économie / Marchés</span>
-                            </div>
-                            <div className="flex items-end gap-2">
-                                <span className="text-3xl font-black text-white leading-none">{stats.market.toFixed(0)}%</span>
-                                <Progress 
-                                    value={stats.market} 
-                                    className="h-1.5 bg-white/10" 
-                                    indicatorClassName="bg-rose-400"
-                                />
-                            </div>
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
+                        <Button 
+                            variant="outline" 
+                            className="w-full sm:w-auto rounded-lg h-10 shadow-sm border-slate-200 font-bold"
+                            onClick={handlePrint}
+                            disabled={filteredVillages.length === 0 || !settings}
+                        >
+                            <Download className="mr-2 h-4 w-4 text-slate-400" />
+                            Exporter
+                        </Button>
+                        <div className="w-full sm:w-auto">
+                            <AddVillageSheet />
                         </div>
                     </div>
                 </div>
-            </div>
 
-            {/* Filter Bar Section */}
-            <div className="container mx-auto px-4 lg:px-8 -mt-10 print:hidden">
-                <Card className="rounded-xl border-none shadow-2xl shadow-slate-200/50 overflow-hidden bg-white/80 backdrop-blur-xl">
-                    <CardContent className="p-4">
-                        <div className="flex flex-col lg:flex-row gap-6 items-end">
-                            {/* Status Tabs */}
-                            <div className="w-full lg:w-auto">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 block px-1">
-                                    Filtrage Rapide
-                                </label>
-                                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                                    <TabsList className="bg-slate-100 p-1 h-auto flex-wrap sm:flex-nowrap rounded-xl w-full lg:w-auto justify-start gap-1">
-                                        <TabsTrigger value="all" className="flex-1 sm:flex-none rounded-lg px-4 sm:px-6 py-2 font-bold data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm">
-                                            Tous ({villageEntries.length})
-                                        </TabsTrigger>
-                                        <TabsTrigger value="occupied" className="flex-1 sm:flex-none rounded-lg px-4 sm:px-6 py-2 font-bold data-[state=active]:bg-emerald-500 data-[state=active]:text-white data-[state=active]:shadow-lg">
-                                            Occupés ({villageEntries.filter(e => e.currentChief).length})
-                                        </TabsTrigger>
-                                        <TabsTrigger value="vacant" className="flex-1 sm:flex-none rounded-lg px-4 sm:px-6 py-2 font-bold data-[state=active]:bg-amber-500 data-[state=active]:text-white data-[state=active]:shadow-lg">
-                                            Vacants ({villageEntries.filter(e => !e.currentChief).length})
-                                        </TabsTrigger>
-                                    </TabsList>
-                                </Tabs>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-10 gap-6 items-end flex-1 w-full">
-                                {/* Search Input */}
-                                <div className="lg:col-span-4 group">
-                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3 block px-1">
-                                        Recherche par nom ou numéro
-                                    </label>
-                                    <div className="relative">
-                                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-amber-500 transition-colors" />
-                                            <DebouncedInput
-                                                placeholder="Village, Chef, Matricule..."
-                                                value={searchQuery}
-                                                onChange={(val) => setSearchQuery(val.toString())}
-                                                className="pl-12 h-14 bg-slate-50 border-transparent focus:bg-white focus:ring-4 focus:ring-amber-500/10 rounded-lg text-lg transition-all font-medium"
-                                            />
-                                    </div>
+                {/* Stats Overview */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-xl overflow-hidden group hover:scale-[1.02] transition-all">
+                        <CardContent className="p-3">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-2">
+                                <div className="h-8 w-8 rounded-lg bg-slate-900 flex items-center justify-center shrink-0">
+                                    <Building2 className="h-4 w-4 text-white" />
                                 </div>
+                                <Badge variant="secondary" className="bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-none font-bold text-[9px]">CNRCT</Badge>
+                            </div>
+                            <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">{stats.total}</h3>
+                            <p className="text-[9px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider mt-0.5 line-clamp-1">Répertoire</p>
+                        </CardContent>
+                    </Card>
 
-                                {/* Region Filter */}
-                                <div className="lg:col-span-2">
-                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3 block px-1">
-                                        Région
-                                    </label>
+                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-xl overflow-hidden group hover:scale-[1.02] transition-all">
+                        <CardContent className="p-3">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-2">
+                                <div className="h-8 w-8 rounded-lg bg-amber-500/10 flex items-center justify-center shrink-0">
+                                    <MapIcon className="h-4 w-4 text-amber-600" />
+                                </div>
+                                <Badge variant="secondary" className="bg-amber-50 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400 border-none font-bold text-[9px]">Territoire</Badge>
+                            </div>
+                            <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">{territorySummary?.departments || Object.keys(filterStats.departments).length}</h3>
+                            <p className="text-[9px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider mt-0.5 line-clamp-1">Départements</p>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-xl overflow-hidden group hover:scale-[1.02] transition-all">
+                        <CardContent className="p-3">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-2">
+                                <div className="h-8 w-8 rounded-lg bg-emerald-500/10 flex items-center justify-center shrink-0">
+                                    <Users className="h-4 w-4 text-emerald-600" />
+                                </div>
+                                <Badge variant="secondary" className="bg-emerald-50 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border-none font-bold text-[9px]">Chefferies</Badge>
+                            </div>
+                            <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">{stats.occupied}</h3>
+                            <p className="text-[9px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider mt-0.5 line-clamp-1">Occupés</p>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-xl overflow-hidden group hover:scale-[1.02] transition-all">
+                        <CardContent className="p-3">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-2">
+                                <div className="h-8 w-8 rounded-lg bg-indigo-500/10 flex items-center justify-center shrink-0">
+                                    <ShieldCheck className="h-4 w-4 text-indigo-600" />
+                                </div>
+                                <Badge variant="secondary" className="bg-indigo-50 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-400 border-none font-bold text-[9px]">Gouvernance</Badge>
+                            </div>
+                            <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">{stats.total > 0 ? ((stats.occupied / stats.total) * 100).toFixed(0) : 0}%</h3>
+                            <p className="text-[9px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider mt-0.5 line-clamp-1">Conformité</p>
+                        </CardContent>
+                    </Card>
+                </div>
+
+                {/* Print View Component (Only mounted during print) */}
+                {isPrinting && (
+                    <VillagesOfficialReport 
+                        villages={filteredVillages} 
+                        organizationSettings={settings} 
+                        subtitle={printSubtitle}
+                        isPrinting={isPrinting}
+                        onAfterPrint={() => setIsPrinting(false)}
+                        stats={stats}
+                    />
+                )}
+
+                <Card className="border-none shadow-2xl shadow-slate-200/50 dark:shadow-none rounded-2xl overflow-hidden flex-1 flex flex-col min-h-0 bg-white dark:bg-slate-900/50">
+                    <CardHeader className="bg-slate-50/50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800 p-4 sm:p-5 shrink-0">
+                        <div className="flex flex-col xl:flex-row xl:items-start justify-between gap-6 w-full">
+                            <div className="flex flex-col lg:flex-row flex-wrap items-center gap-4 w-full justify-start">
+                                <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto justify-start print:hidden">
                                     <Select value={selectedRegion} onValueChange={(val) => {
                                         setSelectedRegion(val);
                                         setSelectedDepartment("all");
                                         setSelectedCommune("all");
                                     }}>
-                                        <SelectTrigger className="h-14 bg-slate-50 border-transparent rounded-lg font-bold">
+                                        <SelectTrigger className="w-full sm:w-auto min-w-[140px] h-10 rounded-lg bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
                                             <SelectValue placeholder="Région" />
                                         </SelectTrigger>
                                         <SelectContent className="rounded-lg border-slate-100">
-                                            <SelectItem value="all">Toutes les régions</SelectItem>
+                                            <SelectItem value="all">Toutes Régions</SelectItem>
                                             {Object.keys(divisions).sort().map(region => (
                                                 <SelectItem key={region} value={region}>
                                                     {region} {filterStats.regions[region] ? `(${filterStats.regions[region]})` : ""}
@@ -588,13 +477,7 @@ export default function VillagesPage() {
                                             ))}
                                         </SelectContent>
                                     </Select>
-                                </div>
 
-                                {/* Department Filter */}
-                                <div className="lg:col-span-2">
-                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3 block px-1">
-                                        Département
-                                    </label>
                                     <Select 
                                         value={selectedDepartment} 
                                         onValueChange={(val) => {
@@ -603,11 +486,11 @@ export default function VillagesPage() {
                                         }}
                                         disabled={selectedRegion === "all"}
                                     >
-                                        <SelectTrigger className="h-14 bg-slate-50 border-transparent rounded-lg font-bold">
+                                        <SelectTrigger className="w-full sm:w-auto min-w-[140px] h-10 rounded-lg bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
                                             <SelectValue placeholder="Département" />
                                         </SelectTrigger>
                                         <SelectContent className="rounded-lg border-slate-100">
-                                            <SelectItem value="all">Tous les dép.</SelectItem>
+                                            <SelectItem value="all">Tous Départements</SelectItem>
                                             {departments.map(dept => (
                                                 <SelectItem key={dept} value={dept}>
                                                     {dept} {filterStats.departments[dept] ? `(${filterStats.departments[dept]})` : ""}
@@ -615,237 +498,225 @@ export default function VillagesPage() {
                                             ))}
                                         </SelectContent>
                                     </Select>
-                                </div>
 
-                                {/* Commune Filter */}
-                                <div className="lg:col-span-2">
-                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3 block px-1">
-                                        S-Préf. / Commune
-                                    </label>
                                     <Select 
                                         value={selectedCommune} 
-                                        onValueChange={(val) => setSelectedCommune(val)}
+                                        onValueChange={setSelectedCommune}
                                         disabled={selectedDepartment === "all"}
                                     >
-                                        <SelectTrigger className="h-14 bg-slate-50 border-transparent rounded-lg font-bold">
+                                        <SelectTrigger className="w-full sm:w-auto min-w-[140px] h-10 rounded-lg bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
                                             <SelectValue placeholder="S-Préf." />
                                         </SelectTrigger>
-                                        <SelectContent className="rounded-xl border-slate-100">
-                                            <SelectItem value="all">Toutes les s-préf.</SelectItem>
+                                        <SelectContent className="rounded-lg border-slate-100">
+                                            <SelectItem value="all">Toutes S-Préf.</SelectItem>
                                             {communes.map(comm => (
                                                 <SelectItem key={comm} value={comm}>{comm}</SelectItem>
                                             ))}
                                         </SelectContent>
                                     </Select>
+
+                                    <Select value={activeTab} onValueChange={setActiveTab}>
+                                        <SelectTrigger className="w-full sm:w-auto min-w-[140px] h-10 rounded-lg bg-amber-50 border-amber-200 text-amber-900 font-medium">
+                                            <SelectValue placeholder="Statut du Siège" />
+                                        </SelectTrigger>
+                                        <SelectContent className="rounded-lg">
+                                            <SelectItem value="all">Tous Statuts</SelectItem>
+                                            <SelectItem value="occupied">Sièges Occupés</SelectItem>
+                                            <SelectItem value="vacant">Sièges Vacants</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto lg:ml-auto">
+                                    <div className="relative group flex-grow lg:w-[280px]">
+                                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
+                                        <Input
+                                            placeholder="Localité, Chef..."
+                                            className="pl-11 h-10 rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-inner focus:ring-slate-900 w-full"
+                                            value={searchQuery}
+                                            onChange={(e) => setSearchQuery(e.target.value)}
+                                        />
+                                    </div>
+                                    <div className="flex items-center justify-center p-1 bg-white dark:bg-slate-800 rounded-lg shadow-inner border border-slate-100 dark:border-slate-700 shrink-0 w-full sm:w-auto">
+                                        <Button 
+                                            variant={viewMode === 'grid' ? 'default' : 'ghost'} 
+                                            size="icon" 
+                                            className={cn("h-9 w-9 rounded-lg transition-all", viewMode === 'grid' ? "bg-slate-900 shadow-md text-white" : "text-slate-400 hover:text-slate-900")}
+                                            onClick={() => setViewMode('grid')}
+                                            title="Vue Grille"
+                                        >
+                                            <LayoutGrid className="h-4 w-4" />
+                                        </Button>
+                                        <Button 
+                                            variant={viewMode === 'list' ? 'default' : 'ghost'} 
+                                            size="icon" 
+                                            className={cn("h-9 w-9 rounded-lg transition-all", viewMode === 'list' ? "bg-slate-900 shadow-md text-white" : "text-slate-400 hover:text-slate-900")}
+                                            onClick={() => setViewMode('list')}
+                                            title="Vue Tableau"
+                                        >
+                                            <List className="h-4 w-4" />
+                                        </Button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        {(searchQuery || selectedRegion !== "all" || activeTab !== "all") && (
-                            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mt-8 pt-6 border-t border-slate-100">
-                                <div className="flex items-center gap-4 flex-wrap">
-                                    <span className="text-sm font-bold text-slate-400 uppercase tracking-widest shrink-0">Filtres actifs:</span>
-                                    <div className="flex flex-wrap gap-2">
-                                        {selectedRegion !== "all" && <Badge variant="secondary" className="bg-slate-100 text-slate-700 font-bold px-3 py-1 rounded-md border-none">{selectedRegion}</Badge>}
-                                        {selectedDepartment !== "all" && <Badge variant="secondary" className="bg-slate-100 text-slate-700 font-bold px-3 py-1 rounded-md border-none">{selectedDepartment}</Badge>}
-                                        {selectedCommune !== "all" && <Badge variant="secondary" className="bg-slate-100 text-slate-700 font-bold px-3 py-1 rounded-md border-none">{selectedCommune}</Badge>}
-                                        {activeTab !== "all" && <Badge variant="secondary" className="bg-amber-100 text-amber-700 font-bold px-3 py-1 rounded-md border-none">{activeTab === "occupied" ? "Sièges Occupés" : "Vacance de Trône"}</Badge>}
-                                        <Button variant="ghost" size="sm" onClick={clearFilters} className="text-amber-600 hover:text-amber-700 font-black uppercase text-[10px] tracking-widest">
-                                            Réinitialiser
-                                        </Button>
-                                    </div>
+                        {/* Actions & Mini-Stats Row */}
+                        <div className="flex flex-wrap items-center justify-between gap-4 mt-4 pt-4 border-t border-slate-100">
+                            <div className="flex flex-wrap items-center gap-3">
+                                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 rounded-lg text-amber-700 text-xs font-bold shadow-sm">
+                                    <Zap className="h-3.5 w-3.5" /> Élec: {stats.electricity.toFixed(0)}%
                                 </div>
-                                
-                                {territorySummary && (
-                                    <div className="flex items-center gap-6 bg-slate-50 border border-slate-100 px-6 py-3 rounded-2xl w-full lg:w-auto overflow-x-auto">
-                                        <div className="flex flex-col shrink-0">
-                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Départements</span>
-                                            <span className="text-lg font-black text-slate-700 leading-none">{territorySummary.departments}</span>
+                                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 rounded-lg text-blue-700 text-xs font-bold shadow-sm">
+                                    <Droplets className="h-3.5 w-3.5" /> Eau: {stats.water.toFixed(0)}%
+                                </div>
+                                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 rounded-lg text-indigo-700 text-xs font-bold shadow-sm">
+                                    <School className="h-3.5 w-3.5" /> École: {stats.school.toFixed(0)}%
+                                </div>
+                                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 rounded-lg text-emerald-700 text-xs font-bold shadow-sm">
+                                    <Activity className="h-3.5 w-3.5" /> Santé: {stats.health.toFixed(0)}%
+                                </div>
+                            </div>
+                        </div>
+                    </CardHeader>
+
+                    <CardContent className="p-5 flex-1 min-h-0 relative">
+                        {loading ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 h-full overflow-hidden">
+                                {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                                    <Card key={i} className="rounded-xl border-none shadow-xl shadow-slate-200/50 overflow-hidden">
+                                        <Skeleton className="h-44 w-full" />
+                                        <CardContent className="p-4 space-y-4">
+                                            <Skeleton className="h-6 w-3/4" />
+                                            <Skeleton className="h-4 w-1/2" />
+                                        </CardContent>
+                                    </Card>
+                                ))}
+                            </div>
+                        ) : filteredVillages.length > 0 ? (
+                            viewMode === 'grid' ? (
+                                <VirtuosoGrid
+                                    useWindowScroll
+                                    data={filteredVillages}
+                                    listClassName="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+                                    itemContent={(index, entry) => (
+                                        <div 
+                                            key={entry.village.id}
+                                            onClick={() => setQuickViewVillage({ village: entry.village, chief: entry.currentChief })}
+                                            className="cursor-pointer h-full"
+                                        >
+                                            <VillageCard
+                                                entry={entry}
+                                                onLink={(e) => { e.stopPropagation(); setLinkSheetEntry(entry); }}
+                                            />
                                         </div>
-                                        <div className="w-px h-8 bg-slate-200 shrink-0"></div>
-                                        <div className="flex flex-col shrink-0">
-                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Sous-préfectures</span>
-                                            <span className="text-lg font-black text-slate-700 leading-none">{territorySummary.subPrefectures}</span>
-                                        </div>
-                                        <div className="w-px h-8 bg-slate-200 shrink-0"></div>
-                                        <div className="flex flex-col shrink-0">
-                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Villages Inscrits</span>
-                                            <span className="text-lg font-black text-amber-600 leading-none">{territorySummary.villages}</span>
-                                        </div>
-                                    </div>
-                                )}
+                                    )}
+                                />
+                            ) : (
+                                <div className="rounded-xl border border-slate-100 shadow-inner overflow-hidden bg-white h-full">
+                                    <TableVirtuoso
+                                        useWindowScroll
+                                        data={filteredVillages}
+                                        components={{
+                                            Table: ({ style, ...props }) => <table {...props} style={{ ...style, width: "100%", borderCollapse: "collapse" }} className="w-full caption-bottom text-base md:text-sm" />,
+                                            TableHead: forwardRef((props, ref) => <thead {...props} ref={ref as any} className="[&_tr]:border-b bg-slate-50/50" />),
+                                            TableRow: (props) => <tr {...props} className="group hover:bg-slate-50/50 border-slate-50 transition-colors border-b cursor-pointer" />,
+                                            TableBody: forwardRef((props, ref) => <tbody {...props} ref={ref as any} className="[&_tr:last-child]:border-0" />),
+                                        }}
+                                        fixedHeaderContent={() => (
+                                            <tr className="border-slate-100 hover:bg-transparent">
+                                                <th className="h-12 px-4 align-middle text-center text-base md:text-sm font-black uppercase tracking-widest text-slate-400 w-12">#</th>
+                                                <th className="h-12 px-4 align-middle text-left text-base md:text-sm font-black uppercase tracking-widest text-slate-400">Localité / S-Préf.</th>
+                                                <th className="h-12 px-4 align-middle text-left text-base md:text-sm font-black uppercase tracking-widest text-slate-400">Région & Dépt</th>
+                                                <th className="h-12 px-4 align-middle text-left text-base md:text-sm font-black uppercase tracking-widest text-slate-400">Autorité Actuelle</th>
+                                                <th className="h-12 px-4 align-middle text-center text-base md:text-sm font-black uppercase tracking-widest text-slate-400">Infrastructures</th>
+                                                <th className="h-12 px-4 align-middle text-center text-base md:text-sm font-black uppercase tracking-widest text-slate-400 w-32">Statut</th>
+                                            </tr>
+                                        )}
+                                        itemContent={(index, entry) => (
+                                            <>
+                                                <td className="p-4 align-middle text-center font-mono text-base md:text-sm text-slate-300" onClick={() => setQuickViewVillage({ village: entry.village, chief: entry.currentChief })}>{index + 1}</td>
+                                                <td className="p-4 align-middle" onClick={() => setQuickViewVillage({ village: entry.village, chief: entry.currentChief })}>
+                                                    <div className="flex flex-col">
+                                                        <span className="font-black text-slate-900 dark:text-white text-sm tracking-tight leading-tight">{entry.village.name}</span>
+                                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{entry.village.subPrefecture || entry.village.commune}</span>
+                                                    </div>
+                                                </td>
+                                                <td className="p-4 align-middle" onClick={() => setQuickViewVillage({ village: entry.village, chief: entry.currentChief })}>
+                                                    <div className="flex flex-col">
+                                                        <span className="text-xs font-bold text-slate-600">{entry.village.region}</span>
+                                                        <span className="text-[10px] font-medium text-slate-400">{entry.village.department}</span>
+                                                    </div>
+                                                </td>
+                                                <td className="p-4 align-middle" onClick={() => setQuickViewVillage({ village: entry.village, chief: entry.currentChief })}>
+                                                    {entry.currentChief ? (
+                                                        <div className="flex items-center gap-3">
+                                                            <Avatar className="h-8 w-8 rounded-lg border border-slate-100 shadow-sm">
+                                                                <AvatarImage src={entry.currentChief.photoUrl} />
+                                                                <AvatarFallback className="bg-slate-100 text-slate-400 text-[10px] font-black">
+                                                                    {entry.currentChief.name.substring(0, 2).toUpperCase()}
+                                                                </AvatarFallback>
+                                                            </Avatar>
+                                                            <div className="flex flex-col">
+                                                                <span className="text-xs font-bold text-slate-900 dark:text-white line-clamp-1">{entry.currentChief.name}</span>
+                                                                <span className="text-[10px] text-slate-400 font-mono">{entry.currentChief.CNRCTRegistrationNumber || "En attente"}</span>
+                                                            </div>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="flex items-center gap-2 text-slate-400">
+                                                            <div className="h-8 w-8 rounded-lg bg-slate-50 border border-slate-100 border-dashed flex items-center justify-center">
+                                                                <Users className="h-3.5 w-3.5 opacity-50" />
+                                                            </div>
+                                                            <span className="text-[10px] font-bold uppercase tracking-widest italic">Trône Vacant</span>
+                                                        </div>
+                                                    )}
+                                                </td>
+                                                <td className="p-4 align-middle text-center" onClick={() => setQuickViewVillage({ village: entry.village, chief: entry.currentChief })}>
+                                                    <div className="flex items-center justify-center gap-1.5 flex-wrap">
+                                                        {entry.village.hasElectricity && <Badge variant="secondary" className="bg-amber-50 text-amber-600 border-amber-200 px-1.5 py-0">Élec</Badge>}
+                                                        {entry.village.hasWater && <Badge variant="secondary" className="bg-blue-50 text-blue-600 border-blue-200 px-1.5 py-0">Eau</Badge>}
+                                                        {entry.village.hasSchool && <Badge variant="secondary" className="bg-indigo-50 text-indigo-600 border-indigo-200 px-1.5 py-0">École</Badge>}
+                                                        {entry.village.hasHealthCenter && <Badge variant="secondary" className="bg-emerald-50 text-emerald-600 border-emerald-200 px-1.5 py-0">Santé</Badge>}
+                                                    </div>
+                                                </td>
+                                                <td className="p-4 align-middle text-center" onClick={() => setQuickViewVillage({ village: entry.village, chief: entry.currentChief })}>
+                                                    {entry.currentChief ? (
+                                                        <Badge className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-[10px] uppercase tracking-widest px-3">Occupé</Badge>
+                                                    ) : (
+                                                        <Badge variant="destructive" className="font-bold text-[10px] uppercase tracking-widest px-3">Vacant</Badge>
+                                                    )}
+                                                </td>
+                                            </>
+                                        )}
+                                    />
+                                </div>
+                            )
+                        ) : (
+                            <div className="h-full flex flex-col items-center justify-center text-center p-12 bg-slate-50/50 rounded-2xl border-2 border-dashed border-slate-200">
+                                <div className="h-20 w-20 bg-slate-100 rounded-full flex items-center justify-center mb-6">
+                                    <SearchX className="h-10 w-10 text-slate-300" />
+                                </div>
+                                <h3 className="text-xl font-black text-slate-900 mb-2">Aucun village trouvé</h3>
+                                <p className="text-sm text-slate-500 max-w-sm mb-6">
+                                    Modifiez vos critères de recherche ou réinitialisez les filtres pour voir plus de résultats.
+                                </p>
+                                <Button onClick={clearFilters} variant="outline" className="border-slate-200 font-bold">
+                                    <RefreshCw className="mr-2 h-4 w-4" />
+                                    Réinitialiser les filtres
+                                </Button>
                             </div>
                         )}
                     </CardContent>
                 </Card>
             </div>
 
-            {/* Grid Content */}
-            <div className="container mx-auto px-4 lg:px-8 py-16 print:hidden">
-                {loading ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                        {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-                            <Card key={i} className="rounded-xl border-none shadow-xl shadow-slate-200/50 overflow-hidden">
-                                <Skeleton className="h-44 w-full" />
-                                <CardContent className="p-4 space-y-4">
-                                    <Skeleton className="h-6 w-3/4" />
-                                    <Skeleton className="h-4 w-1/2" />
-                                    <div className="pt-4 border-t border-slate-50">
-                                        <Skeleton className="h-12 w-full rounded-lg" />
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        ))}
-                    </div>
-                ) : filteredVillages.length > 0 ? (
-                    <div className="space-y-12">
-                        {viewMode === 'grid' ? (
-                            <VirtuosoGrid
-                                useWindowScroll
-                                data={filteredVillages}
-                                listClassName="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
-                                itemContent={(index, entry) => (
-                                    <div 
-                                        key={entry.village.id}
-                                        onClick={() => setQuickViewVillage({ village: entry.village, chief: entry.currentChief })}
-                                        className="cursor-pointer h-full"
-                                    >
-                                        <VillageCard entry={entry} />
-                                    </div>
-                                )}
-                            />
-                        ) : (
-                            <Card className="rounded-[2.5rem] border-none shadow-2xl shadow-slate-200/50 overflow-hidden bg-white">
-                                <TableVirtuoso
-                                    useWindowScroll
-                                    data={filteredVillages}
-                                    components={{
-                                        Table: ({ style, ...props }) => <table {...props} style={{ ...style, width: "100%", borderCollapse: "collapse" }} className="w-full caption-bottom text-sm" />,
-                                        TableHead: forwardRef((props, ref) => <thead {...props} ref={ref as any} className="[&_tr]:border-b" />),
-                                        TableRow: (props) => <tr {...props} className="border-b transition-colors hover:bg-slate-50/80 data-[state=selected]:bg-muted border-slate-50 group cursor-pointer" />,
-                                        TableBody: forwardRef((props, ref) => <tbody {...props} ref={ref as any} className="[&_tr:last-child]:border-0" />),
-                                    }}
-                                    fixedHeaderContent={() => (
-                                        <tr className="hover:bg-transparent border-slate-100 bg-slate-50/50">
-                                            <th className="h-12 px-4 text-center align-middle font-medium text-muted-foreground w-16 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 py-6">ID</th>
-                                            <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Localité / Sous-Préfecture</th>
-                                            <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Région & Département</th>
-                                            <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Autorité Actuelle</th>
-                                            <th className="h-12 px-4 text-center align-middle font-medium text-muted-foreground w-40 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Infrastructures</th>
-                                            <th className="h-12 px-4 text-center align-middle font-medium text-muted-foreground w-32 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Statut</th>
-                                        </tr>
-                                    )}
-                                    itemContent={(index, entry) => (
-                                        <>
-                                            <td className="p-4 align-middle text-center" onClick={() => setQuickViewVillage({ village: entry.village, chief: entry.currentChief })}>
-                                                <span className="text-[10px] font-black text-slate-300">{index + 1}</span>
-                                            </td>
-                                            <td className="p-4 align-middle" onClick={() => setQuickViewVillage({ village: entry.village, chief: entry.currentChief })}>
-                                                <div className="flex flex-col">
-                                                    <span className="font-black text-slate-900 text-sm tracking-tight leading-tight">{entry.village.name}</span>
-                                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{entry.village.subPrefecture || entry.village.commune}</span>
-                                                </div>
-                                            </td>
-                                            <td className="p-4 align-middle" onClick={() => setQuickViewVillage({ village: entry.village, chief: entry.currentChief })}>
-                                                <div className="flex flex-col">
-                                                    <span className="text-xs font-bold text-slate-600">{entry.village.region}</span>
-                                                    <span className="text-[10px] font-medium text-slate-400">{entry.village.department}</span>
-                                                </div>
-                                            </td>
-                                            <td className="p-4 align-middle" onClick={() => setQuickViewVillage({ village: entry.village, chief: entry.currentChief })}>
-                                                {entry.currentChief ? (
-                                                    <div className="flex items-center gap-3">
-                                                        <Avatar className="h-8 w-8 rounded-lg border border-slate-100 shadow-sm">
-                                                            <AvatarImage src={entry.currentChief.photoUrl} />
-                                                            <AvatarFallback className="bg-slate-100 text-slate-400 text-[10px] font-black">
-                                                                {entry.currentChief.name.substring(0, 2).toUpperCase()}
-                                                            </AvatarFallback>
-                                                        </Avatar>
-                                                        <div className="flex flex-col">
-                                                            <span className="text-xs font-black text-slate-900 tracking-tight">{entry.currentChief.name}</span>
-                                                            <span className="text-[9px] font-mono text-slate-400">{entry.currentChief.CNRCTRegistrationNumber}</span>
-                                                        </div>
-                                                    </div>
-                                                ) : (
-                                                    <span className="text-[10px] font-bold text-slate-300 italic uppercase tracking-widest">--- Néant ---</span>
-                                                )}
-                                            </td>
-                                            <td className="p-4 align-middle" onClick={() => setQuickViewVillage({ village: entry.village, chief: entry.currentChief })}>
-                                                <div className="flex justify-center gap-1.5 opacity-40 group-hover:opacity-100 transition-opacity">
-                                                    <Zap className={cn("h-3.5 w-3.5", entry.village.hasElectricity ? "text-amber-500 fill-amber-500" : "text-slate-200")} />
-                                                    <Droplets className={cn("h-3.5 w-3.5", entry.village.hasWater ? "text-blue-500 fill-blue-500" : "text-slate-200")} />
-                                                    <School className={cn("h-3.5 w-3.5", entry.village.hasSchool ? "text-indigo-500 fill-indigo-500" : "text-slate-200")} />
-                                                    <Activity className={cn("h-3.5 w-3.5", entry.village.hasHealthCenter ? "text-emerald-500 fill-emerald-500" : "text-slate-200")} />
-                                                </div>
-                                            </td>
-                                            <td className="p-4 align-middle text-center" onClick={() => setQuickViewVillage({ village: entry.village, chief: entry.currentChief })}>
-                                                {entry.currentChief ? (
-                                                    <Badge className="bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 border-none rounded-lg text-[9px] font-black uppercase tracking-widest px-3 py-1">
-                                                        Occupé
-                                                    </Badge>
-                                                ) : (
-                                                    <Badge className="bg-amber-500/10 text-amber-600 hover:bg-amber-500/20 border-none rounded-lg text-[9px] font-black uppercase tracking-widest px-3 py-1 animate-pulse">
-                                                        Vacant
-                                                    </Badge>
-                                                )}
-                                            </td>
-                                        </>
-                                    )}
-                                />
-                            </Card>
-                        )}
-                    </div>
-                 ) : (
-                    <div className="bg-white rounded-xl p-8 text-center shadow-xl shadow-slate-200/50 border border-slate-50">
-                        <div className="mx-auto w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mb-6">
-                            <SearchX className="h-12 w-12 text-slate-300" />
-                        </div>
-                        <h3 className="text-2xl font-black text-slate-900 mb-2">Aucun village trouvé</h3>
-                        <p className="text-slate-500 font-medium mb-8 max-w-sm mx-auto">
-                            Désolé, nous n'avons trouvé aucune localité correspondant à vos critères de recherche.
-                        </p>
-                        <Button onClick={clearFilters} variant="outline" className="rounded-lg px-8 h-12 font-bold ring-offset-slate-50">
-                            Effacer les filtres
-                        </Button>
-                    </div>
-                )}
+            {/* --- MAINTENANCE (Admin only) --- */}
+            {(user?.role?.name === 'ADMIN' || user?.email === 'magloire078@gmail.com') && (
+                <div className="mt-8 space-y-4 px-4 lg:px-8 pb-8">
 
-                {/* --- MAINTENANCE (Admin only) --- */}
-                {(user?.role?.name === 'ADMIN' || user?.email === 'magloire078@gmail.com') && (
-                    <div className="mt-8 space-y-4">
-                        <div className="p-4 bg-slate-900 text-white rounded-xl font-mono text-[10px] overflow-auto max-h-60 border border-slate-700">
-                            <h3 className="text-amber-500 font-black mb-2">DIAGNOSTIC DATA (ADMIN)</h3>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <p>TOTAL VILLAGES: {villages.length}</p>
-                                    <p>TOTAL CHIEFS: {chiefs.length}</p>
-                                    <p>NON-EMPTY REGIONS: {villages.filter(v => !!v.region).length}</p>
-                                    <p>NON-EMPTY DEPTS: {villages.filter(v => !!v.department).length}</p>
-                                    <p>NON-EMPTY SP: {villages.filter(v => !!v.subPrefecture).length}</p>
-                                    <p>NON-EMPTY NAMES: {villages.filter(v => !!v.name).length}</p>
-                                </div>
-                                <div>
-                                    <p>SELECTED REGION: {selectedRegion}</p>
-                                    {villages.length > 0 && (
-                                        <div className="mt-2 border-t border-slate-700 pt-2">
-                                            <p className="text-amber-400">RAW DATA SAMPLES (FIRST 10):</p>
-                                            <div className="space-y-1 mt-1">
-                                                {villages.slice(0, 10).map((v, i) => (
-                                                    <p key={v.id} className="text-[9px] border-b border-slate-800 pb-1">
-                                                        [{i}] {v.name} | R: &quot;{v.region}&quot; | D: &quot;{v.department}&quot; | SP: &quot;{v.subPrefecture}&quot; | SRC: &quot;{(v as any).source || ""}&quot;
-                                                    </p>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                        
-                        {showMaintenance && <DataMigrationTool />}
-                    </div>
-                )}
-            </div>
+                    {showMaintenance && <DataMigrationTool />}
+                </div>
+            )}
 
             {quickViewVillage && (
                 <VillageQuickView
@@ -855,22 +726,34 @@ export default function VillagesPage() {
                     onOpenChange={(open) => !open && setQuickViewVillage(null)}
                 />
             )}
-        </div>
-    </PermissionGuard>
+
+            {/* Link Chief ↔ Village Sheet */}
+            {linkSheetEntry && (
+                <LinkChiefVillageSheet
+                    mode="from-village"
+                    village={linkSheetEntry.village}
+                    currentChief={linkSheetEntry.currentChief}
+                    isOpen={!!linkSheetEntry}
+                    onCloseAction={() => setLinkSheetEntry(null)}
+                    onLinkedAction={() => setLinkSheetEntry(null)}
+                />
+            )}
+        </PermissionGuard>
     );
 }
 
-function VillageCard({ entry }: { entry: VillageEntry }) {
+
+function VillageCard({ entry, onLink }: { entry: VillageEntry; onLink?: (e: React.MouseEvent) => void }) {
     const { village, currentChief, archivedChiefsCount } = entry;
     const score = village.developmentScore || 0;
 
     return (
         <Card className={cn(
-            "group relative rounded-xl border-none shadow-xl shadow-slate-200/50 overflow-hidden bg-white hover:shadow-2xl transition-all duration-500 hover:-translate-y-2",
-            !currentChief && "ring-2 ring-amber-500/10 shadow-amber-500/5"
+            "group relative rounded-xl border-none shadow-xl shadow-slate-200/50 dark:shadow-none overflow-hidden bg-white dark:bg-slate-800 hover:shadow-2xl transition-all duration-500 hover:-translate-y-1",
+            !currentChief && "ring-1 ring-amber-500/10 shadow-amber-500/5"
         )}>
             {/* Background Pattern Header */}
-            <div className="h-32 bg-slate-900 relative p-6 flex flex-col justify-end overflow-hidden">
+            <div className="h-24 bg-slate-900 relative p-4 flex flex-col justify-end overflow-hidden">
                 {!currentChief && (
                     <motion.div 
                         initial={{ opacity: 0 }}
@@ -882,50 +765,50 @@ function VillageCard({ entry }: { entry: VillageEntry }) {
                 <div className="absolute inset-0 opacity-20 transition-transform duration-700 group-hover:scale-110">
                     <div className="absolute inset-0 pattern-dots text-white"></div>
                 </div>
-                <div className="absolute top-4 right-4 h-12 w-12 bg-white/5 backdrop-blur-md rounded-lg flex items-center justify-center border border-white/10 opacity-0 group-hover:opacity-100 transition-all duration-500 group-hover:rotate-12">
-                    <MapPin className="h-5 w-5 text-white" />
+                <div className="absolute top-2 right-2 h-8 w-8 bg-white/5 backdrop-blur-md rounded-lg flex items-center justify-center border border-white/10 opacity-0 group-hover:opacity-100 transition-all duration-500 group-hover:rotate-12">
+                    <MapPin className="h-4 w-4 text-white" />
                 </div>
                 
-                <h3 className="text-xl font-black text-white truncate group-hover:text-amber-400 transition-colors z-10">
+                <h3 className="text-lg font-black text-white truncate group-hover:text-amber-400 transition-colors z-10">
                     {village.name}
                 </h3>
-                <p className="text-slate-400 text-xs font-black uppercase tracking-widest truncate z-10">
+                <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest truncate z-10">
                     {village.region} • {village.department}
                 </p>
 
                 {/* Hover Commune overlay */}
-                <div className="absolute inset-x-0 bottom-0 bg-amber-500 translate-y-full group-hover:translate-y-0 transition-transform duration-500 p-2 flex items-center justify-center">
-                    <span className="text-white text-[10px] font-black uppercase tracking-[0.2em]">{village.subPrefecture}</span>
+                <div className="absolute inset-x-0 bottom-0 bg-amber-500 translate-y-full group-hover:translate-y-0 transition-transform duration-500 p-1 flex items-center justify-center">
+                    <span className="text-white text-[9px] font-black uppercase tracking-[0.2em]">{village.subPrefecture}</span>
                 </div>
             </div>
 
-            <CardContent className="p-4 pt-8">
-                <div className="relative mb-6">
-                    <div className="flex items-center gap-4">
-                        <Avatar className="h-16 w-16 rounded-lg border-4 border-slate-50 shadow-sm group-hover:border-amber-50 ring-2 ring-transparent group-hover:ring-amber-500/20 transition-all duration-500">
+            <CardContent className="p-3 pt-5">
+                <div className="relative mb-4">
+                    <div className="flex items-center gap-3">
+                        <Avatar className="h-10 w-10 rounded-lg border-2 border-slate-50 dark:border-slate-700 shadow-sm group-hover:border-amber-50 ring-2 ring-transparent group-hover:ring-amber-500/20 transition-all duration-500">
                             <AvatarImage src={currentChief?.photoUrl || ""} />
-                            <AvatarFallback className="bg-slate-100 text-slate-400 font-black rounded-lg">
-                                {currentChief?.name?.charAt(0) || <Users className="h-6 w-6" />}
+                            <AvatarFallback className="bg-slate-100 dark:bg-slate-700 text-slate-400 font-black rounded-lg text-xs">
+                                {currentChief?.name?.charAt(0) || <Users className="h-4 w-4" />}
                             </AvatarFallback>
                         </Avatar>
                         <div className="min-w-0">
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
+                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">
                                 Autorité Actuelle
                             </p>
                             {currentChief ? (
                                 <>
-                                    <h4 className="text-sm font-black text-slate-900 truncate leading-none mb-1 group-hover:text-amber-600 transition-colors">
+                                    <h4 className="text-xs font-black text-slate-900 dark:text-white truncate leading-none mb-1 group-hover:text-amber-600 transition-colors">
                                         {currentChief.name}
                                     </h4>
-                                    <Badge className="bg-green-50 text-green-700 text-[10px] font-black hover:bg-green-50 border-none px-2 rounded-sm">
-                                        SIÈGE OCCUPÉ
+                                    <Badge className="bg-green-50 text-green-700 text-[9px] font-black hover:bg-green-50 border-none px-1.5 py-0 rounded-sm">
+                                        OCCUPÉ
                                     </Badge>
                                 </>
                             ) : (
                                 <>
-                                    <p className="text-sm font-bold text-slate-400 italic mb-1">Non renseignée</p>
-                                    <Badge className="bg-amber-50 text-amber-700 text-[10px] font-black hover:bg-amber-50 border-none px-2 rounded-sm">
-                                        VACANCE DU TRÔNE
+                                    <p className="text-xs font-bold text-slate-400 italic mb-1">Non renseignée</p>
+                                    <Badge className="bg-amber-50 text-amber-700 text-[9px] font-black hover:bg-amber-50 border-none px-1.5 py-0 rounded-sm">
+                                        VACANT
                                     </Badge>
                                 </>
                             )}
@@ -934,15 +817,15 @@ function VillageCard({ entry }: { entry: VillageEntry }) {
                 </div>
 
                 {/* Indice de Développement Local (IDL) */}
-                <div className="mb-6 space-y-2">
-                    <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest leading-none">
-                        <span className="text-slate-400">Indice de Développement (IDL)</span>
+                <div className="mb-4 space-y-1.5">
+                    <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-widest leading-none">
+                        <span className="text-slate-400">Indice (IDL)</span>
                         <span className={cn(
                             score >= 80 ? "text-emerald-500" : 
                             score >= 50 ? "text-blue-500" : "text-amber-500"
                         )}>{score}%</span>
                     </div>
-                    <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                    <div className="h-1 w-full bg-slate-100 rounded-full overflow-hidden">
                         <motion.div 
                             initial={{ width: 0 }}
                             animate={{ width: `${score}%` }}
@@ -956,45 +839,48 @@ function VillageCard({ entry }: { entry: VillageEntry }) {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-slate-50">
+                <div className="grid grid-cols-2 gap-3 mt-3 pt-3 border-t border-slate-50 dark:border-slate-700">
                     <div className="col-span-1">
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.1em] mb-1">Infrastructures</p>
-                        <div className="flex flex-wrap gap-2">
-                            <Zap className={cn("h-3.5 w-3.5", village.hasElectricity ? 'text-amber-500' : 'text-slate-200')} />
-                            <Droplets className={cn("h-3.5 w-3.5", village.hasWater ? 'text-blue-500' : 'text-slate-200')} />
-                            <School className={cn("h-3.5 w-3.5", village.hasSchool ? 'text-indigo-500' : 'text-slate-200')} />
-                            <Activity className={cn("h-3.5 w-3.5", village.hasHealthCenter ? 'text-emerald-500' : 'text-slate-200')} />
-                            <Building2 className={cn("h-3.5 w-3.5", village.hasMarket ? 'text-rose-500' : 'text-slate-200')} />
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.1em] mb-1">Infrastructures</p>
+                        <div className="flex flex-wrap gap-1.5">
+                            <Zap className={cn("h-3 w-3", village.hasElectricity ? 'text-amber-500' : 'text-slate-200')} />
+                            <Droplets className={cn("h-3 w-3", village.hasWater ? 'text-blue-500' : 'text-slate-200')} />
+                            <School className={cn("h-3 w-3", village.hasSchool ? 'text-indigo-500' : 'text-slate-200')} />
+                            <Activity className={cn("h-3 w-3", village.hasHealthCenter ? 'text-emerald-500' : 'text-slate-200')} />
+                            <Building2 className={cn("h-3 w-3", village.hasMarket ? 'text-rose-500' : 'text-slate-200')} />
                         </div>
                     </div>
                     <div className="col-span-1 text-right">
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.1em] mb-1">Archives</p>
-                        <p className="text-sm font-black text-slate-900 leading-none">{archivedChiefsCount} Prédéc.</p>
-                    </div>
-                </div>
-
-                <div className="mt-4 pt-4 border-t border-slate-50 flex justify-between items-center">
-                    <div>
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.1em] mb-1">Code INS</p>
-                        <p className="text-[11px] font-bold text-slate-900 font-mono tracking-tighter">{village.codeINS || "N/A"}</p>
-                    </div>
-                    <div className="text-right">
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.1em] mb-1">Population</p>
-                        <p className="text-[11px] font-bold text-slate-900 leading-none">
-                            {village.population ? `${village.population.toLocaleString()} hab.` : "N/D"}
-                        </p>
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.1em] mb-1">Archives</p>
+                        <p className="text-xs font-black text-slate-900 leading-none">{archivedChiefsCount} Prédéc.</p>
                     </div>
                 </div>
             </CardContent>
 
-            <CardFooter className="p-4 pt-0">
-                <Button asChild className="w-full h-12 rounded-lg border-none shadow-none text-xs font-black uppercase tracking-widest group-hover:bg-slate-900 transition-all duration-500 overflow-hidden relative">
+            <CardFooter className="p-3 pt-0 flex gap-2">
+                <Button asChild className="flex-1 h-9 rounded-md border-none shadow-none text-[10px] font-black uppercase tracking-widest bg-slate-100 text-slate-600 hover:text-white group-hover:bg-slate-900 transition-all duration-500 overflow-hidden relative">
                     <Link href={`/villages/${village.id}`}>
-                        <span className="relative z-10">Détails de la localité</span>
-                        <ChevronRight className="relative z-10 w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                        <span className="relative z-10">Détails</span>
+                        <ChevronRight className="relative z-10 w-3 h-3 ml-1 group-hover:translate-x-1 transition-transform" />
                         <div className="absolute inset-0 bg-gradient-to-r from-slate-800 to-slate-900 translate-x-full group-hover:translate-x-0 transition-transform duration-500"></div>
                     </Link>
                 </Button>
+                <PermissionGuard permission="page:villages:edit">
+                    <Button
+                        variant="outline"
+                        size="icon"
+                        title={currentChief ? "Changer de chef" : "Affecter un chef"}
+                        className="h-9 w-9 rounded-md border-slate-200 text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors shrink-0"
+                        onClick={onLink}
+                    >
+                        <Edit2 className="h-4 w-4" />
+                    </Button>
+                </PermissionGuard>
+                <PermissionGuard permission="page:villages:delete">
+                    <Button variant="outline" size="icon" className="h-9 w-9 rounded-md border-slate-200 text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors shrink-0">
+                        <Trash2 className="h-4 w-4" />
+                    </Button>
+                </PermissionGuard>
             </CardFooter>
         </Card>
     );

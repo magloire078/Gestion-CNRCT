@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getDirectoireMembers, getRegionalCommittees, type RegionalCommittee } from "@/services/employee-service";
+import { getDirectoireMembers, getEmployeeDirectory, type RegionalCommittee } from "@/services/employee-service";
 import type { Employe } from "@/lib/data";
+import { divisions } from "@/lib/ivory-coast-divisions";
 
 // Import landing components
 import { LandingHeader } from "@/components/landing/landing-header";
@@ -17,6 +18,7 @@ import { LandingFooter } from "@/components/landing/landing-footer";
 export default function LandingPage() {
     const [directoireMembers, setDirectoireMembers] = useState<Employe[]>([]);
     const [regionalCommittees, setRegionalCommittees] = useState<RegionalCommittee[]>([]);
+    const [allDirectors, setAllDirectors] = useState<Employe[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedRegionIndex, setSelectedRegionIndex] = useState<number>(0);
     const [searchQuery, setSearchQuery] = useState("");
@@ -24,14 +26,57 @@ export default function LandingPage() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [members, committees] = await Promise.all([
+                const [members, directory] = await Promise.all([
                     getDirectoireMembers(),
-                    getRegionalCommittees()
+                    getEmployeeDirectory()
                 ]);
                 setDirectoireMembers(members);
-                setRegionalCommittees(committees);
 
-                if (committees.length > 0) {
+                // Compute regional committees locally
+                const regionsList = Object.keys(divisions);
+                const computedCommittees: RegionalCommittee[] = regionsList.map(region => {
+                    const depts = Object.keys(divisions[region] || {});
+                    
+                    const president = directory.find(emp => 
+                        emp.Region === region && 
+                        emp.poste?.toLowerCase().includes('membre du directoire')
+                    ) || null;
+
+                    const committeeMembers: Employe[] = [];
+                    if (president) committeeMembers.push(president);
+
+                    depts.forEach(dept => {
+                        const deptMembers = directory.filter(emp => 
+                            emp.Region === region && 
+                            emp.Departement === dept && 
+                            emp.id !== president?.id &&
+                            (emp.poste?.toLowerCase().includes('comité') || emp.poste?.toLowerCase().includes('comite'))
+                        );
+                        committeeMembers.push(...deptMembers.slice(0, 2));
+                    });
+
+                    return {
+                        region,
+                        president,
+                        members: committeeMembers
+                    };
+                });
+                setRegionalCommittees(computedCommittees);
+
+                const directors = directory.filter(m => {
+                    const p = m.poste?.toLowerCase() || '';
+                    return (p.includes('directeur') || p.includes('directrice') || p.includes('cabinet')) &&
+                           !p.includes('secrétaire général') &&
+                           !p.includes('directrice de cabinet') &&
+                           !p.includes('directeur de cabinet') &&
+                           !p.includes('sous-directeur') &&
+                           !p.includes('sous-directrice') &&
+                           !p.includes('assistant') &&
+                           !p.includes('chauffeur');
+                });
+                setAllDirectors(directors);
+
+                if (computedCommittees.length > 0) {
                     setSelectedRegionIndex(0);
                 }
             } catch (error) {
@@ -55,7 +100,8 @@ export default function LandingPage() {
                 
                 <BureauDirectoire 
                     loading={loading} 
-                    members={directoireMembers} 
+                    members={directoireMembers}
+                    allDirectors={allDirectors}
                 />
 
                 <RegionalCommittees 

@@ -153,7 +153,7 @@ function IntranetContent() {
     return (
         <div className="pb-20 space-y-12">
             {/* Immersive Welcome Section - Hyper-Premium Masterpiece */}
-            <div className="relative rounded-[2.5rem] bg-slate-950 px-6 py-10 md:px-10 md:py-16 overflow-hidden group shadow-[0_35px_60px_-15px_rgba(0,0,0,0.5)]">
+            <div className="relative rounded-2xl bg-slate-950 px-6 py-6 md:px-8 md:py-8 overflow-hidden group shadow-[0_35px_60px_-15px_rgba(0,0,0,0.5)]">
                 {/* Advanced Animated Gradients */}
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(59,130,246,0.25),transparent_50%)]" />
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_70%,rgba(99,102,241,0.2),transparent_50%)]" />
@@ -165,30 +165,30 @@ function IntranetContent() {
                     <Rocket className="h-64 w-64 text-white" />
                 </div>
                 
-                <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6 md:gap-10">
-                    <div className="flex items-center gap-10">
+                <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-6">
+                    <div className="flex items-center gap-6">
                         <div className="relative">
-                            <div className="absolute -inset-2 bg-gradient-to-tr from-blue-600 via-indigo-400 to-emerald-500 rounded-[2rem] blur-xl opacity-20 group-hover:opacity-60 transition duration-1000" />
+                            <div className="absolute -inset-2 bg-gradient-to-tr from-blue-600 via-indigo-400 to-emerald-500 rounded-xl blur-xl opacity-20 group-hover:opacity-60 transition duration-1000" />
                             <Avatar className="h-32 w-32 border-4 border-white/10 shadow-2xl shrink-0 transition-all duration-1000 group-hover:scale-105 group-hover:border-white/20 relative z-10">
                                 <AvatarImage src={getValidPhotoUrl(user?.photoUrl)} alt={user?.name} className="object-cover" />
                                 <AvatarFallback className="bg-slate-900 text-white text-3xl font-black">
                                     {user?.name?.split(' ').map(n => n[0]).join('') || "U"}
                                 </AvatarFallback>
                             </Avatar>
-                            <div className="absolute -bottom-2 -right-2 h-10 w-10 bg-emerald-500 rounded-2xl flex items-center justify-center text-white border-4 border-slate-950 shadow-xl z-20">
+                            <div className="absolute -bottom-2 -right-2 h-10 w-10 bg-emerald-500 rounded-xl flex items-center justify-center text-white border-4 border-slate-950 shadow-xl z-20">
                                 <ShieldCheck className="h-5 w-5" />
                             </div>
                         </div>
                         <div className="space-y-4">
                             <div className="flex items-center gap-4">
-                                <div className="px-4 py-1.5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md flex items-center gap-3">
+                                <div className="px-4 py-1.5 rounded-lg bg-white/5 border border-white/10 backdrop-blur-md flex items-center gap-3">
                                      <span className="relative flex h-2 w-2">
                                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
                                         <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
                                     </span>
                                     <span className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-400">Station de Pilotage Alpha</span>
                                 </div>
-                                <div className="hidden sm:flex px-4 py-1.5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md items-center gap-3">
+                                <div className="hidden sm:flex px-4 py-1.5 rounded-lg bg-white/5 border border-white/10 backdrop-blur-md items-center gap-3">
                                     <Sparkles className="h-3 w-3 text-amber-400" />
                                     <span className="text-[10px] font-black uppercase tracking-[0.3em] text-amber-400">{format(new Date(), 'EEEE dd MMMM', { locale: fr })}</span>
                                 </div>
@@ -203,9 +203,9 @@ function IntranetContent() {
                     </div>
                     
                     {/* Immersive AI Hub Status - Hyper Style */}
-                    <div className="hidden xl:flex items-center gap-6 bg-white/[0.02] backdrop-blur-2xl border border-white/5 rounded-[2rem] p-8 max-w-md shadow-2xl relative group/ai overflow-hidden transition-all duration-700 hover:bg-white/[0.05] hover:border-white/10">
+                    <div className="hidden xl:flex items-center gap-4 bg-white/[0.02] backdrop-blur-2xl border border-white/5 rounded-xl p-5 max-w-md shadow-2xl relative group/ai overflow-hidden transition-all duration-700 hover:bg-white/[0.05] hover:border-white/10">
                         <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 to-indigo-600/10 opacity-0 group-hover/ai:opacity-100 transition-opacity duration-1000" />
-                        <div className="h-16 w-16 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-700 flex items-center justify-center shrink-0 shadow-2xl shadow-blue-500/30 relative z-10 group-hover/ai:scale-110 transition-transform duration-700">
+                        <div className="h-16 w-16 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-700 flex items-center justify-center shrink-0 shadow-2xl shadow-blue-500/30 relative z-10 group-hover/ai:scale-110 transition-transform duration-700">
                             <Bot className="h-8 w-8 text-white animate-bounce-slow" />
                         </div>
                         <div className="relative z-10 space-y-2">

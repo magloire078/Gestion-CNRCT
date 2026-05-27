@@ -136,6 +136,30 @@ export default function ReportingDashboard() {
             color: "bg-amber-600",
             href: "/reports/territory",
             metrics: [`${stats.electrificationRate.toFixed(1)}% Électricité`, `${stats.potableWaterRate.toFixed(1)}% Eau Potable`]
+        },
+        {
+            title: "Calendrier des Événements",
+            description: "Intronisations, fêtes traditionnelles, réunions CNRCT et cérémonies coutumières.",
+            icon: Calendar,
+            color: "bg-violet-600",
+            href: "/reports/events",
+            metrics: ["Vue Mensuelle", "Récurrence annuelle"]
+        },
+        {
+            title: "Arbre Hiérarchique",
+            description: "Chaîne coutumière par région : Roi → Province → Canton → Tribu → Village.",
+            icon: Users,
+            color: "bg-amber-500",
+            href: "/reports/hierarchy",
+            metrics: ["Par Région", "Tous rôles"]
+        },
+        {
+            title: "Carte Interactive",
+            description: "Visualisation géographique des villages avec filtres infrastructurels et score IDL.",
+            icon: MapPin,
+            color: "bg-indigo-700",
+            href: "/reports/map",
+            metrics: ["Clusters Leaflet", "Filtres infra"]
         }
 
     ];

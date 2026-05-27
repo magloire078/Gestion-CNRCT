@@ -75,9 +75,37 @@ export function ChiefQuickView({ chief, isOpen, onClose }: ChiefQuickViewProps) 
 
                         <div className="flex-1 space-y-2">
                             <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                                {chief.cnrctAffiliation === 'Directoire' && (
+                                    <Badge className="bg-gradient-to-r from-amber-200 to-yellow-400 text-amber-900 border-none px-3 py-1 text-[10px] uppercase tracking-widest font-black shadow-lg">
+                                        Directoire
+                                    </Badge>
+                                )}
+                                {chief.cnrctAffiliation === 'Comité Régional' && (
+                                    <Badge className="bg-purple-500/20 text-purple-200 border-purple-500/30 px-3 py-1 text-[10px] uppercase tracking-widest font-black shadow-lg">
+                                        Comité Régional
+                                    </Badge>
+                                )}
                                 <Badge className="bg-white/20 text-white hover:bg-white/30 border-none px-3 py-1 text-[10px] uppercase tracking-widest font-black">
                                     {chief.role}
                                 </Badge>
+                                {chief.additionalRoles && chief.additionalRoles.length > 0 && (
+                                    <div className="flex gap-1.5">
+                                        {chief.additionalRoles.map((r, i) => {
+                                            let initials = "CV";
+                                            let colorClass = "bg-white/10 text-white border-white/20";
+                                            if (r === "Roi") { initials = "R"; colorClass = "bg-amber-500/20 text-amber-300 border-amber-500/30"; }
+                                            else if (r === "Chef de province") { initials = "CP"; colorClass = "bg-purple-500/20 text-purple-300 border-purple-500/30"; }
+                                            else if (r === "Chef de canton") { initials = "CC"; colorClass = "bg-blue-500/20 text-blue-300 border-blue-500/30"; }
+                                            else if (r === "Chef de tribu") { initials = "CT"; colorClass = "bg-emerald-500/20 text-emerald-300 border-emerald-500/30"; }
+                                            
+                                            return (
+                                                <div key={i} title={r} className={cn("flex items-center justify-center h-6 px-2 text-[10px] font-black rounded-md border", colorClass)}>
+                                                    {initials}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
                                 {chief.status === 'actif' && (
                                     <Badge className="bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 border-emerald-500/30 px-3 py-1 text-[10px] uppercase font-black">
                                         En fonction

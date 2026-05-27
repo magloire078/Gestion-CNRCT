@@ -181,6 +181,15 @@ export default function HeritageHubPage() {
                             <Printer className="mr-3 h-5 w-5 text-amber-500" />
                             Rapport National
                         </Button>
+                        <Button 
+                            asChild
+                            className="bg-amber-500 hover:bg-amber-600 text-slate-950 rounded-xl h-14 px-8 font-black uppercase tracking-widest text-xs shadow-lg shadow-amber-500/20 shrink-0"
+                        >
+                            <Link href="/heritage/map">
+                                <MapPin className="mr-3 h-5 w-5" />
+                                Carte Interactive
+                            </Link>
+                        </Button>
                     </div>
                 </div>
 

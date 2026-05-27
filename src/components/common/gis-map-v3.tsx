@@ -22,8 +22,9 @@ interface GISMapProps {
     chiefs?: Chief[];
     conflicts?: Conflict[];
     heritage?: HeritageItem[];
+    kingdoms?: any[];
     selectedId?: string | null;
-    onMarkerClick?: (id: string, type: 'chief' | 'conflict' | 'heritage') => void;
+    onMarkerClick?: (id: string, type: 'chief' | 'conflict' | 'heritage' | 'kingdom') => void;
     onAddPoint?: (lat: number, lng: number) => void;
     className?: string;
     showFilters?: boolean;
@@ -35,6 +36,7 @@ export function GISMap(props: GISMapProps) {
         chiefs = [],
         conflicts = [],
         heritage = [],
+        kingdoms = [],
         selectedId,
         onMarkerClick,
         onAddPoint,
@@ -49,6 +51,7 @@ export function GISMap(props: GISMapProps) {
         chiefs: null,
         conflicts: null,
         heritage: null,
+        kingdoms: null,
         heatmap: null,
         proximity: null
     });
@@ -58,11 +61,12 @@ export function GISMap(props: GISMapProps) {
     const [mapReady, setMapReady] = useState(false);
     const instanceId = useMemo(() => `map-${Math.random().toString(36).substr(2, 9)}`, []);
     const [activeLayers, setActiveLayers] = useState({
-        chiefs: true,
-        conflicts: true,
-        heritage: true,
+        chiefs: false,
+        conflicts: false,
+        heritage: false,
         heatmap: false,
-        proximity: true
+        proximity: true,
+        kingdoms: true
     });
 
     // Initialisation de Leaflet (Browser only)
@@ -97,13 +101,25 @@ export function GISMap(props: GISMapProps) {
     }, []);
 
     // Création de l'icône personnalisée (Helper interne)
-    const createCustomIcon = useCallback((type: 'chief' | 'conflict' | 'heritage' | 'selected', options?: { category?: string, status?: string }) => {
+    const createCustomIcon = useCallback((type: 'chief' | 'conflict' | 'heritage' | 'selected' | 'kingdom', options?: { category?: string, status?: string }) => {
         if (!L) return null;
 
         let color = 'bg-blue-600';
         let iconSvg = '';
 
-        if (type === 'chief') {
+        if (type === 'kingdom') {
+            color = 'bg-amber-500';
+            iconSvg = '<path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"/><path d="M12 2v2"/><path d="M8 2v2"/><path d="M16 2v2"/>'; // Crown SVG approximation
+            return L.divIcon({
+                className: 'custom-kingdom-icon',
+                html: `<div class="w-12 h-12 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full border-[3px] border-white shadow-2xl flex items-center justify-center ring-4 ring-amber-500/30 transform transition-transform hover:scale-110 z-50">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">${iconSvg}</svg>
+                </div>`,
+                iconSize: [48, 48],
+                iconAnchor: [24, 48],
+                popupAnchor: [0, -48]
+            });
+        } else if (type === 'chief') {
             color = 'bg-blue-600';
             iconSvg = '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>';
         } else if (type === 'conflict') {
@@ -185,6 +201,7 @@ export function GISMap(props: GISMapProps) {
             layersRef.current.chiefs = L.markerClusterGroup({ showCoverageOnHover: false });
             layersRef.current.conflicts = L.markerClusterGroup({ showCoverageOnHover: false });
             layersRef.current.heritage = L.markerClusterGroup({ showCoverageOnHover: false });
+            layersRef.current.kingdoms = L.markerClusterGroup({ showCoverageOnHover: false, maxClusterRadius: 30 });
             layersRef.current.heatmap = L.layerGroup();
             layersRef.current.proximity = L.layerGroup();
 
@@ -337,13 +354,68 @@ export function GISMap(props: GISMapProps) {
             }
         });
 
+        // Ajout des royaumes
+        kingdoms.forEach(kingdom => {
+            const lat = kingdom.coordonnees_siege?.latitude;
+            const lng = kingdom.coordonnees_siege?.longitude;
+            if (!lat || !lng) return;
+            
+            // Cercle d'influence
+            const influenceCircle = L.circle([lat, lng], {
+                radius: 40000, // 40km approx influence
+                color: '#f59e0b',
+                fillColor: '#fcd34d',
+                fillOpacity: 0.1,
+                weight: 2,
+                dashArray: '5, 10'
+            });
+            influenceCircle.bindTooltip(kingdom.nom, { sticky: true, className: 'font-bold uppercase tracking-widest text-[10px]' });
+            layers.kingdoms.addLayer(influenceCircle);
+
+            // Marqueur central
+            const marker = L.marker([lat, lng], {
+                icon: createCustomIcon('kingdom')
+            });
+
+            const popupContent = document.createElement('div');
+            popupContent.className = 'p-4 min-w-[280px] font-sans';
+            popupContent.innerHTML = `
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="h-12 w-12 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 border-[3px] border-amber-100 flex items-center justify-center text-white shadow-lg shrink-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"/><path d="M12 2v2"/><path d="M8 2v2"/><path d="M16 2v2"/></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-black text-slate-900 uppercase tracking-tight leading-tight">${kingdom.nom}</h3>
+                        <p class="text-[9px] font-bold text-amber-600 uppercase tracking-widest mt-0.5">Peuple: ${kingdom.peuple}</p>
+                    </div>
+                </div>
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 mb-3">
+                    <p class="text-xs font-bold text-slate-800">${kingdom.souverain?.nom_trone || 'Roi'}</p>
+                    <p class="text-[10px] text-slate-500 uppercase tracking-wider mt-1">${kingdom.souverain?.statut || ''}</p>
+                </div>
+                <div class="pt-2 border-t border-slate-100 flex justify-between items-center">
+                     <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                        📍 Siège: ${kingdom.capitale_traditionnelle}
+                     </p>
+                </div>
+            `;
+
+            marker.bindPopup(popupContent);
+            layers.kingdoms.addLayer(marker);
+            
+            if (selectedId === kingdom.id) {
+                map.flyTo([lat, lng], 10);
+            }
+        });
+
         // Visibilité initiale
         if (activeLayers.chiefs) map.addLayer(layers.chiefs);
         if (activeLayers.conflicts) map.addLayer(layers.conflicts);
         if (activeLayers.heritage) map.addLayer(layers.heritage);
+        if (activeLayers.kingdoms) map.addLayer(layers.kingdoms);
         if (activeLayers.proximity) map.addLayer(layers.proximity);
 
-    }, [mapReady, chiefs, conflicts, heritage, selectedId, L]);
+    }, [mapReady, chiefs, conflicts, heritage, kingdoms, selectedId, L]);
 
     // Toggles
     const toggleLayer = (layer: keyof typeof activeLayers) => {
@@ -438,6 +510,16 @@ export function GISMap(props: GISMapProps) {
                         >
                             <Info className="h-3.5 w-3.5" />
                             Patrimoine
+                        </button>
+                        <button
+                            onClick={() => toggleLayer('kingdoms')}
+                            className={cn(
+                                "flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all",
+                                activeLayers.kingdoms ? "bg-amber-500 text-white shadow-lg shadow-amber-500/30" : "text-slate-400 hover:text-white"
+                            )}
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"/><path d="M12 2v2"/><path d="M8 2v2"/><path d="M16 2v2"/></svg>
+                            Royaumes
                         </button>
                         <div className="w-px h-6 bg-white/10 mx-1" />
                     </div>

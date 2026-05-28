@@ -42,6 +42,7 @@ import { Upload, Loader2, UserCircle2, Building2, MapPin, ShieldCheck, Briefcase
 import { Textarea } from "../ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { IVORIAN_REGIONS } from "@/constants/regions";
+import { divisions } from "@/lib/ivory-coast-divisions";
 import { ScrollArea } from "../ui/scroll-area";
 import { DebouncedInput } from "@/components/ui/debounced-input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -365,7 +366,7 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
                       <div className="grid grid-cols-2 gap-6">
                         <div className="space-y-2">
                           <Label htmlFor="region" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Région</Label>
-                          <Select value={region} onValueChange={setRegion}>
+                          <Select value={region} onValueChange={(val) => { setRegion(val); setDepartement(""); setSubPrefecture(""); setVillage(""); }}>
                             <SelectTrigger className="h-12 rounded-xl border-slate-200 bg-white font-bold"><SelectValue placeholder="Choisir..." /></SelectTrigger>
                             <SelectContent className="rounded-xl border-slate-100 shadow-3xl max-h-[300px]">
                               {IVORIAN_REGIONS.map(r => (<SelectItem key={r} value={r} className="font-bold py-3 uppercase text-[9px] tracking-widest">{r}</SelectItem>))}
@@ -374,7 +375,36 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="departement" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Département</Label>
-                          <Input id="departement" value={departement} onChange={(e) => setDepartement(e.target.value)} className="h-12 rounded-xl border-slate-200 bg-white shadow-sm font-bold" />
+                          <Select value={departement} onValueChange={(val) => { setDepartement(val); setSubPrefecture(""); setVillage(""); }} disabled={!region}>
+                            <SelectTrigger className="h-12 rounded-xl border-slate-200 bg-white font-bold"><SelectValue placeholder="Choisir..." /></SelectTrigger>
+                            <SelectContent className="rounded-xl border-slate-100 shadow-3xl max-h-[300px]">
+                              {Object.keys(divisions[region] || {}).sort().map(d => (
+                                <SelectItem key={d} value={d} className="font-bold py-3 uppercase text-[9px] tracking-widest">{d}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <Label htmlFor="subPrefecture" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Sous-Préfecture</Label>
+                          <Select value={subPrefecture} onValueChange={(val) => { setSubPrefecture(val); setVillage(""); }} disabled={!departement}>
+                            <SelectTrigger className="h-12 rounded-xl border-slate-200 bg-white font-bold"><SelectValue placeholder="Choisir..." /></SelectTrigger>
+                            <SelectContent className="rounded-xl border-slate-100 shadow-3xl max-h-[300px]">
+                              {Object.keys(divisions[region]?.[departement] || {}).sort().map(sp => (
+                                <SelectItem key={sp} value={sp} className="font-bold py-3 uppercase text-[9px] tracking-widest">{sp}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="village" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Village / Quartier</Label>
+                          <DebouncedInput 
+                            id="village" 
+                            value={village} 
+                            onChange={(val) => setVillage(val as string)} 
+                            className="h-12 rounded-xl border-slate-200 bg-white shadow-sm font-bold" 
+                          />
                         </div>
                       </div>
                     </div>

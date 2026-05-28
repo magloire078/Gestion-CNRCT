@@ -224,11 +224,17 @@ export default function EmployeesPage() {
 
   const filteredEmployees = useMemo(() => {
     const filtered = enrichedEmployees.filter(employee => {
-      const fullName = (employee.lastName || '').toLowerCase() + ' ' + (employee.firstName || '').toLowerCase();
-      const searchLower = debouncedSearchTerm.toLowerCase();
-      const matchesSearchTerm = fullName.includes(searchLower) || 
-                                (employee.name || '').toLowerCase().includes(searchLower) ||
-                                (employee.matricule || '').toLowerCase().includes(searchLower);
+      const searchTerms = debouncedSearchTerm.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").split(' ').filter(Boolean);
+      
+      const normalizedFullName = ((employee.lastName || '') + ' ' + (employee.firstName || '')).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      const normalizedName = (employee.name || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      const normalizedMatricule = (employee.matricule || '').toLowerCase();
+      
+      const matchesSearchTerm = searchTerms.length === 0 || searchTerms.every(term => 
+        normalizedFullName.includes(term) || 
+        normalizedName.includes(term) ||
+        normalizedMatricule.includes(term)
+      );
       const matchesDepartment = departmentFilter === 'all' || employee.departmentId === departmentFilter;
       const matchesStatus = statusFilter === 'all' || employee.status === statusFilter;
       const matchesCnps = cnpsFilter === 'all' || employee.CNPS === cnpsFilter;

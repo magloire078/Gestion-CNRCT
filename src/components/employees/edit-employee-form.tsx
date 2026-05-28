@@ -34,6 +34,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { IVORIAN_REGIONS } from "@/constants/regions";
+import { divisions } from "@/lib/ivory-coast-divisions";
 import { DebouncedInput } from "@/components/ui/debounced-input";
 import { Checkbox } from "@/components/ui/checkbox";
 
@@ -305,7 +306,7 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                       <Label htmlFor="Region" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Région Administrative</Label>
                       <Select 
                         value={formData.Region || ''} 
-                        onValueChange={(v) => handleSelectChange('Region', v)}
+                        onValueChange={(v) => { handleSelectChange('Region', v); handleSelectChange('Departement', ''); handleSelectChange('subPrefecture', ''); handleSelectChange('Village', ''); }}
                       >
                         <SelectTrigger id="Region" className="h-12 rounded-xl border-slate-200 bg-white shadow-sm font-bold">
                           <SelectValue placeholder="Choisir une région..." />
@@ -317,11 +318,25 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                     </div>
                     <div className="space-y-3">
                       <Label htmlFor="Departement" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Département de résidence</Label>
-                      <Input id="Departement" value={formData.Departement || ''} onChange={handleInputChange} className="h-12 rounded-xl border-slate-200 bg-white shadow-sm font-bold" />
+                      <Select value={formData.Departement || ''} onValueChange={(val) => { handleSelectChange('Departement', val); handleSelectChange('subPrefecture', ''); handleSelectChange('Village', ''); }} disabled={!formData.Region}>
+                        <SelectTrigger id="Departement" className="h-12 rounded-xl border-slate-200 bg-white shadow-sm font-bold"><SelectValue placeholder="Choisir..." /></SelectTrigger>
+                        <SelectContent className="rounded-xl border-slate-100 shadow-3xl max-h-[300px]">
+                          {Object.keys(divisions[formData.Region || ""] || {}).sort().map(d => (
+                            <SelectItem key={d} value={d} className="font-bold py-3 uppercase text-[9px] tracking-widest">{d}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                     <div className="space-y-3">
                       <Label htmlFor="subPrefecture" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Sous-Préfecture</Label>
-                      <Input id="subPrefecture" value={formData.subPrefecture || ''} onChange={handleInputChange} className="h-12 rounded-xl border-slate-200 bg-white shadow-sm font-bold" />
+                      <Select value={formData.subPrefecture || ''} onValueChange={(val) => { handleSelectChange('subPrefecture', val); handleSelectChange('Village', ''); }} disabled={!formData.Departement}>
+                        <SelectTrigger id="subPrefecture" className="h-12 rounded-xl border-slate-200 bg-white shadow-sm font-bold"><SelectValue placeholder="Choisir..." /></SelectTrigger>
+                        <SelectContent className="rounded-xl border-slate-100 shadow-3xl max-h-[300px]">
+                          {Object.keys(divisions[formData.Region || ""]?.[formData.Departement || ""] || {}).sort().map(sp => (
+                            <SelectItem key={sp} value={sp} className="font-bold py-3 uppercase text-[9px] tracking-widest">{sp}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                     <div className="space-y-3">
                       <Label htmlFor="Village" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Village / Quartier</Label>

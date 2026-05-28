@@ -292,7 +292,33 @@ export async function batchAddChiefs(chiefs: Omit<Chief, 'id'>[]): Promise<numbe
     return addedCount;
 }
 
-export async function updateChief(id: string, chiefData: Partial<Omit<Chief, 'id'>>, photoFile: File | null): Promise<void> {
+async function syncChiefToEmployee(chiefId: string, updateData: any) {
+    const employeesQuery = query(collection(db, 'employees'), where('chiefId', '==', chiefId));
+    const snapshot = await getDocs(employeesQuery);
+    if (!snapshot.empty) {
+        const empUpdateData: any = {};
+        if (updateData.name !== undefined) empUpdateData.name = updateData.name;
+        if (updateData.firstName !== undefined) empUpdateData.firstName = updateData.firstName;
+        if (updateData.lastName !== undefined) empUpdateData.lastName = updateData.lastName;
+        if (updateData.phone !== undefined) empUpdateData.mobile = updateData.phone;
+        if (updateData.contact !== undefined) empUpdateData.mobile = updateData.contact; // contact or phone
+        if (updateData.email !== undefined) empUpdateData.email = updateData.email;
+        if (updateData.sexe !== undefined) empUpdateData.sexe = updateData.sexe;
+        if (updateData.region !== undefined) empUpdateData.Region = updateData.region;
+        if (updateData.department !== undefined) empUpdateData.Departement = updateData.department;
+        if (updateData.subPrefecture !== undefined) empUpdateData.subPrefecture = updateData.subPrefecture;
+        if (updateData.village !== undefined) empUpdateData.Village = updateData.village;
+        if (updateData.photoUrl !== undefined) empUpdateData.photoUrl = updateData.photoUrl;
+
+        if (Object.keys(empUpdateData).length > 0) {
+            for (const docSnap of snapshot.docs) {
+                await updateDoc(docSnap.ref, empUpdateData);
+            }
+        }
+    }
+}
+
+export async function updateChief(id: string, chiefData: Partial<Omit<Chief, 'id'>>, photoFile: File | null = null): Promise<void> {
     const chiefDocRef = doc(db, 'chiefs', id);
     const now = new Date().toISOString();
     const updateData: { [key: string]: any } = { ...chiefData };
@@ -352,6 +378,9 @@ export async function updateChief(id: string, chiefData: Partial<Omit<Chief, 'id
         );
 
         await Promise.race([updatePromise, timeoutPromise]);
+
+        // Sync to employee (non-blocking)
+        syncChiefToEmployee(id, updateData).catch(e => console.error("Employee sync error:", e));
     } catch (error: any) {
         console.error("Error in updateChief:", error);
         if (error.code === 'permission-denied') {

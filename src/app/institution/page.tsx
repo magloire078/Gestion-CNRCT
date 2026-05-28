@@ -86,7 +86,7 @@ export default function InstitutionPage() {
     }, []);
 
     return (
-        <PermissionGuard permission="organization-chart:view">
+        <PermissionGuard permission="page:organization-chart:view">
             <div className="flex flex-col min-h-screen bg-[#fafaf8] text-[#1a1a1a] font-body rounded-2xl overflow-hidden shadow-sm border border-slate-200">
                 <main className="flex-1">
                     <OrganizationStructure />

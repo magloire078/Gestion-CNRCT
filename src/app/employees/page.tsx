@@ -225,7 +225,10 @@ export default function EmployeesPage() {
   const filteredEmployees = useMemo(() => {
     const filtered = enrichedEmployees.filter(employee => {
       const fullName = (employee.lastName || '').toLowerCase() + ' ' + (employee.firstName || '').toLowerCase();
-      const matchesSearchTerm = fullName.includes(debouncedSearchTerm.toLowerCase()) || (employee.matricule || '').toLowerCase().includes(debouncedSearchTerm.toLowerCase());
+      const searchLower = debouncedSearchTerm.toLowerCase();
+      const matchesSearchTerm = fullName.includes(searchLower) || 
+                                (employee.name || '').toLowerCase().includes(searchLower) ||
+                                (employee.matricule || '').toLowerCase().includes(searchLower);
       const matchesDepartment = departmentFilter === 'all' || employee.departmentId === departmentFilter;
       const matchesStatus = statusFilter === 'all' || employee.status === statusFilter;
       const matchesCnps = cnpsFilter === 'all' || employee.CNPS === cnpsFilter;

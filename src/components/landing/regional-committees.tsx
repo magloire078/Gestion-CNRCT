@@ -34,9 +34,12 @@ export function RegionalCommittees({
   const { canSeeGovernanceStatus } = usePermissions();
   const showStatus = canSeeGovernanceStatus();
   
-  const filteredCommittees = regionalCommittees.filter(c => 
-    c.region.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredCommittees = regionalCommittees.filter(c => {
+    const q = searchQuery.toLowerCase();
+    return c.region.toLowerCase().includes(q) ||
+           (c.president?.name || '').toLowerCase().includes(q) ||
+           c.members.some(m => (m.name || '').toLowerCase().includes(q));
+  });
 
   const selected = filteredCommittees[selectedRegionIndex];
 
@@ -63,7 +66,7 @@ export function RegionalCommittees({
               <div className="relative group">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-[#006039] transition-colors" />
                 <Input
-                  placeholder="Rechercher une région..."
+                  placeholder="Rechercher une région ou un nom..."
                   className="pl-11 h-14 rounded-2xl border-primary/10 bg-muted/30 focus-visible:ring-[#006039]/20 transition-all"
                   value={searchQuery}
                   onChange={(e) => {

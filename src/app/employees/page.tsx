@@ -229,11 +229,21 @@ export default function EmployeesPage() {
       const normalizedFullName = ((employee.lastName || '') + ' ' + (employee.firstName || '')).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
       const normalizedName = (employee.name || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
       const normalizedMatricule = (employee.matricule || '').toLowerCase();
+      const normalizedVillage = (employee.Village || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      const normalizedPoste = (employee.poste || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      const normalizedRegion = (employee.Region || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      const normalizedDept = (employee.Departement || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      const normalizedSubPref = (employee.subPrefecture || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
       
       const matchesSearchTerm = searchTerms.length === 0 || searchTerms.every(term => 
         normalizedFullName.includes(term) || 
         normalizedName.includes(term) ||
-        normalizedMatricule.includes(term)
+        normalizedMatricule.includes(term) ||
+        normalizedVillage.includes(term) ||
+        normalizedPoste.includes(term) ||
+        normalizedRegion.includes(term) ||
+        normalizedDept.includes(term) ||
+        normalizedSubPref.includes(term)
       );
       const matchesDepartment = departmentFilter === 'all' || employee.departmentId === departmentFilter;
       const matchesStatus = statusFilter === 'all' || employee.status === statusFilter;

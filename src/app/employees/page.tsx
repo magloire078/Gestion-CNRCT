@@ -95,8 +95,6 @@ export default function EmployeesPage() {
   const [geoDepartementFilter, setGeoDepartementFilter] = useState("all");
   const [subPrefectureFilter, setSubPrefectureFilter] = useState("all");
   const [villageFilter, setVillageFilter] = useState("");
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
-  const [debouncedVillageFilter, setDebouncedVillageFilter] = useState("");
 
   const [columnsToPrint, setColumnsToPrint] = useState<ColumnKeys[]>(Object.keys(allColumns) as ColumnKeys[]);
   const [organizationLogos, setOrganizationLogos] = useState<OrganizationSettings | null>(null);
@@ -224,7 +222,7 @@ export default function EmployeesPage() {
 
   const filteredEmployees = useMemo(() => {
     const filtered = enrichedEmployees.filter(employee => {
-      const searchTerms = debouncedSearchTerm.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").split(' ').filter(Boolean);
+      const searchTerms = searchTerm.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").split(' ').filter(Boolean);
       
       const normalizedFullName = ((employee.lastName || '') + ' ' + (employee.firstName || '')).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
       const normalizedName = (employee.name || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -256,7 +254,10 @@ export default function EmployeesPage() {
       const matchesRegion = !isGeoTab || regionFilter === 'all' || employee.Region === regionFilter;
       const matchesGeoDept = !isGeoTab || geoDepartementFilter === 'all' || employee.Departement === geoDepartementFilter;
       const matchesSubPref = !isGeoTab || subPrefectureFilter === 'all' || employee.subPrefecture === subPrefectureFilter || employee.Commune === subPrefectureFilter;
-      const matchesVillageFiltered = !isGeoTab || debouncedVillageFilter === "" || (employee.Village || "").toLowerCase().includes(debouncedVillageFilter.toLowerCase());
+      
+      const normalizedVillageFilter = villageFilter.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      const normalizedEmpVillage = (employee.Village || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      const matchesVillageFiltered = !isGeoTab || normalizedVillageFilter === "" || normalizedEmpVillage.includes(normalizedVillageFilter);
 
       return matchesSearchTerm && matchesDepartment && matchesStatus && matchesCnps && matchesSexe && matchesPersonnelType &&
              matchesRegion && matchesGeoDept && matchesSubPref && matchesVillageFiltered;
@@ -284,11 +285,11 @@ export default function EmployeesPage() {
       return sortOrder === 'asc' ? comparison : -comparison;
     });
 
-    if (currentPage > Math.ceil(sorted.length / itemsPerPage)) {
+    if (currentPage > Math.ceil(sorted.length / itemsPerPage) && sorted.length > 0) {
       setCurrentPage(1);
     }
     return sorted;
-  }, [enrichedEmployees, debouncedSearchTerm, departmentFilter, statusFilter, cnpsFilter, sexeFilter, personnelTypeFilter, currentPage, itemsPerPage, departments, debouncedVillageFilter, isGeoTab, regionFilter, geoDepartementFilter, subPrefectureFilter, sortBy, sortOrder]);
+  }, [enrichedEmployees, searchTerm, departmentFilter, statusFilter, cnpsFilter, sexeFilter, personnelTypeFilter, currentPage, itemsPerPage, departments, villageFilter, isGeoTab, regionFilter, geoDepartementFilter, subPrefectureFilter, sortBy, sortOrder]);
 
   const paginatedEmployees = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
@@ -657,15 +658,14 @@ export default function EmployeesPage() {
 
                         <div className="relative flex-1 min-w-[180px]">
                           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
-                          <DebouncedInput
+                          <Input
                             placeholder="RECHERCHER PAR VILLAGE..."
                             className="h-10 pl-10 rounded-lg border-slate-200 bg-white font-black text-sm md:text-xs tracking-widest"
                             value={villageFilter}
-                            onChange={(val) => startTransition(() => {
-                              const sVal = String(val);
-                              setVillageFilter(sVal);
-                              setDebouncedVillageFilter(sVal);
-                            })}
+                            onChange={(e) => {
+                              setVillageFilter(e.target.value);
+                              setCurrentPage(1);
+                            }}
                           />
                         </div>
                       </div>
@@ -674,15 +674,14 @@ export default function EmployeesPage() {
                     <div className="flex flex-wrap gap-3 mb-4 items-center bg-slate-50/50 p-3 rounded-xl border border-slate-100">
                       <div className="relative flex-1 min-w-[220px]">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
-                        <DebouncedInput
+                        <Input
                           placeholder="IDENTIFICATION AGENT / MATRICULE..."
                           className="h-10 pl-10 rounded-lg border-slate-200 bg-white font-black text-sm md:text-xs tracking-widest shadow-sm focus:bg-white transition-all"
                           value={searchTerm}
-                          onChange={(val) => startTransition(() => {
-                            const sVal = String(val);
-                            setSearchTerm(sVal);
-                            setDebouncedSearchTerm(sVal);
-                          })}
+                          onChange={(e) => {
+                            setSearchTerm(e.target.value);
+                            setCurrentPage(1);
+                          }}
                         />
                       </div>
                       

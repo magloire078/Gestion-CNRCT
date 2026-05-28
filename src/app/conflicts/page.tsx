@@ -11,7 +11,8 @@ import {
     AlertTriangle, History, X, ArrowUpDown,
     ArrowUp, ArrowDown, FileSpreadsheet,
     Tags, Plus, ClipboardList,
-    CalendarIcon, LayoutGrid, Flame, Clock
+    CalendarIcon, LayoutGrid, Flame, Clock,
+    GitBranch, Globe2, BarChart3
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -59,6 +60,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 
 import { Badge } from "@/components/ui/badge";
 import type { Conflict, Chief, ConflictType, ConflictTypeData, ConflictStatus } from "@/lib/data";
@@ -68,11 +70,13 @@ import { AddConflictSheet } from "@/components/conflicts/add-conflict-sheet";
 import { EditConflictSheet } from "@/components/conflicts/edit-conflict-sheet";
 import { Input } from "@/components/ui/input";
 import { subscribeToConflicts, addConflict, updateConflict, deleteConflict, updateConflictStatus } from "@/services/conflict-service";
+import { checkAndNotifyForOverdueConflicts } from "@/services/notification-service";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import type { DateRange } from "react-day-picker";
 import { differenceInDays } from "date-fns";
 import { ConflictKanbanBoard } from "@/components/conflicts/conflict-kanban-board";
+import { ConflictGlobalTimeline } from "@/components/conflicts/conflict-global-timeline";
 import { getChiefs } from "@/services/chief-service";
 import { getAllHeritageItems } from "@/services/heritage-service";
 import type { HeritageItem } from "@/types/heritage";
@@ -202,6 +206,18 @@ export default function ConflictsPage() {
     const [isPending, startTransition] = useTransition();
     const [activeTab, setActiveTab] = useState("list");
 
+    const searchParams = useSearchParams();
+    useEffect(() => {
+        const region = searchParams?.get("region");
+        if (region && IVORIAN_REGIONS.includes(region)) {
+            setSelectedRegion(region);
+        }
+        const focus = searchParams?.get("focus");
+        if (focus) {
+            setActiveTab("list");
+        }
+    }, [searchParams]);
+
     const canDelete = hasPermission('page:admin:view') || hasPermission('feature:conflicts:delete');
     const canEdit = hasPermission('page:conflicts:view') || hasPermission('feature:conflicts:edit');
     const canAdd = hasPermission('page:conflicts:view') || true; // Everyone can report (standard MGP)
@@ -209,10 +225,31 @@ export default function ConflictsPage() {
     const loading = conflicts === null || chiefs === null || heritageItems === null;
 
     useEffect(() => {
+        let overdueCheckRun = false;
         const unsubscribe = subscribeToConflicts(
             (fetchedConflicts) => {
                 setConflicts(fetchedConflicts);
                 setError(null);
+
+                if (!overdueCheckRun && fetchedConflicts.length > 0) {
+                    overdueCheckRun = true;
+                    const lastCheck = typeof window !== 'undefined' ? window.localStorage.getItem('conflicts:overdueLastCheck') : null;
+                    const lastCheckMs = lastCheck ? Number(lastCheck) : 0;
+                    const TWELVE_HOURS = 12 * 60 * 60 * 1000;
+                    if (Date.now() - lastCheckMs > TWELVE_HOURS) {
+                        checkAndNotifyForOverdueConflicts(fetchedConflicts).then(({ warnings, urgents }) => {
+                            if (typeof window !== 'undefined') {
+                                window.localStorage.setItem('conflicts:overdueLastCheck', String(Date.now()));
+                            }
+                            if (urgents > 0 || warnings > 0) {
+                                toast({
+                                    title: "Dossiers à relancer",
+                                    description: `${urgents} critique(s), ${warnings} en attente prolongée.`,
+                                });
+                            }
+                        }).catch(err => console.error('Overdue check failed:', err));
+                    }
+                }
             },
             (err) => {
                 setError("Impossible de charger les conflits.");
@@ -639,6 +676,14 @@ export default function ConflictsPage() {
                                 <LayoutGrid className="mr-2 h-3.5 w-3.5" /> Kanban
                             </Button>
                             <Button
+                                variant={activeTab === "timeline" ? "secondary" : "ghost"}
+                                size="sm"
+                                className={cn("h-8 rounded-lg font-bold text-xs", activeTab === "timeline" && "shadow-sm")}
+                                onClick={() => setActiveTab("timeline")}
+                            >
+                                <GitBranch className="mr-2 h-3.5 w-3.5" /> Chronologie
+                            </Button>
+                            <Button
                                 variant={activeTab === "map" ? "secondary" : "ghost"}
                                 size="sm"
                                 className={cn("h-8 rounded-lg font-bold text-xs", activeTab === "map" && "shadow-sm")}
@@ -667,6 +712,16 @@ export default function ConflictsPage() {
                                 <Link href="/conflicts/analytics">
                                     <DropdownMenuItem>
                                         <TrendingUp className="mr-2 h-4 w-4" /> Statistiques & Analyses
+                                    </DropdownMenuItem>
+                                </Link>
+                                <Link href="/conflicts/regions">
+                                    <DropdownMenuItem>
+                                        <Globe2 className="mr-2 h-4 w-4" /> Tableau régional
+                                    </DropdownMenuItem>
+                                </Link>
+                                <Link href="/conflicts/comparative">
+                                    <DropdownMenuItem>
+                                        <BarChart3 className="mr-2 h-4 w-4" /> Rapport comparatif annuel
                                     </DropdownMenuItem>
                                 </Link>
                             </DropdownMenuContent>
@@ -1117,6 +1172,32 @@ export default function ConflictsPage() {
                                         onCardClick={handleViewDetails}
                                         canEdit={canEdit}
                                     />
+                                )}
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+                    <TabsContent value="timeline" className="mt-0 focus-visible:ring-0">
+                        <Card className="border-none shadow-xl shadow-slate-100 rounded-[2rem] overflow-hidden bg-white">
+                            <CardHeader className="bg-slate-50/80 backdrop-blur-md border-b border-slate-100 p-6">
+                                <div className="flex items-center gap-3">
+                                    <div className="h-2 w-12 bg-slate-900 rounded-full" />
+                                    <div>
+                                        <CardTitle className="text-xl font-black text-slate-900 uppercase tracking-tighter">Chronologie Nationale</CardTitle>
+                                        <CardDescription className="font-bold text-slate-400 italic text-xs mt-1">
+                                            Frise temporelle des signalements et résolutions, groupée par mois.
+                                        </CardDescription>
+                                    </div>
+                                </div>
+                            </CardHeader>
+                            <CardContent className="p-0">
+                                {loading ? (
+                                    <div className="p-8 space-y-6">
+                                        {Array.from({ length: 3 }).map((_, i) => (
+                                            <Skeleton key={i} className="h-32 rounded-2xl" />
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <ConflictGlobalTimeline conflicts={filteredConflicts} onCardClick={handleViewDetails} />
                                 )}
                             </CardContent>
                         </Card>

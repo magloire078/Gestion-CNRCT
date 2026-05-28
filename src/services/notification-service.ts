@@ -2,9 +2,9 @@
 
 import { db } from '@/lib/firebase';
 import { collection, addDoc, onSnapshot, Unsubscribe, query, where, orderBy, writeBatch, doc, getDocs, updateDoc, type QueryDocumentSnapshot, type DocumentData } from '@/lib/firebase';
-import type { Notification, Employe } from '@/lib/data';
+import type { Notification, Employe, Conflict } from '@/lib/data';
 import { getEmployees } from './employee-service';
-import { parseISO, differenceInMonths } from 'date-fns';
+import { parseISO, differenceInMonths, differenceInDays, isValid } from 'date-fns';
 
 const notificationsCollection = collection(db, 'notifications');
 const usersCollection = collection(db, 'users');
@@ -191,3 +191,68 @@ export async function checkAndNotifyForUpcomingRetirements() {
     }
 }
 export { createNotification };
+
+const CONFLICT_WARNING_THRESHOLD_DAYS = 30;
+const CONFLICT_URGENT_THRESHOLD_DAYS = 60;
+
+/**
+ * Scans open / mediation conflicts and creates notifications for managers when
+ * they cross the 30-day warning or 60-day urgent threshold. Idempotent thanks
+ * to the flags `warningNotificationSent` / `urgentNotificationSent` set on the
+ * conflict document.
+ */
+export async function checkAndNotifyForOverdueConflicts(conflicts: Conflict[]): Promise<{ warnings: number; urgents: number }> {
+    const counts = { warnings: 0, urgents: 0 };
+    const batch = writeBatch(db);
+    const now = new Date();
+
+    for (const conflict of conflicts) {
+        const status = conflict.status || 'Ouvert';
+        if (status === 'Résolu' || status === 'Classé sans suite') continue;
+        if (!conflict.reportedDate) continue;
+
+        const reported = parseISO(conflict.reportedDate);
+        if (!isValid(reported)) continue;
+        const days = differenceInDays(now, reported);
+
+        const isUrgent = days >= CONFLICT_URGENT_THRESHOLD_DAYS && !(conflict as any).urgentNotificationSent;
+        const isWarning = !isUrgent && days >= CONFLICT_WARNING_THRESHOLD_DAYS && !(conflict as any).warningNotificationSent;
+
+        if (!isUrgent && !isWarning) continue;
+
+        const title = isUrgent
+            ? `Dossier critique : ${conflict.village}`
+            : `Dossier en attente : ${conflict.village}`;
+        const description = isUrgent
+            ? `Le conflit de ${conflict.village} (${conflict.type}) reste sans suite depuis ${days} jours. Action requise.`
+            : `Le conflit de ${conflict.village} (${conflict.type}) attend traitement depuis ${days} jours.`;
+
+        const notificationData = {
+            userId: 'all',
+            title,
+            description,
+            href: `/conflicts?focus=${conflict.id}`,
+            isRead: false,
+            createdAt: new Date().toISOString()
+        };
+        const newNotifRef = doc(collection(db, 'notifications'));
+        batch.set(newNotifRef, notificationData);
+
+        const conflictRef = doc(db, 'conflicts', conflict.id);
+        batch.update(conflictRef, isUrgent
+            ? { urgentNotificationSent: true, warningNotificationSent: true }
+            : { warningNotificationSent: true });
+
+        if (isUrgent) counts.urgents += 1; else counts.warnings += 1;
+    }
+
+    if (counts.warnings + counts.urgents > 0) {
+        try {
+            await batch.commit();
+        } catch (err) {
+            console.error('Failed to commit overdue conflict notifications:', err);
+            return { warnings: 0, urgents: 0 };
+        }
+    }
+    return counts;
+}

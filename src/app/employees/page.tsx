@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import Link from "next/link";
 import { format, parseISO, differenceInYears } from "date-fns";
 import { fr } from "date-fns/locale";
-import { PlusCircle, Search, Download, Printer, Eye, Pencil, Trash2, MoreHorizontal, ShieldCheck, Globe, Building, BarChart3, Shield, Users2, Zap, Heart } from "lucide-react";
+import { PlusCircle, Search, Download, Printer, Eye, Pencil, Trash2, MoreHorizontal, ShieldCheck, Globe, Building, BarChart3, Shield, Users2, Zap, Heart, LayoutGrid, List } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -66,6 +66,7 @@ export default function EmployeesPage() {
   const [employees, setEmployees] = useState<Employe[]>([]);
   const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
   const [isPrintDialogOpen, setIsPrintDialogOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
 
   const [loading, setLoading] = useState(true);
   const [isPrinting, setIsPrinting] = useState(false);
@@ -466,6 +467,24 @@ export default function EmployeesPage() {
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-2">
+              <div className="flex bg-white/20 backdrop-blur-xl border border-slate-200 p-1 rounded-lg shadow-sm mr-2">
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  onClick={() => setViewMode('table')}
+                  className={cn("h-9 w-9 rounded-md transition-all", viewMode === 'table' ? "bg-white shadow-sm text-slate-900" : "text-slate-500 hover:text-slate-900")}
+                >
+                  <List className="h-4 w-4" />
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  onClick={() => setViewMode('grid')}
+                  className={cn("h-9 w-9 rounded-md transition-all", viewMode === 'grid' ? "bg-white shadow-sm text-slate-900" : "text-slate-500 hover:text-slate-900")}
+                >
+                  <LayoutGrid className="h-4 w-4" />
+                </Button>
+              </div>
               <Button 
                 variant="outline" 
                 className="h-11 px-4 rounded-lg border-slate-200 bg-white/20 backdrop-blur-xl shadow-sm font-black uppercase tracking-widest text-sm md:text-xs hover:bg-white hover:scale-105 transition-all"
@@ -716,8 +735,9 @@ export default function EmployeesPage() {
 
                     {error && <p className="text-destructive text-center py-4">{error}</p>}
 
-                    <div className="overflow-x-auto border rounded-xl shadow-inner bg-slate-50/20 w-full max-w-full">
-                      <Table>
+                    {viewMode === 'table' ? (
+                      <div className="overflow-x-auto border rounded-xl shadow-inner bg-slate-50/20 w-full max-w-full">
+                        <Table>
                         <TableHeader className="bg-slate-100/50">
                           <TableRow>
                             <TableHead className="w-[50px] text-center">N°</TableHead>
@@ -854,6 +874,81 @@ export default function EmployeesPage() {
                         </TableBody>
                       </Table>
                     </div>
+                    ) : (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        {loading ? (
+                          Array.from({ length: 8 }).map((_, i) => (
+                            <Card key={i} className="border border-slate-100 shadow-sm overflow-hidden rounded-2xl">
+                              <CardContent className="p-6">
+                                <div className="flex flex-col items-center text-center space-y-4">
+                                  <Skeleton className="h-20 w-20 rounded-full" />
+                                  <Skeleton className="h-5 w-32" />
+                                  <Skeleton className="h-4 w-24" />
+                                </div>
+                              </CardContent>
+                            </Card>
+                          ))
+                        ) : (
+                          paginatedEmployees.map((employee) => (
+                            <Card 
+                              key={employee.id} 
+                              onClick={() => router.push(`/employees/${employee.id}`)}
+                              className="group cursor-pointer border-slate-100 hover:border-[#006039]/20 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 rounded-2xl overflow-hidden relative"
+                            >
+                              <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-br from-slate-100 to-slate-50" />
+                              <CardContent className="p-6 pt-8 relative">
+                                <Badge 
+                                  className={cn(
+                                    "absolute top-4 right-4 border-none shadow-sm text-[9px] uppercase font-black tracking-widest",
+                                    employee.status === 'Actif' ? "bg-emerald-500 text-white" : "bg-slate-100 text-slate-500"
+                                  )}
+                                >
+                                  {employee.status || 'Actif'}
+                                </Badge>
+                                <div className="flex flex-col items-center text-center">
+                                  <Avatar className="h-20 w-20 border-[4px] border-white shadow-lg mb-4 transition-transform group-hover:scale-105">
+                                    <AvatarImage src={employee.photoUrl || ''} className="object-cover" />
+                                    <AvatarFallback className={cn("font-black text-2xl", getAvatarBgClass(employee.sexe))}>
+                                      {(employee.lastName || '').charAt(0)}{(employee.firstName || '').charAt(0)}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <h3 className="font-black text-lg text-slate-900 uppercase tracking-tight mb-1 group-hover:text-[#006039] transition-colors line-clamp-1">
+                                    {`${employee.lastName || ''} ${employee.firstName || ''}`.trim()}
+                                  </h3>
+                                  <p className="text-xs font-bold text-amber-600 uppercase tracking-widest mb-4 h-8 flex items-center justify-center line-clamp-2">
+                                    {isGeoTab ? employee.Village : employee.poste}
+                                  </p>
+                                  
+                                  <div className="w-full bg-slate-50 rounded-xl p-3 space-y-2 text-left">
+                                    <div className="flex justify-between items-center text-[10px]">
+                                      <span className="text-slate-400 font-bold uppercase tracking-widest">Matricule</span>
+                                      <span className="font-black text-slate-900">{employee.matricule}</span>
+                                    </div>
+                                    {isGeoTab ? (
+                                      <>
+                                        <div className="flex justify-between items-center text-[10px]">
+                                          <span className="text-slate-400 font-bold uppercase tracking-widest">Région</span>
+                                          <span className="font-bold text-slate-700 truncate max-w-[120px]">{employee.Region || '-'}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center text-[10px]">
+                                          <span className="text-slate-400 font-bold uppercase tracking-widest">Dép.</span>
+                                          <span className="font-bold text-slate-700 truncate max-w-[120px]">{employee.Departement || '-'}</span>
+                                        </div>
+                                      </>
+                                    ) : (
+                                      <div className="flex justify-between items-center text-[10px]">
+                                        <span className="text-slate-400 font-bold uppercase tracking-widest">Affectation</span>
+                                        <span className="font-bold text-slate-700 truncate max-w-[120px]">{getEmployeeOrgUnit(employee)}</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          ))
+                        )}
+                      </div>
+                    )}
 
                     {!loading && filteredEmployees.length === 0 && (
                       <div className="text-center py-20 bg-slate-50/50 rounded-2xl border-2 border-dashed mt-4">

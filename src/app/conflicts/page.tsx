@@ -77,7 +77,10 @@ import { IVORIAN_REGIONS } from "@/constants/regions";
 import { PaginationControls } from "@/components/common/pagination-controls";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ConflictsOfficialReport } from "@/components/reports/conflicts-official-report";
-import { PrintConflictDetail, BlankConflictRegistrationForm } from "@/components/conflicts/conflict-print-templates";
+import { PrintConflictDetail, BlankConflictRegistrationFormContent } from "@/components/conflicts/conflict-print-templates";
+import { createRoot } from "react-dom/client";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 import { cn } from "@/lib/utils";
 import dynamic from 'next/dynamic';
 import { PermissionGuard } from "@/components/auth/permission-guard";
@@ -150,7 +153,7 @@ export default function ConflictsPage() {
     // Printing States
     const [isPrintingList, setIsPrintingList] = useState(false);
     const [printingConflict, setPrintingConflict] = useState<Conflict | null>(null);
-    const [isPrintingBlankForm, setIsPrintingBlankForm] = useState(false);
+    const [isGeneratingBlankPdf, setIsGeneratingBlankPdf] = useState(false);
     const [blankFormDepartment, setBlankFormDepartment] = useState("");
     const [isBlankFormDialogOpen, setIsBlankFormDialogOpen] = useState(false);
 
@@ -418,9 +421,70 @@ export default function ConflictsPage() {
         }
     };
 
-    const handlePrintBlankForm = () => {
+    const handleGenerateBlankPdf = async () => {
         setIsBlankFormDialogOpen(false);
-        setIsPrintingBlankForm(true);
+        setIsGeneratingBlankPdf(true);
+
+        const host = document.createElement("div");
+        host.style.cssText = "position:fixed;left:-10000px;top:0;width:794px;background:white;z-index:-1;";
+        document.body.appendChild(host);
+
+        const root = createRoot(host);
+        const cleanup = () => {
+            root.unmount();
+            host.remove();
+        };
+
+        try {
+            await new Promise<void>((resolve) => {
+                root.render(<BlankConflictRegistrationFormContent department={blankFormDepartment} />);
+                requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+            });
+            await new Promise((r) => setTimeout(r, 600));
+
+            const target = host.firstElementChild as HTMLElement;
+            const canvas = await html2canvas(target, {
+                scale: 2,
+                useCORS: true,
+                logging: false,
+                backgroundColor: "#ffffff",
+                windowWidth: 794,
+            });
+
+            const pdf = new jsPDF("p", "mm", "a4", true);
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = pdf.internal.pageSize.getHeight();
+            const imgWidth = pdfWidth;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+            let heightLeft = imgHeight;
+            let position = 0;
+            const imgData = canvas.toDataURL("image/png", 0.95);
+
+            pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight, undefined, "FAST");
+            heightLeft -= pdfHeight;
+
+            while (heightLeft > 0) {
+                position = heightLeft - imgHeight;
+                pdf.addPage();
+                pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight, undefined, "FAST");
+                heightLeft -= pdfHeight;
+            }
+
+            const safeDept = (blankFormDepartment || "generique")
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, "-")
+                .replace(/^-+|-+$/g, "");
+            pdf.save(`fiche-conflit-vierge-${safeDept}-${new Date().toISOString().slice(0, 10)}.pdf`);
+            toast({ title: "PDF généré", description: "La fiche d'enregistrement est prête." });
+        } catch (err) {
+            console.error("Blank PDF generation error:", err);
+            toast({ variant: "destructive", title: "Erreur PDF", description: "Impossible de générer la fiche PDF." });
+        } finally {
+            cleanup();
+            setIsGeneratingBlankPdf(false);
+            setBlankFormDepartment("");
+        }
     };
 
     const regions = useMemo(() => {
@@ -1018,19 +1082,7 @@ export default function ConflictsPage() {
                     />
                 )}
 
-                {isPrintingBlankForm && (
-                    <BlankConflictRegistrationForm
-                        organizationSettings={settings}
-                        department={blankFormDepartment}
-                        isPrinting={isPrintingBlankForm}
-                        onAfterPrint={() => {
-                            setIsPrintingBlankForm(false);
-                            setBlankFormDepartment("");
-                        }}
-                    />
-                )}
-
-                {/* Blank form dialog: ask for department before printing */}
+                {/* Blank form dialog: ask for department before generating PDF */}
                 <Dialog open={isBlankFormDialogOpen} onOpenChange={setIsBlankFormDialogOpen}>
                     <DialogContent className="rounded-2xl">
                         <DialogHeader>
@@ -1038,7 +1090,7 @@ export default function ConflictsPage() {
                                 <ClipboardList className="h-5 w-5 text-primary" /> Fiche d'enregistrement vierge
                             </DialogTitle>
                             <DialogDescription>
-                                Imprime un formulaire papier prêt à être rempli à la main par les agents de terrain et transmis au siège pour saisie.
+                                Génère un PDF prêt à être imprimé et rempli à la main par les agents de terrain, puis transmis au siège pour saisie.
                             </DialogDescription>
                         </DialogHeader>
                         <div className="space-y-3 py-2">
@@ -1051,15 +1103,17 @@ export default function ConflictsPage() {
                                 value={blankFormDepartment}
                                 onChange={(e) => setBlankFormDepartment(e.target.value)}
                                 className="rounded-xl"
+                                disabled={isGeneratingBlankPdf}
                             />
                             <p className="text-[11px] text-slate-400 italic">
                                 Ce nom apparaîtra en tête de la fiche, sous le titre. Laissez vide pour un usage générique.
                             </p>
                         </div>
                         <DialogFooter>
-                            <Button variant="ghost" onClick={() => setIsBlankFormDialogOpen(false)}>Annuler</Button>
-                            <Button onClick={handlePrintBlankForm} className="rounded-xl font-bold">
-                                <Printer className="h-4 w-4 mr-2" /> Imprimer la fiche
+                            <Button variant="ghost" onClick={() => setIsBlankFormDialogOpen(false)} disabled={isGeneratingBlankPdf}>Annuler</Button>
+                            <Button onClick={handleGenerateBlankPdf} disabled={isGeneratingBlankPdf} className="rounded-xl font-bold">
+                                {isGeneratingBlankPdf ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <FileSpreadsheet className="h-4 w-4 mr-2" />}
+                                {isGeneratingBlankPdf ? "Génération…" : "Télécharger le PDF"}
                             </Button>
                         </DialogFooter>
                     </DialogContent>

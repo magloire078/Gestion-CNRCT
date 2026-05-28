@@ -1,7 +1,7 @@
 import { InstitutionalHeader } from "../reports/institutional-header";
 import { InstitutionalFooter } from "../reports/institutional-footer";
 import { InstitutionalReportWrapper } from "../reports/institutional-report-wrapper";
-import { OrganizationSettings, Conflict } from "@/types/common";
+import { OrganizationSettings, Conflict, conflictTypes, conflictStatuses } from "@/types/common";
 import { format, parseISO, isValid } from "date-fns";
 import { fr } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -195,11 +195,208 @@ export function PrintConflictDetail({ conflict, organizationSettings, isPrinting
                     </div>
 
                     <div className="mt-12">
-                        <InstitutionalFooter 
+                        <InstitutionalFooter
                             showSignatures={true}
                             leftSignatureTitle="LE MÉDIATEUR EN CHARGE"
                             rightSignatureTitle="LE SECRÉTAIRE GÉNÉRAL"
                         />
+                    </div>
+                </div>
+            </div>
+        </InstitutionalReportWrapper>
+    );
+}
+
+interface BlankConflictRegistrationFormProps {
+    organizationSettings: OrganizationSettings | null;
+    department?: string;
+    isPrinting?: boolean;
+    onAfterPrint?: () => void;
+}
+
+const FormLine = ({ label, lines = 1, mono = false }: { label: string; lines?: number; mono?: boolean }) => (
+    <div className="mb-3">
+        <p className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-700 mb-1">{label}</p>
+        {Array.from({ length: lines }).map((_, i) => (
+            <div
+                key={i}
+                className={cn(
+                    "border-b border-dotted border-slate-400 h-6",
+                    mono && "font-mono"
+                )}
+            />
+        ))}
+    </div>
+);
+
+const FormCheckbox = ({ label }: { label: string }) => (
+    <div className="flex items-center gap-2 text-[11px]">
+        <span className="inline-block h-3.5 w-3.5 border-2 border-black rounded-sm" />
+        <span className="font-bold text-slate-800">{label}</span>
+    </div>
+);
+
+export function BlankConflictRegistrationForm({
+    organizationSettings,
+    department,
+    isPrinting,
+    onAfterPrint,
+}: BlankConflictRegistrationFormProps) {
+    return (
+        <InstitutionalReportWrapper
+            isPrinting={isPrinting || false}
+            onAfterPrint={onAfterPrint}
+        >
+            <div className="bg-white p-4">
+                <InstitutionalHeader
+                    title="FICHE D'ENREGISTREMENT MANUEL DE CONFLIT"
+                    period={`DESTINATAIRE : ${(department || "Département concerné").toUpperCase()}`}
+                />
+
+                <div className="mt-6 mb-4 p-3 border-2 border-black bg-slate-50 text-[10px] font-bold text-slate-700 leading-relaxed">
+                    <p className="uppercase tracking-widest font-black text-slate-900 mb-1">Instructions :</p>
+                    <p>
+                        Cette fiche est à compléter à la main par l'agent territorial ou le médiateur recevant le signalement.
+                        Une fois remplie et signée, elle doit être transmise au service compétent pour saisie dans la base CNRCT.
+                        Écrire lisiblement, en lettres majuscules. Cocher les cases applicables.
+                    </p>
+                </div>
+
+                <div className="space-y-4 text-sm">
+                    {/* Réf. dossier */}
+                    <div className="grid grid-cols-3 gap-4 p-3 border-2 border-black">
+                        <div>
+                            <p className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-700 mb-1">N° d'ordre</p>
+                            <div className="border-b border-dotted border-slate-400 h-6 font-mono" />
+                        </div>
+                        <div>
+                            <p className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-700 mb-1">Date de réception</p>
+                            <div className="border-b border-dotted border-slate-400 h-6 font-mono">
+                                <span className="text-[10px] text-slate-300 italic">JJ / MM / AAAA</span>
+                            </div>
+                        </div>
+                        <div>
+                            <p className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-700 mb-1">Agent récepteur</p>
+                            <div className="border-b border-dotted border-slate-400 h-6" />
+                        </div>
+                    </div>
+
+                    {/* Section I - Localisation */}
+                    <div>
+                        <h3 className="bg-slate-900 text-white px-4 py-2 font-black border-l-4 border-primary uppercase text-xs">
+                            I. Localisation du Conflit
+                        </h3>
+                        <div className="mt-2 grid grid-cols-2 gap-x-8 p-4 border-2 border-black">
+                            <FormLine label="Village / Localité" />
+                            <FormLine label="Sous-Préfecture / Département" />
+                            <FormLine label="Région" />
+                            <FormLine label="Coordonnées GPS (Lat / Long)" mono />
+                        </div>
+                    </div>
+
+                    {/* Section II - Nature */}
+                    <div>
+                        <h3 className="bg-slate-900 text-white px-4 py-2 font-black border-l-4 border-primary uppercase text-xs">
+                            II. Nature du Conflit
+                        </h3>
+                        <div className="mt-2 p-4 border-2 border-black">
+                            <div className="grid grid-cols-3 gap-3 mb-4">
+                                {conflictTypes.map(t => (
+                                    <FormCheckbox key={t} label={t} />
+                                ))}
+                            </div>
+                            <FormLine label="Si « Autre », préciser" />
+                        </div>
+                    </div>
+
+                    {/* Section III - Dates & Parties */}
+                    <div>
+                        <h3 className="bg-slate-900 text-white px-4 py-2 font-black border-l-4 border-primary uppercase text-xs">
+                            III. Chronologie & Parties Impliquées
+                        </h3>
+                        <div className="mt-2 p-4 border-2 border-black space-y-3">
+                            <div className="grid grid-cols-2 gap-8">
+                                <FormLine label="Date de l'incident" mono />
+                                <FormLine label="Date du signalement" mono />
+                            </div>
+                            <FormLine label="Parties en présence (noms, qualités, communautés)" lines={3} />
+                        </div>
+                    </div>
+
+                    {/* Section IV - Description */}
+                    <div>
+                        <h3 className="bg-slate-900 text-white px-4 py-2 font-black border-l-4 border-primary uppercase text-xs">
+                            IV. Résumé des Faits
+                        </h3>
+                        <div className="mt-2 p-4 border-2 border-black space-y-2">
+                            {Array.from({ length: 6 }).map((_, i) => (
+                                <div key={i} className="border-b border-dotted border-slate-400 h-6" />
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Section V - Impact */}
+                    <div>
+                        <h3 className="bg-slate-900 text-white px-4 py-2 font-black border-l-4 border-primary uppercase text-xs">
+                            V. Impacts Constatés
+                        </h3>
+                        <div className="mt-2 p-4 border-2 border-black space-y-2">
+                            {Array.from({ length: 3 }).map((_, i) => (
+                                <div key={i} className="border-b border-dotted border-slate-400 h-6" />
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Section VI - Médiateur */}
+                    <div>
+                        <h3 className="bg-slate-900 text-white px-4 py-2 font-black border-l-4 border-primary uppercase text-xs">
+                            VI. Médiation & Statut Initial
+                        </h3>
+                        <div className="mt-2 p-4 border-2 border-black">
+                            <div className="grid grid-cols-2 gap-8 mb-3">
+                                <FormLine label="Médiateur assigné (Nom & Prénoms)" />
+                                <FormLine label="Contact du médiateur" mono />
+                            </div>
+                            <p className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-700 mb-2">Statut initial du dossier</p>
+                            <div className="grid grid-cols-4 gap-3">
+                                {conflictStatuses.map(s => (
+                                    <FormCheckbox key={s} label={s} />
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Section VII - Signatures */}
+                    <div>
+                        <h3 className="bg-slate-900 text-white px-4 py-2 font-black border-l-4 border-primary uppercase text-xs">
+                            VII. Attestation & Transmission
+                        </h3>
+                        <div className="mt-2 p-4 border-2 border-black grid grid-cols-2 gap-8">
+                            <div>
+                                <p className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-700 mb-2">
+                                    Le déclarant / plaignant
+                                </p>
+                                <FormLine label="Nom & Prénoms" />
+                                <FormLine label="Contact" mono />
+                                <div className="mt-6 border-t border-slate-400 pt-1 text-[10px] font-bold text-center text-slate-500 uppercase tracking-widest">
+                                    Signature ou empreinte
+                                </div>
+                            </div>
+                            <div>
+                                <p className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-700 mb-2">
+                                    L'agent récepteur
+                                </p>
+                                <FormLine label="Nom, Prénoms & Fonction" />
+                                <FormLine label="Service / Département" />
+                                <div className="mt-6 border-t border-slate-400 pt-1 text-[10px] font-bold text-center text-slate-500 uppercase tracking-widest">
+                                    Cachet & Signature
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="mt-6 text-[9px] italic text-slate-500 text-center border-t border-slate-200 pt-3">
+                        Document à conserver en archive et à transmettre au siège pour saisie informatique sous 72 heures.
                     </div>
                 </div>
             </div>

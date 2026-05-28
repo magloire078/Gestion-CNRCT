@@ -1,13 +1,16 @@
 "use client";
 
 import { useState, useMemo, useEffect, useTransition } from "react";
+import Papa from "papaparse";
 import { format, parseISO, isValid } from "date-fns";
 import { fr } from "date-fns/locale";
-import { 
-    PlusCircle, Search, Loader2, List, Map, 
-    MoreHorizontal, Pencil, Eye, Trash2, 
-    Printer, Settings2, TrendingUp, ShieldAlert,
-    AlertTriangle, CheckCircle2, History
+import {
+    PlusCircle, Search, Loader2, List, Map,
+    MoreHorizontal, Pencil, Eye, Trash2,
+    Printer, TrendingUp, ShieldAlert,
+    AlertTriangle, History, X, ArrowUpDown,
+    ArrowUp, ArrowDown, FileSpreadsheet,
+    Tags, Plus, ClipboardList
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -36,6 +39,16 @@ import {
     AlertDialogTitle,
     AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import {
     Select,
@@ -64,7 +77,7 @@ import { IVORIAN_REGIONS } from "@/constants/regions";
 import { PaginationControls } from "@/components/common/pagination-controls";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ConflictsOfficialReport } from "@/components/reports/conflicts-official-report";
-import { PrintConflictDetail } from "@/components/conflicts/conflict-print-templates";
+import { PrintConflictDetail, BlankConflictRegistrationForm } from "@/components/conflicts/conflict-print-templates";
 import { cn } from "@/lib/utils";
 import dynamic from 'next/dynamic';
 import { PermissionGuard } from "@/components/auth/permission-guard";
@@ -80,12 +93,20 @@ const GISMap = dynamic(() => import('@/components/common/gis-map-v3').then(m => 
 
 type Status = ConflictStatus;
 
-const statusVariantMap: Record<Status, string> = {
-    "Ouvert": "bg-slate-100 text-slate-700 hover:bg-slate-100",
-    "En médiation": "bg-blue-100 text-blue-700 hover:bg-blue-100",
-    "Résolu": "bg-emerald-100 text-emerald-700 hover:bg-emerald-100",
-    "Classé sans suite": "bg-red-100 text-red-700 hover:bg-red-100",
+const statusBadgeMap: Record<Status, { wrapper: string; dot: string }> = {
+    "Ouvert": { wrapper: "bg-rose-50 text-rose-600 border border-rose-100", dot: "bg-rose-500" },
+    "En médiation": { wrapper: "bg-indigo-50 text-indigo-600 border border-indigo-100", dot: "bg-indigo-500 animate-pulse" },
+    "Résolu": { wrapper: "bg-emerald-50 text-emerald-600 border border-emerald-100", dot: "bg-emerald-500" },
+    "Classé sans suite": { wrapper: "bg-slate-100 text-slate-600 border border-slate-200", dot: "bg-slate-500" },
 };
+
+type SortColumn = "village" | "type" | "reportedDate" | "mediatorName" | "status";
+type SortDirection = "asc" | "desc";
+
+function SortIcon({ active, direction }: { active: boolean; direction: SortDirection }) {
+    if (!active) return <ArrowUpDown className="h-3 w-3 opacity-30" />;
+    return direction === "asc" ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />;
+}
 
 export default function ConflictsPage() {
     const [conflicts, setConflicts] = useState<Conflict[] | null>(null);
@@ -113,13 +134,25 @@ export default function ConflictsPage() {
     const [dynamicConflictTypes, setDynamicConflictTypes] = useState<ConflictTypeData[]>([]);
     const [selectedRegion, setSelectedRegion] = useState<string>("Tous");
     const [selectedConflictType, setSelectedConflictType] = useState<string>("Tous");
-    const [isAddTypeDialogOpen, setIsAddTypeDialogOpen] = useState(false);
+    const [selectedStatus, setSelectedStatus] = useState<string>("Tous");
+    const [isManageTypesDialogOpen, setIsManageTypesDialogOpen] = useState(false);
     const [newTypeName, setNewTypeName] = useState("");
     const [isAddingType, setIsAddingType] = useState(false);
+    const [typeToDelete, setTypeToDelete] = useState<ConflictTypeData | null>(null);
+
+    // Sorting & Selection
+    const [sortColumn, setSortColumn] = useState<SortColumn>("reportedDate");
+    const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+    const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = useState(false);
+    const [isBulkDeleting, setIsBulkDeleting] = useState(false);
 
     // Printing States
     const [isPrintingList, setIsPrintingList] = useState(false);
     const [printingConflict, setPrintingConflict] = useState<Conflict | null>(null);
+    const [isPrintingBlankForm, setIsPrintingBlankForm] = useState(false);
+    const [blankFormDepartment, setBlankFormDepartment] = useState("");
+    const [isBlankFormDialogOpen, setIsBlankFormDialogOpen] = useState(false);
 
     // Details State
     const [isDetailsOpen, setIsDetailsOpen] = useState(false);
@@ -265,19 +298,130 @@ export default function ConflictsPage() {
                 conflict.description.toLowerCase().includes(searchTermLower) ||
                 (conflict.mediatorName || '').toLowerCase().includes(searchTermLower) ||
                 (conflict.region || '').toLowerCase().includes(searchTermLower);
-            
+
             const conflictYear = conflict.reportedDate.split('-')[0];
             const matchesYear = selectedYear === "Tous" || conflictYear === selectedYear;
             const matchesRegion = selectedRegion === "Tous" || conflict.region === selectedRegion;
             const matchesType = selectedConflictType === "Tous" || conflict.type === selectedConflictType;
-            
-            return matchesSearch && matchesYear && matchesRegion && matchesType;
+            const matchesStatus = selectedStatus === "Tous" || (conflict.status || 'Ouvert') === selectedStatus;
+
+            return matchesSearch && matchesYear && matchesRegion && matchesType && matchesStatus;
         });
-        if (currentPage > Math.ceil(filtered.length / itemsPerPage)) {
+
+        const sorted = [...filtered].sort((a, b) => {
+            const dir = sortDirection === "asc" ? 1 : -1;
+            const av = (a[sortColumn] || '') as string;
+            const bv = (b[sortColumn] || '') as string;
+            return av.localeCompare(bv, 'fr') * dir;
+        });
+
+        if (currentPage > Math.ceil(sorted.length / itemsPerPage)) {
             setCurrentPage(1);
         }
-        return filtered;
-    }, [conflicts, searchTerm, currentPage, itemsPerPage, selectedYear, selectedRegion, selectedConflictType]);
+        return sorted;
+    }, [conflicts, searchTerm, currentPage, itemsPerPage, selectedYear, selectedRegion, selectedConflictType, selectedStatus, sortColumn, sortDirection]);
+
+    const hasActiveFilters = searchTerm !== "" || selectedYear !== "Tous" || selectedRegion !== "Tous" || selectedConflictType !== "Tous" || selectedStatus !== "Tous";
+
+    const handleResetFilters = () => {
+        setSearchTerm("");
+        setSelectedYear("Tous");
+        setSelectedRegion("Tous");
+        setSelectedConflictType("Tous");
+        setSelectedStatus("Tous");
+        setCurrentPage(1);
+    };
+
+    const handleSort = (column: SortColumn) => {
+        if (sortColumn === column) {
+            setSortDirection(prev => prev === "asc" ? "desc" : "asc");
+        } else {
+            setSortColumn(column);
+            setSortDirection("asc");
+        }
+    };
+
+    const handleExportCsv = () => {
+        if (filteredConflicts.length === 0) {
+            toast({ variant: "destructive", title: "Aucune donnée à exporter" });
+            return;
+        }
+        const csvData = Papa.unparse(filteredConflicts.map(c => ({
+            reference: c.trackingId || c.id.substring(0, 8),
+            village: c.village,
+            region: c.region || '',
+            type: c.type,
+            statut: c.status || 'Ouvert',
+            date_signalement: c.reportedDate,
+            date_incident: c.incidentDate || '',
+            mediateur: c.mediatorName || '',
+            parties: c.parties || '',
+            description: c.description,
+            impact: c.impact || '',
+            date_resolution: c.resolutionDate || '',
+            details_resolution: c.resolutionDetails || '',
+        })), { header: true });
+        const blob = new Blob(["﻿" + csvData], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `export_conflits_${new Date().toISOString().slice(0,10)}.csv`;
+        link.click();
+        toast({ title: "Exportation CSV réussie", description: `${filteredConflicts.length} dossier(s) exporté(s).` });
+    };
+
+    const handleAddType = async () => {
+        const name = newTypeName.trim();
+        if (!name) return;
+        setIsAddingType(true);
+        try {
+            await addConflictType(name);
+            toast({ title: "Type ajouté", description: `« ${name} » a été ajouté à la nomenclature.` });
+            setNewTypeName("");
+        } catch (err) {
+            toast({ variant: "destructive", title: "Erreur", description: "Impossible d'ajouter ce type." });
+        } finally {
+            setIsAddingType(false);
+        }
+    };
+
+    const handleDeleteType = async () => {
+        if (!typeToDelete) return;
+        try {
+            await deleteConflictType(typeToDelete.id);
+            toast({ title: "Type supprimé", description: `« ${typeToDelete.name} » a été retiré.` });
+            setTypeToDelete(null);
+        } catch (err) {
+            toast({ variant: "destructive", title: "Erreur", description: "Impossible de supprimer ce type." });
+        }
+    };
+
+    const toggleSelectOne = (id: string) => {
+        setSelectedIds(prev => {
+            const next = new Set(prev);
+            if (next.has(id)) next.delete(id); else next.add(id);
+            return next;
+        });
+    };
+
+    const handleBulkDelete = async () => {
+        if (selectedIds.size === 0) return;
+        setIsBulkDeleting(true);
+        try {
+            await Promise.all(Array.from(selectedIds).map(id => deleteConflict(id)));
+            toast({ title: "Suppression groupée", description: `${selectedIds.size} dossier(s) supprimé(s).` });
+            setSelectedIds(new Set());
+            setBulkDeleteDialogOpen(false);
+        } catch (err) {
+            toast({ variant: "destructive", title: "Erreur de suppression groupée" });
+        } finally {
+            setIsBulkDeleting(false);
+        }
+    };
+
+    const handlePrintBlankForm = () => {
+        setIsBlankFormDialogOpen(false);
+        setIsPrintingBlankForm(true);
+    };
 
     const regions = useMemo(() => {
         return IVORIAN_REGIONS;
@@ -308,18 +452,18 @@ export default function ConflictsPage() {
 
     const conflictStats = useMemo(() => {
         const total = filteredConflicts.length;
-        if (total === 0) return { total: 0, resolved: 0, mediation: 0, open: 0, resolutionRate: 0, topType: "N/A" };
-        
+        if (total === 0) return { total: 0, resolved: 0, mediation: 0, open: 0, closed: 0, resolutionRate: 0, topType: "N/A" };
+
         const resolved = filteredConflicts.filter(c => c.status === 'Résolu').length;
         const mediation = filteredConflicts.filter(c => c.status === 'En médiation').length;
         const open = filteredConflicts.filter(c => c.status === 'Ouvert' || !c.status).length;
-        
-        // Find top type
+        const closed = filteredConflicts.filter(c => c.status === 'Classé sans suite').length;
+
         const typeCounts = filteredConflicts.reduce((acc, c) => {
             acc[c.type] = (acc[c.type] || 0) + 1;
             return acc;
         }, {} as Record<string, number>);
-        
+
         const topType = Object.entries(typeCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || "N/A";
 
         return {
@@ -327,10 +471,26 @@ export default function ConflictsPage() {
             resolved,
             mediation,
             open,
+            closed,
             resolutionRate: Math.round((resolved / total) * 100),
             topType
         };
     }, [filteredConflicts]);
+
+    const allVisibleSelected = paginatedConflicts.length > 0 && paginatedConflicts.every(c => selectedIds.has(c.id));
+    const someVisibleSelected = paginatedConflicts.some(c => selectedIds.has(c.id));
+
+    const toggleSelectAllVisible = () => {
+        setSelectedIds(prev => {
+            const next = new Set(prev);
+            if (allVisibleSelected) {
+                paginatedConflicts.forEach(c => next.delete(c.id));
+            } else {
+                paginatedConflicts.forEach(c => next.add(c.id));
+            }
+            return next;
+        });
+    };
 
     return (
         <PermissionGuard permission="page:conflicts:view">
@@ -374,9 +534,15 @@ export default function ConflictsPage() {
                                     <Printer className="mr-2 h-4 w-4" /> Rapports
                                 </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-56 rounded-xl">
+                            <DropdownMenuContent align="end" className="w-64 rounded-xl">
                                 <DropdownMenuItem onClick={handlePrint}>
                                     <List className="mr-2 h-4 w-4" /> Imprimer la liste filtrée
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={handleExportCsv}>
+                                    <FileSpreadsheet className="mr-2 h-4 w-4" /> Exporter en CSV (Excel)
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => setIsBlankFormDialogOpen(true)}>
+                                    <ClipboardList className="mr-2 h-4 w-4" /> Fiche d'enregistrement vierge
                                 </DropdownMenuItem>
                                 <Link href="/conflicts/analytics">
                                     <DropdownMenuItem>
@@ -385,6 +551,10 @@ export default function ConflictsPage() {
                                 </Link>
                             </DropdownMenuContent>
                         </DropdownMenu>
+
+                        <Button variant="outline" onClick={() => setIsManageTypesDialogOpen(true)} className="rounded-xl font-bold h-11 border-slate-200">
+                            <Tags className="mr-2 h-4 w-4" /> Types
+                        </Button>
 
                         <Button onClick={() => setIsAddSheetOpen(true)} className="rounded-xl font-bold h-11 shadow-lg shadow-primary/20">
                             <PlusCircle className="mr-2 h-4 w-4" /> Nouveau Dossier
@@ -448,9 +618,69 @@ export default function ConflictsPage() {
                                                 ))}
                                             </SelectContent>
                                         </Select>
+                                        <Select value={selectedConflictType} onValueChange={setSelectedConflictType}>
+                                            <SelectTrigger className="w-[200px] h-14 rounded-2xl border-slate-100 bg-white font-black text-[10px] uppercase tracking-widest shadow-sm hover:border-slate-900 transition-all">
+                                                <div className="flex items-center gap-2">
+                                                    <Tags className="h-3.5 w-3.5 text-slate-400" />
+                                                    <SelectValue placeholder="Nature" />
+                                                </div>
+                                            </SelectTrigger>
+                                            <SelectContent className="rounded-2xl border-slate-100 shadow-2xl">
+                                                <SelectItem value="Tous" className="font-black text-[10px] uppercase">Toutes Natures</SelectItem>
+                                                {allConflictTypes.map(t => (
+                                                    <SelectItem key={t} value={t} className="font-bold">{t}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                                            <SelectTrigger className="w-[180px] h-14 rounded-2xl border-slate-100 bg-white font-black text-[10px] uppercase tracking-widest shadow-sm hover:border-slate-900 transition-all">
+                                                <div className="flex items-center gap-2">
+                                                    <ShieldAlert className="h-3.5 w-3.5 text-slate-400" />
+                                                    <SelectValue placeholder="Statut" />
+                                                </div>
+                                            </SelectTrigger>
+                                            <SelectContent className="rounded-2xl border-slate-100 shadow-2xl">
+                                                <SelectItem value="Tous" className="font-black text-[10px] uppercase">Tous Statuts</SelectItem>
+                                                {conflictStatuses.map(s => (
+                                                    <SelectItem key={s} value={s} className="font-bold">{s}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        {hasActiveFilters && (
+                                            <Button
+                                                variant="ghost"
+                                                onClick={handleResetFilters}
+                                                className="h-14 rounded-2xl font-black text-[10px] uppercase tracking-widest text-slate-500 hover:text-rose-600 hover:bg-rose-50"
+                                            >
+                                                <X className="h-3.5 w-3.5 mr-1.5" /> Réinitialiser
+                                            </Button>
+                                        )}
                                     </div>
                                 </div>
                             </div>
+                            {!loading && (
+                                <div className="mt-6 flex items-center justify-between flex-wrap gap-3 pt-4 border-t border-slate-100">
+                                    <p className="text-[11px] font-black uppercase tracking-widest text-slate-500">
+                                        <span className="text-slate-900 tabular-nums">{filteredConflicts.length}</span> dossier{filteredConflicts.length > 1 ? 's' : ''}
+                                        {hasActiveFilters && <span className="text-slate-400 normal-case font-bold italic ml-2">(filtré sur {conflicts?.length || 0})</span>}
+                                    </p>
+                                    {selectedIds.size > 0 && (
+                                        <div className="flex items-center gap-3">
+                                            <span className="text-[11px] font-black uppercase tracking-widest text-indigo-600">
+                                                {selectedIds.size} sélectionné{selectedIds.size > 1 ? 's' : ''}
+                                            </span>
+                                            <Button size="sm" variant="ghost" onClick={() => setSelectedIds(new Set())} className="h-8 rounded-lg text-[10px] font-black uppercase tracking-widest">
+                                                Désélectionner
+                                            </Button>
+                                            {canDelete && (
+                                                <Button size="sm" variant="destructive" onClick={() => setBulkDeleteDialogOpen(true)} className="h-8 rounded-lg text-[10px] font-black uppercase tracking-widest">
+                                                    <Trash2 className="h-3 w-3 mr-1" /> Supprimer la sélection
+                                                </Button>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </CardHeader>
                             <CardContent className="p-0">
                                 {error && (
@@ -471,12 +701,29 @@ export default function ConflictsPage() {
                                             <Table>
                                                 <TableHeader className="bg-slate-50/50">
                                                     <TableRow className="hover:bg-transparent border-b border-slate-100">
+                                                        <TableHead className="w-10 pl-6">
+                                                            <Checkbox
+                                                                checked={allVisibleSelected ? true : (someVisibleSelected ? "indeterminate" : false)}
+                                                                onCheckedChange={toggleSelectAllVisible}
+                                                                aria-label="Sélectionner tout"
+                                                            />
+                                                        </TableHead>
                                                         <TableHead className="w-16 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 text-center py-6">Réf.</TableHead>
-                                                        <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Localité & Région</TableHead>
-                                                        <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Nature du Dossier</TableHead>
-                                                        <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Date Signalement</TableHead>
-                                                        <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Médiateur Assigné</TableHead>
-                                                        <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Statut</TableHead>
+                                                        <TableHead onClick={() => handleSort('village')} className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 cursor-pointer select-none hover:text-slate-700 transition-colors">
+                                                            <span className="inline-flex items-center gap-1">Localité & Région <SortIcon active={sortColumn === 'village'} direction={sortDirection} /></span>
+                                                        </TableHead>
+                                                        <TableHead onClick={() => handleSort('type')} className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 cursor-pointer select-none hover:text-slate-700 transition-colors">
+                                                            <span className="inline-flex items-center gap-1">Nature du Dossier <SortIcon active={sortColumn === 'type'} direction={sortDirection} /></span>
+                                                        </TableHead>
+                                                        <TableHead onClick={() => handleSort('reportedDate')} className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 cursor-pointer select-none hover:text-slate-700 transition-colors">
+                                                            <span className="inline-flex items-center gap-1">Date Signalement <SortIcon active={sortColumn === 'reportedDate'} direction={sortDirection} /></span>
+                                                        </TableHead>
+                                                        <TableHead onClick={() => handleSort('mediatorName')} className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 cursor-pointer select-none hover:text-slate-700 transition-colors">
+                                                            <span className="inline-flex items-center gap-1">Médiateur Assigné <SortIcon active={sortColumn === 'mediatorName'} direction={sortDirection} /></span>
+                                                        </TableHead>
+                                                        <TableHead onClick={() => handleSort('status')} className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 cursor-pointer select-none hover:text-slate-700 transition-colors">
+                                                            <span className="inline-flex items-center gap-1">Statut <SortIcon active={sortColumn === 'status'} direction={sortDirection} /></span>
+                                                        </TableHead>
                                                         <TableHead className="w-24 text-right pr-10"></TableHead>
                                                     </TableRow>
                                                 </TableHeader>
@@ -484,6 +731,7 @@ export default function ConflictsPage() {
                                                     {loading ? (
                                                         Array.from({ length: 5 }).map((_, i) => (
                                                             <TableRow key={i} className="border-b border-slate-50">
+                                                                <TableCell className="pl-6"><Skeleton className="h-4 w-4 rounded" /></TableCell>
                                                                 <TableCell><Skeleton className="h-4 w-4 mx-auto rounded" /></TableCell>
                                                                 <TableCell><Skeleton className="h-10 w-48 rounded-xl" /></TableCell>
                                                                 <TableCell><Skeleton className="h-6 w-32 rounded-full" /></TableCell>
@@ -495,7 +743,14 @@ export default function ConflictsPage() {
                                                         ))
                                                     ) : (
                                                         paginatedConflicts.map((conflict, index) => (
-                                                            <TableRow key={conflict.id} className="group border-b border-slate-50 hover:bg-slate-50/30 transition-all duration-300">
+                                                            <TableRow key={conflict.id} className={cn("group border-b border-slate-50 hover:bg-slate-50/30 transition-all duration-300", selectedIds.has(conflict.id) && "bg-indigo-50/40 hover:bg-indigo-50/60")}>
+                                                                <TableCell className="pl-6">
+                                                                    <Checkbox
+                                                                        checked={selectedIds.has(conflict.id)}
+                                                                        onCheckedChange={() => toggleSelectOne(conflict.id)}
+                                                                        aria-label={`Sélectionner ${conflict.village}`}
+                                                                    />
+                                                                </TableCell>
                                                                 <TableCell className="text-center">
                                                                     <span className="text-[10px] font-black text-slate-300 tabular-nums bg-slate-50 px-2 py-1 rounded-lg group-hover:bg-white group-hover:text-slate-900 transition-colors">
                                                                         #{String((currentPage - 1) * itemsPerPage + index + 1).padStart(3, '0')}
@@ -543,18 +798,16 @@ export default function ConflictsPage() {
                                                                     </div>
                                                                 </TableCell>
                                                                 <TableCell>
-                                                                    <div className={cn(
-                                                                        "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm",
-                                                                        conflict.status === 'Résolu' ? "bg-emerald-50 text-emerald-600 border border-emerald-100" :
-                                                                        conflict.status === 'En médiation' ? "bg-indigo-50 text-indigo-600 border border-indigo-100" : "bg-rose-50 text-rose-600 border border-rose-100"
-                                                                    )}>
-                                                                        <span className={cn(
-                                                                            "h-1.5 w-1.5 rounded-full",
-                                                                            conflict.status === 'Résolu' ? "bg-emerald-500" :
-                                                                            conflict.status === 'En médiation' ? "bg-indigo-500 animate-pulse" : "bg-rose-500"
-                                                                        )} />
-                                                                        {conflict.status || 'Ouvert'}
-                                                                    </div>
+                                                                    {(() => {
+                                                                        const s = (conflict.status || 'Ouvert') as Status;
+                                                                        const style = statusBadgeMap[s] || statusBadgeMap['Ouvert'];
+                                                                        return (
+                                                                            <div className={cn("inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm", style.wrapper)}>
+                                                                                <span className={cn("h-1.5 w-1.5 rounded-full", style.dot)} />
+                                                                                {s}
+                                                                            </div>
+                                                                        );
+                                                                    })()}
                                                                 </TableCell>
                                                                 <TableCell className="text-right pr-10">
                                                                     <DropdownMenu>
@@ -625,7 +878,8 @@ export default function ConflictsPage() {
                                                                 <Badge variant="outline" className={cn(
                                                                     "text-[9px] font-black uppercase border-none",
                                                                     conflict.status === 'Résolu' ? "bg-emerald-50 text-emerald-600" :
-                                                                    conflict.status === 'En médiation' ? "bg-blue-50 text-blue-600" : "bg-rose-50 text-rose-600"
+                                                                    conflict.status === 'En médiation' ? "bg-blue-50 text-blue-600" :
+                                                                    conflict.status === 'Classé sans suite' ? "bg-slate-100 text-slate-600" : "bg-rose-50 text-rose-600"
                                                                 )}>
                                                                     {conflict.status || 'Ouvert'}
                                                                 </Badge>
@@ -756,13 +1010,167 @@ export default function ConflictsPage() {
                 )}
 
                 {printingConflict && (
-                    <PrintConflictDetail 
-                        conflict={printingConflict} 
-                        organizationSettings={settings} 
+                    <PrintConflictDetail
+                        conflict={printingConflict}
+                        organizationSettings={settings}
                         isPrinting={!!printingConflict}
                         onAfterPrint={() => setPrintingConflict(null)}
                     />
                 )}
+
+                {isPrintingBlankForm && (
+                    <BlankConflictRegistrationForm
+                        organizationSettings={settings}
+                        department={blankFormDepartment}
+                        isPrinting={isPrintingBlankForm}
+                        onAfterPrint={() => {
+                            setIsPrintingBlankForm(false);
+                            setBlankFormDepartment("");
+                        }}
+                    />
+                )}
+
+                {/* Blank form dialog: ask for department before printing */}
+                <Dialog open={isBlankFormDialogOpen} onOpenChange={setIsBlankFormDialogOpen}>
+                    <DialogContent className="rounded-2xl">
+                        <DialogHeader>
+                            <DialogTitle className="flex items-center gap-2">
+                                <ClipboardList className="h-5 w-5 text-primary" /> Fiche d'enregistrement vierge
+                            </DialogTitle>
+                            <DialogDescription>
+                                Imprime un formulaire papier prêt à être rempli à la main par les agents de terrain et transmis au siège pour saisie.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-3 py-2">
+                            <Label htmlFor="blank-form-dept" className="text-xs font-black uppercase tracking-widest text-slate-500">
+                                Département / Service destinataire
+                            </Label>
+                            <Input
+                                id="blank-form-dept"
+                                placeholder="Ex : Direction Régionale de l'Ouest"
+                                value={blankFormDepartment}
+                                onChange={(e) => setBlankFormDepartment(e.target.value)}
+                                className="rounded-xl"
+                            />
+                            <p className="text-[11px] text-slate-400 italic">
+                                Ce nom apparaîtra en tête de la fiche, sous le titre. Laissez vide pour un usage générique.
+                            </p>
+                        </div>
+                        <DialogFooter>
+                            <Button variant="ghost" onClick={() => setIsBlankFormDialogOpen(false)}>Annuler</Button>
+                            <Button onClick={handlePrintBlankForm} className="rounded-xl font-bold">
+                                <Printer className="h-4 w-4 mr-2" /> Imprimer la fiche
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+
+                {/* Manage conflict types dialog */}
+                <Dialog open={isManageTypesDialogOpen} onOpenChange={setIsManageTypesDialogOpen}>
+                    <DialogContent className="rounded-2xl max-w-lg">
+                        <DialogHeader>
+                            <DialogTitle className="flex items-center gap-2">
+                                <Tags className="h-5 w-5 text-primary" /> Nomenclature des conflits
+                            </DialogTitle>
+                            <DialogDescription>
+                                Étendez la nomenclature standard avec des types personnalisés propres au contexte de votre région.
+                            </DialogDescription>
+                        </DialogHeader>
+
+                        <div className="space-y-4 py-2">
+                            <div className="flex gap-2">
+                                <Input
+                                    placeholder="Nouveau type de conflit..."
+                                    value={newTypeName}
+                                    onChange={(e) => setNewTypeName(e.target.value)}
+                                    onKeyDown={(e) => { if (e.key === 'Enter') handleAddType(); }}
+                                    className="rounded-xl"
+                                />
+                                <Button onClick={handleAddType} disabled={isAddingType || !newTypeName.trim()} className="rounded-xl font-bold">
+                                    {isAddingType ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+                                </Button>
+                            </div>
+
+                            <div className="space-y-2">
+                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Types standards (non modifiables)</p>
+                                <div className="flex flex-wrap gap-2">
+                                    {conflictTypes.map(t => (
+                                        <Badge key={t} variant="outline" className="rounded-full font-bold">{t}</Badge>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                                    Types personnalisés ({dynamicConflictTypes.length})
+                                </p>
+                                {dynamicConflictTypes.length === 0 ? (
+                                    <p className="text-xs italic text-slate-400 text-center py-4">Aucun type personnalisé. Ajoutez-en un ci-dessus.</p>
+                                ) : (
+                                    <div className="flex flex-wrap gap-2">
+                                        {dynamicConflictTypes.map(t => (
+                                            <div key={t.id} className="inline-flex items-center gap-1.5 pl-3 pr-1 py-1 rounded-full bg-primary/5 border border-primary/10 text-primary font-bold text-xs">
+                                                {t.name}
+                                                <button
+                                                    onClick={() => setTypeToDelete(t)}
+                                                    className="h-5 w-5 inline-flex items-center justify-center rounded-full hover:bg-rose-100 hover:text-rose-600 transition-colors"
+                                                    aria-label={`Supprimer ${t.name}`}
+                                                >
+                                                    <X className="h-3 w-3" />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        <DialogFooter>
+                            <Button variant="outline" onClick={() => setIsManageTypesDialogOpen(false)} className="rounded-xl">Fermer</Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+
+                {/* Confirm delete custom type */}
+                <AlertDialog open={!!typeToDelete} onOpenChange={(open) => !open && setTypeToDelete(null)}>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Supprimer ce type ?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                Le type « <span className="font-bold">{typeToDelete?.name}</span> » sera retiré de la nomenclature. Les dossiers existants conservent cette valeur mais ne pourront plus la sélectionner.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Annuler</AlertDialogCancel>
+                            <AlertDialogAction onClick={(e) => { e.preventDefault(); handleDeleteType(); }} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                Supprimer
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+
+                {/* Bulk delete dialog */}
+                <AlertDialog open={bulkDeleteDialogOpen} onOpenChange={setBulkDeleteDialogOpen}>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Supprimer {selectedIds.size} dossier(s) ?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                Cette action supprimera définitivement {selectedIds.size} signalement(s) de conflit. Elle est irréversible.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel disabled={isBulkDeleting}>Annuler</AlertDialogCancel>
+                            <AlertDialogAction
+                                onClick={(e) => { e.preventDefault(); handleBulkDelete(); }}
+                                disabled={isBulkDeleting}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            >
+                                {isBulkDeleting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Trash2 className="h-4 w-4 mr-2" />}
+                                Confirmer la suppression
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
             </div>
         </PermissionGuard>
     );

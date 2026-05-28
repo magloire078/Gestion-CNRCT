@@ -16,17 +16,17 @@ export function ConflictStatsCards({ conflicts }: ConflictStatsCardsProps) {
         const open = conflicts.filter(c => c.status === 'Ouvert' || !c.status).length;
         const mediating = conflicts.filter(c => c.status === 'En médiation').length;
         const resolved = conflicts.filter(c => c.status === 'Résolu').length;
-        
+        const closed = conflicts.filter(c => c.status === 'Classé sans suite').length;
+
         const resolutionRate = total > 0 ? Math.round((resolved / total) * 100) : 0;
-        
-        // Find most active region
+
         const regions: Record<string, number> = {};
         conflicts.forEach(c => {
             if (c.region) regions[c.region] = (regions[c.region] || 0) + 1;
         });
         const topRegion = Object.entries(regions).sort((a,b) => b[1] - a[1])[0]?.[0] || "Aucune";
 
-        return { total, open, mediating, resolved, resolutionRate, topRegion };
+        return { total, open, mediating, resolved, closed, resolutionRate, topRegion };
     }, [conflicts]);
 
     return (
@@ -84,9 +84,14 @@ export function ConflictStatsCards({ conflicts }: ConflictStatsCardsProps) {
                 </CardHeader>
                 <CardContent>
                     <div className="text-4xl font-black text-slate-900 tracking-tighter tabular-nums">{stats.resolutionRate}<span className="text-lg ml-0.5 opacity-40">%</span></div>
-                    <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-widest">
-                        {stats.resolved} Cas résolus avec succès
-                    </p>
+                    <div className="flex items-center gap-2 mt-2">
+                        <span className="text-[9px] font-black uppercase tracking-tighter px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 border border-emerald-200/50">
+                            {stats.resolved} Résolus
+                        </span>
+                        <span className="text-[9px] font-black uppercase tracking-tighter px-2 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200/50">
+                            {stats.closed} Classés
+                        </span>
+                    </div>
                 </CardContent>
             </Card>
 

@@ -197,6 +197,7 @@ export default function ConflictsPage() {
     const [printingConflict, setPrintingConflict] = useState<Conflict | null>(null);
     const [isGeneratingBlankPdf, setIsGeneratingBlankPdf] = useState(false);
     const [blankFormDepartment, setBlankFormDepartment] = useState("");
+    const [blankFormCount, setBlankFormCount] = useState(1);
     const [isBlankFormDialogOpen, setIsBlankFormDialogOpen] = useState(false);
 
     // Details State
@@ -517,6 +518,7 @@ export default function ConflictsPage() {
     };
 
     const handleGenerateBlankPdf = async () => {
+        const count = Math.max(1, Math.min(50, blankFormCount || 1));
         setIsBlankFormDialogOpen(false);
         setIsGeneratingBlankPdf(true);
 
@@ -551,27 +553,38 @@ export default function ConflictsPage() {
             const pdfHeight = pdf.internal.pageSize.getHeight();
             const imgWidth = pdfWidth;
             const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-            let heightLeft = imgHeight;
-            let position = 0;
             const imgData = canvas.toDataURL("image/png", 0.95);
 
-            pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight, undefined, "FAST");
-            heightLeft -= pdfHeight;
-
-            while (heightLeft > 0) {
-                position = heightLeft - imgHeight;
-                pdf.addPage();
+            const renderOneForm = (isFirst: boolean) => {
+                if (!isFirst) pdf.addPage();
+                let heightLeft = imgHeight;
+                let position = 0;
                 pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight, undefined, "FAST");
                 heightLeft -= pdfHeight;
+                while (heightLeft > 0) {
+                    position = heightLeft - imgHeight;
+                    pdf.addPage();
+                    pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight, undefined, "FAST");
+                    heightLeft -= pdfHeight;
+                }
+            };
+
+            for (let i = 0; i < count; i++) {
+                renderOneForm(i === 0);
             }
 
             const safeDept = (blankFormDepartment || "generique")
                 .toLowerCase()
                 .replace(/[^a-z0-9]+/g, "-")
                 .replace(/^-+|-+$/g, "");
-            pdf.save(`fiche-conflit-vierge-${safeDept}-${new Date().toISOString().slice(0, 10)}.pdf`);
-            toast({ title: "PDF généré", description: "La fiche d'enregistrement est prête." });
+            const fileName = count > 1
+                ? `lot-fiches-conflit-vierge-x${count}-${safeDept}-${new Date().toISOString().slice(0, 10)}.pdf`
+                : `fiche-conflit-vierge-${safeDept}-${new Date().toISOString().slice(0, 10)}.pdf`;
+            pdf.save(fileName);
+            toast({
+                title: "PDF généré",
+                description: count > 1 ? `Lot de ${count} fiches prêt à imprimer.` : "La fiche d'enregistrement est prête.",
+            });
         } catch (err) {
             console.error("Blank PDF generation error:", err);
             toast({ variant: "destructive", title: "Erreur PDF", description: "Impossible de générer la fiche PDF." });
@@ -579,6 +592,7 @@ export default function ConflictsPage() {
             cleanup();
             setIsGeneratingBlankPdf(false);
             setBlankFormDepartment("");
+            setBlankFormCount(1);
         }
     };
 
@@ -729,6 +743,15 @@ export default function ConflictsPage() {
 
                         <Button variant="outline" onClick={() => setIsManageTypesDialogOpen(true)} className="rounded-xl font-bold h-11 border-slate-200">
                             <Tags className="mr-2 h-4 w-4" /> Types
+                        </Button>
+
+                        <Button
+                            variant="outline"
+                            onClick={() => setIsBlankFormDialogOpen(true)}
+                            className="rounded-xl font-bold h-11 border-amber-200 bg-amber-50/50 text-amber-800 hover:bg-amber-100"
+                            title="Imprimer une fiche vierge à remplir à la main"
+                        >
+                            <ClipboardList className="mr-2 h-4 w-4" /> Fiche vierge
                         </Button>
 
                         <Button onClick={() => setIsAddSheetOpen(true)} className="rounded-xl font-bold h-11 shadow-lg shadow-primary/20">
@@ -1305,27 +1328,95 @@ export default function ConflictsPage() {
                                 Génère un PDF prêt à être imprimé et rempli à la main par les agents de terrain, puis transmis au siège pour saisie.
                             </DialogDescription>
                         </DialogHeader>
-                        <div className="space-y-3 py-2">
-                            <Label htmlFor="blank-form-dept" className="text-xs font-black uppercase tracking-widest text-slate-500">
-                                Département / Service destinataire
-                            </Label>
-                            <Input
-                                id="blank-form-dept"
-                                placeholder="Ex : Direction Régionale de l'Ouest"
-                                value={blankFormDepartment}
-                                onChange={(e) => setBlankFormDepartment(e.target.value)}
-                                className="rounded-xl"
-                                disabled={isGeneratingBlankPdf}
-                            />
-                            <p className="text-[11px] text-slate-400 italic">
-                                Ce nom apparaîtra en tête de la fiche, sous le titre. Laissez vide pour un usage générique.
-                            </p>
+                        <div className="space-y-4 py-2">
+                            <div className="space-y-2">
+                                <Label htmlFor="blank-form-dept" className="text-xs font-black uppercase tracking-widest text-slate-500">
+                                    Département / Service destinataire
+                                </Label>
+                                <Input
+                                    id="blank-form-dept"
+                                    placeholder="Ex : Direction Régionale de l'Ouest"
+                                    value={blankFormDepartment}
+                                    onChange={(e) => setBlankFormDepartment(e.target.value)}
+                                    className="rounded-xl"
+                                    disabled={isGeneratingBlankPdf}
+                                />
+                                <p className="text-[11px] text-slate-400 italic">
+                                    Ce nom apparaîtra en tête de chaque fiche. Laissez vide pour un usage générique.
+                                </p>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="blank-form-count" className="text-xs font-black uppercase tracking-widest text-slate-500">
+                                    Nombre de fiches (1 conflit = 1 fiche)
+                                </Label>
+                                <div className="flex items-center gap-3">
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="icon"
+                                        className="h-11 w-11 rounded-xl"
+                                        onClick={() => setBlankFormCount(c => Math.max(1, c - 1))}
+                                        disabled={isGeneratingBlankPdf || blankFormCount <= 1}
+                                    >
+                                        <X className="h-4 w-4 rotate-90" />
+                                    </Button>
+                                    <Input
+                                        id="blank-form-count"
+                                        type="number"
+                                        min={1}
+                                        max={50}
+                                        value={blankFormCount}
+                                        onChange={(e) => {
+                                            const n = Number(e.target.value);
+                                            if (Number.isFinite(n)) setBlankFormCount(Math.max(1, Math.min(50, Math.floor(n))));
+                                        }}
+                                        className="rounded-xl text-center font-black text-lg h-11"
+                                        disabled={isGeneratingBlankPdf}
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="icon"
+                                        className="h-11 w-11 rounded-xl"
+                                        onClick={() => setBlankFormCount(c => Math.min(50, c + 1))}
+                                        disabled={isGeneratingBlankPdf || blankFormCount >= 50}
+                                    >
+                                        <Plus className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                    {[1, 5, 10, 25, 50].map(n => (
+                                        <button
+                                            key={n}
+                                            type="button"
+                                            onClick={() => setBlankFormCount(n)}
+                                            disabled={isGeneratingBlankPdf}
+                                            className={cn(
+                                                "px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest transition-colors",
+                                                blankFormCount === n
+                                                    ? "bg-primary text-white"
+                                                    : "bg-slate-100 text-slate-500 hover:bg-slate-200"
+                                            )}
+                                        >
+                                            x{n}
+                                        </button>
+                                    ))}
+                                </div>
+                                <p className="text-[11px] text-slate-400 italic">
+                                    Maximum 50 fiches par PDF. Chaque fiche commence sur une nouvelle page.
+                                </p>
+                            </div>
                         </div>
                         <DialogFooter>
                             <Button variant="ghost" onClick={() => setIsBlankFormDialogOpen(false)} disabled={isGeneratingBlankPdf}>Annuler</Button>
                             <Button onClick={handleGenerateBlankPdf} disabled={isGeneratingBlankPdf} className="rounded-xl font-bold">
                                 {isGeneratingBlankPdf ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <FileSpreadsheet className="h-4 w-4 mr-2" />}
-                                {isGeneratingBlankPdf ? "Génération…" : "Télécharger le PDF"}
+                                {isGeneratingBlankPdf
+                                    ? "Génération…"
+                                    : blankFormCount > 1
+                                        ? `Télécharger le PDF (${blankFormCount} fiches)`
+                                        : "Télécharger le PDF"}
                             </Button>
                         </DialogFooter>
                     </DialogContent>

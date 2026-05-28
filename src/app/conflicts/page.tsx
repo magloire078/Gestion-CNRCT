@@ -10,7 +10,8 @@ import {
     Printer, TrendingUp, ShieldAlert,
     AlertTriangle, History, X, ArrowUpDown,
     ArrowUp, ArrowDown, FileSpreadsheet,
-    Tags, Plus, ClipboardList
+    Tags, Plus, ClipboardList,
+    CalendarIcon, LayoutGrid, Flame, Clock
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -66,7 +67,12 @@ import { subscribeToConflictTypes, addConflictType, deleteConflictType } from "@
 import { AddConflictSheet } from "@/components/conflicts/add-conflict-sheet";
 import { EditConflictSheet } from "@/components/conflicts/edit-conflict-sheet";
 import { Input } from "@/components/ui/input";
-import { subscribeToConflicts, addConflict, updateConflict, deleteConflict } from "@/services/conflict-service";
+import { subscribeToConflicts, addConflict, updateConflict, deleteConflict, updateConflictStatus } from "@/services/conflict-service";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import type { DateRange } from "react-day-picker";
+import { differenceInDays } from "date-fns";
+import { ConflictKanbanBoard } from "@/components/conflicts/conflict-kanban-board";
 import { getChiefs } from "@/services/chief-service";
 import { getAllHeritageItems } from "@/services/heritage-service";
 import type { HeritageItem } from "@/types/heritage";
@@ -111,6 +117,37 @@ function SortIcon({ active, direction }: { active: boolean; direction: SortDirec
     return direction === "asc" ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />;
 }
 
+type AgeAlert = { level: "urgent" | "warning"; days: number; label: string } | null;
+
+function getConflictAgeAlert(conflict: Conflict): AgeAlert {
+    const status = conflict.status || "Ouvert";
+    if (status === "Résolu" || status === "Classé sans suite") return null;
+    if (!conflict.reportedDate) return null;
+    const reported = parseISO(conflict.reportedDate);
+    if (!isValid(reported)) return null;
+    const days = differenceInDays(new Date(), reported);
+    if (days >= 60) return { level: "urgent", days, label: `${days}j sans suite` };
+    if (days >= 30) return { level: "warning", days, label: `${days}j en attente` };
+    return null;
+}
+
+function AgeBadge({ alert }: { alert: AgeAlert }) {
+    if (!alert) return null;
+    const isUrgent = alert.level === "urgent";
+    return (
+        <span
+            title={`Dossier ouvert depuis ${alert.days} jour(s)`}
+            className={cn(
+                "inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest shadow-sm",
+                isUrgent ? "bg-rose-600 text-white animate-pulse" : "bg-amber-100 text-amber-800 border border-amber-200"
+            )}
+        >
+            {isUrgent ? <Flame className="h-2.5 w-2.5" /> : <Clock className="h-2.5 w-2.5" />}
+            {alert.label}
+        </span>
+    );
+}
+
 export default function ConflictsPage() {
     const [conflicts, setConflicts] = useState<Conflict[] | null>(null);
     const [chiefs, setChiefs] = useState<Chief[] | null>(null);
@@ -124,7 +161,8 @@ export default function ConflictsPage() {
     const [searchTerm, setSearchTerm] = useState("");
     const { toast } = useToast();
 
-    const [selectedYear, setSelectedYear] = useState<string>("Tous");
+    const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
+    const [isDateOpen, setIsDateOpen] = useState(false);
 
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -302,13 +340,21 @@ export default function ConflictsPage() {
                 (conflict.mediatorName || '').toLowerCase().includes(searchTermLower) ||
                 (conflict.region || '').toLowerCase().includes(searchTermLower);
 
-            const conflictYear = conflict.reportedDate.split('-')[0];
-            const matchesYear = selectedYear === "Tous" || conflictYear === selectedYear;
+            let matchesDate = true;
+            if (dateRange?.from || dateRange?.to) {
+                const reported = conflict.reportedDate ? parseISO(conflict.reportedDate) : null;
+                if (!reported || !isValid(reported)) {
+                    matchesDate = false;
+                } else {
+                    if (dateRange.from && reported < new Date(dateRange.from.setHours(0, 0, 0, 0))) matchesDate = false;
+                    if (dateRange.to && reported > new Date(new Date(dateRange.to).setHours(23, 59, 59, 999))) matchesDate = false;
+                }
+            }
             const matchesRegion = selectedRegion === "Tous" || conflict.region === selectedRegion;
             const matchesType = selectedConflictType === "Tous" || conflict.type === selectedConflictType;
             const matchesStatus = selectedStatus === "Tous" || (conflict.status || 'Ouvert') === selectedStatus;
 
-            return matchesSearch && matchesYear && matchesRegion && matchesType && matchesStatus;
+            return matchesSearch && matchesDate && matchesRegion && matchesType && matchesStatus;
         });
 
         const sorted = [...filtered].sort((a, b) => {
@@ -322,13 +368,13 @@ export default function ConflictsPage() {
             setCurrentPage(1);
         }
         return sorted;
-    }, [conflicts, searchTerm, currentPage, itemsPerPage, selectedYear, selectedRegion, selectedConflictType, selectedStatus, sortColumn, sortDirection]);
+    }, [conflicts, searchTerm, currentPage, itemsPerPage, dateRange, selectedRegion, selectedConflictType, selectedStatus, sortColumn, sortDirection]);
 
-    const hasActiveFilters = searchTerm !== "" || selectedYear !== "Tous" || selectedRegion !== "Tous" || selectedConflictType !== "Tous" || selectedStatus !== "Tous";
+    const hasActiveFilters = searchTerm !== "" || !!dateRange?.from || !!dateRange?.to || selectedRegion !== "Tous" || selectedConflictType !== "Tous" || selectedStatus !== "Tous";
 
     const handleResetFilters = () => {
         setSearchTerm("");
-        setSelectedYear("Tous");
+        setDateRange(undefined);
         setSelectedRegion("Tous");
         setSelectedConflictType("Tous");
         setSelectedStatus("Tous");
@@ -421,6 +467,18 @@ export default function ConflictsPage() {
         }
     };
 
+    const handleQuickStatusChange = async (conflict: Conflict, newStatus: ConflictStatus) => {
+        if (newStatus === (conflict.status || 'Ouvert')) return;
+        try {
+            const authorName = user?.displayName || user?.email || "Utilisateur";
+            await updateConflictStatus(conflict.id, newStatus, authorName);
+            toast({ title: "Statut mis à jour", description: `${conflict.village} → ${newStatus}` });
+        } catch (err) {
+            console.error("Quick status change failed:", err);
+            toast({ variant: "destructive", title: "Erreur", description: "Impossible de modifier le statut." });
+        }
+    };
+
     const handleGenerateBlankPdf = async () => {
         setIsBlankFormDialogOpen(false);
         setIsGeneratingBlankPdf(true);
@@ -497,16 +555,6 @@ export default function ConflictsPage() {
         return Array.from(new Set([...staticTypes, ...dynamicTypes])).sort();
     }, [dynamicConflictTypes]);
 
-    const availableYears = useMemo(() => {
-        if (!conflicts) return [];
-        const years = new Set<string>();
-        conflicts.forEach(c => {
-            const year = c.reportedDate.split('-')[0];
-            if (year) years.add(year);
-        });
-        return Array.from(years).sort((a, b) => b.localeCompare(a));
-    }, [conflicts]);
-
     const paginatedConflicts = useMemo(() => {
         const startIndex = (currentPage - 1) * itemsPerPage;
         return filteredConflicts.slice(startIndex, startIndex + itemsPerPage);
@@ -574,17 +622,25 @@ export default function ConflictsPage() {
                     </div>
                     <div className="flex flex-wrap items-center gap-3">
                         <div className="flex items-center gap-2 p-1 bg-slate-100 rounded-xl mr-2">
-                            <Button 
-                                variant={activeTab === "list" ? "secondary" : "ghost"} 
-                                size="sm" 
+                            <Button
+                                variant={activeTab === "list" ? "secondary" : "ghost"}
+                                size="sm"
                                 className={cn("h-8 rounded-lg font-bold text-xs", activeTab === "list" && "shadow-sm")}
                                 onClick={() => setActiveTab("list")}
                             >
                                 <List className="mr-2 h-3.5 w-3.5" /> Liste
                             </Button>
-                            <Button 
-                                variant={activeTab === "map" ? "secondary" : "ghost"} 
-                                size="sm" 
+                            <Button
+                                variant={activeTab === "kanban" ? "secondary" : "ghost"}
+                                size="sm"
+                                className={cn("h-8 rounded-lg font-bold text-xs", activeTab === "kanban" && "shadow-sm")}
+                                onClick={() => setActiveTab("kanban")}
+                            >
+                                <LayoutGrid className="mr-2 h-3.5 w-3.5" /> Kanban
+                            </Button>
+                            <Button
+                                variant={activeTab === "map" ? "secondary" : "ghost"}
+                                size="sm"
                                 className={cn("h-8 rounded-lg font-bold text-xs", activeTab === "map" && "shadow-sm")}
                                 onClick={() => setActiveTab("map")}
                             >
@@ -654,20 +710,45 @@ export default function ConflictsPage() {
                                         />
                                     </div>
                                     <div className="flex items-center gap-3">
-                                        <Select value={selectedYear} onValueChange={setSelectedYear}>
-                                            <SelectTrigger className="w-[140px] h-14 rounded-2xl border-slate-100 bg-white font-black text-[10px] uppercase tracking-widest shadow-sm hover:border-slate-900 transition-all">
-                                                <div className="flex items-center gap-2">
-                                                    <History className="h-3.5 w-3.5 text-slate-400" />
-                                                    <SelectValue placeholder="Année" />
+                                        <Popover open={isDateOpen} onOpenChange={setIsDateOpen}>
+                                            <PopoverTrigger asChild>
+                                                <Button
+                                                    variant="outline"
+                                                    className={cn(
+                                                        "w-[240px] h-14 rounded-2xl border-slate-100 bg-white font-black text-[10px] uppercase tracking-widest shadow-sm hover:border-slate-900 transition-all justify-start",
+                                                        (dateRange?.from || dateRange?.to) && "border-primary text-primary"
+                                                    )}
+                                                >
+                                                    <CalendarIcon className="h-3.5 w-3.5 mr-2 text-slate-400" />
+                                                    {dateRange?.from ? (
+                                                        dateRange.to ? (
+                                                            <span>{format(dateRange.from, "dd MMM", { locale: fr })} → {format(dateRange.to, "dd MMM yy", { locale: fr })}</span>
+                                                        ) : (
+                                                            <span>Depuis {format(dateRange.from, "dd MMM yyyy", { locale: fr })}</span>
+                                                        )
+                                                    ) : (
+                                                        <span className="text-slate-500">Plage de dates</span>
+                                                    )}
+                                                </Button>
+                                            </PopoverTrigger>
+                                            <PopoverContent className="w-auto p-0 rounded-2xl" align="start">
+                                                <Calendar
+                                                    mode="range"
+                                                    selected={dateRange}
+                                                    onSelect={setDateRange}
+                                                    numberOfMonths={2}
+                                                    locale={fr}
+                                                />
+                                                <div className="flex items-center justify-between p-3 border-t border-slate-100">
+                                                    <Button variant="ghost" size="sm" onClick={() => { setDateRange(undefined); }} className="font-bold text-xs">
+                                                        Effacer
+                                                    </Button>
+                                                    <Button size="sm" onClick={() => setIsDateOpen(false)} className="font-bold text-xs rounded-lg">
+                                                        Appliquer
+                                                    </Button>
                                                 </div>
-                                            </SelectTrigger>
-                                            <SelectContent className="rounded-2xl border-slate-100 shadow-2xl">
-                                                <SelectItem value="Tous" className="font-black text-[10px] uppercase">Toutes Années</SelectItem>
-                                                {availableYears.map(year => (
-                                                    <SelectItem key={year} value={year} className="font-bold">{year}</SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
+                                            </PopoverContent>
+                                        </Popover>
                                         <Select value={selectedRegion} onValueChange={setSelectedRegion}>
                                             <SelectTrigger className="w-[200px] h-14 rounded-2xl border-slate-100 bg-white font-black text-[10px] uppercase tracking-widest shadow-sm hover:border-slate-900 transition-all">
                                                 <div className="flex items-center gap-2">
@@ -865,10 +946,29 @@ export default function ConflictsPage() {
                                                                     {(() => {
                                                                         const s = (conflict.status || 'Ouvert') as Status;
                                                                         const style = statusBadgeMap[s] || statusBadgeMap['Ouvert'];
-                                                                        return (
-                                                                            <div className={cn("inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm", style.wrapper)}>
+                                                                        const alert = getConflictAgeAlert(conflict);
+                                                                        const trigger = (
+                                                                            <button className={cn("inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm transition-all", style.wrapper, canEdit && "hover:ring-2 hover:ring-offset-1 hover:ring-slate-300 cursor-pointer")}>
                                                                                 <span className={cn("h-1.5 w-1.5 rounded-full", style.dot)} />
                                                                                 {s}
+                                                                                {canEdit && <ArrowDown className="h-2.5 w-2.5 opacity-40" />}
+                                                                            </button>
+                                                                        );
+                                                                        return (
+                                                                            <div className="flex flex-col items-start gap-1.5">
+                                                                                {canEdit ? (
+                                                                                    <Select value={s} onValueChange={(v) => handleQuickStatusChange(conflict, v as ConflictStatus)}>
+                                                                                        <SelectTrigger asChild>{trigger}</SelectTrigger>
+                                                                                        <SelectContent className="rounded-xl border-slate-100 shadow-2xl">
+                                                                                            {conflictStatuses.map(st => (
+                                                                                                <SelectItem key={st} value={st} className="font-bold text-xs">{st}</SelectItem>
+                                                                                            ))}
+                                                                                        </SelectContent>
+                                                                                    </Select>
+                                                                                ) : (
+                                                                                    trigger
+                                                                                )}
+                                                                                <AgeBadge alert={alert} />
                                                                             </div>
                                                                         );
                                                                     })()}
@@ -988,6 +1088,37 @@ export default function ConflictsPage() {
                                     />
                                 </CardFooter>
                             )}
+                        </Card>
+                    </TabsContent>
+                    <TabsContent value="kanban" className="mt-0 focus-visible:ring-0">
+                        <Card className="border-none shadow-xl shadow-slate-100 rounded-[2rem] overflow-hidden bg-white">
+                            <CardHeader className="bg-slate-50/80 backdrop-blur-md border-b border-slate-100 p-6">
+                                <div className="flex items-center gap-3">
+                                    <div className="h-2 w-12 bg-slate-900 rounded-full" />
+                                    <div>
+                                        <CardTitle className="text-xl font-black text-slate-900 uppercase tracking-tighter">Pipeline de Médiation</CardTitle>
+                                        <CardDescription className="font-bold text-slate-400 italic text-xs mt-1">
+                                            {canEdit ? "Glissez-déposez un dossier pour changer son statut." : "Vue d'ensemble du pipeline (lecture seule)."}
+                                        </CardDescription>
+                                    </div>
+                                </div>
+                            </CardHeader>
+                            <CardContent className="p-0">
+                                {loading ? (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 p-6">
+                                        {Array.from({ length: 4 }).map((_, i) => (
+                                            <Skeleton key={i} className="h-[400px] rounded-3xl" />
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <ConflictKanbanBoard
+                                        conflicts={filteredConflicts}
+                                        onStatusChange={handleQuickStatusChange}
+                                        onCardClick={handleViewDetails}
+                                        canEdit={canEdit}
+                                    />
+                                )}
+                            </CardContent>
                         </Card>
                     </TabsContent>
                     <TabsContent value="map" className="mt-0 focus-visible:ring-0">

@@ -27,22 +27,30 @@ export function BureauDirectoire({ loading, members, allDirectors = [] }: Bureau
     !m.poste?.toLowerCase().includes('vice-president')
   );
 
-  const cabinetAndSecretariat = members.filter(m =>
-    m.poste?.toLowerCase().includes('secrétaire général') ||
-    m.poste?.toLowerCase().includes('directrice de cabinet') ||
-    m.poste?.toLowerCase().includes('directeur de cabinet')
-  ).sort((a, b) => {
+  const cabinetAndSecretariat = members.filter(m => {
+    const p = m.poste?.toLowerCase() || '';
+    return (p.includes('secrétaire général') ||
+            p.includes('directrice de cabinet') ||
+            p.includes('directeur de cabinet')) &&
+           !p.includes('chauffeur') &&
+           !p.includes('assistant') &&
+           !p.includes('sous-direct');
+  }).sort((a, b) => {
     const aIsCabinet = (a.poste?.toLowerCase().includes('directrice de cabinet') || a.poste?.toLowerCase().includes('directeur de cabinet')) ? -1 : 1;
     const bIsCabinet = (b.poste?.toLowerCase().includes('directrice de cabinet') || b.poste?.toLowerCase().includes('directeur de cabinet')) ? -1 : 1;
     return aIsCabinet - bIsCabinet;
   });
 
-  const otherDirectors = allDirectors.length > 0 ? allDirectors : members.filter(m =>
-    (m.poste?.toLowerCase().includes('directeur') || m.poste?.toLowerCase().includes('directrice') || m.poste?.toLowerCase().includes('cabinet')) &&
-    !m.poste?.toLowerCase().includes('secrétaire général') &&
-    !m.poste?.toLowerCase().includes('directrice de cabinet') &&
-    !m.poste?.toLowerCase().includes('directeur de cabinet')
-  );
+  const otherDirectors = allDirectors.length > 0 ? allDirectors : members.filter(m => {
+    const p = m.poste?.toLowerCase() || '';
+    return (p.includes('directeur') || p.includes('directrice') || p.includes('cabinet')) &&
+    !p.includes('secrétaire général') &&
+    !p.includes('directrice de cabinet') &&
+    !p.includes('directeur de cabinet') &&
+    !p.includes('chauffeur') &&
+    !p.includes('assistant') &&
+    !p.includes('sous-direct');
+  });
 
   return (
     <section id="directoire-section" className="py-12 bg-muted/50 min-h-[400px] flex items-center scroll-mt-24">
@@ -62,7 +70,7 @@ export function BureauDirectoire({ loading, members, allDirectors = [] }: Bureau
         ) : (
           <>
             {president && (
-              <div className="flex justify-center mb-16 animate-in fade-in slide-in-from-bottom-8 duration-700">
+              <div className="flex justify-center mb-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
                 <div className="w-full max-w-sm group relative">
                   <div className="absolute inset-x-[-20px] top-[-20px] bottom-[-20px] bg-gradient-to-br from-emerald-500/10 to-amber-500/10 opacity-0 group-hover:opacity-100 transition-opacity rounded-[3rem] blur-xl" />
                   <div className="relative flex flex-col items-center bg-white p-10 rounded-[2.5rem] border border-amber-200/50 shadow-2xl shadow-amber-500/10 transition-all hover:-translate-y-2">
@@ -91,7 +99,7 @@ export function BureauDirectoire({ loading, members, allDirectors = [] }: Bureau
             )}
 
             {vicePresidents.length > 0 && (
-              <div className="flex flex-wrap justify-center gap-6 max-w-7xl mx-auto mb-16 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200">
+              <div className="flex flex-wrap justify-center gap-6 max-w-7xl mx-auto mb-8 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200">
                 {vicePresidents.map((vp, index) => (
                   <div key={index} className="group relative w-full sm:max-w-[280px] flex-1 min-w-[240px]">
                     <div className="absolute inset-x-[-10px] top-[-10px] bottom-[-10px] bg-gradient-to-br from-amber-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-[2rem] blur-lg" />
@@ -124,7 +132,7 @@ export function BureauDirectoire({ loading, members, allDirectors = [] }: Bureau
 
             {bureauMembers.length > 0 && (
               <>
-                <div className="flex items-center gap-6 mb-12 mt-20 max-w-6xl mx-auto">
+                <div className="flex items-center gap-6 mb-8 mt-10 max-w-6xl mx-auto">
                   <div className="h-px flex-1 bg-gradient-to-r from-transparent to-amber-200" />
                   <h3 className="text-2xl font-black text-amber-500 uppercase tracking-[0.2em]">Membres du Bureau</h3>
                   <div className="h-px flex-1 bg-gradient-to-l from-transparent to-amber-200" />
@@ -162,7 +170,7 @@ export function BureauDirectoire({ loading, members, allDirectors = [] }: Bureau
 
             {cabinetAndSecretariat.length > 0 && (
               <>
-                <div className="flex items-center gap-4 mb-8 mt-16 max-w-6xl mx-auto">
+                <div className="flex items-center gap-4 mb-6 mt-10 max-w-6xl mx-auto">
                   <div className="h-px flex-1 bg-gradient-to-r from-transparent to-[#006039]/20" />
                   <h3 className="text-xl font-black text-[#006039] uppercase tracking-[0.2em]">Cabinet et Secrétariat Général</h3>
                   <div className="h-px flex-1 bg-gradient-to-l from-transparent to-[#006039]/20" />
@@ -200,7 +208,7 @@ export function BureauDirectoire({ loading, members, allDirectors = [] }: Bureau
 
             {otherDirectors.length > 0 && (
               <>
-                <div className="flex items-center gap-4 mb-8 mt-12 max-w-6xl mx-auto">
+                <div className="flex items-center gap-4 mb-6 mt-8 max-w-6xl mx-auto">
                   <div className="h-px flex-1 bg-muted/30" />
                   <h4 className="text-sm font-black text-muted-foreground uppercase tracking-[0.2em]">Les Directions</h4>
                   <div className="h-px flex-1 bg-muted/30" />

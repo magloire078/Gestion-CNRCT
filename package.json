@@ -11,7 +11,9 @@
     "db:seed": "tsx src/scripts/seed-data.ts",
     "db:seed-assets": "tsx src/scripts/seed-assets.ts",
     "db:correct-dates": "tsx src/scripts/correct-employee-departure-dates.ts",
-    "db:populate-villages": "tsx src/scripts/populate-villages.ts"
+    "db:populate-villages": "tsx src/scripts/populate-villages.ts",
+    "db:scan-duplicates": "tsx scripts/scan-duplicates.ts",
+    "db:dedupe": "tsx scripts/scan-duplicates.ts --apply"
   },
   "dependencies": {
     "@genkit-ai/google-genai": "1.31.0",

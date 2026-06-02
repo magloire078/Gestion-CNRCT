@@ -2,22 +2,23 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { 
-    PlusCircle, Search, MapPin, 
-    History, Users, Landmark, 
+import {
+    PlusCircle, Search, MapPin,
+    History, Users, Landmark,
     ChevronRight, Loader2, Globe,
-    ArrowLeft, Filter, Sparkles
+    ArrowLeft, Filter, Sparkles,
+    X, FileSpreadsheet
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { 
-    Select, 
-    SelectContent, 
-    SelectItem, 
-    SelectTrigger, 
-    SelectValue 
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { subscribeToHeritage, deleteHeritageItem, addHeritageItem } from "@/services/heritage-service";
@@ -26,6 +27,7 @@ import { heritageCategoryLabels } from "@/types/heritage";
 import { AddHeritageItemSheet } from "@/components/heritage/add-heritage-item-sheet";
 import { ConfirmationDialog } from "@/components/common/confirmation-dialog";
 import { IVORIAN_REGIONS } from "@/constants/regions";
+import Papa from "papaparse";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
@@ -39,6 +41,7 @@ export default function HeritageCategoryPage() {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
     const [regionFilter, setRegionFilter] = useState("all");
+    const [ethnicGroupFilter, setEthnicGroupFilter] = useState("all");
     const [isSheetOpen, setIsSheetOpen] = useState(false);
     const [deleteTarget, setDeleteTarget] = useState<HeritageItem | null>(null);
     const { toast } = useToast();
@@ -64,11 +67,50 @@ export default function HeritageCategoryPage() {
         return items.filter(item => {
             const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                                  item.ethnicGroup?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                 item.description.toLowerCase().includes(searchTerm.toLowerCase());
+                                 item.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                 (item.village || '').toLowerCase().includes(searchTerm.toLowerCase());
             const matchesRegion = regionFilter === "all" || item.region === regionFilter;
-            return matchesSearch && matchesRegion;
+            const matchesEthnicGroup = ethnicGroupFilter === "all" || item.ethnicGroup === ethnicGroupFilter;
+            return matchesSearch && matchesRegion && matchesEthnicGroup;
         });
-    }, [items, searchTerm, regionFilter]);
+    }, [items, searchTerm, regionFilter, ethnicGroupFilter]);
+
+    const ethnicGroups = useMemo(() => {
+        const set = new Set<string>();
+        items.forEach(i => { if (i.ethnicGroup) set.add(i.ethnicGroup); });
+        return Array.from(set).sort((a, b) => a.localeCompare(b, 'fr'));
+    }, [items]);
+
+    const hasActiveFilters = searchTerm !== "" || regionFilter !== "all" || ethnicGroupFilter !== "all";
+
+    const handleResetFilters = () => {
+        setSearchTerm("");
+        setRegionFilter("all");
+        setEthnicGroupFilter("all");
+    };
+
+    const handleExportCsv = () => {
+        if (filteredItems.length === 0) {
+            toast({ variant: "destructive", title: "Aucune donnée à exporter" });
+            return;
+        }
+        const csvData = Papa.unparse(filteredItems.map(i => ({
+            nom: i.name,
+            categorie: heritageCategoryLabels[i.category as HeritageCategory] || i.category,
+            ethnie: i.ethnicGroup || '',
+            region: i.region || '',
+            village: i.village || '',
+            description: i.description,
+            contexte_historique: i.historicalContext || '',
+            image_url: i.imageUrl || '',
+        })), { header: true });
+        const blob = new Blob(["﻿" + csvData], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `export_patrimoine_${category}_${new Date().toISOString().slice(0, 10)}.csv`;
+        link.click();
+        toast({ title: "Exportation CSV réussie", description: `${filteredItems.length} élément(s) exporté(s).` });
+    };
 
     const handleAddItem = async (data: Omit<HeritageItem, "id">) => {
         try {
@@ -156,14 +198,14 @@ export default function HeritageCategoryPage() {
                 <div className="relative group flex-1">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
                     <Input
-                        placeholder={`Rechercher un(e) ${categoryLabel.toLowerCase()}...`}
+                        placeholder={`Rechercher un(e) ${categoryLabel.toLowerCase()}, village, ethnie...`}
                         className="pl-12 h-14 rounded-lg border-none shadow-xl shadow-slate-200/50 bg-white"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
                 <Select value={regionFilter} onValueChange={setRegionFilter}>
-                    <SelectTrigger className="h-14 rounded-lg border-none shadow-xl shadow-slate-200/50 bg-white w-full md:w-[240px] font-bold text-slate-600">
+                    <SelectTrigger className="h-14 rounded-lg border-none shadow-xl shadow-slate-200/50 bg-white w-full md:w-[220px] font-bold text-slate-600">
                         <div className="flex items-center gap-2">
                             <Filter className="h-4 w-4 text-slate-400" />
                             <SelectValue placeholder="Région" />
@@ -174,7 +216,37 @@ export default function HeritageCategoryPage() {
                         {IVORIAN_REGIONS.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
                     </SelectContent>
                 </Select>
+                <Select value={ethnicGroupFilter} onValueChange={setEthnicGroupFilter} disabled={ethnicGroups.length === 0}>
+                    <SelectTrigger className="h-14 rounded-lg border-none shadow-xl shadow-slate-200/50 bg-white w-full md:w-[220px] font-bold text-slate-600">
+                        <div className="flex items-center gap-2">
+                            <Users className="h-4 w-4 text-slate-400" />
+                            <SelectValue placeholder="Ethnie" />
+                        </div>
+                    </SelectTrigger>
+                    <SelectContent className="rounded-xl border-none shadow-2xl">
+                        <SelectItem value="all" className="font-bold">Toutes les ethnies</SelectItem>
+                        {ethnicGroups.map(e => <SelectItem key={e} value={e}>{e}</SelectItem>)}
+                    </SelectContent>
+                </Select>
+                <Button variant="outline" onClick={handleExportCsv} disabled={filteredItems.length === 0} className="h-14 rounded-lg border-none shadow-xl shadow-slate-200/50 bg-white font-black uppercase text-xs tracking-widest px-6">
+                    <FileSpreadsheet className="mr-2 h-4 w-4 text-emerald-600" /> CSV
+                </Button>
             </div>
+
+            {/* Counter & reset */}
+            {!loading && (
+                <div className="flex items-center justify-between px-2">
+                    <p className="text-xs font-black uppercase tracking-widest text-slate-500">
+                        <span className="text-slate-900 tabular-nums">{filteredItems.length}</span> élément{filteredItems.length > 1 ? 's' : ''}
+                        {hasActiveFilters && <span className="text-slate-400 normal-case font-bold italic ml-2">(filtré sur {items.length})</span>}
+                    </p>
+                    {hasActiveFilters && (
+                        <Button variant="ghost" size="sm" onClick={handleResetFilters} className="h-9 rounded-lg font-black text-[10px] uppercase tracking-widest text-slate-500 hover:text-rose-600 hover:bg-rose-50">
+                            <X className="h-3.5 w-3.5 mr-1.5" /> Réinitialiser
+                        </Button>
+                    )}
+                </div>
+            )}
 
             {/* Content Grid */}
             {loading ? (

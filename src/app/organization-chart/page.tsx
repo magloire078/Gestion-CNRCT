@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { getDepartments } from '@/services/department-service';
 import { getDirections } from '@/services/direction-service';
 import { getServices } from '@/services/service-service';
-import { getEmployees } from '@/services/employee-service';
+import { subscribeToEmployees } from '@/services/employee-service';
 import type { Department, Direction, Service, Employe } from "@/lib/data";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,23 +33,33 @@ export default function OrganizationChartPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    async function fetchData() {
-      try {
-        const [departments, directions, services, employees] = await Promise.all([
-          getDepartments(),
-          getDirections(),
-          getServices(),
-          getEmployees(),
-        ]);
-        setData({ departments, directions, services, employees });
-      } catch (err) {
-        console.error("Failed to fetch organizational data:", err);
+    let currentEmployees: any[] = [];
+    let staticLoaded = false;
+    let depts: any[] = [], dirs: any[] = [], svcs: any[] = [];
+
+    const pushIfReady = () => {
+      if (!staticLoaded) return;
+      setData({ departments: depts, directions: dirs, services: svcs, employees: currentEmployees });
+      setLoading(false);
+    };
+
+    Promise.all([getDepartments(), getDirections(), getServices()])
+      .then(([d, dir, s]) => { depts = d; dirs = dir; svcs = s; staticLoaded = true; pushIfReady(); })
+      .catch(err => {
+        console.error("Failed to fetch org structure:", err);
         setError("Impossible de charger les données de l'organisation.");
-      } finally {
+        setLoading(false);
+      });
+
+    const unsub = subscribeToEmployees(
+      (emps) => { currentEmployees = emps; pushIfReady(); },
+      (err) => {
+        console.error("Failed to subscribe to employees:", err);
+        setError("Impossible de charger les données de l'organisation.");
         setLoading(false);
       }
-    }
-    fetchData();
+    );
+    return () => unsub();
   }, []);
 
   if (loading) {

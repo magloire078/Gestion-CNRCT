@@ -30,7 +30,7 @@ import { EditLeaveRequestSheet } from "@/components/leave/edit-leave-request-she
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { subscribeToLeaves, addLeave, updateLeaveStatus, updateLeave, deleteLeave } from "@/services/leave-service";
-import { getEmployees } from "@/services/employee-service";
+import { subscribeToEmployees } from "@/services/employee-service";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { LeaveCalendar } from "@/components/leave/leave-calendar";
@@ -107,15 +107,21 @@ export default function LeavePage() {
       setLoading(false);
     });
 
-    getEmployees().then(fetchedEmployees => {
-      setEmployees(fetchedEmployees.filter(e => e.status === 'Actif'));
-    }).catch(err => {
-      console.error(err);
-      setError("Impossible de charger les employés pour la recherche.");
-    }).finally(() => setLoading(false));
+    const unsubEmployees = subscribeToEmployees(
+      (data) => {
+        setEmployees(data.filter(e => e.status === 'Actif'));
+        setLoading(false);
+      },
+      (err) => {
+        console.error(err);
+        setError("Impossible de charger les employés pour la recherche.");
+        setLoading(false);
+      }
+    );
 
     return () => {
       unsubLeaves();
+      unsubEmployees();
     };
   }, []);
 

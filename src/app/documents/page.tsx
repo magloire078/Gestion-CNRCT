@@ -4,7 +4,7 @@
 import { useState, useEffect, useActionState, useRef } from "react";
 import { useFormStatus } from "react-dom";
 import { generateDocumentAction, FormState } from "./actions";
-import { getEmployees } from "@/services/employee-service";
+import { subscribeToEmployees } from "@/services/employee-service";
 import type { Employe } from "@/lib/data";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
@@ -51,17 +51,11 @@ export default function DocumentGeneratorPage() {
 
 
   useEffect(() => {
-    async function fetchInitialData() {
-        try {
-            const fetchedEmployees = await getEmployees();
-            setEmployees(fetchedEmployees);
-        } catch (error) {
-            console.error("Failed to fetch initial data:", error);
-        } finally {
-            setLoadingEmployees(false);
-        }
-    }
-    fetchInitialData();
+    const unsub = subscribeToEmployees(
+      (data) => { setEmployees(data); setLoadingEmployees(false); },
+      (error) => { console.error("Failed to subscribe to employees:", error); setLoadingEmployees(false); }
+    );
+    return () => unsub();
   }, []);
 
   const prefillContent = (employee: Employe, type: string) => {

@@ -21,7 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getEmployees } from "@/services/employee-service";
+import { subscribeToEmployees } from "@/services/employee-service";
 import type { Employe } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
 import { 
@@ -71,22 +71,22 @@ export default function IndemnityCalculatorPage() {
   const [employeeSearchTerm, setEmployeeSearchTerm] = useState("");
 
   useEffect(() => {
-    async function fetchEmployees() {
-      try {
-        setLoading(true);
-        const data = await getEmployees();
+    setLoading(true);
+    const unsub = subscribeToEmployees(
+      (data) => {
         setAllEmployees(data.filter(e => e.status === 'Actif' || e.status === 'Licencié'));
-      } catch (error) {
+        setLoading(false);
+      },
+      () => {
         toast({
           variant: "destructive",
           title: "Erreur",
           description: "Impossible de charger la liste des employés.",
         });
-      } finally {
         setLoading(false);
       }
-    }
-    fetchEmployees();
+    );
+    return () => unsub();
   }, [toast]);
   
   const filteredEmployees = useMemo(() => {

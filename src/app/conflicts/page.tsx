@@ -41,16 +41,7 @@ import {
     AlertDialogTitle,
     AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import {
     Select,
@@ -65,7 +56,7 @@ import { useSearchParams } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import type { Conflict, Chief, ConflictType, ConflictTypeData, ConflictStatus } from "@/lib/data";
 import { conflictTypeVariantMap, conflictTypes, conflictStatuses } from "@/lib/data";
-import { subscribeToConflictTypes, addConflictType, deleteConflictType } from "@/services/conflict-type-service";
+import { subscribeToConflictTypes } from "@/services/conflict-type-service";
 import { AddConflictSheet } from "@/components/conflicts/add-conflict-sheet";
 import { EditConflictSheet } from "@/components/conflicts/edit-conflict-sheet";
 import { Input } from "@/components/ui/input";
@@ -77,6 +68,8 @@ import type { DateRange } from "react-day-picker";
 import { differenceInDays } from "date-fns";
 import { ConflictKanbanBoard } from "@/components/conflicts/conflict-kanban-board";
 import { ConflictGlobalTimeline } from "@/components/conflicts/conflict-global-timeline";
+import { BlankFormPdfDialog } from "@/components/conflicts/blank-form-pdf-dialog";
+import { ManageConflictTypesDialog } from "@/components/conflicts/manage-conflict-types-dialog";
 import { getChiefs } from "@/services/chief-service";
 import { getAllHeritageItems } from "@/services/heritage-service";
 import type { HeritageItem } from "@/types/heritage";
@@ -87,10 +80,7 @@ import { IVORIAN_REGIONS } from "@/constants/regions";
 import { PaginationControls } from "@/components/common/pagination-controls";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ConflictsOfficialReport } from "@/components/reports/conflicts-official-report";
-import { PrintConflictDetail, BlankConflictRegistrationFormContent } from "@/components/conflicts/conflict-print-templates";
-import { createRoot } from "react-dom/client";
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
+import { PrintConflictDetail } from "@/components/conflicts/conflict-print-templates";
 import { cn } from "@/lib/utils";
 import dynamic from 'next/dynamic';
 import { PermissionGuard } from "@/components/auth/permission-guard";
@@ -181,9 +171,6 @@ export default function ConflictsPage() {
     const [selectedConflictType, setSelectedConflictType] = useState<string>("Tous");
     const [selectedStatus, setSelectedStatus] = useState<string>("Tous");
     const [isManageTypesDialogOpen, setIsManageTypesDialogOpen] = useState(false);
-    const [newTypeName, setNewTypeName] = useState("");
-    const [isAddingType, setIsAddingType] = useState(false);
-    const [typeToDelete, setTypeToDelete] = useState<ConflictTypeData | null>(null);
 
     // Sorting & Selection
     const [sortColumn, setSortColumn] = useState<SortColumn>("reportedDate");
@@ -195,9 +182,6 @@ export default function ConflictsPage() {
     // Printing States
     const [isPrintingList, setIsPrintingList] = useState(false);
     const [printingConflict, setPrintingConflict] = useState<Conflict | null>(null);
-    const [isGeneratingBlankPdf, setIsGeneratingBlankPdf] = useState(false);
-    const [blankFormDepartment, setBlankFormDepartment] = useState("");
-    const [blankFormCount, setBlankFormCount] = useState(1);
     const [isBlankFormDialogOpen, setIsBlankFormDialogOpen] = useState(false);
 
     // Details State
@@ -456,32 +440,6 @@ export default function ConflictsPage() {
         toast({ title: "Exportation CSV réussie", description: `${filteredConflicts.length} dossier(s) exporté(s).` });
     };
 
-    const handleAddType = async () => {
-        const name = newTypeName.trim();
-        if (!name) return;
-        setIsAddingType(true);
-        try {
-            await addConflictType(name);
-            toast({ title: "Type ajouté", description: `« ${name} » a été ajouté à la nomenclature.` });
-            setNewTypeName("");
-        } catch (err) {
-            toast({ variant: "destructive", title: "Erreur", description: "Impossible d'ajouter ce type." });
-        } finally {
-            setIsAddingType(false);
-        }
-    };
-
-    const handleDeleteType = async () => {
-        if (!typeToDelete) return;
-        try {
-            await deleteConflictType(typeToDelete.id);
-            toast({ title: "Type supprimé", description: `« ${typeToDelete.name} » a été retiré.` });
-            setTypeToDelete(null);
-        } catch (err) {
-            toast({ variant: "destructive", title: "Erreur", description: "Impossible de supprimer ce type." });
-        }
-    };
-
     const toggleSelectOne = (id: string) => {
         setSelectedIds(prev => {
             const next = new Set(prev);
@@ -514,85 +472,6 @@ export default function ConflictsPage() {
         } catch (err) {
             console.error("Quick status change failed:", err);
             toast({ variant: "destructive", title: "Erreur", description: "Impossible de modifier le statut." });
-        }
-    };
-
-    const handleGenerateBlankPdf = async () => {
-        const count = Math.max(1, Math.min(50, blankFormCount || 1));
-        setIsBlankFormDialogOpen(false);
-        setIsGeneratingBlankPdf(true);
-
-        const host = document.createElement("div");
-        host.style.cssText = "position:fixed;left:-10000px;top:0;width:794px;background:white;z-index:-1;";
-        document.body.appendChild(host);
-
-        const root = createRoot(host);
-        const cleanup = () => {
-            root.unmount();
-            host.remove();
-        };
-
-        try {
-            await new Promise<void>((resolve) => {
-                root.render(<BlankConflictRegistrationFormContent department={blankFormDepartment} />);
-                requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
-            });
-            await new Promise((r) => setTimeout(r, 600));
-
-            const target = host.firstElementChild as HTMLElement;
-            const canvas = await html2canvas(target, {
-                scale: 2,
-                useCORS: true,
-                logging: false,
-                backgroundColor: "#ffffff",
-                windowWidth: 794,
-            });
-
-            const pdf = new jsPDF("p", "mm", "a4", true);
-            const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfHeight = pdf.internal.pageSize.getHeight();
-            const imgWidth = pdfWidth;
-            const imgHeight = (canvas.height * imgWidth) / canvas.width;
-            const imgData = canvas.toDataURL("image/png", 0.95);
-
-            const renderOneForm = (isFirst: boolean) => {
-                if (!isFirst) pdf.addPage();
-                let heightLeft = imgHeight;
-                let position = 0;
-                pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight, undefined, "FAST");
-                heightLeft -= pdfHeight;
-                while (heightLeft > 0) {
-                    position = heightLeft - imgHeight;
-                    pdf.addPage();
-                    pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight, undefined, "FAST");
-                    heightLeft -= pdfHeight;
-                }
-            };
-
-            for (let i = 0; i < count; i++) {
-                renderOneForm(i === 0);
-            }
-
-            const safeDept = (blankFormDepartment || "generique")
-                .toLowerCase()
-                .replace(/[^a-z0-9]+/g, "-")
-                .replace(/^-+|-+$/g, "");
-            const fileName = count > 1
-                ? `lot-fiches-conflit-vierge-x${count}-${safeDept}-${new Date().toISOString().slice(0, 10)}.pdf`
-                : `fiche-conflit-vierge-${safeDept}-${new Date().toISOString().slice(0, 10)}.pdf`;
-            pdf.save(fileName);
-            toast({
-                title: "PDF généré",
-                description: count > 1 ? `Lot de ${count} fiches prêt à imprimer.` : "La fiche d'enregistrement est prête.",
-            });
-        } catch (err) {
-            console.error("Blank PDF generation error:", err);
-            toast({ variant: "destructive", title: "Erreur PDF", description: "Impossible de générer la fiche PDF." });
-        } finally {
-            cleanup();
-            setIsGeneratingBlankPdf(false);
-            setBlankFormDepartment("");
-            setBlankFormCount(1);
         }
     };
 
@@ -1317,194 +1196,13 @@ export default function ConflictsPage() {
                     />
                 )}
 
-                {/* Blank form dialog: ask for department before generating PDF */}
-                <Dialog open={isBlankFormDialogOpen} onOpenChange={setIsBlankFormDialogOpen}>
-                    <DialogContent className="rounded-2xl">
-                        <DialogHeader>
-                            <DialogTitle className="flex items-center gap-2">
-                                <ClipboardList className="h-5 w-5 text-primary" /> Fiche d'enregistrement vierge
-                            </DialogTitle>
-                            <DialogDescription>
-                                Génère un PDF prêt à être imprimé et rempli à la main par les agents de terrain, puis transmis au siège pour saisie.
-                            </DialogDescription>
-                        </DialogHeader>
-                        <div className="space-y-4 py-2">
-                            <div className="space-y-2">
-                                <Label htmlFor="blank-form-dept" className="text-xs font-black uppercase tracking-widest text-slate-500">
-                                    Département / Service destinataire
-                                </Label>
-                                <Input
-                                    id="blank-form-dept"
-                                    placeholder="Ex : Direction Régionale de l'Ouest"
-                                    value={blankFormDepartment}
-                                    onChange={(e) => setBlankFormDepartment(e.target.value)}
-                                    className="rounded-xl"
-                                    disabled={isGeneratingBlankPdf}
-                                />
-                                <p className="text-[11px] text-slate-400 italic">
-                                    Ce nom apparaîtra en tête de chaque fiche. Laissez vide pour un usage générique.
-                                </p>
-                            </div>
+                <BlankFormPdfDialog open={isBlankFormDialogOpen} onOpenChange={setIsBlankFormDialogOpen} />
 
-                            <div className="space-y-2">
-                                <Label htmlFor="blank-form-count" className="text-xs font-black uppercase tracking-widest text-slate-500">
-                                    Nombre de fiches (1 conflit = 1 fiche)
-                                </Label>
-                                <div className="flex items-center gap-3">
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="icon"
-                                        className="h-11 w-11 rounded-xl"
-                                        onClick={() => setBlankFormCount(c => Math.max(1, c - 1))}
-                                        disabled={isGeneratingBlankPdf || blankFormCount <= 1}
-                                    >
-                                        <X className="h-4 w-4 rotate-90" />
-                                    </Button>
-                                    <Input
-                                        id="blank-form-count"
-                                        type="number"
-                                        min={1}
-                                        max={50}
-                                        value={blankFormCount}
-                                        onChange={(e) => {
-                                            const n = Number(e.target.value);
-                                            if (Number.isFinite(n)) setBlankFormCount(Math.max(1, Math.min(50, Math.floor(n))));
-                                        }}
-                                        className="rounded-xl text-center font-black text-lg h-11"
-                                        disabled={isGeneratingBlankPdf}
-                                    />
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="icon"
-                                        className="h-11 w-11 rounded-xl"
-                                        onClick={() => setBlankFormCount(c => Math.min(50, c + 1))}
-                                        disabled={isGeneratingBlankPdf || blankFormCount >= 50}
-                                    >
-                                        <Plus className="h-4 w-4" />
-                                    </Button>
-                                </div>
-                                <div className="flex items-center gap-1.5 flex-wrap">
-                                    {[1, 5, 10, 25, 50].map(n => (
-                                        <button
-                                            key={n}
-                                            type="button"
-                                            onClick={() => setBlankFormCount(n)}
-                                            disabled={isGeneratingBlankPdf}
-                                            className={cn(
-                                                "px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest transition-colors",
-                                                blankFormCount === n
-                                                    ? "bg-primary text-white"
-                                                    : "bg-slate-100 text-slate-500 hover:bg-slate-200"
-                                            )}
-                                        >
-                                            x{n}
-                                        </button>
-                                    ))}
-                                </div>
-                                <p className="text-[11px] text-slate-400 italic">
-                                    Maximum 50 fiches par PDF. Chaque fiche commence sur une nouvelle page.
-                                </p>
-                            </div>
-                        </div>
-                        <DialogFooter>
-                            <Button variant="ghost" onClick={() => setIsBlankFormDialogOpen(false)} disabled={isGeneratingBlankPdf}>Annuler</Button>
-                            <Button onClick={handleGenerateBlankPdf} disabled={isGeneratingBlankPdf} className="rounded-xl font-bold">
-                                {isGeneratingBlankPdf ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <FileSpreadsheet className="h-4 w-4 mr-2" />}
-                                {isGeneratingBlankPdf
-                                    ? "Génération…"
-                                    : blankFormCount > 1
-                                        ? `Télécharger le PDF (${blankFormCount} fiches)`
-                                        : "Télécharger le PDF"}
-                            </Button>
-                        </DialogFooter>
-                    </DialogContent>
-                </Dialog>
-
-                {/* Manage conflict types dialog */}
-                <Dialog open={isManageTypesDialogOpen} onOpenChange={setIsManageTypesDialogOpen}>
-                    <DialogContent className="rounded-2xl max-w-lg">
-                        <DialogHeader>
-                            <DialogTitle className="flex items-center gap-2">
-                                <Tags className="h-5 w-5 text-primary" /> Nomenclature des conflits
-                            </DialogTitle>
-                            <DialogDescription>
-                                Étendez la nomenclature standard avec des types personnalisés propres au contexte de votre région.
-                            </DialogDescription>
-                        </DialogHeader>
-
-                        <div className="space-y-4 py-2">
-                            <div className="flex gap-2">
-                                <Input
-                                    placeholder="Nouveau type de conflit..."
-                                    value={newTypeName}
-                                    onChange={(e) => setNewTypeName(e.target.value)}
-                                    onKeyDown={(e) => { if (e.key === 'Enter') handleAddType(); }}
-                                    className="rounded-xl"
-                                />
-                                <Button onClick={handleAddType} disabled={isAddingType || !newTypeName.trim()} className="rounded-xl font-bold">
-                                    {isAddingType ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
-                                </Button>
-                            </div>
-
-                            <div className="space-y-2">
-                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Types standards (non modifiables)</p>
-                                <div className="flex flex-wrap gap-2">
-                                    {conflictTypes.map(t => (
-                                        <Badge key={t} variant="outline" className="rounded-full font-bold">{t}</Badge>
-                                    ))}
-                                </div>
-                            </div>
-
-                            <div className="space-y-2">
-                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-                                    Types personnalisés ({dynamicConflictTypes.length})
-                                </p>
-                                {dynamicConflictTypes.length === 0 ? (
-                                    <p className="text-xs italic text-slate-400 text-center py-4">Aucun type personnalisé. Ajoutez-en un ci-dessus.</p>
-                                ) : (
-                                    <div className="flex flex-wrap gap-2">
-                                        {dynamicConflictTypes.map(t => (
-                                            <div key={t.id} className="inline-flex items-center gap-1.5 pl-3 pr-1 py-1 rounded-full bg-primary/5 border border-primary/10 text-primary font-bold text-xs">
-                                                {t.name}
-                                                <button
-                                                    onClick={() => setTypeToDelete(t)}
-                                                    className="h-5 w-5 inline-flex items-center justify-center rounded-full hover:bg-rose-100 hover:text-rose-600 transition-colors"
-                                                    aria-label={`Supprimer ${t.name}`}
-                                                >
-                                                    <X className="h-3 w-3" />
-                                                </button>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-
-                        <DialogFooter>
-                            <Button variant="outline" onClick={() => setIsManageTypesDialogOpen(false)} className="rounded-xl">Fermer</Button>
-                        </DialogFooter>
-                    </DialogContent>
-                </Dialog>
-
-                {/* Confirm delete custom type */}
-                <AlertDialog open={!!typeToDelete} onOpenChange={(open) => !open && setTypeToDelete(null)}>
-                    <AlertDialogContent>
-                        <AlertDialogHeader>
-                            <AlertDialogTitle>Supprimer ce type ?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                Le type « <span className="font-bold">{typeToDelete?.name}</span> » sera retiré de la nomenclature. Les dossiers existants conservent cette valeur mais ne pourront plus la sélectionner.
-                            </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                            <AlertDialogCancel>Annuler</AlertDialogCancel>
-                            <AlertDialogAction onClick={(e) => { e.preventDefault(); handleDeleteType(); }} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                                Supprimer
-                            </AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
+                <ManageConflictTypesDialog
+                    open={isManageTypesDialogOpen}
+                    onOpenChange={setIsManageTypesDialogOpen}
+                    dynamicTypes={dynamicConflictTypes}
+                />
 
                 {/* Bulk delete dialog */}
                 <AlertDialog open={bulkDeleteDialogOpen} onOpenChange={setBulkDeleteDialogOpen}>

@@ -20,10 +20,11 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Upload, FileText, Loader2, Download, PackageOpen, X, Search } from "lucide-react";
+import { Upload, FileText, Loader2, Download, PackageOpen, X, Search, FileSpreadsheet } from "lucide-react";
 import { useDropzone } from 'react-dropzone';
 import { format, parseISO } from "date-fns";
 import { fr } from "date-fns/locale";
+import Papa from "papaparse";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { PermissionGuard } from "@/components/auth/permission-guard";
@@ -255,14 +256,47 @@ export default function RepositoryPage() {
         return documents.filter(doc => {
             const matchesSearch = doc.fileName.toLowerCase().includes(searchTerm.toLowerCase());
             const fileExtension = (doc.fileName.split('.').pop() || '').toUpperCase();
-            
+
             const matchesType = typeFilter === 'all' || fileExtension === typeFilter;
             const matchesCategory = categoryFilter === 'all' || doc.category === categoryFilter;
             const matchesRegion = regionFilter === 'all' || (doc.region || "National") === regionFilter;
-            
+
             return matchesSearch && matchesType && matchesCategory && matchesRegion;
         });
     }, [documents, searchTerm, typeFilter, categoryFilter, regionFilter]);
+
+    const hasActiveFilters = searchTerm !== "" || typeFilter !== "all" || categoryFilter !== "all" || regionFilter !== "all";
+
+    const handleResetFilters = () => {
+        setSearchTerm("");
+        setCategoryFilter("all");
+        setRegionFilter("all");
+        setTypeFilter("all");
+    };
+
+    const handleExportCsv = () => {
+        if (filteredDocuments.length === 0) {
+            toast({ variant: "destructive", title: "Aucune donnée à exporter" });
+            return;
+        }
+        const csvData = Papa.unparse(filteredDocuments.map(d => ({
+            fichier: d.fileName,
+            categorie: d.category || '',
+            region: d.region || 'National',
+            extension: (d.fileName.split('.').pop() || '').toUpperCase(),
+            taille_octets: d.fileSize,
+            taille: formatBytes(d.fileSize),
+            date_upload: d.uploadDate,
+            employe_id: d.relatedEmployeeId || '',
+            url: d.storageUrl,
+        })), { header: true });
+        const blob = new Blob(["﻿" + csvData], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `export_documents_${new Date().toISOString().slice(0, 10)}.csv`;
+        link.click();
+        toast({ title: "Exportation CSV réussie", description: `${filteredDocuments.length} document(s) exporté(s).` });
+    };
 
     return (
         <PermissionGuard permission="page:repository:view">
@@ -527,18 +561,28 @@ export default function RepositoryPage() {
                                             </SelectContent>
                                         </Select>
 
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={handleExportCsv}
+                                            disabled={filteredDocuments.length === 0}
+                                            className="h-10 rounded-xl font-bold text-xs border-slate-200"
+                                        >
+                                            <FileSpreadsheet className="h-3.5 w-3.5 mr-2 text-emerald-600" /> CSV
+                                        </Button>
+
                                         <div className="flex bg-slate-100/50 p-1 rounded-xl ml-auto border border-slate-200/50">
-                                            <Button 
-                                                variant={viewMode === 'table' ? "secondary" : "ghost"} 
-                                                size="sm" 
+                                            <Button
+                                                variant={viewMode === 'table' ? "secondary" : "ghost"}
+                                                size="sm"
                                                 className={cn("h-8 px-3 rounded-lg font-bold text-[10px] uppercase tracking-wider transition-all", viewMode === 'table' ? "bg-white shadow-sm text-indigo-600" : "text-slate-400 hover:text-slate-600")}
                                                 onClick={() => setViewMode('table')}
                                             >
                                                 <List className="h-3.5 w-3.5 mr-2" /> Liste
                                             </Button>
-                                            <Button 
-                                                variant={viewMode === 'grid' ? "secondary" : "ghost"} 
-                                                size="sm" 
+                                            <Button
+                                                variant={viewMode === 'grid' ? "secondary" : "ghost"}
+                                                size="sm"
                                                 className={cn("h-8 px-3 rounded-lg font-bold text-[10px] uppercase tracking-wider transition-all", viewMode === 'grid' ? "bg-white shadow-sm text-indigo-600" : "text-slate-400 hover:text-slate-600")}
                                                 onClick={() => setViewMode('grid')}
                                             >
@@ -547,6 +591,20 @@ export default function RepositoryPage() {
                                         </div>
                                     </div>
                                 </div>
+
+                                {!loadingDocs && (
+                                    <div className="mt-3 flex items-center justify-between flex-wrap gap-3">
+                                        <p className="text-xs font-black uppercase tracking-widest text-slate-500">
+                                            <span className="text-slate-900 tabular-nums">{filteredDocuments.length}</span> document{filteredDocuments.length > 1 ? 's' : ''}
+                                            {hasActiveFilters && <span className="text-slate-400 normal-case font-bold italic ml-2">(filtré sur {documents.length})</span>}
+                                        </p>
+                                        {hasActiveFilters && (
+                                            <Button variant="ghost" size="sm" onClick={handleResetFilters} className="h-8 rounded-lg font-black text-[10px] uppercase tracking-widest text-slate-500 hover:text-rose-600 hover:bg-rose-50">
+                                                <X className="h-3.5 w-3.5 mr-1.5" /> Réinitialiser
+                                            </Button>
+                                        )}
+                                    </div>
+                                )}
                             </CardHeader>
                             <CardContent className="px-0 pt-6">
                                 <div className="rounded-[2rem] border-none bg-transparent overflow-hidden">
@@ -702,14 +760,9 @@ export default function RepositoryPage() {
                                                 Aucun document ne correspond à vos critères de recherche actuels.
                                             </p>
                                             <Button 
-                                                variant="outline" 
+                                                variant="outline"
                                                 className="mt-6 rounded-xl font-bold"
-                                                onClick={() => {
-                                                    setSearchTerm("");
-                                                    setCategoryFilter("all");
-                                                    setRegionFilter("all");
-                                                    setTypeFilter("all");
-                                                }}
+                                                onClick={handleResetFilters}
                                             >
                                                 Réinitialiser les filtres
                                             </Button>

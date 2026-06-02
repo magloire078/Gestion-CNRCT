@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import Link from "next/link";
 import { format, parseISO, differenceInYears } from "date-fns";
 import { fr } from "date-fns/locale";
-import { PlusCircle, Search, Download, Printer, Eye, Pencil, Trash2, MoreHorizontal, ShieldCheck, Globe, Building, BarChart3, Shield, Users2, Zap, Heart } from "lucide-react";
+import { PlusCircle, Search, Download, Printer, Eye, Pencil, Trash2, MoreHorizontal, ShieldCheck, Globe, Building, BarChart3, Shield, Users2, Zap, Heart, ArrowUpDown, ArrowUp, ArrowDown, X, Flame, Clock, Cake } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -21,6 +21,8 @@ import type { Employe, Department, Direction, Service, OrganizationSettings } fr
 import { AddEmployeeSheet } from "@/components/employees/add-employee-sheet";
 import { PrintDialog } from "@/components/employees/print-dialog";
 import { subscribeToEmployees, addEmployee, deleteEmployee, getEmployeeGroup, getOrganizationalUnits } from "@/services/employee-service";
+import { Checkbox } from "@/components/ui/checkbox";
+import { differenceInMonths, differenceInDays } from "date-fns";
 import { getOrganizationSettings } from "@/services/organization-service";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
@@ -60,6 +62,72 @@ const statusVariantMap: Record<Status, "default" | "secondary" | "destructive" |
 
 import { allColumns, chiefColumns, type ColumnKeys } from "@/lib/constants/employee";
 import { DebouncedInput } from "@/components/ui/debounced-input";
+
+type EmployeeAlert = { level: "urgent" | "warning" | "info"; label: string; icon: "retirement" | "birthday" | "anniversary" } | null;
+
+function getEmployeeAlert(emp: Employe): EmployeeAlert {
+  if (emp.status !== 'Actif') return null;
+  const today = new Date();
+
+  // Retirement (60 years)
+  if (emp.Date_Naissance) {
+    try {
+      const birth = parseISO(emp.Date_Naissance);
+      const retirement = new Date(birth.getFullYear() + 60, birth.getMonth(), birth.getDate());
+      const monthsToRetire = differenceInMonths(retirement, today);
+      if (monthsToRetire <= 3 && monthsToRetire >= 0) return { level: "urgent", label: `Retraite dans ${monthsToRetire}m`, icon: "retirement" };
+      if (monthsToRetire <= 6 && monthsToRetire >= 0) return { level: "warning", label: `Retraite dans ${monthsToRetire}m`, icon: "retirement" };
+    } catch {}
+  }
+
+  // Birthday within 7 days
+  if (emp.Date_Naissance) {
+    try {
+      const birth = parseISO(emp.Date_Naissance);
+      const thisYearBirthday = new Date(today.getFullYear(), birth.getMonth(), birth.getDate());
+      const daysToBirthday = differenceInDays(thisYearBirthday, today);
+      if (daysToBirthday >= 0 && daysToBirthday <= 7) {
+        return { level: "info", label: daysToBirthday === 0 ? "Anniversaire 🎂" : `Anniv. dans ${daysToBirthday}j`, icon: "birthday" };
+      }
+    } catch {}
+  }
+
+  // Work anniversary within 7 days
+  if (emp.dateEmbauche) {
+    try {
+      const hire = parseISO(emp.dateEmbauche);
+      const thisYearAnniv = new Date(today.getFullYear(), hire.getMonth(), hire.getDate());
+      const daysToAnniv = differenceInDays(thisYearAnniv, today);
+      if (daysToAnniv >= 0 && daysToAnniv <= 7) {
+        const years = differenceInYears(thisYearAnniv, hire);
+        if (years > 0) return { level: "info", label: `${years} an${years > 1 ? 's' : ''} dans ${daysToAnniv}j`, icon: "anniversary" };
+      }
+    } catch {}
+  }
+
+  return null;
+}
+
+function AlertBadge({ alert }: { alert: EmployeeAlert }) {
+  if (!alert) return null;
+  const Icon = alert.icon === "birthday" ? Cake : alert.icon === "anniversary" ? Heart : alert.level === "urgent" ? Flame : Clock;
+  return (
+    <span className={cn(
+      "inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest shadow-sm",
+      alert.level === "urgent" ? "bg-rose-600 text-white animate-pulse" :
+      alert.level === "warning" ? "bg-amber-100 text-amber-800 border border-amber-200" :
+      "bg-indigo-50 text-indigo-700 border border-indigo-100"
+    )}>
+      <Icon className="h-2.5 w-2.5" />
+      {alert.label}
+    </span>
+  );
+}
+
+function SortIcon({ active, direction }: { active: boolean; direction: 'asc' | 'desc' }) {
+  if (!active) return <ArrowUpDown className="h-3 w-3 opacity-30 inline" />;
+  return direction === "asc" ? <ArrowUp className="h-3 w-3 inline" /> : <ArrowDown className="h-3 w-3 inline" />;
+}
 
 export default function EmployeesPage() {
   const [employees, setEmployees] = useState<Employe[]>([]);
@@ -111,8 +179,13 @@ export default function EmployeesPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
+  // Bulk selection
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+
   const canImport = hasPermission('feature:employees:import');
   const canExport = hasPermission('feature:employees:export');
+  const canEdit = hasPermission('feature:employees:edit') || hasPermission('page:admin:view');
 
   const isGeoTab = personnelTypeFilter === 'directoire' || personnelTypeFilter === 'regional' || personnelTypeFilter === 'all-geo';
 
@@ -213,6 +286,39 @@ export default function EmployeesPage() {
     }
   };
 
+  const handleResetFilters = () => {
+    setSearchTerm("");
+    setDepartmentFilter("all");
+    setStatusFilter("all");
+    setCnpsFilter('all');
+    setSexeFilter('all');
+    setRegionFilter("all");
+    setGeoDepartementFilter("all");
+    setSubPrefectureFilter("all");
+    setVillageFilter("");
+    setCurrentPage(1);
+  };
+
+  const toggleSelectOne = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.size === 0) return;
+    try {
+      await Promise.all(Array.from(selectedIds).map(id => deleteEmployee(id)));
+      toast({ title: "Suppression groupée", description: `${selectedIds.size} employé(s) supprimé(s).` });
+      setSelectedIds(new Set());
+      setBulkDeleteOpen(false);
+    } catch {
+      toast({ variant: "destructive", title: "Erreur de suppression groupée" });
+    }
+  };
+
   const enrichedEmployees = useMemo(() => {
     return employees.map(emp => ({
       ...emp,
@@ -275,6 +381,34 @@ export default function EmployeesPage() {
   }, [filteredEmployees, currentPage, itemsPerPage]);
 
   const totalPages = Math.ceil(filteredEmployees.length / itemsPerPage);
+
+  const alertCounts = useMemo(() => {
+    let retirementSoon = 0, birthdaysWeek = 0, anniversariesWeek = 0;
+    employees.forEach(emp => {
+      const alert = getEmployeeAlert(emp);
+      if (!alert) return;
+      if (alert.icon === "retirement") retirementSoon += 1;
+      else if (alert.icon === "birthday") birthdaysWeek += 1;
+      else if (alert.icon === "anniversary") anniversariesWeek += 1;
+    });
+    return { retirementSoon, birthdaysWeek, anniversariesWeek };
+  }, [employees]);
+
+  const hasActiveFilters =
+    searchTerm !== "" || departmentFilter !== "all" || statusFilter !== "all" ||
+    cnpsFilter !== 'all' || sexeFilter !== 'all' || regionFilter !== 'all' ||
+    geoDepartementFilter !== 'all' || subPrefectureFilter !== 'all' || villageFilter !== '';
+
+  const allVisibleSelected = paginatedEmployees.length > 0 && paginatedEmployees.every(e => selectedIds.has(e.id));
+  const someVisibleSelected = paginatedEmployees.some(e => selectedIds.has(e.id));
+  const toggleSelectAllVisible = () => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (allVisibleSelected) paginatedEmployees.forEach(e => next.delete(e.id));
+      else paginatedEmployees.forEach(e => next.add(e.id));
+      return next;
+    });
+  };
 
   const downloadFile = (content: string, fileName: string, contentType: string) => {
     const blob = new Blob([content], { type: contentType });
@@ -675,8 +809,44 @@ export default function EmployeesPage() {
                       </Select>
                     </div>
 
-                    <div className="mb-4 text-sm text-muted-foreground">
-                      {filteredEmployees.length} résultat(s) trouvé(s).
+                    <div className="mb-4 flex items-center justify-between flex-wrap gap-3">
+                      <div className="flex items-center gap-3 flex-wrap">
+                        <span className="text-xs font-black uppercase tracking-widest text-slate-500">
+                          <span className="text-slate-900 tabular-nums">{filteredEmployees.length}</span> agent{filteredEmployees.length > 1 ? 's' : ''}
+                          {hasActiveFilters && <span className="text-slate-400 normal-case font-bold italic ml-2">(filtré sur {employees.length})</span>}
+                        </span>
+                        {hasActiveFilters && (
+                          <Button variant="ghost" size="sm" onClick={handleResetFilters} className="h-8 rounded-lg font-black text-[10px] uppercase tracking-widest text-slate-500 hover:text-rose-600 hover:bg-rose-50">
+                            <X className="h-3.5 w-3.5 mr-1.5" /> Réinitialiser
+                          </Button>
+                        )}
+                        {alertCounts.retirementSoon > 0 && (
+                          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-black uppercase tracking-widest bg-amber-50 text-amber-700 border border-amber-200">
+                            <Clock className="h-3 w-3" /> {alertCounts.retirementSoon} retraite{alertCounts.retirementSoon > 1 ? 's' : ''} proche{alertCounts.retirementSoon > 1 ? 's' : ''}
+                          </span>
+                        )}
+                        {alertCounts.birthdaysWeek > 0 && (
+                          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-black uppercase tracking-widest bg-indigo-50 text-indigo-700 border border-indigo-200">
+                            <Cake className="h-3 w-3" /> {alertCounts.birthdaysWeek} anniversaire{alertCounts.birthdaysWeek > 1 ? 's' : ''}
+                          </span>
+                        )}
+                      </div>
+
+                      {selectedIds.size > 0 && (
+                        <div className="flex items-center gap-3">
+                          <span className="text-[11px] font-black uppercase tracking-widest text-indigo-600">
+                            {selectedIds.size} sélectionné{selectedIds.size > 1 ? 's' : ''}
+                          </span>
+                          <Button size="sm" variant="ghost" onClick={() => setSelectedIds(new Set())} className="h-8 rounded-lg text-[10px] font-black uppercase tracking-widest">
+                            Désélectionner
+                          </Button>
+                          {canEdit && (
+                            <Button size="sm" variant="destructive" onClick={() => setBulkDeleteOpen(true)} className="h-8 rounded-lg text-[10px] font-black uppercase tracking-widest">
+                              <Trash2 className="h-3 w-3 mr-1" /> Supprimer la sélection
+                            </Button>
+                          )}
+                        </div>
+                      )}
                     </div>
 
                     {error && <p className="text-destructive text-center py-4">{error}</p>}
@@ -685,14 +855,27 @@ export default function EmployeesPage() {
                       <Table>
                         <TableHeader className="bg-slate-100/50">
                           <TableRow>
+                            <TableHead className="w-[40px] pl-3">
+                              <Checkbox
+                                checked={allVisibleSelected ? true : (someVisibleSelected ? "indeterminate" : false)}
+                                onCheckedChange={toggleSelectAllVisible}
+                                aria-label="Sélectionner tout"
+                              />
+                            </TableHead>
                             <TableHead className="w-[50px] text-center">N°</TableHead>
                             <TableHead className="w-[80px]">Photo</TableHead>
-                            <TableHead>{isGeoTab ? 'Nom et prénoms' : 'NOM & Prénoms'}</TableHead>
-                            <TableHead>{isGeoTab ? 'N° MAT' : 'Matricule'}</TableHead>
+                            <TableHead onClick={() => { setSortBy('name'); setSortOrder(prev => sortBy === 'name' && prev === 'asc' ? 'desc' : 'asc'); }} className="cursor-pointer select-none hover:text-slate-900">
+                              <span className="inline-flex items-center gap-1">{isGeoTab ? 'Nom et prénoms' : 'NOM & Prénoms'} <SortIcon active={sortBy === 'name'} direction={sortOrder} /></span>
+                            </TableHead>
+                            <TableHead onClick={() => { setSortBy('matricule'); setSortOrder(prev => sortBy === 'matricule' && prev === 'asc' ? 'desc' : 'asc'); }} className="cursor-pointer select-none hover:text-slate-900">
+                              <span className="inline-flex items-center gap-1">{isGeoTab ? 'N° MAT' : 'Matricule'} <SortIcon active={sortBy === 'matricule'} direction={sortOrder} /></span>
+                            </TableHead>
                             {isGeoTab ? (
                               <>
                                 <TableHead>Titre / Fonction</TableHead>
-                                <TableHead>Région</TableHead>
+                                <TableHead onClick={() => { setSortBy('Region'); setSortOrder(prev => sortBy === 'Region' && prev === 'asc' ? 'desc' : 'asc'); }} className="cursor-pointer select-none hover:text-slate-900">
+                                  <span className="inline-flex items-center gap-1">Région <SortIcon active={sortBy === 'Region'} direction={sortOrder} /></span>
+                                </TableHead>
                                 <TableHead>Département</TableHead>
                                 <TableHead>Sous-Préfecture</TableHead>
                                 <TableHead>Référence</TableHead>
@@ -700,7 +883,7 @@ export default function EmployeesPage() {
                             ) : (
                               <>
                                 <TableHead>Service</TableHead>
-                                <TableHead>Statut</TableHead>
+                                <TableHead>Statut & Alertes</TableHead>
                                 <TableHead className="text-center">CNPS</TableHead>
                               </>
                             )}
@@ -711,6 +894,7 @@ export default function EmployeesPage() {
                           {loading ? (
                             Array.from({ length: 5 }).map((_, i) => (
                               <TableRow key={i}>
+                                <TableCell className="pl-3"><Skeleton className="h-4 w-4" /></TableCell>
                                 <TableCell><Skeleton className="h-4 w-4" /></TableCell>
                                 <TableCell><Skeleton className="h-10 w-10 rounded-full" /></TableCell>
                                 <TableCell><Skeleton className="h-4 w-32" /></TableCell>
@@ -734,12 +918,24 @@ export default function EmployeesPage() {
                               </TableRow>
                             ))
                           ) : (
-                            paginatedEmployees.map((employee, index) => (
-                              <TableRow 
-                                key={employee.id} 
+                            paginatedEmployees.map((employee, index) => {
+                              const empAlert = getEmployeeAlert(employee);
+                              return (
+                              <TableRow
+                                key={employee.id}
                                 onClick={() => router.push(`/employees/${employee.id}`)}
-                                className="cursor-pointer border-b border-slate-50 hover:bg-white/60 transition-all group h-14"
+                                className={cn(
+                                  "cursor-pointer border-b border-slate-50 hover:bg-white/60 transition-all group h-14",
+                                  selectedIds.has(employee.id) && "bg-indigo-50/40 hover:bg-indigo-50/60"
+                                )}
                               >
+                                <TableCell className="pl-3" onClick={(e) => e.stopPropagation()}>
+                                  <Checkbox
+                                    checked={selectedIds.has(employee.id)}
+                                    onCheckedChange={() => toggleSelectOne(employee.id)}
+                                    aria-label={`Sélectionner ${employee.name}`}
+                                  />
+                                </TableCell>
                                 <TableCell className="text-center font-black text-slate-300">{(currentPage - 1) * itemsPerPage + index + 1}</TableCell>
                                 <TableCell>
                                   <Avatar className="h-10 w-10 border-2 border-white shadow-sm transition-transform group-hover:scale-110">
@@ -775,9 +971,12 @@ export default function EmployeesPage() {
                                   <>
                                     <TableCell className="text-xs font-bold text-slate-500 truncate max-w-[150px]">{getEmployeeOrgUnit(employee)}</TableCell>
                                     <TableCell>
+                                      <div className="flex flex-col gap-1.5 items-start">
                                         <Badge variant={statusVariantMap[employee.status as Status] || 'default'} className="font-black text-[9px] uppercase tracking-widest rounded-lg px-3 py-1 border-none shadow-sm">
                                           {employee.status}
                                         </Badge>
+                                        <AlertBadge alert={empAlert} />
+                                      </div>
                                     </TableCell>
                                     <TableCell className="text-center">
                                       {employee.CNPS && <ShieldCheck className="h-5 w-5 text-emerald-500" />}
@@ -814,7 +1013,8 @@ export default function EmployeesPage() {
                                   </DropdownMenu>
                                 </TableCell>
                               </TableRow>
-                            ))
+                              );
+                            })
                           )}
                         </TableBody>
                       </Table>
@@ -863,6 +1063,14 @@ export default function EmployeesPage() {
             onConfirmAction={() => deleteTarget && handleDeleteEmployee(deleteTarget.id)}
             title={`Confirmer la radiation ?`}
             description={`Êtes-vous sûr de vouloir supprimer ${deleteTarget?.lastName} ${deleteTarget?.firstName} définitivement ? Cette action archive son dossier de base.`}
+          />
+
+          <ConfirmationDialog
+            isOpen={bulkDeleteOpen}
+            onCloseAction={() => setBulkDeleteOpen(false)}
+            onConfirmAction={handleBulkDelete}
+            title={`Supprimer ${selectedIds.size} agent(s)`}
+            description={`Cette action supprimera définitivement ${selectedIds.size} dossier(s) d'agent. Elle est irréversible.`}
           />
         </div>
       </div>

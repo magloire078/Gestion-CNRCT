@@ -74,7 +74,8 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { List, Settings } from "lucide-react";
+import { List, Settings, FileSpreadsheet } from "lucide-react";
+import Papa from "papaparse";
 import { DataMigrationTool } from "@/components/maintenance/data-migration-tool";
 import { normalizeString, getOfficialRegion, getOfficialDepartment, getOfficialSubPrefecture } from "@/lib/normalization-utils";
 
@@ -322,8 +323,51 @@ export default function VillagesPage() {
         setActiveTab("all");
     };
 
+    const hasActiveFilters =
+        searchQuery !== "" ||
+        selectedRegion !== "all" ||
+        selectedDepartment !== "all" ||
+        selectedCommune !== "all" ||
+        activeTab !== "all";
+
     const handlePrint = () => {
         setIsPrinting(true);
+    };
+
+    const handleExportCsv = () => {
+        if (filteredVillages.length === 0) return;
+        const csvData = Papa.unparse(filteredVillages.map(entry => {
+            const v = entry.village;
+            const c = entry.currentChief;
+            return {
+                code_ins: v.codeINS || '',
+                nom: v.name,
+                region: v.region || '',
+                departement: v.department || '',
+                sous_prefecture: v.subPrefecture || '',
+                commune: v.commune || '',
+                population: v.population || '',
+                latitude: v.latitude || '',
+                longitude: v.longitude || '',
+                indice_developpement: v.developmentScore || 0,
+                chef_actuel: c?.name || '',
+                chef_role: c?.role || '',
+                chef_telephone: c?.phone || '',
+                electricite: v.hasElectricity ? 'Oui' : 'Non',
+                eau: v.hasWater ? 'Oui' : 'Non',
+                ecole: v.hasSchool ? 'Oui' : 'Non',
+                sante: v.hasHealthCenter ? 'Oui' : 'Non',
+                marche: v.hasMarket ? 'Oui' : 'Non',
+                mosquee: v.hasMosque ? 'Oui' : 'Non',
+                eglise: v.hasChurch ? 'Oui' : 'Non',
+                anciens_chefs: entry.archivedChiefsCount,
+            };
+        }), { header: true });
+        const blob = new Blob(["﻿" + csvData], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `export_villages_${new Date().toISOString().slice(0, 10)}.csv`;
+        link.click();
     };
 
     return (
@@ -390,8 +434,16 @@ export default function VillagesPage() {
                                     <List className="h-5 w-5" />
                                 </Button>
                             </div>
-                            <Button 
-                                variant="outline" 
+                            <Button
+                                variant="outline"
+                                className="bg-white/5 border-white/10 text-white hover:bg-white/10 rounded-xl h-14 px-6 font-bold group"
+                                onClick={handleExportCsv}
+                                disabled={filteredVillages.length === 0}
+                            >
+                                <FileSpreadsheet className="mr-2 h-5 w-5 group-hover:text-emerald-400 transition-colors" /> CSV
+                            </Button>
+                            <Button
+                                variant="outline"
                                 className="bg-white/5 border-white/10 text-white hover:bg-white/10 rounded-xl h-14 px-8 font-bold group"
                                 onClick={handlePrint}
                                 disabled={filteredVillages.length === 0 || !settings}
@@ -652,6 +704,23 @@ export default function VillagesPage() {
                     </CardContent>
                 </Card>
             </div>
+
+            {/* Results counter */}
+            {!loading && (
+                <div className="container mx-auto px-4 lg:px-8 pt-8 print:hidden">
+                    <div className="flex items-center justify-between flex-wrap gap-3">
+                        <p className="text-xs font-black uppercase tracking-widest text-slate-500">
+                            <span className="text-slate-900 tabular-nums">{filteredVillages.length}</span> village{filteredVillages.length > 1 ? 's' : ''}
+                            {hasActiveFilters && <span className="text-slate-400 normal-case font-bold italic ml-2">(filtré sur {villageEntries.length})</span>}
+                        </p>
+                        {hasActiveFilters && (
+                            <Button variant="ghost" size="sm" onClick={clearFilters} className="h-9 rounded-lg font-black text-[10px] uppercase tracking-widest text-slate-500 hover:text-rose-600 hover:bg-rose-50">
+                                <X className="h-3.5 w-3.5 mr-1.5" /> Réinitialiser
+                            </Button>
+                        )}
+                    </div>
+                </div>
+            )}
 
             {/* Grid Content */}
             <div className="container mx-auto px-4 lg:px-8 py-16 print:hidden">

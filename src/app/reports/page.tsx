@@ -20,10 +20,10 @@ import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { getEmployees } from "@/services/employee-service";
-import { getChiefs } from "@/services/chief-service";
+import { subscribeToChiefs } from "@/services/chief-service";
+import { subscribeToVillages } from "@/services/village-service";
 import { getAssets, getAssetStatusCounts } from "@/services/asset-service";
 import { getSupplySummary } from "@/services/supply-service";
-import { getVillages } from "@/services/village-service";
 import { Compass } from "lucide-react";
 
 import { PermissionGuard } from "@/components/auth/permission-guard";
@@ -44,40 +44,51 @@ export default function ReportingDashboard() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const fetchStats = async () => {
-            try {
-                const [emps, chiefs, assets, assetStats, supplyStats, villages] = await Promise.all([
-                    getEmployees(),
-                    getChiefs(),
-                    getAssets(),
-                    getAssetStatusCounts(),
-                    getSupplySummary(),
-                    getVillages()
-                ]);
+        let currentChiefs: any[] = [];
+        let currentVillages: any[] = [];
 
-                const electrified = villages.filter(v => v.hasElectricity).length;
-                const water = villages.filter(v => v.hasWater).length;
-
-                setStats({
-                    employees: emps.length,
-                    activeEmployees: emps.filter(e => e.status === 'Actif').length,
-                    chiefs: chiefs.length,
-                    villages: villages.length,
-                    assets: assets.length,
-                    itRepair: assetStats['En réparation'] || 0,
-                    lowStock: supplyStats.lowStock,
-                    electrificationRate: villages.length > 0 ? (electrified / villages.length) * 100 : 0,
-                    potableWaterRate: villages.length > 0 ? (water / villages.length) * 100 : 0
-                });
-
-            } catch (err) {
-                console.error("Error fetching dashboard stats:", err);
-            } finally {
-                setLoading(false);
-            }
+        const recompute = (extra?: Partial<typeof stats>) => {
+            const electrified = currentVillages.filter(v => v.hasElectricity).length;
+            const water = currentVillages.filter(v => v.hasWater).length;
+            setStats(prev => ({
+                ...prev,
+                chiefs: currentChiefs.length,
+                villages: currentVillages.length,
+                electrificationRate: currentVillages.length > 0 ? (electrified / currentVillages.length) * 100 : 0,
+                potableWaterRate: currentVillages.length > 0 ? (water / currentVillages.length) * 100 : 0,
+                ...(extra || {}),
+            }));
         };
 
-        fetchStats();
+        const unsubChiefs = subscribeToChiefs(
+            (data) => { currentChiefs = data; recompute(); setLoading(false); },
+            (err) => { console.error(err); setLoading(false); }
+        );
+        const unsubVillages = subscribeToVillages(
+            (data) => { currentVillages = data; recompute(); },
+            (err) => console.error(err)
+        );
+
+        // One-shot fetches for non-subscribable data
+        Promise.all([
+            getEmployees(),
+            getAssets(),
+            getAssetStatusCounts(),
+            getSupplySummary(),
+        ]).then(([emps, assets, assetStats, supplyStats]) => {
+            recompute({
+                employees: emps.length,
+                activeEmployees: emps.filter(e => e.status === 'Actif').length,
+                assets: assets.length,
+                itRepair: assetStats['En réparation'] || 0,
+                lowStock: supplyStats.lowStock,
+            });
+        }).catch(err => console.error("Error fetching one-shot stats:", err));
+
+        return () => {
+            unsubChiefs();
+            unsubVillages();
+        };
     }, []);
 
     const reportCards = [

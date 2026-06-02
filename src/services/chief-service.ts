@@ -167,7 +167,7 @@ export function subscribeToChiefs(
     callback: (chiefs: Chief[]) => void,
     onError: (error: Error) => void
 ): Unsubscribe {
-    const q = query(chiefsCollection, orderBy("lastName", "asc"));
+    const q = query(chiefsCollection);
     const unsubscribe = onSnapshot(q,
         (snapshot) => {
             const chiefs = snapshot.docs.map((doc: any) => ({

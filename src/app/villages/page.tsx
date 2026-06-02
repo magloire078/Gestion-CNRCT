@@ -110,16 +110,13 @@ export default function VillagesPage() {
 
         const checkLoadingFinished = () => {
             if (villagesLoaded && chiefsLoaded) {
-                console.log(`[VillagesPage] Loading finished. Villages: ${villages.length}, Chiefs: ${chiefs.length}`);
                 setLoading(false);
             }
         };
 
         setLoading(true);
-        
-        // Subscription to Villages
+
         const unsubscribeVillages = subscribeToVillages((updatedVillages) => {
-            console.log(`[VillagesPage] Received ${updatedVillages.length} villages`);
             setVillages(updatedVillages);
             villagesLoaded = true;
             checkLoadingFinished();
@@ -129,9 +126,7 @@ export default function VillagesPage() {
             checkLoadingFinished();
         });
 
-        // Subscription to Chiefs
         const unsubscribeChiefs = subscribeToChiefs((updatedChiefs) => {
-            console.log(`[VillagesPage] Received ${updatedChiefs.length} chiefs`);
             setChiefs(updatedChiefs);
             chiefsLoaded = true;
             checkLoadingFinished();

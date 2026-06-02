@@ -61,7 +61,6 @@ function OrganizationSettingsContent() {
             setLoading(true);
             try {
                 const loadedSettings = await getOrganizationSettings();
-                console.log("Loaded Settings:", loadedSettings);
                 setName(loadedSettings.organizationName);
                 setInitialName(loadedSettings.organizationName);
                 setFiles({
@@ -69,7 +68,6 @@ function OrganizationSettingsContent() {
                     secondaryLogo: { file: null, preview: loadedSettings.secondaryLogoUrl },
                     favicon: { file: null, preview: loadedSettings.faviconUrl },
                 });
-                console.log("Secondary Logo Preview State Set To:", loadedSettings.secondaryLogoUrl);
             } catch (error) {
                 console.error("Failed to load organization settings:", error);
                 toast({

@@ -80,7 +80,6 @@ function getSalaryStructureForDate(employee: Employe, history: EmployeeEvent[], 
 
 
 export async function generateDisaReport(yearStr: string): Promise<DisaReportState> {
-  console.log("generateDisaReport triggered (client-side)");
   if (!yearStr) {
     return { reportData: null, grandTotal: null, organizationLogos: null, year: null, error: "Veuillez sélectionner une année." };
   }
@@ -119,9 +118,6 @@ export async function generateDisaReport(yearStr: string): Promise<DisaReportSta
       try {
         const monthlySalaries: number[] = [];
         let totalCNPS = 0;
-        
-        // Detailed logging for debugging
-        console.log(`Processing DISA for: ${employee.lastName} ${employee.firstName} (${employee.matricule})`);
 
         const hireDate = employee.dateEmbauche ? parseISO(employee.dateEmbauche) : null;
         if (employee.dateEmbauche && (!hireDate || !isValid(hireDate))) {

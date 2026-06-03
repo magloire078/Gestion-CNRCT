@@ -71,6 +71,7 @@ import { ChiefQuickView } from "@/components/chiefs/chief-quick-view";
 import { ChiefsMapWrapper } from "@/components/map/map-wrapper";
 import { Map as MapIcon } from "lucide-react";
 import { LinkChiefVillageSheet } from "@/components/common/link-chief-village-sheet";
+import { getOfficialRegion } from "@/lib/normalization-utils";
 
 export default function ChiefsPage() {
   const [chiefs, setChiefs] = useState<Chief[]>([]);

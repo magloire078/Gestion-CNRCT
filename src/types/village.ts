@@ -48,7 +48,6 @@ export type Village = {
     infrastructureNotes?: string;
 
     // Chefferie
-    currentChiefId?: string;
     chiefTitle?: string; // Titre du chef (Chef de village, Roi, Chef de canton...)
     chieftaincyType?: string; // Type de chefferie (Patrilinéaire, Matrilinéaire...)
     successionMode?: string; // Mode de succession

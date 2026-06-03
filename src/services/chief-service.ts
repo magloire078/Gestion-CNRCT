@@ -140,6 +140,29 @@ const defaultChiefs: Omit<Chief, 'id'>[] = [
 
 let defaultChiefsInitialized = false;
 
+/**
+ * Garantit la cohérence entre `chief.villageId` (FK) et `chief.village`
+ * (nom textuel dénormalisé). Si villageId est fourni, lit le doc village
+ * et écrase `village` avec son nom officiel. Sinon, ne touche à rien.
+ */
+async function syncChiefVillageFields<T extends { village?: string; villageId?: string }>(
+    chiefData: T
+): Promise<T> {
+    if (!chiefData.villageId) return chiefData;
+    try {
+        const villageSnap = await getDoc(doc(db, 'villages', chiefData.villageId));
+        if (villageSnap.exists()) {
+            const villageName = (villageSnap.data() as { name?: string }).name;
+            if (villageName && villageName !== chiefData.village) {
+                return { ...chiefData, village: villageName };
+            }
+        }
+    } catch {
+        // En cas d'erreur de lecture, on garde la valeur textuelle saisie.
+    }
+    return chiefData;
+}
+
 export async function initializeDefaultChiefs() {
     if (defaultChiefsInitialized) return;
     const snapshot = await getDocs(query(chiefsCollection, limit(1)));
@@ -206,10 +229,13 @@ export async function getChief(id: string): Promise<Chief | null> {
 }
 
 export async function addChief(chiefData: Omit<Chief, "id">, photoFile: File | null): Promise<Chief> {
+    // Garantit que village (texte) est aligné sur villageId (FK) si fourni
+    chiefData = await syncChiefVillageFields(chiefData);
+
     // Check for existing chief with same name and village
     const q = query(
-        chiefsCollection, 
-        where('name', '==', chiefData.name), 
+        chiefsCollection,
+        where('name', '==', chiefData.name),
         where('village', '==', chiefData.village)
     );
     const snapshot = await getDocs(q);
@@ -287,6 +313,9 @@ export async function batchAddChiefs(chiefs: Omit<Chief, 'id'>[]): Promise<numbe
 }
 
 export async function updateChief(id: string, chiefData: Partial<Omit<Chief, 'id'>>, photoFile: File | null): Promise<void> {
+    // Garantit que village (texte) est aligné sur villageId (FK) si fourni
+    chiefData = await syncChiefVillageFields(chiefData);
+
     const chiefDocRef = doc(db, 'chiefs', id);
     const now = new Date().toISOString();
     const updateData: { [key: string]: any } = { ...chiefData };

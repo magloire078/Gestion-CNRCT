@@ -23,6 +23,11 @@ export type Chief = {
     region: string;
     department: string;
     subPrefecture: string;
+    /**
+     * Nom textuel du village (dénormalisé pour affichage / recherche).
+     * Pour les jointures fiables avec la collection `villages`, utiliser `villageId`.
+     * Doit être tenu à jour en miroir de `villageId` côté création/édition.
+     */
     village: string;
     ethnicGroup?: string;
     customs?: string;
@@ -43,6 +48,11 @@ export type Chief = {
     dateOfBirth?: string;
     regencyStartDate?: string;
     regencyEndDate?: string;
+    /**
+     * Référence canonique vers le document `villages/{id}`.
+     * Source de vérité pour les jointures (regency-service, data-migration-tool).
+     * Le champ `village` (string) doit en être le miroir textuel.
+     */
     villageId?: string;
     status?: 'actif' | 'archive' | 'a_vie';
     

@@ -29,12 +29,13 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { 
-    Plus, Loader2, MapPin, Map as MapIcon, Users, 
+import {
+    Plus, Loader2, MapPin, Map as MapIcon, Users,
     Building2, Droplets, Zap, School, Activity,
     Mountain, Landmark, Coins, Heart, ShoppingBag,
     Church, Info, Calendar, History,
-    Globe, FileText, Moon as Mosque
+    Globe, FileText, Moon as Mosque,
+    Image as ImageIcon, X as XIcon
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
@@ -114,6 +115,8 @@ type VillageFormValues = z.infer<typeof villageSchema>;
 export function AddVillageSheet() {
     const [open, setOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [photoFile, setPhotoFile] = useState<File | null>(null);
+    const [photoPreview, setPhotoPreview] = useState<string | null>(null);
     const { toast } = useToast();
 
     const form = useForm<VillageFormValues>({
@@ -194,12 +197,14 @@ export function AddVillageSheet() {
                 }
             });
 
-            await addVillage(finalData as any);
+            await addVillage(finalData as any, photoFile);
             toast({
                 title: "Village ajouté",
                 description: `Le village ${values.name} a été créé avec succès.`,
             });
             form.reset();
+            setPhotoFile(null);
+            setPhotoPreview(null);
             setOpen(false);
         } catch (error) {
             console.error(error);
@@ -783,6 +788,68 @@ export function AddVillageSheet() {
                                         <div className="p-4 bg-amber-50/50 rounded-xl border border-amber-100 text-[11px] text-amber-800 font-medium">
                                             <Info className="h-4 w-4 inline mr-2 mb-1" />
                                             Le nom du chef et son statut détaillé doivent être gérés via le module "Chefferie" une fois le village créé.
+                                        </div>
+                                    </AccordionContent>
+                                </AccordionItem>
+
+                                {/* Photo principale */}
+                                <AccordionItem value="media" className="border-none">
+                                    <AccordionTrigger className="hover:no-underline py-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2 bg-pink-50 rounded-lg"><ImageIcon className="h-5 w-5 text-pink-600" /></div>
+                                            <span className="font-bold text-slate-900">Photo principale</span>
+                                        </div>
+                                    </AccordionTrigger>
+                                    <AccordionContent className="pt-2 pb-6">
+                                        <div className="flex items-start gap-4">
+                                            {photoPreview ? (
+                                                <div className="relative">
+                                                    <img
+                                                        src={photoPreview}
+                                                        alt="Aperçu"
+                                                        className="h-32 w-32 rounded-2xl object-cover border-2 border-white shadow-lg"
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        aria-label="Retirer la photo"
+                                                        onClick={() => {
+                                                            setPhotoFile(null);
+                                                            setPhotoPreview(null);
+                                                        }}
+                                                        className="absolute -top-2 -right-2 rounded-full bg-rose-500 p-1 text-white shadow-md hover:bg-rose-600"
+                                                    >
+                                                        <XIcon className="h-3.5 w-3.5" />
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <label className="flex h-32 w-32 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 hover:bg-slate-100 transition-colors">
+                                                    <ImageIcon className="h-8 w-8 text-slate-300" />
+                                                    <span className="mt-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Ajouter</span>
+                                                    <input
+                                                        type="file"
+                                                        accept="image/*"
+                                                        className="hidden"
+                                                        onChange={(e) => {
+                                                            const file = e.target.files?.[0];
+                                                            if (!file) return;
+                                                            if (file.size > 5 * 1024 * 1024) {
+                                                                toast({
+                                                                    variant: "destructive",
+                                                                    title: "Image trop lourde",
+                                                                    description: "5 Mo maximum.",
+                                                                });
+                                                                return;
+                                                            }
+                                                            setPhotoFile(file);
+                                                            setPhotoPreview(URL.createObjectURL(file));
+                                                        }}
+                                                    />
+                                                </label>
+                                            )}
+                                            <div className="flex-1 text-xs text-slate-500 leading-relaxed">
+                                                <p className="font-bold text-slate-700 mb-1">JPG / PNG, 5 Mo max.</p>
+                                                <p>La photo sera utilisée comme illustration sur la fiche territoriale et dans les rapports imprimés.</p>
+                                            </div>
                                         </div>
                                     </AccordionContent>
                                 </AccordionItem>

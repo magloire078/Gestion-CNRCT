@@ -3,6 +3,7 @@ import { db } from '@/lib/firebase';
 import type { Village } from '@/types/village';
 import { FirestorePermissionError } from '@/lib/errors';
 import { DEFAULT_QUERY_LIMIT } from '@/lib/firestore-utils';
+import { uploadToCloudinary } from '@/lib/cloudinary';
 
 const villagesCollection = collection(db, 'villages');
 
@@ -59,7 +60,10 @@ export async function getVillageByLocation(region: string, department: string, s
     return null;
 }
 
-export async function addVillage(villageData: Omit<Village, 'id'>): Promise<Village> {
+export async function addVillage(
+    villageData: Omit<Village, 'id'>,
+    photoFile?: File | null
+): Promise<Village> {
     // Check for existing village with same coordinates admin
     const existing = await getVillageByLocation(
         villageData.region,
@@ -72,9 +76,15 @@ export async function addVillage(villageData: Omit<Village, 'id'>): Promise<Vill
         throw new Error(`La localité de ${villageData.name} est déjà répertoriée dans la sous-préfecture de ${villageData.subPrefecture}.`);
     }
 
+    let photoUrl = villageData.photoUrl;
+    if (photoFile) {
+        photoUrl = await uploadToCloudinary(photoFile);
+    }
+
     const now = new Date().toISOString();
     const dataWithAudit = {
         ...villageData,
+        photoUrl,
         createdAt: now,
         updatedAt: now,
         developmentScore: calculateDevelopmentScore(villageData)
@@ -84,13 +94,21 @@ export async function addVillage(villageData: Omit<Village, 'id'>): Promise<Vill
     return { id: docRef.id, ...dataWithAudit } as Village;
 }
 
-export async function updateVillage(id: string, villageData: Partial<Omit<Village, 'id'>>): Promise<void> {
+export async function updateVillage(
+    id: string,
+    villageData: Partial<Omit<Village, 'id'>>,
+    photoFile?: File | null
+): Promise<void> {
     const docRef = doc(db, 'villages', id);
     try {
-        const dataToUpdate = {
+        const dataToUpdate: Partial<Village> & { updatedAt: string } = {
             ...villageData,
             updatedAt: new Date().toISOString()
         };
+
+        if (photoFile) {
+            dataToUpdate.photoUrl = await uploadToCloudinary(photoFile);
+        }
 
         // Recalculer le score si une infrastructure a changé
         if (

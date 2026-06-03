@@ -40,6 +40,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { addVillage } from "@/services/village-service";
+import type { Village } from "@/types/village";
 import { IVORIAN_REGIONS } from "@/constants/regions";
 import { divisions } from "@/lib/ivory-coast-divisions";
 import { calculateDevelopmentScore } from "@/services/village-service";
@@ -175,7 +176,7 @@ export function AddVillageSheet() {
         languages: typeof currentValues.languages === 'string' ? (currentValues.languages as string).split(',').map(s => s.trim()).filter(Boolean) : undefined,
         mainActivities: typeof currentValues.mainActivities === 'string' ? (currentValues.mainActivities as string).split(',').map(s => s.trim()).filter(Boolean) : undefined,
         mainCrops: typeof currentValues.mainCrops === 'string' ? (currentValues.mainCrops as string).split(',').map(s => s.trim()).filter(Boolean) : undefined,
-    } as any);
+    } satisfies Partial<Village>);
 
     async function onSubmit(values: VillageFormValues) {
         setIsSubmitting(true);

@@ -6,6 +6,7 @@ import type { Chief, ChiefRole } from '@/types/chief';
 import { db, storage } from '@/lib/firebase';
 import { FirestorePermissionError, FirestoreQuotaError, FirestoreTimeoutError } from '@/lib/errors';
 import { DEFAULT_QUERY_LIMIT } from '@/lib/firestore-utils';
+import { cnrctRegistrationNumberSchema } from '@/lib/schemas/chief-schema';
 
 const chiefsCollection = collection(db, 'chiefs');
 
@@ -231,6 +232,14 @@ export async function getChief(id: string): Promise<Chief | null> {
 export async function addChief(chiefData: Omit<Chief, "id">, photoFile: File | null): Promise<Chief> {
     // Garantit que village (texte) est aligné sur villageId (FK) si fourni
     chiefData = await syncChiefVillageFields(chiefData);
+
+    // Valide le format du numéro CNRCT s'il est fourni
+    if (chiefData.CNRCTRegistrationNumber) {
+        const result = cnrctRegistrationNumberSchema.safeParse(chiefData.CNRCTRegistrationNumber);
+        if (!result.success) {
+            throw new Error(`Numéro d'enregistrement CNRCT invalide : ${result.error.errors[0]?.message}`);
+        }
+    }
 
     // Check for existing chief with same name and village
     const q = query(

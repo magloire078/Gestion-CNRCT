@@ -24,6 +24,7 @@ import {
     Activity
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import Papa from "papaparse";
 import { Input } from "@/components/ui/input";
 import { DebouncedInput } from "@/components/ui/debounced-input";
 import { Button } from "@/components/ui/button";
@@ -331,6 +332,42 @@ export default function VillagesPage() {
         setIsPrinting(true);
     };
 
+    const handleExportCsv = () => {
+        if (filteredVillages.length === 0) return;
+        const rows = filteredVillages.map((entry) => ({
+            nom: entry.village.name,
+            region: entry.village.region,
+            departement: entry.village.department,
+            sous_prefecture: entry.village.subPrefecture,
+            commune: entry.village.commune || '',
+            code_ins: entry.village.codeINS || '',
+            population: entry.village.population ?? '',
+            chef_actuel: entry.currentChief?.name || '',
+            cnrct_chef: entry.currentChief?.CNRCTRegistrationNumber || '',
+            statut: entry.currentChief ? 'Occupé' : 'Vacant',
+            electricite: entry.village.hasElectricity ? 'oui' : 'non',
+            eau: entry.village.hasWater ? 'oui' : 'non',
+            ecole: entry.village.hasSchool ? 'oui' : 'non',
+            sante: entry.village.hasHealthCenter ? 'oui' : 'non',
+            marche: entry.village.hasMarket ? 'oui' : 'non',
+            mosquee: entry.village.hasMosque ? 'oui' : 'non',
+            eglise: entry.village.hasChurch ? 'oui' : 'non',
+            score_idl: entry.village.developmentScore ?? '',
+            latitude: entry.village.latitude ?? '',
+            longitude: entry.village.longitude ?? '',
+        }));
+        const csv = Papa.unparse(rows, { header: true });
+        const blob = new Blob(["﻿" + csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `export_villages_${new Date().toISOString().split('T')[0]}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    };
+
     return (
         <PermissionGuard permission="page:villages:view">
             <div className="min-h-screen bg-slate-50/50">
@@ -395,8 +432,18 @@ export default function VillagesPage() {
                                     <List className="h-5 w-5" />
                                 </Button>
                             </div>
-                            <Button 
-                                variant="outline" 
+                            <Button
+                                variant="outline"
+                                className="bg-white/5 border-white/10 text-white hover:bg-white/10 rounded-xl h-14 px-6 font-bold group"
+                                onClick={handleExportCsv}
+                                disabled={filteredVillages.length === 0}
+                                aria-label="Exporter la liste des villages en CSV"
+                            >
+                                <Download className="mr-2 h-5 w-5 group-hover:text-emerald-400 transition-colors" />
+                                Exporter CSV
+                            </Button>
+                            <Button
+                                variant="outline"
                                 className="bg-white/5 border-white/10 text-white hover:bg-white/10 rounded-xl h-14 px-8 font-bold group"
                                 onClick={handlePrint}
                                 disabled={filteredVillages.length === 0 || !settings}

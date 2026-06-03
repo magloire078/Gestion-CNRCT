@@ -108,7 +108,7 @@ export default function ChiefsPage() {
     const highLevelRoles = chiefs.filter(c => c.role === 'Roi' || c.role === 'Chef de province').length;
     const regionsCount = new Set(
       chiefs
-        .map(c => c.region?.trim().toUpperCase())
+        .map(c => c.region ? getOfficialRegion(c.region) : '')
         .filter(r => r && r !== '' && r !== 'NON DÉFINIE')
     ).size;
     

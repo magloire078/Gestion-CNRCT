@@ -29,8 +29,8 @@ export function UserPermissionsDialog({
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onCloseAction()}>
-            <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden flex flex-col p-0 border-white/20 bg-white/40 backdrop-blur-3xl rounded-[3rem] shadow-3xl">
-                <DialogHeader className="bg-slate-900 p-10 text-white text-left relative overflow-hidden">
+            <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden flex flex-col p-0 border-white/20 bg-white/40 backdrop-blur-3xl rounded-2xl shadow-3xl">
+                <DialogHeader className="bg-slate-900 p-6 text-white text-left relative overflow-hidden">
                     {/* Institutional Pattern */}
                     <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:24px_24px]" />
                     <div className="relative z-10">
@@ -49,8 +49,8 @@ export function UserPermissionsDialog({
                     </div>
                 </DialogHeader>
                 
-                <div className="flex-1 overflow-y-auto p-10 custom-scrollbar bg-slate-50/30">
-                    <div className="bg-white/60 backdrop-blur-md rounded-[3rem] border border-white/40 shadow-2xl overflow-hidden ring-1 ring-black/5">
+                <div className="flex-1 overflow-y-auto p-6 custom-scrollbar bg-slate-50/30">
+                    <div className="bg-white/60 backdrop-blur-md rounded-2xl border border-white/40 shadow-2xl overflow-hidden ring-1 ring-black/5">
                         <PermissionsEditor 
                             targetId={user.id} 
                             targetType="user" 

@@ -103,8 +103,8 @@ export function ConflictDetailSheet({ conflict, open, onOpenChange }: ConflictDe
     return (
         <Sheet open={open} onOpenChange={onOpenChange}>
             <SheetContent className="sm:max-w-2xl p-0 h-full flex flex-col gap-0 border-l border-slate-200 shadow-[-20px_0_50px_rgba(0,0,0,0.1)]">
-                <SheetHeader className="p-10 bg-slate-950 text-white shrink-0 text-left relative overflow-hidden">
-                    <div className="absolute top-[-20%] right-[-10%] p-8 opacity-20 rotate-12 transition-transform duration-700 group-hover:rotate-45">
+                <SheetHeader className="p-6 bg-slate-950 text-white shrink-0 text-left relative overflow-hidden">
+                    <div className="absolute top-[-20%] right-[-10%] p-5 opacity-20 rotate-12 transition-transform duration-700 group-hover:rotate-45">
                         <Gavel className="h-64 w-64 text-indigo-500" />
                     </div>
                     <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950/30" />
@@ -159,9 +159,9 @@ export function ConflictDetailSheet({ conflict, open, onOpenChange }: ConflictDe
                 </div>
 
                 <ScrollArea className="flex-1 bg-slate-50/30">
-                    <div className="p-10 space-y-12 pb-32">
+                    <div className="p-6 space-y-6 pb-32">
                         {/* Section Details - Upgraded */}
-                        <section className="space-y-8">
+                        <section className="space-y-4">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-4">
                                     <div className="h-10 w-10 rounded-xl bg-slate-900 flex items-center justify-center text-white shadow-lg">
@@ -175,10 +175,10 @@ export function ConflictDetailSheet({ conflict, open, onOpenChange }: ConflictDe
                                 <Badge variant="outline" className="font-black text-[9px] border-slate-200 text-slate-400 uppercase tracking-widest px-3 py-1 rounded-lg">ID: {conflict.id.slice(0, 8)}</Badge>
                             </div>
                             
-                            <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-[0_10px_40px_rgba(0,0,0,0.03)] space-y-8 relative overflow-hidden group">
+                            <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-[0_10px_40px_rgba(0,0,0,0.03)] space-y-4 relative overflow-hidden group">
                                 <div className="absolute top-0 right-0 w-32 h-32 bg-slate-50 rounded-bl-full -mr-16 -mt-16 transition-all group-hover:scale-110" />
                                 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pb-8 border-b border-slate-50 relative z-10">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-5 border-b border-slate-50 relative z-10">
                                     <div className="space-y-3">
                                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] block">Parties Prenantes</label>
                                         <p className="text-sm font-black text-slate-900 leading-relaxed italic border-l-4 border-slate-900 pl-4">{conflict.parties || "Analyse en cours..."}</p>
@@ -250,7 +250,7 @@ export function ConflictDetailSheet({ conflict, open, onOpenChange }: ConflictDe
                         </section>
 
                         {/* Journal de Bord - Timeline Focus */}
-                        <section className="space-y-8">
+                        <section className="space-y-4">
                             <div className="flex items-center gap-4">
                                 <div className="h-10 w-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 shadow-sm">
                                     <History className="h-5 w-5" />
@@ -258,9 +258,9 @@ export function ConflictDetailSheet({ conflict, open, onOpenChange }: ConflictDe
                                 <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Registre Chronologique des Actes</h3>
                             </div>
                             
-                            <div className="bg-white border border-slate-100 shadow-[0_10px_40px_rgba(0,0,0,0.03)] rounded-[2rem] overflow-hidden focus-within:ring-8 focus-within:ring-primary/5 transition-all duration-500">
+                            <div className="bg-white border border-slate-100 shadow-[0_10px_40px_rgba(0,0,0,0.03)] rounded-xl overflow-hidden focus-within:ring-8 focus-within:ring-primary/5 transition-all duration-500">
                                 <Textarea 
-                                    className="border-none focus-visible:ring-0 resize-none min-h-[140px] text-sm p-8 font-bold text-slate-900 placeholder:text-slate-300 placeholder:italic leading-relaxed"
+                                    className="border-none focus-visible:ring-0 resize-none min-h-[140px] text-sm p-5 font-bold text-slate-900 placeholder:text-slate-300 placeholder:italic leading-relaxed"
                                     placeholder="Consignez ici les détails de la médiation, les résolutions et les engagements..."
                                     value={newComment}
                                     onChange={(e) => setNewComment(e.target.value)}
@@ -272,7 +272,7 @@ export function ConflictDetailSheet({ conflict, open, onOpenChange }: ConflictDe
                                     </div>
                                     <Button 
                                         size="sm" 
-                                        className="rounded-[1rem] px-8 font-black h-11 shadow-xl shadow-primary/20 transition-all hover:scale-105 active:scale-95" 
+                                        className="rounded-[1rem] px-5 font-black h-11 shadow-xl shadow-primary/20 transition-all hover:scale-105 active:scale-95" 
                                         onClick={handleAddComment}
                                         disabled={!newComment.trim() || isSubmitting}
                                     >
@@ -282,10 +282,10 @@ export function ConflictDetailSheet({ conflict, open, onOpenChange }: ConflictDe
                                 </div>
                             </div>
 
-                            <div className="space-y-10 pt-6">
+                            <div className="space-y-5 pt-6">
                                 {sortedComments.length > 0 ? (
                                     sortedComments.map((comment, idx) => (
-                                        <div key={comment.id} className="relative pl-12 pb-10 border-l-2 border-slate-100 last:pb-0 group/time">
+                                        <div key={comment.id} className="relative pl-12 pb-6 border-l-2 border-slate-100 last:pb-0 group/time">
                                             <div className={cn(
                                                 "absolute -left-[11px] top-0 h-5 w-5 rounded-full border-4 border-white transition-all duration-500 transform group-hover/time:scale-125 z-10",
                                                 idx === 0 ? "bg-primary shadow-[0_0_15px_rgba(var(--primary),0.4)] scale-110" : "bg-slate-200"
@@ -321,7 +321,7 @@ export function ConflictDetailSheet({ conflict, open, onOpenChange }: ConflictDe
                                         </div>
                                     ))
                                 ) : (
-                                    <div className="flex flex-col items-center justify-center py-24 bg-white rounded-[2.5rem] border border-dashed border-slate-200 shadow-inner">
+                                    <div className="flex flex-col items-center justify-center py-10 bg-white rounded-xl border border-dashed border-slate-200 shadow-inner">
                                         <div className="h-20 w-20 bg-slate-50 rounded-full flex items-center justify-center mb-6 shadow-sm">
                                             <History className="h-10 w-10 text-slate-200" />
                                         </div>

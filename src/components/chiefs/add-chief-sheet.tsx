@@ -20,9 +20,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { Chief, ChiefRole, DesignationMode, ChiefCareerEvent, Predecessor } from "@/types/chief";
 import { getChiefs } from "@/services/chief-service";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { CreatableSelect } from "@/components/ui/creatable-select";
 import { Upload, Plus, Trash2 as TrashIcon, ChevronRight, ChevronLeft, MapPin as PinIcon, ShieldCheck } from "lucide-react";
 import { Textarea } from "../ui/textarea";
 import { divisions } from "@/lib/ivory-coast-divisions";
@@ -75,11 +75,21 @@ export function AddChiefSheet({ isOpen, onCloseAction, onAddChiefAction }: AddCh
   const [selectedRegion, setSelectedRegion] = useState("");
   const [customRegion, setCustomRegion] = useState("");
   const [selectedDepartment, setSelectedDepartment] = useState("");
-  const [customDepartment, setCustomDepartment] = useState("");
   const [selectedSubPrefecture, setSelectedSubPrefecture] = useState("");
   const [customSubPrefecture, setCustomSubPrefecture] = useState("");
   const [selectedVillage, setSelectedVillage] = useState("");
   const [customVillage, setCustomVillage] = useState("");
+
+  // Custom Domains
+  const [royaumeName, setRoyaumeName] = useState("");
+  const [provinceName, setProvinceName] = useState("");
+  const [cantonName, setCantonName] = useState("");
+  const [tribuName, setTribuName] = useState("");
+
+  const [royaumeOptions, setRoyaumeOptions] = useState<{label: string, value: string}[]>([]);
+  const [provinceOptions, setProvinceOptions] = useState<{label: string, value: string}[]>([]);
+  const [cantonOptions, setCantonOptions] = useState<{label: string, value: string}[]>([]);
+  const [tribuOptions, setTribuOptions] = useState<{label: string, value: string}[]>([]);
 
   const [latitude, setLatitude] = useState<number | ''>('');
   const [longitude, setLongitude] = useState<number | ''>('');
@@ -92,6 +102,11 @@ export function AddChiefSheet({ isOpen, onCloseAction, onAddChiefAction }: AddCh
   const [predecessors, setPredecessors] = useState<Predecessor[]>([]);
   const [throneAccessionDate, setThroneAccessionDate] = useState("");
 
+  const [mandatDebut, setMandatDebut] = useState("");
+  const [mandatFin, setMandatFin] = useState("");
+  const [estRenouvele, setEstRenouvele] = useState(false);
+  const [historiqueNominations, setHistoriqueNominations] = useState<Array<{id: string, periode: string, poste: string, region?: string}>>([]);
+
   const [allChiefs, setAllChiefs] = useState<Chief[]>([]);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -103,6 +118,21 @@ export function AddChiefSheet({ isOpen, onCloseAction, onAddChiefAction }: AddCh
         try {
           const fetchedChiefs = await getChiefs();
           setAllChiefs(fetchedChiefs);
+
+          const rSet = new Set<string>();
+          const pSet = new Set<string>();
+          const cSet = new Set<string>();
+          const tSet = new Set<string>();
+          fetchedChiefs.forEach(c => {
+              if (c.royaumeName) rSet.add(c.royaumeName);
+              if (c.provinceName) pSet.add(c.provinceName);
+              if (c.cantonName) cSet.add(c.cantonName);
+              if (c.tribuName) tSet.add(c.tribuName);
+          });
+          setRoyaumeOptions(Array.from(rSet).map(v => ({ label: v, value: v })));
+          setProvinceOptions(Array.from(pSet).map(v => ({ label: v, value: v })));
+          setCantonOptions(Array.from(cSet).map(v => ({ label: v, value: v })));
+          setTribuOptions(Array.from(tSet).map(v => ({ label: v, value: v })));
         } catch (err) {}
       }
       fetchChiefs();
@@ -119,11 +149,13 @@ export function AddChiefSheet({ isOpen, onCloseAction, onAddChiefAction }: AddCh
     setBio(""); setPhotoFile(null); setPhotoPreview(`https://placehold.co/100x100.png`);
     setSelectedRegion(""); setCustomRegion(""); setSelectedDepartment(""); setCustomDepartment("");
     setSelectedSubPrefecture(""); setCustomSubPrefecture(""); setSelectedVillage(""); setCustomVillage("");
+    setRoyaumeName(""); setProvinceName(""); setCantonName(""); setTribuName("");
     setLatitude(''); setLongitude(''); setParentChiefId(null); setDateOfBirth("");
     setRegencyStartDate(""); setRegencyEndDate(""); setStatus("actif"); setError("");
     setDesignationDate(""); setDesignationMode(""); setEthnicGroup(""); setLanguages("");
     setCNRCTRegistrationNumber(""); setOfficialDocuments(""); setEmail(""); setAddress("");
     setCareer([]); setPredecessors([]); setThroneAccessionDate(""); setStep(1);
+    setMandatDebut(""); setMandatFin(""); setEstRenouvele(false); setHistoriqueNominations([]);
     if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
@@ -183,11 +215,23 @@ export function AddChiefSheet({ isOpen, onCloseAction, onAddChiefAction }: AddCh
         ethnicGroup: ethnicGroup || undefined,
         languages: languages ? languages.split(',').map(s => s.trim()) : undefined,
         phone: phone || undefined, contact, email: email || undefined, address: address || undefined,
-        CNRCTRegistrationNumber: CNRCTRegistrationNumber || undefined,
         cnrctAffiliation: cnrctAffiliation !== "Aucune" ? cnrctAffiliation : undefined,
         officialDocuments: officialDocuments || undefined,
         status: status || 'actif', bio, career, predecessors, photoUrl: '',
+        royaumeName: royaumeName || undefined,
+        provinceName: provinceName || undefined,
+        cantonName: cantonName || undefined,
+        tribuName: tribuName || undefined,
       };
+
+      if (cnrctAffiliation !== "Aucune") {
+        if (mandatDebut) chiefData.mandatDebut = mandatDebut;
+        if (mandatFin) chiefData.mandatFin = mandatFin;
+        chiefData.estRenouvele = estRenouvele;
+        if (historiqueNominations.length > 0) {
+            chiefData.historiqueNominations = historiqueNominations.map(({ id, ...rest }) => rest);
+        }
+      }
 
       if (throneAccessionDate) chiefData.throneAccessionDate = throneAccessionDate;
 
@@ -215,12 +259,12 @@ export function AddChiefSheet({ isOpen, onCloseAction, onAddChiefAction }: AddCh
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open) handleClose(); }}>
-      <DialogContent className="sm:max-w-4xl p-0 overflow-hidden bg-slate-50 w-full h-[100dvh] sm:h-auto max-h-[100dvh] sm:max-h-[85vh]">
-        <div className="flex flex-col md:flex-row h-full">
+      <DialogContent className="sm:max-w-4xl p-0 overflow-hidden bg-slate-50 w-full h-[100dvh] sm:h-[85vh] max-h-[100dvh]">
+        <div className="flex flex-col md:flex-row h-full overflow-hidden">
           {/* Sidebar Wizard Navigation */}
           <div className="w-full md:w-64 bg-white border-b md:border-r md:border-b-0 border-slate-100 p-4 md:p-6 shrink-0 flex flex-col justify-between">
             <div>
-              <div className="hidden md:block mb-8">
+              <div className="hidden md:block mb-4">
                 <h2 className="text-xl font-black uppercase tracking-widest text-slate-900">Ajout Autorité</h2>
                 <p className="text-xs text-slate-500 mt-1 font-medium">Enregistrement au registre CNRCT</p>
               </div>
@@ -245,7 +289,7 @@ export function AddChiefSheet({ isOpen, onCloseAction, onAddChiefAction }: AddCh
               </div>
             </div>
             
-            <div className="hidden md:block mt-8 p-4 bg-slate-50 rounded-xl border border-slate-100">
+            <div className="hidden md:block mt-4 p-4 bg-slate-50 rounded-xl border border-slate-100">
                 <p className="text-[10px] text-slate-500 italic">"L'autorité traditionnelle est la garante de la cohésion sociale."</p>
             </div>
           </div>
@@ -257,7 +301,7 @@ export function AddChiefSheet({ isOpen, onCloseAction, onAddChiefAction }: AddCh
               <DialogDescription>{STEPS[step-1].description}</DialogDescription>
             </DialogHeader>
 
-            <ScrollArea className="flex-1 p-6 relative h-full">
+            <div className="flex-1 p-6 relative overflow-y-auto">
               <AnimatePresence mode="wait" custom={direction} initial={false}>
                 <motion.div
                   key={step}
@@ -266,7 +310,7 @@ export function AddChiefSheet({ isOpen, onCloseAction, onAddChiefAction }: AddCh
                   initial="hidden"
                   animate="visible"
                   exit="exit"
-                  className="space-y-6 pb-20"
+                  className="space-y-6 pb-10"
                 >
                   {/* STEP 1: Identité */}
                   {step === 1 && (
@@ -333,6 +377,33 @@ export function AddChiefSheet({ isOpen, onCloseAction, onAddChiefAction }: AddCh
                                 ))}
                             </div>
                         </div>
+
+                        {/* Domaines Coutumiers - Affichés selon les rôles */}
+                        {(role === 'Roi' || additionalRoles.includes('Roi')) && (
+                            <div className="space-y-2">
+                                <Label className="text-blue-600">Nom du Royaume</Label>
+                                <CreatableSelect items={royaumeOptions} value={royaumeName} onValueChange={setRoyaumeName} placeholder="Saisir ou sélectionner..." />
+                            </div>
+                        )}
+                        {(role === 'Chef de province' || additionalRoles.includes('Chef de province')) && (
+                            <div className="space-y-2">
+                                <Label className="text-blue-600">Nom de la Province</Label>
+                                <CreatableSelect items={provinceOptions} value={provinceName} onValueChange={setProvinceName} placeholder="Saisir ou sélectionner..." />
+                            </div>
+                        )}
+                        {(role === 'Chef de canton' || additionalRoles.includes('Chef de canton')) && (
+                            <div className="space-y-2">
+                                <Label className="text-blue-600">Nom du Canton</Label>
+                                <CreatableSelect items={cantonOptions} value={cantonName} onValueChange={setCantonName} placeholder="Saisir ou sélectionner..." />
+                            </div>
+                        )}
+                        {(role === 'Chef de tribu' || additionalRoles.includes('Chef de tribu')) && (
+                            <div className="space-y-2">
+                                <Label className="text-blue-600">Nom de la Tribu</Label>
+                                <CreatableSelect items={tribuOptions} value={tribuName} onValueChange={setTribuName} placeholder="Saisir ou sélectionner..." />
+                            </div>
+                        )}
+                        <div className="w-full h-px bg-slate-100 md:col-span-2 my-2"></div>
 
                         <div className="space-y-2">
                             <Label>Sexe</Label>
@@ -462,6 +533,31 @@ export function AddChiefSheet({ isOpen, onCloseAction, onAddChiefAction }: AddCh
                                     </SelectContent>
                                 </Select>
                             </div>
+                            {cnrctAffiliation !== 'Aucune' && (
+                                <>
+                                    <div className="space-y-2">
+                                        <Label className="text-blue-600">Début de mandat CNRCT</Label>
+                                        <Input type="date" value={mandatDebut} onChange={e => {
+                                            setMandatDebut(e.target.value);
+                                            if (e.target.value && !mandatFin) {
+                                                const start = new Date(e.target.value);
+                                                start.setFullYear(start.getFullYear() + 6);
+                                                setMandatFin(start.toISOString().split('T')[0]);
+                                            }
+                                        }} className="bg-white border-blue-200" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-blue-600">Fin de mandat CNRCT</Label>
+                                        <Input type="date" value={mandatFin} onChange={e => setMandatFin(e.target.value)} className="bg-white border-blue-200" />
+                                    </div>
+                                    <div className="space-y-2 flex flex-col justify-end">
+                                        <div className="flex items-center space-x-2 h-10">
+                                            <input type="checkbox" id="reconduit" checked={estRenouvele} onChange={e => setEstRenouvele(e.target.checked)} className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" />
+                                            <Label htmlFor="reconduit" className="font-bold text-slate-700 cursor-pointer">Mandat Reconduit</Label>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
                             <div className="space-y-2"><Label>Mode de désignation</Label><Select value={designationMode} onValueChange={(v: DesignationMode) => setDesignationMode(v)}><SelectTrigger className="bg-white"><SelectValue placeholder="Sélectionnez..." /></SelectTrigger><SelectContent><SelectItem value="Héritage">Héritage</SelectItem><SelectItem value="Élection">Élection</SelectItem><SelectItem value="Nomination coutumière">Nomination coutumière</SelectItem><SelectItem value="Autre">Autre</SelectItem></SelectContent></Select></div>
                             <div className="space-y-2"><Label>Date de désignation</Label><Input type="date" value={designationDate} onChange={e => setDesignationDate(e.target.value)} className="bg-white" /></div>
                             <div className="space-y-2"><Label>Date d'accession au Trône</Label><Input type="date" value={throneAccessionDate} onChange={e => setThroneAccessionDate(e.target.value)} className="bg-white" /></div>
@@ -477,7 +573,7 @@ export function AddChiefSheet({ isOpen, onCloseAction, onAddChiefAction }: AddCh
                             </div>
                             
                             {career.length === 0 ? (
-                                <div className="p-8 text-center border-2 border-dashed border-slate-200 rounded-2xl text-slate-400 text-sm font-medium">Aucun événement ajouté au dossier.</div>
+                                <div className="p-5 text-center border-2 border-dashed border-slate-200 rounded-2xl text-slate-400 text-sm font-medium">Aucun événement ajouté au dossier.</div>
                             ) : (
                                 <div className="space-y-4">
                                     {career.map((event, index) => (
@@ -509,7 +605,7 @@ export function AddChiefSheet({ isOpen, onCloseAction, onAddChiefAction }: AddCh
                             </div>
                             
                             {predecessors.length === 0 ? (
-                                <div className="p-8 text-center border-2 border-dashed border-slate-200 rounded-2xl text-slate-400 text-sm font-medium">Aucun prédécesseur renseigné.</div>
+                                <div className="p-5 text-center border-2 border-dashed border-slate-200 rounded-2xl text-slate-400 text-sm font-medium">Aucun prédécesseur renseigné.</div>
                             ) : (
                                 <div className="space-y-4">
                                     {predecessors.map((pred, index) => (
@@ -525,13 +621,41 @@ export function AddChiefSheet({ isOpen, onCloseAction, onAddChiefAction }: AddCh
                                 </div>
                             )}
                         </div>
+
+                        {cnrctAffiliation !== 'Aucune' && (
+                        <div>
+                            <div className="flex items-center justify-between mb-4 mt-6 border-t border-slate-100 pt-6">
+                                <Label className="text-sm font-black uppercase text-blue-700">Historique des Nominations (CNRCT)</Label>
+                                <Button type="button" variant="outline" size="sm" onClick={() => setHistoriqueNominations([...historiqueNominations, { id: crypto.randomUUID(), periode: "", poste: "", region: "" }])} className="shadow-sm border-blue-200 text-blue-600 hover:bg-blue-50">
+                                    <Plus className="mr-2 h-4 w-4" /> Ajouter Historique
+                                </Button>
+                            </div>
+                            
+                            {historiqueNominations.length === 0 ? (
+                                <div className="p-5 text-center border-2 border-dashed border-blue-100 rounded-2xl text-blue-400 text-sm font-medium bg-blue-50/30">Aucune ancienne nomination répertoriée.</div>
+                            ) : (
+                                <div className="space-y-4">
+                                    {historiqueNominations.map((hist, index) => (
+                                        <div key={hist.id} className="relative p-4 bg-white border border-blue-100 rounded-xl shadow-sm group">
+                                            <Button type="button" variant="ghost" size="icon" className="absolute -top-3 -right-3 h-8 w-8 rounded-full bg-red-50 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity border border-red-100" onClick={() => setHistoriqueNominations(historiqueNominations.filter(h => h.id !== hist.id))}><TrashIcon className="h-4 w-4" /></Button>
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                                <div className="space-y-1"><Label className="text-[10px] uppercase font-bold text-slate-400">Poste</Label><Input className="h-9 text-xs border-blue-100" value={hist.poste} onChange={(e) => { const newHist = [...historiqueNominations]; newHist[index].poste = e.target.value; setHistoriqueNominations(newHist); }} placeholder="Ex: Membre du Directoire" /></div>
+                                                <div className="space-y-1"><Label className="text-[10px] uppercase font-bold text-slate-400">Période</Label><Input className="h-9 text-xs border-blue-100" value={hist.periode} onChange={(e) => { const newHist = [...historiqueNominations]; newHist[index].periode = e.target.value; setHistoriqueNominations(newHist); }} placeholder="Ex: 2018 - 2024" /></div>
+                                                <div className="space-y-1"><Label className="text-[10px] uppercase font-bold text-slate-400">Région (Optionnel)</Label><Input className="h-9 text-xs border-blue-100" value={hist.region || ''} onChange={(e) => { const newHist = [...historiqueNominations]; newHist[index].region = e.target.value; setHistoriqueNominations(newHist); }} placeholder="Si Comité Régional" /></div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                        )}
                     </div>
                   )}
 
                   {error && <p className="text-sm font-black text-red-500 bg-red-50 p-3 rounded-lg border border-red-100 mt-4">{error}</p>}
                 </motion.div>
               </AnimatePresence>
-            </ScrollArea>
+            </div>
 
             {/* Footer Navigation */}
             <div className="p-4 border-t border-slate-100 bg-slate-50/80 backdrop-blur-md flex items-center justify-between z-10 shrink-0">
@@ -540,11 +664,11 @@ export function AddChiefSheet({ isOpen, onCloseAction, onAddChiefAction }: AddCh
                 </Button>
                 
                 {step < STEPS.length ? (
-                    <Button type="button" onClick={nextStep} className="bg-slate-900 hover:bg-slate-800 font-bold px-8 shadow-xl">
+                    <Button type="button" onClick={nextStep} className="bg-slate-900 hover:bg-slate-800 font-bold px-5 shadow-xl">
                         Suivant <ChevronRight className="ml-2 h-4 w-4" />
                     </Button>
                 ) : (
-                    <Button type="button" onClick={handleSubmit} disabled={isSubmitting} className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-8 shadow-xl shadow-blue-500/20">
+                    <Button type="button" onClick={handleSubmit} disabled={isSubmitting} className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 shadow-xl shadow-blue-500/20">
                         {isSubmitting ? "Création du Dossier..." : "Enregistrer le Chef"} <ShieldCheck className="ml-2 h-4 w-4" />
                     </Button>
                 )}

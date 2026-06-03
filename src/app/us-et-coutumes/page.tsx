@@ -109,9 +109,9 @@ function UsEtCoutumesContent() {
   }, [customs, searchTerm, regionFilter]);
 
   return (
-      <div className="flex flex-col gap-10 pb-20">
+      <div className="flex flex-col gap-5 pb-10">
       {/* Customs Hero Header */}
-      <div className="relative h-[200px] rounded-2xl overflow-hidden bg-slate-900 flex flex-col justify-end p-6 md:p-8 mb-2 group">
+      <div className="relative h-[200px] rounded-2xl overflow-hidden bg-slate-900 flex flex-col justify-end p-6 md:p-5 mb-2 group">
          <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1523805081730-61444927f07a?auto=format&fit=crop&q=80')] opacity-20 bg-cover bg-center transition-transform duration-1000 group-hover:scale-105" />
          <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/60 to-transparent" />
          <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
@@ -127,7 +127,7 @@ function UsEtCoutumesContent() {
          </div>
       </div>
 
-      <div className="flex flex-col gap-8 px-2">
+      <div className="flex flex-col gap-4 px-2">
           {/* Controls */}
           <div className="flex flex-col md:flex-row items-center gap-4 justify-between">
               <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
@@ -163,7 +163,7 @@ function UsEtCoutumesContent() {
           </div>
 
           {/* Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {loading ? (
               Array.from({ length: 6 }).map((_, i) => (
                 <div key={i} className="h-[400px] rounded-xl bg-slate-100 animate-pulse" />
@@ -231,14 +231,14 @@ function UsEtCoutumesContent() {
             ) : (
                 <div className="md:col-span-2 lg:col-span-3">
                     <Card className="border-none shadow-none bg-slate-50/50 rounded-2xl p-12 flex flex-col items-center justify-center text-center">
-                        <div className="h-32 w-32 bg-white rounded-full flex items-center justify-center shadow-xl mb-8">
+                        <div className="h-32 w-32 bg-white rounded-full flex items-center justify-center shadow-xl mb-4">
                             <BookText className="h-16 w-16 text-slate-200" />
                         </div>
                         <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tighter">La bibliothèque est vide</h2>
                         <p className="mt-2 text-slate-400 max-w-sm italic">
                             Aucune fiche n'a été trouvée pour votre recherche. Soyez le premier à documenter ces coutumes millénaires !
                         </p>
-                        <Button onClick={() => setIsSheetOpen(true)} className="mt-8 bg-slate-900 rounded-xl h-12 px-8 font-bold">
+                        <Button onClick={() => setIsSheetOpen(true)} className="mt-4 bg-slate-900 rounded-xl h-12 px-5 font-bold">
                             Commencer l'archivage
                         </Button>
                     </Card>

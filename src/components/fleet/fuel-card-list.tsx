@@ -25,7 +25,7 @@ interface CardListProps {
 export function FuelCardList({ cards, providers, onEdit, onDelete, onRecharge, onPrint, employees = [], vehicles = [] }: CardListProps) {
     if (cards.length === 0) {
         return (
-            <div className="text-center py-10 text-muted-foreground border-2 border-dashed rounded-lg">
+            <div className="text-center py-5 text-muted-foreground border-2 border-dashed rounded-lg">
                 Aucune carte enregistrée.
             </div>
         );

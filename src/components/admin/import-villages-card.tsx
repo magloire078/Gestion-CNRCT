@@ -152,8 +152,8 @@ export function ImportVillagesCard() {
     };
 
     return (
-    <Card className="border-white/20 shadow-3xl overflow-hidden bg-white/40 backdrop-blur-xl rounded-[2.5rem] group transition-all duration-700 hover:border-white/40 hover:-translate-y-2 relative">
-        <CardHeader className="bg-slate-900 p-10 text-white relative overflow-hidden">
+    <Card className="border-white/20 shadow-3xl overflow-hidden bg-white/40 backdrop-blur-xl rounded-xl group transition-all duration-700 hover:border-white/40 hover:-translate-y-2 relative">
+        <CardHeader className="bg-slate-900 p-6 text-white relative overflow-hidden">
             {/* Decorative Map Pattern */}
             <div className="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:24px_24px]" />
             
@@ -169,7 +169,7 @@ export function ImportVillagesCard() {
                 </div>
             </div>
         </CardHeader>
-        <CardContent className="p-10 space-y-8 relative z-10">
+        <CardContent className="p-6 space-y-4 relative z-10">
             <div className="flex flex-col gap-6">
                 <div className="relative group/input">
                     <div className="absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent scale-x-0 group-hover/input:scale-x-100 transition-transform duration-700" />
@@ -179,7 +179,7 @@ export function ImportVillagesCard() {
                         onChange={handleFileChange}
                         ref={inputRef}
                         disabled={isImporting}
-                        className="h-24 border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50/50 hover:bg-white hover:border-emerald-500/50 transition-all cursor-pointer flex items-center justify-center text-center font-bold px-10 pt-8 shadow-inner"
+                        className="h-24 border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50/50 hover:bg-white hover:border-emerald-500/50 transition-all cursor-pointer flex items-center justify-center text-center font-bold px-6 pt-8 shadow-inner"
                     />
                     <div className="absolute top-5 left-1/2 -translate-x-1/2 pointer-events-none flex items-center gap-2.5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 group-hover/input:text-emerald-600 transition-colors">
                         <Upload className="h-3.5 w-3.5" /> Fichier des Localités (.csv)
@@ -219,7 +219,7 @@ export function ImportVillagesCard() {
                 </Alert>
             )}
         </CardContent>
-        <CardFooter className="p-10 pt-0 relative z-10">
+        <CardFooter className="p-6 pt-0 relative z-10">
             <Button 
                 onClick={handleImport} 
                 disabled={isImporting || !file} 

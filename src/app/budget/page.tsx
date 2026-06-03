@@ -379,14 +379,14 @@ export default function BudgetPage() {
     <PermissionGuard permission="page:budget:view">
         <div className="min-h-screen bg-slate-50/50">
             {/* Dark Immersive Header */}
-            <div className="bg-slate-950 text-white pt-16 pb-32 px-4 md:px-10 relative overflow-hidden print:hidden">
+            <div className="bg-slate-950 text-white pt-16 pb-32 px-4 md:px-6 relative overflow-hidden print:hidden">
                 <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10" />
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 via-primary to-indigo-600" />
                 <div className="absolute -top-24 -right-24 w-96 h-96 bg-primary/10 rounded-full blur-[120px]" />
                 <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-emerald-500/10 rounded-full blur-[120px]" />
 
                 <div className="container mx-auto relative z-10">
-                    <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+                    <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
                         <div className="space-y-4">
                             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-black uppercase tracking-[0.2em] animate-in fade-in slide-in-from-left-4">
                                 <Wallet className="h-3 w-3" />
@@ -421,14 +421,14 @@ export default function BudgetPage() {
                                 </Button>
                             )}
                             
-                            <Button onClick={() => setIsAddSheetOpen(true)} className="h-12 px-8 rounded-2xl bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20 transition-all active:scale-95 font-black uppercase text-[10px] tracking-widest">
+                            <Button onClick={() => setIsAddSheetOpen(true)} className="h-12 px-5 rounded-2xl bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20 transition-all active:scale-95 font-black uppercase text-[10px] tracking-widest">
                                 <PlusCircle className="mr-2 h-4 w-4" /> Nouvelle Ligne
                             </Button>
                         </div>
                     </div>
                     
                     {/* Special Import Actions */}
-                    <div className="mt-8 flex flex-wrap gap-2">
+                    <div className="mt-4 flex flex-wrap gap-2">
                         {budgetLines.filter(l => l.year === 2025 && l.type).length === 0 && (
                             <button 
                                 onClick={handleFullImport2025} 
@@ -449,13 +449,13 @@ export default function BudgetPage() {
                 </div>
             </div>
 
-            <div className="container mx-auto px-4 md:px-10 -mt-20 relative z-20 pb-20">
+            <div className="container mx-auto px-4 md:px-6 -mt-20 relative z-20 pb-10">
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-                    <Card className="border-0 shadow-[0_20px_50px_rgba(0,0,0,0.15)] bg-slate-900 text-white overflow-hidden relative group transition-all hover:shadow-2xl hover:-translate-y-2 rounded-[2rem]">
+                    <Card className="border-0 shadow-[0_20px_50px_rgba(0,0,0,0.15)] bg-slate-900 text-white overflow-hidden relative group transition-all hover:shadow-2xl hover:-translate-y-2 rounded-xl">
                         <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900" />
                         <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-bl-full transition-all group-hover:scale-110" />
-                        <CardHeader className="relative z-10 pb-2 p-8">
+                        <CardHeader className="relative z-10 pb-2 p-5">
                             <CardDescription className="text-slate-500 font-black uppercase text-[10px] tracking-[0.3em] mb-2">Total Emplois</CardDescription>
                             <CardTitle className="text-3xl font-black tracking-tighter">
                                 {loading ? <Skeleton className="h-9 w-40 bg-slate-800" /> : formatCurrency(stats.totalEmplois)}
@@ -466,10 +466,10 @@ export default function BudgetPage() {
                         </div>
                     </Card>
 
-                    <Card className="border-0 shadow-[0_20px_50px_rgba(0,0,0,0.15)] bg-emerald-600 text-white overflow-hidden relative group transition-all hover:shadow-2xl hover:-translate-y-2 rounded-[2rem]">
+                    <Card className="border-0 shadow-[0_20px_50px_rgba(0,0,0,0.15)] bg-emerald-600 text-white overflow-hidden relative group transition-all hover:shadow-2xl hover:-translate-y-2 rounded-xl">
                         <div className="absolute inset-0 bg-gradient-to-br from-emerald-600 to-emerald-700" />
                         <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-bl-full transition-all group-hover:scale-110" />
-                        <CardHeader className="relative z-10 pb-2 p-8">
+                        <CardHeader className="relative z-10 pb-2 p-5">
                             <CardDescription className="text-emerald-100/60 font-black uppercase text-[10px] tracking-[0.3em] mb-2">Total Ressources</CardDescription>
                             <CardTitle className="text-3xl font-black tracking-tighter">
                                 {loading ? <Skeleton className="h-9 w-40 bg-emerald-500" /> : formatCurrency(stats.totalRessources)}
@@ -481,11 +481,11 @@ export default function BudgetPage() {
                     </Card>
 
                     <Card className={cn(
-                        "border-0 shadow-[0_20px_50px_rgba(0,0,0,0.15)] overflow-hidden relative group transition-all hover:shadow-2xl hover:-translate-y-2 rounded-[2rem]",
+                        "border-0 shadow-[0_20px_50px_rgba(0,0,0,0.15)] overflow-hidden relative group transition-all hover:shadow-2xl hover:-translate-y-2 rounded-xl",
                         stats.isBalanced ? "bg-indigo-600 text-white" : "bg-amber-500 text-white"
                     )}>
                         <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent" />
-                        <CardHeader className="relative z-10 pb-2 p-8">
+                        <CardHeader className="relative z-10 pb-2 p-5">
                             <CardDescription className="text-white/60 font-black uppercase text-[10px] tracking-[0.3em] mb-2">Solde / Équilibre</CardDescription>
                             <CardTitle className="text-3xl font-black tracking-tighter flex items-center gap-3">
                                 {loading ? <Skeleton className="h-9 w-40 bg-white/10" /> : formatCurrency(stats.balance)}
@@ -494,8 +494,8 @@ export default function BudgetPage() {
                         </CardHeader>
                     </Card>
 
-                    <Card className="border-0 shadow-[0_20px_50px_rgba(0,0,0,0.05)] bg-white/80 backdrop-blur-2xl transition-all hover:shadow-2xl hover:-translate-y-2 group rounded-[2rem] border border-white">
-                        <CardHeader className="pb-2 p-8">
+                    <Card className="border-0 shadow-[0_20px_50px_rgba(0,0,0,0.05)] bg-white/80 backdrop-blur-2xl transition-all hover:shadow-2xl hover:-translate-y-2 group rounded-xl border border-white">
+                        <CardHeader className="pb-2 p-5">
                             <CardDescription className="text-slate-400 font-black uppercase text-[10px] tracking-[0.3em] mb-2">Dotations</CardDescription>
                             <CardTitle className="text-4xl font-black text-slate-950 tracking-tighter">
                                 {loading ? <Skeleton className="h-10 w-20" /> : filteredLines.length}
@@ -508,10 +508,10 @@ export default function BudgetPage() {
                 </div>
 
                     {/* Intelligence Section */}
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
-                        <Card className="lg:col-span-2 border-0 shadow-2xl bg-slate-950 overflow-hidden rounded-[2.5rem] relative group">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-12">
+                        <Card className="lg:col-span-2 border-0 shadow-2xl bg-slate-950 overflow-hidden rounded-xl relative group">
                             <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 via-transparent to-emerald-500/10 opacity-50 group-hover:opacity-80 transition-opacity" />
-                            <CardHeader className="relative z-10 p-8 border-b border-white/5">
+                            <CardHeader className="relative z-10 p-5 border-b border-white/5">
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <CardTitle className="text-xs font-black uppercase tracking-[0.4em] text-slate-500 mb-2">Analyse Comparative</CardTitle>
@@ -523,7 +523,7 @@ export default function BudgetPage() {
                                     </div>
                                 </div>
                             </CardHeader>
-                            <CardContent className="relative z-10 p-8 h-[350px]">
+                            <CardContent className="relative z-10 p-5 h-[350px]">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <AreaChart data={analyticsData.data}>
                                         <defs>
@@ -566,12 +566,12 @@ export default function BudgetPage() {
                             </CardContent>
                         </Card>
 
-                        <Card className="border-0 shadow-2xl bg-white overflow-hidden rounded-[2.5rem] border border-slate-100 flex flex-col">
-                            <CardHeader className="p-8 border-b border-slate-50">
+                        <Card className="border-0 shadow-2xl bg-white overflow-hidden rounded-xl border border-slate-100 flex flex-col">
+                            <CardHeader className="p-5 border-b border-slate-50">
                                 <CardTitle className="text-xs font-black uppercase tracking-[0.4em] text-slate-400 mb-2">Répartition Stratégique</CardTitle>
                                 <CardDescription className="text-slate-900 text-lg font-black tracking-tighter">Poids des Postes Actuels</CardDescription>
                             </CardHeader>
-                            <CardContent className="p-8 flex-1 flex flex-col justify-center min-h-[300px]">
+                            <CardContent className="p-5 flex-1 flex flex-col justify-center min-h-[300px]">
                                 <div className="h-[200px] w-full relative">
                                     <ResponsiveContainer width="100%" height="100%">
                                         <PieChart>
@@ -615,13 +615,13 @@ export default function BudgetPage() {
                     </div>
 
           {/* Main Content Card (Table with Tabs) */}
-                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-8">
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-4">
                     <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                         <TabsList className="h-14 bg-white shadow-xl shadow-slate-200/50 p-2 rounded-2xl border border-slate-100 shrink-0">
-                            <TabsTrigger value="emploi" className="h-full px-8 rounded-xl font-black uppercase text-[10px] tracking-widest data-[state=active]:bg-slate-950 data-[state=active]:text-white transition-all">
+                            <TabsTrigger value="emploi" className="h-full px-5 rounded-xl font-black uppercase text-[10px] tracking-widest data-[state=active]:bg-slate-950 data-[state=active]:text-white transition-all">
                                 <TrendingUp className="h-4 w-4 mr-2" /> Dotations Emplois
                             </TabsTrigger>
-                            <TabsTrigger value="ressource" className="h-full px-8 rounded-xl font-black uppercase text-[10px] tracking-widest data-[state=active]:bg-slate-950 data-[state=active]:text-white transition-all">
+                            <TabsTrigger value="ressource" className="h-full px-5 rounded-xl font-black uppercase text-[10px] tracking-widest data-[state=active]:bg-slate-950 data-[state=active]:text-white transition-all">
                                 <FileText className="h-4 w-4 mr-2" /> Dotations Ressources
                             </TabsTrigger>
                         </TabsList>
@@ -653,8 +653,8 @@ export default function BudgetPage() {
                         </div>
                     </div>
 
-                    <Card className="border-0 shadow-[0_30px_60px_rgba(0,0,0,0.08)] bg-white/80 backdrop-blur-2xl overflow-hidden rounded-[2.5rem] border border-white">
-                        <CardHeader className="bg-slate-950 text-white p-8 border-b-0 relative overflow-hidden">
+                    <Card className="border-0 shadow-[0_30px_60px_rgba(0,0,0,0.08)] bg-white/80 backdrop-blur-2xl overflow-hidden rounded-xl border border-white">
+                        <CardHeader className="bg-slate-950 text-white p-5 border-b-0 relative overflow-hidden">
                             <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950" />
                             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-emerald-500 opacity-50" />
                             <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -758,9 +758,9 @@ export default function BudgetPage() {
                                         ))
                                     ) : (
                                         <TableRow>
-                                            <TableCell colSpan={6} className="text-center py-32">
+                                            <TableCell colSpan={6} className="text-center py-12">
                                                 <div className="flex flex-col items-center">
-                                                    <div className="w-20 h-20 bg-slate-50 rounded-[2rem] flex items-center justify-center mb-6 border border-slate-100">
+                                                    <div className="w-20 h-20 bg-slate-50 rounded-xl flex items-center justify-center mb-6 border border-slate-100">
                                                         <Info className="h-8 w-8 text-slate-200" />
                                                     </div>
                                                     <p className="font-black uppercase text-xs tracking-[0.3em] text-slate-300">Aucun enregistrement trouvé</p>
@@ -773,7 +773,7 @@ export default function BudgetPage() {
                                     {filteredLines.length > 0 && !loading && (
                                         <TableFooter className="bg-transparent border-0">
                                             <TableRow className="bg-slate-950 text-white font-black hover:bg-slate-900 border-0">
-                                                <TableCell colSpan={3} className="py-8 text-right uppercase text-[10px] tracking-[0.4em] text-slate-500">Total {activeTab === 'emploi' ? 'Emplois' : 'Ressources'}</TableCell>
+                                                <TableCell colSpan={3} className="py-4 text-right uppercase text-[10px] tracking-[0.4em] text-slate-500">Total {activeTab === 'emploi' ? 'Emplois' : 'Ressources'}</TableCell>
                                                 <TableCell className="text-right font-mono text-slate-500 text-sm">
                                                     {formatCurrency(filteredLines.reduce((acc, l) => acc + (l.previousAmount || 0), 0))}
                                                 </TableCell>
@@ -787,7 +787,7 @@ export default function BudgetPage() {
                     </Table>
                 </CardContent>
                                 {totalPages > 1 && (
-                                    <div className="bg-slate-50/50 border-t border-slate-100 px-10 py-6">
+                                    <div className="bg-slate-50/50 border-t border-slate-100 px-6 py-6">
                                         <PaginationControls
                                             currentPage={currentPage}
                                             totalPages={totalPages}

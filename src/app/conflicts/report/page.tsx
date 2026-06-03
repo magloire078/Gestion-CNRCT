@@ -272,7 +272,7 @@ export default function ConflictReportPage() {
                       ))
                     ) : (
                       <TableRow>
-                        <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                        <TableCell colSpan={6} className="text-center text-muted-foreground py-4">
                           Aucun conflit pour la période et les filtres sélectionnés.
                         </TableCell>
                       </TableRow>

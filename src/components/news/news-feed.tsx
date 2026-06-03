@@ -164,7 +164,7 @@ export function NewsFeed({ directoireMembers = [] }: NewsFeedProps) {
                     ))}
                 </div>
             ) : (
-                <div className="space-y-8">
+                <div className="space-y-4">
                     {/* Chiefs Map (Replaces Events Carousel) */}
                     <div className="relative group">
                         <div className="flex items-center gap-2 mb-4">
@@ -197,7 +197,7 @@ export function NewsFeed({ directoireMembers = [] }: NewsFeedProps) {
                                 ))}
                             </div>
                         ) : eventNews.length === 0 && (
-                            <div className="text-center py-10 border border-dashed rounded-lg bg-muted/20">
+                            <div className="text-center py-5 border border-dashed rounded-lg bg-muted/20">
                                 <Newspaper className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
                                 <p className="text-muted-foreground text-sm">Aucune actualité disponible pour le moment.</p>
                             </div>
@@ -231,7 +231,7 @@ export function NewsFeed({ directoireMembers = [] }: NewsFeedProps) {
                             )}
 
                             <div className="flex-1 overflow-auto">
-                                <div className="p-6 md:p-8">
+                                <div className="p-6 md:p-5">
                                     {/* Header info if no image */}
                                     {!selectedNews.imageUrl && (
                                         <div className="mb-6">
@@ -271,7 +271,7 @@ export function NewsFeed({ directoireMembers = [] }: NewsFeedProps) {
 
                                     {/* Tags */}
                                     {selectedNews.tags && selectedNews.tags.length > 0 && (
-                                        <div className="mt-8 flex flex-wrap gap-2">
+                                        <div className="mt-4 flex flex-wrap gap-2">
                                             {selectedNews.tags.map(tag => (
                                                 <Badge key={tag} variant="secondary">#{tag}</Badge>
                                             ))}

@@ -122,7 +122,7 @@ export const ChiefProfileReport: React.FC<ChiefProfileReportProps> = ({ chief, i
                 </div>
 
                 {/* Informations de Registre */}
-                <div className="mt-8 pt-4 border-t border-slate-200">
+                <div className="mt-4 pt-4 border-t border-slate-200">
                     <p className="text-[10px] text-slate-500 italic text-center">
                         Extrait du registre numérique des autorités traditionnelles de Côte d'Ivoire.<br/>
                         Document généré électroniquement par le système central du CNRCT le {format(new Date(), "dd/MM/yyyy 'à' HH:mm", { locale: fr })}.

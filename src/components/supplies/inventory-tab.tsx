@@ -80,7 +80,7 @@ export const InventoryTab = memo(({
     return (
         <div className={cn("space-y-6 transition-opacity duration-300", isPending && "opacity-60 pointer-events-none", "contain-layout")}>
             {/* --- Statistical Dashboard --- */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-4">
                 <Card className="border-white/10 shadow-xl bg-gradient-to-br from-slate-900 to-slate-800 text-white overflow-hidden relative group transition-[transform,shadow] duration-200 hover:shadow-2xl hover:-translate-y-1">
                     <CardContent className="p-4 flex items-center gap-4">
                         <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center text-white group-hover:scale-110 transition-transform">
@@ -164,7 +164,7 @@ export const InventoryTab = memo(({
                     </div>
                 </CardHeader>
                 <CardContent className="pt-6 px-0">
-                    {error && <div className="p-8 text-center text-red-500 font-bold">{error}</div>}
+                    {error && <div className="p-5 text-center text-red-500 font-bold">{error}</div>}
                     
                     {viewMode === 'table' ? (
                         <div className="rounded-xl border border-slate-100 overflow-hidden bg-white">
@@ -211,7 +211,7 @@ export const InventoryTab = memo(({
                     )}
 
                     {!loading && filteredSupplies.length === 0 && (
-                        <div className="text-center py-32 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
+                        <div className="text-center py-12 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
                             <div className="h-20 w-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-200 shadow-inner">
                                 <Archive className="h-10 w-10 text-slate-300" />
                             </div>

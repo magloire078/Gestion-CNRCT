@@ -57,7 +57,7 @@ export default function OrganizationChartPage() {
   }
 
   if (error || !data) {
-    return <div className="text-center text-destructive py-10">{error || "Aucune donnée disponible."}</div>;
+    return <div className="text-center text-destructive py-5">{error || "Aucune donnée disponible."}</div>;
   }
 
   const { departments, directions, services, employees } = data;

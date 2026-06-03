@@ -22,7 +22,7 @@ interface IndividualPrintProps extends PrintProps {
 
 function PrintHeader({ logos }: { logos: OrganizationSettings }) {
     return (
-        <header className="flex justify-between items-start mb-8 h-[100px]">
+        <header className="flex justify-between items-start mb-4 h-[100px]">
             <div className="w-1/3 text-center flex flex-col justify-center items-center h-full">
                 <p className="font-bold text-[10px] leading-tight">Chambre Nationale des Rois et Chefs Traditionnels</p>
                 {logos.mainLogoUrl && <img src={logos.mainLogoUrl} alt="Logo Principal" className="max-h-16 max-w-full h-auto w-auto mt-1" />}
@@ -73,7 +73,7 @@ export function GroupMissionRequestPrint({ mission, logos, onCloseAction }: Grou
     ) || 0;
 
     return createPortal(
-        <div id="print-section" className="bg-white text-black p-10 w-full min-h-screen">
+        <div id="print-section" className="bg-white text-black p-6 w-full min-h-screen">
             <PrintHeader logos={logos} />
 
             <div className="text-center my-8">
@@ -171,7 +171,7 @@ export function IndividualMissionSlipPrint({ mission, participant, logos, onClos
     const totalIndiv = (participant.coutTransport || 0) + (participant.coutHebergement || 0) + (participant.totalIndemnites || 0);
 
     return createPortal(
-        <div id="print-section" className="bg-white text-black p-10 w-full min-h-screen">
+        <div id="print-section" className="bg-white text-black p-6 w-full min-h-screen">
             <PrintHeader logos={logos} />
 
             <div className="text-center my-10 border-2 border-black p-4">
@@ -179,7 +179,7 @@ export function IndividualMissionSlipPrint({ mission, participant, logos, onClos
                 <p className="text-lg font-bold mt-1">N° {participant.numeroOrdre || "__________"}</p>
             </div>
 
-            <div className="space-y-10 text-sm mt-8">
+            <div className="space-y-5 text-sm mt-4">
                 <div className="space-y-4">
                     <p className="flex items-center gap-4">
                         <span className="font-bold w-48 uppercase">Objet de la Mission :</span>

@@ -116,9 +116,9 @@ export function ServiceDialog({ isOpen, onCloseAction, onConfirmAction, service,
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="sm:max-w-lg border-white/20 p-0 overflow-hidden bg-white/40 backdrop-blur-3xl shadow-3xl rounded-[3rem]">
+      <DialogContent className="sm:max-w-lg border-white/20 p-0 overflow-hidden bg-white/40 backdrop-blur-3xl shadow-3xl rounded-2xl">
         <form onSubmit={handleSubmit} className="flex flex-col relative">
-          <DialogHeader className="bg-slate-900 p-10 text-white text-left relative overflow-hidden">
+          <DialogHeader className="bg-slate-900 p-6 text-white text-left relative overflow-hidden">
             {/* Institutional Pattern */}
             <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:24px_24px]" />
             <div className="relative z-10 space-y-2">
@@ -133,7 +133,7 @@ export function ServiceDialog({ isOpen, onCloseAction, onConfirmAction, service,
                 </DialogDescription>
             </div>
           </DialogHeader>
-          <div className="p-10 space-y-8 flex-1 overflow-auto custom-scrollbar">
+          <div className="p-6 space-y-4 flex-1 overflow-auto custom-scrollbar">
             <div className="space-y-3">
               <Label htmlFor="name" className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Libellé du Service</Label>
               <Input
@@ -146,7 +146,7 @@ export function ServiceDialog({ isOpen, onCloseAction, onConfirmAction, service,
             </div>
              <div className="space-y-4">
                 <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Structure de Rattachement</Label>
-                <RadioGroup value={parentType} onValueChange={handleParentTypeChange} className="grid grid-cols-2 gap-4 p-2 rounded-[2rem] bg-slate-900/5 border border-white/40 shadow-inner">
+                <RadioGroup value={parentType} onValueChange={handleParentTypeChange} className="grid grid-cols-2 gap-4 p-2 rounded-xl bg-slate-900/5 border border-white/40 shadow-inner">
                     <div className="flex items-center">
                         <RadioGroupItem value="direction" id="r-direction" disabled={directions.length === 0} className="peer sr-only" />
                         <Label htmlFor="r-direction" className="flex-1 text-[9px] font-black uppercase tracking-widest text-center py-4 rounded-xl cursor-pointer transition-all peer-data-[state=checked]:bg-white peer-data-[state=checked]:text-slate-900 peer-data-[state=checked]:shadow-md text-slate-400 hover:text-slate-600">
@@ -208,14 +208,14 @@ export function ServiceDialog({ isOpen, onCloseAction, onConfirmAction, service,
                 </div>
             )}
           </div>
-          <DialogFooter className="p-10 bg-white/20 backdrop-blur-md border-t border-white/40 flex-row gap-4">
-            <Button type="button" variant="ghost" onClick={handleClose} className="h-14 px-8 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] text-slate-400 hover:text-slate-900 transition-all">
+          <DialogFooter className="p-6 bg-white/20 backdrop-blur-md border-t border-white/40 flex-row gap-4">
+            <Button type="button" variant="ghost" onClick={handleClose} className="h-14 px-5 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] text-slate-400 hover:text-slate-900 transition-all">
                 Annuler
             </Button>
             <Button 
                 type="submit" 
                 disabled={isSubmitting}
-                className="bg-slate-900 hover:bg-black text-white px-10 h-14 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] shadow-3xl shadow-slate-900/40 active:scale-95 transition-all flex-1"
+                className="bg-slate-900 hover:bg-black text-white px-6 h-14 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] shadow-3xl shadow-slate-900/40 active:scale-95 transition-all flex-1"
             >
               {isSubmitting ? "TRAITEMENT..." : "CONFIRMER LE SERVICE"}
             </Button>

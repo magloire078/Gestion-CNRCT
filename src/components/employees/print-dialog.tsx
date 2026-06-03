@@ -66,7 +66,7 @@ export function PrintDialog({ isOpen, onClose, onPrint, allColumns }: PrintDialo
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-2xl w-[95vw] h-[85vh] sm:h-[80vh] flex flex-col overflow-hidden p-0 border-none bg-white shadow-3xl rounded-[2rem] sm:rounded-[2.5rem]">
+      <DialogContent className="sm:max-w-2xl w-[95vw] h-[85vh] sm:h-[80vh] flex flex-col overflow-hidden p-0 border-none bg-white shadow-3xl rounded-xl sm:rounded-xl">
         <div className="absolute inset-0 bg-gradient-to-b from-slate-50/50 to-white pointer-events-none" />
         
         <DialogHeader className="p-5 sm:p-6 pb-2 relative z-10 shrink-0">
@@ -112,7 +112,7 @@ export function PrintDialog({ isOpen, onClose, onPrint, allColumns }: PrintDialo
           </div>
         </DialogHeader>
         
-        <div className="px-6 sm:px-8 flex-1 flex flex-col min-h-0 relative z-10">
+        <div className="px-6 sm:px-5 flex-1 flex flex-col min-h-0 relative z-10">
           <div className="flex items-center justify-between p-3 bg-slate-900/5 rounded-xl border border-slate-900/10 mb-3 shrink-0">
             <div className="flex items-center space-x-4">
               <Checkbox
@@ -131,8 +131,8 @@ export function PrintDialog({ isOpen, onClose, onPrint, allColumns }: PrintDialo
             </div>
           </div>
 
-          <ScrollArea className="flex-1 -mx-8 px-8">
-            <div className="space-y-2 pb-10">
+          <ScrollArea className="flex-1 -mx-8 px-5">
+            <div className="space-y-2 pb-6">
               {columnOrder.map((key, index) => (
                 <div 
                   key={key} 

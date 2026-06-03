@@ -49,7 +49,7 @@ export function PrintLayout({ logos, title, subtitle, columns, data, children, o
     return createPortal(
         <div id="print-section" className="bg-white text-black w-full print:shadow-none print:border-none print:pb-24">
                 <div className="avoid-page-break">
-                    <header className="flex justify-between items-start mb-8 min-h-[140px]">
+                    <header className="flex justify-between items-start mb-4 min-h-[140px]">
                         <div className="w-1/3 text-center flex flex-col justify-center items-center h-full">
                             <p className="font-bold text-sm leading-tight text-blue-900">Chambre Nationale des Rois<br />et Chefs Traditionnels</p>
                             {logos?.mainLogoUrl && (
@@ -110,8 +110,8 @@ export function PrintLayout({ logos, title, subtitle, columns, data, children, o
             ) : null}
 
             {/* Footer répété sur chaque page d'impression grâce à la classe print-page-footer */}
-            <footer className="mt-8 text-xs print-page-footer">
-                <div className="flex justify-between items-start border-t border-slate-200/50 pt-2 px-8 pb-2">
+            <footer className="mt-4 text-xs print-page-footer">
+                <div className="flex justify-between items-start border-t border-slate-200/50 pt-2 px-5 pb-2">
                     <div className="w-[100px]"></div>
                     <div className="text-center flex-1 text-[10px] text-slate-600">
                         <p>Yamoussoukro, Riviera - BP 201 Yamoussoukro | Tél : (225) 30 64 06 60 | Fax : (+255) 30 64 06 63</p>

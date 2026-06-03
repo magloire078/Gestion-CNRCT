@@ -242,7 +242,7 @@ export function EditAssetForm({ asset }: EditAssetFormProps) {
           <Button type="button" variant="ghost" onClick={() => router.back()} className="rounded-xl">
             <X className="mr-2 h-4 w-4" /> Annuler
           </Button>
-          <Button type="submit" disabled={isSubmitting} className="rounded-xl bg-slate-900 text-white hover:bg-slate-800 px-8">
+          <Button type="submit" disabled={isSubmitting} className="rounded-xl bg-slate-900 text-white hover:bg-slate-800 px-5">
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Enregistrement...

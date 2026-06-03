@@ -48,8 +48,8 @@ export function VillageQuickView({ village, currentChief, open, onOpenChange }: 
     
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[600px] rounded-[2.5rem] p-0 overflow-hidden border-none shadow-2xl bg-white">
-                <div className="relative h-48 bg-slate-900 flex flex-col justify-end p-8">
+            <DialogContent className="sm:max-w-[600px] rounded-xl p-0 overflow-hidden border-none shadow-2xl bg-white">
+                <div className="relative h-48 bg-slate-900 flex flex-col justify-end p-5">
                     <div className="absolute inset-0 opacity-20">
                         <div className="absolute inset-0 pattern-dots text-white"></div>
                     </div>
@@ -77,9 +77,9 @@ export function VillageQuickView({ village, currentChief, open, onOpenChange }: 
                     </div>
                 </div>
 
-                <div className="p-8 space-y-6 print:hidden">
+                <div className="p-5 space-y-6 print:hidden">
                     {/* IDL Section */}
-                    <div className="bg-slate-50 rounded-[2rem] p-6 border border-slate-100">
+                    <div className="bg-slate-50 rounded-xl p-6 border border-slate-100">
                         <div className="flex justify-between items-center mb-4">
                             <div className="flex items-center gap-3">
                                 <div className="p-2 bg-white rounded-xl shadow-sm">
@@ -112,7 +112,7 @@ export function VillageQuickView({ village, currentChief, open, onOpenChange }: 
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-8">
+                    <div className="grid grid-cols-2 gap-4">
                         {/* Status Section */}
                         <div className="space-y-4">
                             <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] flex items-center gap-2">

@@ -55,7 +55,7 @@ export function MissionsSection() {
           </motion.p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <div className="grid md:grid-cols-3 gap-4 max-w-6xl mx-auto">
           {missions.map((mission, idx) => (
             <motion.div 
               key={idx}
@@ -63,11 +63,11 @@ export function MissionsSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: idx * 0.15, duration: 0.6 }}
-              className="group relative bg-white rounded-[2rem] p-10 border border-slate-100 shadow-xl shadow-slate-200/50 hover:shadow-2xl hover:shadow-slate-300/50 transition-all duration-500 hover:-translate-y-2 overflow-hidden flex flex-col"
+              className="group relative bg-white rounded-xl p-6 border border-slate-100 shadow-xl shadow-slate-200/50 hover:shadow-2xl hover:shadow-slate-300/50 transition-all duration-500 hover:-translate-y-2 overflow-hidden flex flex-col"
             >
               <div className={`absolute top-0 right-0 w-40 h-40 bg-gradient-to-br ${mission.color} rounded-full blur-3xl -mr-10 -mt-10 opacity-50 group-hover:opacity-100 transition-opacity duration-500`} />
               
-              <div className={`h-16 w-16 ${mission.iconBg} rounded-2xl flex items-center justify-center mb-8 relative z-10 shadow-sm transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6`}>
+              <div className={`h-16 w-16 ${mission.iconBg} rounded-2xl flex items-center justify-center mb-4 relative z-10 shadow-sm transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6`}>
                 <mission.icon className={`h-8 w-8 ${mission.textColor}`} />
               </div>
               
@@ -75,7 +75,7 @@ export function MissionsSection() {
                 {mission.title}
               </h3>
               
-              <p className="text-slate-500 font-medium leading-relaxed relative z-10 flex-grow mb-8">
+              <p className="text-slate-500 font-medium leading-relaxed relative z-10 flex-grow mb-4">
                 {mission.description}
               </p>
 

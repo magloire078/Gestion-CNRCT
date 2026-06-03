@@ -129,7 +129,7 @@ export function EmployeeAnalytics({ employees }: EmployeeAnalyticsProps) {
         <div className="space-y-6 animate-in fade-in duration-1000">
             {/* KPI Cards */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <Card className="border-none bg-slate-900 text-white rounded-[2.5rem] shadow-3xl shadow-slate-900/20 relative overflow-hidden group">
+                <Card className="border-none bg-slate-900 text-white rounded-xl shadow-3xl shadow-slate-900/20 relative overflow-hidden group">
                     <div className="absolute -right-4 -top-4 opacity-5 group-hover:scale-125 transition-transform duration-700">
                         <Users className="h-32 w-32" />
                     </div>
@@ -142,7 +142,7 @@ export function EmployeeAnalytics({ employees }: EmployeeAnalyticsProps) {
                     </CardHeader>
                 </Card>
 
-                <Card className="border-none bg-white/40 backdrop-blur-xl rounded-[2.5rem] shadow-3xl shadow-slate-200/50 border border-white/20 relative overflow-hidden group">
+                <Card className="border-none bg-white/40 backdrop-blur-xl rounded-xl shadow-3xl shadow-slate-200/50 border border-white/20 relative overflow-hidden group">
                     <CardHeader className="p-6">
                         <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-600">Présence Active</CardTitle>
                         <div className="flex items-end gap-3 mt-4">
@@ -155,7 +155,7 @@ export function EmployeeAnalytics({ employees }: EmployeeAnalyticsProps) {
                     </CardHeader>
                 </Card>
 
-                <Card className="border-none bg-white/40 backdrop-blur-xl rounded-[2.5rem] shadow-3xl shadow-slate-200/50 border border-white/20 relative overflow-hidden group">
+                <Card className="border-none bg-white/40 backdrop-blur-xl rounded-xl shadow-3xl shadow-slate-200/50 border border-white/20 relative overflow-hidden group">
                     <CardHeader className="p-6">
                         <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600">Index Parité</CardTitle>
                         <div className="flex items-end gap-3 mt-4">
@@ -170,7 +170,7 @@ export function EmployeeAnalytics({ employees }: EmployeeAnalyticsProps) {
                     </CardHeader>
                 </Card>
 
-                <Card className="border-none bg-white/40 backdrop-blur-xl rounded-[2.5rem] shadow-3xl shadow-slate-200/50 border border-white/20 relative overflow-hidden group">
+                <Card className="border-none bg-white/40 backdrop-blur-xl rounded-xl shadow-3xl shadow-slate-200/50 border border-white/20 relative overflow-hidden group">
                     <CardHeader className="p-6">
                         <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-600">Mobilité / Congés</CardTitle>
                         <div className="flex items-end gap-3 mt-4">
@@ -184,9 +184,9 @@ export function EmployeeAnalytics({ employees }: EmployeeAnalyticsProps) {
                 </Card>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 {/* Age Pyramid / Distribution */}
-                <Card className="border-none bg-white/40 backdrop-blur-xl rounded-[2.5rem] shadow-3xl shadow-slate-200/50 border border-white/20 overflow-hidden">
+                <Card className="border-none bg-white/40 backdrop-blur-xl rounded-xl shadow-3xl shadow-slate-200/50 border border-white/20 overflow-hidden">
                     <CardHeader className="bg-slate-50/50 border-b border-white/10 p-6">
                         <div className="flex items-center gap-5">
                             <div className="h-14 w-14 rounded-2xl bg-slate-900 text-white flex items-center justify-center shadow-xl">
@@ -230,7 +230,7 @@ export function EmployeeAnalytics({ employees }: EmployeeAnalyticsProps) {
                 </Card>
 
                 {/* Parity Donut */}
-                <Card className="border-none bg-white/40 backdrop-blur-xl rounded-[2.5rem] shadow-3xl shadow-slate-200/50 border border-white/20 overflow-hidden">
+                <Card className="border-none bg-white/40 backdrop-blur-xl rounded-xl shadow-3xl shadow-slate-200/50 border border-white/20 overflow-hidden">
                     <CardHeader className="bg-slate-50/50 border-b border-white/10 p-6">
                         <div className="flex items-center gap-5">
                             <div className="h-14 w-14 rounded-2xl bg-blue-600 text-white flex items-center justify-center shadow-xl">
@@ -277,9 +277,9 @@ export function EmployeeAnalytics({ employees }: EmployeeAnalyticsProps) {
             </div>
 
             {/* Charts Row 2 */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 {/* Seniority */}
-                <Card className="lg:col-span-2 border-none bg-white/40 backdrop-blur-xl rounded-[2.5rem] shadow-3xl shadow-slate-200/50 border border-white/20 overflow-hidden">
+                <Card className="lg:col-span-2 border-none bg-white/40 backdrop-blur-xl rounded-xl shadow-3xl shadow-slate-200/50 border border-white/20 overflow-hidden">
                     <CardHeader className="bg-slate-50/50 border-b border-white/10 p-6">
                         <div className="flex items-center gap-5">
                             <div className="h-14 w-14 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shadow-xl">
@@ -329,7 +329,7 @@ export function EmployeeAnalytics({ employees }: EmployeeAnalyticsProps) {
                 </Card>
 
                 {/* Status Breakdown */}
-                <Card className="border-none bg-white/40 backdrop-blur-xl rounded-[2.5rem] shadow-3xl shadow-slate-200/50 border border-white/20 overflow-hidden">
+                <Card className="border-none bg-white/40 backdrop-blur-xl rounded-xl shadow-3xl shadow-slate-200/50 border border-white/20 overflow-hidden">
                     <CardHeader className="bg-slate-50/50 border-b border-white/10 p-6">
                         <div className="flex items-center gap-5">
                             <div className="h-14 w-14 rounded-2xl bg-amber-600 text-white flex items-center justify-center shadow-xl">
@@ -342,7 +342,7 @@ export function EmployeeAnalytics({ employees }: EmployeeAnalyticsProps) {
                         </div>
                     </CardHeader>
                     <CardContent className="p-6">
-                        <div className="space-y-8">
+                        <div className="space-y-4">
                             {statusData.map((item, idx) => (
                                 <div key={item.name} className="space-y-3">
                                     <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-[0.15em]">

@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 export default function ManagementSuppliesPage() {
   return (
     <PermissionGuard permission="management:supplies:validate">
-      <div className="flex flex-col gap-8 pb-20">
+      <div className="flex flex-col gap-4 pb-10">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h1 className="text-4xl font-black tracking-tight text-slate-900 flex items-center gap-3">
@@ -29,8 +29,8 @@ export default function ManagementSuppliesPage() {
         </div>
 
         <div className="grid gap-6">
-            <Card className="rounded-3xl border-none shadow-xl shadow-slate-200/50 bg-white overflow-hidden">
-                <CardHeader className="p-8 border-b border-slate-50">
+            <Card className="rounded-xl border-none shadow-xl shadow-slate-200/50 bg-white overflow-hidden">
+                <CardHeader className="p-5 border-b border-slate-50">
                     <div className="flex items-center gap-3 text-sm font-black uppercase tracking-widest text-slate-400 mb-2">
                         <ShoppingBag className="h-4 w-4" />
                         Flux de travail
@@ -40,7 +40,7 @@ export default function ManagementSuppliesPage() {
                         En tant que responsable, vous devez valider la pertinence des demandes avant qu'elles ne soient traitées par le service logistique.
                     </CardDescription>
                 </CardHeader>
-                <CardContent className="p-8">
+                <CardContent className="p-5">
                     <PendingRequestsManager mode="supervisor" />
                 </CardContent>
             </Card>

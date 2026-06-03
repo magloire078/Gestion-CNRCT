@@ -86,7 +86,7 @@ export function AssetOfficialReport({
                     orientation="landscape"
                 />
 
-                <div className="landscape-section min-h-screen p-12 relative print:p-8">
+                <div className="landscape-section min-h-screen p-12 relative print:p-5">
                     <InstitutionalHeader 
                         title="Grand Livre d'Inventaire des Actifs"
                         period={`Situation consolidée au ${todayStr}`}
@@ -95,10 +95,10 @@ export function AssetOfficialReport({
                         settings={organizationSettings}
                     />
 
-                    <div className="space-y-12 mt-10">
+                    <div className="space-y-6 mt-10">
                         {Object.entries(groupedItems).map(([type, categories]) => (
                             Object.keys(categories).length > 0 && (
-                                <div key={type} className="space-y-8">
+                                <div key={type} className="space-y-4">
                                     <div className="flex items-center gap-4 border-b-4 border-slate-900 pb-2">
                                         <div className="h-10 w-10 rounded-lg bg-slate-900 flex items-center justify-center">
                                             {type === 'IT' ? <Monitor className="h-6 w-6 text-white" /> : <HardDrive className="h-6 w-6 text-white" />}

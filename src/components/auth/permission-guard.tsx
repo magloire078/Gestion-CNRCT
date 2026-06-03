@@ -33,7 +33,7 @@ export function PermissionGuard({ permission, children, fallback }: PermissionGu
 
     return (
       <div className="flex items-center justify-center min-h-[60vh] p-4 animate-in fade-in zoom-in duration-500">
-        <Card className="max-w-md w-full border-none shadow-2xl rounded-[2rem] overflow-hidden">
+        <Card className="max-w-md w-full border-none shadow-2xl rounded-xl overflow-hidden">
           <div className="h-2 bg-red-500 w-full" />
           <CardHeader className="text-center pt-10">
             <div className="h-20 w-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
@@ -44,7 +44,7 @@ export function PermissionGuard({ permission, children, fallback }: PermissionGu
               Désolé, votre profil utilisateur ne dispose pas des privilèges nécessaires pour consulter cette page.
             </CardDescription>
           </CardHeader>
-          <CardContent className="text-center pb-8">
+          <CardContent className="text-center pb-5">
             <div className="bg-slate-50 rounded-2xl p-4 flex items-center gap-3 border border-slate-100 mb-6">
               <ShieldAlert className="h-5 w-5 text-amber-500 shrink-0" />
               <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest text-left">

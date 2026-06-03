@@ -169,7 +169,7 @@ export function ConflictDetailsDialog({ conflict, isOpen, onClose }: ConflictDet
                     {/* Right Panel: Timeline & Actions */}
                     <div className="flex-1 flex flex-col overflow-hidden">
                         <ScrollArea className="flex-1 p-6">
-                            <div className="max-w-2xl mx-auto space-y-8">
+                            <div className="max-w-2xl mx-auto space-y-4">
                                 <div className="space-y-4">
                                     <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
                                         <History className="h-4 w-4 text-slate-500" /> Journal des Étapes & Médiation
@@ -216,7 +216,7 @@ export function ConflictDetailsDialog({ conflict, isOpen, onClose }: ConflictDet
                 </div>
 
                 <DialogFooter className="p-4 border-t bg-slate-50 shrink-0">
-                    <Button variant="outline" onClick={onClose} className="px-8 font-bold">Fermer</Button>
+                    <Button variant="outline" onClick={onClose} className="px-5 font-bold">Fermer</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

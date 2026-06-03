@@ -503,7 +503,7 @@ export default function EventsCalendarPage() {
     : [];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50/30 to-violet-50/20 p-6 lg:p-10 space-y-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50/30 to-violet-50/20 p-6 lg:p-6 space-y-4">
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div className="space-y-2">
@@ -707,7 +707,7 @@ export default function EventsCalendarPage() {
                 </CardHeader>
                 <CardContent className="p-4 space-y-3">
                   {selectedDayEvents.length === 0 ? (
-                    <div className="text-center py-8">
+                    <div className="text-center py-4">
                       <Sparkles className="h-8 w-8 text-slate-200 mx-auto mb-2" />
                       <p className="text-sm text-slate-400 font-medium">Aucun événement ce jour</p>
                     </div>
@@ -731,7 +731,7 @@ export default function EventsCalendarPage() {
               </CardHeader>
               <CardContent className="p-4 space-y-3 max-h-[500px] overflow-y-auto">
                 {upcomingEvents.length === 0 ? (
-                  <div className="text-center py-8">
+                  <div className="text-center py-4">
                     <Sparkles className="h-8 w-8 text-slate-200 mx-auto mb-2" />
                     <p className="text-sm text-slate-400 font-medium">Aucun événement à venir</p>
                     <Button size="sm" variant="outline" className="mt-4 rounded-xl text-xs" onClick={() => openCreate()}>

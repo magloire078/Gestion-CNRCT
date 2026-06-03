@@ -142,7 +142,7 @@ export function PrintAssetsList({
             </div>
 
             {/* Section Signatures */}
-            <div className="mt-12 grid grid-cols-2 gap-20 px-10">
+            <div className="mt-12 grid grid-cols-2 gap-20 px-6">
                 <div className="text-center">
                     <p className="font-bold underline mb-16 text-xs italic uppercase">Le Responsable Informatique</p>
                     <div className="border-t border-dotted border-black w-48 mx-auto"></div>

@@ -79,8 +79,8 @@ export function ChiefsOfficialReport({
                 <GlobalSynthesisTable chiefs={chiefs} />
 
                 {/* --- PAGES DÉTAILLÉES (PAYSAGE) --- */}
-                <div className="landscape-section min-h-screen p-12 relative print:p-8 pt-0 print:pt-0">
-                    <div className="space-y-12 mt-8">
+                <div className="landscape-section min-h-screen p-12 relative print:p-5 pt-0 print:pt-0">
+                    <div className="space-y-6 mt-4">
                         {Object.entries(chiefsByRegion).sort().map(([region, regionChiefs]) => {
                             const uniqueDepts = new Set(regionChiefs.map(c => (c.department || '').trim().toUpperCase()).filter(Boolean));
                             const uniqueSPs = new Set(regionChiefs.map(c => (c.subPrefecture || '').trim().toUpperCase()).filter(Boolean));

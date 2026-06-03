@@ -63,10 +63,10 @@ export default function EditAssetPage() {
 
     if (loading) {
         return (
-            <div className="max-w-5xl mx-auto space-y-8 animate-pulse p-8">
+            <div className="max-w-5xl mx-auto space-y-4 animate-pulse p-5">
                 <div className="h-10 w-48 bg-slate-100 rounded-lg" />
-                <div className="h-64 bg-slate-50 rounded-[2rem]" />
-                <div className="h-96 bg-slate-50 rounded-[2rem]" />
+                <div className="h-64 bg-slate-50 rounded-xl" />
+                <div className="h-96 bg-slate-50 rounded-xl" />
             </div>
         );
     }
@@ -74,9 +74,9 @@ export default function EditAssetPage() {
     if (!asset) return null;
 
     return (
-        <div className="flex flex-col gap-10 pb-20">
+        <div className="flex flex-col gap-5 pb-10">
              {/* --- PREMIUM EDIT HEADER --- */}
-            <div className="relative overflow-hidden rounded-[2.5rem] bg-slate-900 p-8 md:p-12 shadow-2xl border border-white/10">
+            <div className="relative overflow-hidden rounded-xl bg-slate-900 p-5 md:p-12 shadow-2xl border border-white/10">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_50%,rgba(59,130,246,0.15),transparent)] opacity-50" />
                 <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div className="space-y-4">
@@ -96,7 +96,7 @@ export default function EditAssetPage() {
                             </p>
                         </div>
                     </div>
-                    <div className="bg-white/5 border border-white/10 p-6 rounded-3xl backdrop-blur-md hidden md:flex flex-col items-center gap-2">
+                    <div className="bg-white/5 border border-white/10 p-6 rounded-xl backdrop-blur-md hidden md:flex flex-col items-center gap-2">
                          <div className="h-12 w-12 rounded-2xl bg-blue-500/20 flex items-center justify-center text-blue-400 border border-blue-500/30">
                             <Laptop className="h-6 w-6" />
                          </div>

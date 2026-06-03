@@ -128,10 +128,10 @@ export default function MissionReportPage() {
         </div>
       </div>
 
-      <div className={`container mx-auto px-4 py-8 space-y-8 ${isPrinting ? 'p-0' : ''}`}>
+      <div className={`container mx-auto px-4 py-4 space-y-4 ${isPrinting ? 'p-0' : ''}`}>
         {/* Filtres Premium */}
         <div className={isPrinting ? 'hidden' : ''}>
-          <Card className="border-none bg-white/40 backdrop-blur-md rounded-[2.5rem] shadow-xl border border-white/20 overflow-hidden">
+          <Card className="border-none bg-white/40 backdrop-blur-md rounded-xl shadow-xl border border-white/20 overflow-hidden">
             <CardHeader className="pb-4">
               <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Configuration du Rapport</CardTitle>
             </CardHeader>
@@ -162,7 +162,7 @@ export default function MissionReportPage() {
                 <Button 
                   onClick={generateReport} 
                   disabled={loading} 
-                  className="h-12 px-8 rounded-2xl bg-slate-900 text-white font-black uppercase tracking-widest text-[10px] hover:bg-black transition-all shadow-xl shadow-slate-900/20 active:scale-95 disabled:opacity-50"
+                  className="h-12 px-5 rounded-2xl bg-slate-900 text-white font-black uppercase tracking-widest text-[10px] hover:bg-black transition-all shadow-xl shadow-slate-900/20 active:scale-95 disabled:opacity-50"
                 >
                   {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin text-blue-400" /> : <FileText className="mr-2 h-4 w-4 text-emerald-400" />}
                   Générer Rapport
@@ -180,8 +180,8 @@ export default function MissionReportPage() {
         </div>
         
         {reportData && (
-          <Card className={`border-none bg-white rounded-[2.5rem] shadow-2xl overflow-hidden ${isPrinting ? 'shadow-none' : ''}`}>
-            <CardHeader className="p-8 border-b border-slate-50">
+          <Card className={`border-none bg-white rounded-xl shadow-2xl overflow-hidden ${isPrinting ? 'shadow-none' : ''}`}>
+            <CardHeader className="p-5 border-b border-slate-50">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                     <div>
                         <div className="flex items-center gap-3 mb-2">
@@ -216,37 +216,37 @@ export default function MissionReportPage() {
                     <Table>
                         <TableHeader className="bg-slate-50/50">
                           <TableRow className="border-b border-slate-100 hover:bg-transparent">
-                              <TableHead className="py-5 px-8 font-black uppercase tracking-widest text-[9px] text-slate-500">N° Mission</TableHead>
-                              <TableHead className="py-5 px-8 font-black uppercase tracking-widest text-[9px] text-slate-500">Désignation</TableHead>
-                              <TableHead className="py-5 px-8 font-black uppercase tracking-widest text-[9px] text-slate-500 text-center">Période</TableHead>
-                              <TableHead className="py-5 px-8 font-black uppercase tracking-widest text-[9px] text-slate-500 text-center">Agents</TableHead>
-                              <TableHead className="py-5 px-8 font-black uppercase tracking-widest text-[9px] text-slate-500 text-right">Coût Previsionnel</TableHead>
+                              <TableHead className="py-5 px-5 font-black uppercase tracking-widest text-[9px] text-slate-500">N° Mission</TableHead>
+                              <TableHead className="py-5 px-5 font-black uppercase tracking-widest text-[9px] text-slate-500">Désignation</TableHead>
+                              <TableHead className="py-5 px-5 font-black uppercase tracking-widest text-[9px] text-slate-500 text-center">Période</TableHead>
+                              <TableHead className="py-5 px-5 font-black uppercase tracking-widest text-[9px] text-slate-500 text-center">Agents</TableHead>
+                              <TableHead className="py-5 px-5 font-black uppercase tracking-widest text-[9px] text-slate-500 text-right">Coût Previsionnel</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
                         {reportData.missions.length > 0 ? (
                             reportData.missions.map(mission => (
                                 <TableRow key={mission.id} className="border-b border-slate-50 hover:bg-slate-50 transition-colors group">
-                                    <TableCell className="py-5 px-8 font-black text-xs text-slate-900">{mission.numeroMission}</TableCell>
-                                    <TableCell className="py-5 px-8">
+                                    <TableCell className="py-5 px-5 font-black text-xs text-slate-900">{mission.numeroMission}</TableCell>
+                                    <TableCell className="py-5 px-5">
                                       <div className="flex flex-col">
                                         <span className="font-bold text-sm text-slate-700 uppercase tracking-tight">{mission.title}</span>
                                         <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{mission.lieuMission || "National"}</span>
                                       </div>
                                     </TableCell>
-                                    <TableCell className="py-5 px-8 text-center">
+                                    <TableCell className="py-5 px-5 text-center">
                                       <div className="inline-flex items-center gap-2 bg-slate-100 px-3 py-1 rounded-full text-[10px] font-bold text-slate-600 uppercase tracking-tight">
                                         <Calendar className="h-3 w-3" />
                                         {format(parseISO(mission.startDate), 'dd/MM/yy')} - {format(parseISO(mission.endDate), 'dd/MM/yy')}
                                       </div>
                                     </TableCell>
-                                    <TableCell className="py-5 px-8 text-center text-sm font-black text-slate-900">{mission.participants.length}</TableCell>
-                                    <TableCell className="py-5 px-8 text-right font-black text-slate-900">{formatCurrency(calculateMissionCost(mission))}</TableCell>
+                                    <TableCell className="py-5 px-5 text-center text-sm font-black text-slate-900">{mission.participants.length}</TableCell>
+                                    <TableCell className="py-5 px-5 text-right font-black text-slate-900">{formatCurrency(calculateMissionCost(mission))}</TableCell>
                                 </TableRow>
                             ))
                         ) : (
                             <TableRow>
-                            <TableCell colSpan={5} className="text-center text-muted-foreground py-20 bg-slate-50/30">
+                            <TableCell colSpan={5} className="text-center text-muted-foreground py-8 bg-slate-50/30">
                                 <div className="flex flex-col items-center gap-2">
                                   <FileText className="h-10 w-10 text-slate-200" />
                                   <p className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em]">Aucun enregistrement pour cette période.</p>
@@ -262,8 +262,8 @@ export default function MissionReportPage() {
         )}
 
         {!reportData && !loading && !isPrinting && (
-          <div className="bg-white/40 backdrop-blur-md rounded-[3rem] border-2 border-dashed border-slate-200 h-96 flex flex-col items-center justify-center animate-in fade-in zoom-in-95 duration-700">
-              <div className="h-20 w-20 bg-white rounded-3xl shadow-xl flex items-center justify-center text-slate-200 mb-6 group-hover:scale-110 transition-transform">
+          <div className="bg-white/40 backdrop-blur-md rounded-2xl border-2 border-dashed border-slate-200 h-96 flex flex-col items-center justify-center animate-in fade-in zoom-in-95 duration-700">
+              <div className="h-20 w-20 bg-white rounded-xl shadow-xl flex items-center justify-center text-slate-200 mb-6 group-hover:scale-110 transition-transform">
                   <FileText className="h-10 w-10" />
               </div>
               <p className="text-xs font-black uppercase tracking-[0.3em] text-slate-400 max-w-[240px] text-center leading-loose">

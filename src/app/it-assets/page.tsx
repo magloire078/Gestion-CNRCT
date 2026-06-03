@@ -543,7 +543,7 @@ export default function ItAssetsPage() {
                 )}
               </div>
               {!loading && paginatedAssets.length === 0 && (
-                <div className="text-center py-10 text-muted-foreground">
+                <div className="text-center py-5 text-muted-foreground">
                   Aucun actif trouvé.
                 </div>
               )}

@@ -70,7 +70,7 @@ export function BudgetPrintTemplate({ budgetLines, year, isPrinting, onAfterPrin
           />
 
           <div className="mt-12">
-            <h2 className="text-2xl font-black uppercase border-b-4 border-slate-900 pb-3 mb-8 tracking-tighter italic">
+            <h2 className="text-2xl font-black uppercase border-b-4 border-slate-900 pb-3 mb-4 tracking-tighter italic">
               I. TABLEAU DES EMPLOIS
             </h2>
             
@@ -119,7 +119,7 @@ export function BudgetPrintTemplate({ budgetLines, year, isPrinting, onAfterPrin
           />
 
           <div className="mt-12">
-            <h2 className="text-2xl font-black uppercase border-b-4 border-slate-900 pb-3 mb-8 tracking-tighter italic">
+            <h2 className="text-2xl font-black uppercase border-b-4 border-slate-900 pb-3 mb-4 tracking-tighter italic">
               II. TABLEAU DES RESSOURCES
             </h2>
             
@@ -167,7 +167,7 @@ export function BudgetPrintTemplate({ budgetLines, year, isPrinting, onAfterPrin
             showService={true}
           />
 
-          <div className="mt-12 p-8 border-4 border-double border-slate-900 bg-slate-50/50 rounded-3xl">
+          <div className="mt-12 p-5 border-4 border-double border-slate-900 bg-slate-50/50 rounded-xl">
             <div className="flex justify-between items-center">
                 <div className="flex flex-col gap-2">
                     <span className="text-xs font-black uppercase tracking-[0.4em] text-slate-400">Synthèse de l'Annexe</span>
@@ -186,7 +186,7 @@ export function BudgetPrintTemplate({ budgetLines, year, isPrinting, onAfterPrin
             </div>
           </div>
 
-          <div className="mt-24 grid grid-cols-3 gap-12">
+          <div className="mt-24 grid grid-cols-3 gap-6">
             <div className="flex flex-col items-center">
               <div className="w-full border-b-2 border-slate-200 mb-6 pb-2 text-center">
                 <span className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">Le Trésorier</span>

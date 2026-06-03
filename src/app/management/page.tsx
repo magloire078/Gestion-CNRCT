@@ -113,9 +113,9 @@ function ManagementHubContent() {
     ];
 
     return (
-        <div className="flex flex-col gap-8 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <div className="flex flex-col gap-4 pb-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
             {/* Header with Search and Profile */}
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 py-2">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 py-2">
                 <div className="space-y-1">
                     <h1 className="text-4xl font-black tracking-tighter text-slate-900">
                         Gestion <span className="text-indigo-600">Opérationnelle</span>
@@ -170,7 +170,7 @@ function ManagementHubContent() {
             </div>
 
             {/* Main Content Area: Quick Actions & Activity */}
-            <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
                 {/* Left: Quick Actions Grid */}
                 <div className="lg:col-span-3 space-y-6">
                     <div className="flex items-center justify-between px-2">
@@ -259,7 +259,7 @@ function ManagementHubContent() {
                     </div>
 
                     <Card className="border-none shadow-xl shadow-slate-200/50 rounded-xl overflow-hidden bg-white">
-                        <CardContent className="p-6 space-y-8">
+                        <CardContent className="p-6 space-y-4">
                             {stats.recentActivity.length > 0 ? stats.recentActivity.map((log, i) => (
                                 <div key={i} className="flex gap-5 relative group">
                                     {i !== stats.recentActivity.length - 1 && (
@@ -297,7 +297,7 @@ function ManagementHubContent() {
                                     </Button>
                                 </div>
                             )) : (
-                                <div className="text-center py-20">
+                                <div className="text-center py-8">
                                     <Package className="h-12 w-12 text-slate-100 mx-auto mb-4" />
                                     <p className="text-slate-400 font-bold text-sm uppercase tracking-widest">Aucune activité récente</p>
                                 </div>

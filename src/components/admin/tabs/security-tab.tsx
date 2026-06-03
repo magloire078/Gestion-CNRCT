@@ -32,11 +32,11 @@ export const SecurityTab = memo(function SecurityTab({
   const isSuperAdmin = currentUser?.roleId === 'LHcHyfBzile3r0vyFOFb' || currentUser?.roleId === 'super-admin';
 
   return (
-    <div className="space-y-12">
+    <div className="space-y-6">
       <SyncRolesCard />
       
-      <Card className="border-white/20 shadow-3xl overflow-hidden bg-white/40 backdrop-blur-xl rounded-[3rem] transition-all duration-700 hover:border-white/30">
-        <CardHeader className="p-10 pb-6 relative overflow-hidden">
+      <Card className="border-white/20 shadow-3xl overflow-hidden bg-white/40 backdrop-blur-xl rounded-2xl transition-all duration-700 hover:border-white/30">
+        <CardHeader className="p-6 pb-6 relative overflow-hidden">
           {/* Subtle Institutional Pattern */}
           <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[radial-gradient(#000_1px,transparent_1px)] [background-size:20px_20px]" />
           
@@ -47,7 +47,7 @@ export const SecurityTab = memo(function SecurityTab({
             </div>
             <Button 
                 onClick={onAddRoleAction} 
-                className="h-14 px-10 bg-slate-900 hover:bg-black text-white rounded-2xl font-black uppercase tracking-[0.2em] text-xs shadow-2xl active:scale-95 transition-all gap-3 group"
+                className="h-14 px-6 bg-slate-900 hover:bg-black text-white rounded-2xl font-black uppercase tracking-[0.2em] text-xs shadow-2xl active:scale-95 transition-all gap-3 group"
             >
               <PlusCircle className="h-5 w-5 group-hover:rotate-90 transition-transform duration-500" /> 
               Initialiser un Rôle
@@ -55,8 +55,8 @@ export const SecurityTab = memo(function SecurityTab({
           </div>
         </CardHeader>
         
-        <CardContent className="px-10 pb-10 pt-4 relative z-10">
-          <div className="rounded-[2rem] border border-white/40 bg-white/20 overflow-hidden shadow-inner backdrop-blur-sm">
+        <CardContent className="px-6 pb-6 pt-4 relative z-10">
+          <div className="rounded-xl border border-white/40 bg-white/20 overflow-hidden shadow-inner backdrop-blur-sm">
             <Table>
               <TableHeader className="bg-slate-900/5">
                 <TableRow className="hover:bg-transparent border-white/20">
@@ -76,7 +76,7 @@ export const SecurityTab = memo(function SecurityTab({
                   ))
                 ) : !roles || roles.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={3} className="py-32 text-center">
+                    <TableCell colSpan={3} className="py-12 text-center">
                       <EmptyState icon={Shield} message="Aucun rôle institutionnel défini dans le registre." />
                     </TableCell>
                   </TableRow>

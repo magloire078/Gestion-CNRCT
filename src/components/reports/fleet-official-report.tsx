@@ -71,7 +71,7 @@ export function FleetOfficialReport({
                 />
 
                 {/* --- PAGES DÉTAILLÉES (PAYSAGE) --- */}
-                <div className="landscape-section min-h-screen p-12 relative print:p-8">
+                <div className="landscape-section min-h-screen p-12 relative print:p-5">
                     <InstitutionalHeader 
                         title="Registre Matricule des Véhicules"
                         period={`Journal technique de bord certifié au ${todayStr}`}
@@ -80,7 +80,7 @@ export function FleetOfficialReport({
                         settings={organizationSettings}
                     />
 
-                    <div className="space-y-12">
+                    <div className="space-y-6">
                         <div className="space-y-6">
                             <div className="flex justify-between items-end border-b-4 border-slate-100 pb-2">
                                 <h3 className="text-2xl font-black uppercase tracking-tighter text-slate-900 italic">

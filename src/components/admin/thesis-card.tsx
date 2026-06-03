@@ -84,13 +84,13 @@ export function ThesisCard() {
   };
 
   return (
-    <Card className="border-white/20 shadow-3xl transition-all hover:border-blue-500/40 bg-white/40 backdrop-blur-xl overflow-hidden rounded-[2.5rem] group relative">
+    <Card className="border-white/20 shadow-3xl transition-all hover:border-blue-500/40 bg-white/40 backdrop-blur-xl overflow-hidden rounded-xl group relative">
       {/* Background Institutional Seal (Subtle) */}
       <div className="absolute -top-12 -right-12 opacity-[0.03] group-hover:opacity-[0.1] transition-all duration-1000 pointer-events-none">
           <GraduationCap className="h-64 w-64 rotate-12 group-hover:rotate-0 transition-transform duration-1000" />
       </div>
 
-      <CardHeader className="p-10 pb-6 relative z-10">
+      <CardHeader className="p-6 pb-6 relative z-10">
         <div className="flex items-center gap-5">
             <div className="p-4 rounded-[1.5rem] bg-blue-500/10 border border-blue-500/20 shadow-2xl group-hover:scale-110 group-hover:rotate-6 transition-all duration-700">
                 <Sparkles className="h-7 w-7 text-blue-600 fill-blue-600/10 animate-pulse" />
@@ -101,7 +101,7 @@ export function ThesisCard() {
             </div>
         </div>
       </CardHeader>
-      <CardContent className="px-10 pb-10 space-y-8 relative z-10">
+      <CardContent className="px-6 pb-6 space-y-4 relative z-10">
         <div className="p-6 rounded-2xl bg-white/30 border border-white/40 shadow-inner backdrop-blur-sm">
             <p className="text-xs font-bold text-slate-600 leading-relaxed uppercase tracking-wide opacity-80">
                 Structure de 40+ pages incluant Introduction, Cadre CNRCT, Méthodologie et Analyse Automatisée au standard LMD.
@@ -112,16 +112,16 @@ export function ThesisCard() {
           <DialogTrigger asChild>
             <Button 
               className={cn(
-                "w-full h-14 rounded-2xl bg-slate-900 hover:bg-black text-white px-8 font-black uppercase tracking-[0.2em] text-xs shadow-2xl shadow-slate-900/40 active:scale-95 transition-all gap-4"
+                "w-full h-14 rounded-2xl bg-slate-900 hover:bg-black text-white px-5 font-black uppercase tracking-[0.2em] text-xs shadow-2xl shadow-slate-900/40 active:scale-95 transition-all gap-4"
               )}
             >
               <FileText className="h-5 w-5 text-blue-400 group-hover:scale-110 transition-transform" />
               Initialiser mon Manuscrit (.docx)
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[550px] border-white/10 p-0 overflow-hidden bg-white/90 backdrop-blur-2xl rounded-[3rem] shadow-2xl">
+          <DialogContent className="sm:max-w-[550px] border-white/10 p-0 overflow-hidden bg-white/90 backdrop-blur-2xl rounded-2xl shadow-2xl">
             <form onSubmit={handleExport} className="flex flex-col">
-              <DialogHeader className="bg-slate-900 p-8 text-white text-left">
+              <DialogHeader className="bg-slate-900 p-5 text-white text-left">
                 <DialogTitle className="text-2xl font-black uppercase tracking-tighter flex items-center gap-3">
                     <GraduationCap className="h-7 w-7 text-blue-400" />
                     Manuscrit Académique
@@ -130,7 +130,7 @@ export function ThesisCard() {
                   Définition des paramètres institutionnels pour l'édition de votre mémoire final.
                 </DialogDescription>
               </DialogHeader>
-              <div className="p-8 space-y-6">
+              <div className="p-5 space-y-6">
                 <div className="space-y-2">
                   <Label htmlFor="title" className="text-[10px] font-black uppercase tracking-widest text-slate-400">Intitulé Officiel du Mémoire</Label>
                   <Input 
@@ -190,12 +190,12 @@ export function ThesisCard() {
                     </div>
                 </div>
               </div>
-              <DialogFooter className="p-8 bg-slate-50 border-t border-slate-100 sm:flex-row flex-col gap-3">
+              <DialogFooter className="p-5 bg-slate-50 border-t border-slate-100 sm:flex-row flex-col gap-3">
                 <Button variant="ghost" onClick={() => setOpen(false)} className="rounded-xl font-bold uppercase tracking-widest text-[10px] h-11">Fermer</Button>
                 <Button 
                     type="submit" 
                     disabled={exporting}
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 h-11 rounded-xl font-black uppercase tracking-widest text-[11px] shadow-lg shadow-emerald-500/20 active:scale-95 transition-all gap-2"
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 h-11 rounded-xl font-black uppercase tracking-widest text-[11px] shadow-lg shadow-emerald-500/20 active:scale-95 transition-all gap-2"
                 >
                   {exporting ? (
                     <>

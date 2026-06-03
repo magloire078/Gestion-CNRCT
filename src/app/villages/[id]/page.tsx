@@ -119,7 +119,7 @@ export default function VillageDetailPage() {
 
     return (
         <PermissionGuard permission="page:villages:view">
-            <div className="flex flex-col gap-8 pb-20">
+            <div className="flex flex-col gap-4 pb-10">
                 {/* Village Hero Section */}
                 <div className="relative h-[280px] rounded-2xl overflow-hidden bg-slate-900 group">
                     {village.photoUrl ? (
@@ -129,7 +129,7 @@ export default function VillageDetailPage() {
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent" />
                     
-                    <div className="relative h-full flex flex-col justify-between p-6 md:p-8 z-10">
+                    <div className="relative h-full flex flex-col justify-between p-6 md:p-5 z-10">
                         <div className="flex items-center gap-3">
                             <Button variant="ghost" className="w-fit text-white/70 hover:text-white hover:bg-white/10 rounded-xl" onClick={() => router.back()}>
                                 <ArrowLeft className="mr-2 h-4 w-4" /> Retour
@@ -178,7 +178,7 @@ export default function VillageDetailPage() {
                     </div>
                 </div>
 
-                <Tabs defaultValue="overview" className="space-y-8">
+                <Tabs defaultValue="overview" className="space-y-4">
                     <TabsList className="bg-slate-100 p-1.5 rounded-2xl w-full md:w-fit overflow-x-auto flex">
                         <TabsTrigger value="overview" className="rounded-xl font-black text-[10px] uppercase tracking-widest px-6 data-[state=active]:bg-white data-[state=active]:shadow-sm">Aperçu & Stats</TabsTrigger>
                         <TabsTrigger value="chefferie" className="rounded-xl font-black text-[10px] uppercase tracking-widest px-6 data-[state=active]:bg-white data-[state=active]:shadow-sm flex items-center gap-2">
@@ -192,10 +192,10 @@ export default function VillageDetailPage() {
 
                     {/* ── CHEFFERIE & SUCCESSION TAB ── */}
                     <TabsContent value="chefferie" className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                             {/* Stats sidebar */}
                             <div className="space-y-6">
-                                <div className="rounded-[2rem] bg-slate-900 text-white p-8 space-y-6 shadow-2xl relative overflow-hidden">
+                                <div className="rounded-xl bg-slate-900 text-white p-5 space-y-6 shadow-2xl relative overflow-hidden">
                                     <div className="absolute top-0 right-0 p-6 opacity-5"><Crown className="h-28 w-28" /></div>
                                     <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Trône de {village.name}</h3>
                                     {activeChief ? (
@@ -239,7 +239,7 @@ export default function VillageDetailPage() {
                                 </div>
 
                                 {/* Summary stats */}
-                                <div className="rounded-[2rem] bg-white shadow-xl p-8 space-y-4">
+                                <div className="rounded-xl bg-white shadow-xl p-5 space-y-4">
                                     <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Statistiques</h3>
                                     <div className="space-y-3">
                                         <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50">
@@ -266,8 +266,8 @@ export default function VillageDetailPage() {
 
                             {/* Timeline */}
                             <div className="lg:col-span-2">
-                                <div className="rounded-[2rem] bg-white shadow-xl p-8">
-                                    <div className="flex items-center justify-between mb-8">
+                                <div className="rounded-xl bg-white shadow-xl p-5">
+                                    <div className="flex items-center justify-between mb-4">
                                         <div>
                                             <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight">Frise des Règnes</h3>
                                             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Chronologie de la chefferie traditionnelle</p>
@@ -277,7 +277,7 @@ export default function VillageDetailPage() {
 
                                     {chiefs.length === 0 ? (
                                         <div className="flex flex-col items-center gap-4 py-16 text-center">
-                                            <div className="h-20 w-20 rounded-[2rem] bg-slate-50 flex items-center justify-center">
+                                            <div className="h-20 w-20 rounded-xl bg-slate-50 flex items-center justify-center">
                                                 <Crown className="h-10 w-10 text-slate-200" />
                                             </div>
                                             <h4 className="font-black text-slate-900 uppercase tracking-tight">Aucun chef enregistré</h4>
@@ -407,10 +407,10 @@ export default function VillageDetailPage() {
                     </TabsContent>
 
                     <TabsContent value="overview" className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                             {/* Demographic Column */}
-                            <div className="space-y-8">
-                                <Card className="rounded-[2rem] border-none shadow-xl shadow-slate-200/50 p-8 space-y-6 bg-white">
+                            <div className="space-y-4">
+                                <Card className="rounded-xl border-none shadow-xl shadow-slate-200/50 p-5 space-y-6 bg-white">
                                     <div className="space-y-1">
                                         <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">Démographie & Social</h3>
                                         <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tighter italic">Données de l'Observatoire Territorial</p>
@@ -449,8 +449,8 @@ export default function VillageDetailPage() {
                                     </div>
                                 </Card>
 
-                                <Card className="rounded-[2rem] border-none shadow-xl shadow-slate-200/50 p-8 bg-slate-900 text-white overflow-hidden relative group">
-                                    <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-125 transition-transform duration-700">
+                                <Card className="rounded-xl border-none shadow-xl shadow-slate-200/50 p-5 bg-slate-900 text-white overflow-hidden relative group">
+                                    <div className="absolute top-0 right-0 p-5 opacity-10 group-hover:scale-125 transition-transform duration-700">
                                         <Coins className="h-24 w-24" />
                                     </div>
                                     <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-6">Dynamique Économique</h3>
@@ -478,9 +478,9 @@ export default function VillageDetailPage() {
                             </div>
 
                             {/* Main Info Column */}
-                            <div className="lg:col-span-2 space-y-8">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                    <Card className="rounded-[2rem] border-none shadow-xl shadow-slate-200/50 overflow-hidden flex flex-col hover:shadow-2xl transition-all duration-500 group bg-white">
+                            <div className="lg:col-span-2 space-y-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <Card className="rounded-xl border-none shadow-xl shadow-slate-200/50 overflow-hidden flex flex-col hover:shadow-2xl transition-all duration-500 group bg-white">
                                         <div className="h-48 w-full bg-slate-100 relative">
                                             <GISMap 
                                             chiefs={chiefs} 
@@ -505,7 +505,7 @@ export default function VillageDetailPage() {
                                         </div>
                                     </Card>
 
-                                    <Card className="rounded-[2rem] border-none shadow-xl shadow-slate-200/50 p-8 flex flex-col justify-between hover:shadow-2xl transition-all duration-500 group bg-white">
+                                    <Card className="rounded-xl border-none shadow-xl shadow-slate-200/50 p-5 flex flex-col justify-between hover:shadow-2xl transition-all duration-500 group bg-white">
                                         <div className="space-y-4">
                                             <div className="h-12 w-12 rounded-2xl bg-amber-50 flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm">
                                                 <Shield className="h-6 w-6 text-amber-500" />
@@ -515,7 +515,7 @@ export default function VillageDetailPage() {
                                                 <p className="text-[10px] text-slate-400 font-bold uppercase mt-1">Type: {village.chieftaincyType || 'Coutumier'}</p>
                                             </div>
                                         </div>
-                                        <div className="mt-8 pt-6 border-t border-slate-50 flex flex-col gap-4">
+                                        <div className="mt-4 pt-6 border-t border-slate-50 flex flex-col gap-4">
                                             {activeChief ? (
                                                 <div className="flex items-center justify-between bg-emerald-50 p-3 rounded-xl border border-emerald-100">
                                                     <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest">Trône pourvu</span>
@@ -537,8 +537,8 @@ export default function VillageDetailPage() {
                                     </Card>
                                 </div>
 
-                                <Card className="rounded-[2.5rem] border-none shadow-xl shadow-slate-200/50 p-10 space-y-6 bg-white relative overflow-hidden group">
-                                    <div className="absolute top-0 right-0 p-8 opacity-5">
+                                <Card className="rounded-xl border-none shadow-xl shadow-slate-200/50 p-6 space-y-6 bg-white relative overflow-hidden group">
+                                    <div className="absolute top-0 right-0 p-5 opacity-5">
                                         <Landmark className="h-32 w-32" />
                                     </div>
                                     <div className="flex items-center justify-between relative z-10">
@@ -563,7 +563,7 @@ export default function VillageDetailPage() {
                     </TabsContent>
 
                     <TabsContent value="heritage" className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        <div className="space-y-8">
+                        <div className="space-y-4">
                             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mr-4">
                                 <div className="space-y-1">
                                     <h2 className="text-3xl font-black text-slate-900 uppercase tracking-tighter">Patrimoine Immatériel</h2>
@@ -575,9 +575,9 @@ export default function VillageDetailPage() {
                             </div>
 
                             {heritage.length > 0 ? (
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pr-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pr-4">
                                     {heritage.map(item => (
-                                        <Card key={item.id} className="group rounded-3xl border-none shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden bg-white">
+                                        <Card key={item.id} className="group rounded-xl border-none shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden bg-white">
                                             <div className="h-52 bg-slate-100 relative overflow-hidden">
                                                 {item.imageUrl && <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />}
                                                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
@@ -588,8 +588,8 @@ export default function VillageDetailPage() {
                                                     <h4 className="text-white font-black uppercase text-xl leading-tight tracking-tighter">{item.name}</h4>
                                                 </div>
                                             </div>
-                                            <CardContent className="p-8">
-                                                <p className="text-xs text-slate-500 font-medium italic line-clamp-3 mb-8 leading-relaxed">"{item.description}"</p>
+                                            <CardContent className="p-5">
+                                                <p className="text-xs text-slate-500 font-medium italic line-clamp-3 mb-4 leading-relaxed">"{item.description}"</p>
                                                 <Button variant="outline" className="w-full h-11 rounded-xl border-slate-100 font-black text-[10px] uppercase tracking-widest group-hover:bg-slate-900 group-hover:text-white group-hover:border-slate-900 transition-all" asChild>
                                                     <Link href={`/heritage/${item.category}/${item.id}`}>Consulter l'archive <ChevronRight className="ml-1 h-3.5 w-3.5"/></Link>
                                                 </Button>
@@ -598,8 +598,8 @@ export default function VillageDetailPage() {
                                     ))}
                                 </div>
                             ) : (
-                                <Card className="rounded-[3rem] border-none bg-slate-50 p-20 flex flex-col items-center justify-center text-center mr-4 shadow-inner">
-                                    <div className="h-24 w-24 bg-white rounded-[2rem] shadow-sm flex items-center justify-center mb-8"><Landmark className="h-10 w-10 text-slate-200" /></div>
+                                <Card className="rounded-2xl border-none bg-slate-50 p-20 flex flex-col items-center justify-center text-center mr-4 shadow-inner">
+                                    <div className="h-24 w-24 bg-white rounded-xl shadow-sm flex items-center justify-center mb-4"><Landmark className="h-10 w-10 text-slate-200" /></div>
                                     <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">Aucun patrimoine répertorié</h3>
                                     <p className="text-sm text-slate-400 font-medium max-w-sm mt-3 leading-relaxed">Les archives spécifiques à cette localité n'ont pas encore été numérisées par le commissariat au patrimoine.</p>
                                 </Card>
@@ -608,7 +608,7 @@ export default function VillageDetailPage() {
                     </TabsContent>
 
                     <TabsContent value="history" className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        <Card className="rounded-[3rem] border-none shadow-xl shadow-slate-200/50 p-12 space-y-10 bg-white max-w-4xl relative overflow-hidden group">
+                        <Card className="rounded-2xl border-none shadow-xl shadow-slate-200/50 p-12 space-y-5 bg-white max-w-4xl relative overflow-hidden group">
                             <div className="absolute top-0 right-0 p-12 opacity-[0.03] group-hover:rotate-12 transition-transform duration-1000">
                                 <History className="h-64 w-64" />
                             </div>
@@ -634,8 +634,8 @@ export default function VillageDetailPage() {
                     </TabsContent>
 
                     <TabsContent value="infrastructure" className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        <div className="space-y-12">
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 pr-4">
+                        <div className="space-y-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pr-4">
                                 {[
                                     { id: 'hasSchool', label: 'Éducation', icon: School, status: village.hasSchool, color: 'text-blue-500', bg: 'bg-blue-50', border: 'border-blue-100' },
                                     { id: 'hasHealthCenter', label: 'Santé', icon: Shield, status: village.hasHealthCenter, color: 'text-rose-500', bg: 'bg-rose-50', border: 'border-rose-100' },
@@ -646,7 +646,7 @@ export default function VillageDetailPage() {
                                     { id: 'hasChurch', label: 'Église', icon: Church, status: village.hasChurch, color: 'text-slate-600', bg: 'bg-slate-50', border: 'border-slate-200' },
                                 ].map(item => (
                                     <Card key={item.id} className={cn(
-                                        "rounded-[2rem] border-none shadow-xl p-8 flex flex-col items-center gap-6 text-center group hover:scale-105 transition-all duration-500 bg-white",
+                                        "rounded-xl border-none shadow-xl p-5 flex flex-col items-center gap-6 text-center group hover:scale-105 transition-all duration-500 bg-white",
                                         !item.status && "opacity-60 grayscale-[0.5]"
                                     )}>
                                         <div className={cn(
@@ -669,7 +669,7 @@ export default function VillageDetailPage() {
                             </div>
                             
                             {village.infrastructureNotes && (
-                                <Card className="rounded-[2rem] border-none bg-slate-50/50 p-8 mr-4 border border-slate-100">
+                                <Card className="rounded-xl border-none bg-slate-50/50 p-5 mr-4 border border-slate-100">
                                     <div className="flex items-center gap-3 mb-4">
                                         <Info className="h-4 w-4 text-slate-400" />
                                         <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Notes techniques de l'Observateur</h4>

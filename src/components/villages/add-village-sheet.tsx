@@ -220,7 +220,7 @@ export function AddVillageSheet() {
     return (
         <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
-                <Button variant="outline" className="rounded-xl h-14 px-8 font-bold border-slate-200 hover:bg-slate-50 w-full sm:w-auto">
+                <Button variant="outline" className="rounded-xl h-14 px-5 font-bold border-slate-200 hover:bg-slate-50 w-full sm:w-auto">
                     <Plus className="mr-2 h-5 w-5" />
                     Nouveau Village
                 </Button>

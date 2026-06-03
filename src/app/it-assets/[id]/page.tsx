@@ -60,12 +60,12 @@ export default function AssetDetailPage() {
 
     if (loading) {
         return (
-            <div className="container mx-auto py-8 space-y-8">
+            <div className="container mx-auto py-4 space-y-4">
                 <div className="flex items-center justify-between">
                     <Skeleton className="h-10 w-64" />
                     <Skeleton className="h-10 w-32" />
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="md:col-span-2 space-y-6">
                         <Skeleton className="h-40 w-full" />
                         <Skeleton className="h-80 w-full" />
@@ -78,7 +78,7 @@ export default function AssetDetailPage() {
 
     if (!asset) {
         return (
-            <div className="container mx-auto py-20 text-center">
+            <div className="container mx-auto py-8 text-center">
                 <h1 className="text-2xl font-bold">Actif non trouvé</h1>
                 <Button variant="link" onClick={() => router.push("/it-assets")}>
                     Retour à l'inventaire
@@ -97,7 +97,7 @@ export default function AssetDetailPage() {
     };
 
     return (
-        <div className="container mx-auto py-8 space-y-8 pb-20">
+        <div className="container mx-auto py-4 space-y-4 pb-10">
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
@@ -129,9 +129,9 @@ export default function AssetDetailPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 {/* Main Content */}
-                <div className="lg:col-span-2 space-y-8">
+                <div className="lg:col-span-2 space-y-4">
                     {/* Key Info Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <Card className="border-none shadow-sm bg-blue-50/50">
@@ -170,7 +170,7 @@ export default function AssetDetailPage() {
                     </div>
 
                     <Tabs defaultValue="specs" className="w-full">
-                        <TabsList className="bg-transparent border-b rounded-none w-full justify-start h-auto p-0 gap-8">
+                        <TabsList className="bg-transparent border-b rounded-none w-full justify-start h-auto p-0 gap-4">
                             <TabsTrigger value="specs" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none rounded-none py-4 px-0 h-auto">
                                 <Info className="h-4 w-4 mr-2" /> Spécifications
                             </TabsTrigger>
@@ -243,7 +243,7 @@ export default function AssetDetailPage() {
                         </TabsContent>
 
                         <TabsContent value="history" className="py-6">
-                            <div className="space-y-8 relative before:absolute before:inset-0 before:left-3 before:top-2 before:bottom-2 before:w-px before:bg-slate-200">
+                            <div className="space-y-4 relative before:absolute before:inset-0 before:left-3 before:top-2 before:bottom-2 before:w-px before:bg-slate-200">
                                 <div className="flex items-start gap-6 relative z-10">
                                     <div className="h-6 w-6 rounded-full bg-emerald-500 border-4 border-white shadow-sm ring-1 ring-slate-100 flex items-center justify-center">
                                         <CheckCircle2 className="h-4 w-4 text-white p-0.5" />

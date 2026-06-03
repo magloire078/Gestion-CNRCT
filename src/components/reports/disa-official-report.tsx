@@ -76,7 +76,7 @@ export function DisaOfficialReport({
                 </InstitutionalHeader>
 
                 {/* Table DISA */}
-                <div className="mt-8 border-2 border-slate-900 rounded-xl overflow-hidden shadow-2xl print:shadow-none">
+                <div className="mt-4 border-2 border-slate-900 rounded-xl overflow-hidden shadow-2xl print:shadow-none">
                     <table className="w-full text-[8.5px] border-collapse bg-white table-fixed">
                         <thead>
                             <tr className="bg-slate-900 text-white">

@@ -32,11 +32,11 @@ export function SyncRolesCard() {
   };
 
   return (
-    <Card className="border-white/20 shadow-3xl transition-all hover:border-emerald-500/40 bg-white/40 backdrop-blur-xl group rounded-[2.5rem] overflow-hidden relative">
+    <Card className="border-white/20 shadow-3xl transition-all hover:border-emerald-500/40 bg-white/40 backdrop-blur-xl group rounded-xl overflow-hidden relative">
       {/* Decorative institutional glow */}
       <div className="absolute -right-20 -top-20 w-64 h-64 rounded-full bg-emerald-500/5 blur-[100px] pointer-events-none group-hover:bg-emerald-500/10 transition-colors duration-700" />
       
-      <CardHeader className="p-10 pb-6 relative z-10">
+      <CardHeader className="p-6 pb-6 relative z-10">
         <div className="flex items-center gap-5">
           <div className="p-4 rounded-[1.5rem] bg-emerald-500/10 border border-emerald-500/20 shadow-2xl group-hover:scale-110 group-hover:rotate-3 transition-all duration-700">
             <ShieldCheck className="h-7 w-7 text-emerald-600" />
@@ -51,7 +51,7 @@ export function SyncRolesCard() {
         </div>
       </CardHeader>
       
-      <CardContent className="px-10 pb-8 relative z-10">
+      <CardContent className="px-6 pb-5 relative z-10">
         <div className="p-6 rounded-2xl bg-white/30 border border-white/40 shadow-inner backdrop-blur-sm">
             <p className="text-xs font-bold text-slate-600 leading-relaxed uppercase tracking-wide opacity-80">
             Cette opération de synchronisation réaligne les habilitations avec les protocoles de sécurité institutionnels par défaut. Toute exception sera conservée.
@@ -59,7 +59,7 @@ export function SyncRolesCard() {
         </div>
       </CardContent>
       
-      <CardFooter className="p-10 pt-0 relative z-10">
+      <CardFooter className="p-6 pt-0 relative z-10">
         <Button 
           onClick={handleSync} 
           disabled={isSyncing}

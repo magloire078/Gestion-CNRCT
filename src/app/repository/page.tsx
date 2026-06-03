@@ -300,7 +300,7 @@ export default function RepositoryPage() {
 
                 {/* Dashboard Stats */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-3xl overflow-hidden bg-white group hover:shadow-2xl transition-all duration-500">
+                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-xl overflow-hidden bg-white group hover:shadow-2xl transition-all duration-500">
                         <CardHeader className="pb-2">
                             <div className="h-10 w-10 rounded-xl bg-indigo-50 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
                                 <FileCheck2 className="h-5 w-5 text-indigo-600" />
@@ -313,7 +313,7 @@ export default function RepositoryPage() {
                         </CardContent>
                     </Card>
 
-                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-3xl overflow-hidden bg-slate-900 group hover:shadow-2xl transition-all duration-500 text-white">
+                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-xl overflow-hidden bg-slate-900 group hover:shadow-2xl transition-all duration-500 text-white">
                         <CardHeader className="pb-2">
                             <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center mb-2">
                                 <Database className="h-5 w-5 text-white" />
@@ -330,7 +330,7 @@ export default function RepositoryPage() {
                         </CardContent>
                     </Card>
 
-                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-3xl overflow-hidden bg-white group hover:shadow-2xl transition-all duration-500">
+                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-xl overflow-hidden bg-white group hover:shadow-2xl transition-all duration-500">
                         <CardHeader className="pb-2">
                             <div className="h-10 w-10 rounded-xl bg-amber-50 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
                                 <Zap className="h-5 w-5 text-amber-600" />
@@ -348,7 +348,7 @@ export default function RepositoryPage() {
                         </CardContent>
                     </Card>
 
-                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-3xl overflow-hidden bg-white group hover:shadow-2xl transition-all duration-500">
+                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-xl overflow-hidden bg-white group hover:shadow-2xl transition-all duration-500">
                         <CardHeader className="pb-2">
                             <div className="h-10 w-10 rounded-xl bg-emerald-50 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
                                 <TrendingUp className="h-5 w-5 text-emerald-600" />
@@ -374,7 +374,7 @@ export default function RepositoryPage() {
                             <button 
                                 onClick={() => setCategoryFilter('all')}
                                 className={cn(
-                                    "flex flex-col items-start gap-4 p-5 rounded-[2rem] border min-w-[200px] transition-all duration-300 text-left",
+                                    "flex flex-col items-start gap-4 p-5 rounded-xl border min-w-[200px] transition-all duration-300 text-left",
                                     categoryFilter === 'all' 
                                         ? "bg-slate-900 text-white border-transparent shadow-xl shadow-slate-900/20" 
                                         : "bg-white border-slate-100 hover:border-slate-200 hover:bg-slate-50"
@@ -394,7 +394,7 @@ export default function RepositoryPage() {
                                     key={cat}
                                     onClick={() => setCategoryFilter(cat!)}
                                     className={cn(
-                                        "flex flex-col items-start gap-4 p-5 rounded-[2rem] border min-w-[200px] transition-all duration-300 text-left",
+                                        "flex flex-col items-start gap-4 p-5 rounded-xl border min-w-[200px] transition-all duration-300 text-left",
                                         categoryFilter === cat 
                                             ? "bg-indigo-600 text-white border-transparent shadow-xl shadow-indigo-600/20" 
                                             : "bg-white border-slate-100 hover:border-slate-200 hover:bg-slate-50"
@@ -549,16 +549,16 @@ export default function RepositoryPage() {
                                 </div>
                             </CardHeader>
                             <CardContent className="px-0 pt-6">
-                                <div className="rounded-[2rem] border-none bg-transparent overflow-hidden">
+                                <div className="rounded-xl border-none bg-transparent overflow-hidden">
                                     {loadingDocs ? (
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                            <Skeleton className="h-48 rounded-3xl" />
-                                            <Skeleton className="h-48 rounded-3xl" />
-                                            <Skeleton className="h-48 rounded-3xl" />
+                                            <Skeleton className="h-48 rounded-xl" />
+                                            <Skeleton className="h-48 rounded-xl" />
+                                            <Skeleton className="h-48 rounded-xl" />
                                         </div>
                                     ) : filteredDocuments.length > 0 ? (
                                         viewMode === 'table' ? (
-                                            <div className="bg-white rounded-3xl border border-slate-100 overflow-hidden shadow-sm">
+                                            <div className="bg-white rounded-xl border border-slate-100 overflow-hidden shadow-sm">
                                                 <Table>
                                                     <TableHeader>
                                                         <TableRow className="bg-slate-50/50 border-b-slate-100">
@@ -646,7 +646,7 @@ export default function RepositoryPage() {
                                         ) : (
                                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                                 {filteredDocuments.map((doc) => (
-                                                    <Card key={doc.id} className="border-none shadow-xl shadow-slate-200/40 rounded-[2rem] overflow-hidden group hover:shadow-2xl hover:scale-[1.02] transition-all duration-300">
+                                                    <Card key={doc.id} className="border-none shadow-xl shadow-slate-200/40 rounded-xl overflow-hidden group hover:shadow-2xl hover:scale-[1.02] transition-all duration-300">
                                                         <CardHeader className="p-6 pb-2">
                                                             <div className="flex justify-between items-start mb-4">
                                                                 <div className="h-12 w-12 rounded-2xl bg-slate-50 flex items-center justify-center border border-slate-100 shadow-sm transition-transform group-hover:scale-110">
@@ -693,7 +693,7 @@ export default function RepositoryPage() {
                                             </div>
                                         )
                                     ) : (
-                                        <div className="flex flex-col items-center justify-center py-24 bg-white/50 rounded-[3rem] border-2 border-dashed border-slate-200">
+                                        <div className="flex flex-col items-center justify-center py-10 bg-white/50 rounded-2xl border-2 border-dashed border-slate-200">
                                             <div className="p-6 rounded-full bg-slate-100 mb-6">
                                                 <PackageOpen className="h-12 w-12 text-slate-300" />
                                             </div>
@@ -723,7 +723,7 @@ export default function RepositoryPage() {
 
                 {/* Modals for Document Actions */}
                 <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
-                    <DialogContent className="max-w-4xl h-[80vh] flex flex-col p-0 overflow-hidden rounded-[2rem] border-none shadow-2xl">
+                    <DialogContent className="max-w-4xl h-[80vh] flex flex-col p-0 overflow-hidden rounded-xl border-none shadow-2xl">
                         <DialogHeader className="p-6 pb-2 border-b bg-white">
                             <div className="flex justify-between items-start">
                                 <div>
@@ -760,7 +760,7 @@ export default function RepositoryPage() {
                 </Dialog>
 
                 <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-                    <DialogContent className="sm:max-w-[425px] rounded-[2rem] shadow-2xl border-none">
+                    <DialogContent className="sm:max-w-[425px] rounded-xl shadow-2xl border-none">
                         <DialogHeader>
                             <DialogTitle className="text-xl font-black">Modifier les Métadonnées</DialogTitle>
                             <DialogDescription className="font-medium text-slate-500">
@@ -811,7 +811,7 @@ export default function RepositoryPage() {
                 </Dialog>
 
                 <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-                    <AlertDialogContent className="rounded-[2rem] border-none shadow-2xl">
+                    <AlertDialogContent className="rounded-xl border-none shadow-2xl">
                         <AlertDialogHeader>
                             <AlertDialogTitle className="text-xl font-black">Confirmer la Suppression ?</AlertDialogTitle>
                             <AlertDialogDescription className="font-medium text-slate-500">

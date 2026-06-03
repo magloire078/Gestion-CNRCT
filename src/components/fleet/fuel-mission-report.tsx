@@ -261,16 +261,16 @@ export function FuelMissionReport({ transactions, card, month: initialMonth, yea
                         </table>
                     </div>
 
-                    <div className="mt-8 grid grid-cols-3 gap-8 text-xs font-semibold">
-                        <div className="space-y-12">
+                    <div className="mt-4 grid grid-cols-3 gap-4 text-xs font-semibold">
+                        <div className="space-y-6">
                             <p className="text-center">Signature Chauffeur / Porteur</p>
                             <div className="border border-gray-300 h-20 w-full rounded"></div>
                         </div>
-                        <div className="space-y-12">
+                        <div className="space-y-6">
                             <p className="text-center">Visa Responsable Parc Auto</p>
                             <div className="border border-gray-300 h-20 w-full rounded"></div>
                         </div>
-                        <div className="space-y-12">
+                        <div className="space-y-6">
                             <p className="text-center">Approbation DFP</p>
                             <div className="border border-gray-300 h-20 w-full rounded"></div>
                         </div>

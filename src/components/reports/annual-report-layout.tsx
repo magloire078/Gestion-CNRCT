@@ -58,7 +58,7 @@ export function AnnualReportLayout({ logos, conflicts, periodLabel, onAfterPrint
                         settings={logos}
                     />
                 
-                <div className="mt-20 space-y-8">
+                <div className="mt-20 space-y-4">
                     {years.map((year, idx) => (
                         <div key={year} className="flex justify-between items-end border-b-2 border-dotted border-slate-200 pb-2">
                             <div className="flex items-center gap-4">
@@ -83,14 +83,14 @@ export function AnnualReportLayout({ logos, conflicts, periodLabel, onAfterPrint
 
             {/* Tableaux par année */}
             {years.map((year, idx) => (
-                <div key={year} className="min-h-[29.7cm] p-8 print:p-10 break-after-page bg-white">
+                <div key={year} className="min-h-[29.7cm] p-5 print:p-6 break-after-page bg-white">
                     <InstitutionalHeader 
                         title={`Récapitulatif des Litiges - Exercice ${year}`}
                         period={periodLabel}
                         settings={logos}
                     />
 
-                    <div className="mt-8">
+                    <div className="mt-4">
                         <table className="w-full border-collapse border-2 border-slate-900 text-[9px] leading-tight">
                             <thead>
                                 <tr className="bg-slate-900 text-white uppercase font-black text-center">

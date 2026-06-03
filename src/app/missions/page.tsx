@@ -171,7 +171,7 @@ export default function MissionsPage() {
 
   return (
     <PermissionGuard permission="page:missions:view">
-      <div className="flex flex-col gap-8 pb-12">
+      <div className="flex flex-col gap-4 pb-12">
         {/* Institutional Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 px-1">
           <div className="space-y-1">
@@ -191,7 +191,7 @@ export default function MissionsPage() {
                     Rapport Annuel
                   </Link>
                 </Button>
-                <Button onClick={() => setIsSheetOpen(true)} className="h-12 rounded-2xl bg-slate-900 px-8 font-black uppercase tracking-widest text-[11px] shadow-xl shadow-slate-900/20 active:scale-95 transition-all text-white hover:bg-black gap-2">
+                <Button onClick={() => setIsSheetOpen(true)} className="h-12 rounded-2xl bg-slate-900 px-5 font-black uppercase tracking-widest text-[11px] shadow-xl shadow-slate-900/20 active:scale-95 transition-all text-white hover:bg-black gap-2">
                   <PlusCircle className="h-4 w-4 text-emerald-400" />
                   Nouvelle Mission
                 </Button>
@@ -247,7 +247,7 @@ export default function MissionsPage() {
         </div>
 
         <Card className="border-white/10 shadow-2xl bg-card/40 backdrop-blur-md overflow-hidden rounded-2xl px-2">
-          <CardHeader className="border-b border-border/50 bg-primary/5 py-8 px-8">
+          <CardHeader className="border-b border-border/50 bg-primary/5 py-4 px-5">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
                 <CardTitle className="text-2xl font-black uppercase tracking-tight text-slate-900">Registre des Missions</CardTitle>
@@ -267,7 +267,7 @@ export default function MissionsPage() {
             </div>
           </CardHeader>
           <CardContent className="p-0">
-            {error && <p className="text-destructive text-center py-10 font-bold">{error}</p>}
+            {error && <p className="text-destructive text-center py-5 font-bold">{error}</p>}
 
             <div className="hidden md:block">
               <Table>
@@ -417,7 +417,7 @@ export default function MissionsPage() {
             </div>
 
             {!loading && paginatedMissions.length === 0 && (
-              <div className="flex flex-col items-center justify-center py-20 text-center">
+              <div className="flex flex-col items-center justify-center py-8 text-center">
                 <div className="h-16 w-16 bg-slate-100 rounded-full flex items-center justify-center mb-4">
                   <Search className="h-8 w-8 text-slate-300" />
                 </div>
@@ -427,7 +427,7 @@ export default function MissionsPage() {
             )}
           </CardContent>
           {totalPages > 1 && (
-            <CardFooter className="py-8 px-8 border-t border-border/50">
+            <CardFooter className="py-4 px-5 border-t border-border/50">
               <PaginationControls
                 currentPage={currentPage}
                 totalPages={totalPages}

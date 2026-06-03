@@ -29,7 +29,7 @@ const typeColorMap = {
 export function ConflictTimeline({ comments = [] }: ConflictTimelineProps) {
     if (comments.length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center py-10 text-center border-2 border-dashed rounded-xl border-slate-100 bg-slate-50/50">
+            <div className="flex flex-col items-center justify-center py-5 text-center border-2 border-dashed rounded-xl border-slate-100 bg-slate-50/50">
                 <Calendar className="h-10 w-10 text-slate-300 mb-3" />
                 <p className="text-sm font-medium text-slate-500">Aucune étape de médiation enregistrée</p>
                 <p className="text-xs text-slate-400 mt-1">Commencez par ajouter une note ou une réunion.</p>
@@ -43,7 +43,7 @@ export function ConflictTimeline({ comments = [] }: ConflictTimelineProps) {
     );
 
     return (
-        <div className="relative space-y-8 before:absolute before:inset-0 before:ml-5 before:-translate-x-px before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-200 before:to-transparent">
+        <div className="relative space-y-4 before:absolute before:inset-0 before:ml-5 before:-translate-x-px before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-200 before:to-transparent">
             {sortedComments.map((comment, index) => {
                 const Icon = typeIconMap[comment.type as keyof typeof typeIconMap] || HelpCircle;
                 const statusColors = typeColorMap[comment.type as keyof typeof typeColorMap] || typeColorMap.Autre;

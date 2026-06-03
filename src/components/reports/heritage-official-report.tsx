@@ -70,7 +70,7 @@ export function HeritageOfficialReport({
                     orientation="landscape"
                 />
 
-                <div className="landscape-section min-h-screen p-12 relative print:p-8">
+                <div className="landscape-section min-h-screen p-12 relative print:p-5">
                     <InstitutionalHeader 
                         title="Grand Livre du Patrimoine National"
                         period={`Situation archivée au ${todayStr}`}
@@ -79,7 +79,7 @@ export function HeritageOfficialReport({
                         settings={organizationSettings}
                     />
 
-                    <div className="space-y-16 mt-8">
+                    <div className="space-y-16 mt-4">
                         {Object.entries(groupedItems).map(([category, items], catIdx) => (
                             <div key={category} className="space-y-6 break-inside-avoid">
                                 <div className="flex justify-between items-end border-b-4 border-amber-100 pb-2">

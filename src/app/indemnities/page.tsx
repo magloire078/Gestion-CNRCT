@@ -169,7 +169,7 @@ export default function IndemnityCalculatorPage() {
 
   return (
     <PermissionGuard permission="page:indemnities:view">
-      <div className="flex flex-col gap-8 pb-20">
+      <div className="flex flex-col gap-4 pb-10">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
                 <h1 className="text-3xl font-extrabold tracking-tight">Simulateur d'Indemnités</h1>
@@ -193,7 +193,7 @@ export default function IndemnityCalculatorPage() {
             </div>
         </div>
 
-        <div className="grid lg:grid-cols-12 gap-8">
+        <div className="grid lg:grid-cols-12 gap-4">
             <div className="lg:col-span-4 space-y-6">
                 <Card className="border-none shadow-xl shadow-slate-200/50 overflow-hidden">
                     <div className="h-1.5 bg-slate-900" />
@@ -323,7 +323,7 @@ export default function IndemnityCalculatorPage() {
                             )}
                         </div>
                     </CardHeader>
-                    <CardContent className="flex-1 p-8">
+                    <CardContent className="flex-1 p-5">
                         {isCalculating && (
                             <div className="flex flex-col justify-center items-center h-[350px] gap-4">
                                 <div className="relative">
@@ -335,10 +335,10 @@ export default function IndemnityCalculatorPage() {
                         )}
                         
                         {result && (
-                            <div className="space-y-8 animate-in fade-in zoom-in-95 duration-500">
+                            <div className="space-y-4 animate-in fade-in zoom-in-95 duration-500">
                                 <div className="relative group">
                                     <div className="absolute -inset-0.5 bg-gradient-to-r from-slate-900 to-slate-700 rounded-2xl blur opacity-10 group-hover:opacity-20 transition" />
-                                    <div className="relative flex flex-col items-center justify-center bg-white p-8 rounded-2xl border border-slate-100 shadow-sm">
+                                    <div className="relative flex flex-col items-center justify-center bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
                                         <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Indemnité de Fin de Carrière</p>
                                         <p className="text-5xl font-black text-slate-900 tabular-nums">
                                             {result.amount.toLocaleString('fr-FR')} <span className="text-xl">FCFA</span>
@@ -373,7 +373,7 @@ export default function IndemnityCalculatorPage() {
                                     </div>
                                 </div>
 
-                                <div className="pt-8 border-t border-slate-100 grid grid-cols-2 gap-8 text-center">
+                                <div className="pt-8 border-t border-slate-100 grid grid-cols-2 gap-4 text-center">
                                     <div>
                                         <TrendingUp className="h-5 w-5 text-emerald-500 mx-auto mb-2" />
                                         <p className="text-[10px] font-bold text-slate-400 uppercase">Impact Budgétaire</p>

@@ -115,7 +115,7 @@ export default function EvaluationsPage() {
 
   return (
     <PermissionGuard permission="page:evaluations:view">
-      <div className="flex flex-col gap-8 pb-20">
+      <div className="flex flex-col gap-4 pb-10">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
@@ -179,7 +179,7 @@ export default function EvaluationsPage() {
             </div>
           </CardHeader>
           <CardContent className="p-0">
-            {error && <div className="p-8 text-center text-destructive font-medium">{error}</div>}
+            {error && <div className="p-5 text-center text-destructive font-medium">{error}</div>}
 
             <div className="overflow-x-auto text-sm">
               <Table>
@@ -264,7 +264,7 @@ export default function EvaluationsPage() {
                     })
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center py-24 bg-slate-50/20">
+                      <TableCell colSpan={6} className="text-center py-10 bg-slate-50/20">
                         <div className="flex flex-col items-center gap-3 grayscale opacity-30">
                           <Award className="h-16 w-16 mb-2" />
                           <p className="font-bold text-lg">Aucune évaluation</p>

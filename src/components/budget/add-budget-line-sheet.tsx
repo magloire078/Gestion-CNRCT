@@ -100,8 +100,8 @@ export function AddBudgetLineSheet({
     <Sheet open={isOpen} onOpenChange={(open) => !open && handleClose()}>
       <SheetContent className="sm:max-w-xl border-l border-slate-200 shadow-[-20px_0_50px_rgba(0,0,0,0.1)] p-0 flex flex-col gap-0">
         <form onSubmit={handleSubmit} className="flex flex-col h-full bg-white">
-          <SheetHeader className="p-10 bg-slate-950 text-white shrink-0 text-left relative overflow-hidden">
-            <div className="absolute top-[-20%] right-[-10%] p-8 opacity-20 rotate-12">
+          <SheetHeader className="p-6 bg-slate-950 text-white shrink-0 text-left relative overflow-hidden">
+            <div className="absolute top-[-20%] right-[-10%] p-5 opacity-20 rotate-12">
                <svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
             </div>
             <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950/30" />
@@ -123,9 +123,9 @@ export function AddBudgetLineSheet({
             </div>
           </SheetHeader>
 
-          <div className="flex-1 px-10 py-10 space-y-10 overflow-y-auto custom-scrollbar bg-slate-50/30">
+          <div className="flex-1 px-6 py-5 space-y-5 overflow-y-auto custom-scrollbar bg-slate-50/30">
             {/* Section Type & Code */}
-            <div className="grid grid-cols-2 gap-8">
+            <div className="grid grid-cols-2 gap-4">
                <div className="space-y-3 group">
                   <Label htmlFor="type-add" className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1 transition-colors group-focus-within:text-primary">Nature de la Ligne</Label>
                   <Select value={type} onValueChange={(val: 'emploi' | 'ressource') => setType(val)}>
@@ -150,7 +150,7 @@ export function AddBudgetLineSheet({
                </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-8">
+            <div className="grid grid-cols-2 gap-4">
                <div className="space-y-3 group">
                   <Label htmlFor="paragraphe-add" className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1 transition-colors group-focus-within:text-primary">Paragraphe</Label>
                   <Input 
@@ -186,7 +186,7 @@ export function AddBudgetLineSheet({
             </div>
 
             {/* Section Montants */}
-            <div className="p-8 bg-slate-950 rounded-[2.5rem] space-y-8 shadow-[0_20px_50px_rgba(0,0,0,0.2)] relative overflow-hidden group/card">
+            <div className="p-5 bg-slate-950 rounded-xl space-y-4 shadow-[0_20px_50px_rgba(0,0,0,0.2)] relative overflow-hidden group/card">
                <div className="absolute inset-0 bg-gradient-to-br from-slate-950 to-slate-900" />
                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-full transition-all group-hover/card:scale-110" />
                
@@ -237,9 +237,9 @@ export function AddBudgetLineSheet({
             )}
           </div>
 
-          <SheetFooter className="p-10 border-t border-slate-100 bg-white flex flex-row items-center justify-end gap-4 shrink-0">
+          <SheetFooter className="p-6 border-t border-slate-100 bg-white flex flex-row items-center justify-end gap-4 shrink-0">
             <SheetClose asChild>
-              <Button type="button" variant="outline" onClick={handleClose} className="h-14 px-10 rounded-2xl font-black uppercase text-[10px] tracking-[0.2em] border-slate-200 text-slate-400 hover:bg-slate-50 hover:text-slate-900 transition-all active:scale-95">
+              <Button type="button" variant="outline" onClick={handleClose} className="h-14 px-6 rounded-2xl font-black uppercase text-[10px] tracking-[0.2em] border-slate-200 text-slate-400 hover:bg-slate-50 hover:text-slate-900 transition-all active:scale-95">
                 Annuler
               </Button>
             </SheetClose>

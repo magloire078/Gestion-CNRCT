@@ -99,12 +99,12 @@ const StatCard = ({ title, value, icon: Icon, description, href, loading, color 
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: index * 0.1, ease: [0.22, 1, 0.36, 1] }}
         >
-            <Card className="group relative overflow-hidden border-white/40 shadow-[0_8px_30px_rgb(0,0,0,0.04)] bg-white/60 backdrop-blur-2xl rounded-[2rem] hover:-translate-y-2 hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] hover:border-white/80 transition-all duration-500">
+            <Card className="group relative overflow-hidden border-white/40 shadow-[0_8px_30px_rgb(0,0,0,0.04)] bg-white/60 backdrop-blur-2xl rounded-xl hover:-translate-y-2 hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] hover:border-white/80 transition-all duration-500">
                 <div className={cn("absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-100 transition-opacity duration-700", gradientClasses[color])} />
-                <div className={cn("absolute top-0 right-0 p-8 opacity-[0.02] transition-transform group-hover:scale-150 group-hover:opacity-[0.06] duration-1000 pointer-events-none")}>
+                <div className={cn("absolute top-0 right-0 p-5 opacity-[0.02] transition-transform group-hover:scale-150 group-hover:opacity-[0.06] duration-1000 pointer-events-none")}>
                     <Icon className="h-32 w-32 rotate-12" />
                 </div>
-                <CardHeader className="flex flex-row items-center justify-between pb-3 relative z-10 px-8 pt-8">
+                <CardHeader className="flex flex-row items-center justify-between pb-3 relative z-10 px-5 pt-8">
                     <div className={cn("p-3.5 rounded-2xl shadow-sm transition-all duration-500 group-hover:scale-110 group-hover:rotate-6", colorClasses[color])}>
                         <Icon className="h-6 w-6" />
                     </div>
@@ -114,7 +114,7 @@ const StatCard = ({ title, value, icon: Icon, description, href, loading, color 
                         </div>
                     )}
                 </CardHeader>
-                <CardContent className="relative z-10 px-8 pb-8 pt-4">
+                <CardContent className="relative z-10 px-5 pb-5 pt-4">
                     <div className="flex flex-col">
                         <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2 pl-0.5">{title}</span>
                         {loading ? <Skeleton className="h-10 w-24 mt-2 rounded-lg bg-slate-200/50" /> : (
@@ -163,8 +163,8 @@ const LatestRecruitsCard = ({ employees, loading, departments }: { employees: Em
         .sort(([groupA], [groupB]) => (categoryLabels[groupA as EmployeeGroup] || groupA).localeCompare(categoryLabels[groupB as EmployeeGroup] || groupB));
 
     return (
-        <Card className="border-white/10 shadow-3xl bg-white/50 backdrop-blur-md rounded-[2.5rem] overflow-hidden">
-            <CardHeader className="bg-primary/5 border-b border-border/50 py-8 px-8">
+        <Card className="border-white/10 shadow-3xl bg-white/50 backdrop-blur-md rounded-xl overflow-hidden">
+            <CardHeader className="bg-primary/5 border-b border-border/50 py-4 px-5">
                 <div className="flex items-center gap-4 mb-1">
                     <div className="h-10 w-10 rounded-xl bg-slate-900 flex items-center justify-center text-white shadow-lg">
                         <Activity className="h-5 w-5" />
@@ -175,10 +175,10 @@ const LatestRecruitsCard = ({ employees, loading, departments }: { employees: Em
                     </div>
                 </div>
             </CardHeader>
-            <CardContent className="p-8">
-                {loading ? <Skeleton className="h-64 w-full rounded-3xl" /> : (
+            <CardContent className="p-5">
+                {loading ? <Skeleton className="h-64 w-full rounded-xl" /> : (
                     categoriesWithRecruits.length > 0 ? (
-                        <Tabs defaultValue={categoriesWithRecruits[0][0]} className="space-y-8">
+                        <Tabs defaultValue={categoriesWithRecruits[0][0]} className="space-y-4">
                             <TabsList className="flex flex-wrap h-auto bg-slate-100/50 p-1.5 rounded-2xl border border-slate-200/50 w-full overflow-x-auto no-scrollbar">
                                 {categoriesWithRecruits.map(([group, _]) => (
                                     <TabsTrigger key={group} value={group} className="flex-1 rounded-xl px-4 py-2 text-[9px] font-black uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:text-primary transition-all whitespace-nowrap">
@@ -214,8 +214,8 @@ const LatestRecruitsCard = ({ employees, loading, departments }: { employees: Em
                             ))}
                         </Tabs>
                     ) : (
-                        <div className="py-20 text-center flex flex-col items-center gap-6 text-slate-300">
-                             <div className="h-20 w-20 bg-slate-50 rounded-[2.5rem] flex items-center justify-center border border-slate-100">
+                        <div className="py-8 text-center flex flex-col items-center gap-6 text-slate-300">
+                             <div className="h-20 w-20 bg-slate-50 rounded-xl flex items-center justify-center border border-slate-100">
                                 <Users className="h-10 w-10 opacity-10" />
                             </div>
                             <p className="text-sm font-black uppercase tracking-widest opacity-60">Aucune intégration récente.</p>
@@ -264,16 +264,16 @@ export default function DashboardPage() {
 
     return (
         <PermissionGuard permission="page:dashboard:view">
-            <div className="pb-20 space-y-12">
-                <div className="flex flex-col gap-10">
+            <div className="pb-10 space-y-6">
+                <div className="flex flex-col gap-5">
                     {/* Hero Welcome Ultra-Premium */}
-                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-10 p-10 rounded-[3rem] bg-card/40 backdrop-blur-md border border-white/10 shadow-3xl relative overflow-hidden group">
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5 p-6 rounded-2xl bg-card/40 backdrop-blur-md border border-white/10 shadow-3xl relative overflow-hidden group">
                         {/* Institutional Background Element */}
                         <div className="absolute top-0 right-0 p-16 opacity-[0.03] group-hover:opacity-[0.05] transition-opacity duration-1000 pointer-events-none">
                             <Scale className="h-96 w-96 rotate-12" />
                         </div>
 
-                        <div className="flex flex-col md:flex-row md:items-center gap-10 relative z-10 font-black">
+                        <div className="flex flex-col md:flex-row md:items-center gap-5 relative z-10 font-black">
                             <div className="relative">
                                 <div className="absolute inset-0 bg-blue-500/20 blur-3xl rounded-full scale-125 animate-pulse" />
                                 <Avatar className="h-32 w-32 md:h-44 md:w-44 border-[6px] border-white shadow-3xl flex-shrink-0 relative z-10 transition-transform duration-700 group-hover:scale-110">
@@ -306,13 +306,13 @@ export default function DashboardPage() {
                         </div>
                         <div className="flex flex-col sm:flex-row items-center gap-6 relative z-10">
                             <Link href="/reports">
-                                <Button variant="outline" className="h-16 rounded-2xl px-10 border-slate-200 font-black bg-white text-slate-900 shadow-2xl hover:bg-slate-50 hover:shadow-primary/10 transition-all uppercase text-[11px] tracking-widest active:scale-95">
+                                <Button variant="outline" className="h-16 rounded-2xl px-6 border-slate-200 font-black bg-white text-slate-900 shadow-2xl hover:bg-slate-50 hover:shadow-primary/10 transition-all uppercase text-[11px] tracking-widest active:scale-95">
                                     <Download className="h-5 w-5 mr-4 text-blue-600" />
                                     Rapports de Contrôle
                                 </Button>
                             </Link>
                             <Link href="/mapping">
-                                <Button className="h-16 rounded-2xl px-10 bg-slate-900 font-black shadow-3xl shadow-slate-900/40 hover:bg-black transition-all uppercase text-[11px] tracking-widest border-t border-white/10 active:scale-95">
+                                <Button className="h-16 rounded-2xl px-6 bg-slate-900 font-black shadow-3xl shadow-slate-900/40 hover:bg-black transition-all uppercase text-[11px] tracking-widest border-t border-white/10 active:scale-95">
                                     <Zap className="h-5 w-5 mr-4 text-blue-400 fill-blue-400 animate-pulse" />
                                     Plateforme SIG
                                 </Button>
@@ -321,8 +321,8 @@ export default function DashboardPage() {
                     </div>
 
                     {/* Dashboard Content Ultra-Premium */}
-                    <Tabs value={activeTab} onValueChange={(val) => startTransition(() => setActiveTab(val))} className="space-y-12">
-                        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 border-b-[3px] border-slate-100 pb-4 px-4">
+                    <Tabs value={activeTab} onValueChange={(val) => startTransition(() => setActiveTab(val))} className="space-y-6">
+                        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b-[3px] border-slate-100 pb-4 px-4">
                             <TabsList className="bg-transparent gap-16 h-auto p-0 flex flex-wrap lg:flex-nowrap">
                                 <TabsTrigger 
                                     value="overview" 
@@ -349,7 +349,7 @@ export default function DashboardPage() {
                                     Territoires & Notabilités
                                 </TabsTrigger>
                             </TabsList>
-                            <div className="flex items-center gap-8 text-[10px] font-black text-slate-400 uppercase tracking-widest opacity-60">
+                            <div className="flex items-center gap-4 text-[10px] font-black text-slate-400 uppercase tracking-widest opacity-60">
                                 <div className="flex items-center gap-3">
                                     <div className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.7)] animate-pulse" /> 
                                     Système Opérationnel
@@ -361,7 +361,7 @@ export default function DashboardPage() {
                             </div>
                         </div>
 
-                        <TabsContent value="overview" className="space-y-12 focus-visible:outline-none focus-visible:ring-0">
+                        <TabsContent value="overview" className="space-y-6 focus-visible:outline-none focus-visible:ring-0">
                             {/* Key Performance Indicators Upgraded */}
                             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
                                 <StatCard index={0} loading={loading} title="Effectifs Total" value={globalStats.activeEmployees.toString()} icon={Users} color="primary" trend={{ value: "+2.4%", up: true }} />
@@ -371,9 +371,9 @@ export default function DashboardPage() {
                             </div>
 
                             {/* Charts Section */}
-                            <div className="grid gap-10 lg:grid-cols-7">
-                                <Card className="lg:col-span-4 border-white/10 shadow-3xl bg-white/50 backdrop-blur-md rounded-[2.5rem] overflow-hidden">
-                                    <CardHeader className="p-8 pb-4">
+                            <div className="grid gap-5 lg:grid-cols-7">
+                                <Card className="lg:col-span-4 border-white/10 shadow-3xl bg-white/50 backdrop-blur-md rounded-xl overflow-hidden">
+                                    <CardHeader className="p-5 pb-4">
                                         <div className="flex items-center justify-between">
                                             <div>
                                                 <CardTitle className="text-2xl font-black uppercase tracking-tight text-slate-900 flex items-center gap-4">
@@ -387,8 +387,8 @@ export default function DashboardPage() {
                                             </div>
                                         </div>
                                     </CardHeader>
-                                    <CardContent className="px-10 pb-10 pt-4">
-                                        {loading ? <Skeleton className="h-[450px] w-full rounded-[2.5rem]" /> : <EmployeeDistributionChart />}
+                                    <CardContent className="px-6 pb-6 pt-4">
+                                        {loading ? <Skeleton className="h-[450px] w-full rounded-xl" /> : <EmployeeDistributionChart />}
                                     </CardContent>
                                 </Card>
                                 <div className="lg:col-span-3">
@@ -397,13 +397,13 @@ export default function DashboardPage() {
                             </div>
 
                             {/* Triple Bottom Panels */}
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mt-6">
-                                <Card className="border-white/10 shadow-3xl rounded-[2.5rem] bg-slate-950 text-white overflow-hidden relative group p-8 min-h-[300px] flex flex-col justify-between">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mt-6">
+                                <Card className="border-white/10 shadow-3xl rounded-xl bg-slate-950 text-white overflow-hidden relative group p-5 min-h-[300px] flex flex-col justify-between">
                                      <div className="absolute inset-x-0 bottom-0 top-1/2 bg-gradient-to-t from-blue-600/20 to-transparent pointer-events-none" />
                                      <div className="absolute top-0 right-0 p-12 opacity-5 scale-150 rotate-12 group-hover:rotate-45 transition-transform duration-1000">
                                          <Globe className="h-64 w-64" />
                                      </div>
-                                     <div className="relative z-10 space-y-8">
+                                     <div className="relative z-10 space-y-4">
                                          <div className="flex items-center gap-4">
                                             <div className="h-12 w-12 rounded-2xl bg-blue-600 shadow-xl flex items-center justify-center">
                                                 <Globe className="h-6 w-6 text-white" />
@@ -420,11 +420,11 @@ export default function DashboardPage() {
                                      </Button>
                                 </Card>
 
-                                <Card className="border-white/10 shadow-3xl rounded-[2.5rem] bg-emerald-50 overflow-hidden relative group p-8 min-h-[300px] flex flex-col justify-between">
+                                <Card className="border-white/10 shadow-3xl rounded-xl bg-emerald-50 overflow-hidden relative group p-5 min-h-[300px] flex flex-col justify-between">
                                      <div className="absolute top-0 right-0 p-12 opacity-5 scale-150 -rotate-12 group-hover:rotate-0 transition-transform duration-1000">
                                          <HelpCircle className="h-64 w-64" />
                                      </div>
-                                     <div className="relative z-10 space-y-8">
+                                     <div className="relative z-10 space-y-4">
                                          <div className="flex items-center gap-4">
                                             <div className="h-12 w-12 rounded-2xl bg-emerald-600 shadow-xl flex items-center justify-center">
                                                 <HelpCircle className="h-6 w-6 text-white" />
@@ -441,11 +441,11 @@ export default function DashboardPage() {
                                      </Button>
                                 </Card>
 
-                                <Card className="border-white/10 shadow-3xl rounded-[2.5rem] bg-blue-50 overflow-hidden relative group p-8 min-h-[300px] flex flex-col justify-between border-2 border-blue-100">
+                                <Card className="border-white/10 shadow-3xl rounded-xl bg-blue-50 overflow-hidden relative group p-5 min-h-[300px] flex flex-col justify-between border-2 border-blue-100">
                                      <div className="absolute top-0 right-0 p-12 opacity-5 scale-150 rotate-6 group-hover:rotate-12 transition-transform duration-1000">
                                          <Rocket className="h-64 w-64" />
                                      </div>
-                                     <div className="relative z-10 space-y-8">
+                                     <div className="relative z-10 space-y-4">
                                          <div className="flex items-center gap-4">
                                             <div className="h-12 w-12 rounded-2xl bg-blue-600 shadow-xl flex items-center justify-center font-black">
                                                 <Rocket className="h-6 w-6 text-white" />
@@ -464,10 +464,10 @@ export default function DashboardPage() {
                             </div>
                         </TabsContent>
 
-                        <TabsContent value="alerts" className="space-y-12 focus-visible:outline-none focus-visible:ring-0">
+                        <TabsContent value="alerts" className="space-y-6 focus-visible:outline-none focus-visible:ring-0">
                             {/* Leaves tracking full width */}
-                            <Card className="border-white/10 shadow-3xl bg-white/50 backdrop-blur-md rounded-[2.5rem] overflow-hidden">
-                                <CardHeader className="p-8 pb-4">
+                            <Card className="border-white/10 shadow-3xl bg-white/50 backdrop-blur-md rounded-xl overflow-hidden">
+                                <CardHeader className="p-5 pb-4">
                                     <div className="flex items-center justify-between">
                                         <div>
                                             <CardTitle className="text-2xl font-black uppercase tracking-tight text-slate-900 flex items-center gap-4">
@@ -478,14 +478,14 @@ export default function DashboardPage() {
                                         </div>
                                     </div>
                                 </CardHeader>
-                                <CardContent className="px-10 pb-10 pt-4">
+                                <CardContent className="px-6 pb-6 pt-4">
                                     <LeavesTrackingChart leaves={allRawLeaves} />
                                 </CardContent>
                             </Card>
 
-                            <div className="grid gap-10 md:grid-cols-2">
-                                <Card className="border-white/10 shadow-3xl bg-white/50 backdrop-blur-md rounded-[2.5rem] overflow-hidden">
-                                    <CardHeader className="p-10 border-b border-border/50 bg-primary/5">
+                            <div className="grid gap-5 md:grid-cols-2">
+                                <Card className="border-white/10 shadow-3xl bg-white/50 backdrop-blur-md rounded-xl overflow-hidden">
+                                    <CardHeader className="p-6 border-b border-border/50 bg-primary/5">
                                         <div className="flex items-center justify-between gap-6">
                                             <div className="space-y-2">
                                                 <CardTitle className="text-2xl font-black uppercase tracking-tight flex items-center gap-5 text-slate-900">
@@ -504,8 +504,8 @@ export default function DashboardPage() {
                                             </div>
                                         </div>
                                     </CardHeader>
-                                    <CardContent className="p-10">
-                                        <Tabs defaultValue="seniority" className="w-full space-y-10">
+                                    <CardContent className="p-6">
+                                        <Tabs defaultValue="seniority" className="w-full space-y-5">
                                             <TabsList className="grid w-full grid-cols-2 bg-slate-100/50 rounded-2xl p-1.5 border border-slate-200/50">
                                                 <TabsTrigger value="seniority" className="text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-lg transition-all rounded-xl py-4">
                                                     <Award className="h-4 w-4 mr-3" /> Ancienneté
@@ -514,9 +514,9 @@ export default function DashboardPage() {
                                                     <Cake className="h-4 w-4 mr-3" /> Naissances
                                                 </TabsTrigger>
                                             </TabsList>
-                                            {loading ? <Skeleton className="h-[400px] w-full rounded-[2.5rem]" /> : (
+                                            {loading ? <Skeleton className="h-[400px] w-full rounded-xl" /> : (
                                                 <>
-                                                    <TabsContent value="seniority" className="space-y-8 focus-visible:outline-none">
+                                                    <TabsContent value="seniority" className="space-y-4 focus-visible:outline-none">
                                                         {seniorityAnniversaries.length > 0 ? (
                                                             <div className="space-y-6">
                                                                 {seniorityAnniversaries.map(emp => (
@@ -539,15 +539,15 @@ export default function DashboardPage() {
                                                                 ))}
                                                             </div>
                                                         ) : (
-                                                            <div className="py-24 text-center flex flex-col items-center gap-8 text-slate-300">
-                                                                <div className="h-24 w-24 bg-slate-50 rounded-[3rem] flex items-center justify-center border border-slate-100">
+                                                            <div className="py-10 text-center flex flex-col items-center gap-4 text-slate-300">
+                                                                <div className="h-24 w-24 bg-slate-50 rounded-2xl flex items-center justify-center border border-slate-100">
                                                                     <Award className="h-12 w-12 opacity-15" />
                                                                 </div>
                                                                 <p className="text-xs font-black uppercase tracking-widest opacity-60">Aucun jubilé archivé pour ce mois.</p>
                                                             </div>
                                                         )}
                                                     </TabsContent>
-                                                    <TabsContent value="birthdays" className="space-y-8 focus-visible:outline-none">
+                                                    <TabsContent value="birthdays" className="space-y-4 focus-visible:outline-none">
                                                         {birthdayAnniversaries.length > 0 ? (
                                                             <div className="space-y-6">
                                                                 {birthdayAnniversaries.map(emp => (
@@ -572,8 +572,8 @@ export default function DashboardPage() {
                                                                 ))}
                                                             </div>
                                                         ) : (
-                                                            <div className="py-24 text-center flex flex-col items-center gap-8 text-slate-300">
-                                                                <div className="h-24 w-24 bg-slate-50 rounded-[3rem] flex items-center justify-center border border-slate-100">
+                                                            <div className="py-10 text-center flex flex-col items-center gap-4 text-slate-300">
+                                                                <div className="h-24 w-24 bg-slate-50 rounded-2xl flex items-center justify-center border border-slate-100">
                                                                     <Cake className="h-12 w-12 opacity-15" />
                                                                 </div>
                                                                 <p className="text-xs font-black uppercase tracking-widest opacity-60">Aucun anniversaire identifié.</p>
@@ -585,8 +585,8 @@ export default function DashboardPage() {
                                         </Tabs>
                                     </CardContent>
                                 </Card>
-                                <Card className="border-white/10 shadow-3xl bg-white/50 backdrop-blur-md rounded-[2.5rem] overflow-hidden">
-                                    <CardHeader className="p-10 border-b border-border/50 bg-primary/5">
+                                <Card className="border-white/10 shadow-3xl bg-white/50 backdrop-blur-md rounded-xl overflow-hidden">
+                                    <CardHeader className="p-6 border-b border-border/50 bg-primary/5">
                                         <div className="flex items-center justify-between gap-6">
                                             <div className="space-y-2">
                                                 <CardTitle className="text-2xl font-black uppercase tracking-tight flex items-center gap-5 text-slate-900">
@@ -605,9 +605,9 @@ export default function DashboardPage() {
                                             </div>
                                         </div>
                                     </CardHeader>
-                                    <CardContent className="p-10">
-                                        {loading ? <Skeleton className="h-[500px] w-full rounded-[2.5rem]" /> : (
-                                            <div className="space-y-8">
+                                    <CardContent className="p-6">
+                                        {loading ? <Skeleton className="h-[500px] w-full rounded-xl" /> : (
+                                            <div className="space-y-4">
                                                 {upcomingRetirements.length > 0 ? (
                                                     <div className="space-y-6">
                                                         {upcomingRetirements.map(emp => (
@@ -632,8 +632,8 @@ export default function DashboardPage() {
                                                         ))}
                                                     </div>
                                                 ) : (
-                                                    <div className="py-32 text-center flex flex-col items-center gap-8 text-slate-300">
-                                                        <div className="h-24 w-24 bg-slate-50 rounded-[3rem] flex items-center justify-center border border-slate-100">
+                                                    <div className="py-12 text-center flex flex-col items-center gap-4 text-slate-300">
+                                                        <div className="h-24 w-24 bg-slate-50 rounded-2xl flex items-center justify-center border border-slate-100">
                                                             <LogOutIcon className="h-12 w-12 opacity-15" />
                                                         </div>
                                                         <p className="text-xs font-black uppercase tracking-widest opacity-60">Aucun départ à la retraite imminent.</p>
@@ -646,18 +646,18 @@ export default function DashboardPage() {
                             </div>
                         </TabsContent>
 
-                        <TabsContent value="stability" className="space-y-12 focus-visible:outline-none focus-visible:ring-0">
+                        <TabsContent value="stability" className="space-y-6 focus-visible:outline-none focus-visible:ring-0">
                             {/* Territorial Heatmap Integration Premium */}
-                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
                                 <div className="lg:col-span-2 relative">
                                     <div className="absolute top-10 left-10 z-20 bg-slate-900/90 backdrop-blur-xl px-6 py-3 rounded-2xl shadow-3xl border border-white/20 flex items-center gap-4 scale-90 md:scale-100">
                                         <div className="h-3 w-3 rounded-full bg-rose-500 animate-ping shadow-[0_0_10px_rgba(244,63,94,0.8)]" />
                                         <span className="text-[11px] font-black uppercase tracking-[0.2em] text-white">Live Monitor : Sûreté Nationale</span>
                                     </div>
-                                    <ConflictHeatmap conflicts={globalStats.conflicts} className="h-full border-4 border-white shadow-3xl rounded-[3rem] overflow-hidden bg-white min-h-[600px]" />
+                                    <ConflictHeatmap conflicts={globalStats.conflicts} className="h-full border-4 border-white shadow-3xl rounded-2xl overflow-hidden bg-white min-h-[600px]" />
                                 </div>
-                                <div className="space-y-10">
-                                    <Card className="border-white/10 shadow-3xl rounded-[2.5rem] bg-slate-900 text-white overflow-hidden p-10 relative group border-t border-white/10">
+                                <div className="space-y-5">
+                                    <Card className="border-white/10 shadow-3xl rounded-xl bg-slate-900 text-white overflow-hidden p-6 relative group border-t border-white/10">
                                          <div className="absolute inset-x-0 bottom-0 top-1/2 bg-gradient-to-t from-blue-600/20 to-transparent pointer-events-none" />
                                          <div className="absolute top-0 right-0 p-12 opacity-5 scale-150 rotate-12 transition-transform duration-1000 group-hover:scale-110 pointer-events-none">
                                             <ShieldCheck className="h-64 w-64" />
@@ -666,15 +666,15 @@ export default function DashboardPage() {
                                             <div className="h-1 lg:h-8 w-1 lg:w-1 bg-blue-500 rounded-full" />
                                             Analyse de Stabilité
                                          </h3>
-                                         <div className="space-y-10 relative z-10">
-                                            <div className="flex justify-between items-end border-b border-white/10 pb-8 group/item hover:translate-x-2 transition-transform cursor-pointer">
+                                         <div className="space-y-5 relative z-10">
+                                            <div className="flex justify-between items-end border-b border-white/10 pb-5 group/item hover:translate-x-2 transition-transform cursor-pointer">
                                                 <div>
                                                     <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Dossiers Résolus</p>
                                                     <p className="text-5xl font-black tracking-tight">{globalStats.conflicts.filter(c => c.status === 'Résolu').length}</p>
                                                 </div>
                                                 <Badge className="bg-emerald-500 text-white border-none font-black text-[9px] px-4 py-1.5 rounded-xl mb-2 shadow-2xl shadow-emerald-500/40 uppercase tracking-widest">SUCCESS 100%</Badge>
                                             </div>
-                                            <div className="flex justify-between items-end border-b border-white/10 pb-8 group/item hover:translate-x-2 transition-transform cursor-pointer">
+                                            <div className="flex justify-between items-end border-b border-white/10 pb-5 group/item hover:translate-x-2 transition-transform cursor-pointer">
                                                 <div>
                                                     <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Médiations actives</p>
                                                     <p className="text-5xl font-black tracking-tight text-amber-400">{globalStats.conflicts.filter(c => c.status === 'En médiation').length}</p>
@@ -694,14 +694,14 @@ export default function DashboardPage() {
                                          </Button>
                                     </Card>
 
-                                    <Card className="border-white/10 shadow-3xl rounded-[2.5rem] bg-white/60 backdrop-blur-md p-10 flex flex-col justify-between group">
+                                    <Card className="border-white/10 shadow-3xl rounded-xl bg-white/60 backdrop-blur-md p-6 flex flex-col justify-between group">
                                         <div>
                                             <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 mb-10 flex items-center gap-4">
                                                 <MapIcon className="h-5 w-5 text-slate-400" /> SIG : Flux de Proximité
                                             </h3>
-                                            <div className="space-y-8">
+                                            <div className="space-y-4">
                                                 {globalStats.conflicts.slice(0, 3).map(c => (
-                                                    <div key={c.id} className="flex gap-6 p-4 rounded-3xl hover:bg-white transition-all group border border-transparent hover:border-slate-100 shadow-sm hover:shadow-2xl translate-z-0">
+                                                    <div key={c.id} className="flex gap-6 p-4 rounded-xl hover:bg-white transition-all group border border-transparent hover:border-slate-100 shadow-sm hover:shadow-2xl translate-z-0">
                                                         <div className={cn("h-14 w-14 rounded-2xl flex items-center justify-center shrink-0 shadow-lg transition-all group-hover:rotate-6", c.status === 'Résolu' ? "bg-emerald-50 text-emerald-500" : "bg-rose-50 text-rose-500")}>
                                                             <AlertTriangle className="h-7 w-7" />
                                                         </div>
@@ -723,7 +723,7 @@ export default function DashboardPage() {
                             {/* End of Stability Content */}
                         </TabsContent>
 
-                        <TabsContent value="territory" className="space-y-12 focus-visible:outline-none focus-visible:ring-0">
+                        <TabsContent value="territory" className="space-y-6 focus-visible:outline-none focus-visible:ring-0">
                             {/* Territory High Level Stats */}
                             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
                                 <StatCard index={0} loading={loading} title="Total Autorités" value={globalStats.chiefs.toString()} icon={Crown} color="amber" trend={{ value: "Actif", up: true }} />
@@ -732,10 +732,10 @@ export default function DashboardPage() {
                                 <StatCard index={3} loading={loading} title="Rois & Prov." value={globalStats.allChiefs.filter(c => c.role === 'Roi' || c.role === 'Chef de province').length.toString()} icon={ShieldCheck} color="info" />
                             </div>
 
-                            <div className="grid gap-10 lg:grid-cols-7">
+                            <div className="grid gap-5 lg:grid-cols-7">
                                 {/* Charts Section */}
-                                <Card className="lg:col-span-4 border-white/10 shadow-3xl bg-white/50 backdrop-blur-md rounded-[2.5rem] overflow-hidden">
-                                    <CardHeader className="p-8 pb-4">
+                                <Card className="lg:col-span-4 border-white/10 shadow-3xl bg-white/50 backdrop-blur-md rounded-xl overflow-hidden">
+                                    <CardHeader className="p-5 pb-4">
                                         <div className="flex items-center justify-between">
                                             <div>
                                                 <CardTitle className="text-2xl font-black uppercase tracking-tight text-slate-900 flex items-center gap-4">
@@ -746,14 +746,14 @@ export default function DashboardPage() {
                                             </div>
                                         </div>
                                     </CardHeader>
-                                    <CardContent className="px-10 pb-10 pt-4">
+                                    <CardContent className="px-6 pb-6 pt-4">
                                         <ChiefsDistributionChart />
                                     </CardContent>
                                 </Card>
 
                                 {/* Villages Distribution Chart */}
-                                <Card className="lg:col-span-7 border-white/10 shadow-3xl bg-white/50 backdrop-blur-md rounded-[2.5rem] overflow-hidden mt-6">
-                                    <CardHeader className="p-8 pb-4">
+                                <Card className="lg:col-span-7 border-white/10 shadow-3xl bg-white/50 backdrop-blur-md rounded-xl overflow-hidden mt-6">
+                                    <CardHeader className="p-5 pb-4">
                                         <div className="flex items-center justify-between">
                                             <div>
                                                 <CardTitle className="text-2xl font-black uppercase tracking-tight text-slate-900 flex items-center gap-4">
@@ -764,14 +764,14 @@ export default function DashboardPage() {
                                             </div>
                                         </div>
                                     </CardHeader>
-                                    <CardContent className="px-10 pb-10 pt-4">
+                                    <CardContent className="px-6 pb-6 pt-4">
                                         <VillagesDistributionChart villages={globalStats.villages} />
                                     </CardContent>
                                 </Card>
 
                                 {/* Latest Chiefs Added */}
-                                <Card className="lg:col-span-3 border-white/10 shadow-3xl bg-white/50 backdrop-blur-md rounded-[2.5rem] overflow-hidden flex flex-col mt-6">
-                                    <CardHeader className="bg-amber-500/10 border-b border-border/50 py-8 px-8">
+                                <Card className="lg:col-span-3 border-white/10 shadow-3xl bg-white/50 backdrop-blur-md rounded-xl overflow-hidden flex flex-col mt-6">
+                                    <CardHeader className="bg-amber-500/10 border-b border-border/50 py-4 px-5">
                                         <div className="flex items-center gap-4 mb-1">
                                             <div className="h-10 w-10 rounded-xl bg-amber-500 flex items-center justify-center text-white shadow-lg">
                                                 <Tent className="h-5 w-5" />
@@ -782,8 +782,8 @@ export default function DashboardPage() {
                                             </div>
                                         </div>
                                     </CardHeader>
-                                    <CardContent className="p-8 flex-1 overflow-y-auto no-scrollbar">
-                                        {loading ? <Skeleton className="h-64 w-full rounded-3xl" /> : (
+                                    <CardContent className="p-5 flex-1 overflow-y-auto no-scrollbar">
+                                        {loading ? <Skeleton className="h-64 w-full rounded-xl" /> : (
                                             globalStats.allChiefs.length > 0 ? (
                                                 <div className="space-y-4">
                                                     {globalStats.allChiefs.sort((a, b) => (b.audit?.createdAt ? new Date(b.audit.createdAt).getTime() : 0) - (a.audit?.createdAt ? new Date(a.audit.createdAt).getTime() : 0)).slice(0, 5).map(chief => (

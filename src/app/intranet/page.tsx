@@ -151,9 +151,9 @@ function IntranetContent() {
     };
 
     return (
-        <div className="pb-20 space-y-12">
+        <div className="pb-10 space-y-6">
             {/* Immersive Welcome Section - Hyper-Premium Masterpiece */}
-            <div className="relative rounded-2xl bg-slate-950 px-6 py-6 md:px-8 md:py-8 overflow-hidden group shadow-[0_35px_60px_-15px_rgba(0,0,0,0.5)]">
+            <div className="relative rounded-2xl bg-slate-950 px-6 py-6 md:px-5 md:py-4 overflow-hidden group shadow-[0_35px_60px_-15px_rgba(0,0,0,0.5)]">
                 {/* Advanced Animated Gradients */}
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(59,130,246,0.25),transparent_50%)]" />
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_70%,rgba(99,102,241,0.2),transparent_50%)]" />
@@ -223,10 +223,10 @@ function IntranetContent() {
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 px-2">
                 {/* Left: Sidebar Mini-Widgets - Ultra Modern Masterpiece */}
-                <div className="lg:col-span-3 order-2 lg:order-1 space-y-8">
-                    <Card className="border-none shadow-[0_20px_50px_rgba(30,41,59,0.3)] rounded-[2rem] bg-slate-950 text-white overflow-hidden group/stats relative">
+                <div className="lg:col-span-3 order-2 lg:order-1 space-y-4">
+                    <Card className="border-none shadow-[0_20px_50px_rgba(30,41,59,0.3)] rounded-xl bg-slate-950 text-white overflow-hidden group/stats relative">
                         <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/10 via-transparent to-transparent" />
-                        <div className="p-8 space-y-10 relative z-10">
+                        <div className="p-5 space-y-5 relative z-10">
                             <div className="flex items-center justify-between">
                                 <div className="flex flex-col gap-2">
                                     <span className="text-[9px] font-black uppercase tracking-[0.4em] text-indigo-400/80 italic">Data Architecture</span>
@@ -273,7 +273,7 @@ function IntranetContent() {
                                     <span className="text-4xl font-black text-white leading-none tracking-tighter">{Object.keys(divisions).length}</span>
                                 </div>
 
-                                <div className="col-span-2 p-8 rounded-[2rem] bg-gradient-to-br from-emerald-500/10 via-transparent to-teal-500/5 border border-emerald-500/20 shadow-2xl flex items-center justify-between group/status transition-all duration-700 hover:from-emerald-500/20 hover:border-emerald-500/40">
+                                <div className="col-span-2 p-5 rounded-xl bg-gradient-to-br from-emerald-500/10 via-transparent to-teal-500/5 border border-emerald-500/20 shadow-2xl flex items-center justify-between group/status transition-all duration-700 hover:from-emerald-500/20 hover:border-emerald-500/40">
                                     <div className="flex flex-col gap-2">
                                         <div className="flex items-center gap-3 opacity-60 text-emerald-400">
                                             <Palmtree className="h-4 w-4 animate-bounce-slow" />
@@ -323,11 +323,11 @@ function IntranetContent() {
 
                     {/* Personal Leave Status - Premium Card */}
                     {personalStats.latestLeave && (
-                        <Card className="border-none shadow-2xl shadow-emerald-900/5 rounded-[2rem] bg-white overflow-hidden border border-emerald-100/50 group/leave relative">
-                            <div className="absolute top-0 right-0 p-8 opacity-[0.03] -rotate-12 transition-transform duration-700 group-hover/leave:rotate-0 group-hover/leave:scale-125">
+                        <Card className="border-none shadow-2xl shadow-emerald-900/5 rounded-xl bg-white overflow-hidden border border-emerald-100/50 group/leave relative">
+                            <div className="absolute top-0 right-0 p-5 opacity-[0.03] -rotate-12 transition-transform duration-700 group-hover/leave:rotate-0 group-hover/leave:scale-125">
                                 <Palmtree className="h-24 w-24 text-emerald-600" />
                             </div>
-                            <div className="p-8 space-y-6 relative z-10">
+                            <div className="p-5 space-y-6 relative z-10">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-4">
                                         <div className="h-10 w-10 rounded-xl bg-emerald-50 flex items-center justify-center">
@@ -361,7 +361,7 @@ function IntranetContent() {
                     )}
 
                     {/* Celebrations & Attendance - Premium Dashboard Style */}
-                    <Card className="border-none shadow-[0_20px_50px_rgba(0,0,0,0.05)] rounded-[2.5rem] overflow-hidden bg-white/80 backdrop-blur-xl border border-slate-100">
+                    <Card className="border-none shadow-[0_20px_50px_rgba(0,0,0,0.05)] rounded-xl overflow-hidden bg-white/80 backdrop-blur-xl border border-slate-100">
                         <div className="bg-slate-50/80 backdrop-blur-md p-6 border-b border-slate-100 flex items-center justify-between">
                             <div className="flex items-center gap-4">
                                 <div className="h-10 w-10 rounded-xl bg-slate-900 flex items-center justify-center text-white shadow-lg">
@@ -379,9 +379,9 @@ function IntranetContent() {
                                 </div>
                             )}
                         </div>
-                        <div className="p-8">
+                        <div className="p-5">
                             <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-                                <TabsList className="grid w-full grid-cols-3 bg-slate-100/50 mb-8 h-12 p-1.5 rounded-[1.25rem]">
+                                <TabsList className="grid w-full grid-cols-3 bg-slate-100/50 mb-4 h-12 p-1.5 rounded-[1.25rem]">
                                     <TabsTrigger value="leaves" className="text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:text-emerald-600 data-[state=active]:shadow-lg rounded-xl transition-all">
                                         Congés
                                     </TabsTrigger>
@@ -427,7 +427,7 @@ function IntranetContent() {
                                                     </div>
                                                 ))
                                             ) : (
-                                                <div className="flex flex-col items-center justify-center py-12 px-6 bg-slate-50/50 rounded-[2rem] border border-dashed border-slate-200">
+                                                <div className="flex flex-col items-center justify-center py-12 px-6 bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
                                                     <div className="h-16 w-16 rounded-full bg-white flex items-center justify-center mb-4 shadow-sm">
                                                         <Palmtree className="h-8 w-8 text-slate-300" />
                                                     </div>
@@ -457,7 +457,7 @@ function IntranetContent() {
                                                     </div>
                                                 ))
                                             ) : (
-                                                <div className="flex flex-col items-center justify-center py-12 px-6 bg-slate-50/50 rounded-[2rem] border border-dashed border-slate-200">
+                                                <div className="flex flex-col items-center justify-center py-12 px-6 bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
                                                     <div className="h-16 w-16 rounded-full bg-white flex items-center justify-center mb-4 shadow-sm">
                                                         <Cake className="h-8 w-8 text-slate-300" />
                                                     </div>
@@ -487,7 +487,7 @@ function IntranetContent() {
                                                     </div>
                                                 ))
                                             ) : (
-                                                <div className="flex flex-col items-center justify-center py-12 px-6 bg-slate-50/50 rounded-[2rem] border border-dashed border-slate-200">
+                                                <div className="flex flex-col items-center justify-center py-12 px-6 bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
                                                     <div className="h-16 w-16 rounded-full bg-white flex items-center justify-center mb-4 shadow-sm">
                                                         <Award className="h-8 w-8 text-slate-300" />
                                                     </div>

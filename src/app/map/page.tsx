@@ -61,7 +61,7 @@ export default function GlobalMapPage() {
                 </div>
             </div>
 
-            <Card className="flex-1 overflow-hidden rounded-[2rem] border-white/60 shadow-2xl bg-slate-50 relative">
+            <Card className="flex-1 overflow-hidden rounded-xl border-white/60 shadow-2xl bg-slate-50 relative">
                 <ChiefsMapWrapper 
                     chiefs={chiefs} 
                     onChiefClick={handleChiefClick} 

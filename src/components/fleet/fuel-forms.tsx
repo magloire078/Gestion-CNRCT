@@ -136,7 +136,7 @@ export function FuelProviderDialog({
     return (
         <Dialog open={open} onOpenChange={onOpenChangeAction}>
             <DialogContent className="sm:max-w-[425px] p-0 overflow-hidden border-white/10 bg-slate-50/95 backdrop-blur-2xl rounded-[1.5rem] shadow-2xl">
-                <DialogHeader className="p-8 bg-slate-900 text-white space-y-2 relative">
+                <DialogHeader className="p-5 bg-slate-900 text-white space-y-2 relative">
                     <div className="relative z-10 flex items-center gap-3">
                         <div className="h-8 w-8 rounded-lg bg-white/10 flex items-center justify-center">
                             <Building2 className="h-4 w-4 text-emerald-400" />
@@ -150,7 +150,7 @@ export function FuelProviderDialog({
                     </DialogDescription>
                 </DialogHeader>
 
-                <div className="p-8">
+                <div className="p-5">
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                             <FormField
@@ -312,7 +312,7 @@ export function FuelCardDialog({
     return (
         <Dialog open={open} onOpenChange={onOpenChangeAction}>
             <DialogContent className="sm:max-w-[450px] p-0 overflow-hidden border-white/10 bg-slate-50/95 backdrop-blur-2xl rounded-[1.5rem] shadow-2xl">
-                <DialogHeader className="p-8 bg-slate-900 text-white space-y-2 relative">
+                <DialogHeader className="p-5 bg-slate-900 text-white space-y-2 relative">
                     <div className="relative z-10 flex items-center gap-3">
                         <div className="h-8 w-8 rounded-lg bg-white/10 flex items-center justify-center">
                             <CreditCard className="h-4 w-4 text-blue-400" />
@@ -326,7 +326,7 @@ export function FuelCardDialog({
                     </DialogDescription>
                 </DialogHeader>
 
-                <div className="p-8">
+                <div className="p-5">
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -545,7 +545,7 @@ export function FuelRechargeDialog({
     return (
         <Dialog open={open} onOpenChange={onOpenChangeAction}>
             <DialogContent className="sm:max-w-[425px] p-0 overflow-hidden border-white/10 bg-slate-50/95 backdrop-blur-2xl rounded-[1.5rem] shadow-2xl">
-                <DialogHeader className="p-8 bg-slate-900 text-white space-y-2 relative">
+                <DialogHeader className="p-5 bg-slate-900 text-white space-y-2 relative">
                     <div className="relative z-10 flex items-center gap-3">
                         <div className="h-8 w-8 rounded-lg bg-white/10 flex items-center justify-center">
                             <PlusCircle className="h-4 w-4 text-emerald-400" />
@@ -559,7 +559,7 @@ export function FuelRechargeDialog({
                     </DialogDescription>
                 </DialogHeader>
 
-                <div className="p-8">
+                <div className="p-5">
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                             <FormField
@@ -705,7 +705,7 @@ export function FuelExpenseDialog({
     return (
         <Dialog open={open} onOpenChange={onOpenChangeAction}>
             <DialogContent className="sm:max-w-[650px] p-0 overflow-hidden border-white/10 bg-slate-50/95 backdrop-blur-2xl rounded-[1.5rem] shadow-2xl">
-                <DialogHeader className="p-8 bg-slate-900 text-white space-y-2 relative">
+                <DialogHeader className="p-5 bg-slate-900 text-white space-y-2 relative">
                     <div className="relative z-10 flex items-center gap-3">
                         <div className="h-8 w-8 rounded-lg bg-white/10 flex items-center justify-center">
                             <Fuel className="h-4 w-4 text-orange-400" />
@@ -719,7 +719,7 @@ export function FuelExpenseDialog({
                     </DialogDescription>
                 </DialogHeader>
 
-                <div className="p-8 max-h-[70vh] overflow-y-auto custom-scrollbar">
+                <div className="p-5 max-h-[70vh] overflow-y-auto custom-scrollbar">
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

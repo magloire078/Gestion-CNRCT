@@ -125,9 +125,9 @@ export default function PayslipDetailPage() {
 
     if (loading) {
         return (
-            <div className="max-w-5xl mx-auto space-y-8 animate-pulse">
+            <div className="max-w-5xl mx-auto space-y-4 animate-pulse">
                 <div className="h-10 w-48 bg-slate-100 rounded-lg" />
-                <div className="h-[800px] bg-slate-50 rounded-[3rem]" />
+                <div className="h-[800px] bg-slate-50 rounded-2xl" />
             </div>
         );
     }
@@ -139,7 +139,7 @@ export default function PayslipDetailPage() {
         : format(parseISO(payslipDate), "MMMM yyyy", { locale: fr });
 
     return (
-        <div className="space-y-8 pb-20">
+        <div className="space-y-4 pb-10">
             {/* Action Bar */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 print:hidden">
                 <div className="space-y-1">
@@ -172,13 +172,13 @@ export default function PayslipDetailPage() {
             </div>
 
             {/* Main Preview Container (visible on screen only) */}
-            <div className="space-y-8 print:hidden">
+            <div className="space-y-4 print:hidden">
                 {allPayslips.map((payslip, index) => (
-                    <div key={index} className="bg-white rounded-[3rem] shadow-2xl shadow-slate-300/60 overflow-hidden border border-slate-100 min-h-[1000px] relative">
+                    <div key={index} className="bg-white rounded-2xl shadow-2xl shadow-slate-300/60 overflow-hidden border border-slate-100 min-h-[1000px] relative">
                         {/* Decorative Pattern */}
                         <div className="absolute top-0 right-0 w-64 h-64 bg-slate-50 rounded-bl-full opacity-50 -z-0 pointer-events-none" />
                         
-                        <div className="relative z-10 p-4 md:p-8">
+                        <div className="relative z-10 p-4 md:p-5">
                             <PayslipTemplate payslipDetails={payslip} />
                         </div>
                     </div>
@@ -201,7 +201,7 @@ export default function PayslipDetailPage() {
             </InstitutionalReportWrapper>
 
             {/* Help / Contextual Note */}
-            <div className="bg-indigo-50 border border-indigo-100 rounded-[2rem] p-8 flex gap-6 items-start print:hidden">
+            <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-5 flex gap-6 items-start print:hidden">
                 <div className="h-12 w-12 rounded-2xl bg-indigo-500 flex items-center justify-center shrink-0 shadow-lg shadow-indigo-500/20">
                     <ShieldCheck className="h-6 w-6 text-white" />
                 </div>

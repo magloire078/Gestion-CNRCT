@@ -75,8 +75,8 @@ export default function ContractDetailPage() {
 
     return (
         <PermissionGuard permission="page:procurement:view">
-            <div className="container mx-auto py-10 px-4 md:px-6">
-                <div className="flex flex-col gap-8">
+            <div className="container mx-auto py-5 px-4 md:px-6">
+                <div className="flex flex-col gap-4">
                     {/* Header */}
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div>
@@ -98,17 +98,17 @@ export default function ContractDetailPage() {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                         {/* Main Info */}
-                        <div className="lg:col-span-2 space-y-8">
+                        <div className="lg:col-span-2 space-y-4">
                             {/* Summary Card */}
-                            <Card className="border-white/40 shadow-xl bg-white/70 backdrop-blur-md rounded-3xl overflow-hidden">
+                            <Card className="border-white/40 shadow-xl bg-white/70 backdrop-blur-md rounded-xl overflow-hidden">
                                 <CardHeader className="border-b border-slate-100 bg-slate-50/50">
                                     <CardTitle className="text-lg font-black flex items-center gap-2 italic text-slate-800">
                                         <Bookmark className="h-5 w-5 text-primary" /> Informations Générales
                                     </CardTitle>
                                 </CardHeader>
-                                <CardContent className="p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <CardContent className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="space-y-4">
                                         <div>
                                             <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-1">Prestataire</p>
@@ -158,7 +158,7 @@ export default function ContractDetailPage() {
                             </Card>
 
                             {/* Invoices Table */}
-                            <Card className="border-white/40 shadow-xl bg-white/70 backdrop-blur-md rounded-3xl overflow-hidden mb-20">
+                            <Card className="border-white/40 shadow-xl bg-white/70 backdrop-blur-md rounded-xl overflow-hidden mb-20">
                                 <CardHeader className="flex flex-row items-center justify-between border-b border-slate-100">
                                     <div>
                                         <CardTitle className="text-lg font-black flex items-center gap-2 italic">
@@ -227,7 +227,7 @@ export default function ContractDetailPage() {
 
                         {/* Sidebar Stats */}
                         <div className="space-y-6">
-                            <Card className="border-white/40 shadow-xl bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-3xl overflow-hidden p-6 relative">
+                            <Card className="border-white/40 shadow-xl bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-xl overflow-hidden p-6 relative">
                                 <div className="absolute top-0 right-0 p-4 opacity-10"><Calculator className="h-20 w-20" /></div>
                                 <div className="relative z-10 space-y-6">
                                     <div className="space-y-1">
@@ -267,7 +267,7 @@ export default function ContractDetailPage() {
                                 </div>
                             </Card>
 
-                            <Card className="border-white/40 shadow-xl bg-white/70 backdrop-blur-md rounded-3xl p-6">
+                            <Card className="border-white/40 shadow-xl bg-white/70 backdrop-blur-md rounded-xl p-6">
                                 <CardTitle className="text-sm font-black uppercase tracking-widest text-slate-400 mb-4 italic">Action Rapide</CardTitle>
                                 <Button className="w-full bg-slate-900 rounded-2xl h-12 font-bold gap-2 mb-3">
                                     <TrendingUp className="h-4 w-4" /> Mettre à jour le statut

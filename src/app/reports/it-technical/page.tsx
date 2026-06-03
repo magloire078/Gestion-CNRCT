@@ -49,9 +49,9 @@ export default function TechnicalManagementReportPage() {
 
   return (
     <PermissionGuard permission="page:reports:view">
-      <div className="flex flex-col gap-10 pb-20 max-w-6xl mx-auto py-12 px-6 sm:px-10 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+      <div className="flex flex-col gap-5 pb-10 max-w-6xl mx-auto py-12 px-6 sm:px-6 animate-in fade-in slide-in-from-bottom-4 duration-1000">
         {/* Controls - Hidden on Print */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 print:hidden">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 print:hidden">
           <div className="space-y-4">
             <Link href="/reports">
               <Button variant="ghost" className="rounded-full gap-2 text-slate-500 hover:text-slate-900 transition-colors p-0 h-auto hover:bg-transparent">
@@ -66,21 +66,21 @@ export default function TechnicalManagementReportPage() {
             </p>
           </div>
           <div className="flex items-center gap-4">
-            <Button onClick={handlePrint} variant="outline" className="rounded-xl border-slate-200 font-bold shadow-sm h-14 px-8 hover:bg-slate-50">
+            <Button onClick={handlePrint} variant="outline" className="rounded-xl border-slate-200 font-bold shadow-sm h-14 px-5 hover:bg-slate-50">
               <Printer className="mr-3 h-5 w-5" /> Imprimer
             </Button>
-            <Button onClick={handlePrint} className="bg-slate-900 text-white rounded-xl font-bold shadow-2xl h-14 px-8 hover:bg-slate-800 transition-all border-none uppercase tracking-widest text-xs">
+            <Button onClick={handlePrint} className="bg-slate-900 text-white rounded-xl font-bold shadow-2xl h-14 px-5 hover:bg-slate-800 transition-all border-none uppercase tracking-widest text-xs">
               <Download className="mr-3 h-5 w-5" /> Exporter PDF
             </Button>
           </div>
         </div>
 
         {/* Preview Card */}
-        <Card className="border-none shadow-2xl shadow-slate-200/60 rounded-[2.5rem] overflow-hidden bg-white/80 backdrop-blur-md group transition-all duration-500">
+        <Card className="border-none shadow-2xl shadow-slate-200/60 rounded-xl overflow-hidden bg-white/80 backdrop-blur-md group transition-all duration-500">
           <CardContent className="p-0">
             <div className="bg-slate-900 p-12 text-white flex justify-between items-center">
               <div className="flex items-center gap-6">
-                <div className="h-20 w-20 rounded-3xl bg-white/10 flex items-center justify-center border border-white/10 group-hover:rotate-6 transition-transform">
+                <div className="h-20 w-20 rounded-xl bg-white/10 flex items-center justify-center border border-white/10 group-hover:rotate-6 transition-transform">
                   <Wrench className="h-10 w-10 text-amber-400" />
                 </div>
                 <div>
@@ -94,7 +94,7 @@ export default function TechnicalManagementReportPage() {
               </div>
             </div>
 
-            <div className="p-10">
+            <div className="p-6">
               <div className="overflow-hidden rounded-2xl border border-slate-100 bg-slate-50/30 p-1">
                 <Table>
                   <TableHeader>

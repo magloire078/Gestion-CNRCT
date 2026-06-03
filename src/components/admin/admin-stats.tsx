@@ -59,7 +59,7 @@ export function AdminStats({ stats }: AdminStatsProps) {
           className={cn(
             "relative overflow-hidden border-white/20 shadow-3xl transition-all duration-700 group",
             "hover:border-white/40 hover:-translate-y-3 hover:shadow-cyan-500/5",
-            "bg-white/40 backdrop-blur-xl rounded-[2.5rem]"
+            "bg-white/40 backdrop-blur-xl rounded-xl"
           )}
         >
           {/* Enhanced Subtle Glow */}
@@ -68,7 +68,7 @@ export function AdminStats({ stats }: AdminStatsProps) {
             item.glow
           )} />
           
-          <CardHeader className="flex flex-row items-center justify-between pb-2 p-8 relative z-10">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 p-5 relative z-10">
             <CardTitle className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-500 group-hover:text-slate-900 transition-colors">
               {item.label}
             </CardTitle>
@@ -81,7 +81,7 @@ export function AdminStats({ stats }: AdminStatsProps) {
               <item.icon className={cn("h-6 w-6", item.color)} />
             </div>
           </CardHeader>
-          <CardContent className="p-8 pt-0 relative z-10">
+          <CardContent className="p-5 pt-0 relative z-10">
             <div className="flex items-end justify-between">
               <div className="text-5xl font-black tracking-tighter tabular-nums text-slate-900 group-hover:scale-105 transition-transform duration-700 origin-left">
                 {item.value.toString().padStart(2, '0')}

@@ -90,11 +90,11 @@ export const SupplyAnalytics = memo(({ supplies, transactions }: SupplyAnalytics
     }, [transactions]);
 
     return (
-        <div className="space-y-8 animate-in fade-in duration-700">
+        <div className="space-y-4 animate-in fade-in duration-700">
             {/* --- Summary Cards --- */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <Card className="bg-slate-900 text-white border-none shadow-xl overflow-hidden relative group">
-                    <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-125 transition-transform duration-700">
+                    <div className="absolute top-0 right-0 p-5 opacity-10 group-hover:scale-125 transition-transform duration-700">
                         <Activity className="h-24 w-24" />
                     </div>
                     <CardHeader className="relative z-10">
@@ -160,7 +160,7 @@ export const SupplyAnalytics = memo(({ supplies, transactions }: SupplyAnalytics
             </div>
 
             {/* --- Main Charts --- */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 {/* 1. Category Distribution */}
                 <Card className="border-none shadow-xl shadow-slate-200/50 rounded-2xl overflow-hidden">
                     <CardHeader className="bg-slate-50/50 border-b border-slate-100 p-6">
@@ -170,7 +170,7 @@ export const SupplyAnalytics = memo(({ supplies, transactions }: SupplyAnalytics
                         </CardTitle>
                         <CardDescription>Répartition du nombre d'unités total en stock.</CardDescription>
                     </CardHeader>
-                    <CardContent className="p-8">
+                    <CardContent className="p-5">
                         <div className="h-[300px] w-full">
                             <ResponsiveContainer width="100%" height="100%">
                                 <PieChart>
@@ -211,7 +211,7 @@ export const SupplyAnalytics = memo(({ supplies, transactions }: SupplyAnalytics
                         </CardTitle>
                         <CardDescription>Les 8 articles nécessitant une commande urgente.</CardDescription>
                     </CardHeader>
-                    <CardContent className="p-8">
+                    <CardContent className="p-5">
                         <div className="h-[300px] w-full">
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart data={stockHealthData} layout="vertical">

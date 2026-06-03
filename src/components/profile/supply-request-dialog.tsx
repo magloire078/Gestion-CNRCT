@@ -248,7 +248,7 @@ export function SupplyRequestDialog({ onSuccess }: SupplyRequestDialogProps) {
                     <Button 
                         onClick={handleSubmit} 
                         disabled={submitting || items.length === 0}
-                        className="bg-slate-900 hover:bg-black rounded-xl px-8 font-black shadow-lg shadow-slate-200"
+                        className="bg-slate-900 hover:bg-black rounded-xl px-5 font-black shadow-lg shadow-slate-200"
                     >
                         {submitting ? "Envoi..." : "Envoyer la Demande"}
                         {!submitting && <Send className="ml-2 h-4 w-4" />}

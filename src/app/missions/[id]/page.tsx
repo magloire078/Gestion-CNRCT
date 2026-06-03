@@ -64,12 +64,12 @@ export default function MissionDetailPage() {
 
     if (loading) {
         return (
-            <div className="container mx-auto py-8 space-y-8">
+            <div className="container mx-auto py-4 space-y-4">
                 <div className="flex items-center justify-between">
                     <Skeleton className="h-10 w-64" />
                     <Skeleton className="h-10 w-32" />
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="md:col-span-2 space-y-6">
                         <Skeleton className="h-40 w-full" />
                         <Skeleton className="h-80 w-full" />
@@ -82,7 +82,7 @@ export default function MissionDetailPage() {
 
     if (!mission) {
         return (
-            <div className="container mx-auto py-20 text-center">
+            <div className="container mx-auto py-8 text-center">
                 <h1 className="text-2xl font-bold">Mission non trouvée</h1>
                 <Button variant="link" onClick={() => router.push("/missions")}>
                     Retour à la liste
@@ -167,13 +167,13 @@ export default function MissionDetailPage() {
                 </div>
             </div>
 
-            <div className="container mx-auto px-4 py-8 pb-24">
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div className="container mx-auto px-4 py-4 pb-24">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
                     {/* Colonne Principale (8 cols) */}
-                    <div className="lg:col-span-8 space-y-8">
+                    <div className="lg:col-span-8 space-y-4">
                         {/* KPI Grid Premium */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <Card className="group relative overflow-hidden border-none bg-slate-900 rounded-[2.5rem] shadow-2xl transition-all duration-500 hover:translate-y-[-4px]">
+                            <Card className="group relative overflow-hidden border-none bg-slate-900 rounded-xl shadow-2xl transition-all duration-500 hover:translate-y-[-4px]">
                                 <div className="absolute top-0 right-0 p-6 opacity-10 transition-opacity group-hover:opacity-20">
                                     <Calendar className="h-16 w-16 text-white" />
                                 </div>
@@ -190,7 +190,7 @@ export default function MissionDetailPage() {
                                 </CardContent>
                             </Card>
 
-                            <Card className="group relative overflow-hidden border-none bg-white rounded-[2.5rem] shadow-xl border border-slate-100 transition-all duration-500 hover:translate-y-[-4px]">
+                            <Card className="group relative overflow-hidden border-none bg-white rounded-xl shadow-xl border border-slate-100 transition-all duration-500 hover:translate-y-[-4px]">
                                 <CardContent className="p-7">
                                     <div className="h-12 w-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600 mb-4">
                                         <MapPin className="h-6 w-6" />
@@ -202,7 +202,7 @@ export default function MissionDetailPage() {
                                 </CardContent>
                             </Card>
 
-                            <Card className="group relative overflow-hidden border-none bg-white rounded-[2.5rem] shadow-xl border border-slate-100 transition-all duration-500 hover:translate-y-[-4px]">
+                            <Card className="group relative overflow-hidden border-none bg-white rounded-xl shadow-xl border border-slate-100 transition-all duration-500 hover:translate-y-[-4px]">
                                 <CardContent className="p-7">
                                     <div className="h-12 w-12 bg-purple-50 rounded-2xl flex items-center justify-center text-purple-600 mb-4">
                                         <Users className="h-6 w-6" />
@@ -216,21 +216,21 @@ export default function MissionDetailPage() {
                             </Card>
                         </div>
 
-                        <div className="bg-card/40 backdrop-blur-md rounded-[2.5rem] border border-white/20 p-8 shadow-xl">
+                        <div className="bg-card/40 backdrop-blur-md rounded-xl border border-white/20 p-5 shadow-xl">
                             <Tabs defaultValue="overview" className="w-full">
                                 <TabsList className="bg-slate-100/50 p-1.5 rounded-2xl w-full justify-start h-auto gap-1">
-                                    <TabsTrigger value="overview" className="rounded-xl font-black uppercase text-[10px] tracking-widest px-8 py-3 data-[state=active]:bg-white data-[state=active]:shadow-lg">
+                                    <TabsTrigger value="overview" className="rounded-xl font-black uppercase text-[10px] tracking-widest px-5 py-3 data-[state=active]:bg-white data-[state=active]:shadow-lg">
                                         <Info className="h-4 w-4 mr-2" /> Présentation
                                     </TabsTrigger>
-                                    <TabsTrigger value="team" className="rounded-xl font-black uppercase text-[10px] tracking-widest px-8 py-3 data-[state=active]:bg-white data-[state=active]:shadow-lg">
+                                    <TabsTrigger value="team" className="rounded-xl font-black uppercase text-[10px] tracking-widest px-5 py-3 data-[state=active]:bg-white data-[state=active]:shadow-lg">
                                         <Users className="h-4 w-4 mr-2" /> Participants
                                     </TabsTrigger>
-                                    <TabsTrigger value="logistics" className="rounded-xl font-black uppercase text-[10px] tracking-widest px-8 py-3 data-[state=active]:bg-white data-[state=active]:shadow-lg">
+                                    <TabsTrigger value="logistics" className="rounded-xl font-black uppercase text-[10px] tracking-widest px-5 py-3 data-[state=active]:bg-white data-[state=active]:shadow-lg">
                                         <Car className="h-4 w-4 mr-2" /> Logistique & Budget
                                     </TabsTrigger>
                                 </TabsList>
 
-                                <TabsContent value="overview" className="pt-8 space-y-8 animate-in fade-in slide-in-from-bottom-2">
+                                <TabsContent value="overview" className="pt-8 space-y-4 animate-in fade-in slide-in-from-bottom-2">
                                     <div className="space-y-6">
                                         <div className="flex items-center gap-3 border-b border-slate-100 pb-3">
                                             <div className="h-8 w-8 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600">
@@ -243,7 +243,7 @@ export default function MissionDetailPage() {
                                         </p>
                                     </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div className="space-y-6">
                                             <div className="flex items-center gap-3 border-b border-slate-100 pb-3">
                                                 <div className="h-8 w-8 rounded-lg bg-orange-100 flex items-center justify-center text-orange-600">
@@ -263,7 +263,7 @@ export default function MissionDetailPage() {
                                             </div>
                                         </div>
 
-                                        <div className="p-6 bg-slate-900 rounded-[2rem] border border-slate-800 shadow-xl relative overflow-hidden group">
+                                        <div className="p-6 bg-slate-900 rounded-xl border border-slate-800 shadow-xl relative overflow-hidden group">
                                              <div className="absolute right-0 top-0 h-full w-24 bg-white/5 skew-x-12 translate-x-12" />
                                              <div className="relative z-10">
                                                 <div className="flex items-center gap-2 mb-3">
@@ -320,11 +320,11 @@ export default function MissionDetailPage() {
                                     </div>
                                 </TabsContent>
 
-                                <TabsContent value="logistics" className="pt-8 space-y-8 animate-in fade-in slide-in-from-bottom-2">
-                                    <Card className="border-none shadow-2xl rounded-[2.5rem] bg-slate-900 text-white overflow-hidden relative group">
+                                <TabsContent value="logistics" className="pt-8 space-y-4 animate-in fade-in slide-in-from-bottom-2">
+                                    <Card className="border-none shadow-2xl rounded-xl bg-slate-900 text-white overflow-hidden relative group">
                                         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.05),transparent)] pointer-events-none" />
                                         <div className="absolute right-0 top-0 h-full w-48 bg-blue-500/5 -skew-x-12 translate-x-24 group-hover:translate-x-20 transition-transform duration-1000" />
-                                        <CardContent className="p-10 relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
+                                        <CardContent className="p-6 relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
                                             <div>
                                                 <div className="flex items-center gap-2 mb-4">
                                                     <CreditCard className="h-5 w-5 text-blue-400" />
@@ -354,7 +354,7 @@ export default function MissionDetailPage() {
                                     </Card>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex items-center justify-between group cursor-pointer hover:border-blue-500 transition-all">
+                                        <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm flex items-center justify-between group cursor-pointer hover:border-blue-500 transition-all">
                                             <div className="flex items-center gap-4">
                                                 <div className="h-12 w-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 transition-colors group-hover:bg-blue-600 group-hover:text-white">
                                                     <Car className="h-6 w-6" />
@@ -369,7 +369,7 @@ export default function MissionDetailPage() {
                                             <ChevronLeft className="h-5 w-5 text-slate-300 rotate-180 group-hover:text-blue-500" />
                                         </div>
 
-                                        <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex items-center justify-between group cursor-pointer hover:border-emerald-500 transition-all">
+                                        <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm flex items-center justify-between group cursor-pointer hover:border-emerald-500 transition-all">
                                             <div className="flex items-center gap-4">
                                                 <div className="h-12 w-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600 transition-colors group-hover:bg-emerald-600 group-hover:text-white">
                                                     <Hotel className="h-6 w-6" />
@@ -390,14 +390,14 @@ export default function MissionDetailPage() {
                     </div>
 
                     {/* Sidebar de Commande (4 cols) */}
-                    <div className="lg:col-span-4 space-y-8">
+                    <div className="lg:col-span-4 space-y-4">
                         {/* Documents Institutional Card */}
-                        <Card className="border-none shadow-2xl rounded-[2.5rem] bg-white overflow-hidden relative">
+                        <Card className="border-none shadow-2xl rounded-xl bg-white overflow-hidden relative">
                              <div className="h-3 bg-slate-900" />
                              <CardHeader className="pb-4">
                                 <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Documentation & Actes</CardTitle>
                              </CardHeader>
-                             <CardContent className="px-6 pb-8 space-y-3">
+                             <CardContent className="px-6 pb-5 space-y-3">
                                 <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between group hover:border-blue-500 cursor-pointer transition-all">
                                     <div className="flex items-center gap-4">
                                         <div className="h-10 w-10 bg-white shadow-sm border border-slate-100 rounded-xl flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-all">
@@ -427,7 +427,7 @@ export default function MissionDetailPage() {
                         </Card>
 
                         {/* Timeline / Update Card */}
-                        <div className="p-8 bg-indigo-900 rounded-[2.5rem] shadow-xl text-white relative overflow-hidden">
+                        <div className="p-5 bg-indigo-900 rounded-xl shadow-xl text-white relative overflow-hidden">
                              <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,rgba(255,255,255,0.1),transparent)]" />
                              <div className="relative z-10 space-y-5">
                                 <div className="flex items-center gap-3">
@@ -453,7 +453,7 @@ export default function MissionDetailPage() {
                         </div>
 
                         {/* Alerte Rappel contextuelle */}
-                        <div className="flex items-start gap-4 p-6 bg-orange-50 rounded-[2rem] border border-orange-100">
+                        <div className="flex items-start gap-4 p-6 bg-orange-50 rounded-xl border border-orange-100">
                             <AlertTriangle className="h-5 w-5 text-orange-600 mt-0.5" />
                             <div>
                                 <h4 className="text-[11px] font-black uppercase tracking-widest text-orange-800 mb-1.5">Note Procédurale</h4>

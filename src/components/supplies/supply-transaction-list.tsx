@@ -19,7 +19,7 @@ interface SupplyTransactionListProps {
 export const SupplyTransactionList = React.memo(({ transactions, onDelete }: SupplyTransactionListProps) => {
     if (transactions.length === 0) {
         return (
-            <div className="text-center py-20 bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
+            <div className="text-center py-8 bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
                 <div className="h-16 w-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-200 shadow-inner">
                     <Calendar className="h-8 w-8 text-slate-300" />
                 </div>

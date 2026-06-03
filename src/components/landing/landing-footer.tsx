@@ -20,7 +20,7 @@ export function LandingFooter() {
           </div>
           <p className="font-serif italic text-xl text-white mb-2">Chambre Nationale des Rois et Chefs Traditionnels</p>
           <p className="text-sm tracking-[0.3em] uppercase mb-10 opacity-60">République de Côte d'Ivoire</p>
-          <div className="flex gap-8 mb-12">
+          <div className="flex gap-4 mb-12">
             <Link href="#" className="hover:text-[#D4AF37] transition-colors">L'Institution</Link>
             <Link href="#" className="hover:text-[#D4AF37] transition-colors">Missions</Link>
             <Link href="#" className="hover:text-[#D4AF37] transition-colors">Contact</Link>

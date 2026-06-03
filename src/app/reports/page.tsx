@@ -166,9 +166,9 @@ export default function ReportingDashboard() {
 
     return (
         <PermissionGuard permission="page:reports:view">
-            <div className="flex flex-col gap-10 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+            <div className="flex flex-col gap-5 pb-10 animate-in fade-in slide-in-from-bottom-4 duration-1000">
                 {/* Header Section */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                     <div className="space-y-4">
                         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-600 font-black uppercase tracking-[0.2em] text-[10px] shadow-sm">
                             <Database className="h-3.5 w-3.5" />
@@ -202,7 +202,7 @@ export default function ReportingDashboard() {
                         { label: "Alertes Supply", value: stats.lowStock, trend: "-5", icon: Package, color: "text-amber-600", bg: "from-amber-500/20 to-amber-500/5", border: "border-amber-100" }
                     ].map((kpi, i) => (
                         <Card key={i} className="border-none shadow-2xl shadow-slate-200/50 rounded-2xl overflow-hidden group hover:shadow-indigo-200/30 transition-all duration-700 bg-white">
-                            <CardContent className="p-10 relative">
+                            <CardContent className="p-6 relative">
                                 <div className={cn("absolute top-0 right-0 h-40 w-40 -mr-20 -mt-20 rounded-full blur-[80px] opacity-10 bg-gradient-to-br", kpi.bg)} />
                                 <div className="flex flex-col gap-6 relative z-10">
                                     <div className={cn("h-16 w-16 rounded-2xl flex items-center justify-center transition-all group-hover:scale-110 group-hover:-rotate-6 duration-700 bg-white border shadow-sm", kpi.border)}>
@@ -226,13 +226,13 @@ export default function ReportingDashboard() {
                 </div>
 
                 {/* Reports Grid Section */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {reportCards.map((card, i) => (
                         <Link href={card.href} key={i} className="h-full">
                             <Card className="h-full border border-slate-100 shadow-2xl shadow-slate-200/30 rounded-2xl overflow-hidden group hover:shadow-indigo-300/20 hover:scale-[1.02] active:scale-[0.98] transition-all duration-700 bg-white relative flex flex-col">
                                 <div className={cn("absolute top-0 right-0 h-40 w-40 -mr-20 -mt-20 rounded-full blur-[60px] opacity-10 group-hover:opacity-30 transition-all duration-700", card.color)} />
-                                <CardHeader className="p-10 pb-4 relative z-10 flex-1">
-                                    <div className={cn("h-16 w-16 rounded-[1.25rem] flex items-center justify-center shadow-xl mb-8 group-hover:scale-110 group-hover:rotate-12 transition-all duration-700", card.color)}>
+                                <CardHeader className="p-6 pb-4 relative z-10 flex-1">
+                                    <div className={cn("h-16 w-16 rounded-[1.25rem] flex items-center justify-center shadow-xl mb-4 group-hover:scale-110 group-hover:rotate-12 transition-all duration-700", card.color)}>
                                         <card.icon className="h-8 w-8 text-white" />
                                     </div>
                                     <CardTitle className="text-2xl font-black text-slate-950 group-hover:text-indigo-600 transition-colors leading-[1.1]">{card.title}</CardTitle>
@@ -240,7 +240,7 @@ export default function ReportingDashboard() {
                                         {card.description}
                                     </CardDescription>
                                 </CardHeader>
-                                <CardContent className="p-10 pt-4 mt-auto relative z-10">
+                                <CardContent className="p-6 pt-4 mt-auto relative z-10">
                                     <div className="flex flex-wrap gap-2 mb-10">
                                         {card.metrics.map((m, j) => (
                                             <div key={j} className="bg-slate-50 text-slate-600 font-black border border-slate-100 px-3 py-1.5 rounded-full text-[9px] uppercase tracking-wider">
@@ -261,8 +261,8 @@ export default function ReportingDashboard() {
                 </div>
 
                 {/* Bottom Actions Feed */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-2xl p-8 bg-gradient-to-br from-indigo-600 to-violet-700 text-white relative overflow-hidden">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-2xl p-5 bg-gradient-to-br from-indigo-600 to-violet-700 text-white relative overflow-hidden">
                         <div className="absolute top-0 left-0 h-full w-full opacity-10 pointer-events-none">
                             <TrendingUp className="h-[200%] w-[200%] -translate-x-1/2 -translate-y-1/4" />
                         </div>
@@ -271,14 +271,14 @@ export default function ReportingDashboard() {
                             <p className="text-indigo-100 font-medium text-lg leading-relaxed max-w-md">
                                 Générez des extractions croisées de données entre le personnel et le patrimoine technique en quelques clics.
                             </p>
-                            <Button className="bg-white text-indigo-600 hover:bg-slate-50 rounded-xl h-14 px-8 font-black text-lg shadow-2xl">
+                            <Button className="bg-white text-indigo-600 hover:bg-slate-50 rounded-xl h-14 px-5 font-black text-lg shadow-2xl">
                                 Lancer l'expert export
                                 <ArrowRight className="ml-3 h-5 w-5" />
                             </Button>
                         </div>
                     </Card>
 
-                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-2xl p-8 bg-slate-900 text-white flex flex-col justify-between group">
+                    <Card className="border-none shadow-xl shadow-slate-200/50 rounded-2xl p-5 bg-slate-900 text-white flex flex-col justify-between group">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
                                 <div className="h-10 w-10 rounded-xl bg-slate-800 flex items-center justify-center">

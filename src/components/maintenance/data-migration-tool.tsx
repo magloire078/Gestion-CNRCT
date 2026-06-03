@@ -378,8 +378,8 @@ export function DataMigrationTool() {
     };
 
     return (
-        <Card className="border-none shadow-2xl bg-white/80 backdrop-blur-xl rounded-3xl overflow-hidden">
-            <CardHeader className="bg-slate-900 text-white p-8">
+        <Card className="border-none shadow-2xl bg-white/80 backdrop-blur-xl rounded-xl overflow-hidden">
+            <CardHeader className="bg-slate-900 text-white p-5">
                 <div className="flex items-center gap-4">
                     <div className="h-12 w-12 rounded-2xl bg-amber-500 flex items-center justify-center shadow-lg shadow-amber-500/20">
                         <Database className="h-6 w-6 text-white" />
@@ -390,7 +390,7 @@ export function DataMigrationTool() {
                     </div>
                 </div>
             </CardHeader>
-            <CardContent className="p-8">
+            <CardContent className="p-5">
                 <div className="space-y-6">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         {Object.entries(stats).map(([key, s]) => (
@@ -406,13 +406,13 @@ export function DataMigrationTool() {
                         ))}
                     </div>
 
-                    <div className="flex flex-col items-center justify-center py-8 text-center">
+                    <div className="flex flex-col items-center justify-center py-4 text-center">
                         {status === "idle" && (
                             <>
                                 <p className="text-slate-500 font-medium mb-6 max-w-md">
                                     Cette opération va scanner toute la base de données et corriger les fautes d'orthographe sur les régions et départements pour correspondre à la nomenclature officielle.
                                 </p>
-                                <Button onClick={analyzeData} className="h-14 px-10 rounded-2xl bg-slate-900 font-black uppercase tracking-widest text-xs hover:bg-slate-800">
+                                <Button onClick={analyzeData} className="h-14 px-6 rounded-2xl bg-slate-900 font-black uppercase tracking-widest text-xs hover:bg-slate-800">
                                     Lancer l'analyse
                                 </Button>
                             </>
@@ -428,7 +428,7 @@ export function DataMigrationTool() {
                         {status === "confirming" && (
                             <>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 w-full max-w-2xl">
-                                    <div className="p-6 bg-amber-50 border border-amber-100 rounded-3xl text-left">
+                                    <div className="p-6 bg-amber-50 border border-amber-100 rounded-xl text-left">
                                         <h4 className="flex items-center gap-2 text-amber-800 font-black uppercase text-sm mb-3">
                                             <RefreshCw className="h-5 w-5" /> Normalisation
                                         </h4>
@@ -444,7 +444,7 @@ export function DataMigrationTool() {
                                     </div>
 
                                     {rescueStats.repairable > 0 && (
-                                        <div className="p-6 bg-emerald-50 border border-emerald-100 rounded-3xl text-left">
+                                        <div className="p-6 bg-emerald-50 border border-emerald-100 rounded-xl text-left">
                                             <h4 className="flex items-center gap-2 text-emerald-800 font-black uppercase text-sm mb-3">
                                                 <LifeBuoy className="h-5 w-5" /> Opération Sauvetage
                                             </h4>
@@ -457,7 +457,7 @@ export function DataMigrationTool() {
                                         </div>
                                     )}
                                 </div>
-                                <Button variant="ghost" onClick={() => setStatus("idle")} className="h-14 px-8 rounded-2xl font-bold">
+                                <Button variant="ghost" onClick={() => setStatus("idle")} className="h-14 px-5 rounded-2xl font-bold">
                                     Retour
                                 </Button>
                             </>

@@ -89,7 +89,7 @@ export function TerritoryOfficialReport({
                         settings={organizationSettings}
                     />
 
-                    <div className="space-y-12">
+                    <div className="space-y-6">
                         {Object.entries(villagesByRegion).sort().map(([region, regionVillages]) => (
                             <div key={region} className="space-y-6 break-inside-avoid">
                                 <div className="flex justify-between items-end border-b-4 border-slate-100 pb-2">

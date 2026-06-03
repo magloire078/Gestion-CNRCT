@@ -74,7 +74,7 @@ export function MissionsOfficialReport({
                 />
 
             {/* --- PAGES DÉTAILLÉES (PAYSAGE) --- */}
-            <div className="min-h-screen p-12 print:p-8 bg-white">
+            <div className="min-h-screen p-12 print:p-5 bg-white">
                     <InstitutionalHeader 
                         title="Grand Livre des Déplacements"
                         period={`Situation financière au ${todayStr}`}
@@ -83,7 +83,7 @@ export function MissionsOfficialReport({
                         settings={organizationSettings}
                     />
 
-                    <div className="space-y-12">
+                    <div className="space-y-6">
                         <div className="space-y-6">
                             <div className="flex justify-between items-end border-b-4 border-slate-100 pb-2">
                                 <h3 className="text-2xl font-black uppercase tracking-tighter text-slate-900 italic">

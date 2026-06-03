@@ -70,10 +70,10 @@ export function BureauDirectoire({ loading, members, allDirectors = [] }: Bureau
         ) : (
           <>
             {president && (
-              <div className="flex justify-center mb-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
+              <div className="flex justify-center mb-4 animate-in fade-in slide-in-from-bottom-8 duration-700">
                 <div className="w-full max-w-sm group relative">
-                  <div className="absolute inset-x-[-20px] top-[-20px] bottom-[-20px] bg-gradient-to-br from-emerald-500/10 to-amber-500/10 opacity-0 group-hover:opacity-100 transition-opacity rounded-[3rem] blur-xl" />
-                  <div className="relative flex flex-col items-center bg-white p-10 rounded-[2.5rem] border border-amber-200/50 shadow-2xl shadow-amber-500/10 transition-all hover:-translate-y-2">
+                  <div className="absolute inset-x-[-20px] top-[-20px] bottom-[-20px] bg-gradient-to-br from-emerald-500/10 to-amber-500/10 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl blur-xl" />
+                  <div className="relative flex flex-col items-center bg-white p-6 rounded-xl border border-amber-200/50 shadow-2xl shadow-amber-500/10 transition-all hover:-translate-y-2">
                     <div className="w-40 h-40 rounded-full bg-gradient-to-br from-emerald-50 to-amber-50 flex items-center justify-center mb-6 overflow-hidden border-[6px] border-white shadow-xl relative group-hover:scale-105 transition-transform duration-500">
                       {president.photoUrl && !president.photoUrl.includes('ui-avatars.com') && !president.photoUrl.includes('placehold.co') ? (
                         <Image src={president.photoUrl} alt={president.name || ''} fill className="object-cover" sizes="160px" />
@@ -99,11 +99,11 @@ export function BureauDirectoire({ loading, members, allDirectors = [] }: Bureau
             )}
 
             {vicePresidents.length > 0 && (
-              <div className="flex flex-wrap justify-center gap-6 max-w-7xl mx-auto mb-8 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200">
+              <div className="flex flex-wrap justify-center gap-6 max-w-7xl mx-auto mb-4 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200">
                 {vicePresidents.map((vp, index) => (
                   <div key={index} className="group relative w-full sm:max-w-[280px] flex-1 min-w-[240px]">
-                    <div className="absolute inset-x-[-10px] top-[-10px] bottom-[-10px] bg-gradient-to-br from-amber-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-[2rem] blur-lg" />
-                    <div className="relative flex flex-col items-center bg-white p-8 rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/50 transition-all hover:shadow-2xl hover:-translate-y-2">
+                    <div className="absolute inset-x-[-10px] top-[-10px] bottom-[-10px] bg-gradient-to-br from-amber-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-xl blur-lg" />
+                    <div className="relative flex flex-col items-center bg-white p-5 rounded-xl border border-slate-100 shadow-xl shadow-slate-200/50 transition-all hover:shadow-2xl hover:-translate-y-2">
                       <div className="w-24 h-24 rounded-full bg-slate-50 flex items-center justify-center mb-6 border-4 border-white shadow-lg overflow-hidden relative group-hover:scale-110 transition-transform duration-500">
                         {vp.photoUrl && !vp.photoUrl.includes('ui-avatars.com') && !vp.photoUrl.includes('placehold.co') ? (
                           <Image src={vp.photoUrl} alt={vp.name || ''} fill className="object-cover" sizes="96px" />
@@ -132,7 +132,7 @@ export function BureauDirectoire({ loading, members, allDirectors = [] }: Bureau
 
             {bureauMembers.length > 0 && (
               <>
-                <div className="flex items-center gap-6 mb-8 mt-10 max-w-6xl mx-auto">
+                <div className="flex items-center gap-6 mb-4 mt-10 max-w-6xl mx-auto">
                   <div className="h-px flex-1 bg-gradient-to-r from-transparent to-amber-200" />
                   <h3 className="text-2xl font-black text-amber-500 uppercase tracking-[0.2em]">Membres du Bureau</h3>
                   <div className="h-px flex-1 bg-gradient-to-l from-transparent to-amber-200" />
@@ -175,10 +175,10 @@ export function BureauDirectoire({ loading, members, allDirectors = [] }: Bureau
                   <h3 className="text-xl font-black text-[#006039] uppercase tracking-[0.2em]">Cabinet et Secrétariat Général</h3>
                   <div className="h-px flex-1 bg-gradient-to-l from-transparent to-[#006039]/20" />
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-700 delay-400">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-700 delay-400">
                   {cabinetAndSecretariat.map((member, index) => (
                     <div key={index} className="group relative h-full">
-                      <div className="relative flex flex-col items-center h-full bg-[#006039]/5 backdrop-blur-sm p-8 rounded-2xl border border-[#006039]/10 transition-all hover:bg-[#006039]/10 hover:shadow-lg">
+                      <div className="relative flex flex-col items-center h-full bg-[#006039]/5 backdrop-blur-sm p-5 rounded-2xl border border-[#006039]/10 transition-all hover:bg-[#006039]/10 hover:shadow-lg">
                         <div className="w-20 h-20 rounded-full bg-white flex items-center justify-center mb-4 border border-primary/10 shadow-sm overflow-hidden relative">
                           {member.photoUrl && !member.photoUrl.includes('ui-avatars.com') && !member.photoUrl.includes('placehold.co') ? (
                             <Image src={member.photoUrl} alt={member.name || ''} fill className="object-cover" sizes="80px" />
@@ -208,7 +208,7 @@ export function BureauDirectoire({ loading, members, allDirectors = [] }: Bureau
 
             {otherDirectors.length > 0 && (
               <>
-                <div className="flex items-center gap-4 mb-6 mt-8 max-w-6xl mx-auto">
+                <div className="flex items-center gap-4 mb-6 mt-4 max-w-6xl mx-auto">
                   <div className="h-px flex-1 bg-muted/30" />
                   <h4 className="text-sm font-black text-muted-foreground uppercase tracking-[0.2em]">Les Directions</h4>
                   <div className="h-px flex-1 bg-muted/30" />

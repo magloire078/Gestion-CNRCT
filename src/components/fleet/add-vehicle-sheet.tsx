@@ -81,7 +81,7 @@ export function AddVehicleSheet({
     <Sheet open={isOpen} onOpenChange={(open) => !open && handleClose()}>
       <SheetContent className="sm:max-w-xl p-0 border-none bg-slate-50 overflow-y-auto rounded-l-[3rem]">
         <form onSubmit={handleSubmit} className="h-full flex flex-col">
-          <SheetHeader className="p-10 bg-slate-900 text-white space-y-4">
+          <SheetHeader className="p-6 bg-slate-900 text-white space-y-4">
             <div className="flex items-center gap-4">
                 <div className="h-12 w-12 bg-emerald-500 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
                     <PlusCircle className="h-6 w-6 text-white" />
@@ -95,7 +95,7 @@ export function AddVehicleSheet({
             </div>
           </SheetHeader>
 
-          <div className="flex-1 p-10 space-y-10">
+          <div className="flex-1 p-6 space-y-5">
             <div className="space-y-6">
                 <div className="space-y-3">
                   <Label htmlFor="plate" className="text-[11px] font-black uppercase tracking-widest text-slate-500 pl-1">
@@ -176,14 +176,14 @@ export function AddVehicleSheet({
             )}
           </div>
 
-          <SheetFooter className="p-10 border-t border-slate-100 bg-white mt-auto">
+          <SheetFooter className="p-6 border-t border-slate-100 bg-white mt-auto">
             <div className="flex flex-col sm:flex-row gap-4 w-full">
                 <SheetClose asChild>
-                  <Button type="button" variant="ghost" onClick={handleClose} className="h-14 px-8 rounded-2xl font-black uppercase tracking-widest text-[11px] text-slate-400 hover:bg-slate-50">
+                  <Button type="button" variant="ghost" onClick={handleClose} className="h-14 px-5 rounded-2xl font-black uppercase tracking-widest text-[11px] text-slate-400 hover:bg-slate-50">
                     Annuler l'Opération
                   </Button>
                 </SheetClose>
-                <Button type="submit" disabled={isSubmitting} className="flex-1 h-14 px-8 rounded-2xl bg-slate-900 shadow-xl shadow-slate-900/20 font-black uppercase tracking-widest text-[11px] hover:bg-black transition-all text-white">
+                <Button type="submit" disabled={isSubmitting} className="flex-1 h-14 px-5 rounded-2xl bg-slate-900 shadow-xl shadow-slate-900/20 font-black uppercase tracking-widest text-[11px] hover:bg-black transition-all text-white">
                   {isSubmitting ? "Traitement..." : "Consigner le Véhicule"}
                 </Button>
             </div>

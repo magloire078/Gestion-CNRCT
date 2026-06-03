@@ -118,7 +118,7 @@ export default function HeritageCategoryPage() {
     const style = categoryStyles[category] || categoryStyles.ethnies;
 
     return (
-        <div className="flex flex-col gap-8 pb-20">
+        <div className="flex flex-col gap-4 pb-10">
             {/* Heritage Category Hero */}
             <div className="relative h-[200px] rounded-xl overflow-hidden bg-slate-900 group">
                 <img 
@@ -143,7 +143,7 @@ export default function HeritageCategoryPage() {
                                 {categoryLabel}
                             </h1>
                         </div>
-                        <Button onClick={() => setIsSheetOpen(true)} className="bg-white text-slate-900 hover:bg-slate-100 rounded-lg h-14 px-8 font-black shadow-2xl transition-all hover:-translate-y-1">
+                        <Button onClick={() => setIsSheetOpen(true)} className="bg-white text-slate-900 hover:bg-slate-100 rounded-lg h-14 px-5 font-black shadow-2xl transition-all hover:-translate-y-1">
                             <PlusCircle className="mr-2 h-5 w-5" />
                             Ajouter un élément
                         </Button>
@@ -178,12 +178,12 @@ export default function HeritageCategoryPage() {
 
             {/* Content Grid */}
             {loading ? (
-                <div className="flex flex-col items-center justify-center py-20 gap-4">
+                <div className="flex flex-col items-center justify-center py-8 gap-4">
                     <Loader2 className="h-10 w-10 animate-spin text-slate-300" />
                     <p className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">Chargement du patrimoine...</p>
                 </div>
             ) : filteredItems.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 px-2">
                     {filteredItems.map((item) => (
                         <Card key={item.id} className="group border-none shadow-xl hover:shadow-2xl transition-all duration-500 rounded-lg overflow-hidden bg-white flex flex-col h-full">
                             <div className="aspect-[16/10] relative overflow-hidden bg-slate-100">
@@ -224,7 +224,7 @@ export default function HeritageCategoryPage() {
                                     </div>
                                 </div>
 
-                                <div className="mt-8 pt-6 border-t border-slate-50 flex items-center justify-between">
+                                <div className="mt-4 pt-6 border-t border-slate-50 flex items-center justify-between">
                                     <Button variant="ghost" className="h-10 w-10 text-rose-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg" onClick={() => setDeleteTarget(item)}>
                                         <Landmark className="h-4 w-4" />
                                     </Button>
@@ -239,15 +239,15 @@ export default function HeritageCategoryPage() {
                     ))}
                 </div>
             ) : (
-                <Card className="border-none shadow-none bg-slate-50/50 rounded-xl p-8 flex flex-col items-center justify-center text-center mx-2">
-                    <div className="h-32 w-32 bg-white rounded-full flex items-center justify-center shadow-xl mb-8">
+                <Card className="border-none shadow-none bg-slate-50/50 rounded-xl p-5 flex flex-col items-center justify-center text-center mx-2">
+                    <div className="h-32 w-32 bg-white rounded-full flex items-center justify-center shadow-xl mb-4">
                         <style.icon className="h-16 w-16 text-slate-200" />
                     </div>
                     <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tighter">Répertoire vide</h2>
                     <p className="mt-2 text-slate-400 max-w-sm italic font-medium">
                         Aucun élément n'a été trouvé pour la catégorie <span className="font-bold text-slate-600">{categoryLabel}</span> dans cette zone.
                     </p>
-                    <Button onClick={() => setIsSheetOpen(true)} className="mt-8 bg-slate-900 rounded-lg h-12 px-8 font-bold">
+                    <Button onClick={() => setIsSheetOpen(true)} className="mt-4 bg-slate-900 rounded-lg h-12 px-5 font-bold">
                         Commencer l'archivage
                     </Button>
                 </Card>

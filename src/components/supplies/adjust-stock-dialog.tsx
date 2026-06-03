@@ -74,8 +74,8 @@ export function AdjustStockDialog({ isOpen, onCloseAction, supply }: AdjustStock
 
     return (
         <Dialog open={isOpen} onOpenChange={onCloseAction}>
-            <DialogContent className="sm:max-w-[480px] p-0 overflow-hidden border-none shadow-2xl rounded-3xl bg-white/95 backdrop-blur-xl">
-                <div className="bg-slate-900 px-6 py-8 text-white relative overflow-hidden">
+            <DialogContent className="sm:max-w-[480px] p-0 overflow-hidden border-none shadow-2xl rounded-xl bg-white/95 backdrop-blur-xl">
+                <div className="bg-slate-900 px-6 py-4 text-white relative overflow-hidden">
                     {/* Background decoration */}
                     <div className="absolute top-[-20%] right-[-10%] w-40 h-40 bg-amber-500/20 rounded-full blur-3xl" />
                     <div className="absolute bottom-[-20%] left-[-10%] w-32 h-32 bg-slate-400/10 rounded-full blur-2xl" />
@@ -93,7 +93,7 @@ export function AdjustStockDialog({ isOpen, onCloseAction, supply }: AdjustStock
                     </DialogHeader>
                 </div>
 
-                <div className="px-6 py-6 space-y-8">
+                <div className="px-6 py-6 space-y-4">
                     {/* Stock Comparison Grid */}
                     <div className="grid grid-cols-2 gap-4">
                         <div className="bg-slate-50/80 p-5 rounded-2xl border border-slate-100 flex flex-col items-center justify-center relative group transition-all hover:bg-white hover:shadow-lg hover:shadow-slate-200/50">

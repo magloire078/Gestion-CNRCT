@@ -524,7 +524,7 @@ export default function LeavePage() {
                 )}
               </div>
               {!loading && paginatedLeaves.length === 0 && !error && (
-                <div className="text-center py-10 text-muted-foreground">
+                <div className="text-center py-5 text-muted-foreground">
                   Aucune demande de congé n'a été trouvée.
                   <br />
                   Cliquez sur "Nouvelle demande" pour en ajouter une.

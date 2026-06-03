@@ -49,15 +49,15 @@ export const GlobalSynthesisTable = ({
     if (regions.length === 0) return null;
 
     return (
-        <div className="page-break w-full p-12 print:p-8 bg-white min-h-screen">
-            <h2 className="text-3xl font-black uppercase tracking-tighter text-slate-900 mb-8 border-b-4 border-slate-900 pb-2">
+        <div className="page-break w-full p-12 print:p-5 bg-white min-h-screen">
+            <h2 className="text-3xl font-black uppercase tracking-tighter text-slate-900 mb-4 border-b-4 border-slate-900 pb-2">
                 Tableau de Synthèse Global
             </h2>
             <table className="w-full border-collapse border-2 border-slate-900 text-sm">
                 <thead>
-                    <tr className="bg-slate-900 text-white uppercase font-black">
-                        <th className="p-3 text-left border-r border-slate-700">Région</th>
-                        <th className="p-3 text-left border-r border-slate-700">Département</th>
+                    <tr className="bg-slate-900 text-white uppercase font-black print:bg-transparent print:text-slate-900 print:border-b-2 print:border-slate-900">
+                        <th className="p-3 text-left border-r border-slate-700 print:border-slate-300">Région</th>
+                        <th className="p-3 text-left border-r border-slate-700 print:border-slate-300">Département</th>
                         <th className="p-3 text-center border-r border-slate-700">Sous-préfectures</th>
                         <th className="p-3 text-center border-r border-slate-700">{hasVillages ? 'Localités' : 'Autorités'}</th>
                         {hasVillages && (
@@ -146,7 +146,7 @@ export const RegionSynthesisTable = ({
     if (depts.length <= 1) return null;
 
     return (
-        <div className="mb-8 mt-4 bg-slate-50 border border-slate-200 p-4 rounded-xl break-inside-avoid">
+        <div className="mb-4 mt-4 bg-slate-50 border border-slate-200 p-4 rounded-xl break-inside-avoid">
             <h4 className="text-[10px] font-black uppercase text-slate-700 tracking-widest mb-3 border-b border-slate-200 pb-2">
                 Synthèse Régionale - {region}
             </h4>

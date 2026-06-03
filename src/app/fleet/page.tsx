@@ -213,15 +213,15 @@ export default function FleetPage() {
             </Button>
             <Button
               onClick={() => setIsAddSheetOpen(true)}
-              className="h-14 px-8 rounded-[1.5rem] bg-slate-900 shadow-2xl shadow-slate-900/20 font-black uppercase tracking-widest text-[11px] hover:bg-black active:scale-95 transition-all text-white border-t border-white/10"
+              className="h-14 px-5 rounded-[1.5rem] bg-slate-900 shadow-2xl shadow-slate-900/20 font-black uppercase tracking-widest text-[11px] hover:bg-black active:scale-95 transition-all text-white border-t border-white/10"
             >
               <PlusCircle className="mr-3 h-5 w-5 text-emerald-400" />
               Intégrer Véhicule
             </Button>
           </div>
         </div>
-        <Card className="border-white/10 shadow-2xl bg-card/40 backdrop-blur-md overflow-hidden rounded-[2.5rem] px-2">
-          <CardHeader className="border-b border-border/50 bg-primary/5 py-8 px-8">
+        <Card className="border-white/10 shadow-2xl bg-card/40 backdrop-blur-md overflow-hidden rounded-xl px-2">
+          <CardHeader className="border-b border-border/50 bg-primary/5 py-4 px-5">
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
               <div>
                 <CardTitle className="text-2xl font-black uppercase tracking-tight text-slate-900">Registre du Parc Automobile</CardTitle>
@@ -256,7 +256,7 @@ export default function FleetPage() {
           </CardHeader>
           <CardContent className="p-0">
             {error && (
-              <div className="p-8 text-center text-destructive font-black uppercase text-xs tracking-widest">
+              <div className="p-5 text-center text-destructive font-black uppercase text-xs tracking-widest">
                 {error}
               </div>
             )}
@@ -266,7 +266,7 @@ export default function FleetPage() {
               <Table>
                 <TableHeader>
                   <TableRow className="border-border/50 bg-slate-50/50 hover:bg-slate-50/50">
-                    <TableHead className="w-[80px] py-6 px-8 font-black uppercase text-[10px] tracking-widest text-center text-slate-400">ID</TableHead>
+                    <TableHead className="w-[80px] py-6 px-5 font-black uppercase text-[10px] tracking-widest text-center text-slate-400">ID</TableHead>
                     <TableHead className="font-black uppercase text-[10px] tracking-widest text-slate-500">Immatriculation</TableHead>
                     <TableHead className="font-black uppercase text-[10px] tracking-widest text-slate-500">Type de Véhicule</TableHead>
                     <TableHead className="font-black uppercase text-[10px] tracking-widest text-slate-500">Affectation Actuelle</TableHead>
@@ -279,7 +279,7 @@ export default function FleetPage() {
                   {loading ? (
                     Array.from({ length: 5 }).map((_, i) => (
                       <TableRow key={i} className="border-border/20">
-                        <TableCell className="px-8"><Skeleton className="h-4 w-4 mx-auto" /></TableCell>
+                        <TableCell className="px-5"><Skeleton className="h-4 w-4 mx-auto" /></TableCell>
                         <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                         <TableCell><Skeleton className="h-4 w-40" /></TableCell>
                         <TableCell><Skeleton className="h-4 w-32" /></TableCell>
@@ -291,7 +291,7 @@ export default function FleetPage() {
                   ) : (
                     paginatedVehicles.map((vehicle, index) => (
                       <TableRow key={vehicle.plate} className="border-border/20 hover:bg-white/40 transition-all group h-20">
-                        <TableCell className="text-center font-black text-slate-300 group-hover:text-slate-900 transition-colors px-8">
+                        <TableCell className="text-center font-black text-slate-300 group-hover:text-slate-900 transition-colors px-5">
                           {((currentPage - 1) * itemsPerPage + index + 1).toString().padStart(2, '0')}
                         </TableCell>
                         <TableCell>
@@ -351,11 +351,11 @@ export default function FleetPage() {
             <div className="grid grid-cols-1 gap-4 md:hidden p-4">
               {loading ? (
                 Array.from({ length: 3 }).map((_, i) => (
-                  <Skeleton key={i} className="h-48 w-full rounded-[2rem]" />
+                  <Skeleton key={i} className="h-48 w-full rounded-xl" />
                 ))
               ) : (
                 paginatedVehicles.map((vehicle) => (
-                  <Card key={vehicle.plate} className="bg-white/50 border-white/10 rounded-[2rem] shadow-lg overflow-hidden active:scale-95 transition-all">
+                  <Card key={vehicle.plate} className="bg-white/50 border-white/10 rounded-xl shadow-lg overflow-hidden active:scale-95 transition-all">
                     <CardHeader className="pb-2">
                       <div className="flex justify-between items-start">
                         <Badge variant={statusVariantMap[vehicle.status]} className="font-black text-[9px] uppercase tracking-widest rounded-md px-2 py-0.5 border-none shadow-sm">
@@ -400,7 +400,7 @@ export default function FleetPage() {
             </div>
 
             {!loading && paginatedVehicles.length === 0 && (
-              <div className="flex flex-col items-center justify-center py-24 text-center">
+              <div className="flex flex-col items-center justify-center py-10 text-center">
                 <div className="h-16 w-16 bg-slate-100 rounded-full flex items-center justify-center mb-4">
                   <Search className="h-8 w-8 text-slate-300" />
                 </div>
@@ -410,7 +410,7 @@ export default function FleetPage() {
             )}
           </CardContent>
           {totalPages > 1 && (
-            <CardFooter className="py-8 px-8 border-t border-border/50">
+            <CardFooter className="py-4 px-5 border-t border-border/50">
               <PaginationControls
                 currentPage={currentPage}
                 totalPages={totalPages}

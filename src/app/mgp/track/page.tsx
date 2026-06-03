@@ -59,8 +59,8 @@ export default function PublicTrackingPage() {
                 </div>
             </header>
 
-            <main className="container mx-auto px-4 py-12 md:py-24">
-                <div className="max-w-4xl mx-auto space-y-12">
+            <main className="container mx-auto px-4 py-12 md:py-10">
+                <div className="max-w-4xl mx-auto space-y-6">
                     {/* Search Hero */}
                     <div className="text-center space-y-6">
                         <h1 className="text-4xl md:text-6xl font-black text-slate-900 tracking-tight leading-tight">
@@ -93,12 +93,12 @@ export default function PublicTrackingPage() {
 
                     {/* Results Area */}
                     {loading ? (
-                        <div className="flex flex-col items-center justify-center py-20 space-y-4">
+                        <div className="flex flex-col items-center justify-center py-8 space-y-4">
                             <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
                             <p className="text-slate-400 font-bold uppercase text-[10px] tracking-widest">Consultation du registre national...</p>
                         </div>
                     ) : searched && !conflict ? (
-                        <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-[2.5rem] bg-white p-12 text-center overflow-hidden relative">
+                        <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-xl bg-white p-12 text-center overflow-hidden relative">
                             <div className="absolute top-0 left-0 w-full h-1 bg-rose-500" />
                             <div className="h-20 w-20 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-6">
                                 <AlertCircle className="h-10 w-10 text-rose-500" />
@@ -110,10 +110,10 @@ export default function PublicTrackingPage() {
                             </p>
                         </Card>
                     ) : searched && conflict ? (
-                        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-5 duration-500">
+                        <div className="space-y-4 animate-in fade-in slide-in-from-bottom-5 duration-500">
                             {/* Summary Card */}
-                            <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-[2.5rem] bg-white overflow-hidden">
-                                <div className="bg-slate-900 p-8 text-white flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                            <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-xl bg-white overflow-hidden">
+                                <div className="bg-slate-900 p-5 text-white flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                                     <div className="space-y-2">
                                         <Badge className="bg-blue-600/20 text-blue-400 border-none px-3 font-black text-[10px] uppercase tracking-widest">
                                             Dossier {conflict.status}
@@ -124,13 +124,13 @@ export default function PublicTrackingPage() {
                                             <span className="flex items-center gap-2"><Calendar className="h-4 w-4" /> Signaler le {conflict.reportedDate}</span>
                                         </div>
                                     </div>
-                                    <div className="bg-white/5 border border-white/10 p-6 rounded-3xl text-center min-w-[200px]">
+                                    <div className="bg-white/5 border border-white/10 p-6 rounded-xl text-center min-w-[200px]">
                                         <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">ID de Suivi</p>
                                         <p className="text-2xl font-black text-blue-400 font-mono tracking-tighter">{conflict.trackingId}</p>
                                     </div>
                                 </div>
-                                <CardContent className="p-10">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                                <CardContent className="p-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                         <div className="space-y-6">
                                             <h3 className="text-sm font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
                                                 <Info className="h-4 w-4" /> Détails de l'Affaire
@@ -151,7 +151,7 @@ export default function PublicTrackingPage() {
                                             <h3 className="text-sm font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
                                                 <History className="h-4 w-4" /> Étapes de Résolution
                                             </h3>
-                                            <div className="relative pl-8 space-y-8 before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-100">
+                                            <div className="relative pl-8 space-y-4 before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-100">
                                                 {/* Start Point */}
                                                 <div className="relative">
                                                     <div className="absolute -left-[30px] top-1 h-2.5 w-2.5 rounded-full bg-slate-900 border-2 border-white shadow-sm z-10" />
@@ -198,7 +198,7 @@ export default function PublicTrackingPage() {
                                         </div>
                                     </div>
                                 </CardContent>
-                                <div className="bg-slate-50 p-6 border-t border-slate-100 flex items-center justify-center gap-8">
+                                <div className="bg-slate-50 p-6 border-t border-slate-100 flex items-center justify-center gap-4">
                                     <div className="flex items-center gap-2">
                                         <Clock className="h-4 w-4 text-slate-300" />
                                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Dernière MaJ: {new Date().toLocaleDateString('fr-FR')}</span>
@@ -218,21 +218,21 @@ export default function PublicTrackingPage() {
                     ) : (
                         /* Informational Footer */
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-12">
-                            <div className="p-6 rounded-3xl bg-white border border-slate-100 space-y-3">
+                            <div className="p-6 rounded-xl bg-white border border-slate-100 space-y-3">
                                 <div className="h-10 w-10 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600">
                                     <ShieldCheck className="h-5 w-5" />
                                 </div>
                                 <h4 className="font-black text-slate-900 uppercase text-xs">Confidentialité</h4>
                                 <p className="text-xs text-slate-500 leading-relaxed">Vos données sont protégées par le secret professionnel et le cadre juridique du CNRCT.</p>
                             </div>
-                            <div className="p-6 rounded-3xl bg-white border border-slate-100 space-y-3">
+                            <div className="p-6 rounded-xl bg-white border border-slate-100 space-y-3">
                                 <div className="h-10 w-10 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-600">
                                     <Clock className="h-5 w-5" />
                                 </div>
                                 <h4 className="font-black text-slate-900 uppercase text-xs">Traitement Rapide</h4>
                                 <p className="text-xs text-slate-500 leading-relaxed">Nos équipes s'engagent à un premier retour sous 72h ouvrées après dépôt du dossier.</p>
                             </div>
-                            <div className="p-6 rounded-3xl bg-white border border-slate-100 space-y-3">
+                            <div className="p-6 rounded-xl bg-white border border-slate-100 space-y-3">
                                 <div className="h-10 w-10 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600">
                                     <CheckCircle2 className="h-5 w-5" />
                                 </div>

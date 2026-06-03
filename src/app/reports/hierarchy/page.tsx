@@ -223,7 +223,7 @@ export default function HierarchyPage() {
   }), [chiefs]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-amber-50/20 to-indigo-50/30 p-6 lg:p-10 space-y-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-amber-50/20 to-indigo-50/30 p-6 lg:p-6 space-y-4">
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div className="space-y-2">
@@ -313,7 +313,7 @@ export default function HierarchyPage() {
           <Loader2 className="h-8 w-8 text-amber-500 animate-spin" />
         </div>
       ) : grouped.length === 0 ? (
-        <div className="text-center py-24 text-slate-400 font-medium">
+        <div className="text-center py-10 text-slate-400 font-medium">
           <TreePine className="h-12 w-12 mx-auto mb-4 opacity-20" />
           Aucune autorité trouvée.
         </div>

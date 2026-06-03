@@ -78,10 +78,27 @@ export function getEmployeeGroup(
 }
 
 
-async function createOrUpdateChiefFromEmployee(employee: Employe): Promise<void> {
+export async function createOrUpdateChiefFromEmployee(employee: Employe): Promise<void> {
+    const posteLower = (employee.poste || '').toLowerCase();
+    const excludedPostes = ['secrétaire', 'secretaire', 'directeur', 'directrice', 'assistant', 'chargé', 'charge'];
+
+    const isDirectoireBase = employee.departmentId === GROUPE_DIRECTOIRE_ID || 
+                             employee.matricule?.startsWith('D 0') || 
+                             posteLower.includes('membre du directoire') ||
+                             posteLower.includes('président') ||
+                             posteLower.includes('president');
+                             
+    const isDirectoire = isDirectoireBase && !excludedPostes.some(ep => posteLower.includes(ep));
+                         
+    const isComite = posteLower.includes('comité régional') || posteLower.includes('comite regional');
+
     // Only sync if the employee is a chief/regional member (has Region and Village fields)
-    const isChief = employee.Region || employee.Village || employee.groupe_2 === 'Rois & Chefs';
+    const isChief = employee.Region || employee.Village || employee.groupe_2 === 'Rois & Chefs' || isDirectoire || isComite;
     if (!isChief) return;
+
+    let affiliation: 'Directoire' | 'Comité Régional' | 'Aucune' = 'Aucune';
+    if (isDirectoire) affiliation = 'Directoire';
+    else if (isComite) affiliation = 'Comité Régional';
 
     const chiefData: Partial<Chief> = {
         name: `${employee.lastName || ''} ${employee.firstName || ''}`.trim() || employee.name,
@@ -92,10 +109,16 @@ async function createOrUpdateChiefFromEmployee(employee: Employe): Promise<void>
         sexe: employee.sexe,
         region: employee.Region,
         department: employee.Departement,
-        subPrefecture: employee.subPrefecture,
+        subPrefecture: employee.subPrefecture || '',
+        // Sync mandate fields
+        mandatDebut: employee.mandatDebut,
+        mandatFin: employee.mandatFin,
+        estRenouvele: employee.estRenouvele,
+        historiqueNominations: employee.historiqueNominations,
         village: employee.Village,
         contact: employee.mobile,
-        photoUrl: employee.photoUrl
+        photoUrl: employee.photoUrl,
+        cnrctAffiliation: affiliation
     };
 
     // Remove undefined fields to avoid overwriting existing data

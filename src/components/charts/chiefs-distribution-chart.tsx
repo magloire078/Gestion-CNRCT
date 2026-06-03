@@ -36,7 +36,7 @@ export function ChiefsDistributionChart() {
     }, [globalStats.allChiefs]);
 
     if (loading) {
-        return <Skeleton className="h-[400px] w-full rounded-3xl" />;
+        return <Skeleton className="h-[400px] w-full rounded-xl" />;
     }
 
     if (data.length === 0) {

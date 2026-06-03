@@ -271,7 +271,7 @@ export function EditVillageSheet({ village, open, onOpenChangeAction }: EditVill
         <Sheet open={open} onOpenChange={onOpenChangeAction}>
             <SheetContent className="sm:max-w-[700px] bg-white border-l-0 sm:border-l p-0 flex flex-col h-[100dvh] shadow-2xl">
                 <div className="flex flex-col h-full">
-                    <div className="p-8 pb-4 bg-white border-b border-slate-100">
+                    <div className="p-5 pb-4 bg-white border-b border-slate-100">
                         <div className="flex justify-between items-start mb-2">
                             <div>
                                 <SheetTitle className="text-3xl font-black text-slate-900 tracking-tighter">MODIFIER LOCALITÉ</SheetTitle>
@@ -301,7 +301,7 @@ export function EditVillageSheet({ village, open, onOpenChangeAction }: EditVill
                                         <TabsTrigger value="chief" className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:text-blue-700 data-[state=active]:bg-transparent data-[state=active]:shadow-none px-5 py-3.5 font-bold whitespace-nowrap text-slate-500 transition-colors">Autorité</TabsTrigger>
                                     </TabsList>
                                 </div>
-                                <ScrollArea className="flex-1 px-8 pb-24 h-full">
+                                <ScrollArea className="flex-1 px-5 pb-24 h-full">
                                     {/* Section 1: Administration */}
                                     <TabsContent value="admin" className="mt-4 outline-none">
                                         <div className="pt-4 space-y-4 h-full">
@@ -380,7 +380,7 @@ export function EditVillageSheet({ village, open, onOpenChangeAction }: EditVill
                                     <TabsContent value="geo" className="mt-0 h-full flex-grow">
                                         
                                         <div className="pt-4 space-y-4 h-full">
-                                            <div className="rounded-[2rem] overflow-hidden border border-slate-100 shadow-inner bg-slate-50">
+                                            <div className="rounded-xl overflow-hidden border border-slate-100 shadow-inner bg-slate-50">
                                                 <LocationPicker 
                                                     onLocationSelectAction={(lat, lng) => {
                                                         form.setValue("latitude", lat);
@@ -537,7 +537,7 @@ export function EditVillageSheet({ village, open, onOpenChangeAction }: EditVill
                                 </ScrollArea>
                             </Tabs>
 
-                            <div className="p-8 bg-white border-t border-slate-100 flex gap-4">
+                            <div className="p-5 bg-white border-t border-slate-100 flex gap-4">
                                 <Button variant="outline" type="button" onClick={() => onOpenChangeAction(false)} className="flex-1 h-14 rounded-2xl font-black uppercase tracking-widest border-slate-200 text-slate-500 hover:bg-slate-50">
                                     Annuler
                                 </Button>

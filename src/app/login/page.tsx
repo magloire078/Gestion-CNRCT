@@ -31,8 +31,8 @@ export default function LoginPage() {
       <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-[#006039]/5 rounded-full blur-[120px]" />
       <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-[#D4AF37]/5 rounded-full blur-[120px]" />
 
-      <Card className="w-full max-w-md border-primary/5 bg-white/80 backdrop-blur-xl shadow-2xl shadow-[#1a1a1a]/5 rounded-[2rem] overflow-hidden animate-in fade-in zoom-in duration-700">
-        <CardHeader className="pt-10 pb-6 px-8">
+      <Card className="w-full max-w-md border-primary/5 bg-white/80 backdrop-blur-xl shadow-2xl shadow-[#1a1a1a]/5 rounded-xl overflow-hidden animate-in fade-in zoom-in duration-700">
+        <CardHeader className="pt-10 pb-6 px-5">
           <div className="flex flex-col items-center justify-center gap-4 mb-4 group">
             <div className="relative w-24 h-24 transition-all duration-700 ease-in-out group-hover:scale-105">
               <Image
@@ -54,9 +54,9 @@ export default function LoginPage() {
             Identifiez-vous pour accéder à l'intranet institutionnel.
           </CardDescription>
         </CardHeader>
-        <CardContent className="px-8 pb-10">
+        <CardContent className="px-5 pb-6">
           <LoginForm />
-          <div className="mt-8 text-center text-sm text-muted-foreground">
+          <div className="mt-4 text-center text-sm text-muted-foreground">
             Première connexion ?{" "}
             <Link href="/signup" className="font-bold text-[#006039] hover:underline">
               Demander un accès

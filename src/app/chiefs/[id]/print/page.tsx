@@ -77,7 +77,7 @@ export default function ChiefPrintPage() {
           style={{ width: "210mm", minHeight: "297mm", padding: "20mm" }}
         >
           {/* Header Banner */}
-          <div className="flex items-start justify-between mb-8 pb-6 border-b-4 border-amber-500">
+          <div className="flex items-start justify-between mb-4 pb-6 border-b-4 border-amber-500">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-2">
                 <div className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">
@@ -106,7 +106,7 @@ export default function ChiefPrintPage() {
           </div>
 
           {/* Chief Identity */}
-          <div className="flex gap-8 mb-8">
+          <div className="flex gap-4 mb-4">
             {/* Photo */}
             <div className="shrink-0">
               <div className="w-32 h-40 rounded-xl overflow-hidden bg-slate-100 border-2 border-slate-200 shadow-md">

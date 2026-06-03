@@ -47,12 +47,12 @@ export default function VehicleDetailPage() {
 
     if (loading) {
         return (
-            <div className="container mx-auto py-8 space-y-8">
+            <div className="container mx-auto py-4 space-y-4">
                 <div className="flex items-center justify-between">
                     <Skeleton className="h-10 w-64" />
                     <Skeleton className="h-10 w-32" />
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="md:col-span-2 space-y-6">
                         <Skeleton className="h-40 w-full" />
                         <Skeleton className="h-80 w-full" />
@@ -65,7 +65,7 @@ export default function VehicleDetailPage() {
 
     if (!vehicle) {
         return (
-            <div className="container mx-auto py-20 text-center">
+            <div className="container mx-auto py-8 text-center">
                 <AlertTriangle className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
                 <h1 className="text-2xl font-bold">Véhicule non trouvé</h1>
                 <Button variant="link" onClick={() => router.push("/fleet")}>
@@ -139,13 +139,13 @@ export default function VehicleDetailPage() {
                 </div>
             </div>
 
-            <div className="container mx-auto px-4 py-8 pb-24">
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div className="container mx-auto px-4 py-4 pb-24">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
                     {/* Colonne Principale (8 cols) */}
-                    <div className="lg:col-span-8 space-y-8">
+                    <div className="lg:col-span-8 space-y-4">
                         {/* KPI Grid Premium */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <Card className="group relative overflow-hidden border-none bg-slate-900 rounded-[2.5rem] shadow-2xl transition-all duration-500 hover:translate-y-[-4px]">
+                            <Card className="group relative overflow-hidden border-none bg-slate-900 rounded-xl shadow-2xl transition-all duration-500 hover:translate-y-[-4px]">
                                 <div className="absolute top-0 right-0 p-6 opacity-10 transition-opacity group-hover:opacity-20">
                                     <Gauge className="h-16 w-16 text-white" />
                                 </div>
@@ -161,7 +161,7 @@ export default function VehicleDetailPage() {
                                 </CardContent>
                             </Card>
 
-                            <Card className="group relative overflow-hidden border-none bg-white rounded-[2.5rem] shadow-xl border border-slate-100 transition-all duration-500 hover:translate-y-[-4px]">
+                            <Card className="group relative overflow-hidden border-none bg-white rounded-xl shadow-xl border border-slate-100 transition-all duration-500 hover:translate-y-[-4px]">
                                 <CardContent className="p-7">
                                     <div className="h-12 w-12 bg-orange-50 rounded-2xl flex items-center justify-center text-orange-600 mb-4">
                                         <Fuel className="h-6 w-6" />
@@ -174,7 +174,7 @@ export default function VehicleDetailPage() {
                                 </CardContent>
                             </Card>
 
-                            <Card className="group relative overflow-hidden border-none bg-white rounded-[2.5rem] shadow-xl border border-slate-100 transition-all duration-500 hover:translate-y-[-4px]">
+                            <Card className="group relative overflow-hidden border-none bg-white rounded-xl shadow-xl border border-slate-100 transition-all duration-500 hover:translate-y-[-4px]">
                                 <CardContent className="p-7">
                                     <div className="h-12 w-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 mb-4">
                                         <Wrench className="h-6 w-6" />
@@ -189,7 +189,7 @@ export default function VehicleDetailPage() {
                         </div>
 
                         {/* Galerie Image (Mockup Premium) */}
-                        <Card className="border-none bg-card/40 backdrop-blur-md rounded-[2.5rem] shadow-xl overflow-hidden group">
+                        <Card className="border-none bg-card/40 backdrop-blur-md rounded-xl shadow-xl overflow-hidden group">
                             <div className="relative aspect-[21/9] w-full bg-slate-200 overflow-hidden">
                                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent z-10" />
                                 <div className="absolute bottom-6 left-8 z-20">
@@ -212,22 +212,22 @@ export default function VehicleDetailPage() {
                             </div>
                         </Card>
 
-                        <div className="bg-card/40 backdrop-blur-md rounded-[2.5rem] border border-white/20 p-8 shadow-xl">
+                        <div className="bg-card/40 backdrop-blur-md rounded-xl border border-white/20 p-5 shadow-xl">
                             <Tabs defaultValue="info" className="w-full">
                                 <TabsList className="bg-slate-100/50 p-1.5 rounded-2xl w-full justify-start h-auto gap-1">
-                                    <TabsTrigger value="info" className="rounded-xl font-black uppercase text-[10px] tracking-widest px-8 py-3 data-[state=active]:bg-white data-[state=active]:shadow-lg">
+                                    <TabsTrigger value="info" className="rounded-xl font-black uppercase text-[10px] tracking-widest px-5 py-3 data-[state=active]:bg-white data-[state=active]:shadow-lg">
                                         <Info className="h-4 w-4 mr-2" /> Spécifications
                                     </TabsTrigger>
-                                    <TabsTrigger value="maintenance" className="rounded-xl font-black uppercase text-[10px] tracking-widest px-8 py-3 data-[state=active]:bg-white data-[state=active]:shadow-lg">
+                                    <TabsTrigger value="maintenance" className="rounded-xl font-black uppercase text-[10px] tracking-widest px-5 py-3 data-[state=active]:bg-white data-[state=active]:shadow-lg">
                                         <History className="h-4 w-4 mr-2" /> Historique
                                     </TabsTrigger>
-                                    <TabsTrigger value="docs" className="rounded-xl font-black uppercase text-[10px] tracking-widest px-8 py-3 data-[state=active]:bg-white data-[state=active]:shadow-lg">
+                                    <TabsTrigger value="docs" className="rounded-xl font-black uppercase text-[10px] tracking-widest px-5 py-3 data-[state=active]:bg-white data-[state=active]:shadow-lg">
                                         <FileText className="h-4 w-4 mr-2" /> Documents
                                     </TabsTrigger>
                                 </TabsList>
 
-                                <TabsContent value="info" className="pt-8 space-y-8 animate-in fade-in slide-in-from-bottom-2">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <TabsContent value="info" className="pt-8 space-y-4 animate-in fade-in slide-in-from-bottom-2">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div className="space-y-6">
                                             <div className="flex items-center gap-3 border-b border-slate-100 pb-3">
                                                 <div className="h-8 w-8 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600">
@@ -278,7 +278,7 @@ export default function VehicleDetailPage() {
 
                                 <TabsContent value="maintenance" className="pt-8">
                                     <div className="space-y-6">
-                                        <div className="bg-white p-6 rounded-3xl border border-blue-100 shadow-sm flex items-center justify-between border-l-8 border-l-blue-600 relative overflow-hidden group">
+                                        <div className="bg-white p-6 rounded-xl border border-blue-100 shadow-sm flex items-center justify-between border-l-8 border-l-blue-600 relative overflow-hidden group">
                                             <div className="absolute right-0 top-0 h-full w-32 bg-blue-50/50 skew-x-12 translate-x-16 transition-transform group-hover:translate-x-12" />
                                             <div className="flex items-center gap-5 relative z-10">
                                                 <div className="h-12 w-12 bg-blue-100 rounded-2xl flex items-center justify-center text-blue-600">
@@ -339,9 +339,9 @@ export default function VehicleDetailPage() {
                     </div>
 
                     {/* Sidebar de Commande (4 cols) */}
-                    <div className="lg:col-span-4 space-y-8">
+                    <div className="lg:col-span-4 space-y-4">
                         {/* Statut Card Institutional */}
-                        <Card className="border-none shadow-2xl rounded-[2.5rem] overflow-hidden bg-white">
+                        <Card className="border-none shadow-2xl rounded-xl overflow-hidden bg-white">
                             <div className={cn("h-3 bg-gradient-to-r", 
                                 vehicle.status === 'Disponible' ? "from-emerald-500 to-teal-400" :
                                 vehicle.status === 'En mission' ? "from-blue-600 to-indigo-400" :
@@ -350,7 +350,7 @@ export default function VehicleDetailPage() {
                             <CardHeader className="text-center pb-0">
                                 <CardTitle className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Positionnement</CardTitle>
                             </CardHeader>
-                            <CardContent className="p-8 space-y-8">
+                            <CardContent className="p-5 space-y-4">
                                 <div className="flex flex-col items-center">
                                     <div className={cn(
                                         "h-32 w-32 rounded-full flex items-center justify-center border-[8px] border-slate-50 shadow-inner",

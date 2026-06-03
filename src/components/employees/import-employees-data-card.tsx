@@ -195,10 +195,10 @@ export function ImportEmployeesDataCard() {
   };
 
   return (
-    <Card className="border-none bg-white/40 backdrop-blur-xl rounded-[2.5rem] shadow-3xl shadow-slate-200/50 border border-white/20 overflow-hidden text-center">
-      <CardHeader className="p-10 border-b border-white/10">
+    <Card className="border-none bg-white/40 backdrop-blur-xl rounded-xl shadow-3xl shadow-slate-200/50 border border-white/20 overflow-hidden text-center">
+      <CardHeader className="p-6 border-b border-white/10">
         <div className="flex justify-center mb-6">
-            <div className="h-16 w-16 bg-slate-900 rounded-3xl flex items-center justify-center shadow-2xl rotate-3">
+            <div className="h-16 w-16 bg-slate-900 rounded-xl flex items-center justify-center shadow-2xl rotate-3">
                 <Upload className="h-8 w-8 text-white" />
             </div>
         </div>
@@ -208,9 +208,9 @@ export function ImportEmployeesDataCard() {
         </CardDescription>
       </CardHeader>
       
-      <CardContent className="p-10 space-y-8">
+      <CardContent className="p-6 space-y-4">
         <div className="relative group">
-            <div className="absolute inset-0 bg-blue-600/5 rounded-[2.5rem] border-2 border-dashed border-blue-600/20 group-hover:bg-blue-600/10 group-hover:border-blue-600/40 transition-all duration-300" />
+            <div className="absolute inset-0 bg-blue-600/5 rounded-xl border-2 border-dashed border-blue-600/20 group-hover:bg-blue-600/10 group-hover:border-blue-600/40 transition-all duration-300" />
             <div className="relative p-12 space-y-4">
                 <Input 
                     type="file" 
@@ -244,7 +244,7 @@ export function ImportEmployeesDataCard() {
         </div>
 
         {error && (
-            <Alert variant="destructive" className="bg-rose-50 border-rose-100 rounded-3xl p-6 animate-in slide-in-from-top-4">
+            <Alert variant="destructive" className="bg-rose-50 border-rose-100 rounded-xl p-6 animate-in slide-in-from-top-4">
                 <AlertCircle className="h-5 w-5 text-rose-500" />
                 <AlertTitle className="text-xs font-black uppercase tracking-widest text-rose-700">Anomalie de transfert</AlertTitle>
                 <AlertDescription className="text-[11px] font-medium text-rose-600 mt-1">{error}</AlertDescription>
@@ -252,12 +252,12 @@ export function ImportEmployeesDataCard() {
         )}
       </CardContent>
 
-      <CardFooter className="p-10 bg-slate-50/50 border-t border-white/10 justify-center">
+      <CardFooter className="p-6 bg-slate-50/50 border-t border-white/10 justify-center">
         <Button 
             onClick={handleImport} 
             disabled={isImporting || !file}
             className={cn(
-                "h-16 px-10 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] shadow-2xl transition-all",
+                "h-16 px-6 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] shadow-2xl transition-all",
                 isImporting ? "bg-slate-400" : "bg-slate-900 hover:bg-blue-600 hover:scale-105 active:scale-95 shadow-slate-900/20"
             )}
         >

@@ -41,10 +41,10 @@ export const OrgTab = memo(function OrgTab({
   onDeleteSvcAction,
 }: OrgTabProps) {
   return (
-    <div className="grid gap-10 md:grid-cols-1 lg:grid-cols-3">
+    <div className="grid gap-5 md:grid-cols-1 lg:grid-cols-3">
       {/* Departments */}
-      <Card className="border-white/20 shadow-3xl bg-white/40 backdrop-blur-xl rounded-[3rem] overflow-hidden h-full flex flex-col group transition-all duration-700 hover:border-white/30 hover:-translate-y-2">
-        <CardHeader className="bg-slate-900 p-8 text-white relative overflow-hidden">
+      <Card className="border-white/20 shadow-3xl bg-white/40 backdrop-blur-xl rounded-2xl overflow-hidden h-full flex flex-col group transition-all duration-700 hover:border-white/30 hover:-translate-y-2">
+        <CardHeader className="bg-slate-900 p-5 text-white relative overflow-hidden">
           {/* Institutional Pattern */}
           <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:20px_20px]" />
           <div className="flex items-center gap-4 relative z-10">
@@ -57,14 +57,14 @@ export const OrgTab = memo(function OrgTab({
               </div>
           </div>
         </CardHeader>
-        <CardContent className="p-8 pb-10 flex-1 flex flex-col relative z-10">
-          <div className="flex justify-end mb-8">
+        <CardContent className="p-5 pb-6 flex-1 flex flex-col relative z-10">
+          <div className="flex justify-end mb-4">
             <Button size="sm" onClick={onAddDeptAction} className="h-11 px-6 bg-slate-900 hover:bg-black text-white rounded-xl font-black uppercase tracking-[0.2em] text-[10px] shadow-2xl active:scale-95 transition-all gap-2 group/btn">
               <PlusCircle className="h-4 w-4 group-hover/btn:rotate-90 transition-transform duration-500" /> 
               Nouveau Pôle
             </Button>
           </div>
-          <div className="rounded-[2rem] border border-white/40 bg-white/20 overflow-hidden shadow-inner backdrop-blur-sm flex-1">
+          <div className="rounded-xl border border-white/40 bg-white/20 overflow-hidden shadow-inner backdrop-blur-sm flex-1">
             <Table>
               <TableHeader className="bg-slate-900/5">
                 <TableRow className="hover:bg-transparent border-white/20">
@@ -84,7 +84,7 @@ export const OrgTab = memo(function OrgTab({
                   ))
                 ) : !departments || departments.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={3} className="py-20 text-center">
+                    <TableCell colSpan={3} className="py-8 text-center">
                       <EmptyState icon={Building} message="Aucune unité stratégique." />
                     </TableCell>
                   </TableRow>
@@ -129,8 +129,8 @@ export const OrgTab = memo(function OrgTab({
       </Card>
 
       {/* Directions */}
-      <Card className="border-white/20 shadow-3xl bg-white/40 backdrop-blur-xl rounded-[3rem] overflow-hidden h-full flex flex-col group transition-all duration-700 hover:border-white/30 hover:-translate-y-2">
-        <CardHeader className="bg-slate-900 p-8 text-white relative overflow-hidden">
+      <Card className="border-white/20 shadow-3xl bg-white/40 backdrop-blur-xl rounded-2xl overflow-hidden h-full flex flex-col group transition-all duration-700 hover:border-white/30 hover:-translate-y-2">
+        <CardHeader className="bg-slate-900 p-5 text-white relative overflow-hidden">
           {/* Institutional Pattern */}
           <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:20px_20px]" />
           <div className="flex items-center gap-4 relative z-10">
@@ -143,8 +143,8 @@ export const OrgTab = memo(function OrgTab({
               </div>
           </div>
         </CardHeader>
-        <CardContent className="p-8 pb-10 flex-1 flex flex-col relative z-10">
-          <div className="flex justify-end mb-8">
+        <CardContent className="p-5 pb-6 flex-1 flex flex-col relative z-10">
+          <div className="flex justify-end mb-4">
             <Button 
                 size="sm" 
                 onClick={onAddDirAction} 
@@ -155,7 +155,7 @@ export const OrgTab = memo(function OrgTab({
               Nouvelle Dir.
             </Button>
           </div>
-          <div className="rounded-[2rem] border border-white/40 bg-white/20 overflow-hidden shadow-inner backdrop-blur-sm flex-1">
+          <div className="rounded-xl border border-white/40 bg-white/20 overflow-hidden shadow-inner backdrop-blur-sm flex-1">
             <Table>
               <TableHeader className="bg-slate-900/5">
                 <TableRow className="hover:bg-transparent border-white/20">
@@ -175,7 +175,7 @@ export const OrgTab = memo(function OrgTab({
                   ))
                 ) : !directions || directions.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={3} className="py-20 text-center">
+                    <TableCell colSpan={3} className="py-8 text-center">
                       <EmptyState icon={Layers} message="Aucune unité opérationnelle." />
                     </TableCell>
                   </TableRow>
@@ -225,8 +225,8 @@ export const OrgTab = memo(function OrgTab({
       </Card>
 
       {/* Services */}
-      <Card className="border-white/20 shadow-3xl bg-white/40 backdrop-blur-xl rounded-[3rem] overflow-hidden h-full flex flex-col group transition-all duration-700 hover:border-white/30 hover:-translate-y-2">
-        <CardHeader className="bg-slate-900 p-8 text-white relative overflow-hidden">
+      <Card className="border-white/20 shadow-3xl bg-white/40 backdrop-blur-xl rounded-2xl overflow-hidden h-full flex flex-col group transition-all duration-700 hover:border-white/30 hover:-translate-y-2">
+        <CardHeader className="bg-slate-900 p-5 text-white relative overflow-hidden">
           {/* Institutional Pattern */}
           <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:20px_20px]" />
           <div className="flex items-center gap-4 relative z-10">
@@ -239,8 +239,8 @@ export const OrgTab = memo(function OrgTab({
               </div>
           </div>
         </CardHeader>
-        <CardContent className="p-8 pb-10 flex-1 flex flex-col relative z-10">
-          <div className="flex justify-end mb-8">
+        <CardContent className="p-5 pb-6 flex-1 flex flex-col relative z-10">
+          <div className="flex justify-end mb-4">
             <Button 
                 size="sm" 
                 onClick={onAddSvcAction} 
@@ -251,7 +251,7 @@ export const OrgTab = memo(function OrgTab({
               Nouveau Svc.
             </Button>
           </div>
-          <div className="rounded-[2rem] border border-white/40 bg-white/20 overflow-hidden shadow-inner backdrop-blur-sm flex-1">
+          <div className="rounded-xl border border-white/40 bg-white/20 overflow-hidden shadow-inner backdrop-blur-sm flex-1">
             <Table>
               <TableHeader className="bg-slate-900/5">
                 <TableRow className="hover:bg-transparent border-white/20">
@@ -271,7 +271,7 @@ export const OrgTab = memo(function OrgTab({
                   ))
                 ) : !services || services.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={3} className="py-20 text-center">
+                    <TableCell colSpan={3} className="py-8 text-center">
                       <EmptyState icon={Layers} message="Aucun service d'exécution." />
                     </TableCell>
                   </TableRow>

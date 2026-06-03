@@ -785,7 +785,7 @@ export default function SuppliesPage() {
 
   return (
     <PermissionGuard permission="page:supplies:view">
-    <div className="flex flex-col gap-8 pb-20">
+    <div className="flex flex-col gap-4 pb-10">
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -990,7 +990,7 @@ export default function SuppliesPage() {
                 period={`Période : ${periodLabel || format(new Date(), 'MMMM yyyy', { locale: fr })}`}
               />
                 
-              <div className="grid grid-cols-4 gap-6 my-8 pb-8 border-b border-slate-100">
+              <div className="grid grid-cols-4 gap-6 my-8 pb-5 border-b border-slate-100">
                   <div className="flex items-start gap-3">
                       <div className="h-8 w-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400">
                           <Package className="h-4 w-4" />

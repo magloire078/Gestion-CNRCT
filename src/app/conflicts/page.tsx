@@ -336,7 +336,7 @@ export default function ConflictsPage() {
 
     return (
         <PermissionGuard permission="page:conflicts:view">
-            <div className="flex flex-col gap-6 pb-4 h-[calc(100vh-6rem)] px-4 lg:px-8 pt-6">
+            <div className="flex flex-col gap-6 pb-4 h-[calc(100vh-6rem)] px-4 lg:px-5 pt-6">
                 
                 {isPrintingList && (
                     <ConflictsOfficialReport 

@@ -135,19 +135,19 @@ export default function SupplyReportsPage() {
 
     if (loading) {
         return (
-            <div className="p-8 space-y-8">
+            <div className="p-5 space-y-4">
                 <Skeleton className="h-12 w-1/3" />
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                    {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-32 rounded-3xl" />)}
+                    {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-32 rounded-xl" />)}
                 </div>
-                <Skeleton className="h-[500px] rounded-[2.5rem]" />
+                <Skeleton className="h-[500px] rounded-xl" />
             </div>
         );
     }
 
     return (
         <PermissionGuard permission="page:reports:view">
-            <div className="flex flex-col gap-8 pb-20 animate-in fade-in duration-700">
+            <div className="flex flex-col gap-4 pb-10 animate-in fade-in duration-700">
                 {/* Header */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div>
@@ -237,7 +237,7 @@ export default function SupplyReportsPage() {
 
                 {/* Main Content */}
                 <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-2xl overflow-hidden bg-white/80 backdrop-blur-md">
-                    <CardHeader className="bg-slate-50/50 border-b border-slate-100 p-8">
+                    <CardHeader className="bg-slate-50/50 border-b border-slate-100 p-5">
                         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                             <div className="flex items-center gap-4">
                                 <div className="h-12 w-12 rounded-xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-200">

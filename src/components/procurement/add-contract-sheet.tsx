@@ -127,7 +127,7 @@ export function AddContractSheet() {
                 </SheetHeader>
 
                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 pt-6 pb-20">
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 pt-6 pb-10">
                         <div className="grid grid-cols-2 gap-4">
                             <FormField
                                 control={form.control}

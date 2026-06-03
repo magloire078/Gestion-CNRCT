@@ -81,7 +81,7 @@ export function DocumentPreviewDialog({ document, open, onOpenChange }: Document
                             />
                         </div>
                     ) : (
-                        <div className="flex flex-col items-center justify-center text-slate-400 space-y-4 py-20">
+                        <div className="flex flex-col items-center justify-center text-slate-400 space-y-4 py-8">
                             <div className="p-6 bg-slate-900 rounded-full border border-slate-800">
                                 <FileText className="h-16 w-16 opacity-20" />
                             </div>

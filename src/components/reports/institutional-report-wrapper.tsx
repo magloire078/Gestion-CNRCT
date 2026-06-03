@@ -76,7 +76,7 @@ export function InstitutionalReportWrapper({
               <div className="h-12 w-12 rounded-full bg-[#006039]/10 animate-pulse" />
             </div>
           </div>
-          <h2 className="mt-8 text-2xl font-black text-slate-900 tracking-tighter uppercase italic">
+          <h2 className="mt-4 text-2xl font-black text-slate-900 tracking-tighter uppercase italic">
             Génération du Rapport
           </h2>
           <p className="mt-2 text-slate-500 font-bold uppercase tracking-widest text-[10px]">

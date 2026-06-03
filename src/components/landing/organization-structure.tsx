@@ -73,7 +73,7 @@ export function OrganizationStructure() {
               viewport={{ once: true }}
               transition={{ delay: idx * 0.1, duration: 0.5 }}
               onClick={() => item.targetId && scrollTo(item.targetId)}
-              className={`bg-white p-8 rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/40 hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 group relative overflow-hidden ${item.targetId ? 'cursor-pointer' : ''}`}
+              className={`bg-white p-5 rounded-xl border border-slate-100 shadow-xl shadow-slate-200/40 hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 group relative overflow-hidden ${item.targetId ? 'cursor-pointer' : ''}`}
             >
               {item.targetId && (
                 <div className="absolute top-4 right-4 h-8 w-8 rounded-full bg-slate-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">

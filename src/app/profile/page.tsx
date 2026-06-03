@@ -123,7 +123,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="flex flex-col gap-8 pb-20">
+    <div className="flex flex-col gap-4 pb-10">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-4xl font-black tracking-tight text-slate-900">Mon Profil</h1>
@@ -142,10 +142,10 @@ export default function ProfilePage() {
         </TabsList>
 
         <TabsContent value="info" className="mt-6">
-          <div className="grid gap-8 md:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-3">
             <div className="md:col-span-1 space-y-6">
               <Card className="rounded-2xl border-none shadow-sm bg-slate-50/50">
-                <CardContent className="p-8 flex flex-col items-center text-center">
+                <CardContent className="p-5 flex flex-col items-center text-center">
                   <div className="relative group">
                     <Avatar className="h-32 w-32 mb-6 border-4 border-white shadow-xl">
                       <AvatarImage src={photoPreview} alt={user.name} />
@@ -192,7 +192,7 @@ export default function ProfilePage() {
                   </CardContent>
               </Card>
             </div>
-            <div className="md:col-span-2 space-y-8">
+            <div className="md:col-span-2 space-y-4">
               <Card className="rounded-2xl border-slate-100 shadow-sm">
                 <form onSubmit={handleUpdateProfile}>
                   <CardHeader>
@@ -217,7 +217,7 @@ export default function ProfilePage() {
                     )}
                   </CardContent>
                   <CardFooter className="bg-slate-50/50 border-t border-slate-100 p-6">
-                    <Button type="submit" disabled={isSavingProfile} className="bg-slate-900 hover:bg-black rounded-xl px-8 font-black">
+                    <Button type="submit" disabled={isSavingProfile} className="bg-slate-900 hover:bg-black rounded-xl px-5 font-black">
                       {isSavingProfile && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                       Enregistrer
                     </Button>
@@ -255,7 +255,7 @@ export default function ProfilePage() {
                     )}
                   </CardContent>
                   <CardFooter className="bg-slate-50/50 border-t border-slate-100 p-6">
-                    <Button type="submit" disabled={isSavingPassword} className="bg-slate-900 hover:bg-black rounded-xl px-8 font-black">
+                    <Button type="submit" disabled={isSavingPassword} className="bg-slate-900 hover:bg-black rounded-xl px-5 font-black">
                         {isSavingPassword && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                         Mettre à jour le mot de passe
                     </Button>
@@ -266,7 +266,7 @@ export default function ProfilePage() {
           </div>
         </TabsContent>
 
-        <TabsContent value="supplies" className="mt-6 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <TabsContent value="supplies" className="mt-6 space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-2">
                 <div>
                     <h2 className="text-2xl font-black text-slate-900">Suivi des Demandes</h2>

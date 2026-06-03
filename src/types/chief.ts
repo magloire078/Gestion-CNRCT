@@ -39,6 +39,13 @@ export type Chief = {
     department: string;
     subPrefecture: string;
     village: string;
+
+    // Customary Domains
+    royaumeName?: string;
+    provinceName?: string;
+    cantonName?: string;
+    tribuName?: string;
+
     ethnicGroup?: string;
     customs?: string;
     languages?: string[];
@@ -48,6 +55,17 @@ export type Chief = {
     address?: string;
     CNRCTRegistrationNumber?: string;
     officialDocuments?: string;
+
+    // Mandate & Nomination History (Sync from Employee)
+    mandatDebut?: string; // YYYY-MM-DD
+    mandatFin?: string; // YYYY-MM-DD
+    estRenouvele?: boolean;
+    historiqueNominations?: Array<{
+        periode: string;
+        poste: string;
+        region?: string;
+    }>;
+
     bio: string;
     photoUrl: string;
     territoryMapUrl?: string;

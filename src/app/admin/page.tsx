@@ -50,7 +50,7 @@ const TAB_CONFIG = [
 
 // Composant d'en-tête mémoïsé
 const AdminHeader = memo(({ user }: { user: User | null }) => (
-  <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 p-8 rounded-[3rem] bg-card/40 backdrop-blur-md border border-white/10 shadow-2xl relative overflow-hidden group">
+  <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 p-5 rounded-2xl bg-card/40 backdrop-blur-md border border-white/10 shadow-2xl relative overflow-hidden group">
     {/* Subtle Institutional Background */}
     <div className="absolute top-0 right-0 p-12 opacity-[0.03] group-hover:opacity-[0.05] transition-opacity duration-700 pointer-events-none">
         <ShieldCheck className="h-64 w-64 rotate-12" />
@@ -409,7 +409,7 @@ export default function AdminPage() {
   return (
     <PermissionGuard permission="page:admin:view">
       <TooltipProvider>
-        <div className="flex flex-col gap-8 pb-12 overflow-x-hidden">
+        <div className="flex flex-col gap-4 pb-12 overflow-x-hidden">
           <AdminHeader user={user} />
 
           {error && (
@@ -422,7 +422,7 @@ export default function AdminPage() {
             <Tabs 
               value={activeTab} 
               onValueChange={(val) => startTransition(() => setActiveTab(val))}
-              className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500"
+              className="w-full space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500"
             >
               <div className="overflow-x-auto pb-2 -mx-2 px-2 scrollbar-none">
                 <TabsList className="bg-card/40 p-1.5 border border-white/10 backdrop-blur-md rounded-2xl shadow-xl inline-flex gap-1.5 h-14">
@@ -431,7 +431,7 @@ export default function AdminPage() {
                       key={value}
                       value={value} 
                       disabled={isPending}
-                      className="gap-2.5 px-8 py-3 rounded-xl data-[state=active]:bg-slate-900 data-[state=active]:text-white data-[state=active]:shadow-2xl active:scale-95 transition-all text-xs font-black uppercase tracking-widest disabled:opacity-50"
+                      className="gap-2.5 px-5 py-3 rounded-xl data-[state=active]:bg-slate-900 data-[state=active]:text-white data-[state=active]:shadow-2xl active:scale-95 transition-all text-xs font-black uppercase tracking-widest disabled:opacity-50"
                     >
                       <Icon className={cn("h-4.5 w-4.5", isPending && activeTab !== value && "animate-pulse")} />
                       {label}

@@ -122,13 +122,13 @@ export default function HeritageHubPage() {
 
     return (
         <PermissionGuard permission="page:heritage:view">
-            <div className={cn("flex flex-col gap-12 pb-20", isPrinting && "hidden")}>
+            <div className={cn("flex flex-col gap-6 pb-10", isPrinting && "hidden")}>
             {/* Heritage Hero Section */}
             <div className="relative h-[340px] rounded-2xl overflow-hidden bg-slate-950 group">
                 <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1523805081730-61444927f07a?auto=format&fit=crop&q=80')] bg-cover bg-center opacity-30 transition-transform duration-1000 group-hover:scale-110" />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
                 
-                <div className="relative h-full container mx-auto px-8 md:px-16 flex flex-col justify-center gap-6">
+                <div className="relative h-full container mx-auto px-5 md:px-16 flex flex-col justify-center gap-6">
                     <div className="space-y-4 max-w-3xl">
                         <Badge className="bg-amber-500 text-slate-950 border-none px-4 py-1.5 rounded-full font-black text-xs uppercase tracking-[0.2em] shadow-lg shadow-amber-500/20">
                             Portail Culturel National
@@ -174,7 +174,7 @@ export default function HeritageHubPage() {
                         )}
                         <Button 
                             variant="outline" 
-                            className="bg-white/5 border-white/10 text-white hover:bg-white/20 rounded-xl h-14 px-8 font-black uppercase tracking-widest text-xs backdrop-blur-xl shrink-0"
+                            className="bg-white/5 border-white/10 text-white hover:bg-white/20 rounded-xl h-14 px-5 font-black uppercase tracking-widest text-xs backdrop-blur-xl shrink-0"
                             onClick={handlePrint}
                             disabled={stats.loading || allItems.length === 0}
                         >
@@ -183,7 +183,7 @@ export default function HeritageHubPage() {
                         </Button>
                         <Button 
                             asChild
-                            className="bg-amber-500 hover:bg-amber-600 text-slate-950 rounded-xl h-14 px-8 font-black uppercase tracking-widest text-xs shadow-lg shadow-amber-500/20 shrink-0"
+                            className="bg-amber-500 hover:bg-amber-600 text-slate-950 rounded-xl h-14 px-5 font-black uppercase tracking-widest text-xs shadow-lg shadow-amber-500/20 shrink-0"
                         >
                             <Link href="/heritage/map">
                                 <MapPin className="mr-3 h-5 w-5" />
@@ -203,9 +203,9 @@ export default function HeritageHubPage() {
             </div>
 
             {/* Introduction Quote */}
-            <div className="container mx-auto px-8 max-w-5xl relative">
+            <div className="container mx-auto px-5 max-w-5xl relative">
                 <div className="absolute inset-0 bg-amber-500/5 blur-[100px] rounded-full" />
-                <blockquote className="relative space-y-8">
+                <blockquote className="relative space-y-4">
                     <Sparkles className="absolute -top-12 -left-12 h-24 w-24 text-amber-500/10 animate-pulse" />
                     <p className="text-3xl md:text-5xl font-black text-slate-900 leading-tight tracking-tighter text-center uppercase italic">
                         "La culture est ce qui reste quand on a tout oublié. Elle est le socle de notre <span className="text-amber-500">stabilité sociale</span> et le garant de notre identité commune."
@@ -219,7 +219,7 @@ export default function HeritageHubPage() {
 
             {/* Latest Discoveries */}
             {!stats.loading && recentItems.length > 0 && (
-                <div className="container mx-auto px-8 space-y-8">
+                <div className="container mx-auto px-5 space-y-4">
                     <div className="flex items-center justify-between">
                         <div className="space-y-1">
                             <h2 className="text-3xl font-black text-slate-900 uppercase tracking-tighter">Dernières Acquisitions</h2>
@@ -234,7 +234,7 @@ export default function HeritageHubPage() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         {recentItems.map((item) => (
                             <Link key={item.id} href={`/heritage/${item.category}/${item.id}`} className="group">
-                                <div className="p-4 rounded-[2rem] bg-slate-50 border border-slate-100/50 hover:bg-white hover:shadow-2xl hover:shadow-slate-200 transition-all duration-500 flex gap-4 items-center">
+                                <div className="p-4 rounded-xl bg-slate-50 border border-slate-100/50 hover:bg-white hover:shadow-2xl hover:shadow-slate-200 transition-all duration-500 flex gap-4 items-center">
                                     <div className="h-16 w-16 rounded-2xl overflow-hidden shrink-0 shadow-lg">
                                         <img src={item.imageUrl} alt="" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" />
                                     </div>
@@ -253,7 +253,7 @@ export default function HeritageHubPage() {
             )}
 
             {/* Categories Grid */}
-            <div className="container mx-auto px-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+            <div className="container mx-auto px-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                 {categories.map((cat) => (cat.id && cat.label && (
                     <Link key={cat.id} href={`/heritage/${cat.id}`} className="group">
                         <Card className="h-full rounded-xl border-none shadow-xl hover:shadow-2xl hover:shadow-amber-500/10 transition-all duration-500 bg-white overflow-hidden flex flex-col">
@@ -268,7 +268,7 @@ export default function HeritageHubPage() {
                                 </div>
                             </div>
                             <CardContent className="p-6 flex-grow flex flex-col justify-between">
-                                <p className="text-slate-500 font-medium leading-relaxed italic mb-8">
+                                <p className="text-slate-500 font-medium leading-relaxed italic mb-4">
                                     {cat.description}
                                 </p>
                                 <div className="flex items-center justify-between pt-6 border-t border-slate-50">
@@ -283,12 +283,12 @@ export default function HeritageHubPage() {
                 )))}
             </div>
 
-            <div className="container mx-auto px-8 mt-12">
-                <Card className="rounded-2xl border-none bg-slate-900 p-10 md:p-16 text-center relative overflow-hidden text-white">
+            <div className="container mx-auto px-5 mt-12">
+                <Card className="rounded-2xl border-none bg-slate-900 p-6 md:p-16 text-center relative overflow-hidden text-white">
                     <div className="absolute inset-0 opacity-10">
                         <div className="absolute inset-0 pattern-dots-lg text-white"></div>
                     </div>
-                    <div className="relative z-10 space-y-8">
+                    <div className="relative z-10 space-y-4">
                         <div className="h-20 w-20 bg-amber-500 rounded-xl flex items-center justify-center mx-auto shadow-2xl rotate-12">
                             <Camera className="h-10 w-10 text-slate-950" />
                         </div>

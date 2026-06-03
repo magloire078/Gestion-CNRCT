@@ -633,7 +633,7 @@ export default function PayrollPage() {
                 ) : null}
               </div>
               {!loading && filteredEmployees.length === 0 && !error && (
-                <div className="text-center py-10 text-muted-foreground">
+                <div className="text-center py-5 text-muted-foreground">
                   Aucun employé correspondant aux filtres.
                 </div>
               )}

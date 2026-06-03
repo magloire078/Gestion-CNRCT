@@ -139,7 +139,7 @@ export function AddEvaluationSheet({
            <div className="py-4 h-[calc(100vh-150px)]">
              <ScrollArea className="h-full w-full pr-6">
                  {loadingEmployees && (
-                    <div className="flex items-center justify-center col-span-4 py-8">
+                    <div className="flex items-center justify-center col-span-4 py-4">
                         <Loader2 className="h-8 w-8 animate-spin" />
                     </div>
                 )}

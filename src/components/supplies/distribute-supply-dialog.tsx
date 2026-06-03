@@ -120,8 +120,8 @@ export function DistributeSupplyDialog({ isOpen, onCloseAction, supply }: Distri
 
     return (
         <Dialog open={isOpen} onOpenChange={onCloseAction}>
-            <DialogContent className="sm:max-w-[480px] p-0 overflow-hidden border-none shadow-2xl rounded-3xl bg-white/95 backdrop-blur-xl">
-                <div className="bg-slate-900 px-6 py-8 text-white relative overflow-hidden">
+            <DialogContent className="sm:max-w-[480px] p-0 overflow-hidden border-none shadow-2xl rounded-xl bg-white/95 backdrop-blur-xl">
+                <div className="bg-slate-900 px-6 py-4 text-white relative overflow-hidden">
                     <div className="absolute top-[-20%] right-[-10%] w-40 h-40 bg-blue-500/10 rounded-full blur-3xl" />
                     
                     <DialogHeader className="relative z-10">

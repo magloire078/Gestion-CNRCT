@@ -18,7 +18,7 @@ export function HeritageGallery({ images, className }: HeritageGalleryProps) {
     return (
         <div className={cn("grid grid-cols-1 md:grid-cols-4 gap-6", className)}>
             {/* Main Featured Image */}
-            <div className="md:col-span-3 rounded-[3rem] overflow-hidden relative group aspect-video shadow-2xl bg-slate-100">
+            <div className="md:col-span-3 rounded-2xl overflow-hidden relative group aspect-video shadow-2xl bg-slate-100">
                 <img 
                     src={images[activeIndex]} 
                     alt={`Vue ${activeIndex + 1}`} 

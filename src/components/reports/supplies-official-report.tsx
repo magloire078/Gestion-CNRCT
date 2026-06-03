@@ -76,7 +76,7 @@ export function SuppliesOfficialReport({
                 />
 
                 {/* --- PAGE DE SYNTHÈSE ET TABLEAU --- */}
-                <div className="landscape-section min-h-screen p-12 relative print:p-8">
+                <div className="landscape-section min-h-screen p-12 relative print:p-5">
                     <InstitutionalHeader 
                         title="Détail des Mouvements de Stock"
                         period={`PÉRIODE : ${periodLabel || format(new Date(), 'MMMM yyyy', { locale: fr })} | Situation au ${format(new Date(), 'dd/MM/yyyy à HH:mm')}`}
@@ -85,7 +85,7 @@ export function SuppliesOfficialReport({
                         settings={logos}
                     />
 
-                    <div className="space-y-12">
+                    <div className="space-y-6">
                         {/* --- Main Data Table (Black Border Administrative Style) --- */}
                         <div className="space-y-6">
                             <div className="flex justify-between items-end border-b-4 border-slate-100 pb-2">

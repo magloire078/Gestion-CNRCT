@@ -120,7 +120,7 @@ export function EditDocumentDialog({ document, open, onOpenChange }: EditDocumen
                     <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isUpdating} className="px-6">
                         Annuler
                     </Button>
-                    <Button onClick={handleUpdate} disabled={isUpdating} className="px-8 bg-blue-600 hover:bg-blue-700">
+                    <Button onClick={handleUpdate} disabled={isUpdating} className="px-5 bg-blue-600 hover:bg-blue-700">
                         {isUpdating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                         Enregistrer les modifications
                     </Button>

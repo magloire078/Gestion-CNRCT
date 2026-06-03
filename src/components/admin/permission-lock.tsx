@@ -88,12 +88,12 @@ export function PermissionLock({ children, userEmail }: PermissionLockProps) {
     if (!isUnlocked) {
         return (
             <>
-                <div className="relative flex flex-col items-center justify-center gap-8 rounded-[3rem] border border-white/10 bg-card/40 py-24 text-center backdrop-blur-md shadow-2xl group overflow-hidden">
+                <div className="relative flex flex-col items-center justify-center gap-4 rounded-2xl border border-white/10 bg-card/40 py-10 text-center backdrop-blur-md shadow-2xl group overflow-hidden">
                     {/* Background Pattern */}
                     <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[radial-gradient(#000_1px,transparent_1px)] [background-size:20px_20px]" />
                     
                     <div className="relative">
-                        <div className="flex h-24 w-24 items-center justify-center rounded-[2rem] bg-slate-900 shadow-2xl ring-8 ring-slate-900/10 group-hover:scale-105 transition-transform duration-500">
+                        <div className="flex h-24 w-24 items-center justify-center rounded-xl bg-slate-900 shadow-2xl ring-8 ring-slate-900/10 group-hover:scale-105 transition-transform duration-500">
                             <LockKeyhole className="h-10 w-10 text-emerald-400" />
                         </div>
                         <div className="absolute -right-2 -top-2 flex h-8 w-8 items-center justify-center rounded-full bg-rose-600 text-white shadow-lg border-2 border-white">
@@ -110,7 +110,7 @@ export function PermissionLock({ children, userEmail }: PermissionLockProps) {
                     
                     <Button 
                         onClick={() => setDialogOpen(true)} 
-                        className="gap-3 h-14 px-10 rounded-2xl bg-slate-900 hover:bg-black text-white font-black uppercase tracking-[0.2em] text-[10px] shadow-xl shadow-slate-900/20 active:scale-95 transition-all"
+                        className="gap-3 h-14 px-6 rounded-2xl bg-slate-900 hover:bg-black text-white font-black uppercase tracking-[0.2em] text-[10px] shadow-xl shadow-slate-900/20 active:scale-95 transition-all"
                     >
                         <UnlockKeyhole className="h-5 w-5" />
                         Ouvrir le Verrou
@@ -118,8 +118,8 @@ export function PermissionLock({ children, userEmail }: PermissionLockProps) {
                 </div>
 
                 <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                    <DialogContent className="sm:max-w-md border-white/10 p-0 overflow-hidden bg-white/90 backdrop-blur-2xl rounded-[3rem] shadow-2xl">
-                        <DialogHeader className="bg-slate-900 p-8 text-white text-left">
+                    <DialogContent className="sm:max-w-md border-white/10 p-0 overflow-hidden bg-white/90 backdrop-blur-2xl rounded-2xl shadow-2xl">
+                        <DialogHeader className="bg-slate-900 p-5 text-white text-left">
                             <DialogTitle className="flex items-center gap-4 text-2xl font-black uppercase tracking-tighter">
                                 <Shield className="h-6 w-6 text-emerald-400" />
                                 Authentification
@@ -128,7 +128,7 @@ export function PermissionLock({ children, userEmail }: PermissionLockProps) {
                                 Confirmez votre identité pour déverrouiller les paramètres de sécurité.
                             </DialogDescription>
                         </DialogHeader>
-                        <div className="p-8 space-y-6">
+                        <div className="p-5 space-y-6">
                             <div className="space-y-2">
                                 <Label htmlFor="unlock-email" className="text-[10px] font-black uppercase tracking-widest text-slate-400">Identifiant</Label>
                                 <Input id="unlock-email" value={userEmail} disabled className="h-11 rounded-xl bg-slate-100 border-none font-bold text-slate-500" />
@@ -147,12 +147,12 @@ export function PermissionLock({ children, userEmail }: PermissionLockProps) {
                                 />
                             </div>
                         </div>
-                        <DialogFooter className="p-8 bg-slate-50 border-t border-slate-100 sm:flex-row flex-col gap-3">
+                        <DialogFooter className="p-5 bg-slate-50 border-t border-slate-100 sm:flex-row flex-col gap-3">
                             <Button variant="ghost" onClick={() => setDialogOpen(false)} className="rounded-xl font-bold uppercase tracking-widest text-[10px] h-11">Annuler</Button>
                             <Button 
                                 onClick={handleUnlock} 
                                 disabled={loading || !password} 
-                                className="bg-slate-900 hover:bg-black text-white px-8 h-11 rounded-xl font-black uppercase tracking-widest text-[11px] shadow-lg shadow-slate-900/20 active:scale-95 transition-all gap-2"
+                                className="bg-slate-900 hover:bg-black text-white px-5 h-11 rounded-xl font-black uppercase tracking-widest text-[11px] shadow-lg shadow-slate-900/20 active:scale-95 transition-all gap-2"
                             >
                                 {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <UnlockKeyhole className="h-4 w-4" />}
                                 Valider l'Accès

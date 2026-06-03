@@ -64,12 +64,12 @@ export function InstitutionalCover({
         settings={settings}
       />
 
-      <div className="flex-1 flex flex-col justify-center items-center text-center py-10 relative z-10">
-        <div className="mb-8 p-1">
+      <div className="flex-1 flex flex-col justify-center items-center text-center py-5 relative z-10">
+        <div className="mb-4 p-1">
           {settings?.mainLogoUrl ? (
             <img src={settings.mainLogoUrl} alt="Logo" className="h-32 w-auto object-contain" />
           ) : (
-            <div className="p-6 bg-slate-900 rounded-3xl rotate-3 shadow-2xl">
+            <div className="p-6 bg-slate-900 rounded-xl rotate-3 shadow-2xl">
               <FileText className="h-16 w-16 text-white -rotate-3" />
             </div>
           )}
@@ -95,9 +95,9 @@ export function InstitutionalCover({
         </div>
 
         {stats && stats.length > 0 && (
-          <div className={cn("grid gap-6 w-full max-w-5xl", compact ? "grid-cols-3 mt-4" : "grid-cols-2 md:grid-cols-4 mt-8")}>
+          <div className={cn("grid gap-6 w-full max-w-5xl", compact ? "grid-cols-3 mt-4" : "grid-cols-2 md:grid-cols-4 mt-4")}>
             {stats.map((stat, index) => (
-              <div key={index} className="flex flex-col items-center gap-2 p-6 bg-slate-50 rounded-3xl border border-slate-100 shadow-sm transition-all hover:shadow-md">
+              <div key={index} className="flex flex-col items-center gap-2 p-6 bg-slate-50 rounded-xl border border-slate-100 shadow-sm transition-all hover:shadow-md">
                 {stat.icon && <stat.icon className="h-5 w-5 text-slate-400 mb-2" />}
                 <span className={cn("font-black text-slate-900 tracking-tighter tabular-nums", compact ? "text-2xl" : "text-3xl")}>{stat.value}</span>
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center leading-tight">{stat.label}</span>

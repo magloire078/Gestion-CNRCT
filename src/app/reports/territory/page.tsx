@@ -183,7 +183,7 @@ export default function TerritoryReportPage() {
 
     if (loading) {
         return (
-            <div className="flex flex-col gap-6 p-8">
+            <div className="flex flex-col gap-6 p-5">
                 <Skeleton className="h-12 w-64" />
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                     {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-32 rounded-2xl" />)}
@@ -195,9 +195,9 @@ export default function TerritoryReportPage() {
 
     return (
         <PermissionGuard permission="page:reports:view">
-            <div className="flex flex-col gap-8 pb-20">
+            <div className="flex flex-col gap-4 pb-10">
                 {/* Header Area */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 print:hidden">
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 print:hidden">
                     <div className="space-y-4">
                         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-50 border border-amber-100 text-amber-600 font-black uppercase tracking-[0.2em] text-[10px] shadow-sm">
                             <Globe className="h-3.5 w-3.5" />
@@ -219,7 +219,7 @@ export default function TerritoryReportPage() {
                             <Download className="mr-2 h-4 w-4 text-amber-500" /> 
                             Exporter CSV
                         </Button>
-                        <Button onClick={() => setIsPrinting(true)} className="bg-slate-900 hover:bg-slate-800 rounded-2xl h-14 px-8 font-black text-white shadow-xl shadow-slate-200 hover:scale-[1.02] transition-all text-sm">
+                        <Button onClick={() => setIsPrinting(true)} className="bg-slate-900 hover:bg-slate-800 rounded-2xl h-14 px-5 font-black text-white shadow-xl shadow-slate-200 hover:scale-[1.02] transition-all text-sm">
                             <Printer className="mr-2 h-4 w-4" /> 
                             Imprimer le Diagnostic
                         </Button>
@@ -229,7 +229,7 @@ export default function TerritoryReportPage() {
                 {/* KPI Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-2xl overflow-hidden bg-slate-900 text-white group hover:scale-[1.02] transition-all duration-500">
-                        <CardContent className="p-8">
+                        <CardContent className="p-5">
                             <div className="flex items-center justify-between mb-6">
                                 <div className="h-14 w-14 rounded-xl bg-white/10 flex items-center justify-center backdrop-blur-md group-hover:rotate-6 transition-transform">
                                     <MapPin className="h-7 w-7 text-amber-400" />
@@ -245,7 +245,7 @@ export default function TerritoryReportPage() {
                     </Card>
 
                     <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-2xl overflow-hidden bg-white group hover:scale-[1.02] transition-all duration-500">
-                        <CardContent className="p-8">
+                        <CardContent className="p-5">
                             <div className="flex items-center justify-between mb-6">
                                 <div className="h-14 w-14 rounded-xl bg-blue-500 flex items-center justify-center shadow-xl shadow-blue-200 group-hover:rotate-6 transition-transform">
                                     <Users className="h-7 w-7 text-white" />
@@ -259,7 +259,7 @@ export default function TerritoryReportPage() {
                     </Card>
 
                     <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-2xl overflow-hidden bg-white group hover:scale-[1.02] transition-all duration-500">
-                        <CardContent className="p-8">
+                        <CardContent className="p-5">
                             <div className="flex items-center justify-between mb-6">
                                 <div className="h-14 w-14 rounded-xl bg-amber-500 flex items-center justify-center shadow-xl shadow-amber-200 group-hover:rotate-6 transition-transform">
                                     <Zap className="h-7 w-7 text-white" />
@@ -273,7 +273,7 @@ export default function TerritoryReportPage() {
                     </Card>
 
                     <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-2xl overflow-hidden bg-white group hover:scale-[1.02] transition-all duration-500">
-                        <CardContent className="p-8">
+                        <CardContent className="p-5">
                             <div className="flex items-center justify-between mb-6">
                                 <div className="h-14 w-14 rounded-xl bg-cyan-500 flex items-center justify-center shadow-xl shadow-cyan-200 group-hover:rotate-6 transition-transform">
                                     <Droplets className="h-7 w-7 text-white" />
@@ -288,9 +288,9 @@ export default function TerritoryReportPage() {
                 </div>
 
                 {/* Quick Secondary Stats */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-slate-900">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-slate-900">
                     <Card className="border-none shadow-2xl shadow-slate-200/30 rounded-2xl bg-white overflow-hidden group">
-                        <CardContent className="p-8 flex justify-between items-center relative">
+                        <CardContent className="p-5 flex justify-between items-center relative">
                             <div className="absolute top-0 right-0 h-32 w-32 -mr-16 -mt-16 bg-rose-500/5 rounded-full blur-3xl group-hover:bg-rose-500/10 transition-all" />
                             <div className="flex items-center gap-6 relative z-10">
                                 <div className="h-16 w-16 bg-rose-50 rounded-xl flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform">
@@ -310,7 +310,7 @@ export default function TerritoryReportPage() {
                     </Card>
 
                     <Card className="border-none shadow-2xl shadow-slate-200/30 rounded-2xl bg-white overflow-hidden group">
-                        <CardContent className="p-8 flex justify-between items-center relative">
+                        <CardContent className="p-5 flex justify-between items-center relative">
                             <div className="absolute top-0 right-0 h-32 w-32 -mr-16 -mt-16 bg-indigo-500/5 rounded-full blur-3xl group-hover:bg-indigo-500/10 transition-all" />
                             <div className="flex items-center gap-6 relative z-10">
                                 <div className="h-16 w-16 bg-indigo-50 rounded-xl flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform">
@@ -332,7 +332,7 @@ export default function TerritoryReportPage() {
 
                 {/* Filters and Table */}
                 <Card className="border-none shadow-2xl shadow-slate-200/40 rounded-2xl overflow-hidden bg-white">
-                    <CardHeader className="border-b border-slate-50 p-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
+                    <CardHeader className="border-b border-slate-50 p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div className="flex items-center gap-6">
                             <div className="h-16 w-16 rounded-xl bg-slate-900 flex items-center justify-center shadow-xl shadow-slate-900/20">
                                 <Map className="h-8 w-8 text-amber-400" />
@@ -409,7 +409,7 @@ export default function TerritoryReportPage() {
                         <Table>
                             <TableHeader className="bg-slate-50/50 backdrop-blur-md sticky top-0 z-10">
                                 <TableRow className="hover:bg-transparent border-slate-100">
-                                    <TableHead className="py-8 pl-10 text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">Village</TableHead>
+                                    <TableHead className="py-4 pl-10 text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">Village</TableHead>
                                     <TableHead className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">Administration</TableHead>
                                     <TableHead className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] text-center">Pop.</TableHead>
                                     <TableHead className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] text-center">Electricité</TableHead>

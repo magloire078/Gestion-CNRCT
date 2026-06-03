@@ -21,7 +21,7 @@ interface ProviderListProps {
 export function FuelProviderList({ providers, onEdit, onDelete }: ProviderListProps) {
     if (providers.length === 0) {
         return (
-            <div className="text-center py-10 text-muted-foreground border-2 border-dashed rounded-lg">
+            <div className="text-center py-5 text-muted-foreground border-2 border-dashed rounded-lg">
                 Aucun prestataire enregistré.
             </div>
         );

@@ -132,8 +132,8 @@ export const ConflictHeatmap = memo(function ConflictHeatmap({ conflicts, classN
     }, [isLoaded, conflicts, L]);
 
     return (
-        <Card className={cn("overflow-hidden border-none shadow-2xl rounded-[2.5rem] bg-white text-slate-900 h-full group", className)}>
-            <CardHeader className="p-8 pb-4">
+        <Card className={cn("overflow-hidden border-none shadow-2xl rounded-xl bg-white text-slate-900 h-full group", className)}>
+            <CardHeader className="p-5 pb-4">
                 <div className="flex items-center justify-between">
                     <div className="space-y-1">
                         <Badge variant="outline" className="border-blue-500/30 text-blue-400 bg-blue-500/10 font-black tracking-widest text-[10px] uppercase">
@@ -164,7 +164,7 @@ export const ConflictHeatmap = memo(function ConflictHeatmap({ conflicts, classN
                 />
                 
                 {/* Overlay Legend */}
-                <div className="absolute bottom-6 right-6 z-[1000] bg-white/90 backdrop-blur-xl border border-slate-200/50 p-4 rounded-3xl shadow-2xl space-y-3 min-w-[180px]">
+                <div className="absolute bottom-6 right-6 z-[1000] bg-white/90 backdrop-blur-xl border border-slate-200/50 p-4 rounded-xl shadow-2xl space-y-3 min-w-[180px]">
                     <p className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Légende des Tensions</p>
                     <div className="space-y-2">
                         <div className="flex items-center gap-3">

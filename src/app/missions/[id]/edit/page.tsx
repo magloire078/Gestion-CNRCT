@@ -87,7 +87,7 @@ export default function EditMissionPage() {
 
     if (!mission) {
         return (
-            <div className="container mx-auto py-20 text-center space-y-4">
+            <div className="container mx-auto py-8 text-center space-y-4">
                 <AlertCircle className="h-16 w-16 text-muted-foreground mx-auto" />
                 <h2 className="text-2xl font-bold">Mission non trouvée</h2>
                 <Button variant="outline" onClick={() => router.push("/missions")}>
@@ -98,7 +98,7 @@ export default function EditMissionPage() {
     }
 
     return (
-        <div className="container mx-auto py-8 space-y-8">
+        <div className="container mx-auto py-4 space-y-4">
             <div className="flex items-center gap-4">
                 <Button variant="ghost" size="sm" onClick={() => router.back()} className="rounded-full h-10 w-10">
                     <ChevronLeft className="h-5 w-5" />

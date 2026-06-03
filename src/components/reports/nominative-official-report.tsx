@@ -48,7 +48,7 @@ export function NominativeOfficialReport({
                 />
 
                 {/* Employee Info Box */}
-                <div className="mb-8 p-6 bg-slate-50 border-2 border-slate-900 rounded-2xl flex justify-between items-center shadow-sm">
+                <div className="mb-4 p-6 bg-slate-50 border-2 border-slate-900 rounded-2xl flex justify-between items-center shadow-sm">
                     <div className="space-y-1">
                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-2">Agent Bénéficiaire</p>
                         <h3 className="text-2xl font-black text-slate-900 tracking-tighter uppercase italic">
@@ -114,7 +114,7 @@ export function NominativeOfficialReport({
                 </div>
 
                 {/* Certification Note */}
-                <div className="mt-8 p-4 bg-amber-50/50 border border-amber-100 rounded-xl text-[9px] text-amber-900/70 italic leading-relaxed">
+                <div className="mt-4 p-4 bg-amber-50/50 border border-amber-100 rounded-xl text-[9px] text-amber-900/70 italic leading-relaxed">
                     <strong>Note importante :</strong> Le présent tableau nominatif récapitule les salaires bruts imposables déclarés pour l'agent susmentionné. 
                     Toute altération de ce document le rend caduc. L'exactitude de ces données peut être vérifiée auprès du Secrétariat Général de la CNRCT.
                 </div>

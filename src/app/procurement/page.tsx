@@ -60,8 +60,8 @@ export default function ProcurementDashboard() {
 
     return (
         <PermissionGuard permission="page:procurement:view">
-            <div className="container mx-auto py-10 px-4 md:px-6">
-                <div className="flex flex-col gap-8 pb-20">
+            <div className="container mx-auto py-5 px-4 md:px-6">
+                <div className="flex flex-col gap-4 pb-10">
                     {/* Header */}
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div>
@@ -119,7 +119,7 @@ export default function ProcurementDashboard() {
                         </Card>
                     </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                         {/* Status Chart */}
                         <Card className="lg:col-span-1 border-white/10 shadow-xl bg-card/40 backdrop-blur-md">
                             <CardHeader>
@@ -184,7 +184,7 @@ export default function ProcurementDashboard() {
                                         </div>
                                     ))}
                                     {contracts.length === 0 && (
-                                        <div className="text-center py-10 text-muted-foreground italic">
+                                        <div className="text-center py-5 text-muted-foreground italic">
                                             Aucun marché enregistré pour le moment.
                                         </div>
                                     )}

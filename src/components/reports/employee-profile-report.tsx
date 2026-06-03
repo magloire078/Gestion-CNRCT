@@ -90,7 +90,7 @@ export function EmployeeProfileReport({
                 />
 
                 {/* --- MAIN CONTENT PAGE --- */}
-                <div className="p-12 space-y-10">
+                <div className="p-12 space-y-5">
                     <InstitutionalHeader 
                         title="Fiche de Renseignements Signalétiques"
                         period={`Document généré le ${todayStr}`}

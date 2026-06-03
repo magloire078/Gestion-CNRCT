@@ -232,7 +232,7 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
           <form onSubmit={handleSubmit} className="h-full flex flex-col">
             <div className="absolute inset-0 bg-gradient-to-b from-blue-50/20 to-transparent pointer-events-none" />
             
-            <SheetHeader className="p-6 md:p-8 pb-4 relative z-10">
+            <SheetHeader className="p-6 md:p-5 pb-4 relative z-10">
               <div className="flex items-center gap-3 mb-2">
                 <div className="h-9 w-9 rounded-lg bg-slate-900 flex items-center justify-center shadow-lg">
                   <UserCircle2 className="h-5 w-5 text-white" />
@@ -245,14 +245,14 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
             </SheetHeader>
 
             <div className="flex-1 overflow-hidden relative z-10">
-              <ScrollArea className="h-full w-full px-6 md:px-8">
+              <ScrollArea className="h-full w-full px-6 md:px-5">
                 {isSubmitting && !firstName ? (
                   <div className="flex flex-col items-center justify-center h-64 gap-3">
                     <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
                     <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 animate-pulse">Initialisation...</p>
                   </div>
                 ) : (
-                  <div className="grid gap-6 pb-8">
+                  <div className="grid gap-6 pb-5">
                     {/* Photo upload section */}
                     <div className="flex items-center gap-6 p-5 bg-white/40 rounded-2xl border border-white/20 shadow-xl shadow-slate-200/20 group">
                       <div className="relative">
@@ -499,7 +499,7 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
               </ScrollArea>
             </div>
 
-            <SheetFooter className="p-6 md:p-8 bg-white/40 border-t border-white/20 backdrop-blur-md relative z-10">
+            <SheetFooter className="p-6 md:p-5 bg-white/40 border-t border-white/20 backdrop-blur-md relative z-10">
               <div className="flex gap-4 w-full">
                 <SheetClose asChild>
                   <Button 

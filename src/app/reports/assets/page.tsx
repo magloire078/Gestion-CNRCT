@@ -153,21 +153,21 @@ export default function AssetReportsPage() {
 
     if (loading) {
         return (
-            <div className="p-8 space-y-8">
+            <div className="p-5 space-y-4">
                 <Skeleton className="h-12 w-1/3" />
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                    {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-32 rounded-3xl" />)}
+                    {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-32 rounded-xl" />)}
                 </div>
-                <Skeleton className="h-[500px] rounded-[2.5rem]" />
+                <Skeleton className="h-[500px] rounded-xl" />
             </div>
         );
     }
 
     return (
         <PermissionGuard permission="page:it-assets:view">
-            <div className="flex flex-col gap-10 pb-20 animate-in fade-in duration-1000">
+            <div className="flex flex-col gap-5 pb-10 animate-in fade-in duration-1000">
                 {/* Header */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 print:hidden">
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 print:hidden">
                     <div className="space-y-4">
                         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-600 font-black uppercase tracking-[0.2em] text-[10px] shadow-sm">
                             <Monitor className="h-3.5 w-3.5" />
@@ -214,7 +214,7 @@ export default function AssetReportsPage() {
                 {/* Stats Overview */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                     <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-2xl overflow-hidden group hover:scale-[1.02] transition-all duration-500 bg-white/80 backdrop-blur-md">
-                        <CardContent className="p-8">
+                        <CardContent className="p-5">
                             <div className="flex items-center justify-between mb-6">
                                 <div className="h-14 w-14 rounded-xl bg-indigo-500 flex items-center justify-center shadow-xl shadow-indigo-200 group-hover:rotate-6 transition-transform">
                                     <Layers className="h-7 w-7 text-white" />
@@ -230,7 +230,7 @@ export default function AssetReportsPage() {
                     </Card>
 
                     <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-2xl overflow-hidden group hover:scale-[1.02] transition-all duration-500 bg-white/80 backdrop-blur-md">
-                        <CardContent className="p-8">
+                        <CardContent className="p-5">
                             <div className="flex items-center justify-between mb-6">
                                 <div className="h-14 w-14 rounded-xl bg-emerald-500 flex items-center justify-center shadow-xl shadow-emerald-200 group-hover:rotate-6 transition-transform">
                                     <ShieldCheck className="h-7 w-7 text-white" />
@@ -246,7 +246,7 @@ export default function AssetReportsPage() {
                     </Card>
 
                     <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-2xl overflow-hidden group hover:scale-[1.02] transition-all duration-500 bg-white/80 backdrop-blur-md">
-                        <CardContent className="p-8">
+                        <CardContent className="p-5">
                             <div className="flex items-center justify-between mb-6">
                                 <div className="h-14 w-14 rounded-xl bg-amber-500 flex items-center justify-center shadow-xl shadow-amber-200 group-hover:rotate-6 transition-transform">
                                     <Wrench className="h-7 w-7 text-white" />
@@ -260,7 +260,7 @@ export default function AssetReportsPage() {
                     </Card>
 
                     <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-2xl overflow-hidden group hover:scale-[1.02] transition-all duration-500 bg-slate-900/90 backdrop-blur-md text-white">
-                        <CardContent className="p-8">
+                        <CardContent className="p-5">
                             <div className="flex items-center justify-between mb-6">
                                 <div className="h-14 w-14 rounded-xl bg-white/10 flex items-center justify-center">
                                     <Activity className="h-7 w-7 text-white" />
@@ -283,8 +283,8 @@ export default function AssetReportsPage() {
 
                 {/* Main Content */}
                 <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-2xl overflow-hidden bg-white/80 backdrop-blur-md group transition-all duration-500">
-                    <CardHeader className="p-10 border-b border-slate-50">
-                        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+                    <CardHeader className="p-6 border-b border-slate-50">
+                        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                             <div className="flex items-center gap-6">
                                 <div className="h-16 w-16 rounded-xl bg-slate-900 flex items-center justify-center shadow-2xl shadow-slate-900/20 group-hover:rotate-6 transition-transform">
                                     <Monitor className="h-8 w-8 text-indigo-400" />
@@ -315,7 +315,7 @@ export default function AssetReportsPage() {
                             <Table>
                                 <TableHeader>
                                     <TableRow className="bg-slate-50/80 hover:bg-slate-50/80 border-b border-slate-100">
-                                        <TableHead className="py-8 pl-10 text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">Actif / Désignation</TableHead>
+                                        <TableHead className="py-4 pl-10 text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">Actif / Désignation</TableHead>
                                         <TableHead className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">Catégorie</TableHead>
                                         <TableHead className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">Affectation</TableHead>
                                         <TableHead className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">Statut Opérationnel</TableHead>

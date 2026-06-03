@@ -1,58 +1,76 @@
 "use client";
 
 /**
- * Filtre global pour supprimer les erreurs Firestore de permissions attendues
- * pendant la phase d'authentification initiale.
+ * Filtre global pour supprimer les avertissements connus et bénins
+ * générés par des bibliothèques tierces (Firestore, next-themes, etc.)
+ * Ces messages n'indiquent aucun dysfonctionnement réel.
  */
 
 if (typeof window !== 'undefined') {
     const appStartTime = Date.now();
-    const isPermissionError = (msg: string) => {
-        const lowerMsg = msg.toLowerCase();
-        return lowerMsg.includes('missing or insufficient permissions') ||
-            lowerMsg.includes('permission-denied') ||
-            lowerMsg.includes('permission_denied') ||
-            lowerMsg.includes('firebaseerror') ||
-            lowerMsg.includes('firestore') ||
-            lowerMsg.includes('auth/network-request-failed') ||
-            lowerMsg.includes('fetching auth token failed') ||
-            lowerMsg.includes('could not reach cloud firestore backend') ||
-            lowerMsg.includes('code=unavailable') ||
-            lowerMsg.includes('the operation could not be completed');
+
+    // ─── Règles de filtrage permanentes (toujours ignorées) ───────────────────
+    const isPermanentNoise = (msg: string) => {
+        const m = msg.toLowerCase();
+        return (
+            // Firestore multi-tab IndexedDB lease — transitoire et auto-résolu
+            m.includes('failed to obtain primary lease') ||
+            m.includes('primary lease for action') ||
+            // next-themes injecte un <script> pour éviter le flash de thème,
+            // React 19 le signale mais le comportement est correct et voulu.
+            m.includes('encountered a script tag while rendering') ||
+            m.includes('scripts inside react components are never executed')
+        );
     };
 
-    // Intercepter console.error
-    const originalError = console.error;
-    console.error = function (...args: any[]) {
-        const isInitialLoad = Date.now() - appStartTime < 30000;
-        const errorMessage = args.join(' ');
-
-        if (isInitialLoad && isPermissionError(errorMessage)) {
-            return; // Ignorer silencieusement
-        }
-
-        originalError.apply(console, args);
+    // ─── Règles de filtrage temporaires (30 s après démarrage) ───────────────
+    const isInitialLoadNoise = (msg: string) => {
+        const m = msg.toLowerCase();
+        return (
+            m.includes('missing or insufficient permissions') ||
+            m.includes('permission-denied') ||
+            m.includes('permission_denied') ||
+            m.includes('firebaseerror') ||
+            m.includes('firestore') ||
+            m.includes('auth/network-request-failed') ||
+            m.includes('fetching auth token failed') ||
+            m.includes('could not reach cloud firestore backend') ||
+            m.includes('code=unavailable') ||
+            m.includes('the operation could not be completed')
+        );
     };
 
-    // Intercepter les erreurs non gérées
-    window.addEventListener('error', function (event) {
-        const isInitialLoad = Date.now() - appStartTime < 30000;
-        const errorMessage = event.message || event.error?.message || '';
+    // ─── Intercepteur console.error ───────────────────────────────────────────
+    const originalError = console.error.bind(console);
+    console.error = (...args: any[]) => {
+        const msg = args.join(' ');
+        if (isPermanentNoise(msg)) return;
+        if (Date.now() - appStartTime < 30000 && isInitialLoadNoise(msg)) return;
+        originalError(...args);
+    };
 
-        if (isInitialLoad && isPermissionError(errorMessage)) {
-            console.log(`[firestore-wrapper] Suppressed unhandled error during initial load: ${errorMessage}`);
+    // ─── Intercepteur console.warn (script tag warning peut venir en warn) ───
+    const originalWarn = console.warn.bind(console);
+    console.warn = (...args: any[]) => {
+        const msg = args.join(' ');
+        if (isPermanentNoise(msg)) return;
+        originalWarn(...args);
+    };
+
+    // ─── Erreurs non gérées ───────────────────────────────────────────────────
+    window.addEventListener('error', (event) => {
+        const msg = event.message || event.error?.message || '';
+        if (Date.now() - appStartTime < 30000 && isInitialLoadNoise(msg)) {
             event.preventDefault();
             event.stopImmediatePropagation();
             return false;
         }
-    }, true); // Capture phase pour intercepter avant les autres
+    }, true);
 
-    // Intercepter les rejets de promesses non gérés
-    window.addEventListener('unhandledrejection', function (event) {
-        const isInitialLoad = Date.now() - appStartTime < 30000;
-        const errorMessage = event.reason?.message || String(event.reason) || '';
-
-        if (isInitialLoad && isPermissionError(errorMessage)) {
+    // ─── Rejets de promesses non gérés ───────────────────────────────────────
+    window.addEventListener('unhandledrejection', (event) => {
+        const msg = event.reason?.message || String(event.reason) || '';
+        if (Date.now() - appStartTime < 30000 && isInitialLoadNoise(msg)) {
             event.preventDefault();
             event.stopImmediatePropagation();
         }

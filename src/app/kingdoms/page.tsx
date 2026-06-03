@@ -35,7 +35,7 @@ export default function KingdomsPage() {
     };
 
     return (
-        <div className="space-y-8 animate-in fade-in duration-500 pb-20">
+        <div className="space-y-4 animate-in fade-in duration-500 pb-10">
             {/* Header Section */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div>

@@ -162,7 +162,7 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
 
   if (loadingMetadata) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 gap-4">
+      <div className="flex flex-col items-center justify-center py-8 gap-4">
         <Loader2 className="h-10 w-10 animate-spin text-primary" />
         <p className="text-muted-foreground animate-pulse">Chargement des données...</p>
       </div>
@@ -170,7 +170,7 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
   }
 
   return (
-    <div className="max-w-5xl mx-auto space-y-8">
+    <div className="max-w-5xl mx-auto space-y-4">
       <div className="flex items-center justify-between">
         <div className="space-y-1">
           <h1 className="text-2xl font-black tracking-tight text-slate-900 uppercase">Modifier le profil</h1>
@@ -187,8 +187,8 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
         </div>
       </div>
 
-    <div className="space-y-10">
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-4 gap-10">
+    <div className="space-y-5">
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-4 gap-5">
         {/* --- LEFT SIDEBAR: PROFILE & STATUS --- */}
         <div className="lg:col-span-1 space-y-6">
           <Card className="border-none bg-white/40 backdrop-blur-xl rounded-2xl shadow-xl shadow-slate-200/50 border border-white/20 overflow-hidden sticky top-8">
@@ -458,7 +458,7 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                            </div>
                         </div>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-3">
                         <Label htmlFor="enfants" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Nombre d'enfants à charge</Label>
                         <Input id="enfants" type="number" value={formData.enfants || 0} onChange={(e) => setFormData(prev => ({ ...prev, enfants: parseInt(e.target.value) || 0 }))} className="h-12 rounded-xl border-slate-200 bg-white font-black" />

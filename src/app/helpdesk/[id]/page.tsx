@@ -60,9 +60,9 @@ function TicketDetailContent() {
 
   if (loading) {
     return (
-      <div className="flex flex-col gap-6 p-8">
+      <div className="flex flex-col gap-6 p-5">
         <Skeleton className="h-8 w-48" />
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <Skeleton className="lg:col-span-2 h-[500px]" />
           <Skeleton className="h-[400px]" />
         </div>
@@ -72,7 +72,7 @@ function TicketDetailContent() {
 
   if (error || !ticket) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 gap-4">
+      <div className="flex flex-col items-center justify-center py-8 gap-4">
         <AlertCircle className="h-12 w-12 text-destructive" />
         <h2 className="text-xl font-bold">{error || "Ticket introuvable"}</h2>
         <Button onClick={() => router.push("/helpdesk")}>Retour au support</Button>
@@ -83,7 +83,7 @@ function TicketDetailContent() {
   // Security check: only author or admin can see the ticket
   if (!isAdmin && ticket.createdBy !== user?.id) {
       return (
-          <div className="flex flex-col items-center justify-center py-20 gap-4">
+          <div className="flex flex-col items-center justify-center py-8 gap-4">
             <AlertCircle className="h-12 w-12 text-destructive" />
             <h2 className="text-xl font-bold">Accès non autorisé</h2>
             <p className="text-muted-foreground text-center">Vous n'avez pas les droits pour consulter ce ticket.</p>
@@ -93,7 +93,7 @@ function TicketDetailContent() {
   }
 
   return (
-    <div className="flex flex-col gap-8 pb-20">
+    <div className="flex flex-col gap-4 pb-10">
       {/* Header with Breadcrumb-like back button */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
@@ -126,7 +126,7 @@ function TicketDetailContent() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Main section: Conversation */}
         <div className="lg:col-span-2">
           {user && <TicketConversation ticket={ticket} currentUser={{ id: user.id, name: user.name }} />}

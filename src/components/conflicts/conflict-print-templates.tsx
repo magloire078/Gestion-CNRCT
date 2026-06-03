@@ -21,7 +21,7 @@ export function PrintConflictsList({ conflicts, organizationSettings, subtitle }
                     period={subtitle || "Toutes Régions / Tous Types"}
                 />
 
-                <div className="mt-8">
+                <div className="mt-4">
                     <table className="w-full text-[10px] border-collapse border-2 border-black">
                         <thead>
                             <tr className="bg-slate-900 text-white uppercase font-black text-center border-b-2 border-black print:bg-transparent print:text-slate-900">
@@ -97,9 +97,9 @@ export function PrintConflictDetail({ conflict, organizationSettings, isPrinting
                     period={`RÉFÉRENCE : #${conflict.id.substring(0, 8).toUpperCase()}`}
                 />
 
-                <div className="mt-8 space-y-8 text-sm">
+                <div className="mt-4 space-y-4 text-sm">
                     {/* Identification Section */}
-                    <div className="grid grid-cols-2 gap-8 bg-slate-50 p-6 border-2 border-black rounded-xl">
+                    <div className="grid grid-cols-2 gap-4 bg-slate-50 p-6 border-2 border-black rounded-xl">
                         <div className="space-y-3">
                             <div>
                                 <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Localisation</h4>
@@ -129,7 +129,7 @@ export function PrintConflictDetail({ conflict, organizationSettings, isPrinting
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-8">
+                    <div className="grid grid-cols-1 gap-4">
                         <div>
                             <h3 className="bg-slate-900 text-white px-4 py-2 font-black border-l-4 border-primary uppercase text-xs print:bg-transparent print:text-slate-900 print:border-b-2 print:border-l-0">I. Résumé Détaillé des Faits</h3>
                             <div className="mt-4 text-justify leading-relaxed p-6 border-2 border-black bg-white min-h-[150px] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
@@ -137,7 +137,7 @@ export function PrintConflictDetail({ conflict, organizationSettings, isPrinting
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-8">
+                        <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <h3 className="bg-slate-900 text-white px-4 py-2 font-black border-l-4 border-primary uppercase text-xs print:bg-transparent print:text-slate-900 print:border-b-2 print:border-l-0">II. Acteurs & Parties</h3>
                                 <div className="mt-4 p-4 border-2 border-black italic text-slate-700 min-h-[80px]">

@@ -21,7 +21,7 @@ interface TransactionListProps {
 export function FuelTransactionList({ transactions, cards, onDelete }: TransactionListProps) {
     if (transactions.length === 0) {
         return (
-            <div className="text-center py-10 text-muted-foreground border-2 border-dashed rounded-lg">
+            <div className="text-center py-5 text-muted-foreground border-2 border-dashed rounded-lg">
                 Aucune transaction enregistrée.
             </div>
         );

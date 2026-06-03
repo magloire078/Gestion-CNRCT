@@ -362,7 +362,7 @@ export default function VillagesPage() {
 
     return (
         <PermissionGuard permission="page:villages:view">
-            <div className="flex flex-col gap-8 pb-20 h-full min-h-screen">
+            <div className="flex flex-col gap-4 pb-10 h-full min-h-screen">
                 {/* Dynamic Hero Header */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div>
@@ -712,7 +712,7 @@ export default function VillagesPage() {
 
             {/* --- MAINTENANCE (Admin only) --- */}
             {(user?.role?.name === 'ADMIN' || user?.email === 'magloire078@gmail.com') && (
-                <div className="mt-8 space-y-4 px-4 lg:px-8 pb-8">
+                <div className="mt-4 space-y-4 px-4 lg:px-5 pb-5">
 
                     {showMaintenance && <DataMigrationTool />}
                 </div>

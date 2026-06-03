@@ -1,0 +1,1 @@
+import { adminDb } from './src/lib/firebase-admin'; async function run() { const snapshot = await adminDb.collection('employees').where('groupe_1', '==', 'Rois & Chefs').limit(1).get(); snapshot.forEach((doc: any) => console.log(doc.data())); } run().catch(console.error);

@@ -117,8 +117,8 @@ export function EditMissionForm({ mission, onUpdateMission }: EditMissionFormPro
         }
     };
 
-    return (        <form onSubmit={handleSubmit} className="space-y-12 pb-24">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-white/80 backdrop-blur-xl p-8 rounded-[2.5rem] border border-white/20 shadow-2xl sticky top-4 z-20 gap-4">
+    return (        <form onSubmit={handleSubmit} className="space-y-6 pb-24">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-white/80 backdrop-blur-xl p-5 rounded-xl border border-white/20 shadow-2xl sticky top-4 z-20 gap-4">
                 <div className="flex items-center gap-4">
                     <div className="h-14 w-14 bg-slate-900 rounded-2xl flex items-center justify-center shadow-lg transform -rotate-3 group-hover:rotate-0 transition-transform">
                         <Settings className="h-7 w-7 text-white" />
@@ -145,7 +145,7 @@ export function EditMissionForm({ mission, onUpdateMission }: EditMissionFormPro
                     <Button 
                         type="submit" 
                         disabled={isSubmitting} 
-                        className="flex-1 md:flex-none h-12 px-8 rounded-xl bg-slate-900 shadow-xl shadow-slate-900/20 font-black uppercase tracking-widest text-[11px] hover:bg-black active:scale-95 transition-all text-white"
+                        className="flex-1 md:flex-none h-12 px-5 rounded-xl bg-slate-900 shadow-xl shadow-slate-900/20 font-black uppercase tracking-widest text-[11px] hover:bg-black active:scale-95 transition-all text-white"
                     >
                         {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                         Valider les Rectifications
@@ -167,10 +167,10 @@ export function EditMissionForm({ mission, onUpdateMission }: EditMissionFormPro
                 </TabsList>
 
 
-                <TabsContent value="general" className="mt-12 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        <Card className="lg:col-span-2 border-white/10 shadow-xl bg-card/40 backdrop-blur-md overflow-hidden rounded-[2rem]">
-                            <CardHeader className="p-8 border-b border-white/10 bg-slate-900/5">
+                <TabsContent value="general" className="mt-12 space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                        <Card className="lg:col-span-2 border-white/10 shadow-xl bg-card/40 backdrop-blur-md overflow-hidden rounded-xl">
+                            <CardHeader className="p-5 border-b border-white/10 bg-slate-900/5">
                                 <CardTitle className="text-lg font-black uppercase tracking-tight flex items-center gap-3">
                                     <div className="h-2 w-2 rounded-full bg-blue-500 animate-pulse" />
                                     Détails Opérationnels
@@ -179,7 +179,7 @@ export function EditMissionForm({ mission, onUpdateMission }: EditMissionFormPro
                                     Spécifications techniques de la mission
                                 </CardDescription>
                             </CardHeader>
-                            <CardContent className="p-8 space-y-8">
+                            <CardContent className="p-5 space-y-4">
                                 <div className="space-y-3">
                                     <Label htmlFor="title" className="text-[11px] font-black uppercase tracking-widest text-slate-500 pl-1">Désignation de la Mission</Label>
                                     <Input 
@@ -202,15 +202,15 @@ export function EditMissionForm({ mission, onUpdateMission }: EditMissionFormPro
                             </CardContent>
                         </Card>
 
-                        <div className="space-y-8">
-                            <Card className="border-white/10 shadow-xl bg-card/40 backdrop-blur-md overflow-hidden rounded-[2rem]">
-                                <CardHeader className="p-8 border-b border-white/10 bg-slate-900/5">
+                        <div className="space-y-4">
+                            <Card className="border-white/10 shadow-xl bg-card/40 backdrop-blur-md overflow-hidden rounded-xl">
+                                <CardHeader className="p-5 border-b border-white/10 bg-slate-900/5">
                                     <CardTitle className="text-lg font-black uppercase tracking-tight flex items-center gap-3">
                                         <MapPin className="h-5 w-5 text-blue-500" />
                                         Logistique
                                     </CardTitle>
                                 </CardHeader>
-                                <CardContent className="p-8 space-y-6">
+                                <CardContent className="p-5 space-y-6">
                                     <div className="space-y-3">
                                         <Label className="text-[11px] font-black uppercase tracking-widest text-slate-500 pl-1">Zone Géographique</Label>
                                         <div className="relative">
@@ -256,14 +256,14 @@ export function EditMissionForm({ mission, onUpdateMission }: EditMissionFormPro
                                 </CardContent>
                             </Card>
 
-                            <Card className="border-white/10 shadow-xl bg-card/40 backdrop-blur-md overflow-hidden rounded-[2rem]">
-                                <CardHeader className="p-8 border-b border-white/10 bg-slate-900/5">
+                            <Card className="border-white/10 shadow-xl bg-card/40 backdrop-blur-md overflow-hidden rounded-xl">
+                                <CardHeader className="p-5 border-b border-white/10 bg-slate-900/5">
                                     <CardTitle className="text-lg font-black uppercase tracking-tight flex items-center gap-3">
                                         <Settings className="h-5 w-5 text-orange-500" />
                                         Statut
                                     </CardTitle>
                                 </CardHeader>
-                                <CardContent className="p-8">
+                                <CardContent className="p-5">
                                     <Select value={status} onValueChange={(v: any) => setStatus(v)}>
                                         <SelectTrigger className="h-12 bg-white/50 rounded-xl border-slate-200 font-black uppercase text-[10px] tracking-[0.2em]">
                                             <SelectValue />
@@ -282,8 +282,8 @@ export function EditMissionForm({ mission, onUpdateMission }: EditMissionFormPro
                 </TabsContent>
 
                 <TabsContent value="participants" className="mt-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                    <Card className="border-white/10 shadow-2xl bg-card/40 backdrop-blur-md overflow-hidden rounded-[2.5rem]">
-                        <CardHeader className="p-8 md:p-12 border-b border-white/10 bg-slate-900/5">
+                    <Card className="border-white/10 shadow-2xl bg-card/40 backdrop-blur-md overflow-hidden rounded-xl">
+                        <CardHeader className="p-5 md:p-12 border-b border-white/10 bg-slate-900/5">
                             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                                 <div>
                                     <CardTitle className="text-2xl font-black uppercase tracking-tight text-slate-900">Équipage Mobilisé</CardTitle>
@@ -312,7 +312,7 @@ export function EditMissionForm({ mission, onUpdateMission }: EditMissionFormPro
                                     <TableBody>
                                         {participants.length === 0 ? (
                                             <TableRow>
-                                                <TableCell colSpan={4} className="text-center py-24">
+                                                <TableCell colSpan={4} className="text-center py-10">
                                                     <div className="flex flex-col items-center gap-3">
                                                         <UserPlus className="h-10 w-10 text-slate-200" />
                                                         <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Aucun membre d'équipage assigné</p>
@@ -365,8 +365,8 @@ export function EditMissionForm({ mission, onUpdateMission }: EditMissionFormPro
                 </TabsContent>
 
                 <TabsContent value="logistics" className="mt-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                    <Card className="border-white/10 shadow-2xl bg-card/40 backdrop-blur-md overflow-hidden rounded-[2.5rem]">
-                        <CardHeader className="p-8 md:p-12 border-b border-white/10 bg-slate-900/5">
+                    <Card className="border-white/10 shadow-2xl bg-card/40 backdrop-blur-md overflow-hidden rounded-xl">
+                        <CardHeader className="p-5 md:p-12 border-b border-white/10 bg-slate-900/5">
                             <CardTitle className="text-2xl font-black uppercase tracking-tight text-slate-900">Enveloppe Logistique</CardTitle>
                             <CardDescription className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-1">Évaluation budgétaire par membre d'équipage</CardDescription>
                         </CardHeader>

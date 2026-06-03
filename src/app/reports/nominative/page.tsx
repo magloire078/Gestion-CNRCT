@@ -157,9 +157,9 @@ export default function NominativeReportPage() {
   return (
     <PermissionGuard permission="page:reports:view">
       <>
-        <div className={`flex flex-col gap-10 pb-20 animate-in fade-in duration-1000 ${isPrinting ? 'print-hidden' : ''}`}>
+        <div className={`flex flex-col gap-5 pb-10 animate-in fade-in duration-1000 ${isPrinting ? 'print-hidden' : ''}`}>
           {/* Header */}
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 print:hidden">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 print:hidden">
             <div className="space-y-4">
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-600 font-black uppercase tracking-[0.2em] text-[10px] shadow-sm">
                 <FileText className="h-3.5 w-3.5" />
@@ -174,7 +174,7 @@ export default function NominativeReportPage() {
             </div>
           </div>
           <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-2xl overflow-hidden bg-white/80 backdrop-blur-md border border-slate-100/50">
-            <CardHeader className="p-10 border-b border-slate-50">
+            <CardHeader className="p-6 border-b border-slate-50">
               <div className="flex items-center gap-6">
                 <div className="h-16 w-16 rounded-xl bg-slate-900 flex items-center justify-center shadow-xl shadow-slate-900/20">
                   <FileText className="h-8 w-8 text-indigo-400" />
@@ -185,8 +185,8 @@ export default function NominativeReportPage() {
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="p-10">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-8 items-end">
+            <CardContent className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
                 <div className="space-y-3">
                   <Label htmlFor="employee" className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Employé</Label>
                   <Popover open={isComboboxOpen} onOpenChange={setIsComboboxOpen}>
@@ -251,7 +251,7 @@ export default function NominativeReportPage() {
                 </Button>
               </div>
               {error && (
-                <Alert variant="destructive" className="mt-8 rounded-xl bg-rose-50 border-rose-100 text-rose-900 p-6 flex flex-col gap-1">
+                <Alert variant="destructive" className="mt-4 rounded-xl bg-rose-50 border-rose-100 text-rose-900 p-6 flex flex-col gap-1">
                   <AlertTitle className="font-black uppercase tracking-widest text-[10px]">Erreur de configuration</AlertTitle>
                   <AlertDescription className="font-bold opacity-80">{error}</AlertDescription>
                 </Alert>
@@ -261,8 +261,8 @@ export default function NominativeReportPage() {
 
           {reportData && (
             <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-2xl overflow-hidden bg-white/80 backdrop-blur-md animate-in slide-in-from-bottom duration-700">
-              <CardHeader className="p-10 border-b border-slate-50">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
+              <CardHeader className="p-6 border-b border-slate-50">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                   <div className="flex items-center gap-6">
                     <div className="h-16 w-16 rounded-xl bg-indigo-500 flex items-center justify-center shadow-xl shadow-indigo-100">
                       <FileText className="h-8 w-8 text-white" />
@@ -282,7 +282,7 @@ export default function NominativeReportPage() {
                   <Table>
                     <TableHeader>
                       <TableRow className="bg-slate-50/80 hover:bg-slate-50/80 border-b border-slate-100">
-                        <TableHead className="py-8 pl-10 text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">Année</TableHead>
+                        <TableHead className="py-4 pl-10 text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">Année</TableHead>
                         {reportData.annualSalaries[0]?.months.map(m => (
                           <TableHead key={m.month} className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] text-right px-4">
                             {m.month.substring(0, 3)}
@@ -317,7 +317,7 @@ export default function NominativeReportPage() {
                         </TableRow>
                       ))}
                       <TableRow className="bg-slate-900 hover:bg-slate-900 border-none">
-                        <TableCell colSpan={13} className="py-10 text-right">
+                        <TableCell colSpan={13} className="py-5 text-right">
                           <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">TOTAL GÉNÉRAL CUMULÉ</span>
                         </TableCell>
                         <TableCell className="text-right pr-10">
@@ -337,7 +337,7 @@ export default function NominativeReportPage() {
           )}
 
           {!reportData && !isGenerating && (
-            <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-2xl overflow-hidden bg-white/60 backdrop-blur-md py-24 border border-slate-100/50">
+            <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-2xl overflow-hidden bg-white/60 backdrop-blur-md py-10 border border-slate-100/50">
               <div className="text-center space-y-6 max-w-sm mx-auto">
                 <div className="h-24 w-24 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center mx-auto shadow-inner group">
                   <FileText className="h-10 w-10 text-indigo-300 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500" />

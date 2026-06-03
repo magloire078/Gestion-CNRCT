@@ -29,7 +29,7 @@ const formatCurrency = (value: number | undefined) => {
 export function MissionCostReport({ mission, participants, duration, totalCost }: MissionCostReportProps) {
     const today = format(new Date(), 'dd MMMM yyyy', { locale: fr });
     return (
-        <div className="bg-white text-black p-8 font-arial w-full print:shadow-none print:border-none print:p-0">
+        <div className="bg-white text-black p-5 font-arial w-full print:shadow-none print:border-none print:p-0">
             <header className="flex justify-between items-center pb-4 border-b-2 border-black">
                 <div className="w-1/4">
                     {/* Placeholder for a logo if available */}

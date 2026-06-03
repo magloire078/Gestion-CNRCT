@@ -72,7 +72,7 @@ export default function ProvidersPage() {
 
     return (
         <PermissionGuard permission="page:procurement:view">
-            <div className="container mx-auto py-10 px-4 md:px-6">
+            <div className="container mx-auto py-5 px-4 md:px-6">
                 <div className="flex flex-col gap-6">
                     {/* Breadcrumbs / Header */}
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -202,7 +202,7 @@ export default function ProvidersPage() {
                             ))}
 
                             {filteredProviders.length === 0 && !loading && (
-                                <div className="col-span-full py-20 text-center flex flex-col items-center justify-center gap-4 bg-slate-50/50 rounded-3xl border-2 border-dashed border-slate-200">
+                                <div className="col-span-full py-8 text-center flex flex-col items-center justify-center gap-4 bg-slate-50/50 rounded-xl border-2 border-dashed border-slate-200">
                                     <div className="h-16 w-16 rounded-full bg-slate-100 flex items-center justify-center">
                                         <Search className="h-8 w-8 text-slate-300" />
                                     </div>

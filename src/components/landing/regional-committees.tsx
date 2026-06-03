@@ -60,7 +60,7 @@ export function RegionalCommittees({
             <p className="text-sm text-muted-foreground">Chargement du réseau territorial...</p>
           </div>
         ) : (
-          <div className="grid lg:grid-cols-3 gap-12 items-start max-w-7xl mx-auto">
+          <div className="grid lg:grid-cols-3 gap-6 items-start max-w-7xl mx-auto">
             {/* Left: Region List */}
             <div className="lg:col-span-1 space-y-6 animate-in fade-in slide-in-from-left-8 duration-700">
               <div className="relative group">
@@ -104,12 +104,12 @@ export function RegionalCommittees({
             {/* Right: Region Details */}
             <div className="lg:col-span-2 animate-in fade-in slide-in-from-right-8 duration-700">
               {!selected ? (
-                <div className="flex flex-col items-center justify-center min-h-[600px] text-muted-foreground bg-muted/20 rounded-[3rem] border-2 border-dashed border-primary/10">
+                <div className="flex flex-col items-center justify-center min-h-[600px] text-muted-foreground bg-muted/20 rounded-2xl border-2 border-dashed border-primary/10">
                   <MapPin className="h-12 w-12 mb-4 opacity-10" />
                   <p className="font-light italic">Aucune région ne correspond à votre recherche</p>
                 </div>
               ) : (
-                <Card className="border-none shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] bg-white overflow-hidden rounded-[3rem] min-h-[600px] flex flex-col group/card">
+                <Card className="border-none shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] bg-white overflow-hidden rounded-2xl min-h-[600px] flex flex-col group/card">
                   {/* Card Header with Region Banner */}
                   <div className="h-48 bg-slate-900 relative flex items-center px-12 overflow-hidden">
                     <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/natural-paper.png')] opacity-10 mix-blend-luminosity" />
@@ -121,10 +121,10 @@ export function RegionalCommittees({
                     <Users className="absolute right-[-20px] bottom-[-20px] w-64 h-64 text-white opacity-5 pointer-events-none group-hover/card:scale-110 transition-transform duration-1000" />
                   </div>
 
-                  <CardContent className="flex-1 p-8 md:p-12 relative">
-                    <div className="grid md:grid-cols-2 gap-12">
+                  <CardContent className="flex-1 p-5 md:p-12 relative">
+                    <div className="grid md:grid-cols-2 gap-6">
                       {/* President / Focal Point */}
-                      <div className="space-y-8">
+                      <div className="space-y-4">
                         <div className="space-y-6">
                           <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-[#006039]/40 border-b border-primary/5 pb-2">Présidence du Comité</h4>
                           <div className="flex items-center gap-6">
@@ -185,8 +185,8 @@ export function RegionalCommittees({
                       </div>
 
                       {/* Members List */}
-                      <div className="bg-[#fafaf8] rounded-[2rem] p-8 border border-primary/5 flex flex-col">
-                        <div className="flex items-center justify-between mb-8">
+                      <div className="bg-[#fafaf8] rounded-xl p-5 border border-primary/5 flex flex-col">
+                        <div className="flex items-center justify-between mb-4">
                           <h5 className="text-[10px] font-black uppercase tracking-[0.3em] text-[#006039]/40">Bureau Local</h5>
                           <Badge className="bg-[#006039]/10 text-[#006039] border-none font-bold">{selected.members.length} Membres</Badge>
                         </div>
@@ -227,7 +227,7 @@ export function RegionalCommittees({
                                 </div>
                               </div>
                             )) : (
-                              <div className="py-20 text-center space-y-3">
+                              <div className="py-8 text-center space-y-3">
                                 <div className="w-12 h-12 rounded-full bg-muted/50 mx-auto flex items-center justify-center">
                                   <Loader2 className="h-5 w-5 text-muted-foreground opacity-30" />
                                 </div>

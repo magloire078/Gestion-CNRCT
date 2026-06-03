@@ -126,7 +126,7 @@ export function AddMissionSheet({
     <Sheet open={isOpen} onOpenChange={(open) => !open && handleClose()}>
       <SheetContent className="sm:max-w-lg border-l-white/10 bg-slate-50/95 backdrop-blur-2xl p-0 overflow-hidden rounded-l-[2rem]">
         <form onSubmit={handleSubmit} className="flex flex-col h-full">
-          <SheetHeader className="p-8 bg-slate-900 text-white space-y-2 relative overflow-hidden">
+          <SheetHeader className="p-5 bg-slate-900 text-white space-y-2 relative overflow-hidden">
             <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
               <LogOut className="h-24 w-24 rotate-180" />
             </div>
@@ -141,7 +141,7 @@ export function AddMissionSheet({
             </div>
           </SheetHeader>
 
-          <div className="flex-1 overflow-hidden px-8 py-6">
+          <div className="flex-1 overflow-hidden px-5 py-6">
             <ScrollArea className="h-full w-full pr-4">
               {loadingInitial ? (
                 <div className="flex flex-col items-center justify-center h-64 gap-4">
@@ -149,7 +149,7 @@ export function AddMissionSheet({
                   <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Génération du numéro de dossier...</p>
                 </div>
               ) : (
-                <div className="space-y-8">
+                <div className="space-y-4">
                   {/* Status & ID Header */}
                   <div className="flex items-center justify-between bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
                     <div className="space-y-1">
@@ -252,7 +252,7 @@ export function AddMissionSheet({
             </ScrollArea>
           </div>
 
-          <SheetFooter className="p-8 bg-white border-t border-slate-100 sm:flex-row gap-3">
+          <SheetFooter className="p-5 bg-white border-t border-slate-100 sm:flex-row gap-3">
             <SheetClose asChild>
               <Button type="button" variant="ghost" onClick={handleClose} className="flex-1 h-12 rounded-xl font-black uppercase tracking-widest text-[11px] text-slate-500 hover:bg-slate-50">
                 Annuler

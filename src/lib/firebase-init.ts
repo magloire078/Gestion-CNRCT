@@ -3,7 +3,9 @@ import { initializeApp, getApps, getApp, type FirebaseOptions } from "firebase/a
 import { 
   initializeFirestore, 
   persistentLocalCache, 
-  persistentMultipleTabManager 
+  persistentMultipleTabManager,
+  memoryLocalCache,
+  getFirestore
 } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { getStorage } from "firebase/storage";
@@ -11,7 +13,7 @@ import { getStorage } from "firebase/storage";
 // Helper to sanitize environment variables that might contain literal quotes
 const sanitize = (val: any) => {
   if (typeof val !== 'string') return val;
-  return val.replace(/^["'](.*)["']$/, '$1').trim();
+  return val.replace(/^["'](.*)['"']$/, '$1').trim();
 };
 
 const firebaseConfig: FirebaseOptions = {
@@ -24,7 +26,10 @@ const firebaseConfig: FirebaseOptions = {
   measurementId: sanitize(process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID)
 };
 
-const isConfigValid = !!firebaseConfig.apiKey && firebaseConfig.apiKey !== 'undefined' && firebaseConfig.apiKey !== '';
+const isConfigValid =
+  !!firebaseConfig.apiKey &&
+  firebaseConfig.apiKey !== 'undefined' &&
+  firebaseConfig.apiKey !== '';
 
 const finalConfig = isConfigValid ? firebaseConfig : {
   apiKey: "dummy-api-key",
@@ -35,16 +40,25 @@ const finalConfig = isConfigValid ? firebaseConfig : {
   appId: "1:000000000:web:000000000"
 };
 
-// Initialize Firebase App
+// Initialize Firebase App (singleton pattern)
 const app = getApps().length === 0 ? initializeApp(finalConfig) : getApp();
 
-// Initialize Firestore with specific settings
-const db = initializeFirestore(app, {
-  localCache: persistentLocalCache({
-    tabManager: persistentMultipleTabManager()
-  }),
-  experimentalForceLongPolling: true
-});
+// Initialize Firestore with persistent multi-tab cache only on the client
+let db: ReturnType<typeof getFirestore>;
+try {
+  db = initializeFirestore(app, {
+    localCache: typeof window !== 'undefined' 
+      ? persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+      : memoryLocalCache(),
+    experimentalForceLongPolling: true
+  });
+} catch (error: any) {
+  if (error.code === 'failed-precondition' || (error.message && error.message.includes('initializeFirestore'))) {
+    db = getFirestore(app);
+  } else {
+    throw error;
+  }
+}
 
 const auth = getAuth(app);
 const storage = getStorage(app);

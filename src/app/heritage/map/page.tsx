@@ -39,7 +39,7 @@ export default function HeritageMapPage() {
 
     return (
         <PermissionGuard permission="page:heritage:view">
-            <div className="flex flex-col gap-6 px-4 lg:px-8 py-6 h-[calc(100vh-4rem)]">
+            <div className="flex flex-col gap-6 px-4 lg:px-5 py-6 h-[calc(100vh-4rem)]">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
                     <div>
                         <div className="flex items-center gap-3 mb-2">

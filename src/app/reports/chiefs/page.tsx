@@ -198,7 +198,7 @@ export default function ChiefsReportsPage() {
 
     if (loading) {
         return (
-            <div className="p-8 space-y-8">
+            <div className="p-5 space-y-4">
                 <Skeleton className="h-12 w-1/3" />
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                     {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-32 rounded-2xl" />)}
@@ -210,15 +210,15 @@ export default function ChiefsReportsPage() {
 
     return (
         <PermissionGuard permission="page:chiefs:view">
-            <div className="flex flex-col gap-10 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+            <div className="flex flex-col gap-5 pb-10 animate-in fade-in slide-in-from-bottom-4 duration-1000">
                 {/* Header Section with Premium Glassmorphism */}
-                <div className="relative overflow-hidden rounded-[2.5rem] bg-slate-950 p-10 md:p-14 shadow-2xl print:hidden">
+                <div className="relative overflow-hidden rounded-xl bg-slate-950 p-6 md:p-14 shadow-2xl print:hidden">
                     {/* Decorative Elements */}
                     <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-[#D4AF37]/10 to-transparent opacity-50" />
                     <div className="absolute -top-24 -right-24 w-64 h-64 bg-[#D4AF37]/20 rounded-full blur-[100px]" />
                     <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-indigo-500/10 rounded-full blur-[100px]" />
 
-                    <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-8">
+                    <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div className="space-y-4">
                             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
                                 <Crown className="h-4 w-4 text-[#D4AF37]" />
@@ -305,7 +305,7 @@ export default function ChiefsReportsPage() {
                                 </DropdownMenu>
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
-                                        <Button className="bg-gradient-to-br from-[#D4AF37] to-[#B8972F] hover:from-[#B8972F] hover:to-[#D4AF37] text-slate-950 rounded-2xl h-14 px-8 font-black shadow-2xl shadow-[#D4AF37]/30 border-none transition-all duration-500 hover:scale-[1.02] active:scale-[0.98]">
+                                        <Button className="bg-gradient-to-br from-[#D4AF37] to-[#B8972F] hover:from-[#B8972F] hover:to-[#D4AF37] text-slate-950 rounded-2xl h-14 px-5 font-black shadow-2xl shadow-[#D4AF37]/30 border-none transition-all duration-500 hover:scale-[1.02] active:scale-[0.98]">
                                             <Download className="mr-2 h-5 w-5" />
                                             Exporter
                                         </Button>
@@ -372,9 +372,9 @@ export default function ChiefsReportsPage() {
                             sub: "Régions avec vacances"
                         }
                     ].map((stat, i) => (
-                        <Card key={i} className="group relative border-none shadow-xl shadow-slate-200/40 rounded-[2rem] overflow-hidden bg-white hover:scale-[1.02] transition-all duration-500">
+                        <Card key={i} className="group relative border-none shadow-xl shadow-slate-200/40 rounded-xl overflow-hidden bg-white hover:scale-[1.02] transition-all duration-500">
                             <div className={`absolute top-0 right-0 w-32 h-32 ${stat.bg} rounded-full -mr-16 -mt-16 blur-3xl opacity-50 group-hover:opacity-80 transition-opacity`} />
-                            <CardContent className="p-8">
+                            <CardContent className="p-5">
                                 <div className="flex items-center justify-between mb-6">
                                     <div className={cn("h-14 w-14 rounded-2xl flex items-center justify-center shadow-inner", stat.bg)}>
                                         <stat.icon className="h-7 w-7" style={{ color: stat.color }} />
@@ -395,12 +395,12 @@ export default function ChiefsReportsPage() {
 
 
                 {/* Content Area */}
-                <div className="space-y-8">
+                <div className="space-y-4">
                     {viewMode === "analytics" ? (
-                        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
                             {/* Vacancy by region */}
-                            <Card className="border-none shadow-2xl rounded-[2.5rem] overflow-hidden bg-white">
-                                <CardHeader className="p-10 border-b border-slate-50">
+                            <Card className="border-none shadow-2xl rounded-xl overflow-hidden bg-white">
+                                <CardHeader className="p-6 border-b border-slate-50">
                                     <div className="flex items-center gap-6">
                                         <div className="h-16 w-16 rounded-2xl bg-slate-900 flex items-center justify-center shadow-2xl">
                                             <AlertTriangle className="h-8 w-8 text-amber-400" />
@@ -411,7 +411,7 @@ export default function ChiefsReportsPage() {
                                         </div>
                                     </div>
                                 </CardHeader>
-                                <CardContent className="p-8 space-y-4">
+                                <CardContent className="p-5 space-y-4">
                                     {vacancyAnalytics.map(({ region, totalVillages, coveredVillages, vacantVillages, activeChiefs, coverageRate }) => (
                                         <div key={region} className="group p-5 rounded-2xl bg-slate-50 hover:bg-white hover:shadow-md transition-all duration-300 border border-transparent hover:border-slate-100">
                                             <div className="flex flex-wrap items-center justify-between gap-4 mb-3">
@@ -456,10 +456,10 @@ export default function ChiefsReportsPage() {
                             </Card>
 
                             {/* Role distribution + Archive reasons */}
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                                 {/* Role distribution */}
-                                <Card className="border-none shadow-2xl rounded-[2.5rem] overflow-hidden bg-white">
-                                    <CardHeader className="p-8 border-b border-slate-50">
+                                <Card className="border-none shadow-2xl rounded-xl overflow-hidden bg-white">
+                                    <CardHeader className="p-5 border-b border-slate-50">
                                         <div className="flex items-center gap-4">
                                             <div className="h-12 w-12 rounded-xl bg-[#D4AF37]/10 flex items-center justify-center">
                                                 <Crown className="h-6 w-6 text-[#D4AF37]" />
@@ -470,7 +470,7 @@ export default function ChiefsReportsPage() {
                                             </div>
                                         </div>
                                     </CardHeader>
-                                    <CardContent className="p-8 space-y-4">
+                                    <CardContent className="p-5 space-y-4">
                                         {Object.entries(stats.roleDistribution)
                                             .sort((a, b) => b[1] - a[1])
                                             .map(([role, count]) => {
@@ -501,8 +501,8 @@ export default function ChiefsReportsPage() {
                                 </Card>
 
                                 {/* Archive reasons */}
-                                <Card className="border-none shadow-2xl rounded-[2.5rem] overflow-hidden bg-white">
-                                    <CardHeader className="p-8 border-b border-slate-50">
+                                <Card className="border-none shadow-2xl rounded-xl overflow-hidden bg-white">
+                                    <CardHeader className="p-5 border-b border-slate-50">
                                         <div className="flex items-center gap-4">
                                             <div className="h-12 w-12 rounded-xl bg-slate-100 flex items-center justify-center">
                                                 <TrendingUp className="h-6 w-6 text-slate-500" />
@@ -513,9 +513,9 @@ export default function ChiefsReportsPage() {
                                             </div>
                                         </div>
                                     </CardHeader>
-                                    <CardContent className="p-8 space-y-4">
+                                    <CardContent className="p-5 space-y-4">
                                         {stats.archived === 0 ? (
-                                            <div className="flex flex-col items-center gap-3 py-8 text-center">
+                                            <div className="flex flex-col items-center gap-3 py-4 text-center">
                                                 <CheckCircle2 className="h-10 w-10 text-emerald-300" />
                                                 <p className="text-sm font-black text-slate-400">Aucun chef archivé</p>
                                             </div>
@@ -559,9 +559,9 @@ export default function ChiefsReportsPage() {
                         </div>
                     ) : viewMode === "map" ? (
                         <div className="group relative">
-                            <div className="absolute -inset-1 bg-gradient-to-r from-[#D4AF37]/20 to-transparent rounded-[2.5rem] blur-xl opacity-50 transition duration-1000 group-hover:opacity-100" />
-                            <Card className="relative border-none shadow-2xl rounded-[2.5rem] overflow-hidden bg-white">
-                                <CardHeader className="bg-slate-950 p-10 border-b border-white/5">
+                            <div className="absolute -inset-1 bg-gradient-to-r from-[#D4AF37]/20 to-transparent rounded-xl blur-xl opacity-50 transition duration-1000 group-hover:opacity-100" />
+                            <Card className="relative border-none shadow-2xl rounded-xl overflow-hidden bg-white">
+                                <CardHeader className="bg-slate-950 p-6 border-b border-white/5">
                                     <div className="flex items-center gap-6">
                                         <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-[#D4AF37] to-[#B8972F] flex items-center justify-center shadow-2xl shadow-[#D4AF37]/20">
                                             <MapIcon className="h-8 w-8 text-slate-950" />
@@ -580,9 +580,9 @@ export default function ChiefsReportsPage() {
                             </Card>
                         </div>
                     ) : (
-                        <Card className="border-none shadow-2xl rounded-[2.5rem] overflow-hidden bg-white">
-                            <CardHeader className="p-10 border-b border-slate-50 bg-slate-50/30">
-                                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+                        <Card className="border-none shadow-2xl rounded-xl overflow-hidden bg-white">
+                            <CardHeader className="p-6 border-b border-slate-50 bg-slate-50/30">
+                                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                                     <div className="flex items-center gap-6">
                                         <div className="h-16 w-16 rounded-2xl bg-slate-950 flex items-center justify-center shadow-2xl">
                                             <Users className="h-8 w-8 text-white" />
@@ -626,7 +626,7 @@ export default function ChiefsReportsPage() {
                                     <Table>
                                         <TableHeader>
                                             <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 border-b border-slate-100">
-                                                <TableHead className="py-8 pl-10 text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">Autorité / Identité</TableHead>
+                                                <TableHead className="py-4 pl-10 text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">Autorité / Identité</TableHead>
                                                 <TableHead className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">Titre & Rôle</TableHead>
                                                 <TableHead className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">Circonscription</TableHead>
                                                 <TableHead className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">Statut</TableHead>

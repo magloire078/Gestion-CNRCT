@@ -27,7 +27,7 @@ export function InstitutionalFooter({
 
   return (
     <div className="pt-12 border-t-2 border-slate-900 mt-16 print:mt-12 break-inside-avoid relative">
-      <div className="flex flex-col md:flex-row justify-between items-start gap-12">
+      <div className="flex flex-col md:flex-row justify-between items-start gap-6">
         {showSignatures ? (
           <>
             {/* Dual Signature Layout */}

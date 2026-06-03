@@ -116,10 +116,10 @@ export function ManageCategoriesDialog({ isOpen, onCloseAction }: ManageCategori
 
     return (
         <Dialog open={isOpen} onOpenChange={onCloseAction}>
-            <DialogContent className="max-w-md bg-white border-none shadow-2xl rounded-[2rem] p-0 overflow-hidden animate-in zoom-in-95 duration-300">
+            <DialogContent className="max-w-md bg-white border-none shadow-2xl rounded-xl p-0 overflow-hidden animate-in zoom-in-95 duration-300">
                 <div className="h-2 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 w-full" />
                 
-                <div className="p-8">
+                <div className="p-5">
                     <DialogHeader className="mb-6">
                         <DialogTitle className="text-2xl font-black text-slate-900 tracking-tight uppercase flex items-center gap-3">
                             <Tag className="h-6 w-6 text-indigo-500" />
@@ -220,7 +220,7 @@ export function ManageCategoriesDialog({ isOpen, onCloseAction }: ManageCategori
                     </div>
 
                     {categories.length === 0 && (
-                        <div className="py-10 text-center flex flex-col items-center gap-3 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">
+                        <div className="py-5 text-center flex flex-col items-center gap-3 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">
                             <AlertTriangle className="h-8 w-8 text-slate-300" />
                             <p className="text-xs text-slate-400 font-medium">Aucune catégorie définie.</p>
                         </div>

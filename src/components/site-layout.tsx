@@ -447,7 +447,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
             <NotificationBell />
           </div>
         </header>
-        <main className="flex-1 p-4 md:p-8 mb-20 md:mb-0 relative z-10 w-full max-w-[100vw] overflow-x-hidden">
+        <main className="flex-1 p-4 md:p-5 mb-20 md:mb-0 relative z-10 w-full max-w-[100vw] overflow-x-hidden">
           <div className="mx-auto w-full max-w-7xl">
             <ProtectedPage>
               {children}

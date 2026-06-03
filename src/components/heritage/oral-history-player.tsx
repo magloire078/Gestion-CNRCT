@@ -61,8 +61,8 @@ export function OralHistoryPlayer({ audioUrl, title, className }: OralHistoryPla
     };
 
     return (
-        <div className={cn("p-6 rounded-[2rem] bg-slate-900 text-white shadow-2xl relative overflow-hidden group", className)}>
-            <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none group-hover:scale-110 transition-transform duration-700">
+        <div className={cn("p-6 rounded-xl bg-slate-900 text-white shadow-2xl relative overflow-hidden group", className)}>
+            <div className="absolute top-0 right-0 p-5 opacity-10 pointer-events-none group-hover:scale-110 transition-transform duration-700">
                 <Radio className="h-24 w-24" />
             </div>
 

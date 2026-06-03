@@ -17,12 +17,9 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
-import { getChief, updateChief } from "@/services/chief-service";
+import { getChief, updateChief, getChiefs } from "@/services/chief-service";
 import type { Chief, ChiefRole, DesignationMode, ChiefCareerEvent, Predecessor } from "@/types/chief";
-import { divisions } from "@/lib/ivory-coast-divisions";
-import { IVORIAN_REGIONS } from "@/constants/regions";
-import { LocationPicker } from "@/components/common/location-picker";
-import { useAuth } from "@/hooks/use-auth";
+import { CreatableSelect } from "@/components/ui/creatable-select";
 
 export default function EditChiefPage() {
     const { id } = useParams() as { id: string };
@@ -59,6 +56,12 @@ export default function EditChiefPage() {
     const [career, setCareer] = useState<ChiefCareerEvent[]>([]);
     const [predecessors, setPredecessors] = useState<Predecessor[]>([]);
     const [throneAccessionDate, setThroneAccessionDate] = useState("");
+
+    const [mandatDebut, setMandatDebut] = useState("");
+    const [mandatFin, setMandatFin] = useState("");
+    const [estRenouvele, setEstRenouvele] = useState(false);
+    const [historiqueNominations, setHistoriqueNominations] = useState<Array<{id: string, periode: string, poste: string, region?: string}>>([]);
+
     const [photoUrl, setPhotoUrl] = useState("");
     const [photoFile, setPhotoFile] = useState<File | null>(null);
     const [photoPreview, setPhotoPreview] = useState("");
@@ -73,6 +76,18 @@ export default function EditChiefPage() {
     const [customVillage, setCustomVillage] = useState("");
     const [latitude, setLatitude] = useState<number | ''>('');
     const [longitude, setLongitude] = useState<number | ''>('');
+
+    // Custom Domains
+    const [royaumeName, setRoyaumeName] = useState("");
+    const [provinceName, setProvinceName] = useState("");
+    const [cantonName, setCantonName] = useState("");
+    const [tribuName, setTribuName] = useState("");
+
+    // Domain options
+    const [royaumeOptions, setRoyaumeOptions] = useState<{label: string, value: string}[]>([]);
+    const [provinceOptions, setProvinceOptions] = useState<{label: string, value: string}[]>([]);
+    const [cantonOptions, setCantonOptions] = useState<{label: string, value: string}[]>([]);
+    const [tribuOptions, setTribuOptions] = useState<{label: string, value: string}[]>([]);
 
     useEffect(() => {
         async function fetchChief() {
@@ -100,6 +115,12 @@ export default function EditChiefPage() {
                     setCareer(data.career || []);
                     setPredecessors(data.predecessors || []);
                     setThroneAccessionDate(data.throneAccessionDate || "");
+                    
+                    setMandatDebut(data.mandatDebut || "");
+                    setMandatFin(data.mandatFin || "");
+                    setEstRenouvele(data.estRenouvele || false);
+                    setHistoriqueNominations(data.historiqueNominations?.map(h => ({ ...h, id: crypto.randomUUID() })) || []);
+
                     setPhotoUrl(data.photoUrl || "");
                     setPhotoPreview(data.photoUrl || "");
                     
@@ -133,7 +154,29 @@ export default function EditChiefPage() {
 
                     setLatitude(data.latitude ?? '');
                     setLongitude(data.longitude ?? '');
+                    setRoyaumeName(data.royaumeName || "");
+                    setProvinceName(data.provinceName || "");
+                    setCantonName(data.cantonName || "");
+                    setTribuName(data.tribuName || "");
                 }
+
+                // Fetch domains
+                const allChiefs = await getChiefs();
+                const rSet = new Set<string>();
+                const pSet = new Set<string>();
+                const cSet = new Set<string>();
+                const tSet = new Set<string>();
+                allChiefs.forEach(c => {
+                    if (c.royaumeName) rSet.add(c.royaumeName);
+                    if (c.provinceName) pSet.add(c.provinceName);
+                    if (c.cantonName) cSet.add(c.cantonName);
+                    if (c.tribuName) tSet.add(c.tribuName);
+                });
+                setRoyaumeOptions(Array.from(rSet).map(v => ({ label: v, value: v })));
+                setProvinceOptions(Array.from(pSet).map(v => ({ label: v, value: v })));
+                setCantonOptions(Array.from(cSet).map(v => ({ label: v, value: v })));
+                setTribuOptions(Array.from(tSet).map(v => ({ label: v, value: v })));
+
             } catch (err) {
                 console.error("Error loading chief for edit:", err);
                 setError("Impossible de charger les données.");
@@ -195,9 +238,24 @@ export default function EditChiefPage() {
                 bio,
                 career,
                 predecessors,
+                royaumeName: royaumeName || undefined,
+                provinceName: provinceName || undefined,
+                cantonName: cantonName || undefined,
+                tribuName: tribuName || undefined,
             };
 
             if (throneAccessionDate) updateData.throneAccessionDate = throneAccessionDate;
+
+            if (cnrctAffiliation !== "Aucune") {
+                updateData.mandatDebut = mandatDebut || undefined;
+                updateData.mandatFin = mandatFin || undefined;
+                updateData.estRenouvele = estRenouvele;
+                if (historiqueNominations.length > 0) {
+                    updateData.historiqueNominations = historiqueNominations.map(({ id, ...rest }) => rest);
+                } else {
+                    updateData.historiqueNominations = undefined;
+                }
+            }
 
             if (latitude !== '') updateData.latitude = Number(latitude);
             if (longitude !== '') updateData.longitude = Number(longitude);
@@ -215,7 +273,7 @@ export default function EditChiefPage() {
 
     if (loading) {
         return (
-            <div className="container mx-auto py-20 flex flex-col items-center justify-center gap-4">
+            <div className="container mx-auto py-8 flex flex-col items-center justify-center gap-4">
                 <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
                 <p className="text-sm font-bold text-slate-500 uppercase tracking-widest animate-pulse">Chargement de la fiche...</p>
             </div>
@@ -223,7 +281,7 @@ export default function EditChiefPage() {
     }
 
     return (
-        <div className="container mx-auto py-8 pb-20 max-w-4xl space-y-6">
+        <div className="container mx-auto py-4 pb-10 max-w-4xl space-y-6">
             <div className="flex items-center justify-between">
                 <Button variant="ghost" size="sm" onClick={() => router.back()} className="hover:bg-slate-100">
                     <ChevronLeft className="mr-2 h-4 w-4" />
@@ -302,6 +360,32 @@ export default function EditChiefPage() {
                                             ))}
                                         </div>
                                     </div>
+                                    {/* Domaines Coutumiers - Affichés selon les rôles */}
+                                    {(role === 'Roi' || additionalRoles.includes('Roi')) && (
+                                        <div className="space-y-2">
+                                            <Label className="text-blue-600">Nom du Royaume</Label>
+                                            <CreatableSelect items={royaumeOptions} value={royaumeName} onValueChange={setRoyaumeName} placeholder="Saisir ou sélectionner..." />
+                                        </div>
+                                    )}
+                                    {(role === 'Chef de province' || additionalRoles.includes('Chef de province')) && (
+                                        <div className="space-y-2">
+                                            <Label className="text-blue-600">Nom de la Province</Label>
+                                            <CreatableSelect items={provinceOptions} value={provinceName} onValueChange={setProvinceName} placeholder="Saisir ou sélectionner..." />
+                                        </div>
+                                    )}
+                                    {(role === 'Chef de canton' || additionalRoles.includes('Chef de canton')) && (
+                                        <div className="space-y-2">
+                                            <Label className="text-blue-600">Nom du Canton</Label>
+                                            <CreatableSelect items={cantonOptions} value={cantonName} onValueChange={setCantonName} placeholder="Saisir ou sélectionner..." />
+                                        </div>
+                                    )}
+                                    {(role === 'Chef de tribu' || additionalRoles.includes('Chef de tribu')) && (
+                                        <div className="space-y-2">
+                                            <Label className="text-blue-600">Nom de la Tribu</Label>
+                                            <CreatableSelect items={tribuOptions} value={tribuName} onValueChange={setTribuName} placeholder="Saisir ou sélectionner..." />
+                                        </div>
+                                    )}
+                                    <div className="w-full h-px bg-slate-100 md:col-span-2 my-2"></div>
                                     <div className="space-y-2"><Label>Sexe</Label>
                                         <Select value={sexe} onValueChange={(v) => setSexe(v as Chief['sexe'])}>
                                             <SelectTrigger><SelectValue/></SelectTrigger>
@@ -405,6 +489,55 @@ export default function EditChiefPage() {
                                             </SelectContent>
                                         </Select>
                                     </div>
+                                    {cnrctAffiliation !== 'Aucune' && (
+                                        <>
+                                            <div className="space-y-2">
+                                                <Label className="text-blue-600">Début de mandat CNRCT</Label>
+                                                <Input type="date" value={mandatDebut} onChange={e => {
+                                                    setMandatDebut(e.target.value);
+                                                    if (e.target.value && !mandatFin) {
+                                                        const start = new Date(e.target.value);
+                                                        start.setFullYear(start.getFullYear() + 6);
+                                                        setMandatFin(start.toISOString().split('T')[0]);
+                                                    }
+                                                }} className="border-blue-200" />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label className="text-blue-600">Fin de mandat CNRCT</Label>
+                                                <Input type="date" value={mandatFin} onChange={e => setMandatFin(e.target.value)} className="border-blue-200" />
+                                            </div>
+                                            <div className="space-y-2 flex flex-col justify-end">
+                                                <div className="flex items-center space-x-2 h-10">
+                                                    <input type="checkbox" id="reconduitEdit" checked={estRenouvele} onChange={e => setEstRenouvele(e.target.checked)} className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" />
+                                                    <Label htmlFor="reconduitEdit" className="font-bold text-slate-700 cursor-pointer">Mandat Reconduit</Label>
+                                                </div>
+                                            </div>
+                                            <div className="col-span-1 md:col-span-2 mt-4 p-4 border border-blue-100 bg-blue-50/20 rounded-xl space-y-4">
+                                                <div className="flex items-center justify-between border-b border-blue-100 pb-2">
+                                                    <Label className="text-xs font-black uppercase text-blue-700">Historique des Nominations (CNRCT)</Label>
+                                                    <Button type="button" variant="outline" size="sm" onClick={() => setHistoriqueNominations([...historiqueNominations, { id: crypto.randomUUID(), periode: "", poste: "", region: "" }])} className="h-7 text-[10px] border-blue-200 text-blue-600 hover:bg-blue-50">
+                                                        <Plus className="mr-1 h-3 w-3" /> Ajouter
+                                                    </Button>
+                                                </div>
+                                                {historiqueNominations.length === 0 ? (
+                                                    <div className="text-center text-blue-400 text-xs italic">Aucune ancienne nomination répertoriée.</div>
+                                                ) : (
+                                                    <div className="space-y-3">
+                                                        {historiqueNominations.map((hist, index) => (
+                                                            <div key={hist.id} className="relative flex gap-2 items-center bg-white p-2 border border-blue-100 rounded-lg group">
+                                                                <div className="flex-1 grid grid-cols-3 gap-2">
+                                                                    <Input className="h-8 text-xs border-blue-100" value={hist.poste} onChange={(e) => { const newHist = [...historiqueNominations]; newHist[index].poste = e.target.value; setHistoriqueNominations(newHist); }} placeholder="Poste" />
+                                                                    <Input className="h-8 text-xs border-blue-100" value={hist.periode} onChange={(e) => { const newHist = [...historiqueNominations]; newHist[index].periode = e.target.value; setHistoriqueNominations(newHist); }} placeholder="Période" />
+                                                                    <Input className="h-8 text-xs border-blue-100" value={hist.region || ''} onChange={(e) => { const newHist = [...historiqueNominations]; newHist[index].region = e.target.value; setHistoriqueNominations(newHist); }} placeholder="Région" />
+                                                                </div>
+                                                                <Button type="button" variant="ghost" size="icon" className="h-7 w-7 text-red-400 hover:text-red-600 hover:bg-red-50 shrink-0" onClick={() => setHistoriqueNominations(historiqueNominations.filter(h => h.id !== hist.id))}><TrashIcon className="h-3 w-3" /></Button>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </>
+                                    )}
                                     <div className="space-y-2"><Label>Mode de Désignation</Label>
                                         <Select value={designationMode} onValueChange={(v) => setDesignationMode(v as DesignationMode)}>
                                             <SelectTrigger><SelectValue /></SelectTrigger>
@@ -441,7 +574,7 @@ export default function EditChiefPage() {
 
                                             <div className="space-y-3">
                                                 {career.length === 0 && (
-                                                    <div className="py-8 text-center border-2 border-dashed border-slate-100 rounded-2xl text-slate-400 text-xs italic">
+                                                    <div className="py-4 text-center border-2 border-dashed border-slate-100 rounded-2xl text-slate-400 text-xs italic">
                                                         Aucun événement ajouté à la timeline.
                                                     </div>
                                                 )}
@@ -530,7 +663,7 @@ export default function EditChiefPage() {
                                                 </div>
                                                 
                                                 {predecessors.length === 0 ? (
-                                                    <div className="py-8 text-center border-2 border-dashed border-slate-100 rounded-2xl text-slate-400 text-xs italic">Aucun prédécesseur renseigné.</div>
+                                                    <div className="py-4 text-center border-2 border-dashed border-slate-100 rounded-2xl text-slate-400 text-xs italic">Aucun prédécesseur renseigné.</div>
                                                 ) : (
                                                     <div className="space-y-4">
                                                         {predecessors.map((pred, index) => (
@@ -556,7 +689,7 @@ export default function EditChiefPage() {
                     
                     <CardFooter className="flex justify-between border-t bg-slate-50/50 p-6 rounded-b-xl">
                         <Button type="button" variant="outline" onClick={() => router.back()}>Abandonner</Button>
-                        <Button type="submit" disabled={isSubmitting} className="bg-blue-600 hover:bg-blue-700 px-8 font-bold">
+                        <Button type="submit" disabled={isSubmitting} className="bg-blue-600 hover:bg-blue-700 px-5 font-bold">
                             {isSubmitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Enregistrement...</> : <><Save className="mr-2 h-4 w-4" /> Sauvegarder les modifications</>}
                         </Button>
                     </CardFooter>

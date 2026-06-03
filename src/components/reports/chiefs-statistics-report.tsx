@@ -139,7 +139,7 @@ export function ChiefsStatisticsReport({
                     settings={organizationSettings}
                 />
 
-                <div className="landscape-section min-h-screen p-12 relative print:p-8 bg-white">
+                <div className="landscape-section min-h-screen p-12 relative print:p-5 bg-white">
                     <InstitutionalHeader 
                         title="Situation Statistique de la Chefferie Traditionnelle"
                         period={`Document extrait le ${todayStr}`}
@@ -148,7 +148,7 @@ export function ChiefsStatisticsReport({
                         settings={organizationSettings}
                     />
 
-                    <div className="mt-8 break-inside-avoid">
+                    <div className="mt-4 break-inside-avoid">
                         <table className="w-full border-collapse border-2 border-slate-900 text-xs">
                             <thead>
                                 <tr className="bg-slate-900 text-white uppercase font-black print:bg-slate-100 print:text-slate-900 print:border-b-2 print:border-slate-900">

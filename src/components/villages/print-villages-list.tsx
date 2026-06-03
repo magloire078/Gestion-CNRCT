@@ -50,13 +50,13 @@ export function PrintVillagesList({ villages, organizationSettings, subtitle }: 
             />
 
             {/* --- PAGES DÉTAILLÉES --- */}
-            <div className="min-h-screen p-12 print:p-8 bg-white">
+            <div className="min-h-screen p-12 print:p-5 bg-white">
                 <InstitutionalHeader 
                     title="État Civil des Localités et Chefferies"
                     period={`Situation consolidée au ${todayStr}`}
                 />
 
-                <div className="space-y-12">
+                <div className="space-y-6">
                     {Object.entries(villagesByRegion).sort().map(([region, regionVillages]) => (
                         <div key={region} className="space-y-6 break-inside-avoid">
                             <div className="flex justify-between items-end border-b-4 border-slate-100 pb-2">

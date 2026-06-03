@@ -19,8 +19,8 @@ export function ConnectedUsersCard({ users }: ConnectedUsersCardProps) {
   });
 
   return (
-    <Card className="border-white/20 shadow-3xl flex flex-col h-full bg-white/40 backdrop-blur-xl overflow-hidden rounded-[2.5rem] group transition-all duration-700 hover:border-white/40 hover:-translate-y-2">
-      <CardHeader className="p-8 pb-4">
+    <Card className="border-white/20 shadow-3xl flex flex-col h-full bg-white/40 backdrop-blur-xl overflow-hidden rounded-xl group transition-all duration-700 hover:border-white/40 hover:-translate-y-2">
+      <CardHeader className="p-5 pb-4">
         <div className="flex items-center justify-between mb-4">
           <div className="space-y-1">
             <CardTitle className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 group-hover:text-slate-900 transition-colors">Sessions Actives</CardTitle>
@@ -36,7 +36,7 @@ export function ConnectedUsersCard({ users }: ConnectedUsersCardProps) {
         </div>
       </CardHeader>
       <CardContent className="p-0 flex-1">
-        <ScrollArea className="h-[300px] px-8 pb-8 custom-scrollbar">
+        <ScrollArea className="h-[300px] px-5 pb-5 custom-scrollbar">
           <div className="space-y-3 pt-6">
             {onlineUsers.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-center animate-in fade-in zoom-in-95 duration-700">

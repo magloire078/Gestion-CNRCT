@@ -60,7 +60,7 @@ export default function ChiefsMap({ chiefs, onChiefClick, height = "600px" }: Ch
     const mappableChiefs = chiefs.filter(c => c.latitude && c.longitude);
 
     if (!isMounted) {
-        return <div style={{ height, width: '100%' }} className="rounded-[2rem] border-4 border-white/60 shadow-[0_20px_40px_rgb(0,0,0,0.08)] bg-slate-100 animate-pulse" />;
+        return <div style={{ height, width: '100%' }} className="rounded-xl border-4 border-white/60 shadow-[0_20px_40px_rgb(0,0,0,0.08)] bg-slate-100 animate-pulse" />;
     }
 
     return (
@@ -69,7 +69,7 @@ export default function ChiefsMap({ chiefs, onChiefClick, height = "600px" }: Ch
             zoom={6} 
             scrollWheelZoom={true} 
             style={{ height, width: '100%', zIndex: 0 }}
-            className="rounded-[2rem] border-4 border-white/60 shadow-[0_20px_40px_rgb(0,0,0,0.08)] bg-slate-50"
+            className="rounded-xl border-4 border-white/60 shadow-[0_20px_40px_rgb(0,0,0,0.08)] bg-slate-50"
         >
             <TileLayer
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'

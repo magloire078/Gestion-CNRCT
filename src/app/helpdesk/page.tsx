@@ -180,7 +180,7 @@ function HelpdeskContent() {
   }
 
   return (
-      <div className="flex flex-col gap-8 pb-20">
+      <div className="flex flex-col gap-4 pb-10">
         {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
@@ -285,7 +285,7 @@ function HelpdeskContent() {
             </div>
           </CardHeader>
           <CardContent className="p-0">
-              {error && <div className="p-8 text-center text-red-500 font-bold">{error}</div>}
+              {error && <div className="p-5 text-center text-red-500 font-bold">{error}</div>}
               
               <div className="overflow-x-auto">
                   <Table>
@@ -380,12 +380,12 @@ function HelpdeskContent() {
               </div>
               
               {!loading && paginatedTickets.length === 0 && (
-                  <div className="text-center py-24 bg-slate-50/30">
+                  <div className="text-center py-10 bg-slate-50/30">
                       <div className="h-20 w-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-200 shadow-inner">
                           <LifeBuoy className="h-10 w-10 text-slate-200" />
                       </div>
                       <p className="font-black text-slate-400 uppercase tracking-widest">Aucun ticket à afficher</p>
-                      <p className="text-xs text-slate-300 mt-2 px-8">Tout est sous contrôle ! Vos filtres actuels ne retournent aucun incident.</p>
+                      <p className="text-xs text-slate-300 mt-2 px-5">Tout est sous contrôle ! Vos filtres actuels ne retournent aucun incident.</p>
                   </div>
               )}
           </CardContent>
@@ -406,7 +406,7 @@ function HelpdeskContent() {
         {/* Expert Tips / Help */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Card className="bg-slate-900 border-none text-white relative overflow-hidden group">
-              <div className="absolute top-0 right-0 p-8 opacity-10 transition-transform group-hover:scale-125">
+              <div className="absolute top-0 right-0 p-5 opacity-10 transition-transform group-hover:scale-125">
                   <Shield className="h-32 w-32" />
               </div>
               <CardHeader>

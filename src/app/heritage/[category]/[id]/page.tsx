@@ -90,7 +90,7 @@ export default function HeritageDetailPage() {
                     <History className="h-10 w-10 text-slate-300" />
                 </div>
                 <h1 className="text-2xl font-black text-slate-900 uppercase">Archive Introuvable</h1>
-                <Button onClick={() => router.push(`/heritage/${category}`)} className="rounded-xl px-8">
+                <Button onClick={() => router.push(`/heritage/${category}`)} className="rounded-xl px-5">
                     Retour au répertoire
                 </Button>
             </div>
@@ -98,7 +98,7 @@ export default function HeritageDetailPage() {
     }
 
     return (
-        <div className="max-w-7xl mx-auto pb-20 space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+        <div className="max-w-7xl mx-auto pb-10 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-1000">
             {/* Header / Action Bar */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 px-4">
                 <Button 
@@ -126,7 +126,7 @@ export default function HeritageDetailPage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 px-4">
                 
                 {/* Left Column: Information & Orality */}
-                <div className="space-y-12">
+                <div className="space-y-6">
                     {/* Identity Section */}
                     <div className="space-y-6">
                         <div className="flex items-center gap-4">
@@ -140,7 +140,7 @@ export default function HeritageDetailPage() {
                         <h1 className="text-6xl md:text-8xl font-black text-slate-900 tracking-tighter leading-[0.8] uppercase">
                             {item.name}
                         </h1>
-                        <div className="p-6 rounded-[2.5rem] bg-slate-50 border border-slate-100/50 relative overflow-hidden group">
+                        <div className="p-6 rounded-xl bg-slate-50 border border-slate-100/50 relative overflow-hidden group">
                            <Quote className="absolute -top-4 -left-4 h-24 w-24 text-slate-200/50 rotate-12" />
                            <p className="text-2xl text-slate-600 leading-tight font-medium italic relative z-10">
                                 "{item.significance || item.description}"
@@ -157,7 +157,7 @@ export default function HeritageDetailPage() {
                     )}
 
                     {/* Anthropological Details */}
-                    <div className="grid grid-cols-1 gap-8">
+                    <div className="grid grid-cols-1 gap-4">
                         <div className="space-y-4">
                             <div className="flex items-center gap-3">
                                 <div className="h-10 w-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
@@ -166,13 +166,13 @@ export default function HeritageDetailPage() {
                                 <h3 className="text-xl font-black text-slate-900 uppercase tracking-tighter">Symbolisme & Usage</h3>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <Card className="border-none shadow-none bg-slate-50/50 p-6 rounded-3xl space-y-2">
+                                <Card className="border-none shadow-none bg-slate-50/50 p-6 rounded-xl space-y-2">
                                     <span className="text-[10px] font-black uppercase tracking-widest text-blue-500">Signification Profonde</span>
                                     <p className="text-xs font-bold text-slate-600 leading-relaxed">
                                         {item.symbolism || "La symbolique profonde de cet élément est transmise de génération en génération au sein de la communauté."}
                                     </p>
                                 </Card>
-                                <Card className="border-none shadow-none bg-slate-50/50 p-6 rounded-3xl space-y-2">
+                                <Card className="border-none shadow-none bg-slate-50/50 p-6 rounded-xl space-y-2">
                                     <span className="text-[10px] font-black uppercase tracking-widest text-emerald-500">Usage Rituel / Social</span>
                                     <p className="text-xs font-bold text-slate-600 leading-relaxed">
                                         {item.usage || "Pratique utilisée lors des cérémonies majeures ou des moments de cohésion sociale du groupe ethno-culturel."}
@@ -182,7 +182,7 @@ export default function HeritageDetailPage() {
                         </div>
 
                         {/* Fabrication & Guardians */}
-                        <div className="flex flex-col md:flex-row gap-8">
+                        <div className="flex flex-col md:flex-row gap-4">
                              <div className="flex-1 space-y-4">
                                 <div className="flex items-center gap-3">
                                     <div className="h-10 w-10 rounded-xl bg-orange-500/10 flex items-center justify-center">
@@ -194,7 +194,7 @@ export default function HeritageDetailPage() {
                                     {item.fabrication || "Les techniques de création ou de transmission de cet élément font partie du patrimoine immatériel protégé."}
                                 </p>
                             </div>
-                            <div className="w-full md:w-[200px] p-6 rounded-3xl bg-slate-900 text-white space-y-4 shadow-xl">
+                            <div className="w-full md:w-[200px] p-6 rounded-xl bg-slate-900 text-white space-y-4 shadow-xl">
                                 <span className="text-[9px] font-black uppercase tracking-[0.2em] text-amber-500">Détenteurs</span>
                                 <div className="space-y-3">
                                     {(item.guardians && item.guardians.length > 0) ? item.guardians.map((g, i) => (
@@ -212,7 +212,7 @@ export default function HeritageDetailPage() {
                 </div>
 
                 {/* Right Column: Visuals & Geography */}
-                <div className="space-y-12">
+                <div className="space-y-6">
                     {/* Interactive Gallery */}
                     <HeritageGallery 
                         images={item.galleryUrls && item.galleryUrls.length > 0 ? [item.imageUrl || '', ...item.galleryUrls] : [item.imageUrl || '']} 
@@ -220,14 +220,14 @@ export default function HeritageDetailPage() {
 
                     {/* Metadata & Origin */}
                     <div className="grid grid-cols-2 gap-6">
-                        <div className="p-6 rounded-3xl bg-white border border-slate-100 shadow-sm flex flex-col gap-3 group hover:border-blue-500/30 transition-colors">
+                        <div className="p-6 rounded-xl bg-white border border-slate-100 shadow-sm flex flex-col gap-3 group hover:border-blue-500/30 transition-colors">
                             <Users className="h-6 w-6 text-blue-500" />
                             <div className="space-y-0.5">
                                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Origine Ethnique</span>
                                 <span className="text-lg font-black text-slate-900 uppercase tracking-tight">{item.ethnicGroup || "Inconnu"}</span>
                             </div>
                         </div>
-                        <div className="p-6 rounded-3xl bg-white border border-slate-100 shadow-sm flex flex-col gap-3 group hover:border-rose-500/30 transition-colors">
+                        <div className="p-6 rounded-xl bg-white border border-slate-100 shadow-sm flex flex-col gap-3 group hover:border-rose-500/30 transition-colors">
                             <Compass className="h-6 w-6 text-rose-500" />
                             <div className="space-y-0.5">
                                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Époque / Datation</span>
@@ -251,7 +251,7 @@ export default function HeritageDetailPage() {
                         </div>
                         
                         {item.latitude && item.longitude ? (
-                            <div className="rounded-[3rem] overflow-hidden border-8 border-white shadow-2xl h-[400px] relative">
+                            <div className="rounded-2xl overflow-hidden border-8 border-white shadow-2xl h-[400px] relative">
                                 <MapContainer 
                                     center={[item.latitude, item.longitude]} 
                                     zoom={13} 
@@ -273,7 +273,7 @@ export default function HeritageDetailPage() {
                                 </div>
                             </div>
                         ) : (
-                            <div className="h-[200px] rounded-[2.5rem] bg-slate-50 border border-dashed border-slate-200 flex flex-col items-center justify-center gap-3 text-slate-400">
+                            <div className="h-[200px] rounded-xl bg-slate-50 border border-dashed border-slate-200 flex flex-col items-center justify-center gap-3 text-slate-400">
                                 <Globe className="h-10 w-10 opacity-20" />
                                 <span className="text-[10px] font-black uppercase tracking-widest italic">Coordonnées GPS non répertoriées</span>
                             </div>

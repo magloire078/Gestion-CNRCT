@@ -326,9 +326,9 @@ export function PermissionsEditor({ targetId, targetType, isSystem, onSave }: Pe
     const hasNoSpecificPerms = targetType === 'user' && Object.keys(permissions).length === 0;
 
     return (
-        <div className="space-y-10">
-            <div className="flex flex-col gap-8">
-                <div className="flex flex-wrap items-center justify-between gap-6 p-8 rounded-[3rem] bg-white/40 backdrop-blur-xl border border-white/30 shadow-3xl">
+        <div className="space-y-5">
+            <div className="flex flex-col gap-4">
+                <div className="flex flex-wrap items-center justify-between gap-6 p-5 rounded-2xl bg-white/40 backdrop-blur-xl border border-white/30 shadow-3xl">
                     <div className="flex items-center gap-4">
                         <div className={cn(
                             "px-6 py-2.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] border transition-all duration-500 shadow-sm",
@@ -360,7 +360,7 @@ export function PermissionsEditor({ targetId, targetType, isSystem, onSave }: Pe
                                     <Button 
                                         variant="outline" 
                                         size="sm" 
-                                        className="h-12 px-8 rounded-2xl gap-3 border-slate-200 bg-white hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200 transition-all duration-500 font-black uppercase tracking-widest text-[10px]"
+                                        className="h-12 px-5 rounded-2xl gap-3 border-slate-200 bg-white hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200 transition-all duration-500 font-black uppercase tracking-widest text-[10px]"
                                         disabled={saving}
                                     >
                                         <Undo2 className={cn("h-4 w-4", saving && "animate-spin")} />
@@ -378,8 +378,8 @@ export function PermissionsEditor({ targetId, targetType, isSystem, onSave }: Pe
                                             L'utilisateur héritera à nouveau des droits de son groupe institutionnel par défaut.
                                         </AlertDialogDescription>
                                     </AlertDialogHeader>
-                                    <AlertDialogFooter className="p-10 bg-slate-50/50 border-t border-slate-100 flex gap-4">
-                                        <AlertDialogCancel className="rounded-2xl font-black uppercase tracking-widest text-[10px] h-14 px-10 border-slate-200">Annuler</AlertDialogCancel>
+                                    <AlertDialogFooter className="p-6 bg-slate-50/50 border-t border-slate-100 flex gap-4">
+                                        <AlertDialogCancel className="rounded-2xl font-black uppercase tracking-widest text-[10px] h-14 px-6 border-slate-200">Annuler</AlertDialogCancel>
                                         <AlertDialogAction 
                                             onClick={handleReset}
                                             className="rounded-2xl font-black bg-rose-600 hover:bg-rose-700 text-white shadow-2xl shadow-rose-500/30 active:scale-95 transition-all text-[10px] h-14 px-12 uppercase tracking-widest"
@@ -396,7 +396,7 @@ export function PermissionsEditor({ targetId, targetType, isSystem, onSave }: Pe
                                 onClick={handleSave} 
                                 disabled={!dirty || saving} 
                                 size="sm" 
-                                className="h-12 px-10 rounded-2xl gap-3 font-black uppercase tracking-[0.2em] text-[10px] bg-slate-900 hover:bg-black text-white shadow-3xl shadow-slate-900/40 active:scale-95 transition-all group"
+                                className="h-12 px-6 rounded-2xl gap-3 font-black uppercase tracking-[0.2em] text-[10px] bg-slate-900 hover:bg-black text-white shadow-3xl shadow-slate-900/40 active:scale-95 transition-all group"
                             >
                                 {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4 group-hover:scale-110 transition-transform" />}
                                 Publier les Droits
@@ -409,7 +409,7 @@ export function PermissionsEditor({ targetId, targetType, isSystem, onSave }: Pe
                     <Search className="absolute left-6 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400 group-focus-within/search:text-blue-600 transition-colors duration-500" />
                     <Input 
                         placeholder="RECHERCHER UNE HABILITATION, UN MODULE OU UNE RESSOURCE..." 
-                        className="pl-16 h-16 rounded-[2.5rem] bg-white/40 backdrop-blur-xl border-white/30 shadow-2xl focus-visible:ring-blue-500 focus-visible:border-blue-500 font-black uppercase tracking-widest text-[10px] transition-all duration-700 placeholder:text-slate-300"
+                        className="pl-16 h-16 rounded-xl bg-white/40 backdrop-blur-xl border-white/30 shadow-2xl focus-visible:ring-blue-500 focus-visible:border-blue-500 font-black uppercase tracking-widest text-[10px] transition-all duration-700 placeholder:text-slate-300"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
@@ -417,7 +417,7 @@ export function PermissionsEditor({ targetId, targetType, isSystem, onSave }: Pe
             </div>
 
             {hasNoSpecificPerms && (
-                <div className="p-8 border border-dashed border-emerald-500/30 rounded-[2.5rem] bg-emerald-500/5 text-center text-[10px] font-black uppercase tracking-[0.2em] text-emerald-600 italic shadow-inner">
+                <div className="p-5 border border-dashed border-emerald-500/30 rounded-xl bg-emerald-500/5 text-center text-[10px] font-black uppercase tracking-[0.2em] text-emerald-600 italic shadow-inner">
                    <span className="flex items-center justify-center gap-3">
                        <ShieldCheck className="h-5 w-5" />
                        Héritage actif — Aucune exception individuelle détectée.
@@ -426,14 +426,14 @@ export function PermissionsEditor({ targetId, targetType, isSystem, onSave }: Pe
             )}
 
             {/* Matrix table */}
-            <div className="max-h-[70vh] overflow-auto rounded-[3rem] border border-white/20 shadow-3xl group/table bg-white/40 backdrop-blur-xl custom-scrollbar relative">
+            <div className="max-h-[70vh] overflow-auto rounded-2xl border border-white/20 shadow-3xl group/table bg-white/40 backdrop-blur-xl custom-scrollbar relative">
                 <Table className="relative">
                     <TableHeader className="sticky top-0 z-30">
                         <TableRow className="bg-slate-900 border-none hover:bg-black transition-colors duration-500">
-                            <TableHead className="w-80 py-8 pl-10 font-black text-[11px] uppercase tracking-[0.3em] text-slate-400 border-none">Architecture de Droits</TableHead>
+                            <TableHead className="w-80 py-4 pl-10 font-black text-[11px] uppercase tracking-[0.3em] text-slate-400 border-none">Architecture de Droits</TableHead>
                             {CRUD_ACTIONS.map(action => (
                                 <TableHead key={action} className={cn(
-                                    "text-center w-40 py-8 font-black text-[11px] uppercase tracking-[0.3em] transition-all duration-500 border-none",
+                                    "text-center w-40 py-4 font-black text-[11px] uppercase tracking-[0.3em] transition-all duration-500 border-none",
                                     action === 'read' ? 'text-blue-400' :
                                     action === 'create' ? 'text-emerald-400' :
                                     action === 'update' ? 'text-amber-400' :
@@ -449,7 +449,7 @@ export function PermissionsEditor({ targetId, targetType, isSystem, onSave }: Pe
                             <TableRow>
                                 <TableCell colSpan={5} className="py-40 text-center">
                                     <div className="flex flex-col items-center justify-center gap-6">
-                                        <div className="h-24 w-24 rounded-[2rem] bg-slate-900/5 flex items-center justify-center shadow-inner">
+                                        <div className="h-24 w-24 rounded-xl bg-slate-900/5 flex items-center justify-center shadow-inner">
                                             <Search className="h-10 w-10 text-slate-300 animate-pulse" />
                                         </div>
                                         <div className="space-y-2">
@@ -488,7 +488,7 @@ export function PermissionMatrix({ roles: customRoles }: PermissionMatrixProps) 
     if (!rolesToDisplay || rolesToDisplay.length === 0) {
         return (
             <div className="flex flex-col items-center justify-center py-40 text-center bg-white/40 backdrop-blur-xl rounded-[4rem] border border-white/20 shadow-3xl mx-8 my-8">
-                <div className="h-24 w-24 rounded-[2.5rem] bg-slate-900/5 flex items-center justify-center mb-8 shadow-inner">
+                <div className="h-24 w-24 rounded-xl bg-slate-900/5 flex items-center justify-center mb-4 shadow-inner">
                     <ShieldCheck className="h-12 w-12 text-slate-900 opacity-20" />
                 </div>
                 <p className="font-black uppercase tracking-[0.3em] text-[11px] text-slate-400 max-w-xs leading-loose">
@@ -499,7 +499,7 @@ export function PermissionMatrix({ roles: customRoles }: PermissionMatrixProps) 
     }
 
     return (
-        <div className="space-y-12">
+        <div className="space-y-6">
             <div className="space-y-2 p-12 pb-0">
                 <div className="flex items-center gap-4">
                     <div className="h-1 w-12 bg-emerald-500 rounded-full" />
@@ -515,12 +515,12 @@ export function PermissionMatrix({ roles: customRoles }: PermissionMatrixProps) 
 
             <Tabs defaultValue={rolesToDisplay[0].id} className="w-full">
                 <div className="px-12 overflow-x-auto scrollbar-none pb-4">
-                    <TabsList className="flex h-auto w-fit gap-3 bg-white/20 p-2.5 rounded-3xl border border-white/30 backdrop-blur-md shadow-2xl">
+                    <TabsList className="flex h-auto w-fit gap-3 bg-white/20 p-2.5 rounded-xl border border-white/30 backdrop-blur-md shadow-2xl">
                         {rolesToDisplay.map(role => (
                             <TabsTrigger
                                 key={role.id}
                                 value={role.id}
-                                className="data-[state=active]:bg-slate-900 data-[state=active]:text-white lg:px-8 px-5 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-500 active:scale-95 shadow-sm border border-transparent data-[state=active]:shadow-2xl data-[state=active]:shadow-slate-900/40"
+                                className="data-[state=active]:bg-slate-900 data-[state=active]:text-white lg:px-5 px-5 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-500 active:scale-95 shadow-sm border border-transparent data-[state=active]:shadow-2xl data-[state=active]:shadow-slate-900/40"
                             >
                                 {role.label}
                                 {role.isSystem && <ShieldCheck className="ml-3 h-4 w-4 text-emerald-400" />}

@@ -123,7 +123,7 @@ export default function MappingPage() {
             </div>
         </div>
 
-        <Card className="flex-1 flex flex-col border-none shadow-2xl shadow-slate-200/50 overflow-hidden rounded-3xl">
+        <Card className="flex-1 flex flex-col border-none shadow-2xl shadow-slate-200/50 overflow-hidden rounded-xl">
           <CardContent className="flex-1 flex flex-col md:flex-row p-0 overflow-hidden relative">
             
             {/* Sidebar */}
@@ -192,7 +192,7 @@ export default function MappingPage() {
                         <ChevronRight className={cn("h-4 w-4 transition-transform group-hover:translate-x-1", selectedChiefId === chief.id ? "text-slate-600" : "text-slate-200")} />
                       </button>
                     )) : (
-                      <div className="py-20 text-center space-y-4">
+                      <div className="py-8 text-center space-y-4">
                           <div className="h-16 w-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto">
                               <Search className="h-8 w-8 text-slate-200" />
                           </div>

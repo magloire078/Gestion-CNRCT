@@ -99,7 +99,7 @@ export function EmployeeOfficialReport({
                 />
 
                 {/* --- PAGE DE DONNÉES --- */}
-                <div className="print-page p-8 landscape-section bg-white">
+                <div className="print-page p-5 landscape-section bg-white">
                     <InstitutionalHeader 
                         title="Registre Nominatif du Personnel"
                         period={`Situation arrêtée au ${todayStr}`}
@@ -109,7 +109,7 @@ export function EmployeeOfficialReport({
                     />
 
                     {/* Synthesis KPIs */}
-                    <div className="grid grid-cols-4 gap-4 mb-8">
+                    <div className="grid grid-cols-4 gap-4 mb-4">
                         <div className="border border-slate-200 p-4 rounded-xl bg-slate-50/30 break-inside-avoid shadow-sm">
                             <div className="flex items-center gap-2 text-slate-400 mb-1">
                                 <Users className="h-3 w-3" />
@@ -180,7 +180,7 @@ export function EmployeeOfficialReport({
                     </div>
 
                     {/* Validation Area */}
-                    <div className="mt-8 break-inside-avoid">
+                    <div className="mt-4 break-inside-avoid">
                         <InstitutionalFooter 
                             signatoryName="YEO Fatogoma"
                             signatoryTitle="Secrétaire Général de la CNRCT"

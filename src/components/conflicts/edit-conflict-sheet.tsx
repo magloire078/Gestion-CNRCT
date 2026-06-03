@@ -321,14 +321,14 @@ export function EditConflictSheet({ isOpen, onCloseAction, onUpdateConflictActio
                                                 </div>
                                             ))
                                         ) : (
-                                            <div className="p-8 text-center border-2 border-dashed border-slate-100 rounded-[2rem]">
+                                            <div className="p-5 text-center border-2 border-dashed border-slate-100 rounded-xl">
                                                 <p className="text-sm text-slate-400">Aucune étape enregistrée pour le moment.</p>
                                             </div>
                                         )}
                                     </div>
 
                                     {/* Add Comment Input */}
-                                    <div className="p-6 rounded-[2rem] bg-slate-900 text-white space-y-4">
+                                    <div className="p-6 rounded-xl bg-slate-900 text-white space-y-4">
                                         <div className="flex items-center gap-2">
                                             <MessageSquarePlus className="h-5 w-5 text-blue-400" />
                                             <span className="font-bold">Ajouter une observation</span>

@@ -47,7 +47,7 @@ import { cn } from "@/lib/utils";
  * En-tête institutionnel dédié à l'export PDF
  */
 const ReportPdfHeader = ({ region, year, type }: { region: string, year: string, type: string }) => (
-    <div id="pdf-report-header" className="hidden print:block mb-8 p-10 bg-white border-b-4 border-slate-900 rounded-[2.5rem]">
+    <div id="pdf-report-header" className="hidden print:block mb-4 p-6 bg-white border-b-4 border-slate-900 rounded-xl">
         <div className="flex justify-between items-start mb-10">
             <div className="flex items-center gap-6">
                 <div className="relative w-24 h-24">
@@ -238,7 +238,7 @@ export default function ConflictAnalyticsPage() {
 
     if (loading) {
         return (
-            <div className="p-8 space-y-8">
+            <div className="p-5 space-y-4">
                 <Skeleton className="h-12 w-64" />
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                     <Skeleton className="h-32 rounded-2xl" />
@@ -246,19 +246,19 @@ export default function ConflictAnalyticsPage() {
                     <Skeleton className="h-32 rounded-2xl" />
                     <Skeleton className="h-32 rounded-2xl" />
                 </div>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <Skeleton className="h-[400px] rounded-[2.5rem]" />
-                    <Skeleton className="h-[400px] rounded-[2.5rem]" />
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <Skeleton className="h-[400px] rounded-xl" />
+                    <Skeleton className="h-[400px] rounded-xl" />
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="pb-20 space-y-10">
+        <div className="pb-10 space-y-5">
             <Chart3DEffects />
             
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
                 <div className="space-y-3">
                     <div className="flex items-center gap-3">
                         <Link href="/conflicts">
@@ -300,7 +300,7 @@ export default function ConflictAnalyticsPage() {
                 </div>
             </div>
 
-            <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-[2.5rem] bg-white/80 backdrop-blur-xl p-6 border border-white/40">
+            <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-xl bg-white/80 backdrop-blur-xl p-6 border border-white/40">
                 <div className="flex flex-col md:flex-row items-center gap-6">
                     <div className="flex items-center gap-3 px-4 py-2.5 bg-slate-900 rounded-2xl text-white shadow-lg shadow-slate-200">
                         <Filter className="h-4 w-4 text-primary" />
@@ -371,14 +371,14 @@ export default function ConflictAnalyticsPage() {
                 </div>
             </Card>
             
-            <div ref={reportRef} className="space-y-10 p-4 md:p-10 bg-[#f1f5f9] rounded-[3.5rem] border border-white/50">
+            <div ref={reportRef} className="space-y-5 p-4 md:p-6 bg-[#f1f5f9] rounded-[3.5rem] border border-white/50">
                 <div className="pdf-page-block">
                     <ReportPdfHeader region={selectedRegion} year={selectedYear} type={selectedType} />
                 </div>
 
                 {/* KPI Cards Upgraded */}
-                <div className="pdf-page-block grid grid-cols-1 md:grid-cols-4 gap-8">
-                    <Card className="border-none shadow-2xl shadow-slate-200/40 rounded-[2rem] overflow-hidden bg-white group hover:-translate-y-2 transition-all duration-500 relative">
+                <div className="pdf-page-block grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <Card className="border-none shadow-2xl shadow-slate-200/40 rounded-xl overflow-hidden bg-white group hover:-translate-y-2 transition-all duration-500 relative">
                         <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
                             <Users className="h-16 w-16" />
                         </div>
@@ -394,7 +394,7 @@ export default function ConflictAnalyticsPage() {
                         </CardContent>
                     </Card>
 
-                    <Card className="border-none shadow-2xl shadow-slate-200/40 rounded-[2rem] overflow-hidden bg-white group hover:-translate-y-2 transition-all duration-500 relative">
+                    <Card className="border-none shadow-2xl shadow-slate-200/40 rounded-xl overflow-hidden bg-white group hover:-translate-y-2 transition-all duration-500 relative">
                         <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
                             <CheckCircle2 className="h-16 w-16" />
                         </div>
@@ -412,7 +412,7 @@ export default function ConflictAnalyticsPage() {
                         </CardContent>
                     </Card>
 
-                    <Card className="border-none shadow-2xl shadow-slate-200/40 rounded-[2rem] overflow-hidden bg-white group hover:-translate-y-2 transition-all duration-500 relative">
+                    <Card className="border-none shadow-2xl shadow-slate-200/40 rounded-xl overflow-hidden bg-white group hover:-translate-y-2 transition-all duration-500 relative">
                         <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
                             <ShieldAlert className="h-16 w-16" />
                         </div>
@@ -428,7 +428,7 @@ export default function ConflictAnalyticsPage() {
                         </CardContent>
                     </Card>
 
-                    <Card className="border-none shadow-2xl shadow-slate-200/40 rounded-[2rem] overflow-hidden bg-white group hover:-translate-y-2 transition-all duration-500 relative">
+                    <Card className="border-none shadow-2xl shadow-slate-200/40 rounded-xl overflow-hidden bg-white group hover:-translate-y-2 transition-all duration-500 relative">
                         <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
                             <AlertTriangle className="h-16 w-16" />
                         </div>
@@ -446,68 +446,68 @@ export default function ConflictAnalyticsPage() {
                 </div>
 
                 {/* Charts Grid - Enhanced */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-                    <Card className="pdf-page-block border-none shadow-2xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden bg-white hover:shadow-primary/5 transition-all">
-                        <CardHeader className="p-10 border-b border-slate-50 bg-slate-50/30">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                    <Card className="pdf-page-block border-none shadow-2xl shadow-slate-200/50 rounded-xl overflow-hidden bg-white hover:shadow-primary/5 transition-all">
+                        <CardHeader className="p-6 border-b border-slate-50 bg-slate-50/30">
                             <div className="flex items-center gap-3 mb-2">
                                 <TrendingUp className="h-5 w-5 text-primary" />
                                 <CardTitle className="text-xl font-black text-slate-900 uppercase tracking-tight">Profil d'Expansion Historique</CardTitle>
                             </div>
                             <CardDescription className="font-medium">Analyse longitudinale du flux de signalements (2016-2025).</CardDescription>
                         </CardHeader>
-                        <CardContent className="p-10">
+                        <CardContent className="p-6">
                             <ConflictHistoryChart conflicts={filteredConflicts} />
                         </CardContent>
                     </Card>
 
-                    <Card className="pdf-page-block border-none shadow-2xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden bg-white hover:shadow-primary/5 transition-all">
-                        <CardHeader className="p-10 border-b border-slate-50 bg-slate-50/30">
+                    <Card className="pdf-page-block border-none shadow-2xl shadow-slate-200/50 rounded-xl overflow-hidden bg-white hover:shadow-primary/5 transition-all">
+                        <CardHeader className="p-6 border-b border-slate-50 bg-slate-50/30">
                             <div className="flex items-center gap-3 mb-2">
                                 <PieChartIcon className="h-5 w-5 text-primary" />
                                 <CardTitle className="text-xl font-black text-slate-900 uppercase tracking-tight">Répartition des Typologies</CardTitle>
                             </div>
                             <CardDescription className="font-medium">Nature prédominante des litiges enregistrés sur la période.</CardDescription>
                         </CardHeader>
-                        <CardContent className="p-10">
+                        <CardContent className="p-6">
                             <ConflictTypeChart conflicts={filteredConflicts} />
                         </CardContent>
                     </Card>
 
-                    <Card className="pdf-page-block border-none shadow-2xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden bg-white hover:shadow-primary/5 transition-all">
-                        <CardHeader className="p-10 border-b border-slate-50 bg-slate-50/30">
+                    <Card className="pdf-page-block border-none shadow-2xl shadow-slate-200/50 rounded-xl overflow-hidden bg-white hover:shadow-primary/5 transition-all">
+                        <CardHeader className="p-6 border-b border-slate-50 bg-slate-50/30">
                             <div className="flex items-center gap-3 mb-2">
                                 <Globe className="h-5 w-5 text-primary" />
                                 <CardTitle className="text-xl font-black text-slate-900 uppercase tracking-tight">Concentration Régionale (Top 10)</CardTitle>
                             </div>
                             <CardDescription className="font-medium">Hiérarchie géographique des zones à forte conflictualité.</CardDescription>
                         </CardHeader>
-                        <CardContent className="p-10">
+                        <CardContent className="p-6">
                             <ConflictRegionChart conflicts={filteredConflicts} />
                         </CardContent>
                     </Card>
 
-                    <Card className="pdf-page-block border-none shadow-2xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden bg-white hover:shadow-primary/5 transition-all">
-                        <CardHeader className="p-10 border-b border-slate-50 bg-slate-50/30">
+                    <Card className="pdf-page-block border-none shadow-2xl shadow-slate-200/50 rounded-xl overflow-hidden bg-white hover:shadow-primary/5 transition-all">
+                        <CardHeader className="p-6 border-b border-slate-50 bg-slate-50/30">
                             <div className="flex items-center gap-3 mb-2">
                                 <Calendar className="h-5 w-5 text-primary" />
                                 <CardTitle className="text-xl font-black text-slate-900 uppercase tracking-tight">Vitesse de Résolution (MGP)</CardTitle>
                             </div>
                             <CardDescription className="font-medium">Évaluation de l'efficacité opérationnelle des comités de médiation.</CardDescription>
                         </CardHeader>
-                        <CardContent className="p-10">
+                        <CardContent className="p-6">
                             <ResolutionTimeChart conflicts={filteredConflicts} />
                         </CardContent>
                     </Card>
 
-                    <Card className="pdf-page-block border-none shadow-2xl shadow-slate-200/50 rounded-[2.5rem] overflow-hidden bg-white lg:col-span-2">
-                        <CardHeader className="p-10 border-b border-slate-50 bg-slate-50/30">
+                    <Card className="pdf-page-block border-none shadow-2xl shadow-slate-200/50 rounded-xl overflow-hidden bg-white lg:col-span-2">
+                        <CardHeader className="p-6 border-b border-slate-50 bg-slate-50/30">
                             <div className="flex items-center gap-3 mb-2">
                                 <BarChart3 className="h-5 w-5 text-primary" />
                                 <CardTitle className="text-xl font-black text-slate-900 uppercase tracking-tight">Matrice d'Impact & Risques</CardTitle>
                             </div>
                             <CardDescription className="font-medium">Conséquences socio-économiques et environnementales des conflits répertoriés.</CardDescription>
                         </CardHeader>
-                        <CardContent className="p-10">
+                        <CardContent className="p-6">
                             <ImpactThematicChart conflicts={filteredConflicts} />
                         </CardContent>
                     </Card>

@@ -56,7 +56,7 @@ export function ChiefQuickView({ chief, isOpen, onClose }: ChiefQuickViewProps) 
             <DialogContent className="max-w-2xl p-0 overflow-hidden border-none gap-0 bg-slate-50/95 backdrop-blur-2xl">
                 {/* Header Profile Section */}
                 <div className={cn(
-                    "relative p-8 text-white overflow-hidden",
+                    "relative p-5 text-white overflow-hidden",
                     isHighAuthority ? "bg-amber-900" : "bg-blue-900"
                 )}>
                     {/* Background Pattern */}
@@ -66,7 +66,7 @@ export function ChiefQuickView({ chief, isOpen, onClose }: ChiefQuickViewProps) 
                     </div>
 
                     <div className="relative flex flex-col sm:flex-row gap-6 items-center sm:items-start text-center sm:text-left">
-                        <Avatar className="h-24 w-24 rounded-3xl border-4 border-white/20 shadow-2xl">
+                        <Avatar className="h-24 w-24 rounded-xl border-4 border-white/20 shadow-2xl">
                             <AvatarImage src={chief.photoUrl} alt={chief.name} className="object-cover" />
                             <AvatarFallback className="bg-white/10 text-white font-bold text-2xl">
                                 {chief.lastName?.charAt(0)}{chief.firstName?.charAt(0)}
@@ -136,9 +136,9 @@ export function ChiefQuickView({ chief, isOpen, onClose }: ChiefQuickViewProps) 
                 </div>
 
                 <ScrollArea className="max-h-[70vh]">
-                    <div className="p-8">
+                    <div className="p-5">
                         <Tabs defaultValue="profil" className="w-full">
-                            <TabsList className="grid w-full grid-cols-3 bg-slate-100/80 rounded-2xl p-1.5 border border-slate-200/50 mb-8">
+                            <TabsList className="grid w-full grid-cols-3 bg-slate-100/80 rounded-2xl p-1.5 border border-slate-200/50 mb-4">
                                 <TabsTrigger value="profil" className="text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:text-blue-700 data-[state=active]:shadow-md transition-all rounded-xl py-3">
                                     Profil & Contact
                                 </TabsTrigger>
@@ -150,7 +150,7 @@ export function ChiefQuickView({ chief, isOpen, onClose }: ChiefQuickViewProps) 
                                 </TabsTrigger>
                             </TabsList>
 
-                            <TabsContent value="profil" className="space-y-8 focus-visible:outline-none mt-0">
+                            <TabsContent value="profil" className="space-y-4 focus-visible:outline-none mt-0">
                                 <section className="space-y-4">
                                     <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
                                         <FileText className="h-4 w-4" /> BIOGRAPHIE OFFICIELLE
@@ -186,10 +186,10 @@ export function ChiefQuickView({ chief, isOpen, onClose }: ChiefQuickViewProps) 
                                 </div>
                             </TabsContent>
 
-                            <TabsContent value="carriere" className="space-y-8 focus-visible:outline-none mt-0">
+                            <TabsContent value="carriere" className="space-y-4 focus-visible:outline-none mt-0">
                                 {canReadCareer ? (
                                     <section className="space-y-6">
-                                        <div className="relative space-y-8 before:absolute before:left-[23px] before:top-4 before:bottom-4 before:w-1 before:bg-slate-100 before:rounded-full">
+                                        <div className="relative space-y-4 before:absolute before:left-[23px] before:top-4 before:bottom-4 before:w-1 before:bg-slate-100 before:rounded-full">
                                             {career.length > 0 ? (
                                                 career.map((event, index) => (
                                                     <div key={event.id} className="relative pl-14 group">
@@ -208,7 +208,7 @@ export function ChiefQuickView({ chief, isOpen, onClose }: ChiefQuickViewProps) 
                                                     </div>
                                                 ))
                                             ) : (
-                                                <div className="pl-14 text-slate-400 italic font-medium py-8 flex items-center gap-4">
+                                                <div className="pl-14 text-slate-400 italic font-medium py-4 flex items-center gap-4">
                                                     <div className="h-12 w-12 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center">
                                                         <History className="h-5 w-5 opacity-30" />
                                                     </div>
@@ -242,7 +242,7 @@ export function ChiefQuickView({ chief, isOpen, onClose }: ChiefQuickViewProps) 
                                 )}
                             </TabsContent>
 
-                            <TabsContent value="territoire" className="space-y-8 focus-visible:outline-none mt-0">
+                            <TabsContent value="territoire" className="space-y-4 focus-visible:outline-none mt-0">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200/60 space-y-4">
                                         <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2 mb-4">

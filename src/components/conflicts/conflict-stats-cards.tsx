@@ -30,7 +30,7 @@ export function ConflictStatsCards({ conflicts }: ConflictStatsCardsProps) {
     }, [conflicts]);
 
     return (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-4">
             <Card className="border-none shadow-xl shadow-blue-500/5 bg-gradient-to-br from-blue-50/50 to-white relative overflow-hidden group hover:scale-[1.02] transition-all duration-300">
                 <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
                     <ClipboardList className="h-16 w-16 -mr-4 -mt-4 text-blue-600" />

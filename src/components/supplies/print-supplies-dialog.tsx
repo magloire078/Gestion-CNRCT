@@ -79,7 +79,7 @@ export const PrintSuppliesDialog = memo(function PrintSuppliesDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onCloseAction}>
-      <DialogContent className="sm:max-w-3xl rounded-[2rem] border-none shadow-3xl p-0 overflow-hidden bg-white/95 backdrop-blur-3xl">
+      <DialogContent className="sm:max-w-3xl rounded-xl border-none shadow-3xl p-0 overflow-hidden bg-white/95 backdrop-blur-3xl">
         <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-emerald-950 p-5 md:p-7 text-white relative">
           <div className="absolute top-0 right-10 p-2 opacity-5 h-full flex items-center">
              <Printer size={120} strokeWidth={0.5} />
@@ -101,7 +101,7 @@ export const PrintSuppliesDialog = memo(function PrintSuppliesDialog({
           </DialogHeader>
         </div>
 
-        <div className="p-6 md:p-8 space-y-6 max-h-[60vh] overflow-y-auto custom-scrollbar">
+        <div className="p-6 md:p-5 space-y-6 max-h-[60vh] overflow-y-auto custom-scrollbar">
           
           {/* Section 1: Report Template Selection */}
           <div className="space-y-3">
@@ -168,7 +168,7 @@ export const PrintSuppliesDialog = memo(function PrintSuppliesDialog({
               </RadioGroup>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Left Column: Visual Options */}
             <div className="space-y-4">
                 <div className="flex items-center gap-2 text-slate-400">
@@ -305,17 +305,17 @@ export const PrintSuppliesDialog = memo(function PrintSuppliesDialog({
           </div>
         </div>
 
-        <DialogFooter className="bg-slate-50/80 border-t border-slate-100 p-6 md:p-8 flex flex-col sm:flex-row gap-3 items-center">
+        <DialogFooter className="bg-slate-50/80 border-t border-slate-100 p-6 md:p-5 flex flex-col sm:flex-row gap-3 items-center">
           <Button 
             variant="ghost" 
             onClick={onCloseAction} 
-            className="w-full sm:w-auto rounded-xl font-black text-slate-400 h-14 px-8 hover:bg-slate-100 transition-all uppercase text-[10px] tracking-widest"
+            className="w-full sm:w-auto rounded-xl font-black text-slate-400 h-14 px-5 hover:bg-slate-100 transition-all uppercase text-[10px] tracking-widest"
           >
             Annuler
           </Button>
           <Button 
             onClick={handlePrint} 
-            className="w-full sm:flex-grow bg-slate-900 text-white rounded-2xl font-black h-14 px-10 shadow-3xl hover:bg-emerald-600 transition-all border-none uppercase tracking-[0.2em] text-[10px] gap-3 relative group overflow-hidden"
+            className="w-full sm:flex-grow bg-slate-900 text-white rounded-2xl font-black h-14 px-6 shadow-3xl hover:bg-emerald-600 transition-all border-none uppercase tracking-[0.2em] text-[10px] gap-3 relative group overflow-hidden"
           >
             <Printer className="h-4 w-4 transition-transform group-hover:scale-110" /> 
             Générer le Document Officiel

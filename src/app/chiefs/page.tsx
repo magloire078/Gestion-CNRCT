@@ -9,10 +9,13 @@ import {
     UserCheck, MapPin, Grid2X2, List,
     FileSpreadsheet, FileJson, Database,
     UserCircle2, ShieldCheck, ChevronRight,
-    Star, GraduationCap, Medal
+    Star, GraduationCap, Medal, Printer
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from 'next/link';
+import { getOrganizationSettings } from "@/services/organization-service";
+import type { OrganizationSettings } from "@/lib/data";
+import { ChiefsOfficialReport } from "@/components/reports/chiefs-official-report";
 import kingdomsData from "@/data/kingdoms.json";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -59,6 +62,7 @@ import { Badge } from "@/components/ui/badge";
 import Papa from "papaparse";
 import { useAuth } from "@/hooks/use-auth";
 import { PaginationControls } from "@/components/common/pagination-controls";
+import { divisions } from "@/lib/ivory-coast-divisions";
 import { ConfirmationDialog } from "@/components/common/confirmation-dialog";
 import { cn } from "@/lib/utils";
 import { PermissionGuard } from "@/components/auth/permission-guard";
@@ -79,6 +83,9 @@ export default function ChiefsPage() {
   const { hasPermission } = useAuth();
   const [deleteTarget, setDeleteTarget] = useState<Chief | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'table' | 'map'>('grid');
+  
+  const [isPrinting, setIsPrinting] = useState(false);
+  const [orgSettings, setOrgSettings] = useState<OrganizationSettings | null>(null);
 
   const [selectedRole, setSelectedRole] = useState<string>("all");
   const [selectedRegion, setSelectedRegion] = useState<string>("all");
@@ -86,6 +93,9 @@ export default function ChiefsPage() {
   const [selectedAffiliation, setSelectedAffiliation] = useState<string>("all");
   const [selectedKingdom, setSelectedKingdom] = useState<string>("all");
   
+  const [selectedDepartment, setSelectedDepartment] = useState<string>("all");
+  const [selectedSubPrefecture, setSelectedSubPrefecture] = useState<string>("all");
+
   const [selectedChief, setSelectedChief] = useState<Chief | null>(null);
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
   const [linkChief, setLinkChief] = useState<Chief | null>(null);
@@ -96,7 +106,11 @@ export default function ChiefsPage() {
   const stats = useMemo(() => {
     const activeCount = chiefs.filter(c => c.status === 'actif' || c.status === 'a_vie' || !c.status).length;
     const highLevelRoles = chiefs.filter(c => c.role === 'Roi' || c.role === 'Chef de province').length;
-    const regionsCount = new Set(chiefs.map(c => c.region)).size;
+    const regionsCount = new Set(
+      chiefs
+        .map(c => c.region?.trim().toUpperCase())
+        .filter(r => r && r !== '' && r !== 'NON DÉFINIE')
+    ).size;
     
     return {
       total: chiefs.length,
@@ -110,6 +124,7 @@ export default function ChiefsPage() {
   const canExport = hasPermission('feature:chiefs:export');
 
   useEffect(() => {
+    getOrganizationSettings().then(setOrgSettings);
     const unsubscribe = subscribeToChiefs(
       (data) => {
         setChiefs(data);
@@ -188,6 +203,8 @@ export default function ChiefsPage() {
     return baseChiefs.filter((chief) => {
       const matchesRole = selectedRole === 'all' || chief.role === selectedRole;
       const matchesRegion = selectedRegion === 'all' || chief.region === selectedRegion;
+      const matchesDepartment = selectedDepartment === 'all' || chief.department === selectedDepartment;
+      const matchesSubPrefecture = selectedSubPrefecture === 'all' || chief.subPrefecture === selectedSubPrefecture;
       const matchesStatus = selectedStatus === 'all' || (chief.status || 'actif') === selectedStatus;
       const matchesAffiliation = selectedAffiliation === 'all' || 
           (selectedAffiliation === 'Aucune' ? !chief.cnrctAffiliation || chief.cnrctAffiliation === 'Aucune' : chief.cnrctAffiliation === selectedAffiliation);
@@ -200,9 +217,19 @@ export default function ChiefsPage() {
           return cReg.includes(kReg) || kReg.includes(cReg);
       })();
 
-      return matchesRole && matchesRegion && matchesStatus && matchesAffiliation && matchesKingdom;
+      return matchesRole && matchesRegion && matchesDepartment && matchesSubPrefecture && matchesStatus && matchesAffiliation && matchesKingdom;
     });
-  }, [chiefs, fuseInstance, searchTerm, selectedRole, selectedRegion, selectedStatus, selectedAffiliation, selectedKingdom]);
+  }, [chiefs, fuseInstance, searchTerm, selectedRole, selectedRegion, selectedDepartment, selectedSubPrefecture, selectedStatus, selectedAffiliation, selectedKingdom]);
+
+  const departments = useMemo(() => {
+      if (selectedRegion === 'all' || !selectedRegion || !divisions[selectedRegion]) return [];
+      return Object.keys(divisions[selectedRegion]);
+  }, [selectedRegion]);
+
+  const subPrefectures = useMemo(() => {
+      if (selectedRegion === 'all' || selectedDepartment === 'all' || !selectedRegion || !selectedDepartment || !divisions[selectedRegion] || !divisions[selectedRegion][selectedDepartment]) return [];
+      return Object.keys(divisions[selectedRegion][selectedDepartment]);
+  }, [selectedRegion, selectedDepartment]);
 
   const totalPages = Math.ceil(filteredChiefs.length / itemsPerPage);
 
@@ -226,7 +253,7 @@ export default function ChiefsPage() {
 
   return (
     <PermissionGuard permission="page:chiefs:view">
-      <div className="flex flex-col gap-8 pb-20">
+      <div className={cn("flex flex-col gap-4 pb-10", isPrinting && "hidden print:hidden")}>
       {/* Dynamic Hero Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
@@ -260,6 +287,10 @@ export default function ChiefsPage() {
               </DropdownMenuContent>
             </DropdownMenu>
           )}
+          <Button onClick={() => setIsPrinting(true)} variant="outline" className="w-full sm:w-auto rounded-lg h-10 shadow-sm border-blue-200 font-bold bg-blue-50 text-blue-700 hover:bg-blue-100 hover:text-blue-800">
+            <Printer className="mr-2 h-4 w-4" />
+            Imprimer PDF
+          </Button>
           <Button onClick={() => setIsSheetOpen(true)} className="w-full sm:w-auto bg-slate-900 hover:bg-slate-800 rounded-lg h-10 px-6 font-bold shadow-xl shadow-slate-200">
             <PlusCircle className="mr-2 h-5 w-5" />
             Ajouter un Chef
@@ -352,7 +383,7 @@ export default function ChiefsPage() {
                             </SelectContent>
                         </Select>
 
-                        <Select value={selectedRegion} onValueChange={setSelectedRegion}>
+                        <Select value={selectedRegion} onValueChange={(v) => { setSelectedRegion(v); setSelectedDepartment("all"); setSelectedSubPrefecture("all"); }}>
                             <SelectTrigger className="w-full sm:w-auto min-w-[140px] h-10 rounded-lg bg-white border-slate-200">
                                 <SelectValue placeholder="Toutes Régions" />
                             </SelectTrigger>
@@ -360,6 +391,30 @@ export default function ChiefsPage() {
                                 <SelectItem value="all">Toutes Régions</SelectItem>
                                 {IVORIAN_REGIONS.map(r => (
                                     <SelectItem key={r} value={r}>{r}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+
+                        <Select value={selectedDepartment} onValueChange={(v) => { setSelectedDepartment(v); setSelectedSubPrefecture("all"); }} disabled={selectedRegion === 'all' || departments.length === 0}>
+                            <SelectTrigger className="w-full sm:w-auto min-w-[140px] h-10 rounded-lg bg-white border-slate-200">
+                                <SelectValue placeholder="Tous Départements" />
+                            </SelectTrigger>
+                            <SelectContent className="rounded-lg">
+                                <SelectItem value="all">Tous Départements</SelectItem>
+                                {departments.map(d => (
+                                    <SelectItem key={d} value={d}>{d}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+
+                        <Select value={selectedSubPrefecture} onValueChange={setSelectedSubPrefecture} disabled={selectedDepartment === 'all' || subPrefectures.length === 0}>
+                            <SelectTrigger className="w-full sm:w-auto min-w-[140px] h-10 rounded-lg bg-white border-slate-200">
+                                <SelectValue placeholder="Toutes Sous-préfectures" />
+                            </SelectTrigger>
+                            <SelectContent className="rounded-lg">
+                                <SelectItem value="all">Toutes Sous-préfectures</SelectItem>
+                                {subPrefectures.map(sp => (
+                                    <SelectItem key={sp} value={sp}>{sp}</SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
@@ -378,10 +433,10 @@ export default function ChiefsPage() {
 
                         <Select value={selectedAffiliation} onValueChange={setSelectedAffiliation}>
                             <SelectTrigger className="w-full sm:w-auto min-w-[140px] h-10 rounded-lg bg-white border-slate-200">
-                                <SelectValue placeholder="Affiliation" />
+                                <SelectValue placeholder="Instances CNRCT" />
                             </SelectTrigger>
                             <SelectContent className="rounded-lg">
-                                <SelectItem value="all">Toutes</SelectItem>
+                                <SelectItem value="all">Toutes instances</SelectItem>
                                 <SelectItem value="Directoire">Directoire</SelectItem>
                                 <SelectItem value="Comité Régional">Comité Régional</SelectItem>
                                 <SelectItem value="Aucune">Sans Affiliation</SelectItem>
@@ -464,7 +519,7 @@ export default function ChiefsPage() {
                 )}
               />
           ) : viewMode === 'map' ? (
-              <div className="rounded-[2rem] border-4 border-slate-100/50 shadow-inner overflow-hidden relative">
+              <div className="rounded-xl border-4 border-slate-100/50 shadow-inner overflow-hidden relative">
                   <div className="absolute top-4 left-4 z-10 bg-white/90 backdrop-blur-md px-4 py-2 rounded-xl shadow-lg border border-slate-200">
                       <p className="text-base md:text-sm font-black uppercase tracking-widest text-slate-500">Autorités Visibles : <span className="text-slate-900">{filteredChiefs.length}</span></p>
                   </div>
@@ -511,7 +566,14 @@ export default function ChiefsPage() {
                                 </div>
                             </td>
                             <td className="p-4 align-middle">
-                                <Badge variant="secondary" className="px-2 py-0.5 rounded-lg text-base md:text-sm font-black uppercase tracking-wider">{chief.role}</Badge>
+                                <div className="flex flex-wrap gap-1">
+                                    <Badge variant="secondary" className="px-2 py-0.5 rounded-lg text-base md:text-sm font-black uppercase tracking-wider">{chief.role}</Badge>
+                                    {chief.additionalRoles?.map(r => (
+                                        <Badge key={r} variant="outline" className="px-1.5 py-0.5 rounded-md text-[10px] font-bold text-slate-500 border-slate-200">
+                                            {r}
+                                        </Badge>
+                                    ))}
+                                </div>
                             </td>
                             <td className="p-4 align-middle">
                                 <div className="flex flex-col">
@@ -597,6 +659,20 @@ export default function ChiefsPage() {
         />
       )}
       </div>
+
+      {isPrinting && (
+        <ChiefsOfficialReport 
+            chiefs={filteredChiefs}
+            organizationSettings={orgSettings}
+            isPrinting={isPrinting}
+            onAfterPrint={() => setIsPrinting(false)}
+            stats={{
+                total: filteredChiefs.length,
+                regions: new Set(filteredChiefs.map(c => c.region)).size,
+                villages: new Set(filteredChiefs.map(c => c.village)).size,
+            }}
+        />
+      )}
     </PermissionGuard>
   );
 }

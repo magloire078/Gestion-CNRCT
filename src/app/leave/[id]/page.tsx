@@ -83,12 +83,12 @@ export default function LeaveDetailPage() {
 
     if (loading) {
         return (
-            <div className="container mx-auto py-8 space-y-8">
+            <div className="container mx-auto py-4 space-y-4">
                 <div className="flex items-center justify-between">
                     <Skeleton className="h-10 w-64" />
                     <Skeleton className="h-10 w-32" />
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="md:col-span-2 space-y-6">
                         <Skeleton className="h-64 w-full" />
                         <Skeleton className="h-40 w-full" />
@@ -101,7 +101,7 @@ export default function LeaveDetailPage() {
 
     if (!leave) {
         return (
-            <div className="container mx-auto py-20 text-center">
+            <div className="container mx-auto py-8 text-center">
                 <AlertCircle className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
                 <h1 className="text-2xl font-bold">Demande de congé non trouvée</h1>
                 <Button variant="link" onClick={() => router.push("/leave")}>
@@ -135,7 +135,7 @@ export default function LeaveDetailPage() {
     };
 
     return (
-        <div className="container mx-auto py-8 space-y-8 pb-20">
+        <div className="container mx-auto py-4 space-y-4 pb-10">
             {/* Header / Toolbar */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
@@ -173,9 +173,9 @@ export default function LeaveDetailPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 {/* Main Content */}
-                <div className="lg:col-span-2 space-y-8">
+                <div className="lg:col-span-2 space-y-4">
                     {/* Detail Cards */}
                     <Card className="border-none shadow-sm bg-slate-50 overflow-hidden">
                         <div className="h-1.5 bg-primary/20 w-full" />
@@ -184,7 +184,7 @@ export default function LeaveDetailPage() {
                                 <Info className="h-5 w-5 text-primary" /> Détails de la demande
                             </CardTitle>
                         </CardHeader>
-                        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-8 py-6">
+                        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4 py-6">
                             <div className="space-y-6">
                                 <div className="flex items-start gap-4">
                                     <div className="h-12 w-12 bg-white rounded-xl flex items-center justify-center shadow-sm text-blue-600">
@@ -246,7 +246,7 @@ export default function LeaveDetailPage() {
                         <CardHeader>
                             <CardTitle className="text-md font-bold">Historique de la demande</CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-8 relative before:absolute before:inset-0 before:left-6 before:top-4 before:bottom-4 before:w-px before:bg-slate-200">
+                        <CardContent className="space-y-4 relative before:absolute before:inset-0 before:left-6 before:top-4 before:bottom-4 before:w-px before:bg-slate-200">
                             <div className="flex items-start gap-4 relative z-10">
                                 <div className="h-4 w-4 rounded-full bg-emerald-500 mt-1 border-4 border-white shadow-sm ring-1 ring-slate-100" />
                                 <div>

@@ -80,11 +80,11 @@ export function PrintAssetsDialog({ isOpen, onClose, onPrint, allColumns }: Prin
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-lg p-0 overflow-hidden border-none bg-white/80 backdrop-blur-xl shadow-2xl rounded-[2.5rem]">
+      <DialogContent className="sm:max-w-lg p-0 overflow-hidden border-none bg-white/80 backdrop-blur-xl shadow-2xl rounded-xl">
         {/* Header Decor */}
         <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-br from-slate-900 to-slate-800 -z-10" />
         
-        <DialogHeader className="p-8 pb-4 text-white relative">
+        <DialogHeader className="p-5 pb-4 text-white relative">
           <div className="flex items-center gap-4 mb-2">
             <div className="p-3 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 shadow-xl shadow-black/20">
               <Settings2 className="h-6 w-6 text-white" />
@@ -100,7 +100,7 @@ export function PrintAssetsDialog({ isOpen, onClose, onPrint, allColumns }: Prin
           </div>
         </DialogHeader>
 
-        <div className="p-8 pt-6 space-y-8 bg-white/50 backdrop-blur-sm">
+        <div className="p-5 pt-6 space-y-4 bg-white/50 backdrop-blur-sm">
           {/* Select All Toggle */}
           <div 
             className={cn(
@@ -191,7 +191,7 @@ export function PrintAssetsDialog({ isOpen, onClose, onPrint, allColumns }: Prin
           </div>
         </div>
 
-        <DialogFooter className="p-8 pt-4 bg-slate-50/80 backdrop-blur-sm border-t border-slate-100 sm:justify-between gap-4">
+        <DialogFooter className="p-5 pt-4 bg-slate-50/80 backdrop-blur-sm border-t border-slate-100 sm:justify-between gap-4">
           <Button 
             type="button" 
             variant="ghost" 
@@ -204,7 +204,7 @@ export function PrintAssetsDialog({ isOpen, onClose, onPrint, allColumns }: Prin
           <Button 
             type="button" 
             onClick={handlePrintClick}
-            className="rounded-2xl px-8 h-12 bg-slate-900 text-white hover:bg-slate-800 font-black uppercase tracking-widest text-[10px] shadow-xl shadow-slate-900/20 transition-all active:scale-95 flex items-center gap-2 group"
+            className="rounded-2xl px-5 h-12 bg-slate-900 text-white hover:bg-slate-800 font-black uppercase tracking-widest text-[10px] shadow-xl shadow-slate-900/20 transition-all active:scale-95 flex items-center gap-2 group"
           >
             <Printer className="h-4 w-4 transition-transform group-hover:-translate-y-0.5" />
             Lancer l'impression

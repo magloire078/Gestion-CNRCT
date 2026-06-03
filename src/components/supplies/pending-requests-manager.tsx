@@ -109,7 +109,7 @@ export function PendingRequestsManager({ mode }: PendingRequestsManagerProps) {
 
     if (requests.length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center py-20 text-center bg-card/40 backdrop-blur-md rounded-3xl border border-white/10 shadow-xl">
+            <div className="flex flex-col items-center justify-center py-8 text-center bg-card/40 backdrop-blur-md rounded-xl border border-white/10 shadow-xl">
                 <div className="h-16 w-16 rounded-2xl bg-emerald-500/10 flex items-center justify-center mb-4 border border-emerald-500/20">
                     <CheckCircle2 className="h-8 w-8 text-emerald-500" />
                 </div>
@@ -201,8 +201,8 @@ export function PendingRequestsManager({ mode }: PendingRequestsManagerProps) {
 
             {/* Rejection Dialog */}
             <Dialog open={!!rejectionRequestId} onOpenChange={(open) => !open && setRejectionRequestId(null)}>
-                <DialogContent className="rounded-3xl sm:max-w-md border-white/10 shadow-2xl overflow-hidden p-0 bg-white/90 backdrop-blur-2xl">
-                    <div className="bg-red-600 p-8 text-white">
+                <DialogContent className="rounded-xl sm:max-w-md border-white/10 shadow-2xl overflow-hidden p-0 bg-white/90 backdrop-blur-2xl">
+                    <div className="bg-red-600 p-5 text-white">
                         <DialogHeader>
                             <DialogTitle className="text-2xl font-black flex items-center gap-3 uppercase tracking-tighter">
                                 <AlertCircle className="h-8 w-8" />
@@ -213,7 +213,7 @@ export function PendingRequestsManager({ mode }: PendingRequestsManagerProps) {
                             </DialogDescription>
                         </DialogHeader>
                     </div>
-                    <div className="p-8 space-y-4">
+                    <div className="p-5 space-y-4">
                         <div className="space-y-3">
                             <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Motif institutionnel du rejet</Label>
                             <Textarea 
@@ -224,13 +224,13 @@ export function PendingRequestsManager({ mode }: PendingRequestsManagerProps) {
                             />
                         </div>
                     </div>
-                    <DialogFooter className="p-8 bg-slate-50/50 border-t border-slate-100">
+                    <DialogFooter className="p-5 bg-slate-50/50 border-t border-slate-100">
                         <Button variant="ghost" onClick={() => setRejectionRequestId(null)} className="rounded-xl font-bold uppercase tracking-widest text-[10px]">Annuler</Button>
                         <Button 
                             variant="destructive" 
                             disabled={!rejectionReason.trim() || actionLoading === rejectionRequestId}
                             onClick={handleReject}
-                            className="bg-red-600 hover:bg-red-700 rounded-xl px-10 font-black uppercase tracking-widest text-xs h-11 shadow-lg shadow-red-500/20 active:scale-95 transition-all"
+                            className="bg-red-600 hover:bg-red-700 rounded-xl px-6 font-black uppercase tracking-widest text-xs h-11 shadow-lg shadow-red-500/20 active:scale-95 transition-all"
                         >
                             {actionLoading === rejectionRequestId ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <XCircle className="mr-2 h-4 w-4" />}
                             Confirmer Rejet

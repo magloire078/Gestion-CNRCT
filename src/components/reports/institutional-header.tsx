@@ -34,7 +34,7 @@ export function InstitutionalHeader({
   }, [initialSettings]);
 
   return (
-    <div className="flex justify-between items-start border-b-2 border-slate-900 pb-8 mb-12 relative break-inside-avoid">
+    <div className="flex justify-between items-start border-b-2 border-slate-900 pb-5 mb-12 relative break-inside-avoid">
       {/* Left Column: Local Institution Details */}
       <div className="flex flex-col items-center gap-0.5 text-slate-800 font-black uppercase text-[10px] leading-tight tracking-tighter w-[30%] text-center">
         <span className="text-sm">Chambre Nationale des Rois</span>
@@ -70,7 +70,7 @@ export function InstitutionalHeader({
 
       {/* Center Column: Title (Optional) */}
       {(title || children) && (
-        <div className="absolute left-1/2 -translate-x-1/2 text-center max-w-[35%] mt-8">
+        <div className="absolute left-1/2 -translate-x-1/2 text-center max-w-[35%] mt-4">
           {children ? children : (
             <>
               <h1 className="text-2xl font-black text-slate-900 tracking-tighter uppercase leading-tight italic">

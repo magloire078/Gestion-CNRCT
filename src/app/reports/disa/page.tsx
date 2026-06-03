@@ -115,8 +115,8 @@ export default function DisaPage() {
 
     return (
         <PermissionGuard permission="page:disa:view">
-            <div className={`flex flex-col gap-10 pb-20 animate-in fade-in duration-1000 ${isPrinting ? 'print-hidden' : ''}`}>
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+            <div className={`flex flex-col gap-5 pb-10 animate-in fade-in duration-1000 ${isPrinting ? 'print-hidden' : ''}`}>
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                     <div className="space-y-4">
                         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 border border-blue-100 text-blue-600 font-black uppercase tracking-[0.2em] text-[10px] shadow-sm">
                             <FileText className="h-3.5 w-3.5" />
@@ -132,7 +132,7 @@ export default function DisaPage() {
                 </div>
 
                 <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-2xl overflow-hidden bg-white/80 backdrop-blur-md group transition-all duration-500">
-                    <CardHeader className="p-10 border-b border-slate-50">
+                    <CardHeader className="p-6 border-b border-slate-50">
                         <div className="flex items-center gap-6">
                             <div className="h-14 w-14 rounded-xl bg-slate-900 flex items-center justify-center shadow-2xl shadow-slate-900/20 group-hover:rotate-12 transition-transform">
                                 <FileText className="h-7 w-7 text-blue-400" />
@@ -143,7 +143,7 @@ export default function DisaPage() {
                             </div>
                         </div>
                     </CardHeader>
-                    <CardContent className="p-10">
+                    <CardContent className="p-6">
                         <form onSubmit={handleGenerate} className="max-w-xl">
                             <div className="space-y-6">
                                 <div className="grid gap-3">
@@ -161,7 +161,7 @@ export default function DisaPage() {
                                                 </SelectContent>
                                             </Select>
                                         </div>
-                                        <Button type="submit" disabled={loading} className="h-16 px-10 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-black shadow-xl shadow-slate-200 hover:scale-[1.02] active:scale-[0.98] transition-all w-full sm:w-auto">
+                                        <Button type="submit" disabled={loading} className="h-16 px-6 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-black shadow-xl shadow-slate-200 hover:scale-[1.02] active:scale-[0.98] transition-all w-full sm:w-auto">
                                             {loading ? (
                                                 <div className="flex items-center gap-3">
                                                     <Loader2 className="h-5 w-5 animate-spin" />
@@ -180,7 +180,7 @@ export default function DisaPage() {
                         </form>
 
                         {state.error && (
-                            <Alert variant="destructive" className="mt-8 rounded-xl border-none bg-rose-50 text-rose-700 shadow-sm animate-in slide-in-from-top-4">
+                            <Alert variant="destructive" className="mt-4 rounded-xl border-none bg-rose-50 text-rose-700 shadow-sm animate-in slide-in-from-top-4">
                                 <AlertCircle className="h-5 w-5 text-rose-600" />
                                 <AlertTitle className="font-black text-rose-900">Calcul Interrompu</AlertTitle>
                                 <AlertDescription className="font-medium">{state.error}</AlertDescription>
@@ -191,8 +191,8 @@ export default function DisaPage() {
 
                 {state.reportData && (
                     <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-2xl overflow-hidden bg-white/80 backdrop-blur-md animate-in zoom-in-95 duration-700">
-                        <CardHeader className="p-10 border-b border-slate-50">
-                            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+                        <CardHeader className="p-6 border-b border-slate-50">
+                            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                                 <div className="flex items-center gap-6">
                                     <div className="h-16 w-16 rounded-xl bg-blue-600 flex items-center justify-center shadow-2xl shadow-blue-200">
                                         <Printer className="h-8 w-8 text-white" />
@@ -202,18 +202,18 @@ export default function DisaPage() {
                                         <CardDescription className="font-bold text-slate-400 uppercase text-[10px] tracking-widest leading-none mt-1">Total de {state.reportData.length} collaborateur(s) assujetti(s)</CardDescription>
                                     </div>
                                 </div>
-                                <Button onClick={handlePrint} className="h-14 px-8 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-black shadow-xl border-none">
+                                <Button onClick={handlePrint} className="h-14 px-5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-black shadow-xl border-none">
                                     <Printer className="mr-2 h-5 w-5" />
                                     Imprimer l'Officiel
                                 </Button>
                             </div>
                         </CardHeader>
                         <CardContent className="p-0">
-                            <div className="p-10 bg-slate-50/50">
-                                <div className="bg-white p-8 rounded-2xl shadow-xl shadow-slate-200/30 border border-slate-100">
+                            <div className="p-6 bg-slate-50/50">
+                                <div className="bg-white p-5 rounded-2xl shadow-xl shadow-slate-200/30 border border-slate-100">
                                     <DisaHeader organizationLogos={state.organizationLogos} year={state.year || ""} />
                                     
-                                    <div className="overflow-x-auto rounded-xl border border-slate-100 overflow-hidden mt-8 shadow-2xl shadow-slate-200/20">
+                                    <div className="overflow-x-auto rounded-xl border border-slate-100 overflow-hidden mt-4 shadow-2xl shadow-slate-200/20">
                                         <table className="w-full border-collapse">
                                             <thead className="bg-[#1e3a8a] text-white">
                                                 <tr>
@@ -274,7 +274,7 @@ export default function DisaPage() {
                                 <FileText className="h-10 w-10 text-slate-300 group-hover:text-blue-500 transition-colors" />
                             </div>
                         </div>
-                        <h3 className="mt-8 text-2xl font-black text-slate-900 tracking-tight">En attente de génération</h3>
+                        <h3 className="mt-4 text-2xl font-black text-slate-900 tracking-tight">En attente de génération</h3>
                         <p className="mt-2 text-slate-500 font-bold uppercase text-[10px] tracking-widest">Sélectionnez une année pour initialiser le calcul DISA</p>
                     </div>
                 )}

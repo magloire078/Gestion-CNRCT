@@ -90,6 +90,16 @@ export type Employe = {
     calculatedRetirementDate?: Date;
     age?: number;
     retirementNotificationSent?: boolean;
+
+    // Mandate & Nomination History (CNRCT Instances)
+    mandatDebut?: string; // YYYY-MM-DD
+    mandatFin?: string; // YYYY-MM-DD
+    estRenouvele?: boolean;
+    historiqueNominations?: Array<{
+        periode: string; // e.g., "2018-2024"
+        poste: string; // e.g., "Membre du Comité Régional"
+        region?: string;
+    }>;
 };
 
 export type Department = {

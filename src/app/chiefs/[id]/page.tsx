@@ -78,9 +78,9 @@ export default function ChiefProfilePage() {
 
     if (loading) {
         return (
-            <div className="container mx-auto py-8 space-y-8 animate-pulse">
+            <div className="container mx-auto py-4 space-y-4 animate-pulse">
                 <div className="h-4 w-24 bg-muted rounded mb-4" />
-                <div className="flex flex-col md:flex-row gap-8 items-start">
+                <div className="flex flex-col md:flex-row gap-4 items-start">
                     <Skeleton className="h-48 w-48 rounded-2xl" />
                     <div className="space-y-4 flex-1">
                         <Skeleton className="h-10 w-2/3" />
@@ -101,7 +101,7 @@ export default function ChiefProfilePage() {
 
     if (!chief) {
         return (
-            <div className="container mx-auto py-20 text-center space-y-4">
+            <div className="container mx-auto py-8 text-center space-y-4">
                 <AlertCircle className="h-16 w-16 text-muted-foreground mx-auto" />
                 <h2 className="text-2xl font-bold">Chef non trouvé</h2>
                 <p className="text-muted-foreground">L'autorité que vous recherchez n'existe pas ou a été déplacée.</p>
@@ -114,7 +114,7 @@ export default function ChiefProfilePage() {
     }
 
     return (
-        <div className="container mx-auto py-8 pb-20 space-y-8">
+        <div className="container mx-auto py-4 pb-10 space-y-4">
             {/* Navigation & Actions */}
             <div className="flex items-center justify-between">
                 <Button variant="ghost" size="sm" onClick={() => router.back()} className="hover:bg-slate-100">
@@ -136,19 +136,25 @@ export default function ChiefProfilePage() {
             </div>
 
             {/* Chief Profile card */}
-            <div className="relative overflow-hidden rounded-2xl bg-white border shadow-sm p-6 md:p-8">
+            <div className="relative overflow-hidden rounded-2xl bg-white border shadow-sm p-6 md:p-5">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-slate-50 rounded-full -mr-32 -mt-32 opacity-50 pointer-events-none" />
                 
-                <div className="flex flex-col md:flex-row gap-8 items-center md:items-start text-center md:text-left relative z-10">
+                <div className="flex flex-col md:flex-row gap-4 items-center md:items-start text-center md:text-left relative z-10">
                     <div className="relative group">
                         <Avatar className="h-48 w-48 rounded-xl border-4 border-white shadow-2xl transition-transform group-hover:scale-[1.02]">
                             <AvatarImage src={chief.photoUrl} alt={chief.name} className="object-cover" />
                             <AvatarFallback className="text-4xl font-bold bg-slate-100">{chief.name?.charAt(0)}</AvatarFallback>
                         </Avatar>
-                        <Badge className="absolute -bottom-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-blue-600 text-white border-2 border-white shadow-lg">
-                            {chief.role}
-                        </Badge>
-                    </div>
+                        <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 flex gap-1">
+                            <Badge className="px-4 py-1 bg-blue-600 text-white border-2 border-white shadow-lg">
+                                {chief.role}
+                            </Badge>
+                            {chief.additionalRoles?.map(r => (
+                                <Badge key={r} className="px-2 py-1 bg-slate-700 text-white border-2 border-white shadow-lg text-[10px]">
+                                    {r}
+                                </Badge>
+                            ))}
+                        </div>
 
                     <div className="flex-1 space-y-4">
                         <div className="space-y-1">
@@ -185,9 +191,9 @@ export default function ChiefProfilePage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 {/* Colonne Gauche - Détails & Bio */}
-                <div className="lg:col-span-2 space-y-8">
+                <div className="lg:col-span-2 space-y-4">
                     <Tabs defaultValue="info" className="w-full">
                         <TabsList className="grid w-full grid-cols-4 mb-6 bg-slate-100/50 p-1 rounded-xl">
                             <TabsTrigger value="info" className="rounded-lg font-bold text-xs uppercase tracking-widest">Général</TabsTrigger>
@@ -245,6 +251,89 @@ export default function ChiefProfilePage() {
                                             <span className="text-sm text-slate-500 font-medium">Groupe Ethnique</span>
                                             <span className="text-sm font-bold text-slate-800">{chief.ethnicGroup || "N/A"}</span>
                                         </div>
+                                    </CardContent>
+                                </Card>
+
+                                <Card className="border-none shadow-sm bg-white overflow-hidden">
+                                    <CardHeader className="border-b bg-slate-50/50">
+                                        <CardTitle className="text-sm font-bold uppercase tracking-widest text-slate-500">Affiliation & Mandat</CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="pt-4 space-y-4">
+                                        <div className="flex justify-between items-center py-2 border-b border-slate-50">
+                                            <span className="text-sm text-slate-500 font-medium">Instance CNRCT</span>
+                                            <Badge variant={chief.cnrctAffiliation && chief.cnrctAffiliation !== 'Aucune' ? 'default' : 'secondary'} className={chief.cnrctAffiliation && chief.cnrctAffiliation !== 'Aucune' ? "bg-blue-600 hover:bg-blue-700" : ""}>
+                                                {chief.cnrctAffiliation || "Aucune"}
+                                            </Badge>
+                                        </div>
+                                        {chief.cnrctAffiliation && chief.cnrctAffiliation !== 'Aucune' && (
+                                            <>
+                                                <div className="flex justify-between items-center py-2 border-b border-slate-50">
+                                                    <span className="text-sm text-slate-500 font-medium">Période du Mandat</span>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-sm font-bold text-slate-800">
+                                                            {chief.mandatDebut ? new Date(chief.mandatDebut).toLocaleDateString() : 'N/A'} - {chief.mandatFin ? new Date(chief.mandatFin).toLocaleDateString() : 'N/A'}
+                                                        </span>
+                                                        {chief.estRenouvele && (
+                                                            <Badge variant="outline" className="border-green-200 text-green-700 bg-green-50 text-[10px] font-bold uppercase">Reconduit</Badge>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                {chief.historiqueNominations && chief.historiqueNominations.length > 0 && (
+                                                    <div className="pt-2">
+                                                        <span className="text-xs text-slate-400 font-bold uppercase tracking-wider block mb-2">Historique des nominations</span>
+                                                        <div className="space-y-2">
+                                                            {chief.historiqueNominations.map((hist, idx) => (
+                                                                <div key={idx} className="flex flex-col p-2 bg-slate-50 rounded-lg border border-slate-100">
+                                                                    <div className="flex justify-between items-center">
+                                                                        <span className="text-xs font-bold text-slate-700">{hist.poste}</span>
+                                                                        <span className="text-[10px] text-slate-500">{hist.periode}</span>
+                                                                    </div>
+                                                                    {hist.region && <span className="text-[10px] text-slate-400">{hist.region}</span>}
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </>
+                                        )}
+                                    </CardContent>
+                                </Card>
+
+                                <Card className="border-none shadow-sm bg-white overflow-hidden">
+                                    <CardHeader className="border-b bg-slate-50/50">
+                                        <CardTitle className="text-sm font-bold uppercase tracking-widest text-slate-500">Domaines Coutumiers</CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="pt-4 space-y-4">
+                                        {(chief.role === 'Roi' || chief.additionalRoles?.includes('Roi')) && (
+                                            <div className="flex justify-between items-center py-2 border-b border-slate-50">
+                                                <span className="text-sm text-slate-500 font-medium">Royaume</span>
+                                                <span className="text-sm font-bold text-slate-800">{chief.royaumeName || "N/A"}</span>
+                                            </div>
+                                        )}
+                                        {(chief.role === 'Chef de province' || chief.additionalRoles?.includes('Chef de province')) && (
+                                            <div className="flex justify-between items-center py-2 border-b border-slate-50">
+                                                <span className="text-sm text-slate-500 font-medium">Province</span>
+                                                <span className="text-sm font-bold text-slate-800">{chief.provinceName || "N/A"}</span>
+                                            </div>
+                                        )}
+                                        {(chief.role === 'Chef de canton' || chief.additionalRoles?.includes('Chef de canton')) && (
+                                            <div className="flex justify-between items-center py-2 border-b border-slate-50">
+                                                <span className="text-sm text-slate-500 font-medium">Canton</span>
+                                                <span className="text-sm font-bold text-slate-800">{chief.cantonName || "N/A"}</span>
+                                            </div>
+                                        )}
+                                        {(chief.role === 'Chef de tribu' || chief.additionalRoles?.includes('Chef de tribu')) && (
+                                            <div className="flex justify-between items-center py-2 border-b border-slate-50">
+                                                <span className="text-sm text-slate-500 font-medium">Tribu</span>
+                                                <span className="text-sm font-bold text-slate-800">{chief.tribuName || "N/A"}</span>
+                                            </div>
+                                        )}
+                                        {(!chief.royaumeName && !chief.provinceName && !chief.cantonName && !chief.tribuName) && (
+                                            <div className="flex justify-between items-center py-2">
+                                                <span className="text-sm text-slate-500 font-medium">Domaine(s)</span>
+                                                <span className="text-sm font-bold text-slate-800 italic text-slate-400">Non défini</span>
+                                            </div>
+                                        )}
                                     </CardContent>
                                 </Card>
 
@@ -315,8 +404,8 @@ export default function ChiefProfilePage() {
                                                  </div>
                                              </div>
                                          </CardHeader>
-                                         <CardContent className="pt-8 px-8">
-                                             <div className="relative border-l-2 border-slate-100 ml-3 pb-4 space-y-8">
+                                         <CardContent className="pt-8 px-5">
+                                             <div className="relative border-l-2 border-slate-100 ml-3 pb-4 space-y-4">
                                                  {chief.career && chief.career.length > 0 ? (
                                                      chief.career.map((event, idx) => (
                                                          <div key={event.id} className="relative pl-8">
@@ -360,7 +449,7 @@ export default function ChiefProfilePage() {
                                                         <Medal className="h-6 w-6 text-white" />
                                                     </div>
                                                 </div>
-                                                <div className="mt-8 pt-4 border-t border-white/10 space-y-3">
+                                                <div className="mt-4 pt-4 border-t border-white/10 space-y-3">
                                                     <div className="flex justify-between text-[10px] font-bold">
                                                         <span className="text-amber-100">Contribution Sociale</span>
                                                         <span>85%</span>

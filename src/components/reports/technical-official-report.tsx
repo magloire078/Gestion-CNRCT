@@ -70,7 +70,7 @@ export function TechnicalOfficialReport({
                     orientation="landscape"
                 />
 
-                <div className="landscape-section min-h-screen p-12 relative print:p-8">
+                <div className="landscape-section min-h-screen p-12 relative print:p-5">
                     <InstitutionalHeader 
                         title="Inventaire Technique et Outillage"
                         period={period}
@@ -79,9 +79,9 @@ export function TechnicalOfficialReport({
                         settings={organizationSettings}
                     />
 
-                    <div className="space-y-12 mt-10">
+                    <div className="space-y-6 mt-10">
                         {/* Observation Note */}
-                        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-8 flex items-start gap-6 break-inside-avoid">
+                        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 flex items-start gap-6 break-inside-avoid">
                             <div className="h-12 w-12 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
                                 <FileText className="h-6 w-6 text-amber-600" />
                             </div>

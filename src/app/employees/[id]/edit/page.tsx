@@ -58,11 +58,11 @@ export default function EditEmployeePage() {
 
     if (loading) {
         return (
-            <div className="max-w-5xl mx-auto space-y-8 animate-pulse">
+            <div className="max-w-5xl mx-auto space-y-4 animate-pulse">
                 <div className="h-10 w-48 bg-slate-100 rounded-lg" />
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div className="h-96 bg-slate-50 rounded-[2rem]" />
-                    <div className="md:col-span-2 h-[600px] bg-slate-50 rounded-[2rem]" />
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="h-96 bg-slate-50 rounded-xl" />
+                    <div className="md:col-span-2 h-[600px] bg-slate-50 rounded-xl" />
                 </div>
             </div>
         );
@@ -71,9 +71,9 @@ export default function EditEmployeePage() {
     if (!employee) return null;
 
     return (
-        <div className="flex flex-col gap-10 pb-20">
+        <div className="flex flex-col gap-5 pb-10">
              {/* --- PREMIUM EDIT HEADER --- */}
-            <div className="relative overflow-hidden rounded-[2.5rem] bg-slate-900 p-8 md:p-12 shadow-2xl border border-white/10">
+            <div className="relative overflow-hidden rounded-xl bg-slate-900 p-5 md:p-12 shadow-2xl border border-white/10">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_50%,rgba(59,130,246,0.15),transparent)] opacity-50" />
                 <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div className="space-y-4">

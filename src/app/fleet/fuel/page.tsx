@@ -189,7 +189,7 @@ export default function FuelManagementPage() {
 
     return (
         <PermissionGuard permission="page:fuel:view">
-        <div className="flex flex-col gap-10 pb-12">
+        <div className="flex flex-col gap-5 pb-12">
             {/* Institutional Header */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 px-1">
                 <div className="space-y-4">
@@ -212,8 +212,8 @@ export default function FuelManagementPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <Card className="border-white/10 shadow-2xl bg-slate-900 text-white overflow-hidden relative group transition-all duration-500 hover:scale-[1.02] rounded-[2.5rem]">
-                    <CardHeader className="p-8 relative z-10">
+                <Card className="border-white/10 shadow-2xl bg-slate-900 text-white overflow-hidden relative group transition-all duration-500 hover:scale-[1.02] rounded-xl">
+                    <CardHeader className="p-5 relative z-10">
                         <CardDescription className="text-slate-400 font-black uppercase text-[9px] tracking-[0.2em]">Budget Recharge Cumulé</CardDescription>
                         <CardTitle className="text-4xl font-black mt-2">{stats.totalBudget.toLocaleString()} <span className="text-sm font-bold text-slate-400">FCFA</span></CardTitle>
                     </CardHeader>
@@ -222,8 +222,8 @@ export default function FuelManagementPage() {
                     </div>
                 </Card>
 
-                <Card className="border-white/10 shadow-xl bg-card/40 backdrop-blur-md overflow-hidden relative group transition-all duration-500 hover:scale-[1.02] rounded-[2.5rem]">
-                    <CardHeader className="p-8 relative z-10">
+                <Card className="border-white/10 shadow-xl bg-card/40 backdrop-blur-md overflow-hidden relative group transition-all duration-500 hover:scale-[1.02] rounded-xl">
+                    <CardHeader className="p-5 relative z-10">
                         <CardDescription className="text-slate-500 font-black uppercase text-[9px] tracking-[0.2em]">Solde Disponible (Cartes)</CardDescription>
                         <CardTitle className="text-4xl font-black mt-2 text-slate-900">{stats.currentBalance.toLocaleString()} <span className="text-sm font-bold text-slate-400">FCFA</span></CardTitle>
                     </CardHeader>
@@ -233,8 +233,8 @@ export default function FuelManagementPage() {
                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent" />
                 </Card>
 
-                <Card className="border-white/10 shadow-xl bg-card/40 backdrop-blur-md overflow-hidden relative group transition-all duration-500 hover:scale-[1.02] rounded-[2.5rem]">
-                    <CardHeader className="p-8 relative z-10">
+                <Card className="border-white/10 shadow-xl bg-card/40 backdrop-blur-md overflow-hidden relative group transition-all duration-500 hover:scale-[1.02] rounded-xl">
+                    <CardHeader className="p-5 relative z-10">
                         <CardDescription className="text-slate-500 font-black uppercase text-[9px] tracking-[0.2em]">Consommation Totale</CardDescription>
                         <CardTitle className="text-4xl font-black mt-2 text-blue-600">{stats.totalSpent.toLocaleString()} <span className="text-sm font-bold text-slate-400">FCFA</span></CardTitle>
                     </CardHeader>
@@ -245,8 +245,8 @@ export default function FuelManagementPage() {
                 </Card>
             </div>
 
-            <Tabs defaultValue="overview" className="space-y-8">
-                <TabsList className="bg-transparent border-b border-border/50 rounded-none w-full justify-start h-auto p-0 gap-8">
+            <Tabs defaultValue="overview" className="space-y-4">
+                <TabsList className="bg-transparent border-b border-border/50 rounded-none w-full justify-start h-auto p-0 gap-4">
                     <TabsTrigger value="overview" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-slate-900 data-[state=active]:shadow-none rounded-none py-4 px-0 h-auto font-black uppercase text-[11px] tracking-widest text-slate-400 data-[state=active]:text-slate-900 transition-all">
                         <LayoutDashboard className="h-4 w-4 mr-2" /> Vue d&apos;ensemble
                     </TabsTrigger>
@@ -261,9 +261,9 @@ export default function FuelManagementPage() {
                     </TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="overview" className="space-y-8 outline-none">
-                    <Card className="border-white/10 shadow-2xl bg-card/40 backdrop-blur-md overflow-hidden rounded-[2.5rem] px-2">
-                        <CardHeader className="border-b border-border/50 bg-primary/5 py-8 px-8 flex flex-row items-center justify-between">
+                <TabsContent value="overview" className="space-y-4 outline-none">
+                    <Card className="border-white/10 shadow-2xl bg-card/40 backdrop-blur-md overflow-hidden rounded-xl px-2">
+                        <CardHeader className="border-b border-border/50 bg-primary/5 py-4 px-5 flex flex-row items-center justify-between">
                             <div>
                                 <CardTitle className="text-2xl font-black uppercase tracking-tight text-slate-900">Activités Récentes</CardTitle>
                                 <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mt-1">Flux financiers et consommation des 30 derniers jours</CardDescription>
@@ -276,8 +276,8 @@ export default function FuelManagementPage() {
                 </TabsContent>
 
                 <TabsContent value="providers" className="outline-none">
-                    <Card className="border-white/10 shadow-2xl bg-card/40 backdrop-blur-md overflow-hidden rounded-[2.5rem] px-2">
-                        <CardHeader className="border-b border-border/50 bg-primary/5 py-8 px-8 flex flex-row items-center justify-between">
+                    <Card className="border-white/10 shadow-2xl bg-card/40 backdrop-blur-md overflow-hidden rounded-xl px-2">
+                        <CardHeader className="border-b border-border/50 bg-primary/5 py-4 px-5 flex flex-row items-center justify-between">
                             <div>
                                 <CardTitle className="text-2xl font-black uppercase tracking-tight text-slate-900">Registre des Prestataires</CardTitle>
                                 <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mt-1">Total: {providers.length} entités certifiées</CardDescription>
@@ -298,8 +298,8 @@ export default function FuelManagementPage() {
                 </TabsContent>
 
                 <TabsContent value="cards" className="outline-none">
-                    <Card className="border-white/10 shadow-2xl bg-card/40 backdrop-blur-md overflow-hidden rounded-[2.5rem] px-2">
-                        <CardHeader className="border-b border-border/50 bg-primary/5 py-8 px-8 flex flex-row items-center justify-between">
+                    <Card className="border-white/10 shadow-2xl bg-card/40 backdrop-blur-md overflow-hidden rounded-xl px-2">
+                        <CardHeader className="border-b border-border/50 bg-primary/5 py-4 px-5 flex flex-row items-center justify-between">
                             <div>
                                 <CardTitle className="text-2xl font-black uppercase tracking-tight text-slate-900">Gestion des Dotations</CardTitle>
                                 <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mt-1">Cartes affectées aux véhicules ou au personnel</CardDescription>
@@ -335,8 +335,8 @@ export default function FuelManagementPage() {
                 </TabsContent>
 
                 <TabsContent value="history" className="outline-none">
-                    <Card className="border-white/10 shadow-2xl bg-card/40 backdrop-blur-md overflow-hidden rounded-[2.5rem] px-2">
-                        <CardHeader className="border-b border-border/50 bg-primary/5 py-8 px-8 flex flex-row items-center justify-between">
+                    <Card className="border-white/10 shadow-2xl bg-card/40 backdrop-blur-md overflow-hidden rounded-xl px-2">
+                        <CardHeader className="border-b border-border/50 bg-primary/5 py-4 px-5 flex flex-row items-center justify-between">
                             <div>
                                 <CardTitle className="text-2xl font-black uppercase tracking-tight text-slate-900">Historique Transactionnel</CardTitle>
                                 <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mt-1">Rechargements et consommations consolidés</CardDescription>

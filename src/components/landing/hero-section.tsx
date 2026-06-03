@@ -18,7 +18,7 @@ export function HeroSection() {
       <div className="absolute bottom-1/4 -right-64 h-96 w-96 bg-emerald-500/10 rounded-full blur-[120px] animate-pulse delay-1000" />
       
       <div className="container mx-auto px-4 relative z-10">
-        <div className="max-w-5xl mx-auto text-center space-y-12">
+        <div className="max-w-5xl mx-auto text-center space-y-6">
           
           <motion.div 
             initial={{ opacity: 0, y: 20 }}

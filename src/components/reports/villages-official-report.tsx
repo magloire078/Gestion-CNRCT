@@ -91,8 +91,8 @@ export function VillagesOfficialReport({
                 <GlobalSynthesisTable villages={villages} />
 
                 {/* --- PAGES DÉTAILLÉES (PAYSAGE) --- */}
-                <div className="landscape-section min-h-screen p-12 relative print:p-8 pt-0 print:pt-0">
-                    <div className="space-y-12 mt-8">
+                <div className="landscape-section min-h-screen p-12 relative print:p-5 pt-0 print:pt-0">
+                    <div className="space-y-6 mt-4">
                         {Object.entries(villagesByRegion).sort().map(([region, regionVillages]) => {
                             const uniqueDepts = new Set(regionVillages.map(v => (v.village.department || '').trim().toUpperCase()).filter(Boolean));
                             const uniqueSPs = new Set(regionVillages.map(v => (v.village.subPrefecture || v.village.commune || '').trim().toUpperCase()).filter(Boolean));

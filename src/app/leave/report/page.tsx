@@ -220,7 +220,7 @@ export default function LeaveReportPage() {
                             )})
                         ) : (
                             <TableRow>
-                            <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                            <TableCell colSpan={6} className="text-center text-muted-foreground py-4">
                                 Aucune donnée de congé pour la période sélectionnée.
                             </TableCell>
                             </TableRow>

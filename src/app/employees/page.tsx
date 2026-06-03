@@ -584,9 +584,9 @@ export default function EmployeesPage() {
               )}
               {isGeoTab && (
                 <>
-                  <TabsTrigger value="all-geo" className="rounded-2xl px-8 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-sm md:text-xs transition-all">Membres Géo-localisés</TabsTrigger>
-                  <TabsTrigger value="directoire" className="rounded-2xl px-8 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-sm md:text-xs transition-all">Directoire</TabsTrigger>
-                  <TabsTrigger value="regional" className="rounded-2xl px-8 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-sm md:text-xs transition-all">Comités Régionaux</TabsTrigger>
+                  <TabsTrigger value="all-geo" className="rounded-2xl px-5 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-sm md:text-xs transition-all">Membres Géo-localisés</TabsTrigger>
+                  <TabsTrigger value="directoire" className="rounded-2xl px-5 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-sm md:text-xs transition-all">Directoire</TabsTrigger>
+                  <TabsTrigger value="regional" className="rounded-2xl px-5 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-sm md:text-xs transition-all">Comités Régionaux</TabsTrigger>
                 </>
               )}
               <TabsTrigger value="analytics" className="rounded-2xl px-6 py-2.5 data-[state=active]:bg-slate-900 data-[state=active]:text-white font-black uppercase tracking-widest text-sm md:text-xs transition-all gap-2">
@@ -969,7 +969,7 @@ export default function EmployeesPage() {
                     )}
 
                     {!loading && filteredEmployees.length === 0 && (
-                      <div className="text-center py-20 bg-slate-50/50 rounded-2xl border-2 border-dashed mt-4">
+                      <div className="text-center py-8 bg-slate-50/50 rounded-2xl border-2 border-dashed mt-4">
                         <Users2 className="h-12 w-12 text-slate-200 mx-auto mb-4" />
                         <p className="text-slate-400 font-bold uppercase tracking-[0.2em] text-base md:text-sm">Aucun collaborateur identifié pour ce périmètre.</p>
                       </div>

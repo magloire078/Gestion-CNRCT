@@ -7,7 +7,7 @@ import type { Chief } from '@/types/chief';
 // Import dynamique sans SSR pour éviter les erreurs "window is not defined"
 const ChiefsMap = dynamic(() => import('./chiefs-map'), {
   ssr: false,
-  loading: () => <Skeleton className="w-full h-full min-h-[500px] rounded-3xl bg-slate-100" />
+  loading: () => <Skeleton className="w-full h-full min-h-[500px] rounded-xl bg-slate-100" />
 });
 
 interface ChiefsMapWrapperProps {

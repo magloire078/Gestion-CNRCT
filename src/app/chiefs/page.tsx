@@ -96,6 +96,8 @@ export default function ChiefsPage() {
   
   const [selectedDepartment, setSelectedDepartment] = useState<string>("all");
   const [selectedSubPrefecture, setSelectedSubPrefecture] = useState<string>("all");
+  const [selectedCanton, setSelectedCanton] = useState<string>("all");
+  const [selectedTribu, setSelectedTribu] = useState<string>("all");
 
   const [selectedChief, setSelectedChief] = useState<Chief | null>(null);
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
@@ -206,6 +208,8 @@ export default function ChiefsPage() {
       const matchesRegion = selectedRegion === 'all' || chief.region === selectedRegion;
       const matchesDepartment = selectedDepartment === 'all' || chief.department === selectedDepartment;
       const matchesSubPrefecture = selectedSubPrefecture === 'all' || chief.subPrefecture === selectedSubPrefecture;
+      const matchesCanton = selectedCanton === 'all' || chief.cantonName === selectedCanton;
+      const matchesTribu = selectedTribu === 'all' || chief.tribuName === selectedTribu;
       const matchesStatus = selectedStatus === 'all' || (chief.status || 'actif') === selectedStatus;
       const matchesAffiliation = selectedAffiliation === 'all' || 
           (selectedAffiliation === 'Aucune' ? !chief.cnrctAffiliation || chief.cnrctAffiliation === 'Aucune' : chief.cnrctAffiliation === selectedAffiliation);
@@ -218,9 +222,9 @@ export default function ChiefsPage() {
           return cReg.includes(kReg) || kReg.includes(cReg);
       })();
 
-      return matchesRole && matchesRegion && matchesDepartment && matchesSubPrefecture && matchesStatus && matchesAffiliation && matchesKingdom;
+      return matchesRole && matchesRegion && matchesDepartment && matchesSubPrefecture && matchesCanton && matchesTribu && matchesStatus && matchesAffiliation && matchesKingdom;
     });
-  }, [chiefs, fuseInstance, searchTerm, selectedRole, selectedRegion, selectedDepartment, selectedSubPrefecture, selectedStatus, selectedAffiliation, selectedKingdom]);
+  }, [chiefs, fuseInstance, searchTerm, selectedRole, selectedRegion, selectedDepartment, selectedSubPrefecture, selectedCanton, selectedTribu, selectedStatus, selectedAffiliation, selectedKingdom]);
 
   const departments = useMemo(() => {
       if (selectedRegion === 'all' || !selectedRegion || !divisions[selectedRegion]) return [];
@@ -231,6 +235,22 @@ export default function ChiefsPage() {
       if (selectedRegion === 'all' || selectedDepartment === 'all' || !selectedRegion || !selectedDepartment || !divisions[selectedRegion] || !divisions[selectedRegion][selectedDepartment]) return [];
       return Object.keys(divisions[selectedRegion][selectedDepartment]);
   }, [selectedRegion, selectedDepartment]);
+
+  const cantonsList = useMemo(() => {
+      const set = new Set<string>();
+      chiefs.forEach(c => {
+          if (c.cantonName) set.add(c.cantonName.trim());
+      });
+      return Array.from(set).sort();
+  }, [chiefs]);
+
+  const tribusList = useMemo(() => {
+      const set = new Set<string>();
+      chiefs.forEach(c => {
+          if (c.tribuName) set.add(c.tribuName.trim());
+      });
+      return Array.from(set).sort();
+  }, [chiefs]);
 
   const totalPages = Math.ceil(filteredChiefs.length / itemsPerPage);
 
@@ -416,6 +436,30 @@ export default function ChiefsPage() {
                                 <SelectItem value="all">Toutes Sous-préfectures</SelectItem>
                                 {subPrefectures.map(sp => (
                                     <SelectItem key={sp} value={sp}>{sp}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+
+                        <Select value={selectedCanton} onValueChange={setSelectedCanton}>
+                            <SelectTrigger className="w-full sm:w-auto min-w-[140px] h-10 rounded-lg bg-white border-slate-200">
+                                <SelectValue placeholder="Tous Cantons" />
+                            </SelectTrigger>
+                            <SelectContent className="rounded-lg">
+                                <SelectItem value="all">Tous Cantons</SelectItem>
+                                {cantonsList.map(c => (
+                                    <SelectItem key={c} value={c}>{c}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+
+                        <Select value={selectedTribu} onValueChange={setSelectedTribu}>
+                            <SelectTrigger className="w-full sm:w-auto min-w-[140px] h-10 rounded-lg bg-white border-slate-200">
+                                <SelectValue placeholder="Toutes Tribus" />
+                            </SelectTrigger>
+                            <SelectContent className="rounded-lg">
+                                <SelectItem value="all">Toutes Tribus</SelectItem>
+                                {tribusList.map(t => (
+                                    <SelectItem key={t} value={t}>{t}</SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>

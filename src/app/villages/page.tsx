@@ -25,6 +25,7 @@ import {
     Activity,
     ShieldCheck,
     Edit2,
+    UserPlus,
     Trash2
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -63,6 +64,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { AddVillageSheet } from "@/components/villages/add-village-sheet";
+import { EditVillageSheet } from "@/components/villages/edit-village-sheet";
 import { VillageQuickView } from "@/components/villages/village-quick-view";
 import { VillagesOfficialReport } from "@/components/reports/villages-official-report";
 import { PermissionGuard } from "@/components/auth/permission-guard";
@@ -97,6 +99,8 @@ export default function VillagesPage() {
     const [selectedRegion, setSelectedRegion] = useState<string>("all");
     const [selectedDepartment, setSelectedDepartment] = useState<string>("all");
     const [selectedCommune, setSelectedCommune] = useState<string>("all");
+    const [selectedCanton, setSelectedCanton] = useState<string>("all");
+    const [selectedTribu, setSelectedTribu] = useState<string>("all");
     const [activeTab, setActiveTab] = useState("all");
     const [quickViewVillage, setQuickViewVillage] = useState<{ village: Village, chief: Chief | null } | null>(null);
     const [printDate, setPrintDate] = useState("");
@@ -110,6 +114,7 @@ export default function VillagesPage() {
 
     // Link sheet state
     const [linkSheetEntry, setLinkSheetEntry] = useState<VillageEntry | null>(null);
+    const [editSheetVillage, setEditSheetVillage] = useState<Village | null>(null);
 
     const handleDeleteVillage = async (village: Village) => {
         if (window.confirm(`Êtes-vous sûr de vouloir supprimer la localité de ${village.name} ? Cette action est irréversible.`)) {
@@ -202,7 +207,9 @@ export default function VillagesPage() {
         const stats = {
             regions: {} as Record<string, number>,
             departments: {} as Record<string, number>,
-            communes: {} as Record<string, number>
+            communes: {} as Record<string, number>,
+            cantons: {} as Record<string, number>,
+            tribus: {} as Record<string, number>
         };
 
         villages.forEach(v => {
@@ -210,6 +217,8 @@ export default function VillagesPage() {
             if (v.department) stats.departments[v.department] = (stats.departments[v.department] || 0) + 1;
             if (v.subPrefecture) stats.communes[v.subPrefecture] = (stats.communes[v.subPrefecture] || 0) + 1;
             if (v.commune) stats.communes[v.commune] = (stats.communes[v.commune] || 0) + 1;
+            if (v.canton) stats.cantons[v.canton] = (stats.cantons[v.canton] || 0) + 1;
+            if (v.tribu) stats.tribus[v.tribu] = (stats.tribus[v.tribu] || 0) + 1;
         });
 
         return stats;
@@ -224,6 +233,14 @@ export default function VillagesPage() {
         if (selectedRegion === "all" || selectedDepartment === "all") return [];
         return Object.keys(divisions[selectedRegion]?.[selectedDepartment] || {}).sort();
     }, [selectedRegion, selectedDepartment]);
+
+    const cantons = useMemo(() => {
+        return Object.keys(filterStats.cantons).sort();
+    }, [filterStats.cantons]);
+
+    const tribus = useMemo(() => {
+        return Object.keys(filterStats.tribus).sort();
+    }, [filterStats.tribus]);
 
     // Fuse Instance for fuzzy searching
     const fuseInstance = useMemo(() => {
@@ -283,13 +300,16 @@ export default function VillagesPage() {
                 }
             }
 
+            if (selectedCanton !== "all" && v.canton !== selectedCanton) return false;
+            if (selectedTribu !== "all" && v.tribu !== selectedTribu) return false;
+
             // Status Filter (via Tabs)
             if (activeTab === "vacant" && c) return false;
             if (activeTab === "occupied" && !c) return false;
 
             return true;
         });
-    }, [villageEntries, searchQuery, selectedRegion, selectedDepartment, selectedCommune, activeTab]);
+    }, [villageEntries, searchQuery, selectedRegion, selectedDepartment, selectedCommune, selectedCanton, selectedTribu, activeTab]);
 
     // Pagination Logic
     const paginatedVillages = useMemo(() => {
@@ -302,17 +322,19 @@ export default function VillagesPage() {
     // Reset pagination when filters change
     useEffect(() => {
         setCurrentPage(1);
-    }, [searchQuery, selectedRegion, selectedDepartment, selectedCommune, activeTab]);
+    }, [searchQuery, selectedRegion, selectedDepartment, selectedCommune, selectedCanton, selectedTribu, activeTab]);
 
     const printSubtitle = useMemo(() => {
         let subtitle = `Total: ${filteredVillages.length} | Date: ${printDate}`;
         if (selectedRegion !== "all") subtitle += ` | Région: ${selectedRegion}`;
         if (selectedDepartment !== "all") subtitle += ` | Dept: ${selectedDepartment}`;
         if (selectedCommune !== "all") subtitle += ` | S/P: ${selectedCommune}`;
+        if (selectedCanton !== "all") subtitle += ` | Canton: ${selectedCanton}`;
+        if (selectedTribu !== "all") subtitle += ` | Tribu: ${selectedTribu}`;
         if (activeTab !== "all") subtitle += ` | Statut: ${activeTab === 'occupied' ? 'Occupés' : 'Vacants'}`;
         if (searchQuery) subtitle += ` | Recherche: ${searchQuery}`;
         return subtitle;
-    }, [filteredVillages.length, printDate, selectedRegion, selectedDepartment, selectedCommune, activeTab, searchQuery]);
+    }, [filteredVillages.length, printDate, selectedRegion, selectedDepartment, selectedCommune, selectedCanton, selectedTribu, activeTab, searchQuery]);
 
     const stats = useMemo(() => {
         const total = filteredVillages.length;
@@ -386,12 +408,12 @@ export default function VillagesPage() {
                     <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
                         <Button 
                             variant="outline" 
-                            className="w-full sm:w-auto rounded-lg h-10 shadow-sm border-slate-200 font-bold"
+                            className="w-full sm:w-auto rounded-lg h-10 shadow-sm border-blue-200 font-bold bg-blue-50 text-blue-700 hover:bg-blue-100 hover:text-blue-800"
                             onClick={handlePrint}
                             disabled={filteredVillages.length === 0 || !settings}
                         >
-                            <Download className="mr-2 h-4 w-4 text-slate-400" />
-                            Exporter
+                            <Printer className="mr-2 h-4 w-4" />
+                            Imprimer PDF
                         </Button>
                         <div className="w-full sm:w-auto">
                             <AddVillageSheet />
@@ -469,123 +491,132 @@ export default function VillagesPage() {
                 <Card className="border-none shadow-2xl shadow-slate-200/50 dark:shadow-none rounded-2xl overflow-hidden flex-1 flex flex-col min-h-0 bg-white dark:bg-slate-900/50">
                     <CardHeader className="bg-slate-50/50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800 p-4 sm:p-5 shrink-0">
                         <div className="flex flex-col xl:flex-row xl:items-start justify-between gap-6 w-full">
-                            <div className="flex flex-col lg:flex-row flex-wrap items-center gap-4 w-full justify-start">
-                                <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto justify-start print:hidden">
-                                    <Select value={selectedRegion} onValueChange={(val) => {
-                                        setSelectedRegion(val);
-                                        setSelectedDepartment("all");
-                                        setSelectedCommune("all");
-                                    }}>
-                                        <SelectTrigger className="w-full sm:w-auto min-w-[140px] h-10 rounded-lg bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-                                            <SelectValue placeholder="Région" />
-                                        </SelectTrigger>
-                                        <SelectContent className="rounded-lg border-slate-100">
-                                            <SelectItem value="all">Toutes Régions</SelectItem>
-                                            {Object.keys(divisions).sort().map(region => (
-                                                <SelectItem key={region} value={region}>
-                                                    {region} {filterStats.regions[region] ? `(${filterStats.regions[region]})` : ""}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-
-                                    <Select 
-                                        value={selectedDepartment} 
-                                        onValueChange={(val) => {
-                                            setSelectedDepartment(val);
-                                            setSelectedCommune("all");
-                                        }}
-                                        disabled={selectedRegion === "all"}
-                                    >
-                                        <SelectTrigger className="w-full sm:w-auto min-w-[140px] h-10 rounded-lg bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-                                            <SelectValue placeholder="Département" />
-                                        </SelectTrigger>
-                                        <SelectContent className="rounded-lg border-slate-100">
-                                            <SelectItem value="all">Tous Départements</SelectItem>
-                                            {departments.map(dept => (
-                                                <SelectItem key={dept} value={dept}>
-                                                    {dept} {filterStats.departments[dept] ? `(${filterStats.departments[dept]})` : ""}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-
-                                    <Select 
-                                        value={selectedCommune} 
-                                        onValueChange={setSelectedCommune}
-                                        disabled={selectedDepartment === "all"}
-                                    >
-                                        <SelectTrigger className="w-full sm:w-auto min-w-[140px] h-10 rounded-lg bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-                                            <SelectValue placeholder="S-Préf." />
-                                        </SelectTrigger>
-                                        <SelectContent className="rounded-lg border-slate-100">
-                                            <SelectItem value="all">Toutes S-Préf.</SelectItem>
-                                            {communes.map(comm => (
-                                                <SelectItem key={comm} value={comm}>{comm}</SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-
-                                    <Select value={activeTab} onValueChange={setActiveTab}>
-                                        <SelectTrigger className="w-full sm:w-auto min-w-[140px] h-10 rounded-lg bg-amber-50 border-amber-200 text-amber-900 font-medium">
-                                            <SelectValue placeholder="Statut du Siège" />
-                                        </SelectTrigger>
-                                        <SelectContent className="rounded-lg">
-                                            <SelectItem value="all">Tous Statuts</SelectItem>
-                                            <SelectItem value="occupied">Sièges Occupés</SelectItem>
-                                            <SelectItem value="vacant">Sièges Vacants</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-
-                                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto lg:ml-auto">
-                                    <div className="relative group flex-grow lg:w-[280px]">
-                                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
-                                        <Input
-                                            placeholder="Localité, Chef..."
-                                            className="pl-11 h-10 rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-inner focus:ring-slate-900 w-full"
-                                            value={searchQuery}
-                                            onChange={(e) => setSearchQuery(e.target.value)}
-                                        />
+                            <div className="flex flex-col gap-4 shrink-0 xl:max-w-sm">
+                                <div className="flex items-center gap-4">
+                                    <div className="h-10 w-10 rounded-lg bg-slate-900 flex items-center justify-center shadow-lg shrink-0">
+                                        <MapIcon className="h-6 w-6 text-white" />
                                     </div>
-                                    <div className="flex items-center justify-center p-1 bg-white dark:bg-slate-800 rounded-lg shadow-inner border border-slate-100 dark:border-slate-700 shrink-0 w-full sm:w-auto">
-                                        <Button 
-                                            variant={viewMode === 'grid' ? 'default' : 'ghost'} 
-                                            size="icon" 
-                                            className={cn("h-9 w-9 rounded-lg transition-all", viewMode === 'grid' ? "bg-slate-900 shadow-md text-white" : "text-slate-400 hover:text-slate-900")}
-                                            onClick={() => setViewMode('grid')}
-                                            title="Vue Grille"
-                                        >
-                                            <LayoutGrid className="h-4 w-4" />
-                                        </Button>
-                                        <Button 
-                                            variant={viewMode === 'list' ? 'default' : 'ghost'} 
-                                            size="icon" 
-                                            className={cn("h-9 w-9 rounded-lg transition-all", viewMode === 'list' ? "bg-slate-900 shadow-md text-white" : "text-slate-400 hover:text-slate-900")}
-                                            onClick={() => setViewMode('list')}
-                                            title="Vue Tableau"
-                                        >
-                                            <List className="h-4 w-4" />
-                                        </Button>
+                                    <div>
+                                        <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">Répertoire des Localités</h2>
+                                        <p className="text-sm text-slate-500 dark:text-slate-400">{filteredVillages.length} localités recensées</p>
+                                    </div>
+                                </div>
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <div className="flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 rounded-md text-amber-700 text-[10px] font-bold shadow-sm border border-amber-100">
+                                        <Zap className="h-3 w-3" /> Élec: {stats.electricity.toFixed(0)}%
+                                    </div>
+                                    <div className="flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 rounded-md text-blue-700 text-[10px] font-bold shadow-sm border border-blue-100">
+                                        <Droplets className="h-3 w-3" /> Eau: {stats.water.toFixed(0)}%
+                                    </div>
+                                    <div className="flex items-center gap-1.5 px-2.5 py-1 bg-indigo-50 rounded-md text-indigo-700 text-[10px] font-bold shadow-sm border border-indigo-100">
+                                        <School className="h-3 w-3" /> École: {stats.school.toFixed(0)}%
+                                    </div>
+                                    <div className="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 rounded-md text-emerald-700 text-[10px] font-bold shadow-sm border border-emerald-100">
+                                        <Activity className="h-3 w-3" /> Santé: {stats.health.toFixed(0)}%
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                            
+                            <div className="flex flex-col lg:flex-row flex-wrap items-center gap-3 w-full xl:w-auto justify-start xl:justify-end print:hidden">
+                                <Select value={activeTab} onValueChange={setActiveTab}>
+                                    <SelectTrigger className="w-full sm:w-auto min-w-[140px] h-10 rounded-lg bg-amber-50 border-amber-200 text-amber-900 font-bold shadow-sm">
+                                        <SelectValue placeholder="Tous Statuts" />
+                                    </SelectTrigger>
+                                    <SelectContent className="rounded-lg">
+                                        <SelectItem value="all">Tous Statuts</SelectItem>
+                                        <SelectItem value="occupied">Sièges Occupés</SelectItem>
+                                        <SelectItem value="vacant">Sièges Vacants</SelectItem>
+                                    </SelectContent>
+                                </Select>
 
-                        {/* Actions & Mini-Stats Row */}
-                        <div className="flex flex-wrap items-center justify-between gap-4 mt-4 pt-4 border-t border-slate-100">
-                            <div className="flex flex-wrap items-center gap-3">
-                                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 rounded-lg text-amber-700 text-xs font-bold shadow-sm">
-                                    <Zap className="h-3.5 w-3.5" /> Élec: {stats.electricity.toFixed(0)}%
+                                <Select value={selectedRegion} onValueChange={(val) => { setSelectedRegion(val); setSelectedDepartment("all"); setSelectedCommune("all"); }}>
+                                    <SelectTrigger className="w-full sm:w-auto min-w-[130px] h-10 rounded-lg bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 font-medium">
+                                        <SelectValue placeholder="Région" />
+                                    </SelectTrigger>
+                                    <SelectContent className="rounded-lg border-slate-100">
+                                        <SelectItem value="all">Toutes Régions</SelectItem>
+                                        {Object.keys(divisions).sort().map(region => (
+                                            <SelectItem key={region} value={region}>{region} {filterStats.regions[region] ? `(${filterStats.regions[region]})` : ""}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+
+                                <Select value={selectedDepartment} onValueChange={(val) => { setSelectedDepartment(val); setSelectedCommune("all"); }} disabled={selectedRegion === "all"}>
+                                    <SelectTrigger className="w-full sm:w-auto min-w-[130px] h-10 rounded-lg bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 font-medium">
+                                        <SelectValue placeholder="Département" />
+                                    </SelectTrigger>
+                                    <SelectContent className="rounded-lg border-slate-100">
+                                        <SelectItem value="all">Tous Départements</SelectItem>
+                                        {departments.map(dept => (
+                                            <SelectItem key={dept} value={dept}>{dept} {filterStats.departments[dept] ? `(${filterStats.departments[dept]})` : ""}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+
+                                <Select value={selectedCommune} onValueChange={setSelectedCommune} disabled={selectedDepartment === "all"}>
+                                    <SelectTrigger className="w-full sm:w-auto min-w-[120px] h-10 rounded-lg bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 font-medium">
+                                        <SelectValue placeholder="S-Préf." />
+                                    </SelectTrigger>
+                                    <SelectContent className="rounded-lg border-slate-100">
+                                        <SelectItem value="all">Toutes S-Préf.</SelectItem>
+                                        {communes.map(commune => (
+                                            <SelectItem key={commune} value={commune}>{commune} {filterStats.communes[commune] ? `(${filterStats.communes[commune]})` : ""}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+
+                                <Select value={selectedCanton} onValueChange={setSelectedCanton}>
+                                    <SelectTrigger className="w-full sm:w-auto min-w-[120px] h-10 rounded-lg bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 font-medium">
+                                        <SelectValue placeholder="Canton" />
+                                    </SelectTrigger>
+                                    <SelectContent className="rounded-lg border-slate-100">
+                                        <SelectItem value="all">Tous Cantons</SelectItem>
+                                        {cantons.map(canton => (
+                                            <SelectItem key={canton} value={canton}>{canton} ({filterStats.cantons[canton]})</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+
+                                <Select value={selectedTribu} onValueChange={setSelectedTribu}>
+                                    <SelectTrigger className="w-full sm:w-auto min-w-[120px] h-10 rounded-lg bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 font-medium">
+                                        <SelectValue placeholder="Tribu" />
+                                    </SelectTrigger>
+                                    <SelectContent className="rounded-lg border-slate-100">
+                                        <SelectItem value="all">Toutes Tribus</SelectItem>
+                                        {tribus.map(tribu => (
+                                            <SelectItem key={tribu} value={tribu}>{tribu} ({filterStats.tribus[tribu]})</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+
+                                <div className="relative group flex-grow lg:w-auto lg:min-w-[200px]">
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
+                                    <Input
+                                        placeholder="Localité, Chef..."
+                                        className="pl-9 h-10 rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm focus:ring-slate-900 w-full"
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                    />
                                 </div>
-                                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 rounded-lg text-blue-700 text-xs font-bold shadow-sm">
-                                    <Droplets className="h-3.5 w-3.5" /> Eau: {stats.water.toFixed(0)}%
-                                </div>
-                                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 rounded-lg text-indigo-700 text-xs font-bold shadow-sm">
-                                    <School className="h-3.5 w-3.5" /> École: {stats.school.toFixed(0)}%
-                                </div>
-                                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 rounded-lg text-emerald-700 text-xs font-bold shadow-sm">
-                                    <Activity className="h-3.5 w-3.5" /> Santé: {stats.health.toFixed(0)}%
+                                <div className="flex items-center justify-center p-1 bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 shrink-0 w-full sm:w-auto">
+                                    <Button 
+                                        variant={viewMode === 'grid' ? 'default' : 'ghost'} 
+                                        size="icon" 
+                                        className={cn("h-8 w-8 rounded-md transition-all", viewMode === 'grid' ? "bg-slate-900 shadow text-white" : "text-slate-400 hover:text-slate-900")}
+                                        onClick={() => setViewMode('grid')}
+                                        title="Vue Grille"
+                                    >
+                                        <LayoutGrid className="h-4 w-4" />
+                                    </Button>
+                                    <Button 
+                                        variant={viewMode === 'list' ? 'default' : 'ghost'} 
+                                        size="icon" 
+                                        className={cn("h-8 w-8 rounded-md transition-all", viewMode === 'list' ? "bg-slate-900 shadow text-white" : "text-slate-400 hover:text-slate-900")}
+                                        onClick={() => setViewMode('list')}
+                                        title="Vue Tableau"
+                                    >
+                                        <List className="h-4 w-4" />
+                                    </Button>
                                 </div>
                             </div>
                         </div>
@@ -618,6 +649,7 @@ export default function VillagesPage() {
                                         >
                                             <VillageCard
                                                 entry={entry}
+                                                onEdit={(e) => { e.stopPropagation(); setEditSheetVillage(entry.village); }}
                                                 onLink={(e) => { e.stopPropagation(); setLinkSheetEntry(entry); }}
                                                 onDelete={(e) => { e.stopPropagation(); handleDeleteVillage(entry.village); }}
                                             />
@@ -750,12 +782,22 @@ export default function VillagesPage() {
                     onLinkedAction={() => setLinkSheetEntry(null)}
                 />
             )}
+
+            {/* Edit Village Sheet */}
+            {editSheetVillage && (
+                <EditVillageSheet
+                    village={editSheetVillage}
+                    open={!!editSheetVillage}
+                    onOpenChangeAction={(open) => !open && setEditSheetVillage(null)}
+                />
+            )}
         </PermissionGuard>
     );
 }
 
 
-function VillageCard({ entry, onLink, onDelete }: { entry: VillageEntry; onLink?: (e: React.MouseEvent) => void; onDelete?: (e: React.MouseEvent) => void }) {
+// --- SOUS-COMPOSANT VILLAGECARD ---
+function VillageCard({ entry, onLink, onEdit, onDelete }: { entry: VillageEntry; onLink?: (e: React.MouseEvent) => void; onEdit?: (e: React.MouseEvent) => void; onDelete?: (e: React.MouseEvent) => void }) {
     const { village, currentChief, archivedChiefsCount } = entry;
     const score = village.developmentScore || 0;
 
@@ -789,8 +831,12 @@ function VillageCard({ entry, onLink, onDelete }: { entry: VillageEntry; onLink?
                 </p>
 
                 {/* Hover Commune overlay */}
-                <div className="absolute inset-x-0 bottom-0 bg-amber-500 translate-y-full group-hover:translate-y-0 transition-transform duration-500 p-1 flex items-center justify-center">
-                    <span className="text-white text-[9px] font-black uppercase tracking-[0.2em]">{village.subPrefecture}</span>
+                <div className="absolute inset-x-0 bottom-0 bg-amber-500 translate-y-full group-hover:translate-y-0 transition-transform duration-500 p-1 flex items-center justify-center overflow-hidden whitespace-nowrap text-ellipsis">
+                    <span className="text-white text-[9px] font-black uppercase tracking-[0.2em]">
+                        {village.subPrefecture}
+                        {village.canton ? ` • ${village.canton}` : ''}
+                        {village.tribu ? ` • ${village.tribu}` : ''}
+                    </span>
                 </div>
             </div>
 
@@ -881,11 +927,20 @@ function VillageCard({ entry, onLink, onDelete }: { entry: VillageEntry; onLink?
                     <Button
                         variant="outline"
                         size="icon"
+                        title="Modifier le village"
+                        className="h-9 w-9 rounded-md border-slate-200 text-slate-400 hover:text-amber-600 hover:bg-amber-50 transition-colors shrink-0"
+                        onClick={onEdit}
+                    >
+                        <Edit2 className="h-4 w-4" />
+                    </Button>
+                    <Button
+                        variant="outline"
+                        size="icon"
                         title={currentChief ? "Changer de chef" : "Affecter un chef"}
                         className="h-9 w-9 rounded-md border-slate-200 text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors shrink-0"
                         onClick={onLink}
                     >
-                        <Edit2 className="h-4 w-4" />
+                        <UserPlus className="h-4 w-4" />
                     </Button>
                 </PermissionGuard>
                 <PermissionGuard permission="page:villages:delete">

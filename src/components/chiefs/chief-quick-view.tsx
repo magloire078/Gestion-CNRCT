@@ -122,7 +122,14 @@ export function ChiefQuickView({ chief, isOpen, onClose }: ChiefQuickViewProps) 
                                 </div>
                                 <div className="flex items-center gap-1.5">
                                     <ShieldCheck className="h-4 w-4" />
-                                    {chief.subPrefecture} • {chief.region}
+                                    <div className="flex flex-col text-left leading-tight">
+                                        <span>{chief.subPrefecture} • {chief.region}</span>
+                                        {(chief.cantonName || chief.tribuName) && (
+                                            <span className="text-[10px] text-white/60 tracking-widest uppercase">
+                                                {[chief.cantonName, chief.tribuName].filter(Boolean).join(" • ")}
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -258,6 +265,24 @@ export function ChiefQuickView({ chief, isOpen, onClose }: ChiefQuickViewProps) 
                                                 <div className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Sous-Préfecture</div>
                                                 <div className="text-base font-black text-slate-900">{chief.subPrefecture}</div>
                                             </div>
+                                            {chief.cantonName && (
+                                                <>
+                                                    <Separator className="bg-slate-200" />
+                                                    <div>
+                                                        <div className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Canton</div>
+                                                        <div className="text-base font-black text-slate-900">{chief.cantonName}</div>
+                                                    </div>
+                                                </>
+                                            )}
+                                            {chief.tribuName && (
+                                                <>
+                                                    <Separator className="bg-slate-200" />
+                                                    <div>
+                                                        <div className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Tribu</div>
+                                                        <div className="text-base font-black text-slate-900">{chief.tribuName}</div>
+                                                    </div>
+                                                </>
+                                            )}
                                             <Separator className="bg-slate-200" />
                                             <div>
                                                 <div className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Région</div>

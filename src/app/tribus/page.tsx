@@ -1,0 +1,352 @@
+"use client";
+
+import { useState, useEffect, useMemo } from "react";
+import Fuse from "fuse.js";
+import { 
+    Search, 
+    ArrowLeft,
+    SearchX,
+    Network,
+    Printer
+} from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { subscribeToVillages } from "@/services/village-service";
+import { subscribeToChiefs } from "@/services/chief-service";
+import { Village } from "@/types/village";
+import { Chief } from "@/types/chief";
+import Link from "next/link";
+import { TribuData, TribuCard } from "@/components/territory/tribu-card";
+import { TribuQuickView } from "@/components/territory/tribu-quick-view";
+import { PrintTribusList } from "@/components/territory/print-tribus-list";
+import { PaginationControls } from "@/components/common/pagination-controls";
+import { 
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { useAuth } from "@/hooks/use-auth";
+import { normalizeString } from "@/lib/normalization-utils";
+
+export default function TribusPage() {
+    const { user } = useAuth();
+    const [villages, setVillages] = useState<Village[]>([]);
+    const [chiefs, setChiefs] = useState<Chief[]>([]);
+    const [loading, setLoading] = useState(true);
+    
+    const [searchQuery, setSearchQuery] = useState("");
+    const [selectedRegion, setSelectedRegion] = useState<string>("all");
+    const [selectedDepartment, setSelectedDepartment] = useState<string>("all");
+    const [selectedSubPrefecture, setSelectedSubPrefecture] = useState<string>("all");
+    
+    const [quickViewTribu, setQuickViewTribu] = useState<TribuData | null>(null);
+    const [isPrinting, setIsPrinting] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(12);
+
+    useEffect(() => {
+        let vLoaded = false;
+        let cLoaded = false;
+
+        const checkLoad = () => { if(vLoaded && cLoaded) setLoading(false); };
+
+        setLoading(true);
+        const unsubV = subscribeToVillages((data) => {
+            setVillages(data);
+            vLoaded = true;
+            checkLoad();
+        }, console.error);
+
+        const unsubC = subscribeToChiefs((data) => {
+            setChiefs(data);
+            cLoaded = true;
+            checkLoad();
+        }, console.error);
+
+        return () => {
+            unsubV();
+            unsubC();
+        };
+    }, []);
+
+    // Extract regions and departments
+    const { regions, departments, subPrefectures } = useMemo(() => {
+        const rs = new Set<string>();
+        const ds = new Set<string>();
+        const sp = new Set<string>();
+        villages.forEach(v => {
+            if (v.region) rs.add(v.region);
+            if (v.department) {
+                if (selectedRegion === "all" || v.region === selectedRegion) {
+                    ds.add(v.department);
+                }
+            }
+            if (v.subPrefecture) {
+                if ((selectedRegion === "all" || v.region === selectedRegion) &&
+                    (selectedDepartment === "all" || v.department === selectedDepartment)) {
+                    sp.add(v.subPrefecture);
+                }
+            }
+        });
+        return {
+            regions: Array.from(rs).sort(),
+            departments: Array.from(ds).sort(),
+            subPrefectures: Array.from(sp).sort()
+        };
+    }, [villages, selectedRegion, selectedDepartment]);
+
+    // Build Tribus Data
+    const tribusData = useMemo(() => {
+        const tribusMap = new Map<string, TribuData>();
+
+        villages.forEach(v => {
+            if (!v.tribu) return;
+            const key = normalizeString(v.tribu);
+            if (!key) return;
+
+            if (!tribusMap.has(key)) {
+                tribusMap.set(key, {
+                    name: v.tribu,
+                    region: v.region,
+                    department: v.department,
+                    subPrefecture: v.subPrefecture,
+                    canton: v.canton || "",
+                    villages: [],
+                    chiefs: [],
+                    tribuChief: null,
+                    population: 0
+                });
+            }
+
+            const tData = tribusMap.get(key)!;
+            tData.villages.push(v);
+            if (v.population) tData.population += v.population;
+            // Update canton if it's missing but this village has one
+            if (!tData.canton && v.canton) tData.canton = v.canton;
+        });
+
+        // Add chiefs and identify tribu chief
+        Array.from(tribusMap.values()).forEach(tData => {
+            // Find all chiefs for these villages
+            const relatedChiefs = chiefs.filter(c => 
+                c.tribuName?.toLowerCase() === tData.name.toLowerCase() ||
+                tData.villages.some(v => v.id === c.villageId || v.name.toLowerCase() === c.village?.toLowerCase())
+            );
+            tData.chiefs = relatedChiefs;
+
+            // Identify Tribu Chief
+            tData.tribuChief = chiefs.find(c => 
+                c.tribuName?.toLowerCase() === tData.name.toLowerCase() && 
+                c.role === "Chef de tribu" && 
+                c.status === "actif"
+            ) || null;
+        });
+
+        return Array.from(tribusMap.values()).sort((a, b) => a.name.localeCompare(b.name));
+    }, [villages, chiefs]);
+
+    // Filter and Search
+    const filteredTribus = useMemo(() => {
+        let result = tribusData;
+
+        if (selectedRegion !== "all") {
+            result = result.filter(t => t.region === selectedRegion);
+        }
+        if (selectedDepartment !== "all") {
+            result = result.filter(t => t.department === selectedDepartment);
+        }
+        if (selectedSubPrefecture !== "all") {
+            result = result.filter(t => t.subPrefecture === selectedSubPrefecture);
+        }
+
+        if (searchQuery.trim()) {
+            const fuse = new Fuse(result, {
+                keys: ["name", "region", "department", "subPrefecture", "canton"],
+                threshold: 0.3,
+            });
+            result = fuse.search(searchQuery).map(r => r.item);
+        }
+
+        return result;
+    }, [tribusData, searchQuery, selectedRegion, selectedDepartment, selectedSubPrefecture]);
+
+    // Pagination
+    const totalPages = Math.ceil(filteredTribus.length / itemsPerPage);
+    const paginatedTribus = filteredTribus.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+    );
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchQuery, selectedRegion, selectedDepartment, selectedSubPrefecture]);
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-[60vh]">
+                <div className="flex flex-col items-center gap-4 text-emerald-600">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-current"></div>
+                    <p className="font-bold uppercase tracking-widest text-sm">Chargement des tribus...</p>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="p-4 sm:p-8 max-w-[1600px] mx-auto space-y-8">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+                <div className="space-y-2">
+                    <Link href="/intranet" className="inline-flex items-center text-sm font-bold text-slate-500 hover:text-emerald-600 transition-colors uppercase tracking-widest group">
+                        <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
+                        Retour à l'accueil
+                    </Link>
+                    <h1 className="text-4xl font-black text-slate-900 uppercase tracking-tighter flex items-center gap-4">
+                        <div className="h-12 w-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shadow-inner">
+                            <Network className="h-6 w-6" />
+                        </div>
+                        Répertoire des Tribus
+                    </h1>
+                    <p className="text-slate-500 font-medium text-lg ml-16 max-w-2xl leading-relaxed">
+                        Cartographie complète des tribus de la République.
+                    </p>
+                </div>
+                <div className="bg-white px-6 py-4 rounded-2xl border border-slate-200/60 shadow-sm flex items-center gap-4">
+                    <div className="h-12 w-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                        <Network className="h-6 w-6" />
+                    </div>
+                    <div>
+                        <div className="text-3xl font-black text-slate-900">{tribusData.length}</div>
+                        <div className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Tribus Renseignées</div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="bg-white/80 backdrop-blur-xl border border-slate-200/60 rounded-3xl p-6 shadow-xl shadow-slate-200/40">
+                <div className="flex flex-col lg:flex-row gap-6">
+                    <div className="flex-1 relative">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                        <Input 
+                            placeholder="Rechercher une tribu, un canton, une région..." 
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full pl-12 h-14 bg-slate-50/50 border-slate-200/60 text-lg font-bold rounded-2xl shadow-inner focus-visible:ring-emerald-500"
+                        />
+                    </div>
+                    
+                    <div className="flex gap-4 overflow-x-auto pb-2 lg:pb-0 hide-scrollbar">
+                        <div className="w-[200px] shrink-0">
+                            <Select value={selectedRegion} onValueChange={setSelectedRegion}>
+                                <SelectTrigger className="h-14 bg-white border-slate-200/60 rounded-2xl font-bold shadow-sm focus:ring-emerald-500">
+                                    <SelectValue placeholder="Région" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">Toutes les régions</SelectItem>
+                                    {regions.map(r => (
+                                        <SelectItem key={r} value={r}>{r}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="w-[200px] shrink-0">
+                            <Select value={selectedDepartment} onValueChange={setSelectedDepartment} disabled={selectedRegion === "all"}>
+                                <SelectTrigger className="h-14 bg-white border-slate-200/60 rounded-2xl font-bold shadow-sm focus:ring-emerald-500">
+                                    <SelectValue placeholder="Département" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">Tous les départements</SelectItem>
+                                    {departments.map(d => (
+                                        <SelectItem key={d} value={d}>{d}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="w-[200px] shrink-0">
+                            <Select value={selectedSubPrefecture} onValueChange={setSelectedSubPrefecture} disabled={selectedDepartment === "all"}>
+                                <SelectTrigger className="h-14 bg-white border-slate-200/60 rounded-2xl font-bold shadow-sm focus:ring-emerald-500">
+                                    <SelectValue placeholder="Sous-préfecture" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">Toutes les ss-préfectures</SelectItem>
+                                    {subPrefectures.map(sp => (
+                                        <SelectItem key={sp} value={sp}>{sp}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="flex items-center justify-between text-sm font-bold text-slate-500 bg-slate-100/50 py-3 px-6 rounded-2xl">
+                <div>
+                    <span className="text-slate-900">{filteredTribus.length}</span> tribus trouvées
+                </div>
+                <button
+                    onClick={() => {
+                        setIsPrinting(true);
+                        setTimeout(() => window.print(), 500);
+                    }}
+                    className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-700 text-xs font-black uppercase tracking-widest rounded-xl hover:bg-slate-50 transition-colors shadow-sm"
+                >
+                    <Printer className="h-4 w-4" />
+                    Imprimer la Liste
+                </button>
+            </div>
+
+            {filteredTribus.length === 0 ? (
+                <div className="bg-white/50 border border-slate-200 border-dashed rounded-3xl p-16 text-center">
+                    <div className="h-24 w-24 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <SearchX className="h-10 w-10 text-slate-400" />
+                    </div>
+                    <h3 className="text-xl font-black text-slate-900 mb-2">Aucune tribu trouvée</h3>
+                    <p className="text-slate-500 font-medium max-w-md mx-auto">
+                        Il n'y a aucune tribu enregistrée ou correspondant à vos critères de recherche.
+                    </p>
+                </div>
+            ) : (
+                <>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        {paginatedTribus.map((tribu, idx) => (
+                            <TribuCard 
+                                key={`${tribu.name}-${idx}`} 
+                                tribu={tribu} 
+                                onClick={() => setQuickViewTribu(tribu)}
+                            />
+                        ))}
+                    </div>
+
+                    {totalPages > 1 && (
+                        <div className="mt-12 flex justify-center pb-12">
+                            <PaginationControls 
+                                currentPage={currentPage}
+                                totalPages={totalPages}
+                                onPageChange={setCurrentPage}
+                                itemsPerPage={itemsPerPage}
+                                onItemsPerPageChange={setItemsPerPage}
+                                totalItems={filteredTribus.length}
+                            />
+                        </div>
+                    )}
+                </>
+            )}
+
+            <TribuQuickView 
+                tribu={quickViewTribu}
+                open={!!quickViewTribu}
+                onOpenChange={(o) => !o && setQuickViewTribu(null)}
+            />
+
+            {isPrinting && (
+                <div className="fixed inset-0 z-50 bg-white">
+                    <PrintTribusList tribus={filteredTribus} />
+                    <div className="fixed bottom-4 right-4 print:hidden flex gap-2">
+                        <Button variant="outline" onClick={() => setIsPrinting(false)}>Fermer</Button>
+                        <Button onClick={() => window.print()}>Imprimer</Button>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}

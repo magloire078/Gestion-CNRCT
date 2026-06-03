@@ -132,7 +132,14 @@ export function ChiefCard({ chief, onClick, onEdit, onLink }: ChiefCardProps) {
                             <div className="h-6 w-6 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0 group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors">
                                 <ShieldCheck className="h-3 w-3" />
                             </div>
-                            <span className="text-[10px] font-bold truncate uppercase tracking-widest opacity-80">{chief.subPrefecture} • {chief.region}</span>
+                            <div className="flex flex-col min-w-0">
+                                <span className="text-[10px] font-bold truncate uppercase tracking-widest opacity-80">{chief.subPrefecture} • {chief.region}</span>
+                                {(chief.cantonName || chief.tribuName) && (
+                                    <span className="text-[9px] font-bold truncate uppercase tracking-widest text-slate-400">
+                                        {[chief.cantonName, chief.tribuName].filter(Boolean).join(" • ")}
+                                    </span>
+                                )}
+                            </div>
                         </div>
                     </div>
 

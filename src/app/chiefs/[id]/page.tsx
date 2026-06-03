@@ -155,6 +155,7 @@ export default function ChiefProfilePage() {
                                 </Badge>
                             ))}
                         </div>
+                    </div>
 
                     <div className="flex-1 space-y-4">
                         <div className="space-y-1">

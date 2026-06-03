@@ -189,40 +189,9 @@ export function ChiefsOfficialReport({
                                                 return (a.lastName || '').localeCompare(b.lastName || '');
                                             });
 
-                                            const deptSpans: Record<number, number> = {};
-                                            const spSpans: Record<number, number> = {};
-
-                                            sortedChiefs.forEach((chief, idx) => {
+                                            return sortedChiefs.map((chief, idx) => {
                                                 const dept = chief.department || '';
                                                 const sp = chief.subPrefecture || '';
-                                                
-                                                if (idx === 0 || (sortedChiefs[idx - 1].department || '') !== dept) {
-                                                    let span = 1;
-                                                    for (let i = idx + 1; i < sortedChiefs.length; i++) {
-                                                        if ((sortedChiefs[i].department || '') === dept) span++;
-                                                        else break;
-                                                    }
-                                                    deptSpans[idx] = span;
-                                                }
-
-                                                const prevDept = idx > 0 ? (sortedChiefs[idx - 1].department || '') : null;
-                                                const prevSP = idx > 0 ? (sortedChiefs[idx - 1].subPrefecture || '') : null;
-                                                
-                                                if (idx === 0 || prevDept !== dept || prevSP !== sp) {
-                                                    let span = 1;
-                                                    for (let i = idx + 1; i < sortedChiefs.length; i++) {
-                                                        const nextDept = sortedChiefs[i].department || '';
-                                                        const nextSP = sortedChiefs[i].subPrefecture || '';
-                                                        if (nextDept === dept && nextSP === sp) span++;
-                                                        else break;
-                                                    }
-                                                    spSpans[idx] = span;
-                                                }
-                                            });
-
-                                            return sortedChiefs.map((chief, idx) => {
-                                                const renderDept = !commonDept && deptSpans[idx] !== undefined;
-                                                const renderSP = !commonSP && spSpans[idx] !== undefined;
 
                                                 return (
                                                     <tr key={chief.id} className="border-b border-slate-200 hover:bg-slate-50/50">
@@ -233,18 +202,14 @@ export function ChiefsOfficialReport({
                                                                 <span className="text-[9px] font-bold text-[#D4AF37] uppercase italic">{chief.title || 'Chef de Village'}</span>
                                                             </div>
                                                         </td>
-                                                        {renderDept && (
-                                                            <td rowSpan={deptSpans[idx]} className="p-3 border-r border-slate-200 uppercase font-bold text-slate-700 tracking-tighter align-middle text-center bg-slate-50/50">
-                                                                <div className="rotate-180" style={{ writingMode: 'vertical-rl' }}>
-                                                                    {chief.department}
-                                                                </div>
+                                                        {!commonDept && (
+                                                            <td className="p-3 border-r border-slate-200 uppercase font-bold text-slate-700 tracking-tighter align-middle text-left bg-slate-50/50">
+                                                                {dept}
                                                             </td>
                                                         )}
-                                                        {renderSP && (
-                                                            <td rowSpan={spSpans[idx]} className="p-3 border-r border-slate-200 uppercase font-bold text-slate-600 align-middle text-center bg-slate-50/30">
-                                                                <div className="rotate-180" style={{ writingMode: 'vertical-rl' }}>
-                                                                    {chief.subPrefecture}
-                                                                </div>
+                                                        {!commonSP && (
+                                                            <td className="p-3 border-r border-slate-200 uppercase font-bold text-slate-600 align-middle text-left bg-slate-50/30">
+                                                                {sp}
                                                             </td>
                                                         )}
                                                         <td className="p-3 border-r border-slate-200 uppercase italic text-[11px] text-slate-800">

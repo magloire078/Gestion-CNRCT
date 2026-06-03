@@ -21,6 +21,11 @@ import { getChief, updateChief, getChiefs } from "@/services/chief-service";
 import type { Chief, ChiefRole, DesignationMode, ChiefCareerEvent, Predecessor } from "@/types/chief";
 import { CreatableSelect } from "@/components/ui/creatable-select";
 
+import { useAuth } from "@/hooks/use-auth";
+import { IVORIAN_REGIONS } from "@/constants/regions";
+import { divisions } from "@/lib/ivory-coast-divisions";
+import { LocationPicker } from "@/components/common/location-picker";
+
 export default function EditChiefPage() {
     const { id } = useParams() as { id: string };
     const router = useRouter();

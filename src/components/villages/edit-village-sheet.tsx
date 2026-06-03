@@ -15,12 +15,12 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
-    Sheet,
-    SheetContent,
-    SheetDescription,
-    SheetHeader,
-    SheetTitle,
-} from "@/components/ui/sheet";
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 import {
     Select,
     SelectContent,
@@ -29,11 +29,9 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { 
-    Loader2, MapPin, Map as MapIcon, Users, 
-    Building2, Droplets, Zap, School, Activity,
-    Mountain, Landmark, Coins, Heart, ShoppingBag,
-    Church, Info, Calendar, History,
-    Globe, FileText, Moon as Mosque
+    Loader2, Activity,
+    MapPin, Users, Building2, Droplets, Zap, School, Church, Moon as Mosque,
+    ChevronRight, ChevronLeft
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
@@ -42,11 +40,13 @@ import { IVORIAN_REGIONS } from "@/constants/regions";
 import { divisions } from "@/lib/ivory-coast-divisions";
 import { calculateDevelopmentScore } from "@/services/village-service";
 import { Progress } from "@/components/ui/progress";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { LocationPicker } from "@/components/common/location-picker";
 import { Label } from "@/components/ui/label";
+import { CreatableSelect } from "@/components/ui/creatable-select";
+import { useCustomaryDivisions } from "@/services/customary-hooks";
+import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "@/lib/utils";
 import { Village } from "@/types/village";
 
 const preprocessNumber = (val: any) => {
@@ -62,6 +62,8 @@ const villageSchema = z.object({
     department: z.string().min(1, "Le département est requis"),
     subPrefecture: z.string().min(1, "La sous-préfecture est requise"),
     commune: z.string().optional(),
+    canton: z.string().optional(),
+    tribu: z.string().optional(),
     codeINS: z.string().optional(),
     
     // Position SIG & Géo
@@ -101,11 +103,18 @@ const villageSchema = z.object({
     infrastructureNotes: z.string().optional(),
 
     // Chefferie
-    chieftaincyType: z.string().optional(),
-    successionMode: z.string().optional(),
+    chiefTitle: z.string().optional(),
 });
 
 type VillageFormValues = z.infer<typeof villageSchema>;
+
+const STEPS = [
+  { id: 1, title: "Identité", description: "Nom et rattachement", fields: ["name", "region", "department", "subPrefecture", "commune", "canton", "tribu", "codeINS", "chiefTitle"] },
+  { id: 2, title: "SIG & Géo", description: "Coordonnées et accès", fields: ["latitude", "longitude", "altitude", "distanceFromCapital", "distanceFromChefLieu", "accessRoads"] },
+  { id: 3, title: "Infrastructures", description: "Équipements et ressources", fields: ["hasSchool", "hasHealthCenter", "hasElectricity", "hasWater", "hasMosque", "hasChurch", "hasMarket", "infrastructureNotes"] },
+  { id: 4, title: "Démographie", description: "Population et socio-éco", fields: ["population", "populationYear", "numberOfHouseholds", "mainEthnicGroups", "languages", "mainActivities", "naturalResources", "mainCrops"] },
+  { id: 5, title: "Histoire", description: "Traditions et culture", fields: ["history", "customs", "traditionalPractices", "annualEvents"] }
+];
 
 interface EditVillageSheetProps {
     village: Village;
@@ -115,6 +124,8 @@ interface EditVillageSheetProps {
 
 export function EditVillageSheet({ village, open, onOpenChangeAction }: EditVillageSheetProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [step, setStep] = useState(1);
+    const [direction, setDirection] = useState(1);
     const { toast } = useToast();
 
     const form = useForm<VillageFormValues>({
@@ -125,6 +136,8 @@ export function EditVillageSheet({ village, open, onOpenChangeAction }: EditVill
             department: village.department || "",
             subPrefecture: village.subPrefecture || "",
             commune: village.commune || "",
+            canton: village.canton || "",
+            tribu: village.tribu || "",
             codeINS: village.codeINS || "",
             latitude: village.latitude ?? null,
             longitude: village.longitude ?? null,
@@ -152,20 +165,20 @@ export function EditVillageSheet({ village, open, onOpenChangeAction }: EditVill
             hasChurch: !!village.hasChurch,
             hasMarket: !!village.hasMarket,
             infrastructureNotes: village.infrastructureNotes || "",
-            chieftaincyType: village.chieftaincyType || "",
-            successionMode: village.successionMode || "",
+            chiefTitle: village.chiefTitle || "Chef de Village",
         },
     });
 
-    // Update form when village prop changes
     useEffect(() => {
-        if (village && open) {
+        if (open) {
             form.reset({
                 name: village.name || "",
                 region: village.region || "",
                 department: village.department || "",
                 subPrefecture: village.subPrefecture || "",
                 commune: village.commune || "",
+                canton: village.canton || "",
+                tribu: village.tribu || "",
                 codeINS: village.codeINS || "",
                 latitude: village.latitude ?? null,
                 longitude: village.longitude ?? null,
@@ -193,11 +206,11 @@ export function EditVillageSheet({ village, open, onOpenChangeAction }: EditVill
                 hasChurch: !!village.hasChurch,
                 hasMarket: !!village.hasMarket,
                 infrastructureNotes: village.infrastructureNotes || "",
-                chieftaincyType: village.chieftaincyType || "",
-                successionMode: village.successionMode || "",
+                chiefTitle: village.chiefTitle || "Chef de Village",
             });
+            setStep(1);
         }
-    }, [village, form, open]);
+    }, [open, village, form]);
 
     const selectedRegion = form.watch("region");
     const selectedDepartment = form.watch("department");
@@ -206,351 +219,350 @@ export function EditVillageSheet({ village, open, onOpenChangeAction }: EditVill
     const subPrefectures = (selectedRegion && selectedDepartment) 
         ? Object.keys(divisions[selectedRegion][selectedDepartment] || {}) 
         : [];
+        
+    const { cantons, tribus } = useCustomaryDivisions();
+    const cantonItems = cantons.map(c => ({ value: c, label: c }));
+    const tribuItems = tribus.map(t => ({ value: t, label: t }));
 
-    const watchedFields = form.watch(["hasSchool", "hasHealthCenter", "hasElectricity", "hasWater", "hasMarket", "hasMosque", "hasChurch"]);
-    const currentScore = calculateDevelopmentScore({
-        hasSchool: watchedFields[0],
-        hasHealthCenter: watchedFields[1],
-        hasElectricity: watchedFields[2],
-        hasWater: watchedFields[3],
-        hasMarket: watchedFields[4],
-        hasMosque: watchedFields[5],
-        hasChurch: watchedFields[6],
+    const currentValues = form.watch();
+    const liveScore = calculateDevelopmentScore({
+        ...currentValues,
+        latitude: currentValues.latitude ?? undefined,
+        longitude: currentValues.longitude ?? undefined,
+        mainEthnicGroups: typeof currentValues.mainEthnicGroups === 'string' ? (currentValues.mainEthnicGroups as string).split(',').map(s => s.trim()).filter(Boolean) : undefined,
+        languages: typeof currentValues.languages === 'string' ? (currentValues.languages as string).split(',').map(s => s.trim()).filter(Boolean) : undefined,
+        mainActivities: typeof currentValues.mainActivities === 'string' ? (currentValues.mainActivities as string).split(',').map(s => s.trim()).filter(Boolean) : undefined,
+        mainCrops: typeof currentValues.mainCrops === 'string' ? (currentValues.mainCrops as string).split(',').map(s => s.trim()).filter(Boolean) : undefined,
     } as any);
+
+    const nextStep = async () => {
+        const fieldsToValidate = STEPS[step - 1].fields as any[];
+        const isStepValid = await form.trigger(fieldsToValidate);
+        if (isStepValid) {
+            setDirection(1);
+            setStep(s => Math.min(s + 1, STEPS.length));
+        }
+    };
+
+    const prevStep = () => {
+        setDirection(-1);
+        setStep(s => Math.max(s - 1, 1));
+    };
 
     async function onSubmit(values: VillageFormValues) {
         setIsSubmitting(true);
         try {
-            // Transformation des champs string en tableaux
             const finalData = {
                 ...values,
-                mainEthnicGroups: values.mainEthnicGroups ? values.mainEthnicGroups.split(",").map(s => s.trim()).filter(s => s !== "") : [],
-                languages: values.languages ? values.languages.split(",").map(s => s.trim()).filter(s => s !== "") : [],
-                mainActivities: values.mainActivities ? values.mainActivities.split(",").map(s => s.trim()).filter(s => s !== "") : [],
-                mainCrops: values.mainCrops ? values.mainCrops.split(",").map(s => s.trim()).filter(s => s !== "") : [],
-                latitude: values.latitude ?? null,
-                longitude: values.longitude ?? null,
+                latitude: values.latitude ?? undefined,
+                longitude: values.longitude ?? undefined,
+                mainEthnicGroups: values.mainEthnicGroups ? values.mainEthnicGroups.split(',').map(s => s.trim()).filter(Boolean) : [],
+                languages: values.languages ? values.languages.split(',').map(s => s.trim()).filter(Boolean) : [],
+                mainActivities: values.mainActivities ? values.mainActivities.split(',').map(s => s.trim()).filter(Boolean) : [],
+                mainCrops: values.mainCrops ? values.mainCrops.split(',').map(s => s.trim()).filter(Boolean) : [],
             };
 
-            // Nettoyage des undefined pour Firebase (Firebase rejette les valeurs undefined)
             Object.keys(finalData).forEach(key => {
                 if ((finalData as any)[key] === undefined) {
                     (finalData as any)[key] = null;
                 }
             });
 
-            await updateVillage(village.id, finalData as any);
-            
+            await updateVillage(village.id, finalData);
             toast({
                 title: "Village mis à jour",
-                description: `Le village ${values.name} a été modifié avec succès.`,
+                description: `Le village ${values.name} a été mis à jour avec succès.`,
             });
             onOpenChangeAction(false);
         } catch (error) {
             console.error(error);
-            toast({
-                variant: "destructive",
-                title: "Erreur",
-                description: "Impossible de modifier le village. Veuillez réessayer.",
-            });
+            toast({ variant: "destructive", title: "Erreur", description: "Impossible de mettre à jour le village." });
         } finally {
             setIsSubmitting(false);
         }
     }
 
-    const onError = (errors: any) => {
-        console.error("Validation Errors:", errors);
-        toast({
-            variant: "destructive",
-            title: "Champs invalides",
-            description: "Veuillez vérifier tous les onglets du formulaire, certains champs obligatoires ou formats sont invalides.",
-        });
+    const slideVariants = {
+        hidden: (direction: number) => ({ x: direction > 0 ? '50%' : '-50%', opacity: 0 }),
+        visible: { x: 0, opacity: 1, transition: { type: "spring" as const, stiffness: 300, damping: 30 } },
+        exit: (direction: number) => ({ x: direction > 0 ? '-50%' : '50%', opacity: 0, transition: { duration: 0.2 } })
     };
 
     return (
-        <Sheet open={open} onOpenChange={onOpenChangeAction}>
-            <SheetContent className="sm:max-w-[700px] bg-white border-l-0 sm:border-l p-0 flex flex-col h-[100dvh] shadow-2xl">
-                <div className="flex flex-col h-full">
-                    <div className="p-5 pb-4 bg-white border-b border-slate-100">
-                        <div className="flex justify-between items-start mb-2">
-                            <div>
-                                <SheetTitle className="text-3xl font-black text-slate-900 tracking-tighter">MODIFIER LOCALITÉ</SheetTitle>
-                                <SheetDescription className="text-slate-500 font-medium">
-                                    Enrichissement des données territoriales pour {village.name}
-                                </SheetDescription>
+        <Dialog open={open} onOpenChange={onOpenChangeAction}>
+            <DialogContent className="sm:max-w-4xl p-0 overflow-hidden bg-slate-50 w-full h-[100dvh] sm:h-[85vh] max-h-[100dvh]">
+                <div className="flex flex-col md:flex-row h-full overflow-hidden">
+                    {/* Sidebar Wizard Navigation */}
+                    <div className="w-full md:w-64 bg-white border-b md:border-r md:border-b-0 border-slate-100 p-4 md:p-6 shrink-0 flex flex-col justify-between">
+                        <div>
+                            <div className="hidden md:block mb-4">
+                                <h2 className="text-xl font-black uppercase tracking-widest text-slate-900">Modification</h2>
+                                <p className="text-xs text-slate-500 mt-1 font-medium">Localité territoriale</p>
                             </div>
-                            <div className="text-right">
-                                <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">IDL Actuel</div>
-                                <div className="text-2xl font-black text-blue-600 leading-none">{currentScore}%</div>
+                            <div className="flex flex-row md:flex-col justify-between md:justify-start space-y-0 md:space-y-6 overflow-x-auto no-scrollbar pb-2">
+                                {STEPS.map((s) => (
+                                    <div key={s.id} className="flex flex-col md:flex-row items-center md:items-start gap-1 md:gap-4 flex-1 md:flex-none">
+                                        <div className={cn(
+                                            "flex items-center justify-center w-7 h-7 md:w-8 md:h-8 rounded-full border-2 text-[10px] md:text-xs font-black shrink-0 transition-all duration-300",
+                                            step === s.id ? "bg-amber-500 border-amber-500 text-white shadow-md shadow-amber-500/30" 
+                                            : step > s.id ? "bg-emerald-500 border-emerald-500 text-white" : "bg-slate-50 border-slate-200 text-slate-400"
+                                        )}>
+                                            {step > s.id ? "✓" : s.id}
+                                        </div>
+                                        <div className="flex flex-col pt-0 md:pt-1 text-center md:text-left">
+                                            <span className={cn("text-[9px] md:text-sm font-bold uppercase tracking-wider line-clamp-1", step === s.id ? "text-slate-900" : step > s.id ? "text-slate-700" : "text-slate-400")}>
+                                                {s.title}
+                                            </span>
+                                            <span className="hidden md:block text-[10px] text-slate-400">{s.description}</span>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
                         </div>
-                        <Progress value={currentScore} className="h-1.5 bg-slate-100" />
+
+                        <div className="hidden md:block mt-4">
+                            <div className="bg-amber-50/50 p-4 rounded-xl border border-amber-100/50">
+                                <div className="flex justify-between items-center mb-2">
+                                    <span className="text-[10px] font-black uppercase text-amber-600 tracking-widest">IDL Actuel</span>
+                                    <span className="text-sm font-black text-amber-700">{liveScore}%</span>
+                                </div>
+                                <div className="h-1.5 w-full bg-amber-100 rounded-full overflow-hidden">
+                                    <Progress value={liveScore} className="h-full w-full bg-amber-100" indicatorClassName="bg-amber-600" />
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit, onError)} className="flex flex-col flex-1 overflow-hidden min-h-0">
-                            <Tabs defaultValue="admin" className="w-full h-full flex flex-col overflow-hidden min-h-0">
-                                <div className="border-b border-slate-100 shrink-0 bg-white">
-                                    <TabsList className="w-full flex overflow-x-auto no-scrollbar justify-start bg-transparent p-0 h-auto rounded-none">
-                                        <TabsTrigger value="admin" className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:text-blue-700 data-[state=active]:bg-transparent data-[state=active]:shadow-none px-5 py-3.5 font-bold whitespace-nowrap text-slate-500 transition-colors">Identité</TabsTrigger>
-                                        <TabsTrigger value="geo" className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:text-blue-700 data-[state=active]:bg-transparent data-[state=active]:shadow-none px-5 py-3.5 font-bold whitespace-nowrap text-slate-500 transition-colors">SIG & Géo</TabsTrigger>
-                                        <TabsTrigger value="demography" className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:text-blue-700 data-[state=active]:bg-transparent data-[state=active]:shadow-none px-5 py-3.5 font-bold whitespace-nowrap text-slate-500 transition-colors">Démographie</TabsTrigger>
-                                        <TabsTrigger value="history" className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:text-blue-700 data-[state=active]:bg-transparent data-[state=active]:shadow-none px-5 py-3.5 font-bold whitespace-nowrap text-slate-500 transition-colors">Histoire</TabsTrigger>
-                                        <TabsTrigger value="economy" className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:text-blue-700 data-[state=active]:bg-transparent data-[state=active]:shadow-none px-5 py-3.5 font-bold whitespace-nowrap text-slate-500 transition-colors">Économie</TabsTrigger>
-                                        <TabsTrigger value="infra" className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:text-blue-700 data-[state=active]:bg-transparent data-[state=active]:shadow-none px-5 py-3.5 font-bold whitespace-nowrap text-slate-500 transition-colors">Infra.</TabsTrigger>
-                                        <TabsTrigger value="chief" className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:text-blue-700 data-[state=active]:bg-transparent data-[state=active]:shadow-none px-5 py-3.5 font-bold whitespace-nowrap text-slate-500 transition-colors">Autorité</TabsTrigger>
-                                    </TabsList>
-                                </div>
-                                <ScrollArea className="flex-1 px-5 pb-24 h-full">
-                                    {/* Section 1: Administration */}
-                                    <TabsContent value="admin" className="mt-4 outline-none">
-                                        <div className="pt-4 space-y-4 h-full">
-                                            <FormField
-                                                control={form.control}
-                                                name="name"
-                                                render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabel className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Nom officiel de la localité</FormLabel>
-                                                        <FormControl><Input placeholder="Ex: Ebouassue" className="h-12 bg-slate-50/50 border-slate-100 rounded-xl focus:ring-blue-500" {...field} value={field.value || ""} /></FormControl>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
-                                            />
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <FormField
-                                                    control={form.control}
-                                                    name="region"
-                                                    render={({ field }) => (
-                                                        <FormItem>
-                                                            <FormLabel className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Région</FormLabel>
-                                                            <Select onValueChange={(v) => { field.onChange(v); form.setValue("department", ""); form.setValue("subPrefecture", ""); }} value={field.value}>
-                                                                <FormControl><SelectTrigger className="h-12 bg-slate-50/50 border-slate-100 rounded-xl"><SelectValue placeholder="Sél. région" /></SelectTrigger></FormControl>
-                                                                <SelectContent className="max-h-[300px]">{IVORIAN_REGIONS.map((r) => (<SelectItem key={r} value={r}>{r}</SelectItem>))}</SelectContent>
-                                                            </Select>
-                                                            <FormMessage />
-                                                        </FormItem>
-                                                    )}
-                                                />
-                                                <FormField
-                                                    control={form.control}
-                                                    name="department"
-                                                    render={({ field }) => (
-                                                        <FormItem>
-                                                            <FormLabel className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Département</FormLabel>
-                                                            <Select onValueChange={(v) => { field.onChange(v); form.setValue("subPrefecture", ""); }} value={field.value} disabled={!selectedRegion}>
-                                                                <FormControl><SelectTrigger className="h-12 bg-slate-50/50 border-slate-100 rounded-xl"><SelectValue placeholder="Sél. dépt." /></SelectTrigger></FormControl>
-                                                                <SelectContent>{departments.map((d) => (<SelectItem key={d} value={d}>{d}</SelectItem>))}</SelectContent>
-                                                            </Select>
-                                                            <FormMessage />
-                                                        </FormItem>
-                                                    )}
-                                                />
-                                            </div>
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <FormField
-                                                    control={form.control}
-                                                    name="subPrefecture"
-                                                    render={({ field }) => (
-                                                        <FormItem>
-                                                            <FormLabel className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Sous-Préfecture</FormLabel>
-                                                            <Select onValueChange={field.onChange} value={field.value} disabled={!selectedDepartment}>
-                                                                <FormControl><SelectTrigger className="h-12 bg-slate-50/50 border-slate-100 rounded-xl"><SelectValue placeholder="Sél. s-préf." /></SelectTrigger></FormControl>
-                                                                <SelectContent>{subPrefectures.map((s) => (<SelectItem key={s} value={s}>{s}</SelectItem>))}</SelectContent>
-                                                            </Select>
-                                                            <FormMessage />
-                                                        </FormItem>
-                                                    )}
-                                                />
-                                                <FormField
-                                                    control={form.control}
-                                                    name="codeINS"
-                                                    render={({ field }) => (
-                                                        <FormItem>
-                                                            <FormLabel className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Code INS</FormLabel>
-                                                            <FormControl><Input placeholder="Ex: CIV001" className="h-12 bg-slate-50/50 border-slate-100 rounded-xl" {...field} value={field.value || ""} /></FormControl>
-                                                            <FormMessage />
-                                                        </FormItem>
-                                                    )}
-                                                />
-                                            </div>
-                                        </div>
-                                    </TabsContent>
+                    {/* Form Content */}
+                    <div className="flex-1 flex flex-col relative bg-white overflow-hidden min-h-0">
+                        <DialogHeader className="p-6 border-b border-slate-100 bg-white z-10 shrink-0">
+                            <DialogTitle className="text-xl">{STEPS[step-1].title}</DialogTitle>
+                            <DialogDescription>{STEPS[step-1].description}</DialogDescription>
+                        </DialogHeader>
 
-                                    {/* Section 2: Géographie & SIG */}
-                                    <TabsContent value="geo" className="mt-0 h-full flex-grow">
-                                        
-                                        <div className="pt-4 space-y-4 h-full">
-                                            <div className="rounded-xl overflow-hidden border border-slate-100 shadow-inner bg-slate-50">
-                                                <LocationPicker 
-                                                    onLocationSelectAction={(lat, lng) => {
-                                                        form.setValue("latitude", lat);
-                                                        form.setValue("longitude", lng);
-                                                    }}
-                                                />
-                                            </div>
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <FormField control={form.control} name="latitude" render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabel className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Latitude</FormLabel>
-                                                        <FormControl><Input type="number" step="any" {...field} value={field.value || ""} onChange={e => field.onChange(parseFloat(e.target.value) || null)} className="h-12 bg-slate-50/50 rounded-xl" /></FormControl>
-                                                    </FormItem>
-                                                )} />
-                                                <FormField control={form.control} name="longitude" render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabel className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Longitude</FormLabel>
-                                                        <FormControl><Input type="number" step="any" {...field} value={field.value || ""} onChange={e => field.onChange(parseFloat(e.target.value) || null)} className="h-12 bg-slate-50/50 rounded-xl" /></FormControl>
-                                                    </FormItem>
-                                                )} />
-                                            </div>
-                                            <div className="grid grid-cols-3 gap-4">
-                                                <FormField control={form.control} name="altitude" render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabel className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Alt. (m)</FormLabel>
-                                                        <FormControl><Input type="number" {...field} value={field.value || ""} className="h-12 bg-slate-50/50 rounded-xl" /></FormControl>
-                                                    </FormItem>
-                                                )} />
-                                                <FormField control={form.control} name="distanceFromCapital" render={({ field }) => (
-                                                    <FormItem className="col-span-2">
-                                                        <FormLabel className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Dist. Capitale (km)</FormLabel>
-                                                        <FormControl><Input type="number" {...field} value={field.value || ""} className="h-12 bg-slate-50/50 rounded-xl" /></FormControl>
-                                                    </FormItem>
-                                                )} />
-                                            </div>
-                                            <FormField control={form.control} name="accessRoads" render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Voies d'accès & État</FormLabel>
-                                                    <FormControl><Textarea placeholder="Ex: Bitumée en bon état, Piste carrossable..." className="min-h-[80px] bg-slate-50/50 rounded-xl resize-none" {...field} value={field.value || ""} /></FormControl>
-                                                </FormItem>
-                                            )} />
-                                        </div>
-                                    </TabsContent>
+                        <Form {...form}>
+                            <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 flex flex-col overflow-hidden">
+                                <div className="flex-1 p-6 relative overflow-y-auto">
+                                    <AnimatePresence mode="wait" custom={direction} initial={false}>
+                                        <motion.div
+                                            key={step}
+                                            custom={direction}
+                                            variants={slideVariants}
+                                            initial="hidden"
+                                            animate="visible"
+                                            exit="exit"
+                                            className="space-y-6 pb-10"
+                                        >
+                                            {/* STEP 1: Identité */}
+                                            {step === 1 && (
+                                                <div className="space-y-4">
+                                                    <FormField control={form.control} name="name" render={({ field }) => (
+                                                        <FormItem><FormLabel className="font-bold">Nom du village/localité *</FormLabel>
+                                                        <FormControl><Input placeholder="Ex: Ebouassue" className="h-11 rounded-lg" {...field} /></FormControl><FormMessage /></FormItem>
+                                                    )} />
+                                                    <FormField control={form.control} name="chiefTitle" render={({ field }) => (
+                                                        <FormItem><FormLabel className="font-bold">Titre de l'autorité locale</FormLabel>
+                                                        <FormControl><Input placeholder="Ex: Chef de Village" className="h-11 rounded-lg" {...field} /></FormControl><FormMessage /></FormItem>
+                                                    )} />
+                                                    <FormField control={form.control} name="region" render={({ field }) => (
+                                                        <FormItem><FormLabel className="font-bold">Région *</FormLabel>
+                                                        <Select onValueChange={(v) => { field.onChange(v); form.setValue("department", ""); form.setValue("subPrefecture", ""); }} defaultValue={field.value}>
+                                                            <FormControl><SelectTrigger className="h-11 rounded-lg"><SelectValue placeholder="Sélectionner" /></SelectTrigger></FormControl>
+                                                            <SelectContent className="max-h-[300px]">{IVORIAN_REGIONS.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}</SelectContent>
+                                                        </Select><FormMessage /></FormItem>
+                                                    )} />
+                                                    <div className="grid grid-cols-2 gap-4">
+                                                        <FormField control={form.control} name="department" render={({ field }) => (
+                                                            <FormItem><FormLabel className="font-bold">Département *</FormLabel>
+                                                            <Select onValueChange={(v) => { field.onChange(v); form.setValue("subPrefecture", ""); }} value={field.value} defaultValue={field.value} disabled={!selectedRegion}>
+                                                                <FormControl><SelectTrigger className="h-11 rounded-lg"><SelectValue placeholder="Sélectionner" /></SelectTrigger></FormControl>
+                                                                <SelectContent>{departments.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
+                                                            </Select><FormMessage /></FormItem>
+                                                        )} />
+                                                        <FormField control={form.control} name="subPrefecture" render={({ field }) => (
+                                                            <FormItem><FormLabel className="font-bold">Sous-Préfecture *</FormLabel>
+                                                            <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value} disabled={!selectedDepartment}>
+                                                                <FormControl><SelectTrigger className="h-11 rounded-lg"><SelectValue placeholder="Sélectionner" /></SelectTrigger></FormControl>
+                                                                <SelectContent>{subPrefectures.map(sp => <SelectItem key={sp} value={sp}>{sp}</SelectItem>)}</SelectContent>
+                                                            </Select><FormMessage /></FormItem>
+                                                        )} />
+                                                    </div>
+                                                    <div className="grid grid-cols-2 gap-4">
+                                                        <FormField control={form.control} name="commune" render={({ field }) => (
+                                                            <FormItem><FormLabel className="font-bold">Commune</FormLabel><FormControl><Input placeholder="Ex: Abidjan" className="h-11 rounded-lg" {...field} /></FormControl><FormMessage /></FormItem>
+                                                        )} />
+                                                        <FormField control={form.control} name="canton" render={({ field }) => (
+                                                            <FormItem><FormLabel className="font-bold">Canton</FormLabel>
+                                                            <CreatableSelect items={cantonItems} value={field.value} onValueChange={field.onChange} placeholder="Sélectionner/Créer" /><FormMessage /></FormItem>
+                                                        )} />
+                                                    </div>
+                                                    <div className="grid grid-cols-2 gap-4">
+                                                        <FormField control={form.control} name="tribu" render={({ field }) => (
+                                                            <FormItem><FormLabel className="font-bold">Tribu</FormLabel>
+                                                            <CreatableSelect items={tribuItems} value={field.value} onValueChange={field.onChange} placeholder="Sélectionner/Créer" /><FormMessage /></FormItem>
+                                                        )} />
+                                                        <FormField control={form.control} name="codeINS" render={({ field }) => (
+                                                            <FormItem><FormLabel className="font-bold">Code INS</FormLabel><FormControl><Input placeholder="Ex: CIV0101" className="h-11 rounded-lg" {...field} /></FormControl><FormMessage /></FormItem>
+                                                        )} />
+                                                    </div>
+                                                </div>
+                                            )}
 
-                                    {/* Section 3: Démographie & Peuplement */}
-                                    <TabsContent value="demography" className="mt-0 h-full flex-grow">
-                                        
-                                        <div className="pt-4 space-y-4 h-full">
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <FormField control={form.control} name="population" render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabel className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Population Totale</FormLabel>
-                                                        <FormControl><Input type="number" inputMode="numeric" placeholder="Habitants" className="h-12 bg-slate-50/50 rounded-xl" {...field} value={field.value || ""} /></FormControl>
-                                                    </FormItem>
-                                                )} />
-                                                <FormField control={form.control} name="populationYear" render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabel className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Année Recens.</FormLabel>
-                                                        <FormControl><Input type="number" inputMode="numeric" placeholder="Ex: 2024" className="h-12 bg-slate-50/50 rounded-xl" {...field} value={field.value || ""} /></FormControl>
-                                                    </FormItem>
-                                                )} />
-                                            </div>
-                                            <FormField control={form.control} name="mainEthnicGroups" render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Ethnies majoritaires (séparées par virgule)</FormLabel>
-                                                    <FormControl><Input placeholder="Ex: Baoulé, Agni, Dioula..." className="h-12 bg-slate-50/50 rounded-xl" {...field} value={field.value || ""} /></FormControl>
-                                                </FormItem>
-                                            )} />
-                                            <FormField control={form.control} name="languages" render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Langues parlées</FormLabel>
-                                                    <FormControl><Input placeholder="Ex: Français, Baoulé..." className="h-12 bg-slate-50/50 rounded-xl" {...field} value={field.value || ""} /></FormControl>
-                                                </FormItem>
-                                            )} />
-                                        </div>
-                                    </TabsContent>
-
-                                    {/* Section 4: Histoire & Patrimoine */}
-                                    <TabsContent value="history" className="mt-0 h-full flex-grow">
-                                        
-                                        <div className="pt-4 space-y-4 h-full">
-                                            <FormField control={form.control} name="history" render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Bref aperçu historique</FormLabel>
-                                                    <FormControl><Textarea placeholder="Origine du village, fondateurs..." className="min-h-[100px] bg-slate-50/50 rounded-xl resize-none" {...field} value={field.value || ""} /></FormControl>
-                                                </FormItem>
-                                            )} />
-                                            <FormField control={form.control} name="customs" render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Coutumes & Totems</FormLabel>
-                                                    <FormControl><Textarea placeholder="Interdits, lieux sacrés..." className="min-h-[100px] bg-slate-50/50 rounded-xl resize-none" {...field} value={field.value || ""} /></FormControl>
-                                                </FormItem>
-                                            )} />
-                                        </div>
-                                    </TabsContent>
-
-                                    {/* Section 5: Économie */}
-                                    <TabsContent value="economy" className="mt-0 h-full flex-grow">
-                                        
-                                        <div className="pt-4 space-y-4 h-full">
-                                            <FormField control={form.control} name="mainActivities" render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Activités principales</FormLabel>
-                                                    <FormControl><Input placeholder="Ex: Agriculture, Commerce, Pêche..." className="h-12 bg-slate-50/50 rounded-xl" {...field} value={field.value || ""} /></FormControl>
-                                                </FormItem>
-                                            )} />
-                                            <FormField control={form.control} name="mainCrops" render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Cultures majeures</FormLabel>
-                                                    <FormControl><Input placeholder="Ex: Cacao, Café, Hévéa, Igname..." className="h-12 bg-slate-50/50 rounded-xl" {...field} value={field.value || ""} /></FormControl>
-                                                </FormItem>
-                                            )} />
-                                        </div>
-                                    </TabsContent>
-
-                                    {/* Section 6: Infrastructures */}
-                                    <TabsContent value="infra" className="mt-0 h-full flex-grow">
-                                        
-                                        <div className="pt-4 space-y-4 h-full">
-                                            <div className="grid grid-cols-1 gap-4">
-                                                {[
-                                                    { id: "hasElectricity", label: "Électrification (CIE)", icon: Zap, color: "text-amber-500" },
-                                                    { id: "hasWater", label: "Eau Potable (SODECI/HVA)", icon: Droplets, color: "text-blue-500" },
-                                                    { id: "hasSchool", label: "Établissement Scolaire", icon: School, color: "text-indigo-500" },
-                                                    { id: "hasHealthCenter", label: "Centre de Santé", icon: Activity, color: "text-rose-500" },
-                                                    { id: "hasMarket", label: "Marché Permanent", icon: ShoppingBag, color: "text-emerald-500" },
-                                                    { id: "hasMosque", label: "Mosquée", icon: Mosque, color: "text-slate-600" },
-                                                    { id: "hasChurch", label: "Église", icon: Church, color: "text-slate-600" },
-                                                ].map((item) => (
-                                                    <FormField
-                                                        key={item.id}
-                                                        control={form.control}
-                                                        name={item.id as any}
-                                                        render={({ field }) => (
-                                                            <div className="flex items-center justify-between p-4 bg-slate-50/50 rounded-2xl border border-slate-100">
-                                                                <div className="flex items-center gap-3">
-                                                                    <item.icon className={`h-5 w-5 ${item.color}`} />
-                                                                    <Label htmlFor={item.id} className="font-bold text-slate-700 cursor-pointer">{item.label}</Label>
-                                                                </div>
-                                                                <FormControl><Checkbox id={item.id} checked={field.value} onCheckedChange={field.onChange} className="h-6 w-6 rounded-lg" /></FormControl>
-                                                            </div>
-                                                        )}
+                                            {/* STEP 2: SIG & Géo */}
+                                            {step === 2 && (
+                                                <div className="space-y-4">
+                                                    <LocationPicker 
+                                                        onLocationSelectAction={(lat, lng) => { form.setValue("latitude", lat); form.setValue("longitude", lng); }}
+                                                        className="border shadow-sm rounded-xl"
                                                     />
-                                                ))}
-                                            </div>
-                                            <FormField control={form.control} name="infrastructureNotes" render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Notes sur l'état des infrastructures</FormLabel>
-                                                    <FormControl><Textarea placeholder="Besoin de réhabilitation, extension..." className="min-h-[80px] bg-slate-50/50 rounded-xl resize-none" {...field} value={field.value || ""} /></FormControl>
-                                                </FormItem>
-                                            )} />
-                                        </div>
-                                    </TabsContent>
-                                </ScrollArea>
-                            </Tabs>
+                                                    <div className="grid grid-cols-2 gap-4">
+                                                        <FormField control={form.control} name="latitude" render={({ field }) => (
+                                                            <FormItem><FormLabel className="font-bold">Latitude</FormLabel><FormControl><Input type="number" step="any" {...field} value={field.value || ''} onChange={e => field.onChange(parseFloat(e.target.value) || null)} className="h-11 rounded-lg" /></FormControl><FormMessage /></FormItem>
+                                                        )} />
+                                                        <FormField control={form.control} name="longitude" render={({ field }) => (
+                                                            <FormItem><FormLabel className="font-bold">Longitude</FormLabel><FormControl><Input type="number" step="any" {...field} value={field.value || ''} onChange={e => field.onChange(parseFloat(e.target.value) || null)} className="h-11 rounded-lg" /></FormControl><FormMessage /></FormItem>
+                                                        )} />
+                                                    </div>
+                                                    <div className="grid grid-cols-3 gap-4">
+                                                        <FormField control={form.control} name="altitude" render={({ field }) => (
+                                                            <FormItem><FormLabel className="font-bold">Altitude (m)</FormLabel><FormControl><Input type="number" {...field} className="h-11 rounded-lg" /></FormControl><FormMessage /></FormItem>
+                                                        )} />
+                                                        <FormField control={form.control} name="distanceFromCapital" render={({ field }) => (
+                                                            <FormItem><FormLabel className="font-bold">Dist. Abidjan (km)</FormLabel><FormControl><Input type="number" {...field} className="h-11 rounded-lg" /></FormControl><FormMessage /></FormItem>
+                                                        )} />
+                                                        <FormField control={form.control} name="distanceFromChefLieu" render={({ field }) => (
+                                                            <FormItem><FormLabel className="font-bold">Dist. Chef-lieu (km)</FormLabel><FormControl><Input type="number" {...field} className="h-11 rounded-lg" /></FormControl><FormMessage /></FormItem>
+                                                        )} />
+                                                    </div>
+                                                    <FormField control={form.control} name="accessRoads" render={({ field }) => (
+                                                        <FormItem><FormLabel className="font-bold">Voies d'accès (État et type)</FormLabel><FormControl><Textarea className="min-h-[80px]" placeholder="Ex: Route non bitumée..." {...field} /></FormControl><FormMessage /></FormItem>
+                                                    )} />
+                                                </div>
+                                            )}
 
-                            <div className="p-5 bg-white border-t border-slate-100 flex gap-4">
-                                <Button variant="outline" type="button" onClick={() => onOpenChangeAction(false)} className="flex-1 h-14 rounded-2xl font-black uppercase tracking-widest border-slate-200 text-slate-500 hover:bg-slate-50">
-                                    Annuler
-                                </Button>
-                                <Button type="submit" disabled={isSubmitting} className="flex-[2] h-14 rounded-2xl font-black uppercase tracking-widest bg-slate-900 border-none hover:bg-slate-800 shadow-xl shadow-slate-200">
-                                    {isSubmitting ? (
-                                        <div className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /> Synchronisation...</div>
-                                    ) : "Mettre à jour la fiche"}
-                                </Button>
-                            </div>
-                        </form>
-                    </Form>
+                                            {/* STEP 3: Infrastructures */}
+                                            {step === 3 && (
+                                                <div className="space-y-6">
+                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                        <FormField control={form.control} name="hasSchool" render={({ field }) => (
+                                                            <FormItem className="flex flex-row items-center justify-between p-4 bg-slate-50 border border-slate-100 rounded-xl"><div className="space-y-0.5 flex items-center gap-3"><div className="h-8 w-8 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600"><School className="h-4 w-4" /></div><div><FormLabel className="font-bold text-base">École primaire</FormLabel><p className="text-xs text-slate-500">Présence d'établissement</p></div></div><FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} className="h-5 w-5" /></FormControl></FormItem>
+                                                        )} />
+                                                        <FormField control={form.control} name="hasHealthCenter" render={({ field }) => (
+                                                            <FormItem className="flex flex-row items-center justify-between p-4 bg-slate-50 border border-slate-100 rounded-xl"><div className="space-y-0.5 flex items-center gap-3"><div className="h-8 w-8 bg-emerald-100 rounded-lg flex items-center justify-center text-emerald-600"><Activity className="h-4 w-4" /></div><div><FormLabel className="font-bold text-base">Centre de santé</FormLabel><p className="text-xs text-slate-500">Dispensaire ou hôpital</p></div></div><FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} className="h-5 w-5" /></FormControl></FormItem>
+                                                        )} />
+                                                        <FormField control={form.control} name="hasElectricity" render={({ field }) => (
+                                                            <FormItem className="flex flex-row items-center justify-between p-4 bg-slate-50 border border-slate-100 rounded-xl"><div className="space-y-0.5 flex items-center gap-3"><div className="h-8 w-8 bg-amber-100 rounded-lg flex items-center justify-center text-amber-600"><Zap className="h-4 w-4" /></div><div><FormLabel className="font-bold text-base">Électricité</FormLabel><p className="text-xs text-slate-500">Raccordé au réseau</p></div></div><FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} className="h-5 w-5" /></FormControl></FormItem>
+                                                        )} />
+                                                        <FormField control={form.control} name="hasWater" render={({ field }) => (
+                                                            <FormItem className="flex flex-row items-center justify-between p-4 bg-slate-50 border border-slate-100 rounded-xl"><div className="space-y-0.5 flex items-center gap-3"><div className="h-8 w-8 bg-cyan-100 rounded-lg flex items-center justify-center text-cyan-600"><Droplets className="h-4 w-4" /></div><div><FormLabel className="font-bold text-base">Eau potable</FormLabel><p className="text-xs text-slate-500">Forage ou réseau</p></div></div><FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} className="h-5 w-5" /></FormControl></FormItem>
+                                                        )} />
+                                                        <FormField control={form.control} name="hasMarket" render={({ field }) => (
+                                                            <FormItem className="flex flex-row items-center justify-between p-4 bg-slate-50 border border-slate-100 rounded-xl"><div className="space-y-0.5 flex items-center gap-3"><div className="h-8 w-8 bg-rose-100 rounded-lg flex items-center justify-center text-rose-600"><Building2 className="h-4 w-4" /></div><div><FormLabel className="font-bold text-base">Marché local</FormLabel><p className="text-xs text-slate-500">Activité commerciale</p></div></div><FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} className="h-5 w-5" /></FormControl></FormItem>
+                                                        )} />
+                                                        <FormField control={form.control} name="hasChurch" render={({ field }) => (
+                                                            <FormItem className="flex flex-row items-center justify-between p-4 bg-slate-50 border border-slate-100 rounded-xl"><div className="space-y-0.5 flex items-center gap-3"><div className="h-8 w-8 bg-indigo-100 rounded-lg flex items-center justify-center text-indigo-600"><Church className="h-4 w-4" /></div><div><FormLabel className="font-bold text-base">Église / Temple</FormLabel><p className="text-xs text-slate-500">Lieu de culte</p></div></div><FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} className="h-5 w-5" /></FormControl></FormItem>
+                                                        )} />
+                                                        <FormField control={form.control} name="hasMosque" render={({ field }) => (
+                                                            <FormItem className="flex flex-row items-center justify-between p-4 bg-slate-50 border border-slate-100 rounded-xl"><div className="space-y-0.5 flex items-center gap-3"><div className="h-8 w-8 bg-teal-100 rounded-lg flex items-center justify-center text-teal-600"><Mosque className="h-4 w-4" /></div><div><FormLabel className="font-bold text-base">Mosquée</FormLabel><p className="text-xs text-slate-500">Lieu de culte</p></div></div><FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} className="h-5 w-5" /></FormControl></FormItem>
+                                                        )} />
+                                                    </div>
+                                                    <FormField control={form.control} name="infrastructureNotes" render={({ field }) => (
+                                                        <FormItem><FormLabel className="font-bold">Observations sur les infrastructures</FormLabel><FormControl><Textarea className="min-h-[80px]" placeholder="Projets en cours, infrastructures dégradées..." {...field} /></FormControl><FormMessage /></FormItem>
+                                                    )} />
+                                                </div>
+                                            )}
+
+                                            {/* STEP 4: Socio-Éco */}
+                                            {step === 4 && (
+                                                <div className="space-y-4">
+                                                    <div className="grid grid-cols-3 gap-4">
+                                                        <FormField control={form.control} name="population" render={({ field }) => (
+                                                            <FormItem><FormLabel className="font-bold">Population Totale</FormLabel><FormControl><Input type="number" {...field} className="h-11 rounded-lg" /></FormControl><FormMessage /></FormItem>
+                                                        )} />
+                                                        <FormField control={form.control} name="populationYear" render={({ field }) => (
+                                                            <FormItem><FormLabel className="font-bold">Année Recensement</FormLabel><FormControl><Input type="number" {...field} className="h-11 rounded-lg" /></FormControl><FormMessage /></FormItem>
+                                                        )} />
+                                                        <FormField control={form.control} name="numberOfHouseholds" render={({ field }) => (
+                                                            <FormItem><FormLabel className="font-bold">Nombre de Foyers</FormLabel><FormControl><Input type="number" {...field} className="h-11 rounded-lg" /></FormControl><FormMessage /></FormItem>
+                                                        )} />
+                                                    </div>
+                                                    <div className="grid grid-cols-2 gap-4">
+                                                        <FormField control={form.control} name="mainEthnicGroups" render={({ field }) => (
+                                                            <FormItem><FormLabel className="font-bold">Ethnies principales</FormLabel><FormControl><Input placeholder="Baoulé, Bété (séparés par virgule)" className="h-11 rounded-lg" {...field} /></FormControl><FormMessage /></FormItem>
+                                                        )} />
+                                                        <FormField control={form.control} name="languages" render={({ field }) => (
+                                                            <FormItem><FormLabel className="font-bold">Langues parlées</FormLabel><FormControl><Input placeholder="Français, Dioula..." className="h-11 rounded-lg" {...field} /></FormControl><FormMessage /></FormItem>
+                                                        )} />
+                                                    </div>
+                                                    <FormField control={form.control} name="mainActivities" render={({ field }) => (
+                                                        <FormItem><FormLabel className="font-bold">Activités économiques</FormLabel><FormControl><Input placeholder="Agriculture, Commerce, Pêche..." className="h-11 rounded-lg" {...field} /></FormControl><FormMessage /></FormItem>
+                                                    )} />
+                                                    <div className="grid grid-cols-2 gap-4">
+                                                        <FormField control={form.control} name="mainCrops" render={({ field }) => (
+                                                            <FormItem><FormLabel className="font-bold">Cultures principales</FormLabel><FormControl><Input placeholder="Cacao, Igname..." className="h-11 rounded-lg" {...field} /></FormControl><FormMessage /></FormItem>
+                                                        )} />
+                                                        <FormField control={form.control} name="naturalResources" render={({ field }) => (
+                                                            <FormItem><FormLabel className="font-bold">Ressources naturelles</FormLabel><FormControl><Input placeholder="Or, Forêt classée..." className="h-11 rounded-lg" {...field} /></FormControl><FormMessage /></FormItem>
+                                                        )} />
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* STEP 5: Histoire */}
+                                            {step === 5 && (
+                                                <div className="space-y-4">
+                                                    <FormField control={form.control} name="history" render={({ field }) => (
+                                                        <FormItem><FormLabel className="font-bold">Histoire et origines</FormLabel><FormControl><Textarea className="min-h-[120px]" placeholder="Récit de fondation, mythes d'origine..." {...field} /></FormControl><FormMessage /></FormItem>
+                                                    )} />
+                                                    <FormField control={form.control} name="customs" render={({ field }) => (
+                                                        <FormItem><FormLabel className="font-bold">Coutumes et totems</FormLabel><FormControl><Textarea className="min-h-[80px]" placeholder="Interdits alimentaires, jours sacrés..." {...field} /></FormControl><FormMessage /></FormItem>
+                                                    )} />
+                                                    <FormField control={form.control} name="traditionalPractices" render={({ field }) => (
+                                                        <FormItem><FormLabel className="font-bold">Pratiques traditionnelles</FormLabel><FormControl><Textarea className="min-h-[80px]" placeholder="Danses, rituels initiatiques..." {...field} /></FormControl><FormMessage /></FormItem>
+                                                    )} />
+                                                    <FormField control={form.control} name="annualEvents" render={({ field }) => (
+                                                        <FormItem><FormLabel className="font-bold">Fêtes et événements annuels</FormLabel><FormControl><Input placeholder="Fête des ignames, Dipri..." className="h-11 rounded-lg" {...field} /></FormControl><FormMessage /></FormItem>
+                                                    )} />
+                                                </div>
+                                            )}
+                                        </motion.div>
+                                    </AnimatePresence>
+                                </div>
+
+                                <div className="p-6 border-t border-slate-100 bg-slate-50 flex justify-between items-center shrink-0">
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={prevStep}
+                                        disabled={step === 1 || isSubmitting}
+                                        className="h-12 px-6 rounded-xl font-bold"
+                                    >
+                                        <ChevronLeft className="w-4 h-4 mr-2" /> Retour
+                                    </Button>
+
+                                    {step < STEPS.length ? (
+                                        <Button
+                                            type="button"
+                                            onClick={nextStep}
+                                            className="h-12 px-8 rounded-xl font-bold bg-slate-900 text-white hover:bg-slate-800"
+                                        >
+                                            Suivant <ChevronRight className="w-4 h-4 ml-2" />
+                                        </Button>
+                                    ) : (
+                                        <Button
+                                            type="submit"
+                                            disabled={isSubmitting}
+                                            className="h-12 px-8 rounded-xl font-bold bg-amber-500 hover:bg-amber-600 text-white shadow-lg shadow-amber-200"
+                                        >
+                                            {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Mettre à jour"}
+                                        </Button>
+                                    )}
+                                </div>
+                            </form>
+                        </Form>
+                    </div>
                 </div>
-            </SheetContent>
-        </Sheet>
+            </DialogContent>
+        </Dialog>
     );
 }

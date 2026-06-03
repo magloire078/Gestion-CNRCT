@@ -118,6 +118,8 @@ export const ALL_MENU_ITEMS: MenuItem[] = [
     subItems: [
       { href: "/chiefs", label: "Rois & Chefs", icon: Crown, permission: "page:chiefs:view" },
       { href: "/kingdoms", label: "Grands Royaumes", icon: Crown, permission: "page:chiefs:view" },
+      { href: "/cantons", label: "Cantons", icon: Landmark, permission: "page:villages:view" },
+      { href: "/tribus", label: "Tribus", icon: Network, permission: "page:villages:view" },
       { href: "/villages", label: "Villages", icon: MapPin, permission: "page:villages:view" },
     ]
   },

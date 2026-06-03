@@ -167,56 +167,21 @@ export function VillagesOfficialReport({
                                                 return (a.village.name || '').localeCompare(b.village.name || '');
                                             });
 
-                                            const deptSpans: Record<number, number> = {};
-                                            const spSpans: Record<number, number> = {};
-
-                                            sortedVillages.forEach((entry, idx) => {
+                                            return sortedVillages.map((entry, idx) => {
                                                 const dept = entry.village.department || '';
                                                 const sp = entry.village.subPrefecture || entry.village.commune || '';
-                                                
-                                                if (idx === 0 || (sortedVillages[idx - 1].village.department || '') !== dept) {
-                                                    let span = 1;
-                                                    for (let i = idx + 1; i < sortedVillages.length; i++) {
-                                                        if ((sortedVillages[i].village.department || '') === dept) span++;
-                                                        else break;
-                                                    }
-                                                    deptSpans[idx] = span;
-                                                }
-
-                                                const prevDept = idx > 0 ? (sortedVillages[idx - 1].village.department || '') : null;
-                                                const prevSP = idx > 0 ? (sortedVillages[idx - 1].village.subPrefecture || sortedVillages[idx - 1].village.commune || '') : null;
-                                                
-                                                if (idx === 0 || prevDept !== dept || prevSP !== sp) {
-                                                    let span = 1;
-                                                    for (let i = idx + 1; i < sortedVillages.length; i++) {
-                                                        const nextDept = sortedVillages[i].village.department || '';
-                                                        const nextSP = sortedVillages[i].village.subPrefecture || sortedVillages[i].village.commune || '';
-                                                        if (nextDept === dept && nextSP === sp) span++;
-                                                        else break;
-                                                    }
-                                                    spSpans[idx] = span;
-                                                }
-                                            });
-
-                                            return sortedVillages.map((entry, idx) => {
-                                                const renderDept = !commonDept && deptSpans[idx] !== undefined;
-                                                const renderSP = !commonSP && spSpans[idx] !== undefined;
 
                                                 return (
                                                     <tr key={entry.village.id} className="border-b border-slate-300 hover:bg-slate-50/50">
                                                         <td className="p-3 text-center font-bold text-slate-400">{idx + 1}</td>
-                                                        {renderDept && (
-                                                            <td rowSpan={deptSpans[idx]} className="p-3 font-bold text-slate-700 uppercase tracking-tighter align-middle text-center bg-slate-50/50 border-r border-slate-200">
-                                                                <div className="rotate-180" style={{ writingMode: 'vertical-rl' }}>
-                                                                    {entry.village.department}
-                                                                </div>
+                                                        {!commonDept && (
+                                                            <td className="p-3 font-bold text-slate-700 uppercase tracking-tighter align-middle text-left bg-slate-50/50 border-r border-slate-200">
+                                                                {dept}
                                                             </td>
                                                         )}
-                                                        {renderSP && (
-                                                            <td rowSpan={spSpans[idx]} className="p-3 font-bold text-slate-600 uppercase align-middle text-center bg-slate-50/30 border-r border-slate-200">
-                                                                <div className="rotate-180" style={{ writingMode: 'vertical-rl' }}>
-                                                                    {entry.village.subPrefecture || entry.village.commune}
-                                                                </div>
+                                                        {!commonSP && (
+                                                            <td className="p-3 font-bold text-slate-600 uppercase align-middle text-left bg-slate-50/30 border-r border-slate-200">
+                                                                {sp}
                                                             </td>
                                                         )}
                                                         <td className="p-3">

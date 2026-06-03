@@ -32,6 +32,7 @@ import { DebouncedInput } from "@/components/ui/debounced-input";
 import { LocationPicker } from "@/components/common/location-picker";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import type { Chief, ChiefRole, DesignationMode, ChiefCareerEvent, Predecessor } from "@/types/chief";
 
 interface AddChiefDialogProps {
   isOpen: boolean;

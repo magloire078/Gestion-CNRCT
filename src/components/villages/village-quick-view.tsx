@@ -60,9 +60,16 @@ export function VillageQuickView({ village, currentChief, open, onOpenChange }: 
                         <div>
                             <Badge className="bg-amber-500 text-white mb-2 border-none font-black text-[9px] uppercase tracking-widest">Fiche Territoriale</Badge>
                             <DialogTitle className="text-3xl font-black text-white uppercase tracking-tighter">{village.name}</DialogTitle>
-                            <DialogDescription className="text-slate-400 font-bold text-sm flex items-center gap-2">
-                                <MapPin className="h-3.5 w-3.5 text-amber-500" />
-                                {village.region} • {village.department} • {village.subPrefecture}
+                            <DialogDescription className="text-slate-400 font-bold text-sm flex flex-col gap-1 mt-1">
+                                <span className="flex items-center gap-2">
+                                    <MapPin className="h-3.5 w-3.5 text-amber-500" />
+                                    {village.region} • {village.department} • {village.subPrefecture}
+                                </span>
+                                {(village.canton || village.tribu) && (
+                                    <span className="text-[10px] text-amber-400/80 tracking-widest pl-5 uppercase">
+                                        {[village.canton, village.tribu].filter(Boolean).join(" • ")}
+                                    </span>
+                                )}
                             </DialogDescription>
                         </div>
                         <Button 

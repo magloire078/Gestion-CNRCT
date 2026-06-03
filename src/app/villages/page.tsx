@@ -49,7 +49,7 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { subscribeToVillages } from "@/services/village-service";
+import { subscribeToVillages, deleteVillage } from "@/services/village-service";
 import { subscribeToChiefs } from "@/services/chief-service";
 import { getOrganizationSettings } from "@/services/organization-service";
 import { Village, VillageEntry } from "@/types/village";
@@ -110,6 +110,17 @@ export default function VillagesPage() {
 
     // Link sheet state
     const [linkSheetEntry, setLinkSheetEntry] = useState<VillageEntry | null>(null);
+
+    const handleDeleteVillage = async (village: Village) => {
+        if (window.confirm(`Êtes-vous sûr de vouloir supprimer la localité de ${village.name} ? Cette action est irréversible.`)) {
+            try {
+                await deleteVillage(village.id);
+            } catch (error: any) {
+                console.error("Erreur lors de la suppression:", error);
+                alert(error.message || "Erreur lors de la suppression du village.");
+            }
+        }
+    };
 
     // Fetch Data with Real-time Sync
     useEffect(() => {
@@ -608,6 +619,7 @@ export default function VillagesPage() {
                                             <VillageCard
                                                 entry={entry}
                                                 onLink={(e) => { e.stopPropagation(); setLinkSheetEntry(entry); }}
+                                                onDelete={(e) => { e.stopPropagation(); handleDeleteVillage(entry.village); }}
                                             />
                                         </div>
                                     )}
@@ -743,7 +755,7 @@ export default function VillagesPage() {
 }
 
 
-function VillageCard({ entry, onLink }: { entry: VillageEntry; onLink?: (e: React.MouseEvent) => void }) {
+function VillageCard({ entry, onLink, onDelete }: { entry: VillageEntry; onLink?: (e: React.MouseEvent) => void; onDelete?: (e: React.MouseEvent) => void }) {
     const { village, currentChief, archivedChiefsCount } = entry;
     const score = village.developmentScore || 0;
 
@@ -877,7 +889,7 @@ function VillageCard({ entry, onLink }: { entry: VillageEntry; onLink?: (e: Reac
                     </Button>
                 </PermissionGuard>
                 <PermissionGuard permission="page:villages:delete">
-                    <Button variant="outline" size="icon" className="h-9 w-9 rounded-md border-slate-200 text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors shrink-0">
+                    <Button variant="outline" size="icon" className="h-9 w-9 rounded-md border-slate-200 text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors shrink-0" onClick={onDelete}>
                         <Trash2 className="h-4 w-4" />
                     </Button>
                 </PermissionGuard>

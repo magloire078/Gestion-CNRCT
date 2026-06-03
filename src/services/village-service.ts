@@ -134,3 +134,15 @@ export function subscribeToVillages(
         }
     );
 }
+
+export async function deleteVillage(id: string): Promise<void> {
+    const docRef = doc(db, 'villages', id);
+    try {
+        await deleteDoc(docRef);
+    } catch (error: any) {
+        if (error.code === 'permission-denied') {
+            throw new FirestorePermissionError("Vous n'avez pas la permission de supprimer ce village.", { operation: 'delete', path: `villages/${id}` });
+        }
+        throw error;
+    }
+}

@@ -75,6 +75,7 @@ export function AddChiefSheet({ isOpen, onCloseAction, onAddChiefAction }: AddCh
   const [selectedRegion, setSelectedRegion] = useState("");
   const [customRegion, setCustomRegion] = useState("");
   const [selectedDepartment, setSelectedDepartment] = useState("");
+  const [customDepartment, setCustomDepartment] = useState("");
   const [selectedSubPrefecture, setSelectedSubPrefecture] = useState("");
   const [customSubPrefecture, setCustomSubPrefecture] = useState("");
   const [selectedVillage, setSelectedVillage] = useState("");

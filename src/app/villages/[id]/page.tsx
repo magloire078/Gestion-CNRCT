@@ -25,6 +25,7 @@ import { HeritageItem, HeritageCategory, heritageCategoryLabels } from "@/types/
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { EditVillageSheet } from "@/components/villages/edit-village-sheet";
+import { VillageRegencyTimeline } from "@/components/villages/village-regency-timeline";
 import { PermissionGuard } from "@/components/auth/permission-guard";
 
 const GISMap = dynamic(() => import('@/components/common/gis-map-v3').then(m => m.GISMap), {
@@ -183,6 +184,7 @@ export default function VillageDetailPage() {
                         <TabsTrigger value="overview" className="rounded-xl font-black text-[10px] uppercase tracking-widest px-6 data-[state=active]:bg-white data-[state=active]:shadow-sm">Aperçu & Stats</TabsTrigger>
                         <TabsTrigger value="heritage" className="rounded-xl font-black text-[10px] uppercase tracking-widest px-6 data-[state=active]:bg-white data-[state=active]:shadow-sm">Patrimoine & Culture</TabsTrigger>
                         <TabsTrigger value="history" className="rounded-xl font-black text-[10px] uppercase tracking-widest px-6 data-[state=active]:bg-white data-[state=active]:shadow-sm">Histoire Locale</TabsTrigger>
+                        <TabsTrigger value="regency" className="rounded-xl font-black text-[10px] uppercase tracking-widest px-6 data-[state=active]:bg-white data-[state=active]:shadow-sm">Régence</TabsTrigger>
                         <TabsTrigger value="infrastructure" className="rounded-xl font-black text-[10px] uppercase tracking-widest px-6 data-[state=active]:bg-white data-[state=active]:shadow-sm">Infrastructure</TabsTrigger>
                     </TabsList>
 
@@ -410,6 +412,22 @@ export default function VillageDetailPage() {
                                     <p className="text-sm font-bold text-slate-600 bg-slate-50 p-6 rounded-2xl border border-slate-100 italic">"{village.annualEvents}"</p>
                                 </div>
                             )}
+                        </Card>
+                    </TabsContent>
+
+                    <TabsContent value="regency" className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <Card className="border-none shadow-xl shadow-slate-200/40 rounded-[2rem] bg-white overflow-hidden">
+                            <CardHeader>
+                                <CardTitle className="text-2xl font-black tracking-tight text-slate-900">
+                                    Succession des chefferies
+                                </CardTitle>
+                                <CardDescription>
+                                    Historique chronologique des chefs ayant régné sur cette localité, du plus récent au plus ancien.
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="pt-2 pb-8">
+                                <VillageRegencyTimeline villageId={village.id} />
+                            </CardContent>
                         </Card>
                     </TabsContent>
 

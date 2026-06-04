@@ -10,6 +10,7 @@ import {
     CheckCircle2, AlertCircle, Medal, Star, Clock, UserCheck
 } from "lucide-react";
 import Link from "next/link";
+import { formatChiefStatus } from "@/lib/chief-status";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -238,6 +239,16 @@ export default function ChiefProfilePage() {
                                         <div className="flex justify-between items-center py-2 border-b border-slate-50">
                                             <span className="text-sm text-slate-500 font-medium">Date de naissance</span>
                                             <span className="text-sm font-bold text-slate-800">{chief.dateOfBirth || "N/A"}</span>
+                                        </div>
+                                        {chief.status === 'decede' && (
+                                            <div className="flex justify-between items-center py-2 border-b border-slate-50">
+                                                <span className="text-sm text-slate-500 font-medium">Date de décès</span>
+                                                <span className="text-sm font-bold text-rose-700">{chief.dateOfDeath || "Non renseignée"}</span>
+                                            </div>
+                                        )}
+                                        <div className="flex justify-between items-center py-2 border-b border-slate-50">
+                                            <span className="text-sm text-slate-500 font-medium">Statut</span>
+                                            <span className="text-sm font-bold text-slate-800">{formatChiefStatus(chief.status)}</span>
                                         </div>
                                         <div className="flex justify-between items-center py-2">
                                             <span className="text-sm text-slate-500 font-medium">Groupe Ethnique</span>

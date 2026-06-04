@@ -69,6 +69,11 @@ export default function EditChiefPage() {
     const [customVillage, setCustomVillage] = useState("");
     const [latitude, setLatitude] = useState<number | ''>('');
     const [longitude, setLongitude] = useState<number | ''>('');
+    const [status, setStatus] = useState<Chief['status']>("actif");
+    const [regencyStartDate, setRegencyStartDate] = useState("");
+    const [regencyEndDate, setRegencyEndDate] = useState("");
+    const [dateOfDeath, setDateOfDeath] = useState("");
+    const [dateOfBirth, setDateOfBirth] = useState("");
 
     useEffect(() => {
         async function fetchChief() {
@@ -94,6 +99,11 @@ export default function EditChiefPage() {
                     setCareer(data.career || []);
                     setPhotoUrl(data.photoUrl || "");
                     setPhotoPreview(data.photoUrl || "");
+                    setStatus(data.status || "actif");
+                    setRegencyStartDate(data.regencyStartDate || "");
+                    setRegencyEndDate(data.regencyEndDate || "");
+                    setDateOfDeath(data.dateOfDeath || "");
+                    setDateOfBirth(data.dateOfBirth || "");
                     
                     // Division loading
                     if (data.region && ((IVORIAN_REGIONS as readonly string[]).includes(data.region) || data.region === "AUTRE")) {
@@ -188,6 +198,11 @@ export default function EditChiefPage() {
 
             if (latitude !== '') updateData.latitude = Number(latitude);
             if (longitude !== '') updateData.longitude = Number(longitude);
+            if (status) updateData.status = status;
+            updateData.regencyStartDate = regencyStartDate || undefined;
+            updateData.regencyEndDate = regencyEndDate || undefined;
+            updateData.dateOfBirth = dateOfBirth || undefined;
+            updateData.dateOfDeath = status === 'decede' ? (dateOfDeath || undefined) : undefined;
 
             await updateChief(id, updateData, photoFile);
             toast({ title: "Modifications enregistrées", description: "La fiche du chef a été mise à jour avec succès." });
@@ -477,6 +492,50 @@ export default function EditChiefPage() {
                                     </AccordionContent>
                                 </AccordionItem>
                             )}
+
+                            <AccordionItem value="lifecycle" className="border-none">
+                                <AccordionTrigger className="hover:no-underline">
+                                    <div className="flex items-center gap-2 font-bold text-slate-700 text-sm uppercase tracking-widest">
+                                        <Clock className="h-4 w-4" /> Cycle de vie / Régence
+                                    </div>
+                                </AccordionTrigger>
+                                <AccordionContent className="pt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="status">Statut actuel</Label>
+                                        <Select value={status} onValueChange={(v) => setStatus(v as Chief['status'])}>
+                                            <SelectTrigger><SelectValue placeholder="Sélectionnez..." /></SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="actif">En Exercice (Actif)</SelectItem>
+                                                <SelectItem value="a_vie">Régence à Vie</SelectItem>
+                                                <SelectItem value="demissionnaire">Démissionnaire / Retraité</SelectItem>
+                                                <SelectItem value="decede">Décédé</SelectItem>
+                                                <SelectItem value="archive">Archive (legacy)</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="dateOfBirth">Date de naissance</Label>
+                                        <Input id="dateOfBirth" type="date" value={dateOfBirth} onChange={(e) => setDateOfBirth(e.target.value)} />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="regencyStartDate">Début de régence</Label>
+                                        <Input id="regencyStartDate" type="date" value={regencyStartDate} onChange={(e) => setRegencyStartDate(e.target.value)} />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="regencyEndDate">Fin de régence</Label>
+                                        <Input id="regencyEndDate" type="date" value={regencyEndDate} onChange={(e) => setRegencyEndDate(e.target.value)} />
+                                    </div>
+                                    {status === 'decede' && (
+                                        <div className="space-y-2 md:col-span-2">
+                                            <Label htmlFor="dateOfDeath">Date de décès</Label>
+                                            <Input id="dateOfDeath" type="date" value={dateOfDeath} onChange={(e) => setDateOfDeath(e.target.value)} />
+                                            <p className="text-xs text-slate-500 italic">
+                                                Le chef restera visible dans l'historique de régence du village ({(selectedVillage === 'AUTRE' ? customVillage : selectedVillage) || "—"}).
+                                            </p>
+                                        </div>
+                                    )}
+                                </AccordionContent>
+                            </AccordionItem>
                         </Accordion>
                         {error && <div className="mt-6 p-4 bg-red-50 text-red-600 rounded-xl flex items-center gap-2 text-sm font-bold border border-red-100"><AlertCircle className="h-4 w-4" /> {error}</div>}
                     </CardContent>

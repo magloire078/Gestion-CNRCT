@@ -3,21 +3,24 @@
 import dynamic from "next/dynamic";
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { 
-    ArrowLeft, MapPin, Users, 
-    Landmark, Globe, History, 
+import {
+    ArrowLeft, MapPin, Users,
+    Landmark, Globe, History,
     Loader2, ChevronRight, School,
     Plus, Coffee, Info, Camera,
     Home, Droplets, Zap, Shield,
     Pencil, Coins, Heart, Moon as Mosque,
-    ShoppingBag, Church
+    ShoppingBag, Church, Trash2, AlertTriangle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getVillage } from "@/services/village-service";
+import { getVillage, deleteVillage, VillageStillHasActiveChiefsError } from "@/services/village-service";
 import { subscribeToChiefs } from "@/services/chief-service";
+import { useAuth } from "@/hooks/use-auth";
+import { useToast } from "@/hooks/use-toast";
+import { ConfirmationDialog } from "@/components/common/confirmation-dialog";
 import { getAllHeritageItems } from "@/services/heritage-service";
 import { Village } from "@/types/village";
 import { Chief } from "@/types/chief";
@@ -48,6 +51,33 @@ export default function VillageDetailPage() {
     const [heritage, setHeritage] = useState<HeritageItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
+    const [deleteOpen, setDeleteOpen] = useState(false);
+    const [blockingChiefs, setBlockingChiefs] = useState<Chief[]>([]);
+    const [forceDeleteOpen, setForceDeleteOpen] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const { hasPermission } = useAuth();
+    const { toast } = useToast();
+
+    const handleDelete = async (force = false) => {
+        if (!village) return;
+        setIsDeleting(true);
+        try {
+            await deleteVillage(village.id, { forceArchiveChiefs: force });
+            toast({ title: "Village supprimé", description: `${village.name} a été retiré du registre.` });
+            router.push("/villages");
+        } catch (err: unknown) {
+            if (err instanceof VillageStillHasActiveChiefsError) {
+                setBlockingChiefs(err.activeChiefs);
+                setDeleteOpen(false);
+                setForceDeleteOpen(true);
+                return;
+            }
+            const message = err instanceof Error ? err.message : "Erreur inconnue";
+            toast({ variant: "destructive", title: "Suppression impossible", description: message });
+        } finally {
+            setIsDeleting(false);
+        }
+    };
 
     useEffect(() => {
         if (!id) return;
@@ -138,6 +168,16 @@ export default function VillageDetailPage() {
                             <Button variant="ghost" className="w-fit text-white border-white/10 bg-white/5 hover:bg-white/10 rounded-xl" onClick={() => setIsEditSheetOpen(true)}>
                                 <Pencil className="mr-2 h-4 w-4" /> Modifier la localité
                             </Button>
+                            {hasPermission('villages:delete') && (
+                                <Button
+                                    variant="ghost"
+                                    className="w-fit text-rose-200 border-rose-200/20 bg-rose-500/10 hover:bg-rose-500/20 rounded-xl"
+                                    onClick={() => setDeleteOpen(true)}
+                                    aria-label="Supprimer le village"
+                                >
+                                    <Trash2 className="mr-2 h-4 w-4" /> Supprimer
+                                </Button>
+                            )}
                         </div>
                         
                         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
@@ -480,12 +520,38 @@ export default function VillageDetailPage() {
                 </Tabs>
 
                 {village && (
-                    <EditVillageSheet 
-                        village={village} 
-                        open={isEditSheetOpen} 
-                        onOpenChangeAction={setIsEditSheetOpen} 
+                    <EditVillageSheet
+                        village={village}
+                        open={isEditSheetOpen}
+                        onOpenChangeAction={setIsEditSheetOpen}
                     />
                 )}
+
+                <ConfirmationDialog
+                    isOpen={deleteOpen}
+                    onCloseAction={() => setDeleteOpen(false)}
+                    onConfirmAction={() => handleDelete(false)}
+                    title="Supprimer définitivement ce village ?"
+                    description={
+                        `${village?.name} sera retiré du registre territorial. Les entrées d'historique de régence (RegencyHistory) seront conservées pour la postérité.\n\n` +
+                        `Si un ou plusieurs chefs sont encore en fonction sur ce village, la suppression sera bloquée et vous pourrez choisir de les archiver.`
+                    }
+                    confirmText={isDeleting ? "Suppression..." : "Supprimer"}
+                />
+
+                <ConfirmationDialog
+                    isOpen={forceDeleteOpen}
+                    onCloseAction={() => setForceDeleteOpen(false)}
+                    onConfirmAction={() => handleDelete(true)}
+                    title="Archiver les chefs encore en fonction ?"
+                    description={
+                        `${blockingChiefs.length} chef(s) sont encore en fonction sur ce village :\n` +
+                        blockingChiefs.map(c => `• ${c.name}${c.title ? ' — ' + c.title : ''}`).join('\n') +
+                        `\n\nEn confirmant, leur statut passera à « archive » et leur villageId sera dissocié, puis le village sera supprimé. ` +
+                        `Leur historique de régence sur le village restera intact.`
+                    }
+                    confirmText={isDeleting ? "Archivage..." : "Archiver et supprimer"}
+                />
             </div>
         </PermissionGuard>
     );

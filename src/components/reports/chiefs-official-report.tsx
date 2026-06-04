@@ -3,6 +3,7 @@
 import React from "react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { formatChiefStatus, isChiefCurrentlyInOffice } from "@/lib/chief-status";
 import { 
     Crown, 
     MapPin, 
@@ -142,11 +143,11 @@ export function ChiefsOfficialReport({
                                                 <td className="p-3 text-center">
                                                     <span className={cn(
                                                         "inline-block px-2 py-0.5 rounded font-black text-[8px] uppercase tracking-widest border",
-                                                        chief.status === 'archive' 
-                                                            ? "bg-slate-50 text-slate-400 border-slate-200" 
-                                                            : "bg-emerald-50 text-emerald-700 border-emerald-100"
+                                                        isChiefCurrentlyInOffice(chief.status)
+                                                            ? "bg-emerald-50 text-emerald-700 border-emerald-100"
+                                                            : "bg-slate-50 text-slate-400 border-slate-200"
                                                     )}>
-                                                        {chief.status === 'a_vie' ? 'À Vie' : chief.status || 'Actif'}
+                                                        {formatChiefStatus(chief.status)}
                                                     </span>
                                                 </td>
                                             </tr>

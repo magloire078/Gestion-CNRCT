@@ -54,7 +54,19 @@ export type Chief = {
      * Le champ `village` (string) doit en être le miroir textuel.
      */
     villageId?: string;
-    status?: 'actif' | 'archive' | 'a_vie';
+    /**
+     * Statut de régence du chef :
+     * - 'actif'           : en exercice (chef en place)
+     * - 'a_vie'           : régence à vie (chef à vie)
+     * - 'decede'          : décédé (l'entrée reste dans l'historique du village)
+     * - 'demissionnaire'  : démission, retraite, ou remplacement générationnel
+     *                      (le chef est encore vivant mais n'est plus en fonction)
+     * - 'archive'         : statut historique générique (legacy, à remplacer
+     *                      progressivement par 'decede' ou 'demissionnaire')
+     */
+    status?: 'actif' | 'a_vie' | 'decede' | 'demissionnaire' | 'archive';
+    /** Date de décès si status = 'decede' (ISO 8601 ou YYYY) */
+    dateOfDeath?: string;
     
     // Authority Life Hub fields
     career?: ChiefCareerEvent[];

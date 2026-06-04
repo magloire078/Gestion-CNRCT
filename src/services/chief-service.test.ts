@@ -27,11 +27,20 @@ describe('buildCurrentChiefIndex', () => {
         expect(idx.get('v2')?.id).toBe('c2');
     });
 
-    it('ignore les chefs archivés', () => {
+    it('ignore les chefs archivés, décédés et démissionnaires', () => {
         const idx = buildCurrentChiefIndex([
             mkChief({ id: 'c1', villageId: 'v1', status: 'archive' }),
+            mkChief({ id: 'c2', villageId: 'v2', status: 'decede' }),
+            mkChief({ id: 'c3', villageId: 'v3', status: 'demissionnaire' }),
         ]);
         expect(idx.size).toBe(0);
+    });
+
+    it('considère les chefs à vie comme en fonction', () => {
+        const idx = buildCurrentChiefIndex([
+            mkChief({ id: 'c1', villageId: 'v1', status: 'a_vie' }),
+        ]);
+        expect(idx.get('v1')?.id).toBe('c1');
     });
 
     it('en cas de plusieurs chefs actifs pour le même village, garde le premier', () => {

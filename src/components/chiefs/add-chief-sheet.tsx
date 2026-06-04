@@ -84,6 +84,7 @@ export function AddChiefSheet({ isOpen, onCloseAction, onAddChiefAction }: AddCh
   const [dateOfBirth, setDateOfBirth] = useState("");
   const [regencyStartDate, setRegencyStartDate] = useState("");
   const [regencyEndDate, setRegencyEndDate] = useState("");
+  const [dateOfDeath, setDateOfDeath] = useState("");
   const [status, setStatus] = useState<Chief['status']>("actif");
   
   // Career Events State
@@ -122,7 +123,7 @@ export function AddChiefSheet({ isOpen, onCloseAction, onAddChiefAction }: AddCh
     setSelectedVillage(""); setCustomVillage("");
     setLatitude(''); setLongitude('');
     setParentChiefId(null); setDateOfBirth("");
-    setRegencyStartDate(""); setRegencyEndDate(""); setStatus("actif"); setError("");
+    setRegencyStartDate(""); setRegencyEndDate(""); setDateOfDeath(""); setStatus("actif"); setError("");
     setDesignationDate(""); setDesignationMode(""); setEthnicGroup(""); setLanguages("");
     setCNRCTRegistrationNumber(""); setOfficialDocuments(""); setEmail(""); setAddress("");
     setCareer([]);
@@ -205,6 +206,7 @@ export function AddChiefSheet({ isOpen, onCloseAction, onAddChiefAction }: AddCh
       if (dateOfBirth) chiefData.dateOfBirth = dateOfBirth;
       if (regencyStartDate) chiefData.regencyStartDate = regencyStartDate;
       if (regencyEndDate) chiefData.regencyEndDate = regencyEndDate;
+      if (status === 'decede' && dateOfDeath) chiefData.dateOfDeath = dateOfDeath;
 
       await onAddChiefAction(chiefData, photoFile);
       handleClose();
@@ -358,10 +360,23 @@ export function AddChiefSheet({ isOpen, onCloseAction, onAddChiefAction }: AddCh
                         <SelectContent>
                           <SelectItem value="actif">En Exercice (Actif)</SelectItem>
                           <SelectItem value="a_vie">Régence à Vie</SelectItem>
-                          <SelectItem value="archive">Ancien / Archivé</SelectItem>
+                          <SelectItem value="demissionnaire">Démissionnaire / Retraité</SelectItem>
+                          <SelectItem value="decede">Décédé</SelectItem>
+                          <SelectItem value="archive">Archive (legacy)</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
+                    {status === 'decede' && (
+                      <div>
+                        <Label htmlFor="dateOfDeath">Date de décès</Label>
+                        <Input
+                          id="dateOfDeath"
+                          type="date"
+                          value={dateOfDeath}
+                          onChange={(e) => setDateOfDeath(e.target.value)}
+                        />
+                      </div>
+                    )}
                   </div>
                 </AccordionContent>
               </AccordionItem>

@@ -1,9 +1,11 @@
-import { collection, getDocs, addDoc, onSnapshot, Unsubscribe, query, orderBy, deleteDoc, doc, updateDoc, getDoc, where, setDoc, limit } from '@/lib/firebase';
+import { collection, getDocs, addDoc, onSnapshot, Unsubscribe, query, orderBy, deleteDoc, doc, updateDoc, getDoc, where, setDoc, limit, writeBatch } from '@/lib/firebase';
 import { db } from '@/lib/firebase';
 import type { Village } from '@/types/village';
+import type { Chief } from '@/types/chief';
 import { FirestorePermissionError } from '@/lib/errors';
 import { DEFAULT_QUERY_LIMIT } from '@/lib/firestore-utils';
 import { uploadToCloudinary } from '@/lib/cloudinary';
+import { ACTIVE_CHIEF_STATUSES } from '@/lib/schemas/chief-schema';
 
 const villagesCollection = collection(db, 'villages');
 
@@ -142,7 +144,7 @@ export function subscribeToVillages(
     onError?: (error: Error) => void
 ): Unsubscribe {
     const q = query(villagesCollection, orderBy("name", "asc"), limit(DEFAULT_QUERY_LIMIT));
-    return onSnapshot(q, 
+    return onSnapshot(q,
         (snapshot) => {
             const villages = snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() } as Village));
             callback(villages);
@@ -152,4 +154,77 @@ export function subscribeToVillages(
             if (onError) onError(error);
         }
     );
+}
+
+/**
+ * Erreur levée par deleteVillage quand des chefs sont encore en fonction
+ * sur ce village. L'UI peut intercepter l'erreur et proposer à l'admin
+ * de relancer avec { forceArchiveChiefs: true }.
+ */
+export class VillageStillHasActiveChiefsError extends Error {
+    readonly activeChiefs: Chief[];
+    constructor(activeChiefs: Chief[]) {
+        super(
+            `Le village ne peut pas être supprimé : ${activeChiefs.length} chef(s) y sont encore en fonction. ` +
+            `Modifiez leur statut (démissionnaire ou décédé) avant de supprimer le village, ou utilisez l'option forceArchiveChiefs.`
+        );
+        this.name = 'VillageStillHasActiveChiefsError';
+        this.activeChiefs = activeChiefs;
+    }
+}
+
+export type DeleteVillageOptions = {
+    /**
+     * Si vrai, archive automatiquement les chefs encore en fonction sur ce
+     * village (status -> 'archive') au lieu de bloquer la suppression.
+     * À utiliser uniquement après confirmation explicite de l'utilisateur.
+     */
+    forceArchiveChiefs?: boolean;
+};
+
+/**
+ * Supprime un village après vérification qu'aucun chef n'y est encore en
+ * fonction. Lève VillageStillHasActiveChiefsError sinon (sauf si
+ * forceArchiveChiefs = true, auquel cas les chefs concernés sont archivés
+ * dans la même transaction batch).
+ *
+ * Les entrées RegencyHistory ne sont PAS supprimées : on garde l'historique
+ * de la chefferie même si la fiche village disparaît administrativement.
+ */
+export async function deleteVillage(id: string, options: DeleteVillageOptions = {}): Promise<void> {
+    if (!id) throw new Error('deleteVillage: id manquant');
+
+    // 1. Identifie les chefs actuellement en fonction sur ce village
+    const chiefsCol = collection(db, 'chiefs');
+    const activeChiefsSnap = await getDocs(query(chiefsCol, where('villageId', '==', id)));
+    const activeChiefs: Chief[] = activeChiefsSnap.docs
+        .map((d) => ({ id: d.id, ...d.data() } as Chief))
+        .filter((c) => !c.status || ACTIVE_CHIEF_STATUSES.includes(c.status));
+
+    // 2. Bloque ou archive selon l'option
+    if (activeChiefs.length > 0 && !options.forceArchiveChiefs) {
+        throw new VillageStillHasActiveChiefsError(activeChiefs);
+    }
+
+    try {
+        const batch = writeBatch(db);
+        if (options.forceArchiveChiefs) {
+            for (const chief of activeChiefs) {
+                batch.update(doc(db, 'chiefs', chief.id), {
+                    status: 'archive',
+                    villageId: null,
+                });
+            }
+        }
+        batch.delete(doc(db, 'villages', id));
+        await batch.commit();
+    } catch (error: any) {
+        if (error.code === 'permission-denied') {
+            throw new FirestorePermissionError(
+                "Vous n'avez pas la permission de supprimer ce village.",
+                { operation: 'delete', path: `villages/${id}` }
+            );
+        }
+        throw error;
+    }
 }

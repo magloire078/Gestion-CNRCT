@@ -529,7 +529,12 @@ export default function ChiefsPage() {
         onCloseAction={() => setDeleteTarget(null)}
         onConfirmAction={handleDeleteChief}
         title={`Radiation du Registre ?`}
-        description={`Confirmez-vous le retrait définitif de Sa Majesté ${deleteTarget?.name} des archives officielles de la CNRCT ? Cette action est irréversible.`}
+        description={
+          `Confirmez-vous le retrait définitif de Sa Majesté ${deleteTarget?.name} des archives officielles de la CNRCT ?\n\n` +
+          `Cette action est irréversible.\n\n` +
+          `IMPORTANT : si ce chef est décédé, il est recommandé de modifier son statut à « Décédé » plutôt que de supprimer la fiche — l'historique de régence du village conservera ainsi sa trace.\n\n` +
+          `Les entrées d'historique de régence (RegencyHistory) liées à ce chef ne seront PAS supprimées et resteront visibles sur la fiche du village.`
+        }
       />
       </div>
     </PermissionGuard>

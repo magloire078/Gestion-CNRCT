@@ -157,11 +157,13 @@ export default function VillagesPage() {
     const { currentChiefByVillage, archivedCountByVillage } = useMemo(() => {
         const current = new Map<string, Chief>();
         const archived = new Map<string, number>();
+        const ACTIVE: Array<Chief['status']> = ['actif', 'a_vie'];
+        const HISTORICAL: Array<Chief['status']> = ['archive', 'decede', 'demissionnaire'];
         for (const chief of chiefs) {
             if (!chief.villageId) continue;
-            if (chief.status === 'archive') {
+            if (chief.status && HISTORICAL.includes(chief.status)) {
                 archived.set(chief.villageId, (archived.get(chief.villageId) || 0) + 1);
-            } else if ((chief.status === 'actif' || chief.status === 'a_vie') && !current.has(chief.villageId)) {
+            } else if ((!chief.status || ACTIVE.includes(chief.status)) && !current.has(chief.villageId)) {
                 current.set(chief.villageId, chief);
             }
         }

@@ -6,7 +6,7 @@ import type { Chief, ChiefRole } from '@/types/chief';
 import { db, storage } from '@/lib/firebase';
 import { FirestorePermissionError, FirestoreQuotaError, FirestoreTimeoutError } from '@/lib/errors';
 import { DEFAULT_QUERY_LIMIT } from '@/lib/firestore-utils';
-import { cnrctRegistrationNumberSchema } from '@/lib/schemas/chief-schema';
+import { ACTIVE_CHIEF_STATUSES, cnrctRegistrationNumberSchema } from '@/lib/schemas/chief-schema';
 
 const chiefsCollection = collection(db, 'chiefs');
 
@@ -257,10 +257,10 @@ export function buildCurrentChiefIndex(chiefs: Chief[]): Map<string, Chief> {
     const index = new Map<string, Chief>();
     for (const chief of chiefs) {
         if (!chief.villageId) continue;
-        if (chief.status && chief.status !== 'actif') continue;
-        const existing = index.get(chief.villageId);
-        // S'il y a plusieurs chefs sans status, on garde le premier rencontré
-        if (!existing) {
+        // Sont considérés en fonction : 'actif', 'a_vie', et les entrées
+        // sans status (legacy, présumées actives).
+        if (chief.status && !ACTIVE_CHIEF_STATUSES.includes(chief.status)) continue;
+        if (!index.has(chief.villageId)) {
             index.set(chief.villageId, chief);
         }
     }

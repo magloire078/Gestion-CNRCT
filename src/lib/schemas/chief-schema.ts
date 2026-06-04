@@ -27,7 +27,19 @@ export const designationModeSchema = z.enum([
     "Autre",
 ]);
 
-export const chiefStatusSchema = z.enum(["actif", "archive", "a_vie"]);
+export const chiefStatusSchema = z.enum([
+    "actif",
+    "a_vie",
+    "decede",
+    "demissionnaire",
+    "archive", // legacy, à éviter pour les nouvelles entrées
+]);
+
+/** Statuts considérés comme "en fonction" pour le calcul du chef actuel */
+export const ACTIVE_CHIEF_STATUSES: Array<z.infer<typeof chiefStatusSchema>> = [
+    "actif",
+    "a_vie",
+];
 
 export const chiefCareerEventSchema = z.object({
     id: z.string(),
@@ -94,6 +106,7 @@ export const chiefBaseSchema = z.object({
     dateOfBirth: z.string().optional(),
     regencyStartDate: z.string().optional(),
     regencyEndDate: z.string().optional(),
+    dateOfDeath: z.string().optional(),
     status: chiefStatusSchema.optional(),
 
     // Authority Life Hub

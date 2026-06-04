@@ -426,7 +426,7 @@ export default function VillageDetailPage() {
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="pt-2 pb-8">
-                                <VillageRegencyTimeline villageId={village.id} />
+                                <VillageRegencyTimeline villageId={village.id} villageName={village.name} />
                             </CardContent>
                         </Card>
                     </TabsContent>

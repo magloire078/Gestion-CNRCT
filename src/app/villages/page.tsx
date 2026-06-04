@@ -76,7 +76,6 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { List, Settings } from "lucide-react";
-import { DataMigrationTool } from "@/components/maintenance/data-migration-tool";
 import { normalizeString, getOfficialRegion, getOfficialDepartment, getOfficialSubPrefecture } from "@/lib/normalization-utils";
 
 
@@ -103,7 +102,6 @@ export default function VillagesPage() {
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(12);
-    const [showMaintenance, setShowMaintenance] = useState(false);
 
     // Fetch Data with Real-time Sync
     useEffect(() => {
@@ -453,16 +451,15 @@ export default function VillagesPage() {
                             </Button>
                              <PermissionGuard permission="page:repository:view">
                                 {hasPermission('admin:maintenance') && (
-                                    <Button 
-                                        variant="outline" 
-                                        onClick={() => setShowMaintenance(!showMaintenance)}
-                                        className={cn(
-                                            "h-14 px-6 rounded-xl font-bold transition-all gap-2",
-                                            showMaintenance ? "bg-white text-slate-900" : "bg-white/5 border-white/10 text-white hover:bg-white/10"
-                                        )}
+                                    <Button
+                                        asChild
+                                        variant="outline"
+                                        className="h-14 px-6 rounded-xl font-bold gap-2 bg-white/5 border-white/10 text-white hover:bg-white/10"
                                     >
-                                        <Settings className="h-5 w-5" />
-                                        {showMaintenance ? "Fermer Maintenance" : "Maintenance"}
+                                        <Link href="/admin/maintenance" aria-label="Ouvrir l'espace maintenance données">
+                                            <Settings className="h-5 w-5" />
+                                            Maintenance
+                                        </Link>
                                     </Button>
                                 )}
                                 <AddVillageSheet />
@@ -863,41 +860,6 @@ export default function VillagesPage() {
                     </div>
                 )}
 
-                {/* --- MAINTENANCE (Admin only) --- */}
-                {hasPermission('admin:maintenance') && (
-                    <div className="mt-8 space-y-4">
-                        <div className="p-4 bg-slate-900 text-white rounded-xl font-mono text-[10px] overflow-auto max-h-60 border border-slate-700">
-                            <h3 className="text-amber-500 font-black mb-2">DIAGNOSTIC DATA (ADMIN)</h3>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <p>TOTAL VILLAGES: {villages.length}</p>
-                                    <p>TOTAL CHIEFS: {chiefs.length}</p>
-                                    <p>NON-EMPTY REGIONS: {villages.filter(v => !!v.region).length}</p>
-                                    <p>NON-EMPTY DEPTS: {villages.filter(v => !!v.department).length}</p>
-                                    <p>NON-EMPTY SP: {villages.filter(v => !!v.subPrefecture).length}</p>
-                                    <p>NON-EMPTY NAMES: {villages.filter(v => !!v.name).length}</p>
-                                </div>
-                                <div>
-                                    <p>SELECTED REGION: {selectedRegion}</p>
-                                    {villages.length > 0 && (
-                                        <div className="mt-2 border-t border-slate-700 pt-2">
-                                            <p className="text-amber-400">RAW DATA SAMPLES (FIRST 10):</p>
-                                            <div className="space-y-1 mt-1">
-                                                {villages.slice(0, 10).map((v, i) => (
-                                                    <p key={v.id} className="text-[9px] border-b border-slate-800 pb-1">
-                                                        [{i}] {v.name} | R: &quot;{v.region}&quot; | D: &quot;{v.department}&quot; | SP: &quot;{v.subPrefecture}&quot; | SRC: &quot;{(v as any).source || ""}&quot;
-                                                    </p>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                        
-                        {showMaintenance && <DataMigrationTool />}
-                    </div>
-                )}
             </div>
 
             {quickViewVillage && (

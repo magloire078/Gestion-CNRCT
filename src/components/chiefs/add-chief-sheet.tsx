@@ -39,6 +39,7 @@ import {
 } from "@/components/ui/accordion";
 import { LocationPicker } from "@/components/common/location-picker";
 import { Plus, Trash2 as TrashIcon, Award, Medal, ShieldCheck, Clock, MapPin as PinIcon } from "lucide-react";
+import { cnrctRegistrationNumberSchema } from "@/lib/schemas/chief-schema";
 
 interface AddChiefDialogProps {
   isOpen: boolean;
@@ -155,6 +156,17 @@ export function AddChiefSheet({ isOpen, onCloseAction, onAddChiefAction }: AddCh
 
     if (!firstName || !lastName || !title) {
       setError("Veuillez remplir au moins les champs nom, prénom et titre.");
+      return;
+    }
+    if (CNRCTRegistrationNumber) {
+      const cnrctCheck = cnrctRegistrationNumberSchema.safeParse(CNRCTRegistrationNumber);
+      if (!cnrctCheck.success) {
+        setError(`Numéro CNRCT invalide : ${cnrctCheck.error.errors[0]?.message}`);
+        return;
+      }
+    }
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setError("L'adresse email n'est pas valide.");
       return;
     }
     setIsSubmitting(true);

@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import {
     Form,
@@ -54,63 +53,7 @@ import { LocationPicker } from "@/components/common/location-picker";
 import { Label } from "@/components/ui/label";
 import { Village } from "@/types/village";
 
-const preprocessNumber = (val: any) => {
-    if (val === "" || val === undefined || val === null) return undefined;
-    const num = Number(val);
-    return isNaN(num) ? undefined : num;
-};
-
-const villageSchema = z.object({
-    // Identité administrative
-    name: z.string().min(2, "Le nom du village doit avoir au moins 2 caractères"),
-    region: z.string().min(1, "La région est requise"),
-    department: z.string().min(1, "Le département est requis"),
-    subPrefecture: z.string().min(1, "La sous-préfecture est requise"),
-    commune: z.string().optional(),
-    codeINS: z.string().optional(),
-    
-    // Position SIG & Géo
-    latitude: z.number().optional().nullable(),
-    longitude: z.number().optional().nullable(),
-    altitude: z.preprocess(preprocessNumber, z.number().optional()),
-    distanceFromCapital: z.preprocess(preprocessNumber, z.number().optional()),
-    distanceFromChefLieu: z.preprocess(preprocessNumber, z.number().optional()),
-    accessRoads: z.string().optional(),
-
-    // Démographie
-    population: z.preprocess(preprocessNumber, z.number().optional()),
-    populationYear: z.preprocess(preprocessNumber, z.number().optional()),
-    numberOfHouseholds: z.preprocess(preprocessNumber, z.number().optional()),
-    mainEthnicGroups: z.string().optional(),
-    languages: z.string().optional(),
-
-    // Histoire & Culture
-    history: z.string().optional(),
-    customs: z.string().optional(),
-    traditionalPractices: z.string().optional(),
-    annualEvents: z.string().optional(),
-
-    // Économie
-    mainActivities: z.string().optional(),
-    naturalResources: z.string().optional(),
-    mainCrops: z.string().optional(),
-
-    // Infrastructures
-    hasSchool: z.boolean().default(false),
-    hasHealthCenter: z.boolean().default(false),
-    hasElectricity: z.boolean().default(false),
-    hasWater: z.boolean().default(false),
-    hasMosque: z.boolean().default(false),
-    hasChurch: z.boolean().default(false),
-    hasMarket: z.boolean().default(false),
-    infrastructureNotes: z.string().optional(),
-
-    // Chefferie
-    chieftaincyType: z.string().optional(),
-    successionMode: z.string().optional(),
-});
-
-type VillageFormValues = z.infer<typeof villageSchema>;
+import { villageFormSchema as villageSchema, type VillageFormValues, csvToArray } from "@/lib/schemas/village-form-schema";
 
 interface EditVillageSheetProps {
     village: Village;
@@ -229,10 +172,10 @@ export function EditVillageSheet({ village, open, onOpenChangeAction }: EditVill
             // Transformation des champs string en tableaux
             const finalData = {
                 ...values,
-                mainEthnicGroups: values.mainEthnicGroups ? values.mainEthnicGroups.split(",").map(s => s.trim()).filter(s => s !== "") : [],
-                languages: values.languages ? values.languages.split(",").map(s => s.trim()).filter(s => s !== "") : [],
-                mainActivities: values.mainActivities ? values.mainActivities.split(",").map(s => s.trim()).filter(s => s !== "") : [],
-                mainCrops: values.mainCrops ? values.mainCrops.split(",").map(s => s.trim()).filter(s => s !== "") : [],
+                mainEthnicGroups: csvToArray(values.mainEthnicGroups),
+                languages: csvToArray(values.languages),
+                mainActivities: csvToArray(values.mainActivities),
+                mainCrops: csvToArray(values.mainCrops),
                 latitude: values.latitude ?? null,
                 longitude: values.longitude ?? null,
             };

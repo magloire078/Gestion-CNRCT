@@ -153,20 +153,28 @@ export default function VillagesPage() {
 
 
 
-    // Derived Data: Merge Villages and Chiefs
+    // Derived Data: Merge Villages and Chiefs en O(n+m)
+    const { currentChiefByVillage, archivedCountByVillage } = useMemo(() => {
+        const current = new Map<string, Chief>();
+        const archived = new Map<string, number>();
+        for (const chief of chiefs) {
+            if (!chief.villageId) continue;
+            if (chief.status === 'archive') {
+                archived.set(chief.villageId, (archived.get(chief.villageId) || 0) + 1);
+            } else if ((chief.status === 'actif' || chief.status === 'a_vie') && !current.has(chief.villageId)) {
+                current.set(chief.villageId, chief);
+            }
+        }
+        return { currentChiefByVillage: current, archivedCountByVillage: archived };
+    }, [chiefs]);
+
     const villageEntries = useMemo(() => {
-        return villages.map(village => {
-            const villageChiefs = chiefs.filter(c => c.villageId === village.id);
-            const currentChief = villageChiefs.find(c => c.status === 'actif' || c.status === 'a_vie') || null;
-            const archivedChiefsCount = villageChiefs.filter(c => c.status === 'archive').length;
-            
-            return {
-                village,
-                currentChief,
-                archivedChiefsCount
-            };
-        });
-    }, [villages, chiefs]);
+        return villages.map(village => ({
+            village,
+            currentChief: currentChiefByVillage.get(village.id) || null,
+            archivedChiefsCount: archivedCountByVillage.get(village.id) || 0,
+        }));
+    }, [villages, currentChiefByVillage, archivedCountByVillage]);
 
     // Computed stats for filters
     const filterStats = useMemo(() => {

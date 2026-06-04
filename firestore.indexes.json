@@ -93,7 +93,7 @@
       ]
     },
     {
-      "collectionGroup": "regency",
+      "collectionGroup": "regency_history",
       "queryScope": "COLLECTION",
       "fields": [
         {
@@ -107,7 +107,7 @@
       ]
     },
     {
-      "collectionGroup": "regency",
+      "collectionGroup": "regency_history",
       "queryScope": "COLLECTION",
       "fields": [
         {
@@ -117,6 +117,34 @@
         {
           "fieldPath": "startDate",
           "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "chiefs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "villageId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "chiefs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "villageId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "lastName",
+          "order": "ASCENDING"
         }
       ]
     },

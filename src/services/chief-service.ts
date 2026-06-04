@@ -229,6 +229,44 @@ export async function getChief(id: string): Promise<Chief | null> {
     return null;
 }
 
+/**
+ * Récupère uniquement le chef actuel (status = 'actif') d'un village.
+ * Nécessite l'index composé (villageId ASC, status ASC) sur 'chiefs',
+ * déclaré dans firestore.indexes.json.
+ */
+export async function getCurrentChiefByVillageId(villageId: string): Promise<Chief | null> {
+    if (!villageId) return null;
+    const q = query(
+        chiefsCollection,
+        where('villageId', '==', villageId),
+        where('status', '==', 'actif'),
+        limit(1)
+    );
+    const snapshot = await getDocs(q);
+    if (snapshot.empty) return null;
+    const d = snapshot.docs[0];
+    return { id: d.id, ...d.data() } as Chief;
+}
+
+/**
+ * Construit une Map { villageId -> chefActuel } à partir d'une liste de
+ * chefs (typiquement la souscription complète). Permet aux pages liste
+ * villages de faire le join en O(n+m) au lieu de O(n*m).
+ */
+export function buildCurrentChiefIndex(chiefs: Chief[]): Map<string, Chief> {
+    const index = new Map<string, Chief>();
+    for (const chief of chiefs) {
+        if (!chief.villageId) continue;
+        if (chief.status && chief.status !== 'actif') continue;
+        const existing = index.get(chief.villageId);
+        // S'il y a plusieurs chefs sans status, on garde le premier rencontré
+        if (!existing) {
+            index.set(chief.villageId, chief);
+        }
+    }
+    return index;
+}
+
 export async function addChief(chiefData: Omit<Chief, "id">, photoFile: File | null): Promise<Chief> {
     // Garantit que village (texte) est aligné sur villageId (FK) si fourni
     chiefData = await syncChiefVillageFields(chiefData);

@@ -13,6 +13,10 @@ export const allColumns = {
     dateEmbauche: "Prise de Service",
     Date_Depart: "Date Dep.",
     age: "Âge",
+    Region: "Région",
+    Departement: "Département",
+    subPrefecture: "Sous-Préfecture",
+    Village: "Village / Localité",
 } as const;
 
 export const chiefColumns = {
@@ -25,6 +29,7 @@ export const chiefColumns = {
     subPrefecture: "SOUS-PREFECTURE",
     Village: "VILLAGE",
     Num_Decision: "REFERENCE",
+    photoUrl: "PHOTO",
 } as const;
 
 export type ColumnKeys = keyof typeof allColumns | keyof typeof chiefColumns;

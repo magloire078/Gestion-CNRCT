@@ -18,6 +18,8 @@ import type { OrganizationSettings } from "@/lib/data";
 import { ChiefsOfficialReport } from "@/components/reports/chiefs-official-report";
 import kingdomsData from "@/data/kingdoms.json";
 import { motion, AnimatePresence } from "framer-motion";
+import { chiefColumns, type ColumnKeys } from "@/lib/constants/employee";
+import { PrintDialog } from "@/components/employees/print-dialog";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -87,6 +89,9 @@ export default function ChiefsPage() {
   
   const [isPrinting, setIsPrinting] = useState(false);
   const [orgSettings, setOrgSettings] = useState<OrganizationSettings | null>(null);
+  const [isPrintDialogOpen, setIsPrintDialogOpen] = useState(false);
+  const [printOrientation, setPrintOrientation] = useState<'portrait' | 'landscape'>('landscape');
+  const [columnsToPrint, setColumnsToPrint] = useState<ColumnKeys[]>([]);
 
   const [selectedRole, setSelectedRole] = useState<string>("all");
   const [selectedRegion, setSelectedRegion] = useState<string>("all");
@@ -224,6 +229,33 @@ export default function ChiefsPage() {
 
       return matchesRole && matchesRegion && matchesDepartment && matchesSubPrefecture && matchesCanton && matchesTribu && matchesStatus && matchesAffiliation && matchesKingdom;
     });
+
+    // Default sorting: Alphabetical by Region -> Department -> SubPrefecture -> Village -> Name
+    if (searchTerm.trim() === '') {
+        baseChiefs.sort((a, b) => {
+            const regA = (a.region || '').toLowerCase();
+            const regB = (b.region || '').toLowerCase();
+            if (regA !== regB) return regA.localeCompare(regB);
+
+            const depA = (a.department || '').toLowerCase();
+            const depB = (b.department || '').toLowerCase();
+            if (depA !== depB) return depA.localeCompare(depB);
+
+            const spA = (a.subPrefecture || '').toLowerCase();
+            const spB = (b.subPrefecture || '').toLowerCase();
+            if (spA !== spB) return spA.localeCompare(spB);
+
+            const vilA = (a.village || '').toLowerCase();
+            const vilB = (b.village || '').toLowerCase();
+            if (vilA !== vilB) return vilA.localeCompare(vilB);
+
+            const nameA = (a.name || `${a.lastName || ''} ${a.firstName || ''}`).toLowerCase();
+            const nameB = (b.name || `${b.lastName || ''} ${b.firstName || ''}`).toLowerCase();
+            return nameA.localeCompare(nameB);
+        });
+    }
+
+    return baseChiefs;
   }, [chiefs, fuseInstance, searchTerm, selectedRole, selectedRegion, selectedDepartment, selectedSubPrefecture, selectedCanton, selectedTribu, selectedStatus, selectedAffiliation, selectedKingdom]);
 
   const departments = useMemo(() => {
@@ -272,6 +304,13 @@ export default function ChiefsPage() {
     downloadFile(csvData, 'export_chefs.csv', 'text/csv;charset=utf-8;');
   };
 
+  const handlePrint = (selectedColumns: ColumnKeys[], orientation: 'portrait' | 'landscape') => {
+    setColumnsToPrint(selectedColumns);
+    setPrintOrientation(orientation);
+    setIsPrintDialogOpen(false);
+    setIsPrinting(true);
+  };
+
   return (
     <PermissionGuard permission="page:chiefs:view">
       <div className={cn("flex flex-col gap-4 pb-10", isPrinting && "hidden print:hidden")}>
@@ -308,7 +347,7 @@ export default function ChiefsPage() {
               </DropdownMenuContent>
             </DropdownMenu>
           )}
-          <Button onClick={() => setIsPrinting(true)} variant="outline" className="w-full sm:w-auto rounded-lg h-10 shadow-sm border-blue-200 font-bold bg-blue-50 text-blue-700 hover:bg-blue-100 hover:text-blue-800">
+          <Button onClick={() => setTimeout(() => setIsPrintDialogOpen(true), 50)} variant="outline" className="w-full sm:w-auto rounded-lg h-10 shadow-sm border-blue-200 font-bold bg-blue-50 text-blue-700 hover:bg-blue-100 hover:text-blue-800">
             <Printer className="mr-2 h-4 w-4" />
             Imprimer PDF
           </Button>
@@ -711,6 +750,8 @@ export default function ChiefsPage() {
             organizationSettings={orgSettings}
             isPrinting={isPrinting}
             onAfterPrint={() => setIsPrinting(false)}
+            orientation={printOrientation}
+            columnsToPrint={columnsToPrint}
             stats={{
                 total: filteredChiefs.length,
                 regions: new Set(filteredChiefs.map(c => c.region)).size,
@@ -718,6 +759,13 @@ export default function ChiefsPage() {
             }}
         />
       )}
+
+      <PrintDialog
+        isOpen={isPrintDialogOpen}
+        onClose={() => setIsPrintDialogOpen(false)}
+        onPrint={handlePrint}
+        allColumns={chiefColumns}
+      />
     </PermissionGuard>
   );
 }

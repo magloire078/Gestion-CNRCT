@@ -10,7 +10,9 @@ export const divisions: Division = {
   "Abidjan": {
     "Abidjan": {
       "Abobo": [
-        "(Aucun village trouvé)"
+        "(Aucun village trouvé)",
+        "Chef du village d'Abadjin-Kouté",
+        "Chef du village d'Akéikoi"
       ],
       "Adjame": [
         "(Aucun village trouvé)"
@@ -100,6 +102,8 @@ export const divisions: Division = {
         "Ananguié",
         "Azaguié",
         "Céchi",
+        "Chef du village d'Oress - Krobou",
+        "Grand Morié",
         "Grand-Morié",
         "Guessiguié",
         "Loviguié",
@@ -192,14 +196,18 @@ export const divisions: Division = {
         "Gomon"
       ],
       "Sikensi": [
+        "Bakanou B",
+        "Sahuyé",
         "Sikensi"
       ]
     },
     "Taabo": {
       "Pacobo": [],
       "Taabo": [
-        "Taabo",
-        "Pacobo"
+        "Chef du village  d'Amani Menou",
+        "Pacobo",
+        "Singrobo",
+        "Taabo"
       ]
     },
     "Tiassalé": {
@@ -207,10 +215,11 @@ export const divisions: Division = {
       "Morokro": [],
       "N'Douci": [],
       "Tiassalé": [
-        "Tiassalé",
+        "Chef du village d'Akoungbou",
+        "Gbolouville",
         "Morokro",
         "N'Douci",
-        "Gbolouville"
+        "Tiassalé"
       ]
     }
   },
@@ -292,12 +301,14 @@ export const divisions: Division = {
         "Gbélo-Mahapleu"
       ],
       "Ouaninou": [
-        "Ouaninou",
         "Gbélo",
         "Gouékan",
+        "Kawa",
         "Koonan",
+        "Ouaninou",
         "Saboudougou",
-        "Santa"
+        "Santa",
+        "Toubako"
       ],
       "Saboudougou": [
         "Saboudougou",
@@ -358,10 +369,12 @@ export const divisions: Division = {
         "(Aucun village trouvé)"
       ],
       "Touba": [
-        "Touba",
+        "Candessi",
+        "Chef de Canton/Touba",
         "Dioman",
         "Foungbesso",
-        "Guintéguéla"
+        "Guintéguéla",
+        "Touba"
       ]
     }
   },
@@ -381,9 +394,11 @@ export const divisions: Division = {
         "N'Goumon-Tienko-Sokourala"
       ],
       "Boundiali": [
-        "Boundiali",
         "Baya",
+        "Boundiali",
         "Ganaoni",
+        "Gbaton",
+        "Gbemou",
         "Kasséré",
         "Siempurgo"
       ],
@@ -421,7 +436,10 @@ export const divisions: Division = {
       "Blessegue": [],
       "Gbon": [],
       "Kolia": [],
-      "Kouto": [],
+      "Kouto": [
+        "Kolia",
+        "Kouto"
+      ],
       "Sianhala": []
     },
     "Tengréla": {
@@ -443,10 +461,11 @@ export const divisions: Division = {
       "Kanakono": [],
       "Papara": [],
       "Tengréla": [
-        "Tengréla",
+        "De Tengrela",
         "Débété",
         "Kanacoroni",
-        "Papara"
+        "Papara",
+        "Tengréla"
       ]
     }
   },
@@ -454,8 +473,9 @@ export const divisions: Division = {
     "Didiévi": {
       "Boli": [],
       "Didiévi": [
-        "Didiévi",
+        "",
         "Boli",
+        "Didiévi",
         "Molonou-Blé",
         "Raviart",
         "Tié-N'Diékro"
@@ -481,8 +501,10 @@ export const divisions: Division = {
     "Djékanou": {
       "Bonikro": [],
       "Djékanou": [
-        "Djékanou",
-        "Bonikro"
+        "/Angbavia",
+        "/Djékanou",
+        "Bonikro",
+        "Djékanou"
       ]
     },
     "Tiébissou": {
@@ -499,9 +521,10 @@ export const divisions: Division = {
         "Tiéplé"
       ],
       "Tiébissou": [
-        "Tiébissou",
+        "",
         "Lomokankro",
         "Molonou",
+        "Tiébissou",
         "Yakpabo-Sakassou"
       ],
       "Yakpabo-Sakassou": []
@@ -511,10 +534,12 @@ export const divisions: Division = {
       "Kokoumbo": [],
       "Kpouebo": [],
       "Toumodi": [
-        "Toumodi",
+        "/Dida-Kouadiokro",
+        "/Tchimoukro",
         "Angoda",
         "Kokumbo",
-        "Kpouèbo"
+        "Kpouèbo",
+        "Toumodi"
       ]
     }
   },
@@ -522,23 +547,28 @@ export const divisions: Division = {
     "Dianra": {
       "Dianra": [
         "Dianra",
-        "Dianra-Village"
+        "Dianra-Village",
+        "Gbatoh",
+        "Kafegue"
       ],
       "Dianra-Village": []
     },
     "Kounahiri": {
       "Kongasso": [],
       "Kounahiri": [
+        "Kongasso",
         "Kounahiri",
-        "Kongasso"
+        "Tofesso"
       ]
     },
     "Mankono": {
       "Bouandougou": [],
       "Mankono": [
-        "Mankono",
         "Bouandougou",
+        "Mankono",
         "Marandallah",
+        "Ouedallah",
+        "Pokoutou",
         "Sarabala",
         "Tiéningboué"
       ],
@@ -551,9 +581,11 @@ export const divisions: Division = {
     "Bouna": {
       "Bouko": [],
       "Bouna": [
-        "Bouna",
         "Bouko",
+        "Bouna",
+        "Koflandé",
         "Ondéfidouo",
+        "Yallo",
         "Youndouo"
       ],
       "Ondefidouo": [],
@@ -562,8 +594,9 @@ export const divisions: Division = {
     "Doropo": {
       "Danoa": [],
       "Doropo": [
-        "Doropo",
+        "",
         "Danoa",
+        "Doropo",
         "Kalamon",
         "Niamoin"
       ],
@@ -575,10 +608,11 @@ export const divisions: Division = {
       "Kakpin": [],
       "Kotouba": [],
       "Nassian": [
-        "Nassian",
         "Bogofa",
+        "Chef de canton/Bodé",
         "Kakpin",
         "Koutouba",
+        "Nassian",
         "Sipilou"
       ],
       "Sominasse": []
@@ -586,9 +620,10 @@ export const divisions: Division = {
     "Téhini": {
       "Gogo": [],
       "Téhini": [
-        "Téhini",
         "Gogo",
-        "Tougbô"
+        "Téhini",
+        "Tougbô",
+        "Vontcho"
       ],
       "Tougbo": []
     }
@@ -596,6 +631,7 @@ export const divisions: Division = {
   "Cavally": {
     "Bloléquin": {
       "Bloléquin": [
+        "",
         "Bloléquin",
         "Diboké",
         "Doké",
@@ -610,8 +646,9 @@ export const divisions: Division = {
     "Guiglo": {
       "Bedy-Goazon": [],
       "Guiglo": [
-        "Guiglo",
+        "",
         "Bedy-Goazon",
+        "Guiglo",
         "Kaadé",
         "Nizahon"
       ],
@@ -620,6 +657,8 @@ export const divisions: Division = {
     },
     "Taï": {
       "Taï": [
+        "Gahably",
+        "Gouléako II",
         "Taï",
         "Zagné"
       ],
@@ -632,12 +671,14 @@ export const divisions: Division = {
       "Pehe": [],
       "Tiobly": [],
       "Toulepleu": [
-        "Toulepleu",
         "Bakoubly",
+        "Chef de la tribu Bloawia",
         "Méo",
         "Nézosso",
         "Péhé",
-        "Tiobly"
+        "Seizaibli",
+        "Tiobly",
+        "Toulepleu"
       ]
     }
   },
@@ -647,8 +688,9 @@ export const divisions: Division = {
         "(Aucun village trouvé)"
       ],
       "Kaniasso": [
-        "Kaniasso",
+        "Chef de canton de Goulia",
         "Goulia",
+        "Kaniasso",
         "Mahandiana-Sokourani",
         "Samatiguila"
       ],
@@ -672,8 +714,9 @@ export const divisions: Division = {
     "Béoumi": {
       "Ando-Kekrenou": [],
       "Béoumi": [
-        "Béoumi",
+        "",
         "Ando-Kékrénou",
+        "Béoumi",
         "Bodokro",
         "Kondrobo",
         "Lolobo",
@@ -687,6 +730,7 @@ export const divisions: Division = {
     },
     "Botro": {
       "Botro": [
+        "",
         "Botro",
         "Diabo",
         "Kouassikro",
@@ -700,6 +744,7 @@ export const divisions: Division = {
     },
     "Bouaké": {
       "Bouaké": [
+        "",
         "Bouaké",
         "Bounda",
         "Brobo",
@@ -715,9 +760,10 @@ export const divisions: Division = {
       "Ayaou-Sran": [],
       "Dibri-Assirikro": [],
       "Sakassou": [
-        "Sakassou",
+        "",
         "Ayaou-Sran",
         "Dibri-Assirikro",
+        "Sakassou",
         "Toumodi-Sakassou"
       ],
       "Toumodi-Sakassou": []
@@ -727,8 +773,9 @@ export const divisions: Division = {
     "Fresco": {
       "Dahiri": [],
       "Fresco": [
-        "Fresco",
+        "",
         "Dahiri",
+        "Fresco",
         "Gbagbam"
       ],
       "Gbagbam": []
@@ -758,12 +805,13 @@ export const divisions: Division = {
       "Medon": [],
       "Sago": [],
       "Sassandra": [
-        "Sassandra",
+        "",
         "Dakpadou",
         "Grihiri",
         "Lobakuya",
         "Médoni",
-        "Sago"
+        "Sago",
+        "Sassandra"
       ]
     }
   },
@@ -775,12 +823,14 @@ export const divisions: Division = {
       "Dougroupalegonao": [],
       "Doukouyo": [],
       "Gagnoa": [
-        "Gagnoa",
         "Bayota",
         "Dahopa",
         "Diguéyo",
         "Dougroupalégnoa",
         "Gabiadji",
+        "Gagnoa",
+        "Gnalégribouo / Chef Tribu Djérégou",
+        "Godelilié / Chef Caton Gnébié",
         "Guibéroua",
         "Ouragahio",
         "Sérihio",
@@ -797,10 +847,12 @@ export const divisions: Division = {
       "Diegonefla": [],
       "Guepahouo": [],
       "Oumé": [
-        "Oumé",
+        "Badié",
         "Diégonéfla",
         "Guépahouo",
-        "Tonla"
+        "Oumé",
+        "Tonla",
+        "Yahofla"
       ],
       "Tonla": [
         "Tonla",
@@ -832,9 +884,11 @@ export const divisions: Division = {
       "Pinda-Boroko": [],
       "Bondo": [],
       "Bondoukou": [
-        "Bondoukou",
         "Appimandoum",
+        "Binda",
         "Bondo-Dioula",
+        "Bondoukou",
+        "Chef de Province",
         "Gogo",
         "Laoudi-Ba",
         "Pinda-Boroko",
@@ -874,11 +928,13 @@ export const divisions: Division = {
         "Tiéplé"
       ],
       "Koun-Fao": [
-        "Koun-Fao",
         "Assuéfry",
         "Boahia",
         "Kokomian",
         "Kouassi-Datékro",
+        "Koun-Fao",
+        "Krakro",
+        "N'gorato",
         "Tankessé",
         "Tienkoikro"
       ],
@@ -953,9 +1009,10 @@ export const divisions: Division = {
       ],
       "Dimandougou": [],
       "Sandégué": [
-        "Sandégué",
         "Bandakagni-Sokoura",
+        "Chef de canton",
         "Dimandougou",
+        "Sandégué",
         "Yorobodi"
       ],
       "Yorobodi": []
@@ -1005,11 +1062,13 @@ export const divisions: Division = {
         "Ahorofikro",
         "Ahuitiesso",
         "Akossuam",
+        "Assueffry",
         "Assuétia-Banon",
         "Assuétia-Kessé",
         "Attokom",
         "Bénanon",
         "Bissassé",
+        "Chef de canton",
         "Diédou",
         "Kangassua",
         "Kassan",
@@ -1057,9 +1116,11 @@ export const divisions: Division = {
         "Yaokro"
       ],
       "Tanda": [
-        "Tanda",
+        "/Korokobango",
         "Amanvi",
+        "Chef de canton /",
         "Diamba",
+        "Tanda",
         "Téhiri"
       ],
       "Tchedio": []
@@ -1068,8 +1129,10 @@ export const divisions: Division = {
   "Grands-Ponts": {
     "Dabou": {
       "Dabou": [
+        "Bouboury",
         "Dabou",
         "Lopou",
+        "Pandaa",
         "Toupah"
       ],
       "Lopou": [],
@@ -1080,10 +1143,12 @@ export const divisions: Division = {
       "Bacanda": [],
       "Ebonou": [],
       "Grand-Lahou": [
-        "Grand-Lahou",
         "Ahouanou",
         "Bacanda",
         "Ebonou",
+        "Grand-Lahou",
+        "Likpilassé",
+        "N'Zida",
         "Toukouzou"
       ],
       "Toukouzou": []
@@ -1091,14 +1156,17 @@ export const divisions: Division = {
     "Jacqueville": {
       "Attoutou": [],
       "Jacqueville": [
+        "Attoutou",
+        "Bahuama",
         "Jacqueville",
-        "Attoutou"
+        "Koko"
       ]
     }
   },
   "Guémon": {
     "Bangolo": {
       "Bangolo": [
+        "",
         "Bangolo",
         "Béoué-Zibiao",
         "Bléniméouin",
@@ -1139,8 +1207,9 @@ export const divisions: Division = {
     "Duékoué": {
       "Bagohouo": [],
       "Duékoué": [
-        "Duékoué",
+        "",
         "Bagohouo",
+        "Duékoué",
         "Gbapleu",
         "Guézon"
       ],
@@ -1150,6 +1219,7 @@ export const divisions: Division = {
     },
     "Facobly": {
       "Facobly": [
+        "",
         "Facobly",
         "Guézon",
         "Kouibly",
@@ -1185,8 +1255,9 @@ export const divisions: Division = {
     },
     "Kouibly": {
       "Kouibly": [
-        "Kouibly",
+        "",
         "Gnama",
+        "Kouibly",
         "Ouyably-Gnondrou",
         "Sémien",
         "Totrodrou"
@@ -1219,9 +1290,11 @@ export const divisions: Division = {
         "N'Guitodougou"
       ],
       "Dabakala": [
-        "Dabakala",
         "Bassawa",
         "Boniérédougou",
+        "Chef de Canton/Kotolo",
+        "Chef de Canton/Satama-Sokoro",
+        "Dabakala",
         "Foumbolo",
         "Satama-Sokoro",
         "Satama-Sokoura",
@@ -1289,8 +1362,10 @@ export const divisions: Division = {
     "Katiola": {
       "Fronan": [],
       "Katiola": [
-        "Katiola",
+        "/Pédiakaha",
+        "Chef de Canton/Fronan",
         "Fronan",
+        "Katiola",
         "Timbé"
       ],
       "Timbe": []
@@ -1298,7 +1373,10 @@ export const divisions: Division = {
     "Niakaramadougou": {
       "Arikokaha": [],
       "Badikaha": [],
-      "Niakaramadougou": [],
+      "Niakaramadougou": [
+        "/Tafiré",
+        "Chef de Canton/Niakara"
+      ],
       "Niedekaha": [],
       "Tafire": [],
       "Tortiya": []
@@ -1318,10 +1396,11 @@ export const divisions: Division = {
         "Zoukougbeu"
       ],
       "Daloa": [
-        "Daloa",
+        "",
         "Bédiala",
-        "Gboguhé",
+        "Daloa",
         "Gadouan",
+        "Gboguhé",
         "Guéssabo",
         "Zaïo"
       ],
@@ -1334,9 +1413,10 @@ export const divisions: Division = {
       "Boguedia": [],
       "Iboguhe": [],
       "Issia": [
-        "Issia",
+        "",
         "Boguédia",
         "Iboguhé",
+        "Issia",
         "Nahio",
         "Saïoua",
         "Tapéguia"
@@ -1353,12 +1433,13 @@ export const divisions: Division = {
       "Kettro-Bassam": [],
       "Seitifla": [],
       "Vavoua": [
-        "Vavoua",
+        "",
         "Bazra-Nattis",
         "Danané",
         "Dania",
         "Kétro-Bassam",
-        "Séitifla"
+        "Séitifla",
+        "Vavoua"
       ]
     },
     "Zoukougbeu": {
@@ -1366,35 +1447,42 @@ export const divisions: Division = {
       "Gregbeu": [],
       "Guessabo": [],
       "Zoukougbeu": [
-        "Zoukougbeu",
+        "",
         "Domangbeu",
         "Grégbeu",
-        "Guessabo"
+        "Guessabo",
+        "Zoukougbeu"
       ]
     }
   },
   "Iffou": {
     "Daoukro": {
       "Daoukro": [
-        "Daoukro",
+        "/d'Anoumabo S/P Daoukro",
+        "/Daoukro S/P Daoukro",
         "Akpassanou",
         "Ananda",
+        "Daoukro",
         "N'Gattakro"
       ]
     },
     "M'Bahiakro": {
       "M'Bahiakro": [
-        "M'Bahiakro",
         "Bonguéra",
-        "Kondossou"
+        "Chef du Village/Amankro S/P MBahiakro",
+        "Chef du Village/kouassikro S/P MBahi",
+        "Kondossou",
+        "M'Bahiakro"
       ]
     },
     "Prikro": {
       "Prikro": [
-        "Prikro",
+        "/Serebou S/P Famienkro",
+        "/Tetessi S/P Nafanan",
         "Anianou",
         "Famienkro",
-        "Nafana"
+        "Nafana",
+        "Prikro"
       ]
     }
   },
@@ -1404,6 +1492,8 @@ export const divisions: Division = {
         "Abengourou",
         "Amélékia",
         "Aniassué",
+        "Bokakokoré",
+        "Chef de Canton / Niablé",
         "Niablé",
         "Yakassé-Féyassé",
         "Zaranou"
@@ -1473,6 +1563,7 @@ export const divisions: Division = {
         "Akoboissué",
         "Damé",
         "Duffrébo",
+        "Kongodia",
         "Tanguélan"
       ],
       "Akoboissue": [],
@@ -1482,7 +1573,9 @@ export const divisions: Division = {
     },
     "Bettié": {
       "Bettié": [
+        "Akebri",
         "Bettié",
+        "Chef de canton / Bettié",
         "Diamarakro"
       ],
       "Diamarakro": []
@@ -1492,6 +1585,7 @@ export const divisions: Division = {
     "Gbéléban": {
       "Gbéléban": [
         "Gbéléban",
+        "Kogonan",
         "Samango",
         "Seydougou"
       ],
@@ -1501,9 +1595,10 @@ export const divisions: Division = {
     "Madinani": {
       "Fengolo": [],
       "Madinani": [
-        "Madinani",
         "Fengolo",
+        "Fladougo",
         "Gougoualo",
+        "Madinani",
         "N'Goloblasso"
       ],
       "N’Goloblasso": []
@@ -1513,10 +1608,12 @@ export const divisions: Division = {
       "Bougousso": [],
       "Dioulatiedougou": [],
       "Odienné": [
-        "Odienné",
         "Bako",
         "Bougousso",
+        "Chef du canton Nafana",
+        "Chef du canton Sienkô",
         "Dioulatiédougou",
+        "Odienné",
         "Séguelon",
         "Seydougou"
       ],
@@ -1524,11 +1621,17 @@ export const divisions: Division = {
     },
     "Samatiguila": {
       "Kimbirila-Sud": [],
-      "Samatiguila": []
+      "Samatiguila": [
+        "Samatiguila",
+        "Sanogobra-Mafélé"
+      ]
     },
     "Seguelon": {
       "Gbongaha": [],
-      "Seguelon": []
+      "Seguelon": [
+        "Chef du canton Seguelon",
+        "Lingoho"
+      ]
     }
   },
   "La Mé": {
@@ -1541,6 +1644,8 @@ export const divisions: Division = {
         "Assikoi",
         "Bakon",
         "Biasso",
+        "Miadzin",
+        "Nyan",
         "Yakassé-Mé"
       ],
       "Agou": [],
@@ -1552,19 +1657,23 @@ export const divisions: Division = {
     "Akoupé": {
       "Affery": [],
       "Akoupé": [
-        "Akoupé",
         "Afféry",
-        "Bécoiffé"
+        "Akoupé",
+        "Bécoiffé",
+        "Chef du village d'Adikokoi",
+        "Chef du village d'Akoupé 2"
       ],
       "Becouefin": []
     },
     "Alépé": {
       "Aboisso-Comoe": [],
       "Alépé": [
-        "Alépé",
         "Abou-Dehia",
         "Ahouabo",
+        "Alépé",
         "Alosso",
+        "Chef du village d'Aboisso - Comoé",
+        "Chef du village d'Alépé",
         "Danguira",
         "Oghlwapo"
       ],
@@ -1576,9 +1685,11 @@ export const divisions: Division = {
       "Abongoua": [],
       "Bieby": [],
       "Yakassé-Attobrou": [
-        "Yakassé-Attobrou",
         "Abongoua",
-        "Biéby"
+        "Biéby",
+        "Chef de canton Attobrou",
+        "Kong 1",
+        "Yakassé-Attobrou"
       ]
     }
   },
@@ -1587,9 +1698,11 @@ export const divisions: Division = {
       "Chiepo": [],
       "Didoko": [],
       "Divo": [
-        "Divo",
+        "Chef du Canton Zego",
         "Didoko",
+        "Divo",
         "Guébié",
+        "Hiré",
         "Nébo",
         "Ogonaté",
         "Ziki-Diès"
@@ -1601,7 +1714,10 @@ export const divisions: Division = {
     },
     "Guitry": {
       "Dairo-Didizo": [],
-      "Guitry": [],
+      "Guitry": [
+        "Chef du canton Kobouo",
+        "Méné s/p Yacobou"
+      ],
       "Lauzoua": [],
       "Yocoboue": []
     },
@@ -1610,9 +1726,11 @@ export const divisions: Division = {
       "Gagore": [],
       "Goudouko": [],
       "Lakota": [
-        "Lakota",
+        "Chef du village et d'Akabreboua",
+        "Chef du Village Niémanakoya",
         "Djadjo",
         "Goudouko",
+        "Lakota",
         "Niambézaria",
         "Zikisso"
       ],
@@ -1623,6 +1741,7 @@ export const divisions: Division = {
   "Marahoué": {
     "Bonon": {
       "Bonon": [
+        "",
         "Bonon",
         "Zaguiéta"
       ],
@@ -1631,8 +1750,9 @@ export const divisions: Division = {
     "Bouaflé": {
       "Begbessou": [],
       "Bouaflé": [
-        "Bouaflé",
+        "",
         "Bégbessou",
+        "Bouaflé",
         "N'Douffoukankro",
         "Pakouabo",
         "Tibéita"
@@ -1642,7 +1762,9 @@ export const divisions: Division = {
       "Tibeita": []
     },
     "Gohitafla": {
-      "Gohitafla": [],
+      "Gohitafla": [
+        ""
+      ],
       "Iriefla": [],
       "Maminigui": []
     },
@@ -1651,10 +1773,11 @@ export const divisions: Division = {
       "Kononfla": [],
       "Kouetinfla": [],
       "Sinfra": [
-        "Sinfra",
+        "",
         "Bazré",
         "Kononfla",
-        "Kouétinfla"
+        "Kouétinfla",
+        "Sinfra"
       ]
     },
     "Zuénoula": {
@@ -1662,19 +1785,22 @@ export const divisions: Division = {
       "Voueboufla": [],
       "Zanzra": [],
       "Zuénoula": [
-        "Zuénoula",
+        "",
         "Gohitafla",
         "Iriéfla",
         "Kanzra",
         "Vouéboufla",
-        "Zanzra"
+        "Zanzra",
+        "Zuénoula"
       ]
     }
   },
   "Moronou": {
     "Arrah": {
       "Arrah": [
+        "/Erobo",
         "Arrah",
+        "Chef de Tribu/Ahua",
         "Kotobi",
         "Krébé"
       ],
@@ -1685,9 +1811,11 @@ export const divisions: Division = {
       "Ande": [],
       "Assie-Koumassi": [],
       "Bongouanou": [
-        "Bongouanou",
+        "/Agbossou S/P Ande",
+        "/Bocaci S/P Bongouanou",
         "Andé",
         "Assié-Koumassi",
+        "Bongouanou",
         "N'Guessankro"
       ],
       "N’Guessankro-Bongouanou": []
@@ -1696,9 +1824,11 @@ export const divisions: Division = {
       "Anoumaba": [],
       "Assahara": [],
       "M'Batto": [
-        "M'Batto",
         "Anoumaba",
         "Assahara",
+        "Chef de Tribu",
+        "Chef de Tribu/Allangoua S/P Assahara",
+        "M'Batto",
         "Tiémélékro"
       ],
       "Tiemelekro": []
@@ -1731,8 +1861,10 @@ export const divisions: Division = {
     "Bocanda": {
       "Bengassou": [],
       "Bocanda": [
-        "Bocanda",
+        "/Abeanou S/P Kouadioblékro",
+        "/Dida-Kayabo S/P Bocanda",
         "Bengassou",
+        "Bocanda",
         "Kouadioblékro",
         "N'Zèkrézessou"
       ],
@@ -1743,15 +1875,21 @@ export const divisions: Division = {
       "Abigui": [],
       "Diangokro": [],
       "Dimbokro": [
-        "Dimbokro",
+        "/Komien Kouassikro S/P Abidji",
         "Abigui",
+        "Chef de Tribu/Sakiaré S/P Djagoko",
         "Diangokro",
+        "Dimbokro",
         "Nofou"
       ],
       "Nofou": []
     },
     "Kouassi-Kouassikro": {
       "Kouassi-Kouassikro": [
+        "Chef du Village/Adikoffikro S/P Kcro",
+        "Chef du Village/Adikoffikro S/P Mekro",
+        "Chef du Village/Koffikro S/P N'Gokro",
+        "Chef du Village/Kouadio-Miankro S/P M'Bahiakro",
         "Kouassi-Kouassikro",
         "Mékro"
       ],
@@ -1762,22 +1900,24 @@ export const divisions: Division = {
     "Buyo": {
       "Buyo": [
         "Buyo",
-        "Dapéoua"
+        "Chef du Vilage de Loboville",
+        "Dapéoua",
+        "Wonsealy V2"
       ],
       "Dapeoua": []
     },
     "Guéyo": {
       "Dabouyo": [],
       "Guéyo": [
-        "Guéyo",
-        "Dabouyo"
+        "Bakadou s/p Dabouyo",
+        "Brétihio s/p Guéyo",
+        "Dabouyo",
+        "Guéyo"
       ]
     },
     "Méagui": {
       "Gnamangui": [],
       "Méagui": [
-        "Méagui",
-        "Méagui-Village",
         "Abodagui",
         "Adamagui",
         "Ahoutouagui",
@@ -1785,6 +1925,7 @@ export const divisions: Division = {
         "Amoragui",
         "Anagba",
         "Angagui",
+        "Gnamagni / Chef de Caton Bakoué de la Nawa",
         "Gnamangui",
         "Gnititouagui",
         "Gnititouagui 2",
@@ -1792,6 +1933,8 @@ export const divisions: Division = {
         "Ipouagui",
         "Kouadioagui",
         "Kouakouagui",
+        "Méagui",
+        "Méagui-Village",
         "Oupoyo",
         "Touagui",
         "Touagui 2",
@@ -1821,17 +1964,22 @@ export const divisions: Division = {
       "Liliyo": [],
       "Okrouyo": [],
       "Soubré": [
-        "Soubré",
+        "Gabaguhé",
         "Grand-Zattry",
+        "Guiméyo",
         "Lili-yo",
-        "Okrouyo"
+        "Okrouyo",
+        "Soubré"
       ]
     }
   },
   "Poro": {
     "Dikodougou": {
       "Boron": [],
-      "Dikodougou": [],
+      "Dikodougou": [
+        "Chef de Canton de Dikodougou",
+        "Chef de Canton de Guiembé"
+      ],
       "Guiembe": []
     },
     "Korhogo": {
@@ -1843,14 +1991,15 @@ export const divisions: Division = {
       "Komborodougou": [],
       "Koni": [],
       "Korhogo": [
-        "Korhogo",
+        "Chef de Canton de Komborodougou",
         "Dikodougou",
         "Kanoroba",
         "Karakoro",
         "Komborodougou",
+        "Korhogo",
+        "N'Ganon",
         "Nafoun",
         "Napiéolédougou",
-        "N'Ganon",
         "Sinématiali",
         "Tioroniaradougou"
       ],
@@ -1867,17 +2016,22 @@ export const divisions: Division = {
       "Bougou": [],
       "Katiali": [],
       "Katogo": [],
-      "M'Bengue": []
+      "M'Bengue": [
+        "Chef de Canton de M'bengué",
+        "M'bengué"
+      ]
     },
     "Sinématiali": {
       "Bahouakaha": [],
       "Kagbolodougou": [],
       "Sediego": [],
       "Sinématiali": [
-        "Sinématiali",
         "Bouakassou",
+        "Chef de Canton de Kagbolodougou",
+        "Chef de Canton de Sinématiali",
         "Kadéha",
-        "Sediego"
+        "Sediego",
+        "Sinématiali"
       ]
     }
   },
@@ -1888,10 +2042,11 @@ export const divisions: Division = {
       "Gabiadji": [],
       "Grand-Bereby": [],
       "San-Pédro": [
-        "San-Pédro",
+        "",
         "Doba",
         "Dogbo",
-        "Gabiadji"
+        "Gabiadji",
+        "San-Pédro"
       ]
     },
     "Tabou": {
@@ -1901,12 +2056,13 @@ export const divisions: Division = {
       "Grabo": [],
       "Olodio": [],
       "Tabou": [
-        "Tabou",
+        "",
         "Dapo-Iboké",
         "Djamandioké",
         "Djouroutou",
         "Grabo",
-        "Olodio"
+        "Olodio",
+        "Tabou"
       ]
     }
   },
@@ -1921,6 +2077,7 @@ export const divisions: Division = {
         "Bianouan",
         "Kouakro",
         "Maféré",
+        "Roi du Sanwi",
         "Yaou"
       ],
       "Adaou": [],
@@ -1935,7 +2092,9 @@ export const divisions: Division = {
       "Adiaké": [
         "Adiaké",
         "Assouba",
-        "Etueboué"
+        "Etueboué",
+        "Roi des Bétibés (Adiaké)",
+        "Roi Essouma (Assinie)"
       ],
       "Assinie-Mafia": [],
       "Etueboue": []
@@ -1944,20 +2103,27 @@ export const divisions: Division = {
       "Bongo": [],
       "Bonoua": [],
       "Grand-Bassam": [
-        "Grand-Bassam",
         "Bongo",
-        "Bonoua"
+        "Bonoua",
+        "Chef du village d' Azuretti",
+        "Grand-Bassam",
+        "Roi de Bonoua"
       ]
     },
     "Tiapoum": {
       "Noe": [],
       "Nouamou": [],
-      "Tiapoum": []
+      "Tiapoum": [
+        "Eboko",
+        "Roi de Tiapoum"
+      ]
     }
   },
   "Tchologo": {
     "Ferkessédougou": {
       "Ferkessédougou": [
+        "Chef de Canton de Ferkessédougou",
+        "Chef de Canton de Koumbala",
         "Ferkessédougou",
         "Koumbala",
         "Niafana",
@@ -1968,7 +2134,10 @@ export const divisions: Division = {
     },
     "Kong": {
       "Bilimono": [],
-      "Kong": [],
+      "Kong": [
+        "Kafolo",
+        "Kong"
+      ],
       "Nafana(De Kong)": [],
       "Sikolo": []
     },
@@ -1977,10 +2146,11 @@ export const divisions: Division = {
       "Kaouara": [],
       "Nielle": [],
       "Ouangolodougou": [
-        "Ouangolodougou",
         "Diawala",
         "Kaouara",
         "Nielé",
+        "Ouangolodougou",
+        "Torla",
         "Toumoukoro"
       ],
       "Toumoukoro": []
@@ -1989,6 +2159,7 @@ export const divisions: Division = {
   "Tonkpi": {
     "Biankouma": {
       "Biankouma": [
+        "",
         "Biankouma",
         "Blapleu",
         "Gbangbégouiné",
@@ -2007,8 +2178,9 @@ export const divisions: Division = {
     "Danané": {
       "Daleu": [],
       "Danané": [
-        "Danané",
+        "",
         "Daleu",
+        "Danané",
         "Gbon-Houyé",
         "Kouan-Houlé",
         "Mahapleu",
@@ -2027,11 +2199,12 @@ export const divisions: Division = {
       "Gbangbegouine Yati": [],
       "Logouale": [],
       "Man": [
-        "Man",
+        "",
         "Bogouiné",
         "Fagnampleu",
         "Gbangbégouiné-Yati",
         "Logoualé",
+        "Man",
         "Podoué",
         "Sangouiné",
         "Yapleu",
@@ -2047,6 +2220,7 @@ export const divisions: Division = {
     },
     "Sipilou": {
       "Sipilou": [
+        "",
         "Sipilou",
         "Yorodougou"
       ],
@@ -2059,12 +2233,13 @@ export const divisions: Division = {
       "Teapleu": [],
       "Yelleu": [],
       "Zouan-Hounien": [
-        "Zouan-Hounien",
+        "",
         "Banneu",
         "Bin-Houyé",
         "Goulaleu",
         "Téapleu",
-        "Yelleu"
+        "Yelleu",
+        "Zouan-Hounien"
       ]
     }
   },
@@ -2073,10 +2248,11 @@ export const divisions: Division = {
       "Djibrosso": [],
       "Fadiadougou": [],
       "Kani": [
-        "Kani",
         "Djibrosso",
         "Fadiadougou",
-        "Morondo"
+        "Kani",
+        "Morondo",
+        "Soba"
       ],
       "Morondo": []
     },
@@ -2087,11 +2263,13 @@ export const divisions: Division = {
       "Kamalo": [],
       "Massala": [],
       "Séguéla": [
-        "Séguéla",
+        "/ Kamalo",
+        "/Farafing",
         "Bobi",
         "Diarrasoba",
         "Dualla",
         "Massala",
+        "Séguéla",
         "Sifié",
         "Worofla"
       ],
@@ -2102,12 +2280,16 @@ export const divisions: Division = {
   "Yamoussoukro": {
     "Attiégouakro": {
       "Attiégouakro": [
-        "Attiégouakro"
+        "/Ouffoué-diékro",
+        "Attiégouakro",
+        "Chef de Canton/Nanafouè d'Attiégouakro"
       ],
       "Lolobo (D'Attiegouakro)": []
     },
     "Yamoussoukro": {
       "Yamoussoukro": [
+        "/Kami",
+        "/Yobouekro",
         "Yamoussoukro"
       ],
       "Kossou": []

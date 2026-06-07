@@ -19,19 +19,48 @@ interface PrintDialogProps {
 export function PrintDialog({ isOpen, onClose, onPrint, allColumns }: PrintDialogProps) {
   const [selectedColumns, setSelectedColumns] = useState<Partial<Record<ColumnKeys, boolean>>>({});
   const [columnOrder, setColumnOrder] = useState<ColumnKeys[]>([]);
-  const [orientation, setOrientation] = useState<'portrait' | 'landscape'>('portrait');
+  const [orientation, setOrientation] = useState<'portrait' | 'landscape'>('landscape');
 
-  // Sync state when allColumns changes (e.g. tab switch)
+  const STORAGE_KEY = 'cnrct_print_preferences';
+
+  // Load state when dialog opens or columns change
   useEffect(() => {
+    if (!isOpen) return;
+
     const keys = Object.keys(allColumns) as ColumnKeys[];
-    setColumnOrder(keys);
-    setSelectedColumns(
-      keys.reduce((acc, key) => {
-        acc[key] = true;
-        return acc;
-      }, {} as Partial<Record<ColumnKeys, boolean>>)
-    );
-  }, [allColumns]);
+    let initialOrder = [...keys];
+    let initialSelected = keys.reduce((acc, key) => {
+      acc[key] = true;
+      return acc;
+    }, {} as Partial<Record<ColumnKeys, boolean>>);
+    let initialOrientation: 'portrait' | 'landscape' = 'landscape';
+
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.orientation) {
+          initialOrientation = parsed.orientation;
+        }
+        if (parsed.columnOrder && Array.isArray(parsed.columnOrder)) {
+          // Keep saved keys that still exist, then append any new keys
+          const validSavedKeys = parsed.columnOrder.filter((k: any) => keys.includes(k));
+          const newKeys = keys.filter(k => !validSavedKeys.includes(k as any));
+          initialOrder = [...validSavedKeys, ...newKeys];
+        }
+        if (parsed.selectedColumns) {
+          // Merge saved selections, keeping default true for new keys
+          initialSelected = { ...initialSelected, ...parsed.selectedColumns };
+        }
+      }
+    } catch (e) {
+      console.error('Failed to load print preferences', e);
+    }
+
+    setColumnOrder(initialOrder);
+    setSelectedColumns(initialSelected);
+    setOrientation(initialOrientation);
+  }, [isOpen, allColumns]);
 
   const handleCheckboxChange = (key: ColumnKeys) => {
     setSelectedColumns((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -58,6 +87,15 @@ export function PrintDialog({ isOpen, onClose, onPrint, allColumns }: PrintDialo
   const handlePrintClick = () => {
     const selected = columnOrder.filter((key) => selectedColumns[key]);
     if (selected.length > 0) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          columnOrder,
+          selectedColumns,
+          orientation
+        }));
+      } catch (e) {
+        console.error('Failed to save print preferences', e);
+      }
       onPrint(selected, orientation);
     }
   };

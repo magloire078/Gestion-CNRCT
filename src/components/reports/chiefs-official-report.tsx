@@ -25,11 +25,13 @@ interface ChiefsOfficialReportProps {
     subtitle?: string;
     isPrinting?: boolean;
     onAfterPrint?: () => void;
+    orientation?: 'portrait' | 'landscape';
     stats: {
         total: number;
         regions: number;
         villages: number;
     };
+    columnsToPrint?: string[];
 }
 
 export function ChiefsOfficialReport({ 
@@ -38,7 +40,9 @@ export function ChiefsOfficialReport({
     subtitle,
     isPrinting,
     onAfterPrint,
-    stats 
+    orientation = 'landscape',
+    stats,
+    columnsToPrint 
 }: ChiefsOfficialReportProps) {
     if (!organizationSettings) return null;
 
@@ -55,13 +59,13 @@ export function ChiefsOfficialReport({
     return (
         <InstitutionalReportWrapper 
             isPrinting={isPrinting || false} 
-            orientation="landscape"
+            orientation={orientation}
             onAfterPrint={onAfterPrint}
         >
             <div className="bg-white text-black w-full min-h-screen font-sans">
                 <InstitutionalCover 
                     title="RÉPERTOIRE OFFICIEL DES AUTORITÉS TRADITIONNELLES"
-                    orientation="landscape"
+                    orientation={orientation}
                     subtitle="Directoire des Rois et Chefs Traditionnels"
                     direction="DR"
                     service="Direction du Directoire et de la Gouvernance"
@@ -164,11 +168,11 @@ export function ChiefsOfficialReport({
                                             </div>
                                         </div>
                                     )}
-                                    
                                     <table className="w-full border-collapse border-2 border-slate-900 text-[10px]">
                                     <thead>
                                         <tr className="bg-slate-900 text-white uppercase font-black print:bg-transparent print:text-slate-900 print:border-b-2 print:border-slate-900">
                                             <th className="p-3 w-[40px] text-center border-r border-slate-700">N°</th>
+                                            {columnsToPrint?.includes('photoUrl') && <th className="p-3 w-[60px] text-center border-r border-slate-700">Photo</th>}
                                             <th className="p-3 text-left border-r border-slate-700">Identité & Titre</th>
                                             {!commonDept && <th className="p-3 text-left border-r border-slate-700">Département</th>}
                                             {!commonSP && <th className="p-3 text-left border-r border-slate-700">Sous-Préfecture</th>}
@@ -196,6 +200,19 @@ export function ChiefsOfficialReport({
                                                 return (
                                                     <tr key={chief.id} className="border-b border-slate-200 hover:bg-slate-50/50">
                                                         <td className="p-3 text-center font-bold text-slate-400 border-r border-slate-200">{idx + 1}</td>
+                                                        {columnsToPrint?.includes('photoUrl') && (
+                                                            <td className="p-1 border-r border-slate-200 align-middle text-center">
+                                                                {chief.photoUrl ? (
+                                                                    <div className="w-10 h-10 mx-auto rounded-full overflow-hidden border border-slate-200 bg-white">
+                                                                        <img src={chief.photoUrl} alt="Photo" className="w-full h-full object-cover" />
+                                                                    </div>
+                                                                ) : (
+                                                                    <div className="w-10 h-10 mx-auto rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center">
+                                                                        <span className="text-[10px] text-slate-400 font-bold uppercase">{chief.lastName?.charAt(0) || ''}{chief.firstName?.charAt(0) || ''}</span>
+                                                                    </div>
+                                                                )}
+                                                            </td>
+                                                        )}
                                                         <td className="p-3 border-r border-slate-200">
                                                             <div className="flex flex-col">
                                                                 <span className="text-sm font-black uppercase text-slate-900">{chief.lastName} {chief.firstName}</span>

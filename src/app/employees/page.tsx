@@ -95,6 +95,7 @@ export default function EmployeesPage() {
   const [geoDepartementFilter, setGeoDepartementFilter] = useState("all");
   const [subPrefectureFilter, setSubPrefectureFilter] = useState("all");
   const [villageFilter, setVillageFilter] = useState("");
+  const [mandatFilter, setMandatFilter] = useState("actuelle");
 
   const [columnsToPrint, setColumnsToPrint] = useState<ColumnKeys[]>(Object.keys(allColumns) as ColumnKeys[]);
   const [organizationLogos, setOrganizationLogos] = useState<OrganizationSettings | null>(null);
@@ -259,8 +260,17 @@ export default function EmployeesPage() {
       const normalizedEmpVillage = (employee.Village || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
       const matchesVillageFiltered = !isGeoTab || normalizedVillageFilter === "" || normalizedEmpVillage.includes(normalizedVillageFilter);
 
+      let matchesMandat = true;
+      if (isGeoTab) {
+        if (mandatFilter === 'actuelle') {
+          matchesMandat = employee.estRenouvele !== false; // Active mandate if not explicitly archived
+        } else if (mandatFilter === 'precedente') {
+          matchesMandat = employee.estRenouvele === false; // Previous mandate
+        }
+      }
+
       return matchesSearchTerm && matchesDepartment && matchesStatus && matchesCnps && matchesSexe && matchesPersonnelType &&
-             matchesRegion && matchesGeoDept && matchesSubPref && matchesVillageFiltered;
+             matchesRegion && matchesGeoDept && matchesSubPref && matchesVillageFiltered && matchesMandat;
     });
 
     const sorted = [...filtered].sort((a, b) => {
@@ -275,6 +285,9 @@ export default function EmployeesPage() {
         comparison = dateA - dateB || (a.lastName || '').localeCompare(b.lastName || '');
       } else if (sortBy === 'Region') {
         comparison = (a.Region || '').localeCompare(b.Region || '') ||
+                     (a.Departement || '').localeCompare(b.Departement || '') ||
+                     (a.subPrefecture || '').localeCompare(b.subPrefecture || '') ||
+                     (a.Village || '').localeCompare(b.Village || '') ||
                      (a.lastName || '').localeCompare(b.lastName || '') ||
                      (a.firstName || '').localeCompare(b.firstName || '') ||
                      (a.matricule || '').localeCompare(b.matricule || '');
@@ -289,7 +302,7 @@ export default function EmployeesPage() {
       setCurrentPage(1);
     }
     return sorted;
-  }, [enrichedEmployees, searchTerm, departmentFilter, statusFilter, cnpsFilter, sexeFilter, personnelTypeFilter, currentPage, itemsPerPage, departments, villageFilter, isGeoTab, regionFilter, geoDepartementFilter, subPrefectureFilter, sortBy, sortOrder]);
+  }, [enrichedEmployees, searchTerm, departmentFilter, statusFilter, cnpsFilter, sexeFilter, personnelTypeFilter, currentPage, itemsPerPage, departments, villageFilter, isGeoTab, regionFilter, geoDepartementFilter, subPrefectureFilter, sortBy, sortOrder, mandatFilter]);
 
   const paginatedEmployees = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
@@ -616,6 +629,23 @@ export default function EmployeesPage() {
                   <CardContent className="p-4">
                     {isGeoTab && (
                       <div className="flex flex-col md:flex-row gap-3 mb-4 p-3 bg-slate-900/5 rounded-xl border border-slate-200/50">
+                        <Select
+                          value={mandatFilter}
+                          onValueChange={(val) => startTransition(() => {
+                            setMandatFilter(val);
+                            setCurrentPage(1);
+                          })}
+                        >
+                          <SelectTrigger className="w-[200px] h-10 bg-white/50 border-slate-200/50 rounded-xl font-bold uppercase tracking-widest text-xs md:text-[10px]">
+                            <SelectValue placeholder="Toutes les mandatures" />
+                          </SelectTrigger>
+                          <SelectContent className="rounded-xl border-slate-200/50 shadow-xl">
+                            <SelectItem value="all" className="font-bold uppercase tracking-widest text-xs md:text-[10px]">Toutes les mandatures</SelectItem>
+                            <SelectItem value="actuelle" className="font-bold uppercase tracking-widest text-xs md:text-[10px]">Mandature Actuelle</SelectItem>
+                            <SelectItem value="precedente" className="font-bold uppercase tracking-widest text-xs md:text-[10px]">Mandature Précédente (Archivés)</SelectItem>
+                          </SelectContent>
+                        </Select>
+
                         <Select
                           value={regionFilter}
                           onValueChange={(val) => startTransition(() => {
@@ -1016,27 +1046,21 @@ export default function EmployeesPage() {
       </div>
 
       {/* --- INSTITUTIONAL PRINT PORTAL --- */}
-      {isPrinting && (
-        <InstitutionalReportWrapper 
-            isPrinting={isPrinting} 
-            onAfterPrint={() => setIsPrinting(false)}
-            orientation={printOrientation}
-        >
-            <EmployeeOfficialReport 
-                employees={filteredEmployees}
-                logos={organizationLogos}
-                unitLabel={pageTitle}
-                selectedColumns={columnsToPrint}
-                isPrinting={isPrinting}
-                stats={{
-                    total: filteredEmployees.length,
-                    active: filteredEmployees.filter(e => e.status === 'Actif').length,
-                    men: filteredEmployees.filter(e => e.sexe === 'Homme').length,
-                    women: filteredEmployees.filter(e => e.sexe === 'Femme').length
-                }}
-            />
-        </InstitutionalReportWrapper>
-      )}
+      <EmployeeOfficialReport 
+          employees={filteredEmployees.map(e => ({ ...e, department: e.department || getEmployeeOrgUnit(e) }))}
+          logos={organizationLogos}
+          unitLabel={pageTitle}
+          selectedColumns={columnsToPrint}
+          isPrinting={isPrinting}
+          onAfterPrint={() => setIsPrinting(false)}
+          orientation={printOrientation}
+          stats={{
+              total: filteredEmployees.length,
+              active: filteredEmployees.filter(e => e.status === 'Actif').length,
+              men: filteredEmployees.filter(e => e.sexe === 'Homme').length,
+              women: filteredEmployees.filter(e => e.sexe === 'Femme').length
+          }}
+      />
     </PermissionGuard>
   );
 }

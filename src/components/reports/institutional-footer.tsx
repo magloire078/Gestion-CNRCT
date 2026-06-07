@@ -8,6 +8,7 @@ interface InstitutionalFooterProps {
   signatoryName?: string;
   signatoryTitle?: string;
   showCertification?: boolean;
+  showVisa?: boolean;
   showSignatures?: boolean;
   leftSignatureTitle?: string;
   rightSignatureTitle?: string;
@@ -19,6 +20,7 @@ export function InstitutionalFooter({
   signatoryName, 
   signatoryTitle = "Contrôleur Interne et Qualité, CNRCT",
   showCertification = true,
+  showVisa = true,
   showSignatures = false,
   leftSignatureTitle = "LE MÉDIATEUR EN CHARGE",
   rightSignatureTitle = "LE SECRÉTAIRE GÉNÉRAL"
@@ -26,8 +28,8 @@ export function InstitutionalFooter({
   const displayDate = date || new Date().toLocaleDateString('fr-FR');
 
   return (
-    <div className="pt-12 border-t-2 border-slate-900 mt-16 print:mt-12 break-inside-avoid relative">
-      <div className="flex flex-col md:flex-row justify-between items-start gap-6">
+    <div className="pt-12 border-t-2 border-slate-900 mt-16 print:mt-12 break-inside-avoid relative w-full">
+      <div className="flex flex-col md:flex-row justify-between items-start gap-6 w-full">
         {showSignatures ? (
           <>
             {/* Dual Signature Layout */}
@@ -51,11 +53,15 @@ export function InstitutionalFooter({
         ) : (
           <>
             {/* Visa Area */}
-            <div className="space-y-1">
-              <p className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] italic mb-6">Visa de Contrôle Systèmes</p>
-              <div className="h-28 w-56 border-4 border-dashed border-slate-100 rounded-2xl flex items-center justify-center bg-slate-50/50">
-                <span className="text-[9px] text-slate-300 font-black uppercase tracking-[0.3em] text-center px-4">Cachet Numérique &<br/> Signature Autorisée</span>
-              </div>
+            <div className="space-y-1 flex-1">
+              {showVisa && (
+                <>
+                  <p className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] italic mb-6">Visa de Contrôle Systèmes</p>
+                  <div className="h-28 w-56 border-4 border-dashed border-slate-100 rounded-2xl flex items-center justify-center bg-slate-50/50">
+                    <span className="text-[9px] text-slate-300 font-black uppercase tracking-[0.3em] text-center px-4">Cachet Numérique &<br/> Signature Autorisée</span>
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Signature Area */}

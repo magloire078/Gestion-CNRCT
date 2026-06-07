@@ -626,156 +626,167 @@ export default function EmployeesPage() {
                       Gestion administrative et tactique des collaborateurs
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="p-4">
-                    {isGeoTab && (
-                      <div className="flex flex-col md:flex-row gap-3 mb-4 p-3 bg-slate-900/5 rounded-xl border border-slate-200/50">
-                        <Select
-                          value={mandatFilter}
-                          onValueChange={(val) => startTransition(() => {
-                            setMandatFilter(val);
-                            setCurrentPage(1);
-                          })}
-                        >
-                          <SelectTrigger className="w-[200px] h-10 bg-white/50 border-slate-200/50 rounded-xl font-bold uppercase tracking-widest text-xs md:text-[10px]">
-                            <SelectValue placeholder="Toutes les mandatures" />
-                          </SelectTrigger>
-                          <SelectContent className="rounded-xl border-slate-200/50 shadow-xl">
-                            <SelectItem value="all" className="font-bold uppercase tracking-widest text-xs md:text-[10px]">Toutes les mandatures</SelectItem>
-                            <SelectItem value="actuelle" className="font-bold uppercase tracking-widest text-xs md:text-[10px]">Mandature Actuelle</SelectItem>
-                            <SelectItem value="precedente" className="font-bold uppercase tracking-widest text-xs md:text-[10px]">Mandature Précédente (Archivés)</SelectItem>
-                          </SelectContent>
-                        </Select>
-
-                        <Select
-                          value={regionFilter}
-                          onValueChange={(val) => startTransition(() => {
-                            setRegionFilter(val);
-                            setGeoDepartementFilter('all');
-                            setSubPrefectureFilter('all');
-                            setCurrentPage(1);
-                          })}
-                        >
-                          <SelectTrigger className="h-10 flex-1 min-w-[180px] rounded-lg border-slate-200 bg-white font-black uppercase text-sm md:text-xs tracking-widest">
-                            <SelectValue placeholder="Région" />
-                          </SelectTrigger>
-                          <SelectContent className="rounded-lg border-slate-100 shadow-2xl">
-                            <SelectItem value="all" className="font-bold py-2.5 uppercase text-sm md:text-xs tracking-widest">Toutes les régions</SelectItem>
-                            {Object.keys(divisions).sort().map(reg => (
-                              <SelectItem key={reg} value={reg} className="font-bold py-2.5 uppercase text-sm md:text-xs tracking-widest">{reg}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-
-                        <Select
-                          value={geoDepartementFilter}
-                          onValueChange={(val) => startTransition(() => {
-                            setGeoDepartementFilter(val);
-                            setSubPrefectureFilter('all');
-                            setCurrentPage(1);
-                          })}
-                          disabled={regionFilter === 'all'}
-                        >
-                          <SelectTrigger className="h-10 flex-1 min-w-[180px] rounded-lg border-slate-200 bg-white font-black uppercase text-sm md:text-xs tracking-widest">
-                            <SelectValue placeholder="Département" />
-                          </SelectTrigger>
-                          <SelectContent className="rounded-lg border-slate-100 shadow-2xl">
-                            <SelectItem value="all" className="font-bold py-2.5 uppercase text-sm md:text-xs tracking-widest">Tous les départements</SelectItem>
-                            {Object.keys(divisions[regionFilter] || {}).sort().map(dep => (
-                              <SelectItem key={dep} value={dep} className="font-bold py-2.5 uppercase text-sm md:text-xs tracking-widest">{dep}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-
-                        <div className="relative flex-1 min-w-[180px]">
-                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                  <CardContent className="p-4 md:p-6 bg-slate-50/30">
+                    
+                    {/* FILTER SECTION */}
+                    <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200/60 mb-2 space-y-4">
+                      
+                      {/* Top Row: Global Filters */}
+                      <div className="flex flex-col md:flex-row gap-3">
+                        <div className="relative flex-1 md:min-w-[280px]">
+                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                           <Input
-                            placeholder="RECHERCHER PAR VILLAGE..."
-                            className="h-10 pl-10 rounded-lg border-slate-200 bg-white font-black text-sm md:text-xs tracking-widest"
-                            value={villageFilter}
+                            placeholder="Rechercher (Nom, Matricule...)"
+                            className="h-10 pl-9 rounded-lg border-slate-200 bg-slate-50/50 hover:bg-slate-50 focus:bg-white font-medium text-sm transition-colors"
+                            value={searchTerm}
                             onChange={(e) => {
-                              setVillageFilter(e.target.value);
+                              setSearchTerm(e.target.value);
                               setCurrentPage(1);
                             }}
                           />
                         </div>
-                      </div>
-                    )}
-                    
-                    <div className="flex flex-wrap gap-3 mb-4 items-center bg-slate-50/50 p-3 rounded-xl border border-slate-100">
-                      <div className="relative flex-1 min-w-[220px]">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
-                        <Input
-                          placeholder="IDENTIFICATION AGENT / MATRICULE..."
-                          className="h-10 pl-10 rounded-lg border-slate-200 bg-white font-black text-sm md:text-xs tracking-widest shadow-sm focus:bg-white transition-all"
-                          value={searchTerm}
-                          onChange={(e) => {
-                            setSearchTerm(e.target.value);
-                            setCurrentPage(1);
-                          }}
-                        />
-                      </div>
-                      
-                      {showDepartmentFilter && (
-                        <Select value={departmentFilter} onValueChange={(val) => startTransition(() => {
-                          setDepartmentFilter(val);
+
+                        <Select value={statusFilter} onValueChange={(val) => startTransition(() => {
+                          setStatusFilter(val);
                           setCurrentPage(1);
                         })}>
-                          <SelectTrigger className="h-10 flex-1 min-w-[180px] rounded-lg border-slate-200 bg-white font-black uppercase text-sm md:text-xs tracking-widest">
-                            <SelectValue placeholder="Section / Département" />
+                          <SelectTrigger className="h-10 w-full md:w-[160px] rounded-lg border-slate-200 bg-slate-50/50 font-medium text-sm text-slate-700">
+                            <SelectValue placeholder="Statut" />
                           </SelectTrigger>
-                          <SelectContent className="rounded-lg border-slate-100 shadow-2xl">
-                            <SelectItem value="all" className="font-bold py-2.5 uppercase text-sm md:text-xs tracking-widest">Tous les départements</SelectItem>
-                            {departments.map(dep => <SelectItem key={dep.id} value={dep.id} className="font-bold py-2.5 uppercase text-sm md:text-xs tracking-widest">{dep.name}</SelectItem>)}
+                          <SelectContent className="rounded-lg border-slate-100 shadow-xl">
+                            <SelectItem value="all" className="font-medium">Tous les statuts</SelectItem>
+                            <SelectItem value="Actif" className="font-medium text-emerald-600">Actif</SelectItem>
+                            <SelectItem value="En congé" className="font-medium text-blue-600">En congé</SelectItem>
+                            <SelectItem value="Retraité" className="font-medium text-slate-500">Retraité</SelectItem>
                           </SelectContent>
                         </Select>
+
+                        <Select value={sexeFilter} onValueChange={(val) => startTransition(() => {
+                          setSexeFilter(val);
+                          setCurrentPage(1);
+                        })}>
+                          <SelectTrigger className="h-10 w-full md:w-[140px] rounded-lg border-slate-200 bg-slate-50/50 font-medium text-sm text-slate-700">
+                            <SelectValue placeholder="Genre" />
+                          </SelectTrigger>
+                          <SelectContent className="rounded-lg border-slate-100 shadow-xl">
+                            <SelectItem value="all" className="font-medium">Tous les genres</SelectItem>
+                            <SelectItem value="Homme" className="font-medium">Homme</SelectItem>
+                            <SelectItem value="Femme" className="font-medium">Femme</SelectItem>
+                          </SelectContent>
+                        </Select>
+
+                        <Select value={`${sortBy}-${sortOrder}`} onValueChange={(val) => {
+                          const [newSortBy, newSortOrder] = val.split('-') as [any, any];
+                          setSortBy(newSortBy);
+                          setSortOrder(newSortOrder);
+                        }}>
+                          <SelectTrigger className="h-10 w-full md:w-[180px] rounded-lg border-slate-200 bg-white font-medium text-sm text-slate-700">
+                            <SelectValue placeholder="Trier par" />
+                          </SelectTrigger>
+                          <SelectContent className="rounded-lg border-slate-100 shadow-xl">
+                            <SelectItem value="name-asc" className="font-medium">Nom (A-Z)</SelectItem>
+                            <SelectItem value="name-desc" className="font-medium">Nom (Z-A)</SelectItem>
+                            <SelectItem value="matricule-asc" className="font-medium">Matricule</SelectItem>
+                            <SelectItem value="Date_Naissance-asc" className="font-medium">Âge (Plus âgé)</SelectItem>
+                            {isGeoTab && <SelectItem value="Region-asc" className="font-medium">Région</SelectItem>}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {/* Bottom Row: Context Specific Filters (Geo or Dept) */}
+                      {isGeoTab && (
+                        <div className="flex flex-col md:flex-row gap-3 pt-4 border-t border-slate-100">
+                          <Select
+                            value={mandatFilter}
+                            onValueChange={(val) => startTransition(() => {
+                              setMandatFilter(val);
+                              setCurrentPage(1);
+                            })}
+                          >
+                            <SelectTrigger className="h-10 w-full md:w-[190px] rounded-lg border-slate-200 bg-amber-50/50 text-amber-900 font-medium text-sm">
+                              <SelectValue placeholder="Mandature" />
+                            </SelectTrigger>
+                            <SelectContent className="rounded-lg border-slate-100 shadow-xl">
+                              <SelectItem value="all" className="font-medium">Toutes mandatures</SelectItem>
+                              <SelectItem value="actuelle" className="font-medium">Mandat Actuel</SelectItem>
+                              <SelectItem value="precedente" className="font-medium">Mandat Précédent</SelectItem>
+                            </SelectContent>
+                          </Select>
+
+                          <Select
+                            value={regionFilter}
+                            onValueChange={(val) => startTransition(() => {
+                              setRegionFilter(val);
+                              setGeoDepartementFilter('all');
+                              setSubPrefectureFilter('all');
+                              setCurrentPage(1);
+                            })}
+                          >
+                            <SelectTrigger className="h-10 flex-1 min-w-[160px] rounded-lg border-slate-200 bg-slate-50/50 font-medium text-sm">
+                              <SelectValue placeholder="Région" />
+                            </SelectTrigger>
+                            <SelectContent className="rounded-lg border-slate-100 shadow-xl max-h-[300px]">
+                              <SelectItem value="all" className="font-medium">Toutes les régions</SelectItem>
+                              {Object.keys(divisions).sort().map(reg => (
+                                <SelectItem key={reg} value={reg} className="font-medium">{reg}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+
+                          <Select
+                            value={geoDepartementFilter}
+                            onValueChange={(val) => startTransition(() => {
+                              setGeoDepartementFilter(val);
+                              setSubPrefectureFilter('all');
+                              setCurrentPage(1);
+                            })}
+                            disabled={regionFilter === 'all'}
+                          >
+                            <SelectTrigger className="h-10 flex-1 min-w-[160px] rounded-lg border-slate-200 bg-slate-50/50 font-medium text-sm disabled:opacity-50">
+                              <SelectValue placeholder="Département" />
+                            </SelectTrigger>
+                            <SelectContent className="rounded-lg border-slate-100 shadow-xl max-h-[300px]">
+                              <SelectItem value="all" className="font-medium">Tous les départements</SelectItem>
+                              {Object.keys(divisions[regionFilter] || {}).sort().map(dep => (
+                                <SelectItem key={dep} value={dep} className="font-medium">{dep}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+
+                          <div className="relative flex-1 min-w-[160px]">
+                            <LayoutGrid className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                            <Input
+                              placeholder="Filtrer par village..."
+                              className="h-10 pl-9 rounded-lg border-slate-200 bg-slate-50/50 hover:bg-slate-50 focus:bg-white font-medium text-sm transition-colors"
+                              value={villageFilter}
+                              onChange={(e) => {
+                                setVillageFilter(e.target.value);
+                                setCurrentPage(1);
+                              }}
+                            />
+                          </div>
+                        </div>
                       )}
 
-                      <Select value={statusFilter} onValueChange={(val) => startTransition(() => {
-                        setStatusFilter(val);
-                        setCurrentPage(1);
-                      })}>
-                        <SelectTrigger className="h-10 flex-1 min-w-[150px] rounded-lg border-slate-200 bg-white font-black uppercase text-sm md:text-xs tracking-widest text-slate-900 shadow-sm">
-                          <SelectValue placeholder="Statut Actuel" />
-                        </SelectTrigger>
-                        <SelectContent className="rounded-lg border-slate-100 shadow-2xl">
-                          <SelectItem value="all" className="font-bold py-2.5 uppercase text-sm md:text-xs tracking-widest">Tous les statuts</SelectItem>
-                          <SelectItem value="Actif" className="font-bold py-2.5 uppercase text-sm md:text-xs tracking-widest text-emerald-600">Actif</SelectItem>
-                          <SelectItem value="En congé" className="font-bold py-2.5 uppercase text-sm md:text-xs tracking-widest text-blue-600">En congé</SelectItem>
-                          <SelectItem value="Retraité" className="font-bold py-2.5 uppercase text-sm md:text-xs tracking-widest text-slate-500">Retraité</SelectItem>
-                        </SelectContent>
-                      </Select>
-
-                      <Select value={sexeFilter} onValueChange={(val) => startTransition(() => {
-                        setSexeFilter(val);
-                        setCurrentPage(1);
-                      })}>
-                        <SelectTrigger className="h-10 w-[140px] rounded-lg border-slate-200 bg-white font-black uppercase text-sm md:text-xs tracking-widest text-slate-900 shadow-sm">
-                          <SelectValue placeholder="Genre" />
-                        </SelectTrigger>
-                        <SelectContent className="rounded-lg border-slate-100 shadow-2xl">
-                          <SelectItem value="all" className="font-bold py-2.5 uppercase text-sm md:text-xs tracking-widest">Tous</SelectItem>
-                          <SelectItem value="Homme" className="font-bold py-2.5 uppercase text-sm md:text-xs tracking-widest">Homme</SelectItem>
-                          <SelectItem value="Femme" className="font-bold py-2.5 uppercase text-sm md:text-xs tracking-widest">Femme</SelectItem>
-                        </SelectContent>
-                      </Select>
-
-                      <Select value={`${sortBy}-${sortOrder}`} onValueChange={(val) => {
-                        const [newSortBy, newSortOrder] = val.split('-') as [any, any];
-                        setSortBy(newSortBy);
-                        setSortOrder(newSortOrder);
-                      }}>
-                        <SelectTrigger className="h-10 w-[220px] rounded-lg border-slate-900 bg-slate-900 text-white font-black uppercase text-sm md:text-xs tracking-widest shadow-lg">
-                          <SelectValue placeholder="Trier par" />
-                        </SelectTrigger>
-                        <SelectContent className="rounded-lg border-slate-100 shadow-2xl">
-                          <SelectItem value="name-asc" className="font-bold py-3 uppercase text-sm md:text-xs tracking-widest">Nom (ALPHA A-Z)</SelectItem>
-                          <SelectItem value="name-desc" className="font-bold py-3 uppercase text-sm md:text-xs tracking-widest">Nom (ALPHA Z-A)</SelectItem>
-                          <SelectItem value="matricule-asc" className="font-bold py-3 uppercase text-sm md:text-xs tracking-widest">Matricule (CROISSANT)</SelectItem>
-                          <SelectItem value="Date_Naissance-asc" className="font-bold py-3 uppercase text-sm md:text-xs tracking-widest">Âge (PLUS ÂGÉ)</SelectItem>
-                          {isGeoTab && <SelectItem value="Region-asc" className="font-bold py-3 uppercase text-sm md:text-xs tracking-widest">Région (A-Z)</SelectItem>}
-                        </SelectContent>
-                      </Select>
+                      {!isGeoTab && showDepartmentFilter && (
+                        <div className="flex flex-col md:flex-row gap-3 pt-4 border-t border-slate-100">
+                          <Select value={departmentFilter} onValueChange={(val) => startTransition(() => {
+                            setDepartmentFilter(val);
+                            setCurrentPage(1);
+                          })}>
+                            <SelectTrigger className="h-10 w-full md:w-[280px] rounded-lg border-slate-200 bg-slate-50/50 font-medium text-sm">
+                              <SelectValue placeholder="Section / Département" />
+                            </SelectTrigger>
+                            <SelectContent className="rounded-lg border-slate-100 shadow-xl max-h-[300px]">
+                              <SelectItem value="all" className="font-medium">Tous les départements</SelectItem>
+                              {departments.map(dep => <SelectItem key={dep.id} value={dep.id} className="font-medium">{dep.name}</SelectItem>)}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
                     </div>
+                  </CardContent>
+                </Card>
 
                     <div className="mb-4 text-base md:text-sm text-muted-foreground">
                       {filteredEmployees.length} résultat(s) trouvé(s).

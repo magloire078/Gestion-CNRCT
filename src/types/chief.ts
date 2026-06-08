@@ -77,7 +77,7 @@ export type Chief = {
     regencyStartDate?: string;
     regencyEndDate?: string;
     villageId?: string;
-    status?: 'actif' | 'archive' | 'a_vie';
+    status?: 'actif' | 'archive' | 'a_vie' | 'décédé' | 'intérimaire';
     // Succession / archivage
     archiveReason?: ChiefArchiveReason;
     archiveDate?: string;    // Date de fin effective du règne

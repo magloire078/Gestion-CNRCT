@@ -124,7 +124,7 @@ export function FuelMissionReport({ transactions, card, month: initialMonth, yea
                                         <td>${t.odometer?.toLocaleString() || ''}</td>
                                         <td>${t.liters || ''}</td>
                                         <td>${t.unitPrice || ''}</td>
-                                        <td class="text-right">${t.amount.toLocaleString()}</td>
+                                        <td class="text-right">${(t.amount || 0).toLocaleString()}</td>
                                     </tr>
                                 `).join('')}
                             </tbody>
@@ -239,7 +239,7 @@ export function FuelMissionReport({ transactions, card, month: initialMonth, yea
                                             <td className="border border-gray-300 p-2 text-xs">{t.odometer?.toLocaleString() || '-'}</td>
                                             <td className="border border-gray-300 p-2 text-xs">{t.liters || '-'}</td>
                                             <td className="border border-gray-300 p-2 text-xs">{t.unitPrice || '-'}</td>
-                                            <td className="border border-gray-300 p-2 text-right text-xs">{t.amount.toLocaleString()}</td>
+                                            <td className="border border-gray-300 p-2 text-right text-xs">{(t.amount || 0).toLocaleString()}</td>
                                         </tr>
                                     ))
                                 ) : (

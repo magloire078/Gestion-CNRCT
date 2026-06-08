@@ -23,8 +23,7 @@ function normalizeName(name) {
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "")
         .toLowerCase()
-        .replace(/[^a-z0-9\s]/g, '')
-        .trim();
+        .replace(/[^a-z0-9]/g, '');
 }
 
 async function run() {
@@ -42,7 +41,8 @@ async function run() {
 
         const groups = {};
         for (const emp of regionalMembers) {
-            const key = normalizeName(emp.lastName || '') + '_' + normalizeName(emp.firstName || '');
+            const fullName = (emp.lastName || '') + ' ' + (emp.firstName || '');
+            const key = normalizeName(fullName);
             if (!groups[key]) groups[key] = [];
             groups[key].push(emp);
         }

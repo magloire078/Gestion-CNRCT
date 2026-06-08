@@ -76,7 +76,7 @@ export function ChiefsStatisticsReport({
             if (hasRole("Chef de Village")) stat.villagesCount++;
             
             // Chefs en exercice (Actifs ou À vie)
-            if (chief.status === "actif" || chief.status === "a_vie" || !chief.status) {
+            if (chief.status === "actif" || chief.status === "a_vie" || chief.status === "intérimaire" || !chief.status) {
                 stat.activeChiefsCount++;
             }
 

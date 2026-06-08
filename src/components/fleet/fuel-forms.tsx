@@ -577,7 +577,7 @@ export function FuelRechargeDialog({
                                             <SelectContent className="rounded-xl border-slate-100 shadow-2xl">
                                                 {cards.map(c => (
                                                     <SelectItem key={c.id} value={c.id} className="font-bold py-3">
-                                                        {c.cardNumber} — {c.currentBalance.toLocaleString()} <span className="text-[10px] opacity-60">FCFA</span>
+                                                        {c.cardNumber} — {(c.currentBalance || 0).toLocaleString()} <span className="text-[10px] opacity-60">FCFA</span>
                                                     </SelectItem>
                                                 ))}
                                             </SelectContent>
@@ -741,7 +741,7 @@ export function FuelExpenseDialog({
                                                     <SelectContent className="rounded-xl border-slate-100 shadow-2xl">
                                                         {cards.filter(c => c.currentBalance > 0).map(c => (
                                                             <SelectItem key={c.id} value={c.id} className="font-bold py-3">
-                                                                {c.cardNumber} ({c.currentBalance.toLocaleString()} F)
+                                                                {c.cardNumber} ({(c.currentBalance || 0).toLocaleString()} F)
                                                             </SelectItem>
                                                         ))}
                                                         {cards.filter(c => c.currentBalance <= 0).length > 0 && (

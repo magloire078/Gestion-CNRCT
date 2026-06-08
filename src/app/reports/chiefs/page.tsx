@@ -671,15 +671,21 @@ export default function ChiefsReportsPage() {
                                                     <TableCell>
                                                         {showStatus && (
                                                             <div className="flex items-center gap-2">
-                                                                <div className={cn(
+                                                                <span className={cn(
                                                                     "h-2 w-2 rounded-full",
-                                                                    chief.status === 'archive' ? "bg-slate-300" : "bg-emerald-500 animate-pulse"
+                                                                    chief.status === 'archive' || chief.status === 'décédé' ? "bg-slate-300" : 
+                                                                    chief.status === 'intérimaire' ? "bg-orange-500 animate-pulse" : "bg-emerald-500 animate-pulse"
                                                                 )} />
                                                                 <span className={cn(
-                                                                    "text-[10px] font-black uppercase tracking-tight",
-                                                                    chief.status === 'archive' ? "text-slate-400" : "text-emerald-700"
+                                                                    "text-[10px] font-black uppercase tracking-widest",
+                                                                    chief.status === 'archive' || chief.status === 'décédé' ? "text-slate-400" : 
+                                                                    chief.status === 'intérimaire' ? "text-orange-700" : "text-emerald-700"
                                                                 )}>
-                                                                    {chief.status === 'a_vie' ? 'Mandat À Vie' : chief.status || 'Actif'}
+                                                                    {chief.status === 'a_vie' ? 'Mandat À Vie' : 
+                                                                     chief.status === 'intérimaire' ? 'Intérimaire' : 
+                                                                     chief.status === 'décédé' ? 'Décédé' : 
+                                                                     chief.status === 'archive' ? 'Archivé' : 
+                                                                     'Actif'}
                                                                 </span>
                                                             </div>
                                                         )}

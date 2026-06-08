@@ -112,7 +112,7 @@ export default function ChiefsPage() {
   const [itemsPerPage, setItemsPerPage] = useState(viewMode === 'grid' ? 12 : 10);
 
   const stats = useMemo(() => {
-    const activeCount = chiefs.filter(c => c.status === 'actif' || c.status === 'a_vie' || !c.status).length;
+    const activeCount = chiefs.filter(c => c.status === 'actif' || c.status === 'a_vie' || c.status === 'intérimaire' || !c.status).length;
     const highLevelRoles = chiefs.filter(c => c.role === 'Roi' || c.role === 'Chef de province').length;
     const regionsCount = new Set(
       chiefs
@@ -510,8 +510,10 @@ export default function ChiefsPage() {
                             <SelectContent className="rounded-lg">
                                 <SelectItem value="all">Tous Statuts</SelectItem>
                                 <SelectItem value="actif">En Exercice</SelectItem>
+                                <SelectItem value="intérimaire">Intérimaire</SelectItem>
                                 <SelectItem value="a_vie">À Vie</SelectItem>
                                 <SelectItem value="archive">Archivés</SelectItem>
+                                <SelectItem value="décédé">Décédés</SelectItem>
                             </SelectContent>
                         </Select>
 

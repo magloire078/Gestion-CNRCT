@@ -101,7 +101,7 @@ export function FuelTransactionList({ transactions, cards, onDelete }: Transacti
                                         "font-black text-base tracking-tighter",
                                         t.type === 'recharge' ? "text-emerald-600" : "text-slate-900"
                                     )}>
-                                        {t.type === 'recharge' ? '+' : '-'}{t.amount.toLocaleString()} <span className="text-[10px] opacity-60">FCFA</span>
+                                        {t.type === 'recharge' ? '+' : '-'}{(t.amount || 0).toLocaleString()} <span className="text-[10px] opacity-60">FCFA</span>
                                     </span>
                                     {t.liters && (
                                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5">

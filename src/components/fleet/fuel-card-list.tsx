@@ -88,7 +88,7 @@ export function FuelCardList({ cards, providers, onEdit, onDelete, onRecharge, o
                             </TableCell>
                             <TableCell className="text-right">
                                 <span className="font-black text-emerald-600 text-sm">
-                                    {c.currentBalance.toLocaleString()} <span className="text-[10px] opacity-70">FCFA</span>
+                                    {(c.currentBalance || 0).toLocaleString()} <span className="text-[10px] opacity-70">FCFA</span>
                                 </span>
                             </TableCell>
                             <TableCell className="text-center">

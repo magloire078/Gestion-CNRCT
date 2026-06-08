@@ -44,7 +44,7 @@ export const ChiefProfileReport: React.FC<ChiefProfileReportProps> = ({ chief, i
                                 <th className="border border-slate-800 bg-slate-100 px-3 py-2">Prénoms & Nom</th>
                                 <td className="border border-slate-800 px-3 py-2">{chief.firstName} {chief.lastName}</td>
                                 <th className="border border-slate-800 bg-slate-100 px-3 py-2">Statut</th>
-                                <td className="border border-slate-800 px-3 py-2 font-bold uppercase">{chief.status === 'actif' ? "En Exercice" : chief.status === 'archive' ? "Archivé" : chief.status === 'a_vie' ? "À Vie" : chief.status || "Inconnu"}</td>
+                                <td className="border border-slate-800 px-3 py-2 font-bold uppercase">{chief.status === 'actif' ? "En Exercice" : chief.status === 'archive' ? "Archivé" : chief.status === 'décédé' ? "Décédé" : chief.status === 'intérimaire' ? "Intérimaire" : chief.status === 'a_vie' ? "À Vie" : chief.status || "Inconnu"}</td>
                             </tr>
                             <tr>
                                 <th className="border border-slate-800 bg-slate-100 px-3 py-2">Titre Traditionnel</th>

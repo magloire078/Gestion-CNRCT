@@ -250,12 +250,18 @@ export function ChiefsOfficialReport({
                                                 </td>
                                                 <td className="p-3 text-center">
                                                     <span className={cn(
-                                                        "inline-block px-2 py-0.5 rounded font-black text-[8px] uppercase tracking-widest border",
-                                                        chief.status === 'archive' 
-                                                            ? "bg-slate-50 text-slate-400 border-slate-200" 
-                                                            : "bg-emerald-50 text-emerald-700 border-emerald-100"
+                                                        "text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full border",
+                                                        chief.status === 'archive' || chief.status === 'décédé' 
+                                                            ? "bg-slate-100 text-slate-500 border-slate-200"
+                                                            : chief.status === 'intérimaire'
+                                                            ? "bg-orange-50 text-orange-600 border-orange-200"
+                                                            : "bg-emerald-50 text-emerald-600 border-emerald-200"
                                                     )}>
-                                                        {chief.status === 'a_vie' ? 'À Vie' : chief.status || 'Actif'}
+                                                        {chief.status === 'a_vie' ? 'À Vie' : 
+                                                         chief.status === 'intérimaire' ? 'Intérimaire' :
+                                                         chief.status === 'décédé' ? 'Décédé' :
+                                                         chief.status === 'archive' ? 'Archivé' :
+                                                         chief.status || 'Actif'}
                                                     </span>
                                                 </td>
                                             </tr>

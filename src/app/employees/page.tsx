@@ -785,8 +785,6 @@ export default function EmployeesPage() {
                         </div>
                       )}
                     </div>
-                  </CardContent>
-                </Card>
 
                     <div className="mb-4 text-base md:text-sm text-muted-foreground">
                       {filteredEmployees.length} résultat(s) trouvé(s).

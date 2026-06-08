@@ -512,7 +512,7 @@ export function AddChiefSheet({ isOpen, onCloseAction, onAddChiefAction }: AddCh
                   {step === 4 && (
                     <div className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-5 bg-slate-50 border border-slate-100 rounded-2xl">
-                            <div className="space-y-2"><Label>N° d'enregistrement CNRCT</Label><Input value={CNRCTRegistrationNumber} onChange={e => setCNRCTRegistrationNumber(e.target.value)} className="bg-white font-mono" placeholder="Ex: CNRCT-2024-001" /></div>
+                        <div className="space-y-2"><Label>N° d'enregistrement CNRCT</Label><Input value={CNRCTRegistrationNumber} onChange={e => setCNRCTRegistrationNumber(e.target.value)} className="bg-white font-mono" placeholder="Ex: CNRCT-2024-001" /></div>
                             <div className="space-y-2">
                                 <Label>Statut Actuel</Label>
                                 <Select value={status} onValueChange={(v) => setStatus(v as Chief['status'])}>
@@ -520,7 +520,9 @@ export function AddChiefSheet({ isOpen, onCloseAction, onAddChiefAction }: AddCh
                                     <SelectContent>
                                         <SelectItem value="actif">En Exercice (Actif)</SelectItem>
                                         <SelectItem value="a_vie">Régence à Vie</SelectItem>
+                                        <SelectItem value="intérimaire">Intérimaire</SelectItem>
                                         <SelectItem value="archive">Archivé / Décédé</SelectItem>
+                                        <SelectItem value="décédé">Décédé</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>

@@ -111,6 +111,16 @@ export function ChiefQuickView({ chief, isOpen, onClose }: ChiefQuickViewProps) 
                                         En fonction
                                     </Badge>
                                 )}
+                                {chief.status === 'intérimaire' && (
+                                    <Badge className="bg-orange-500/20 text-orange-300 hover:bg-orange-500/30 border-orange-500/30 px-3 py-1 text-[10px] uppercase font-black">
+                                        Intérimaire
+                                    </Badge>
+                                )}
+                                {chief.status === 'décédé' && (
+                                    <Badge className="bg-red-500/20 text-red-300 hover:bg-red-500/30 border-red-500/30 px-3 py-1 text-[10px] uppercase font-black">
+                                        Décédé
+                                    </Badge>
+                                )}
                             </div>
                             <DialogTitle className="text-3xl font-black tracking-tight leading-none uppercase">
                                 {chief.name}

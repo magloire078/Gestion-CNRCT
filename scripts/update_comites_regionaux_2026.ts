@@ -53,7 +53,7 @@ async function updateComitesRegionaux() {
 
         // 2. Fetch all existing chiefs
         const chiefsSnap = await db.collection('chiefs').get();
-        const allChiefs = chiefsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        const allChiefs: any[] = chiefsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
 
         const activeMembers = allChiefs.filter((c: any) => c.cnrctAffiliation === 'Comité Régional');
 

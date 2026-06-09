@@ -238,25 +238,27 @@ export function RegionalCommittees({
                                         )}
                                       </div>
                                       <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-bold truncate text-[#1a1a1a]">{member.name}</p>
-                                        <div className="flex items-center gap-2">
-                                          <p className="text-[10px] text-muted-foreground truncate uppercase tracking-tighter">{member.poste}</p>
+                                        <p className="text-sm font-bold text-[#1a1a1a] leading-tight mb-0.5">{member.name}</p>
+                                        <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
+                                          <p className="text-[10px] text-muted-foreground uppercase tracking-tighter">{member.poste}</p>
                                           {member.Departement && (
                                             <>
                                               <span className="w-1 h-1 rounded-full bg-muted-foreground/30" />
-                                              <p className="text-[10px] text-[#006039] font-bold truncate uppercase tracking-tighter">{member.Departement}</p>
+                                              <p className="text-[10px] text-[#006039] font-bold uppercase tracking-tighter">{member.Departement}</p>
                                             </>
                                           )}
-                                          <span className="w-1 h-1 rounded-full bg-muted-foreground/30" />
                                           {showStatus && (
-                                            <Badge 
-                                              className={cn(
-                                                "bg-transparent border-none p-0 text-[8px] font-black uppercase tracking-widest leading-none shadow-none hover:bg-transparent",
-                                                member.status === 'Actif' ? "text-emerald-600" : "text-slate-400"
-                                              )}
-                                            >
-                                              {member.status || 'Actif'}
-                                            </Badge>
+                                            <>
+                                              <span className="w-1 h-1 rounded-full bg-muted-foreground/30" />
+                                              <Badge 
+                                                className={cn(
+                                                  "bg-transparent border-none p-0 text-[8px] font-black uppercase tracking-widest leading-none shadow-none hover:bg-transparent",
+                                                  member.status === 'Actif' ? "text-emerald-600" : "text-slate-400"
+                                                )}
+                                              >
+                                                {member.status || 'Actif'}
+                                              </Badge>
+                                            </>
                                           )}
                                         </div>
                                       </div>

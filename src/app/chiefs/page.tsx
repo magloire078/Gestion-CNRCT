@@ -11,7 +11,7 @@ import {
     UserCircle2, ShieldCheck, ChevronRight,
     Star, GraduationCap, Medal, Printer
 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from 'next/link';
 import { getOrganizationSettings } from "@/services/organization-service";
 import type { OrganizationSettings } from "@/lib/data";
@@ -75,7 +75,9 @@ import { Map as MapIcon } from "lucide-react";
 import { LinkChiefVillageSheet } from "@/components/common/link-chief-village-sheet";
 import { getOfficialRegion } from "@/lib/normalization-utils";
 
-export default function ChiefsPage() {
+import { Suspense } from 'react';
+
+function ChiefsPageContent() {
   const [chiefs, setChiefs] = useState<Chief[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -93,8 +95,11 @@ export default function ChiefsPage() {
   const [printOrientation, setPrintOrientation] = useState<'portrait' | 'landscape'>('landscape');
   const [columnsToPrint, setColumnsToPrint] = useState<ColumnKeys[]>([]);
 
+  const searchParams = useSearchParams();
+  const initialRegion = searchParams.get('region') || "all";
+
   const [selectedRole, setSelectedRole] = useState<string>("all");
-  const [selectedRegion, setSelectedRegion] = useState<string>("all");
+  const [selectedRegion, setSelectedRegion] = useState<string>(initialRegion);
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [selectedAffiliation, setSelectedAffiliation] = useState<string>("all");
   const [selectedKingdom, setSelectedKingdom] = useState<string>("all");
@@ -769,5 +774,17 @@ export default function ChiefsPage() {
         allColumns={chiefColumns}
       />
     </PermissionGuard>
+  );
+}
+
+export default function ChiefsPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex h-[80vh] items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-600 border-t-transparent" />
+      </div>
+    }>
+      <ChiefsPageContent />
+    </Suspense>
   );
 }

@@ -122,143 +122,150 @@ export function RegionalCommittees({
                   </div>
 
                   <CardContent className="flex-1 p-5 md:p-12 relative">
-                    <div className="grid md:grid-cols-2 gap-6">
-                      {/* President / Focal Point */}
-                      <div className="space-y-4">
-                        <div className="space-y-6">
-                          <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-[#006039]/40 border-b border-primary/5 pb-2">Présidence du Comité</h4>
-                          <div className="flex items-center gap-6">
-                            <div className="relative">
-                              <div className="absolute inset-[-4px] bg-gradient-to-br from-[#006039] to-[#D4AF37] rounded-full blur opacity-20" />
-                              <Avatar className="h-[100px] w-[100px] border-[6px] border-white shadow-2xl relative z-10 transition-transform duration-500 group-hover/card:scale-110">
-                                {selected.president?.photoUrl && !selected.president?.photoUrl.includes('ui-avatars.com') && !selected.president?.photoUrl.includes('placehold.co') ? (
-                                  <AvatarImage src={selected.president.photoUrl} className="object-cover" />
-                                ) : (
-                                  <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(selected.president?.name || selected.region[0])}&backgroundColor=006039&fontFamily=Arial`} className="object-cover" />
-                                )}
-                                <AvatarFallback className="bg-muted text-[#006039] font-black text-2xl">
-                                  {getInitials(selected.president?.name || selected.region[0])}
-                                </AvatarFallback>
-                              </Avatar>
-                            </div>
-                            <div>
-                              <h5 className="text-2xl font-bold text-[#1a1a1a] leading-tight">
-                                {selected.president?.name || "Installation en cours"}
-                              </h5>
-                              <p className="text-[#006039] font-bold text-sm mt-1 uppercase tracking-wider">
-                                {selected.president?.poste || 'Point Focal Régional'}
-                              </p>
-                              {showStatus && (
-                                <Badge 
-                                  className={cn(
-                                    "mt-2 border-none rounded-full px-3 py-0.5 text-[9px] font-black uppercase tracking-widest",
-                                    selected.president?.status === 'Actif' ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"
-                                  )}
-                                >
-                                  {selected.president?.status || 'Actif'}
-                                </Badge>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 gap-4 pt-4">
-                          <div className="flex items-center gap-4 p-4 rounded-2xl bg-muted/30 border border-primary/5">
-                            <div className="h-10 w-10 rounded-xl bg-white flex items-center justify-center shadow-sm">
-                              <MapPin className="h-5 w-5 text-[#006039]" />
-                            </div>
-                            <div>
-                              <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Territoire</p>
-                              <p className="text-sm font-semibold">{cleanRegionName(selected.region)}</p>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-4 p-4 rounded-2xl bg-muted/30 border border-primary/5">
-                            <div className="h-10 w-10 rounded-xl bg-white flex items-center justify-center shadow-sm">
-                              <ShieldCheck className="h-5 w-5 text-[#006039]" />
-                            </div>
-                            <div>
-                              <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Mission Locale</p>
-                              <p className="text-sm font-semibold">Médiation & Cohésion</p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Members List */}
-                      <div className="bg-[#fafaf8] rounded-xl p-5 border border-primary/5 flex flex-col">
-                        <div className="flex items-center justify-between mb-4">
-                          <h5 className="text-[10px] font-black uppercase tracking-[0.3em] text-[#006039]/40">Bureau Local</h5>
-                          <Badge className="bg-[#006039]/10 text-[#006039] border-none font-bold">{selected.members.length} Membres</Badge>
-                        </div>
-
-                        <ScrollArea className="flex-1 pr-4">
-                          <div className="space-y-4">
-                            {selected.members.length > 0 ? selected.members.map((member, mIdx) => (
-                              <div key={mIdx} className="group/item flex items-center gap-4 p-3 rounded-xl hover:bg-white hover:shadow-md transition-all duration-300">
-                                <div className="w-10 h-10 rounded-full bg-white border border-primary/5 flex items-center justify-center text-xs font-black text-[#006039] shadow-sm overflow-hidden relative">
-                                  {member.photoUrl && !member.photoUrl.includes('ui-avatars.com') ? (
-                                    <Image src={member.photoUrl} alt={member.name} fill className="object-cover" sizes="40px" />
-                                  ) : (
-                                    getInitials(member.name || '')
-                                  )}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-sm font-bold truncate text-[#1a1a1a]">{member.name}</p>
-                                  <div className="flex items-center gap-2">
-                                    <p className="text-[10px] text-muted-foreground truncate uppercase tracking-tighter">{member.poste}</p>
-                                    {member.Departement && (
-                                      <>
-                                        <span className="w-1 h-1 rounded-full bg-muted-foreground/30" />
-                                        <p className="text-[10px] text-[#006039] font-bold truncate uppercase tracking-tighter">{member.Departement}</p>
-                                      </>
-                                    )}
-                                    <span className="w-1 h-1 rounded-full bg-muted-foreground/30" />
+                    {(() => {
+                      const activeMembers = selected.members.filter(m => !m.status || m.status === 'Actif');
+                      return (
+                        <>
+                          <div className="grid md:grid-cols-2 gap-6">
+                            {/* President / Focal Point */}
+                            <div className="space-y-4">
+                              <div className="space-y-6">
+                                <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-[#006039]/40 border-b border-primary/5 pb-2">Présidence du Comité</h4>
+                                <div className="flex items-center gap-6">
+                                  <div className="relative">
+                                    <div className="absolute inset-[-4px] bg-gradient-to-br from-[#006039] to-[#D4AF37] rounded-full blur opacity-20" />
+                                    <Avatar className="h-[100px] w-[100px] border-[6px] border-white shadow-2xl relative z-10 transition-transform duration-500 group-hover/card:scale-110">
+                                      {selected.president?.photoUrl && !selected.president?.photoUrl.includes('ui-avatars.com') && !selected.president?.photoUrl.includes('placehold.co') ? (
+                                        <AvatarImage src={selected.president.photoUrl} className="object-cover" />
+                                      ) : (
+                                        <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(selected.president?.name || selected.region[0])}&backgroundColor=006039&fontFamily=Arial`} className="object-cover" />
+                                      )}
+                                      <AvatarFallback className="bg-muted text-[#006039] font-black text-2xl">
+                                        {getInitials(selected.president?.name || selected.region[0])}
+                                      </AvatarFallback>
+                                    </Avatar>
+                                  </div>
+                                  <div>
+                                    <h5 className="text-2xl font-bold text-[#1a1a1a] leading-tight">
+                                      {selected.president?.name || "Installation en cours"}
+                                    </h5>
+                                    <p className="text-[#006039] font-bold text-sm mt-1 uppercase tracking-wider">
+                                      {selected.president?.poste || 'Point Focal Régional'}
+                                    </p>
                                     {showStatus && (
                                       <Badge 
                                         className={cn(
-                                          "bg-transparent border-none p-0 text-[8px] font-black uppercase tracking-widest leading-none shadow-none hover:bg-transparent",
-                                          member.status === 'Actif' ? "text-emerald-600" : "text-slate-400"
+                                          "mt-2 border-none rounded-full px-3 py-0.5 text-[9px] font-black uppercase tracking-widest",
+                                          selected.president?.status === 'Actif' ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"
                                         )}
                                       >
-                                        {member.status || 'Actif'}
+                                        {selected.president?.status || 'Actif'}
                                       </Badge>
                                     )}
                                   </div>
                                 </div>
                               </div>
-                            )) : (
-                              <div className="py-8 text-center space-y-3">
-                                <div className="w-12 h-12 rounded-full bg-muted/50 mx-auto flex items-center justify-center">
-                                  <Loader2 className="h-5 w-5 text-muted-foreground opacity-30" />
-                                </div>
-                                <p className="text-xs text-muted-foreground italic max-w-[150px] mx-auto">
-                                  Composition du bureau en attente de validation officielle.
-                                </p>
-                              </div>
-                            )}
-                          </div>
-                        </ScrollArea>
-                      </div>
-                    </div>
 
-                    <div className="mt-12 pt-8 border-t border-primary/5 flex items-center justify-between">
-                      <div className="flex -space-x-3 overflow-hidden">
-                        {selected.members.slice(0, 5).map((m, i) => (
-                          <Avatar key={i} className="inline-block h-8 w-8 rounded-full ring-2 ring-white">
-                            <AvatarImage src={m.photoUrl} />
-                            <AvatarFallback className="bg-muted text-[8px] font-bold">{getInitials(m.name || '')}</AvatarFallback>
-                          </Avatar>
-                        ))}
-                        {selected.members.length > 5 && (
-                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-[10px] font-bold text-muted-foreground ring-2 ring-white">
-                            +{selected.members.length - 5}
+                              <div className="grid grid-cols-1 gap-4 pt-4">
+                                <div className="flex items-center gap-4 p-4 rounded-2xl bg-muted/30 border border-primary/5">
+                                  <div className="h-10 w-10 rounded-xl bg-white flex items-center justify-center shadow-sm">
+                                    <MapPin className="h-5 w-5 text-[#006039]" />
+                                  </div>
+                                  <div>
+                                    <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Territoire</p>
+                                    <p className="text-sm font-semibold">{cleanRegionName(selected.region)}</p>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-4 p-4 rounded-2xl bg-muted/30 border border-primary/5">
+                                  <div className="h-10 w-10 rounded-xl bg-white flex items-center justify-center shadow-sm">
+                                    <ShieldCheck className="h-5 w-5 text-[#006039]" />
+                                  </div>
+                                  <div>
+                                    <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Mission Locale</p>
+                                    <p className="text-sm font-semibold">Médiation & Cohésion</p>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Members List */}
+                            <div className="bg-[#fafaf8] rounded-xl p-5 border border-primary/5 flex flex-col">
+                              <div className="flex items-center justify-between mb-4">
+                                <h5 className="text-[10px] font-black uppercase tracking-[0.3em] text-[#006039]/40">Bureau Local</h5>
+                                <Badge className="bg-[#006039]/10 text-[#006039] border-none font-bold">{activeMembers.length} Membres</Badge>
+                              </div>
+
+                              <ScrollArea className="flex-1 pr-4">
+                                <div className="space-y-4">
+                                  {activeMembers.length > 0 ? activeMembers.map((member, mIdx) => (
+                                    <div key={mIdx} className="group/item flex items-center gap-4 p-3 rounded-xl hover:bg-white hover:shadow-md transition-all duration-300">
+                                      <div className="w-10 h-10 rounded-full bg-white border border-primary/5 flex items-center justify-center text-xs font-black text-[#006039] shadow-sm overflow-hidden relative">
+                                        {member.photoUrl && !member.photoUrl.includes('ui-avatars.com') ? (
+                                          <Image src={member.photoUrl} alt={member.name} fill className="object-cover" sizes="40px" />
+                                        ) : (
+                                          getInitials(member.name || '')
+                                        )}
+                                      </div>
+                                      <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-bold truncate text-[#1a1a1a]">{member.name}</p>
+                                        <div className="flex items-center gap-2">
+                                          <p className="text-[10px] text-muted-foreground truncate uppercase tracking-tighter">{member.poste}</p>
+                                          {member.Departement && (
+                                            <>
+                                              <span className="w-1 h-1 rounded-full bg-muted-foreground/30" />
+                                              <p className="text-[10px] text-[#006039] font-bold truncate uppercase tracking-tighter">{member.Departement}</p>
+                                            </>
+                                          )}
+                                          <span className="w-1 h-1 rounded-full bg-muted-foreground/30" />
+                                          {showStatus && (
+                                            <Badge 
+                                              className={cn(
+                                                "bg-transparent border-none p-0 text-[8px] font-black uppercase tracking-widest leading-none shadow-none hover:bg-transparent",
+                                                member.status === 'Actif' ? "text-emerald-600" : "text-slate-400"
+                                              )}
+                                            >
+                                              {member.status || 'Actif'}
+                                            </Badge>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  )) : (
+                                    <div className="py-8 text-center space-y-3">
+                                      <div className="w-12 h-12 rounded-full bg-muted/50 mx-auto flex items-center justify-center">
+                                        <Loader2 className="h-5 w-5 text-muted-foreground opacity-30" />
+                                      </div>
+                                      <p className="text-xs text-muted-foreground italic max-w-[150px] mx-auto">
+                                        Composition du bureau en attente de validation officielle.
+                                      </p>
+                                    </div>
+                                  )}
+                                </div>
+                              </ScrollArea>
+                            </div>
                           </div>
-                        )}
-                      </div>
-                      <Button variant="outline" className="rounded-full border-[#006039]/20 text-[#006039] hover:bg-[#006039] hover:text-white transition-all">
-                        Consulter l'annuaire de la région
-                      </Button>
-                    </div>
+
+                          <div className="mt-12 pt-8 border-t border-primary/5 flex items-center justify-between">
+                            <div className="flex -space-x-3 overflow-hidden">
+                              {activeMembers.slice(0, 5).map((m, i) => (
+                                <Avatar key={i} className="inline-block h-8 w-8 rounded-full ring-2 ring-white">
+                                  <AvatarImage src={m.photoUrl} />
+                                  <AvatarFallback className="bg-muted text-[8px] font-bold">{getInitials(m.name || '')}</AvatarFallback>
+                                </Avatar>
+                              ))}
+                              {activeMembers.length > 5 && (
+                                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-[10px] font-bold text-muted-foreground ring-2 ring-white">
+                                  +{activeMembers.length - 5}
+                                </div>
+                              )}
+                            </div>
+                            <Button variant="outline" className="rounded-full border-[#006039]/20 text-[#006039] hover:bg-[#006039] hover:text-white transition-all" asChild>
+                              <a href={`/chiefs?region=${encodeURIComponent(cleanRegionName(selected.region))}`}>Consulter l'annuaire de la région</a>
+                            </Button>
+                          </div>
+                        </>
+                      );
+                    })()}
                   </CardContent>
                 </Card>
               )}

@@ -39,7 +39,8 @@ export default function LandingPage() {
                     
                     const president = directory.find(emp => 
                         emp.Region === region && 
-                        emp.poste?.toLowerCase().includes('membre du directoire')
+                        emp.poste?.toLowerCase().includes('membre du directoire') &&
+                        (!emp.status || emp.status === 'Actif')
                     ) || null;
 
                     const committeeMembers: Employe[] = [];

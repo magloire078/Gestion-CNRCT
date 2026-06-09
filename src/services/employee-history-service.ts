@@ -123,8 +123,8 @@ export async function recalculateSalaryChain(employeeId: string): Promise<void> 
             employeeUpdates.primeAnciennete = Number(latestEvent.details.primeAnciennete);
         }
 
-        // Update poste if the latest event is a Promotion with newPoste
-        if (latestEvent.eventType === 'Promotion' && latestEvent.details.newPoste) {
+        // Update poste if the latest event is a Promotion or Changement de poste with newPoste
+        if ((latestEvent.eventType === 'Promotion' || latestEvent.eventType === 'Changement de poste') && latestEvent.details.newPoste) {
             employeeUpdates.poste = latestEvent.details.newPoste;
         }
 

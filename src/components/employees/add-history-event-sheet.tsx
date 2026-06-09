@@ -371,7 +371,7 @@ export function AddHistoryEventSheet({ isOpen, onCloseAction, employeeId, eventT
                   </div>
                 )}
 
-                {eventType === 'Promotion' && (
+                {(eventType === 'Promotion' || eventType === 'Changement de poste') && (
                   <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-500">
                     <div className="flex items-center gap-3 border-b border-slate-100 pb-2">
                       <Briefcase className="h-4 w-4 text-slate-400" />

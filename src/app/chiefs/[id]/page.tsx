@@ -145,10 +145,20 @@ export default function ChiefProfilePage() {
                             <AvatarImage src={chief.photoUrl} alt={chief.name} className="object-cover" />
                             <AvatarFallback className="text-4xl font-bold bg-slate-100">{chief.name?.charAt(0)}</AvatarFallback>
                         </Avatar>
-                        <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 flex gap-1">
+                        <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 flex flex-wrap justify-center gap-1">
                             <Badge className="px-4 py-1 bg-blue-600 text-white border-2 border-white shadow-lg">
                                 {chief.role}
                             </Badge>
+                            {chief.status === 'décédé' && (
+                                <Badge className="px-2 py-1 bg-red-600 text-white border-2 border-white shadow-lg text-[10px] uppercase">
+                                    Décédé
+                                </Badge>
+                            )}
+                            {chief.cnrctAffiliation === 'Aucune' && chief.historiqueNominations && chief.historiqueNominations.length > 0 && (
+                                <Badge className="px-2 py-1 bg-slate-500 text-white border-2 border-white shadow-lg text-[10px] uppercase">
+                                    Ancien Membre
+                                </Badge>
+                            )}
                             {chief.additionalRoles?.map(r => (
                                 <Badge key={r} className="px-2 py-1 bg-slate-700 text-white border-2 border-white shadow-lg text-[10px]">
                                     {r}

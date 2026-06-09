@@ -74,15 +74,25 @@ export function ChiefQuickView({ chief, isOpen, onClose }: ChiefQuickViewProps) 
                         </Avatar>
 
                         <div className="flex-1 space-y-2">
-                            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                            <div className="flex flex-wrap gap-2">
                                 {chief.cnrctAffiliation === 'Directoire' && (
-                                    <Badge className="bg-gradient-to-r from-amber-200 to-yellow-400 text-amber-900 border-none px-3 py-1 text-[10px] uppercase tracking-widest font-black shadow-lg">
-                                        Directoire
+                                    <Badge variant="outline" className="px-2 py-0.5 text-xs uppercase tracking-widest font-black rounded-lg shadow-sm border border-amber-300 bg-gradient-to-r from-amber-100 to-yellow-200 text-amber-800">
+                                        <Crown className="w-3 h-3 mr-1 inline" /> Directoire
                                     </Badge>
                                 )}
                                 {chief.cnrctAffiliation === 'Comité Régional' && (
-                                    <Badge className="bg-purple-500/20 text-purple-200 border-purple-500/30 px-3 py-1 text-[10px] uppercase tracking-widest font-black shadow-lg">
+                                    <Badge variant="outline" className="px-2 py-0.5 text-xs uppercase tracking-widest font-black rounded-lg shadow-sm border border-purple-200 bg-purple-50 text-purple-700">
                                         Comité Régional
+                                    </Badge>
+                                )}
+                                {chief.status === 'décédé' && (
+                                    <Badge variant="outline" className="px-2 py-0.5 text-xs uppercase tracking-widest font-black rounded-lg shadow-sm border border-red-200 bg-red-50 text-red-700">
+                                        Décédé
+                                    </Badge>
+                                )}
+                                {chief.cnrctAffiliation === 'Aucune' && chief.historiqueNominations && chief.historiqueNominations.length > 0 && (
+                                    <Badge variant="outline" className="px-2 py-0.5 text-xs uppercase tracking-widest font-black rounded-lg shadow-sm border border-slate-200 bg-slate-100 text-slate-500">
+                                        Ancien Membre
                                     </Badge>
                                 )}
                                 <Badge className="bg-white/20 text-white hover:bg-white/30 border-none px-3 py-1 text-[10px] uppercase tracking-widest font-black">

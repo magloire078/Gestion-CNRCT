@@ -74,20 +74,19 @@ export function PayslipTemplate({ payslipDetails }: { payslipDetails: PayslipDet
                     </div>
                 </section>
 
-                {/* Job Info Table */}
-                <table className="w-full border-collapse border border-gray-400 rounded-lg mt-2 text-[10px] no-zebra">
+                <table className="w-full border-collapse border border-gray-400 rounded-lg mt-2 text-[9px] no-zebra table-fixed">
                     <thead className="bg-slate-200 text-slate-900 border-b-2 border-slate-700 font-bold text-center">
                         <tr>
-                            <td className="p-1 border border-gray-400">EMPLOI</td>
-                            <td className="p-1 border border-gray-400">CATEGORIE</td>
-                            <td className="p-1 border border-gray-400">ANCIENNETE</td>
-                            <td className="p-1 border border-gray-400">NBRE DE PARTS</td>
-                            <td className="p-1 border border-gray-400">DATE D'EMBAUCHE</td>
+                            <td className="p-1 border border-gray-400 w-[45%]">EMPLOI</td>
+                            <td className="p-1 border border-gray-400 w-[15%]">CATEGORIE</td>
+                            <td className="p-1 border border-gray-400 w-[15%]">ANCIENNETE</td>
+                            <td className="p-1 border border-gray-400 w-[10%] leading-tight">NBRE DE PARTS</td>
+                            <td className="p-1 border border-gray-400 w-[15%]">DATE D'EMBAUCHE</td>
                         </tr>
                     </thead>
                     <tbody className="text-center">
                         <tr className="even:bg-slate-50 odd:bg-white text-slate-800">
-                            <td className="p-1 border-r border-gray-400">{employeeInfo.poste}</td>
+                            <td className="p-1 border-r border-gray-400 font-medium leading-tight">{employeeInfo.poste}</td>
                             <td className="p-1 border-r border-gray-400">{employeeInfo.categorie}</td>
                             <td className="p-1 border-r border-gray-400">{employeeInfo.anciennete}</td>
                             <td className="p-1 border-r border-gray-400">{employeeInfo.parts}</td>
@@ -154,7 +153,7 @@ export function PayslipTemplate({ payslipDetails }: { payslipDetails: PayslipDet
                 <div className="grid grid-cols-12 mt-2">
                     <div className="col-span-8">
                         <p className="font-bold text-center underline mb-1 text-sm">Impôts à la charge de l'employeur</p>
-                        <div className="border border-gray-400 rounded-lg p-1 text-[10px]">
+                        <div className="text-[10px]">
                             <table className="w-full no-zebra">
                                 <tbody>
                                     {employerContributions.map(item => (

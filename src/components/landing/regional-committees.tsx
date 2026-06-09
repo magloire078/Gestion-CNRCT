@@ -13,6 +13,8 @@ import type { RegionalCommittee } from "@/services/employee-service";
 import { getInitials, cleanRegionName } from "./landing-utils";
 import { cn } from "@/lib/utils";
 import { usePermissions } from "@/hooks/use-permissions";
+import { useAuth } from "@/hooks/use-auth";
+import { LockKeyhole } from "lucide-react";
 
 interface RegionalCommitteesProps {
   loading: boolean;
@@ -33,7 +35,36 @@ export function RegionalCommittees({
 }: RegionalCommitteesProps) {
   const { canSeeGovernanceStatus } = usePermissions();
   const showStatus = canSeeGovernanceStatus();
+  const { user, loading: authLoading } = useAuth();
   
+  if (!authLoading && !user) {
+    return (
+      <section id="regional-committees" className="py-12 bg-white border-t border-primary/5 scroll-mt-24 overflow-hidden">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-10 max-w-3xl mx-auto">
+            <Badge variant="outline" className="mb-4 border-[#006039]/20 text-[#006039] uppercase tracking-[0.2em] px-4 py-1.5 text-[10px] font-bold">Réseau Territorial</Badge>
+            <h2 className="text-4xl md:text-5xl font-black mb-6 text-[#1a1a1a]">31 Regions et 2 Districts (Abidjan et Yamoussoukro)</h2>
+            <p className="text-muted-foreground text-lg leading-relaxed font-light">
+              La Chambre assure une présence continue sur l'ensemble du territoire national à travers ses relais régionaux, garantissant ainsi une <span className="text-[#006039] font-medium">médiation de proximité</span>.
+            </p>
+          </div>
+          <div className="flex flex-col items-center justify-center py-20 px-4 text-center border rounded-2xl bg-muted/10">
+            <div className="h-16 w-16 bg-[#006039]/10 rounded-full flex items-center justify-center mb-6">
+              <LockKeyhole className="h-8 w-8 text-[#006039]" />
+            </div>
+            <h3 className="text-2xl font-bold mb-4">Accès Restreint</h3>
+            <p className="text-muted-foreground max-w-md mx-auto mb-8">
+              La consultation détaillée du réseau territorial et des bureaux des comités régionaux est réservée aux utilisateurs connectés.
+            </p>
+            <Button className="bg-[#006039] hover:bg-[#006039]/90 text-white rounded-full px-8 py-6 text-sm font-bold shadow-lg" asChild>
+              <a href="/login">Se connecter pour accéder à l'annuaire</a>
+            </Button>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   const filteredCommittees = regionalCommittees.filter(c => {
     const q = searchQuery.toLowerCase();
     return c.region.toLowerCase().includes(q) ||
@@ -54,7 +85,7 @@ export function RegionalCommittees({
           </p>
         </div>
 
-        {loading ? (
+        {loading || authLoading ? (
           <div className="flex flex-col items-center justify-center py-12 gap-4">
             <Loader2 className="h-10 w-10 text-[#006039] animate-spin" />
             <p className="text-sm text-muted-foreground">Chargement du réseau territorial...</p>

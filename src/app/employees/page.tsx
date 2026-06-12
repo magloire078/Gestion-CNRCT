@@ -806,8 +806,6 @@ export default function EmployeesPage() {
                                 <TableHead>Titre / Fonction</TableHead>
                                 <TableHead>Région</TableHead>
                                 <TableHead>Département</TableHead>
-                                <TableHead>Sous-Préfecture</TableHead>
-                                <TableHead>Village</TableHead>
                               </>
                             ) : (
                               <>
@@ -830,8 +828,6 @@ export default function EmployeesPage() {
                                 {isGeoTab ? (
                                     <>
                                         <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                                        <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                                        <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                                         <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                                         <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                                     </>
@@ -880,8 +876,6 @@ export default function EmployeesPage() {
                                     <TableCell className="text-sm md:text-xs truncate max-w-[150px] font-bold text-slate-700">{employee.poste}</TableCell>
                                     <TableCell className="text-sm md:text-xs font-black uppercase tracking-tighter text-slate-500">{employee.Region}</TableCell>
                                     <TableCell className="text-sm md:text-xs font-bold text-slate-500">{employee.Departement}</TableCell>
-                                    <TableCell className="text-sm md:text-xs">{employee.subPrefecture}</TableCell>
-                                    <TableCell className="text-base md:text-sm uppercase font-black tracking-widest text-slate-400">{employee.Village}</TableCell>
                                   </>
                                 ) : (
                                   <>

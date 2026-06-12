@@ -1,4 +1,3 @@
-
 "use client";
 
 import Image from "next/image";
@@ -30,11 +29,11 @@ export function BureauDirectoire({ loading, members, allDirectors = [] }: Bureau
   const cabinetAndSecretariat = members.filter(m => {
     const p = m.poste?.toLowerCase() || '';
     return (p.includes('secrétaire général') ||
-            p.includes('directrice de cabinet') ||
-            p.includes('directeur de cabinet')) &&
-           !p.includes('chauffeur') &&
-           !p.includes('assistant') &&
-           !p.includes('sous-direct');
+      p.includes('directrice de cabinet') ||
+      p.includes('directeur de cabinet')) &&
+      !p.includes('chauffeur') &&
+      !p.includes('assistant') &&
+      !p.includes('sous-direct');
   }).sort((a, b) => {
     const aIsCabinet = (a.poste?.toLowerCase().includes('directrice de cabinet') || a.poste?.toLowerCase().includes('directeur de cabinet')) ? -1 : 1;
     const bIsCabinet = (b.poste?.toLowerCase().includes('directrice de cabinet') || b.poste?.toLowerCase().includes('directeur de cabinet')) ? -1 : 1;
@@ -44,12 +43,12 @@ export function BureauDirectoire({ loading, members, allDirectors = [] }: Bureau
   const otherDirectors = allDirectors.length > 0 ? allDirectors : members.filter(m => {
     const p = m.poste?.toLowerCase() || '';
     return (p.includes('directeur') || p.includes('directrice') || p.includes('cabinet')) &&
-    !p.includes('secrétaire général') &&
-    !p.includes('directrice de cabinet') &&
-    !p.includes('directeur de cabinet') &&
-    !p.includes('chauffeur') &&
-    !p.includes('assistant') &&
-    !p.includes('sous-direct');
+      !p.includes('secrétaire général') &&
+      !p.includes('directrice de cabinet') &&
+      !p.includes('directeur de cabinet') &&
+      !p.includes('chauffeur') &&
+      !p.includes('assistant') &&
+      !p.includes('sous-direct');
   });
 
   return (
@@ -82,7 +81,7 @@ export function BureauDirectoire({ loading, members, allDirectors = [] }: Bureau
                       )}
                     </div>
                     {showStatus && (
-                      <Badge 
+                      <Badge
                         className={cn(
                           "mt-2 border-none rounded-full px-4 py-1 text-[9px] font-black uppercase tracking-widest shadow-sm",
                           president.status === 'Actif' ? "bg-emerald-500 text-white" : "bg-slate-100 text-slate-500"
@@ -115,7 +114,7 @@ export function BureauDirectoire({ loading, members, allDirectors = [] }: Bureau
                       <h4 className="font-black text-sm text-slate-900 text-center leading-tight mb-2 uppercase tracking-tight">{vp.name}</h4>
                       {vp.Region && <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest">{cleanRegionName(vp.Region)}</p>}
                       {showStatus && (
-                        <Badge 
+                        <Badge
                           className={cn(
                             "mt-3 border-none rounded-full px-3 py-0.5 text-[8px] font-black uppercase tracking-widest",
                             vp.status === 'Actif' ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"
@@ -152,7 +151,7 @@ export function BureauDirectoire({ loading, members, allDirectors = [] }: Bureau
                         <h4 className="font-black text-xs text-slate-900 text-center uppercase tracking-tight">{member.name}</h4>
                         {member.Region && <p className="text-[8px] text-slate-500 font-bold uppercase tracking-widest mt-1">{cleanRegionName(member.Region)}</p>}
                         {showStatus && (
-                          <Badge 
+                          <Badge
                             className={cn(
                               "mt-2 border-none rounded-full px-2 py-0 text-[7px] font-black uppercase tracking-widest",
                               member.status === 'Actif' ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"
@@ -190,7 +189,7 @@ export function BureauDirectoire({ loading, members, allDirectors = [] }: Bureau
                         <h4 className="font-bold text-lg text-[#1a1a1a] text-center">{member.name}</h4>
                         {member.Region && <p className="text-[10px] text-[#006039] font-bold uppercase mt-1">{cleanRegionName(member.Region)}</p>}
                         {showStatus && (
-                          <Badge 
+                          <Badge
                             className={cn(
                               "mt-2 border-none rounded-full px-2 py-0 text-[8px] font-black uppercase tracking-widest",
                               member.status === 'Actif' ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"
@@ -228,7 +227,7 @@ export function BureauDirectoire({ loading, members, allDirectors = [] }: Bureau
                         <h4 className="font-bold text-sm text-[#1a1a1a] text-center">{member.name}</h4>
                         {member.Region && <p className="text-[9px] text-[#006039] font-bold uppercase mt-1">{cleanRegionName(member.Region)}</p>}
                         {showStatus && (
-                          <Badge 
+                          <Badge
                             className={cn(
                               "mt-2 border-none rounded-full px-2 py-0 text-[7px] font-black uppercase tracking-widest",
                               member.status === 'Actif' ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"

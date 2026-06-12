@@ -231,6 +231,16 @@ export default function EmployeeDetailPage() {
 
     return (
         <div className="flex flex-col gap-2 pb-6">
+            <div className="flex items-center pb-1">
+                <Button 
+                    variant="ghost" 
+                    onClick={() => router.back()} 
+                    className="h-8 px-3 gap-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg font-black uppercase tracking-widest text-[10px]"
+                >
+                    <ChevronLeft className="h-4 w-4" />
+                    Retour
+                </Button>
+            </div>
             {/* --- PROFILE HERO SECTION --- */}
             <div className="relative overflow-hidden rounded-2xl p-0.5 shadow-lg bg-white/20 backdrop-blur-xl border border-white/30">
                 <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900" />

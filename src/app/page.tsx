@@ -26,15 +26,15 @@ export default function LandingPage() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [members, directory] = await Promise.all([
+                const [membersRaw, directoryRaw] = await Promise.all([
                     getDirectoireMembers(),
                     getEmployeeDirectory()
                 ]);
-                const filteredMembers = members.filter(m => {
-                    const n = (m.name || `${m.lastName || ''} ${m.firstName || ''}`).toLowerCase();
-                    return !n.includes('kouassi andon');
-                });
-                setDirectoireMembers(filteredMembers);
+                
+                const directory = directoryRaw.filter(emp => !emp.status || emp.status === 'Actif');
+                const members = membersRaw.filter(emp => !emp.status || emp.status === 'Actif');
+
+                setDirectoireMembers(members);
 
                 // Compute regional committees locally
                 const regionsList = Object.keys(divisions);
@@ -74,9 +74,6 @@ export default function LandingPage() {
 
                 const directors = directory.filter(m => {
                     const p = m.poste?.toLowerCase() || '';
-                    const n = (m.name || `${m.lastName || ''} ${m.firstName || ''}`).toLowerCase();
-                    
-                    if (n.includes('kouassi andon')) return false;
 
                     return (p.includes('directeur') || p.includes('directrice') || p.includes('cabinet')) &&
                            !p.includes('secrétaire général') &&

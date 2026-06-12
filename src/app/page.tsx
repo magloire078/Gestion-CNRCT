@@ -43,22 +43,26 @@ export default function LandingPage() {
                     
                     const president = directory.find(emp => 
                         emp.Region === region && 
-                        emp.poste?.toLowerCase().includes('membre du directoire') &&
+                        (emp.poste?.toLowerCase().includes('membre du directoire') || 
+                         emp.poste?.toLowerCase().includes('point focal') ||
+                         emp.poste?.toLowerCase().includes('chef')) &&
                         (!emp.status || emp.status === 'Actif')
                     ) || null;
 
                     const committeeMembers: Employe[] = [];
                     if (president) committeeMembers.push(president);
 
-                    depts.forEach(dept => {
-                        const deptMembers = directory.filter(emp => 
-                            emp.Region === region && 
-                            emp.Departement === dept && 
-                            emp.id !== president?.id &&
-                            (emp.poste?.toLowerCase().includes('comité') || emp.poste?.toLowerCase().includes('comite'))
-                        );
-                        committeeMembers.push(...deptMembers.slice(0, 2));
-                    });
+                    const regionMembers = directory.filter(emp => 
+                        emp.Region === region && 
+                        emp.id !== president?.id &&
+                        (emp.poste?.toLowerCase().includes('comité') || 
+                         emp.poste?.toLowerCase().includes('comite') ||
+                         emp.poste?.toLowerCase().includes('bureau') ||
+                         emp.poste?.toLowerCase().includes('membre') ||
+                         emp.poste?.toLowerCase().includes('point focal'))
+                    );
+                    
+                    committeeMembers.push(...regionMembers);
 
                     return {
                         region,

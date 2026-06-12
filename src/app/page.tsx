@@ -30,7 +30,11 @@ export default function LandingPage() {
                     getDirectoireMembers(),
                     getEmployeeDirectory()
                 ]);
-                setDirectoireMembers(members);
+                const filteredMembers = members.filter(m => {
+                    const n = (m.name || `${m.lastName || ''} ${m.firstName || ''}`).toLowerCase();
+                    return !n.includes('kouassi andon');
+                });
+                setDirectoireMembers(filteredMembers);
 
                 // Compute regional committees locally
                 const regionsList = Object.keys(divisions);
@@ -66,6 +70,10 @@ export default function LandingPage() {
 
                 const directors = directory.filter(m => {
                     const p = m.poste?.toLowerCase() || '';
+                    const n = (m.name || `${m.lastName || ''} ${m.firstName || ''}`).toLowerCase();
+                    
+                    if (n.includes('kouassi andon')) return false;
+
                     return (p.includes('directeur') || p.includes('directrice') || p.includes('cabinet')) &&
                            !p.includes('secrétaire général') &&
                            !p.includes('directrice de cabinet') &&

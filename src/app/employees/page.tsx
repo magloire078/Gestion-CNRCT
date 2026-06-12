@@ -807,7 +807,7 @@ export default function EmployeesPage() {
                                 <TableHead>Région</TableHead>
                                 <TableHead>Département</TableHead>
                                 <TableHead>Sous-Préfecture</TableHead>
-                                <TableHead>Référence</TableHead>
+                                <TableHead>Village</TableHead>
                               </>
                             ) : (
                               <>
@@ -881,7 +881,7 @@ export default function EmployeesPage() {
                                     <TableCell className="text-sm md:text-xs font-black uppercase tracking-tighter text-slate-500">{employee.Region}</TableCell>
                                     <TableCell className="text-sm md:text-xs font-bold text-slate-500">{employee.Departement}</TableCell>
                                     <TableCell className="text-sm md:text-xs">{employee.subPrefecture}</TableCell>
-                                    <TableCell className="text-base md:text-sm uppercase font-black tracking-widest text-slate-400">{employee.Num_Decision}</TableCell>
+                                    <TableCell className="text-base md:text-sm uppercase font-black tracking-widest text-slate-400">{employee.Village}</TableCell>
                                   </>
                                 ) : (
                                   <>

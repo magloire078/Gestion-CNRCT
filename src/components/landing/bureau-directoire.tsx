@@ -213,10 +213,10 @@ export function BureauDirectoire({ loading, members, allDirectors = [] }: Bureau
                   <h4 className="text-sm font-black text-muted-foreground uppercase tracking-[0.2em]">Les Directions</h4>
                   <div className="h-px flex-1 bg-muted/30" />
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-700 delay-500">
+                <div className="flex flex-wrap justify-center gap-6 max-w-6xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-700 delay-500">
                   {otherDirectors.map((member, index) => (
-                    <div key={index} className="group relative">
-                      <div className="relative flex flex-col items-center bg-white/40 backdrop-blur-sm p-6 rounded-2xl border border-primary/5 transition-all hover:bg-white/80 hover:shadow-lg">
+                    <div key={index} className="group relative w-full sm:max-w-[280px] flex-1 min-w-[240px]">
+                      <div className="relative flex flex-col items-center h-full bg-white/40 backdrop-blur-sm p-6 rounded-2xl border border-primary/5 transition-all hover:bg-white/80 hover:shadow-lg">
                         <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mb-4 border border-white shadow-sm overflow-hidden relative">
                           {member.photoUrl && !member.photoUrl.includes('ui-avatars.com') && !member.photoUrl.includes('placehold.co') ? (
                             <Image src={member.photoUrl} alt={member.name || ''} fill className="object-cover" sizes="64px" />

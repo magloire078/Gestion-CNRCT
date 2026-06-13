@@ -121,6 +121,10 @@ export async function createOrUpdateChiefFromEmployee(employee: Employe): Promis
         cnrctAffiliation: affiliation
     };
 
+    if (employee.status === 'Décédé') {
+        chiefData.status = 'décédé';
+    }
+
     // Remove undefined fields to avoid overwriting existing data
     Object.keys(chiefData).forEach(k => (chiefData as any)[k] === undefined && delete (chiefData as any)[k]);
 

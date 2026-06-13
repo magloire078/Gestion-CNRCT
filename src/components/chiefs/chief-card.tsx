@@ -16,9 +16,6 @@ interface ChiefCardProps {
 }
 
 export function ChiefCard({ chief, onClick, onEdit, onLink }: ChiefCardProps) {
-    const meritPoints = chief.meritPoints || 0;
-    
-    // Determine the "level" of authority for visual styling
     const isHighAuthority = ["Roi", "Chef de province", "Chef de canton"].includes(chief.role);
 
     return (
@@ -63,7 +60,7 @@ export function ChiefCard({ chief, onClick, onEdit, onLink }: ChiefCardProps) {
 
                         <div className="flex-1 min-w-0 flex flex-col justify-center">
                             <div className="flex flex-col gap-1.5 mb-2">
-                                {/* Ligne 1 : Affiliations spéciales (Directoire, Comité) et Points */}
+                                {/* Ligne 1 : Affiliations spéciales (Directoire, Comité) */}
                                 <div className="flex items-center justify-between gap-3">
                                     <div className="flex flex-wrap gap-1">
                                         {chief.cnrctAffiliation === 'Directoire' && (
@@ -87,12 +84,6 @@ export function ChiefCard({ chief, onClick, onEdit, onLink }: ChiefCardProps) {
                                             </Badge>
                                         )}
                                     </div>
-                                    {meritPoints > 0 && (
-                                        <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-white border border-slate-100 shadow-sm">
-                                            <Award className={cn("h-3 w-3", meritPoints > 70 ? "text-amber-500" : "text-blue-600")} />
-                                            <span className="text-[9px] font-black text-slate-700">{meritPoints} pts</span>
-                                        </div>
-                                    )}
                                 </div>
                                 
                                 {/* Ligne 2 : Rôle principal et Casquettes (initiales colorées) */}

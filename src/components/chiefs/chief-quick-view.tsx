@@ -45,7 +45,6 @@ export function ChiefQuickView({ chief, isOpen, onClose }: ChiefQuickViewProps) 
 
     const career = chief.career || [];
     const predecessors = chief.predecessors || [];
-    const meritPoints = chief.meritPoints || 0;
     const isHighAuthority = ["Roi", "Chef de province", "Chef de canton"].includes(chief.role);
     const { hasPermission } = useAuth();
     
@@ -154,12 +153,6 @@ export function ChiefQuickView({ chief, isOpen, onClose }: ChiefQuickViewProps) 
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        
-                        <div className="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/20 text-center min-w-[110px] shadow-2xl">
-                            <Award className={cn("h-8 w-8 mx-auto mb-2", meritPoints > 70 ? "text-amber-400" : "text-blue-400")} />
-                            <div className="text-3xl font-black text-white">{meritPoints}</div>
-                            <div className="text-[10px] uppercase font-black text-white/70 tracking-widest mt-1">Mérites</div>
                         </div>
                     </div>
                 </div>

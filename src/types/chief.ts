@@ -86,7 +86,6 @@ export type Chief = {
     // Authority Life Hub fields
     career?: ChiefCareerEvent[];
     predecessors?: Predecessor[];
-    meritPoints?: number;
     audit?: {
         createdAt: string;
         updatedAt: string;

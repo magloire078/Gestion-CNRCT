@@ -52,10 +52,6 @@ export const ChiefProfileReport: React.FC<ChiefProfileReportProps> = ({ chief, i
                                 <th className="border border-slate-800 bg-slate-100 px-3 py-2">Catégorie (Grade)</th>
                                 <td className="border border-slate-800 px-3 py-2">{chief.role}</td>
                             </tr>
-                            <tr>
-                                <th className="border border-slate-800 bg-slate-100 px-3 py-2">Points de Mérite</th>
-                                <td className="border border-slate-800 px-3 py-2" colSpan={3}>{chief.meritPoints || 0} pts</td>
-                            </tr>
                         </tbody>
                     </table>
                 </div>

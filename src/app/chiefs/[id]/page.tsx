@@ -449,28 +449,6 @@ export default function ChiefProfilePage() {
                                     </Card>
 
                                     <div className="space-y-6">
-                                        <Card className="border-none shadow-sm bg-gradient-to-br from-amber-500 to-amber-600 text-white overflow-hidden">
-                                            <CardContent className="p-6">
-                                                <div className="flex items-start justify-between">
-                                                    <div className="space-y-1">
-                                                        <p className="text-[10px] font-black uppercase text-amber-200 tracking-widest">Score de Mérite</p>
-                                                        <h3 className="text-4xl font-black">{chief.meritPoints || 0}</h3>
-                                                    </div>
-                                                    <div className="h-12 w-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center">
-                                                        <Medal className="h-6 w-6 text-white" />
-                                                    </div>
-                                                </div>
-                                                <div className="mt-4 pt-4 border-t border-white/10 space-y-3">
-                                                    <div className="flex justify-between text-[10px] font-bold">
-                                                        <span className="text-amber-100">Contribution Sociale</span>
-                                                        <span>85%</span>
-                                                    </div>
-                                                    <div className="h-1 bg-white/20 rounded-full overflow-hidden">
-                                                        <div className="h-full bg-white w-[85%]" />
-                                                    </div>
-                                                </div>
-                                            </CardContent>
-                                        </Card>
 
                                         {canViewAudit && (
                                             <Card className="border-none shadow-sm bg-white overflow-hidden">

@@ -37,6 +37,7 @@ import { IVORIAN_REGIONS } from "@/constants/regions";
 import { divisions } from "@/lib/ivory-coast-divisions";
 import { DebouncedInput } from "@/components/ui/debounced-input";
 import { Checkbox } from "@/components/ui/checkbox";
+import { VillageCombobox } from "@/components/chiefs/village-combobox";
 
 interface EditEmployeeFormProps {
   employee: Employe;
@@ -340,7 +341,14 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                     </div>
                     <div className="space-y-3">
                       <Label htmlFor="Village" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Village / Quartier</Label>
-                      <Input id="Village" value={formData.Village || ''} onChange={handleInputChange} className="h-12 rounded-xl border-slate-200 bg-white shadow-sm font-bold" />
+                      <VillageCombobox
+                          value={formData.Village}
+                          onValueChange={(val) => handleValueChange('Village', val)}
+                          region={formData.Region}
+                          department={formData.Departement}
+                          subPrefecture={formData.subPrefecture}
+                          disabled={!formData.subPrefecture}
+                      />
                     </div>
                   </CardContent>
                 </Card>

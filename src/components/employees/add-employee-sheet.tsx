@@ -45,6 +45,7 @@ import { IVORIAN_REGIONS } from "@/constants/regions";
 import { divisions } from "@/lib/ivory-coast-divisions";
 import { ScrollArea } from "../ui/scroll-area";
 import { DebouncedInput } from "@/components/ui/debounced-input";
+import { VillageCombobox } from "@/components/chiefs/village-combobox";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 
@@ -399,11 +400,13 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="village" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Village / Quartier</Label>
-                          <DebouncedInput 
-                            id="village" 
-                            value={village} 
-                            onChange={(val) => setVillage(val as string)} 
-                            className="h-12 rounded-xl border-slate-200 bg-white shadow-sm font-bold" 
+                          <VillageCombobox
+                              value={village}
+                              onValueChange={(val) => setVillage(val)}
+                              region={region}
+                              department={departement}
+                              subPrefecture={subPrefecture}
+                              disabled={!subPrefecture}
                           />
                         </div>
                       </div>

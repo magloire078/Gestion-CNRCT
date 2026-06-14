@@ -161,7 +161,7 @@ export function RegionalCommittees({
                                             : selected.president?.status === 'Actif' ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"
                                         )}
                                       >
-                                        {selected.president?.departmentId === '9ywKFDgVMS86rZLPYhpm' ? 'Promu au Directoire' : (selected.president?.status || 'Actif')}
+                                        {selected.president?.departmentId === '9ywKFDgVMS86rZLPYhpm' ? 'Promu' : (selected.president?.status || 'Actif')}
                                       </Badge>
                                     )}
                                   </div>
@@ -229,7 +229,7 @@ export function RegionalCommittees({
                                                     : member.status === 'Actif' ? "text-emerald-600" : "text-slate-400"
                                                 )}
                                               >
-                                                {member.departmentId === '9ywKFDgVMS86rZLPYhpm' ? 'Promu au Directoire' : (member.status || 'Actif')}
+                                                {member.departmentId === '9ywKFDgVMS86rZLPYhpm' ? 'Promu' : (member.status || 'Actif')}
                                               </Badge>
                                             </>
                                           )}

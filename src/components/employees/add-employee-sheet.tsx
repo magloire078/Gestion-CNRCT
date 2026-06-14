@@ -428,7 +428,7 @@ export function AddEmployeeSheet({ isOpen, onCloseAction, onAddEmployeeAction }:
                             <SelectContent className="rounded-xl border-slate-100 shadow-3xl">
                               <SelectItem value="Actif" className="font-bold py-3 uppercase text-[9px] tracking-widest text-emerald-600">Actif</SelectItem>
                               <SelectItem value="En congé" className="font-bold py-3 uppercase text-[9px] tracking-widest text-blue-600">En congé</SelectItem>
-                              <SelectItem value="Licencié" className="font-bold py-3 uppercase text-[9px] tracking-widest text-rose-600">Licencié</SelectItem>
+                              <SelectItem value="Remplacé" className="font-bold py-3 uppercase text-[9px] tracking-widest text-rose-600">Remplacé</SelectItem>
                               <SelectItem value="Retraité" className="font-bold py-3 uppercase text-[9px] tracking-widest text-slate-500">Retraité</SelectItem>
                             </SelectContent>
                           </Select>

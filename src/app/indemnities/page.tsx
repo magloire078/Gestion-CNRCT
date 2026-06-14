@@ -75,7 +75,7 @@ export default function IndemnityCalculatorPage() {
       try {
         setLoading(true);
         const data = await getEmployees();
-        setAllEmployees(data.filter(e => e.status === 'Actif' || e.status === 'Licencié'));
+        setAllEmployees(data.filter(e => e.status === 'Actif' || e.status === 'Licencié' || e.status === 'Remplacé'));
       } catch (error) {
         toast({
           variant: "destructive",

@@ -146,7 +146,7 @@ export function ImportDataCard() {
                     // 3. Fallback to raw value
                     return csvValue;
                 })(),
-                status: String(row.statut) === '1' || String(row.statut).toLowerCase() === 'actif' ? 'Actif' : 'Licencié',
+                status: String(row.statut) === '1' || String(row.statut).toLowerCase() === 'actif' ? 'Actif' : 'Remplacé',
                 
                 civilite: String(row.civilite || ''),
                 sexe: String(row.sexe || 'Autre') as Employe['sexe'],

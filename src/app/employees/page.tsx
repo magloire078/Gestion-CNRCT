@@ -49,12 +49,13 @@ const DirectoireMap = dynamic<{ members: any[]; className?: string }>(() => impo
   loading: () => <Skeleton className="h-[400px] w-full rounded-xl" />,
 });
 
-type Status = 'Actif' | 'En congé' | 'Licencié' | 'Retraité' | 'Décédé';
+type Status = 'Actif' | 'En congé' | 'Licencié' | 'Remplacé' | 'Retraité' | 'Décédé';
 
 const statusVariantMap: Record<Status, "default" | "secondary" | "destructive" | "outline"> = {
   'Actif': 'default',
   'En congé': 'secondary',
   'Licencié': 'destructive',
+  'Remplacé': 'destructive',
   'Retraité': 'outline',
   'Décédé': 'outline',
 };
@@ -863,7 +864,7 @@ export default function EmployeesPage() {
                                       <span>{`${employee.lastName || ''} ${employee.firstName || ''}`.trim()}</span>
                                       {isGeoTab && statusFilter === 'all' && employee.status && employee.status !== 'Actif' && (
                                           <Badge variant={statusVariantMap[employee.status as Status] || 'default'} className="px-1.5 py-0 h-4 text-[9px]">
-                                            {employee.status}
+                                            {employee.status === 'Licencié' ? 'Remplacé' : employee.status}
                                           </Badge>
                                       )}
                                     </span>
@@ -889,7 +890,7 @@ export default function EmployeesPage() {
                                     <TableCell className="text-sm md:text-xs font-bold text-slate-500 truncate max-w-[150px]">{getEmployeeOrgUnit(employee)}</TableCell>
                                     <TableCell>
                                         <Badge variant={statusVariantMap[employee.status as Status] || 'default'} className="font-black text-sm md:text-xs uppercase tracking-widest rounded-lg px-3 py-1 border-none shadow-sm">
-                                          {employee.status}
+                                          {employee.status === 'Licencié' ? 'Remplacé' : employee.status}
                                         </Badge>
                                     </TableCell>
                                     <TableCell className="text-center">
@@ -961,7 +962,7 @@ export default function EmployeesPage() {
                                     employee.status === 'Actif' ? "bg-emerald-500 text-white" : "bg-slate-100 text-slate-500"
                                   )}
                                 >
-                                  {employee.status || 'Actif'}
+                                  {employee.status === 'Licencié' ? 'Remplacé' : (employee.status || 'Actif')}
                                 </Badge>
                                 <div className="flex flex-col items-center text-center">
                                   <Avatar className="h-20 w-20 border-[4px] border-white shadow-lg mb-4 transition-transform group-hover:scale-105">

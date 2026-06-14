@@ -97,7 +97,7 @@ export function ImportEmployeesDataCard() {
                 lastName: String(row.nom || ''),
                 poste: String(row.poste || ''),
                 departmentId: String(row.service || ''), // Assuming service from CSV maps to departmentId
-                status: String(row.statut) === '1' || String(row.statut).toLowerCase() === 'actif' ? 'Actif' : 'Licencié',
+                status: String(row.statut) === '1' || String(row.statut).toLowerCase() === 'actif' ? 'Actif' : 'Remplacé',
                 
                 civilite: String(row.civilite || ''),
                 sexe: String(row.sexe || 'Autre') as Employe['sexe'],

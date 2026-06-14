@@ -8,7 +8,7 @@ export type Employe = {
     departmentId?: string; // Foreign key to 'departments' collection
     directionId?: string; // Foreign key to 'directions' collection
     serviceId?: string; // Foreign key to 'services' collection
-    status: 'Actif' | 'En congé' | 'Licencié' | 'Retraité' | 'Décédé';
+    status: 'Actif' | 'En congé' | 'Licencié' | 'Remplacé' | 'Retraité' | 'Décédé';
     photoUrl: string;
     userId?: string; // ID de l'utilisateur authentifié lié
 

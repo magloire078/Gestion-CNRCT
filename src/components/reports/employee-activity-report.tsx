@@ -66,7 +66,7 @@ export function EmployeeActivityReport() {
       const terminations = employees.filter(e => {
         if (!e.Date_Depart) return false;
         const termDate = new Date(e.Date_Depart);
-        return e.status === 'Licencié' && termDate.getFullYear() === selectedYear && termDate.getMonth() === selectedMonth;
+        return (e.status === 'Licencié' || e.status === 'Remplacé') && termDate.getFullYear() === selectedYear && termDate.getMonth() === selectedMonth;
       });
 
       const approvedLeaves = leaves.filter(l => {

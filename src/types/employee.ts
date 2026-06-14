@@ -12,6 +12,10 @@ export type Employe = {
     photoUrl: string;
     userId?: string; // ID de l'utilisateur authentifié lié
 
+    // Replacement Info
+    remplaceId?: string; // ID of the member they replaced
+    remplaceNom?: string; // Name of the member they replaced
+
     // Personal Info
     email?: string;
     mobile?: string;

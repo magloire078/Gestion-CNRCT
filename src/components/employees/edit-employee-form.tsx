@@ -24,7 +24,7 @@ import type { Employe, Department, Direction, Service } from "@/lib/data";
 import { getDepartments } from "@/services/department-service";
 import { getDirections } from "@/services/direction-service";
 import { getServices } from "@/services/service-service";
-import { updateEmployee } from "@/services/employee-service";
+import { updateEmployee, getEmployeeDirectory } from "@/services/employee-service";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Upload, Loader2, Save, X, Trash2, UserCircle2, Briefcase } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -54,6 +54,7 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
   const [departmentList, setDepartmentList] = useState<Department[]>([]);
   const [directionList, setDirectionList] = useState<Direction[]>([]);
   const [serviceList, setServiceList] = useState<Service[]>([]);
+  const [inactiveEmployees, setInactiveEmployees] = useState<Employe[]>([]);
   const [loadingMetadata, setLoadingMetadata] = useState(true);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -61,14 +62,16 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
   useEffect(() => {
     async function fetchMetadata() {
       try {
-        const [depts, dirs, svcs] = await Promise.all([
+        const [depts, dirs, svcs, employees] = await Promise.all([
           getDepartments(),
           getDirections(),
           getServices(),
+          getEmployeeDirectory(),
         ]);
         setDepartmentList(depts);
         setDirectionList(dirs);
         setServiceList(svcs);
+        setInactiveEmployees(employees.filter(e => e.status === 'Décédé' || e.status === 'Remplacé' || e.status === 'Licencié'));
       } catch (err) {
         console.error("Failed to fetch organizational data", err);
         toast({
@@ -408,6 +411,34 @@ export function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                           </SelectContent>
                         </Select>
                       </div>
+                    </div>
+                    {/* Add Remplace field */}
+                    <div className="space-y-3 pt-4 border-t border-slate-100">
+                      <Label htmlFor="remplaceId" className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">En remplacement de</Label>
+                      <Select 
+                        value={formData.remplaceId || "none"} 
+                        onValueChange={(val) => {
+                          const id = val === "none" ? undefined : val;
+                          const replacedEmp = inactiveEmployees.find(e => e.id === id);
+                          setFormData(prev => ({ 
+                            ...prev, 
+                            remplaceId: id,
+                            remplaceNom: replacedEmp ? `${replacedEmp.lastName || ''} ${replacedEmp.firstName || ''}`.trim() : undefined
+                          }));
+                        }}
+                      >
+                        <SelectTrigger id="remplaceId" className="h-12 rounded-xl border-slate-200 bg-white shadow-sm font-bold">
+                          <SelectValue placeholder="Personne (Nouvelle nomination)" />
+                        </SelectTrigger>
+                        <SelectContent className="rounded-xl border-slate-100 shadow-3xl">
+                          <SelectItem value="none" className="font-bold py-3 uppercase text-[9px] tracking-widest text-slate-400">Personne (Nouvelle nomination)</SelectItem>
+                          {inactiveEmployees.map(emp => (
+                            <SelectItem key={emp.id} value={emp.id} className="font-bold py-3 uppercase text-[9px] tracking-widest">
+                              {`${emp.lastName || ''} ${emp.firstName || ''} - ${emp.poste || 'Sans poste'} (${emp.status})`}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                   </CardContent>
                 </Card>

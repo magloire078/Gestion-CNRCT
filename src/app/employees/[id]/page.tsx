@@ -12,6 +12,22 @@ import type { Employe, Department, Direction, Service } from "@/lib/data";
 import { useAuth } from "@/hooks/use-auth";
 import { useFormat } from "@/hooks/use-format";
 import { useToast } from "@/hooks/use-toast";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 import { 
     getEmployeeHistory, 
     deleteEmployeeHistoryEvent
@@ -110,6 +126,12 @@ export default function EmployeeDetailPage() {
     const [isPrinting, setIsPrinting] = useState(false);
     const [orgSettings, setOrgSettings] = useState<OrganizationSettings | null>(null);
     const [isPending, startTransition] = useTransition();
+
+    // Promotion state
+    const [isPromotionDialogOpen, setIsPromotionDialogOpen] = useState(false);
+    const [inactiveEmployees, setInactiveEmployees] = useState<Employe[]>([]);
+    const [promotionRemplaceId, setPromotionRemplaceId] = useState<string>("none");
+    const [isPromoting, setIsPromoting] = useState(false);
 
     const employeeId = params.id as string;
 
@@ -228,6 +250,46 @@ export default function EmployeeDetailPage() {
     const displayNet = (employee.Salaire_Net && employee.Salaire_Net > 0) ? employee.Salaire_Net : displayBrut;
 
     const isActive = employee.status === "Actif";
+    const isRegionalMember = employee.poste?.toLowerCase().includes("comité régional") || employee.poste?.toLowerCase().includes("comite regional");
+
+    const handleOpenPromotion = async () => {
+        setIsPromotionDialogOpen(true);
+        if (inactiveEmployees.length === 0) {
+            try {
+                const { getEmployeeDirectory } = await import("@/services/employee-service");
+                const employees = await getEmployeeDirectory();
+                setInactiveEmployees(employees.filter(e => e.status === 'Décédé' || e.status === 'Remplacé' || e.status === 'Licencié'));
+            } catch(e) {
+                console.error(e);
+            }
+        }
+    };
+
+    const handlePromote = async () => {
+        if (!employee) return;
+        setIsPromoting(true);
+        try {
+            const { updateEmployee } = await import("@/services/employee-service");
+            const replacedEmp = inactiveEmployees.find(e => e.id === promotionRemplaceId);
+            
+            await updateEmployee(employee.id, {
+                poste: 'Membre du Directoire',
+                departmentId: '9ywKFDgVMS86rZLPYhpm',
+                remplaceId: promotionRemplaceId !== "none" ? promotionRemplaceId : undefined,
+                remplaceNom: replacedEmp ? `${replacedEmp.lastName || ''} ${replacedEmp.firstName || ''}`.trim() : undefined
+            });
+            
+            toast({ title: "Promotion effectuée", description: "Le membre a été promu au Directoire." });
+            setIsPromotionDialogOpen(false);
+            
+            const emp = await getEmployee(employee.id);
+            if (emp) setEmployee(emp);
+        } catch(e) {
+            toast({ variant: "destructive", title: "Erreur", description: "Échec de la promotion." });
+        } finally {
+            setIsPromoting(false);
+        }
+    };
 
     return (
         <div className="flex flex-col gap-2 pb-6">
@@ -297,7 +359,7 @@ export default function EmployeeDetailPage() {
                             {[
                                 { icon: Building2, label: "Unité", val: deptName, color: "text-blue-400" },
                                 { icon: MapPin, label: "Lieu", val: employee.Region || "Siège", color: "text-rose-400" },
-                                { icon: ShieldCheck, label: "CNPS", val: employee.CNPS ? "Affilié" : "Non immatriculé", color: employee.CNPS ? "text-emerald-400" : "text-slate-500" }
+                                { icon: ShieldCheck, label: "CNPS", val: employee.CNPS ? "Affilié" : "Non immatriculé", color: employee.CNPS ? "text-emerald-400" : "text-slate-500" },
                             ].map((item, idx) => (
                                 <div key={idx} className="flex flex-col gap-1">
                                     <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">{item.label}</span>
@@ -306,6 +368,14 @@ export default function EmployeeDetailPage() {
                                     </div>
                                 </div>
                             ))}
+                            {employee.remplaceNom && (
+                                <div className="flex flex-col gap-1 col-span-2">
+                                    <span className="text-[9px] font-black text-amber-500/80 uppercase tracking-widest">En remplacement de</span>
+                                    <div className="flex items-center gap-2 text-amber-400 text-sm font-bold">
+                                        <UserCircle2 className="h-4 w-4" /> {employee.remplaceNom}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
 
@@ -340,6 +410,11 @@ export default function EmployeeDetailPage() {
                                     <DropdownMenuItem className="p-2.5 rounded-xl gap-3 cursor-pointer text-xs font-bold">
                                         <FileText className="h-4 w-4 text-emerald-400" /> Générer Attestation
                                     </DropdownMenuItem>
+                                    {isRegionalMember && canEdit && (
+                                        <DropdownMenuItem onClick={handleOpenPromotion} className="p-2.5 rounded-xl gap-3 cursor-pointer text-xs font-bold text-amber-500 focus:bg-amber-500/10">
+                                            <Award className="h-4 w-4" /> Promouvoir au Directoire
+                                        </DropdownMenuItem>
+                                    )}
                                     <DropdownMenuSeparator className="bg-white/10"/>
                                     {canDelete && (
                                         <DropdownMenuItem 
@@ -697,6 +772,41 @@ export default function EmployeeDetailPage() {
                     directionName={directionName}
                 />
             )}
+            
+            <Dialog open={isPromotionDialogOpen} onOpenChange={setIsPromotionDialogOpen}>
+                <DialogContent className="rounded-2xl border-white/20 bg-white/90 backdrop-blur-xl shadow-2xl sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="text-xl font-black uppercase tracking-tight text-slate-900">Promouvoir au Directoire</DialogTitle>
+                        <DialogDescription className="font-medium text-slate-500">
+                            Cette action nommera automatiquement le membre au sein du Directoire.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="py-4 space-y-4">
+                        <div className="space-y-2">
+                            <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">En remplacement de</Label>
+                            <Select value={promotionRemplaceId} onValueChange={setPromotionRemplaceId}>
+                                <SelectTrigger className="h-12 rounded-xl border-slate-200 bg-white shadow-sm font-bold">
+                                    <SelectValue placeholder="Personne (Nouvelle nomination)" />
+                                </SelectTrigger>
+                                <SelectContent className="rounded-xl border-slate-100 shadow-3xl">
+                                    <SelectItem value="none" className="font-bold py-3 uppercase text-[9px] tracking-widest text-slate-400">Personne (Nouvelle nomination)</SelectItem>
+                                    {inactiveEmployees.map(emp => (
+                                        <SelectItem key={emp.id} value={emp.id} className="font-bold py-3 uppercase text-[9px] tracking-widest">
+                                            {`${emp.lastName || ''} ${emp.firstName || ''} - ${emp.poste || 'Sans poste'} (${emp.status})`}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
+                    <DialogFooter className="flex gap-2 sm:justify-between">
+                        <Button variant="outline" onClick={() => setIsPromotionDialogOpen(false)} disabled={isPromoting} className="rounded-xl h-10 font-black uppercase tracking-widest text-[9px]">Annuler</Button>
+                        <Button onClick={handlePromote} disabled={isPromoting} className="rounded-xl h-10 font-black uppercase tracking-widest text-[9px] bg-amber-500 hover:bg-amber-600 text-white">
+                            {isPromoting ? "En cours..." : "Confirmer"}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

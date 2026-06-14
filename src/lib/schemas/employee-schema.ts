@@ -15,9 +15,13 @@ export const employeeSchema = z.object({
     status: employeeStatusSchema,
     photoUrl: z.string(),
     userId: z.string().optional(),
+    
+    // Replacement Info
+    remplaceId: z.string().optional(),
+    remplaceNom: z.string().optional(),
 
     // Personal Info
-    email: z.string().email().optional().or(z.literal('')),
+    email: z.string().email("Email invalide").optional().or(z.literal('')),
     mobile: z.string().optional(),
     Date_Naissance: z.string().optional(),
     Lieu_Naissance: z.string().optional(),

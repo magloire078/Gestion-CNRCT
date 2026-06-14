@@ -43,9 +43,12 @@ export default function LandingPage() {
                     
                     const president = directory.find(emp => 
                         emp.Region === region && 
-                        (emp.poste?.toLowerCase().includes('membre du directoire') || 
-                         emp.poste?.toLowerCase().includes('point focal') ||
-                         emp.poste?.toLowerCase().includes('chef')) &&
+                        emp.departmentId !== '9ywKFDgVMS86rZLPYhpm' &&
+                        !emp.poste?.toLowerCase().includes('directoire') &&
+                        (emp.poste?.toLowerCase().includes('point focal') ||
+                         emp.poste?.toLowerCase().includes('chef') || 
+                         emp.poste?.toLowerCase().includes('president') || 
+                         emp.poste?.toLowerCase().includes('président')) &&
                         (!emp.status || emp.status === 'Actif')
                     ) || null;
 
@@ -55,6 +58,8 @@ export default function LandingPage() {
                     const regionMembers = directory.filter(emp => 
                         emp.Region === region && 
                         emp.id !== president?.id &&
+                        emp.departmentId !== '9ywKFDgVMS86rZLPYhpm' &&
+                        !emp.poste?.toLowerCase().includes('directoire') &&
                         (emp.poste?.toLowerCase().includes('comité') || 
                          emp.poste?.toLowerCase().includes('comite') ||
                          emp.poste?.toLowerCase().includes('bureau') ||

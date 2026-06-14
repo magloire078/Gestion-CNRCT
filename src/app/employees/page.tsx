@@ -868,7 +868,9 @@ export default function EmployeesPage() {
                                       )}
                                     </span>
                                     {isGeoTab ? (
-                                      <span className="text-base md:text-sm font-bold text-slate-400 uppercase tracking-widest mt-0.5">{employee.Village}</span>
+                                      <span className="text-base md:text-sm font-bold text-slate-400 uppercase tracking-widest mt-0.5 truncate max-w-[200px]">
+                                        {[employee.subPrefecture, employee.Village].filter(Boolean).join(' - ')}
+                                      </span>
                                     ) : (
                                       <span className="text-base md:text-sm font-bold text-slate-400 uppercase tracking-widest mt-0.5">{employee.poste}</span>
                                     )}
@@ -972,7 +974,7 @@ export default function EmployeesPage() {
                                     {`${employee.lastName || ''} ${employee.firstName || ''}`.trim()}
                                   </h3>
                                   <p className="text-xs font-bold text-amber-600 uppercase tracking-widest mb-4 h-8 flex items-center justify-center line-clamp-2">
-                                    {isGeoTab ? employee.Village : employee.poste}
+                                    {isGeoTab ? [employee.subPrefecture, employee.Village].filter(Boolean).join(' - ') : employee.poste}
                                   </p>
                                   
                                   <div className="w-full bg-slate-50 rounded-xl p-3 space-y-2 text-left">

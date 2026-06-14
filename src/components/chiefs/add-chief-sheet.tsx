@@ -30,6 +30,7 @@ import { IVORIAN_REGIONS } from "@/constants/regions";
 import { ScrollArea } from "../ui/scroll-area";
 import { DebouncedInput } from "@/components/ui/debounced-input";
 import { LocationPicker } from "@/components/common/location-picker";
+import { EthnicityCombobox } from "@/components/common/ethnicity-combobox";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import type { Chief, ChiefRole, DesignationMode, ChiefCareerEvent, Predecessor } from "@/types/chief";
@@ -492,7 +493,10 @@ export function AddChiefSheet({ isOpen, onCloseAction, onAddChiefAction }: AddCh
                   {step === 3 && (
                     <div className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2"><Label>Groupe ethnique</Label><DebouncedInput value={ethnicGroup} onChange={(v) => setEthnicGroup(v as string)} placeholder="Ex: Akan, Baoulé..." /></div>
+                            <div className="space-y-2">
+                                <Label>Groupe ethnique</Label>
+                                <EthnicityCombobox value={ethnicGroup} onValueChange={(v) => setEthnicGroup(v as string)} />
+                            </div>
                             <div className="space-y-2"><Label>Langue(s) parlée(s)</Label><DebouncedInput value={languages} onChange={(v) => setLanguages(v as string)} placeholder="Séparées par une virgule" /></div>
                             <div className="col-span-2 space-y-2"><Label>Us, Coutumes & Biographie</Label><Textarea value={bio} onChange={(e) => setBio(e.target.value)} rows={4} placeholder="Brève biographie, historique de la chefferie, us et coutumes..." className="resize-none" /></div>
                         </div>
@@ -556,7 +560,7 @@ export function AddChiefSheet({ isOpen, onCloseAction, onAddChiefAction }: AddCh
                                     </div>
                                     <div className="space-y-2 flex flex-col justify-end">
                                         <div className="flex items-center space-x-2 h-10">
-                                            <input type="checkbox" id="reconduit" checked={estRenouvele} onChange={e => setEstRenouvele(e.target.checked)} className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" />
+                                            <input type="checkbox" id="reconduit" checked={estRenouvele} onChange={e => setEstRenouvele(e.target.checked)} className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" title="Mandat Reconduit" aria-label="Mandat Reconduit" />
                                             <Label htmlFor="reconduit" className="font-bold text-slate-700 cursor-pointer">Mandat Reconduit</Label>
                                         </div>
                                     </div>

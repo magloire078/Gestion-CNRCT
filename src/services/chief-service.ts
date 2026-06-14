@@ -212,6 +212,11 @@ export async function addChief(chiefData: Omit<Chief, "id">, photoFile: File | n
 
     try {
         await setDoc(docRef, finalChiefData);
+        
+        if (finalChiefData.village) {
+            autoLinkChiefToVillage(docRef.id, finalChiefData.village, finalChiefData.subPrefecture).catch(e => console.error("Auto-link failed:", e));
+        }
+
         return { id: docRef.id, ...finalChiefData };
     } catch (error: any) {
         if (error.code === 'permission-denied') {
@@ -349,6 +354,11 @@ export async function updateChief(id: string, chiefData: Partial<Omit<Chief, 'id
 
         // Sync to employee (non-blocking)
         syncChiefToEmployee(id, updateData).catch(e => console.error("Employee sync error:", e));
+
+        const villageToLink = updateData.village || currentChief?.village;
+        if (villageToLink) {
+            autoLinkChiefToVillage(id, villageToLink, updateData.subPrefecture || currentChief?.subPrefecture).catch(e => console.error("Auto-link failed:", e));
+        }
     } catch (error: any) {
         console.error("Error in updateChief:", error);
         if (error.code === 'permission-denied') {
@@ -462,19 +472,24 @@ export async function linkChiefToVillage(
 
     // 3. Activer le nouveau chef sur le nouveau village
     const newChiefRef = doc(db, 'chiefs', chief.id);
-    batch.update(newChiefRef, {
+    const chiefUpdate: any = {
         villageId: village.id,
         village: village.name,
-        region: village.region,
-        department: village.department,
-        subPrefecture: village.subPrefecture,
+        region: village.region ?? null,
+        department: village.department ?? null,
+        subPrefecture: village.subPrefecture ?? null,
         status: 'actif',
-        // Réinitialiser les champs d'archivage si le chef était archivé
         archiveReason: null,
         archiveDate: null,
         archiveNote: null,
         'audit.updatedAt': now,
+    };
+
+    Object.keys(chiefUpdate).forEach(k => {
+        if (chiefUpdate[k] === undefined) delete chiefUpdate[k];
     });
+
+    batch.update(newChiefRef, chiefUpdate);
 
     // 4. Mettre à jour le village avec le nouveau currentChiefId
     const villageRef = doc(db, 'villages', village.id);
@@ -516,4 +531,45 @@ export async function unlinkChiefFromVillage(
     });
 
     await batch.commit();
+}
+
+/**
+ * Tente de lier automatiquement un chef à un village en fonction du nom du village
+ * et des autres informations géographiques. Retourne true si la liaison a réussi.
+ */
+export async function autoLinkChiefToVillage(chiefId: string, villageName: string, subPrefecture?: string): Promise<boolean> {
+    if (!villageName) return false;
+    
+    const villagesRef = collection(db, 'villages');
+    const q = query(villagesRef, where('name', '==', villageName));
+    const snapshot = await getDocs(q);
+    
+    if (snapshot.empty) return false;
+
+    let matchingVillages = snapshot.docs;
+    if (matchingVillages.length > 1 && subPrefecture) {
+        const filtered = matchingVillages.filter(d => d.data().subPrefecture === subPrefecture);
+        if (filtered.length > 0) matchingVillages = filtered;
+    }
+
+    if (matchingVillages.length === 1) {
+        const villageDoc = matchingVillages[0];
+        const villageData = villageDoc.data();
+        
+        const chief = await getChief(chiefId);
+        if (!chief) return false;
+
+        if (chief.villageId === villageDoc.id) return true;
+
+        await linkChiefToVillage(chief, {
+            id: villageDoc.id,
+            name: villageData.name,
+            region: villageData.region,
+            department: villageData.department,
+            subPrefecture: villageData.subPrefecture
+        });
+        return true;
+    }
+    
+    return false;
 }

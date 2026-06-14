@@ -25,6 +25,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { IVORIAN_REGIONS } from "@/constants/regions";
 import { divisions } from "@/lib/ivory-coast-divisions";
 import { LocationPicker } from "@/components/common/location-picker";
+import { EthnicityCombobox } from "@/components/common/ethnicity-combobox";
 
 export default function EditChiefPage() {
     const { id } = useParams() as { id: string };
@@ -473,7 +474,7 @@ export default function EditChiefPage() {
                                 <AccordionContent className="pt-4 space-y-4">
                                     <div className="space-y-2"><Label>Biographie / Historique</Label><Textarea value={bio} onChange={e => setBio(e.target.value)} rows={6} className="bg-slate-50/30" /></div>
                                     <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-2"><Label>Groupe Ethnique</Label><Input value={ethnicGroup} onChange={e => setEthnicGroup(e.target.value)} /></div>
+                                        <div className="space-y-2"><Label>Groupe Ethnique</Label><EthnicityCombobox value={ethnicGroup} onValueChange={(v) => setEthnicGroup(v as string)} /></div>
                                         <div className="space-y-2"><Label>Langues parlées</Label><Input value={languages} onChange={e => setLanguages(e.target.value)} /></div>
                                     </div>
                                 </AccordionContent>
@@ -513,7 +514,7 @@ export default function EditChiefPage() {
                                             </div>
                                             <div className="space-y-2 flex flex-col justify-end">
                                                 <div className="flex items-center space-x-2 h-10">
-                                                    <input type="checkbox" id="reconduitEdit" checked={estRenouvele} onChange={e => setEstRenouvele(e.target.checked)} className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" />
+                                                    <input type="checkbox" id="reconduitEdit" checked={estRenouvele} onChange={e => setEstRenouvele(e.target.checked)} className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" title="Mandat Reconduit" aria-label="Mandat Reconduit" />
                                                     <Label htmlFor="reconduitEdit" className="font-bold text-slate-700 cursor-pointer">Mandat Reconduit</Label>
                                                 </div>
                                             </div>

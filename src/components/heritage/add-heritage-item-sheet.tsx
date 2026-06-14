@@ -1,10 +1,10 @@
-
 "use client";
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { EthnicityCombobox } from "@/components/common/ethnicity-combobox";
 import { Textarea } from "@/components/ui/textarea";
 import { Sparkles } from "lucide-react";
 import {
@@ -104,7 +104,10 @@ export function AddHeritageItemSheet({ isOpen, onCloseAction, onAddItemAction, c
 
                                 <div className="space-y-2">
                                     <Label htmlFor="ethnicGroup">Groupe Ethnique</Label>
-                                    <Input id="ethnicGroup" name="ethnicGroup" value={formData.ethnicGroup || ''} onChange={handleInputChange} placeholder="Ex: Baoulé, Bété..." />
+                                    <EthnicityCombobox
+                                        value={formData.ethnicGroup || ''}
+                                        onValueChange={(v) => setFormData(prev => ({ ...prev, ethnicGroup: v as string }))}
+                                    />
                                 </div>
 
                                 <div className="space-y-2">

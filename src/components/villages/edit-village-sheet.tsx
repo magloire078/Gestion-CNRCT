@@ -42,6 +42,7 @@ import { calculateDevelopmentScore } from "@/services/village-service";
 import { Progress } from "@/components/ui/progress";
 import { Checkbox } from "@/components/ui/checkbox";
 import { LocationPicker } from "@/components/common/location-picker";
+import { EthnicityCombobox } from "@/components/common/ethnicity-combobox";
 import { Label } from "@/components/ui/label";
 import { CreatableSelect } from "@/components/ui/creatable-select";
 import { useCustomaryDivisions } from "@/services/customary-hooks";

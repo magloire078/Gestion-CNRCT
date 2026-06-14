@@ -131,6 +131,7 @@ export const ALL_MENU_ITEMS: MenuItem[] = [
     subItems: [
       { href: "/heritage", label: "Aperçu Global", icon: LayoutDashboard, permission: "page:heritage:view" },
       { href: "/us-et-coutumes", label: "Us & Coutumes", icon: BookText, permission: "page:us-et-coutumes:view" },
+      { href: "/ethnies", label: "Cartographie Ethnographique", icon: BookText, permission: "page:us-et-coutumes:view" },
       { href: "/heritage/ethnies", label: "Ethnies & Groupes", icon: Users2, permission: "page:heritage:view" },
       { href: "/heritage/culinaire", label: "Arts Culinaires", icon: Utensils, permission: "page:heritage:view" },
       { href: "/heritage/masques", label: "Masques & Statues", icon: Drama, permission: "page:heritage:view" },

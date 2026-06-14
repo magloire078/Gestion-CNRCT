@@ -25,6 +25,7 @@ import {
 import { IVORIAN_REGIONS } from "@/constants/regions";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { Custom } from "@/lib/data";
+import { EthnicityCombobox } from "@/components/common/ethnicity-combobox";
 
 interface AddCustomSheetProps {
   isOpen: boolean;
@@ -112,7 +113,12 @@ export function AddCustomSheet({ isOpen, onCloseAction, onAddCustomAction }: Add
                 {formFields.map(field => (
                   <div key={field.id} className="space-y-2">
                     <Label htmlFor={field.id}>{field.label}</Label>
-                    {field.id === 'regions' ? (
+                    {field.id === 'ethnicGroup' ? (
+                        <EthnicityCombobox
+                            value={(formData as any)[field.id] || ''}
+                            onValueChange={(v) => setFormData(prev => ({ ...prev, [field.id]: v as string }))}
+                        />
+                    ) : field.id === 'regions' ? (
                       <Select 
                         value={(formData as any)[field.id] || ''} 
                         onValueChange={(v) => setFormData(prev => ({ ...prev, regions: v }))}

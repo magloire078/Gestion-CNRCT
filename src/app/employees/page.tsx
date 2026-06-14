@@ -859,8 +859,13 @@ export default function EmployeesPage() {
                                 </TableCell>
                                 <TableCell>
                                   <div className="flex flex-col">
-                                    <span className="font-black text-slate-900 uppercase tracking-tight text-base md:text-sm group-hover:text-blue-600 transition-colors">
-                                      {`${employee.lastName || ''} ${employee.firstName || ''}`.trim()}
+                                    <span className="font-black text-slate-900 uppercase tracking-tight text-base md:text-sm group-hover:text-blue-600 transition-colors flex items-center gap-2">
+                                      <span>{`${employee.lastName || ''} ${employee.firstName || ''}`.trim()}</span>
+                                      {isGeoTab && statusFilter === 'all' && employee.status && employee.status !== 'Actif' && (
+                                          <Badge variant={statusVariantMap[employee.status as Status] || 'default'} className="px-1.5 py-0 h-4 text-[9px]">
+                                            {employee.status}
+                                          </Badge>
+                                      )}
                                     </span>
                                     {isGeoTab ? (
                                       <span className="text-base md:text-sm font-bold text-slate-400 uppercase tracking-widest mt-0.5">{employee.Village}</span>

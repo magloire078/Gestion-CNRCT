@@ -17,16 +17,20 @@ interface BureauDirectoireProps {
 export function BureauDirectoire({ loading, members, allDirectors = [] }: BureauDirectoireProps) {
   const { canSeeGovernanceStatus } = usePermissions();
   const showStatus = canSeeGovernanceStatus();
-  const president = members.find(m => m.poste?.toLowerCase().includes('president') && !m.poste?.toLowerCase().includes('vice'));
-  const vicePresidents = members.filter(m => m.poste?.toLowerCase().includes('vice-president'));
+  const isEmpActive = (m: Employe) => !m.status || m.status === 'Actif' || m.status === 'En congé';
+
+  const president = members.find(m => isEmpActive(m) && m.poste?.toLowerCase().includes('president') && !m.poste?.toLowerCase().includes('vice'));
+  const vicePresidents = members.filter(m => isEmpActive(m) && m.poste?.toLowerCase().includes('vice-president'));
 
   const bureauMembers = members.filter(m =>
+    isEmpActive(m) &&
     (m.poste?.toLowerCase().includes('membre du bureau') || m.poste?.toLowerCase().includes('membre du directoire')) &&
     !m.poste?.toLowerCase().includes('president') &&
     !m.poste?.toLowerCase().includes('vice-president')
   );
 
   const cabinetAndSecretariat = members.filter(m => {
+    if (!isEmpActive(m)) return false;
     const p = m.poste?.toLowerCase() || '';
     return (p.includes('secrétaire général') ||
       p.includes('directrice de cabinet') ||
@@ -40,7 +44,8 @@ export function BureauDirectoire({ loading, members, allDirectors = [] }: Bureau
     return aIsCabinet - bIsCabinet;
   });
 
-  const otherDirectors = allDirectors.length > 0 ? allDirectors : members.filter(m => {
+  const otherDirectors = (allDirectors.length > 0 ? allDirectors : members).filter(m => {
+    if (!isEmpActive(m)) return false;
     const p = m.poste?.toLowerCase() || '';
     return (p.includes('directeur') || p.includes('directrice') || p.includes('cabinet')) &&
       !p.includes('secrétaire général') &&

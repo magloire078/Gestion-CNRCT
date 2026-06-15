@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * API pour récupérer l'annuaire simplifié des employés.
  * Exclut volontairement les champs sensibles (salaires, banques, etc.)

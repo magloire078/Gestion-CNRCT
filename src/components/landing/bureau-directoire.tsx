@@ -8,6 +8,13 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { usePermissions } from "@/hooks/use-permissions";
 
+const getDisplayRegion = (member: Employe) => {
+  if (member.name?.toUpperCase().includes('JOHANNY MAXIME KOUADIO')) {
+    return 'Représentante des rois et Reine';
+  }
+  return member.Region ? cleanRegionName(member.Region) : null;
+};
+
 interface BureauDirectoireProps {
   loading: boolean;
   members: Employe[];
@@ -117,7 +124,7 @@ export function BureauDirectoire({ loading, members, allDirectors = [] }: Bureau
                       </div>
                       <p className="text-[9px] uppercase tracking-widest font-black text-amber-500 text-center leading-tight mb-2">Vice-Président</p>
                       <h4 className="font-black text-sm text-slate-900 text-center leading-tight mb-2 uppercase tracking-tight">{vp.name}</h4>
-                      {vp.Region && <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest">{cleanRegionName(vp.Region)}</p>}
+                      {getDisplayRegion(vp) && <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest">{getDisplayRegion(vp)}</p>}
                       {showStatus && (
                         <Badge
                           className={cn(
@@ -154,7 +161,7 @@ export function BureauDirectoire({ loading, members, allDirectors = [] }: Bureau
                         </div>
                         <p className="text-[8px] uppercase tracking-[0.2em] font-black text-amber-500 text-center leading-tight mb-2">{member.poste || 'Membre du Bureau'}</p>
                         <h4 className="font-black text-xs text-slate-900 text-center uppercase tracking-tight">{member.name}</h4>
-                        {member.Region && <p className="text-[8px] text-slate-500 font-bold uppercase tracking-widest mt-1">{cleanRegionName(member.Region)}</p>}
+                        {getDisplayRegion(member) && <p className="text-[8px] text-slate-500 font-bold uppercase tracking-widest mt-1">{getDisplayRegion(member)}</p>}
                         {showStatus && (
                           <Badge
                             className={cn(
@@ -192,7 +199,7 @@ export function BureauDirectoire({ loading, members, allDirectors = [] }: Bureau
                         </div>
                         <p className="text-[10px] uppercase tracking-widest font-bold text-[#006039] text-center leading-tight mb-1">{member.poste}</p>
                         <h4 className="font-bold text-lg text-[#1a1a1a] text-center">{member.name}</h4>
-                        {member.Region && <p className="text-[10px] text-[#006039] font-bold uppercase mt-1">{cleanRegionName(member.Region)}</p>}
+                        {getDisplayRegion(member) && <p className="text-[10px] text-[#006039] font-bold uppercase mt-1">{getDisplayRegion(member)}</p>}
                         {showStatus && (
                           <Badge
                             className={cn(
@@ -230,7 +237,7 @@ export function BureauDirectoire({ loading, members, allDirectors = [] }: Bureau
                         </div>
                         <p className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground text-center leading-tight mb-1">{member.poste}</p>
                         <h4 className="font-bold text-sm text-[#1a1a1a] text-center">{member.name}</h4>
-                        {member.Region && <p className="text-[9px] text-[#006039] font-bold uppercase mt-1">{cleanRegionName(member.Region)}</p>}
+                        {getDisplayRegion(member) && <p className="text-[9px] text-[#006039] font-bold uppercase mt-1">{getDisplayRegion(member)}</p>}
                         {showStatus && (
                           <Badge
                             className={cn(

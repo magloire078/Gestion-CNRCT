@@ -44,6 +44,7 @@ export default function LandingPage() {
                     const president = directory.find(emp => 
                         emp.Region === region && 
                         (emp.poste?.toLowerCase().includes('membre du directoire') ||
+                         emp.poste?.toLowerCase().includes('membre du bureau') ||
                          emp.poste?.toLowerCase().includes('point focal') ||
                          emp.poste?.toLowerCase().includes('chef') || 
                          emp.poste?.toLowerCase().includes('president') || 

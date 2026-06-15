@@ -13,6 +13,7 @@ import type { RegionalCommittee } from "@/services/employee-service";
 import { getInitials, cleanRegionName } from "./landing-utils";
 import { cn } from "@/lib/utils";
 import { usePermissions } from "@/hooks/use-permissions";
+import { divisions } from "@/lib/ivory-coast-divisions";
 
 interface RegionalCommitteesProps {
   loading: boolean;
@@ -116,7 +117,12 @@ export function RegionalCommittees({
                     <div className="absolute inset-0 bg-gradient-to-r from-slate-900 via-slate-900/90 to-transparent" />
                     <div className="relative z-10">
                       <Badge className="bg-amber-500 text-white border-none mb-3 px-3 uppercase text-[9px] tracking-[0.2em] font-black">Region</Badge>
-                      <h3 className="text-4xl md:text-5xl font-black text-white tracking-tighter">{cleanRegionName(selected.region)}</h3>
+                      <h3 className="text-4xl md:text-5xl font-black text-white tracking-tighter mb-2">{cleanRegionName(selected.region)}</h3>
+                      {divisions[selected.region] && (
+                        <p className="text-slate-300 text-sm font-medium tracking-wide">
+                          {Object.keys(divisions[selected.region]).join(' • ')}
+                        </p>
+                      )}
                     </div>
                     <Users className="absolute right-[-20px] bottom-[-20px] w-64 h-64 text-white opacity-5 pointer-events-none group-hover/card:scale-110 transition-transform duration-1000" />
                   </div>

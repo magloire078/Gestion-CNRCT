@@ -95,7 +95,7 @@ export function EmployeeOfficialReport({
             <div className="bg-white text-black w-full font-sans print:min-h-0">
                 
                 {/* --- PAGE DE RÉSUMÉ GRAPHIQUE --- */}
-                <div className="print-page p-8 bg-white flex flex-col items-center justify-center break-after-page" style={{ minHeight: '21cm', pageBreakAfter: 'always' }}>
+                <div className="print-page p-8 bg-white flex flex-col items-center justify-center break-after-page min-h-[21cm]">
                     
                     <div className="w-full mb-2">
                         <InstitutionalHeader showService={false} settings={logos} />
@@ -144,7 +144,7 @@ export function EmployeeOfficialReport({
                 </div>
 
                 {/* --- PAGE DE DONNÉES --- */}
-                <div className="print-page p-5 landscape-section bg-white" style={{ pageBreakBefore: 'always' }}>
+                <div className="print-page p-5 landscape-section bg-white break-before-page">
                     
                     {/* Header text above table */}
                     <div className="mb-4 text-xs font-bold text-slate-600 uppercase tracking-wider text-left">
@@ -155,7 +155,7 @@ export function EmployeeOfficialReport({
                     <div className="w-full overflow-visible mt-4">
                         <table className="w-full border-collapse border-2 border-slate-900 text-[8px] leading-tight shadow-sm">
                             <thead>
-                                <tr className="bg-slate-100 text-slate-900 uppercase font-black text-center border-b-2 border-slate-900" style={{ WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}>
+                                <tr className="bg-slate-100 text-slate-900 uppercase font-black text-center border-b-2 border-slate-900 [print-color-adjust:exact] [-webkit-print-color-adjust:exact]">
                                     {columnsToDisplay.map((key) => (
                                         <th key={key} className={cn(
                                             "border border-slate-700 p-2 align-middle break-words",

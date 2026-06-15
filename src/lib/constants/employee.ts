@@ -24,6 +24,7 @@ export const chiefColumns = {
     matricule: "N° MAT",
     name: "NOM ET PRENOMS",
     poste: "TITRE / FONCTION",
+    status: "STATUT",
     Region: "REGION",
     Departement: "DEPARTEMENT",
     subPrefecture: "SOUS-PREFECTURE",

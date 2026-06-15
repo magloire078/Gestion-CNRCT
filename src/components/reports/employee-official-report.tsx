@@ -80,6 +80,8 @@ export function EmployeeOfficialReport({
                 </span>
             );
             case 'sexe': return emp.sexe || '---';
+            case 'subPrefecture': return (emp as any).sousPrefecture || (emp as any).subPrefecture || '---';
+            case 'Village': return (emp as any).village || (emp as any).Village || '---';
             default: return (emp as any)[key] || '---';
         }
     };

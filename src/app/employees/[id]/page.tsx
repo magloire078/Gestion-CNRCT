@@ -101,6 +101,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ConfirmationDialog } from "@/components/common/confirmation-dialog";
+import { SecurityConfirmationDialog } from "@/components/common/security-confirmation-dialog";
 import { cn } from "@/lib/utils";
 
 export default function EmployeeDetailPage() {
@@ -746,10 +747,10 @@ export default function EmployeeDetailPage() {
                 onEventSavedAction={() => handleRefreshHistory()}
             />
 
-            <ConfirmationDialog
+            <SecurityConfirmationDialog
                 isOpen={isDeleteDialogOpen}
                 onCloseAction={() => setIsDeleteDialogOpen(false)}
-                onConfirmAction={handleDelete}
+                onConfirmAction={async () => { await handleDelete(); }}
                 title="Radier cet employé ?"
                 description={`Cette action retirera définitivement ${employee.name} de la base de données active de la CNRCT. Cette opération est irréversible.`}
             />

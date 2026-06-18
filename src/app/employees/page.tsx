@@ -33,7 +33,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PaginationControls } from "@/components/common/pagination-controls";
 import { useAuth } from "@/hooks/use-auth";
-import { ConfirmationDialog } from "@/components/common/confirmation-dialog";
+import { SecurityConfirmationDialog } from "@/components/common/security-confirmation-dialog";
 import { InstitutionalReportWrapper } from "@/components/reports/institutional-report-wrapper";
 import { EmployeeOfficialReport } from "@/components/reports/employee-official-report";
 import { EmployeeAnalytics } from "@/components/employees/employee-analytics";
@@ -1046,10 +1046,14 @@ export default function EmployeesPage() {
             onPrint={handlePrint}
             allColumns={isGeoTab ? chiefColumns : allColumns}
           />
-          <ConfirmationDialog
+          <SecurityConfirmationDialog
             isOpen={!!deleteTarget}
             onCloseAction={() => setDeleteTarget(null)}
-            onConfirmAction={() => deleteTarget && handleDeleteEmployee(deleteTarget.id)}
+            onConfirmAction={async () => {
+              if (deleteTarget) {
+                await handleDeleteEmployee(deleteTarget.id);
+              }
+            }}
             title={`Confirmer la radiation ?`}
             description={`Êtes-vous sûr de vouloir supprimer ${deleteTarget?.lastName} ${deleteTarget?.firstName} définitivement ? Cette action archive son dossier de base.`}
           />

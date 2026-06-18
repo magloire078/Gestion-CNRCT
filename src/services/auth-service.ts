@@ -280,9 +280,28 @@ export async function changePassword(currentPassword: string, newPassword: strin
         await reauthenticateWithCredential(user, credential);
         await updatePassword(user, newPassword);
     } catch (error: any) {
-        if (error.code === 'auth/wrong-password') {
+        if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
             throw new Error("Le mot de passe actuel est incorrect.");
         }
         throw new Error("Une erreur est survenue lors du changement de mot de passe.");
+    }
+}
+
+export async function verifyPassword(password: string): Promise<boolean> {
+    const user = auth.currentUser;
+    if (!user || !user.email) {
+        throw new Error("Utilisateur non authentifié.");
+    }
+
+    const credential = EmailAuthProvider.credential(user.email, password);
+
+    try {
+        await reauthenticateWithCredential(user, credential);
+        return true;
+    } catch (error: any) {
+        if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+            return false;
+        }
+        throw new Error("Une erreur est survenue lors de la vérification du mot de passe.");
     }
 }

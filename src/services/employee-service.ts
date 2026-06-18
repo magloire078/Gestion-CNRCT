@@ -214,7 +214,20 @@ export function subscribeToDirectoireMembers(
                 and(where("matricule", ">=", "DIR"), where("matricule", "<=", "DIR\uf8ff")),
                 and(where("matricule", ">=", "PRE"), where("matricule", "<=", "PRE\uf8ff")),
                 and(where("matricule", ">=", "D 0"), where("matricule", "<=", "D 0\uf8ff")),
-                where("poste", "in", ['Membre du Directoire', 'Président', 'Secrétaire Général', 'Directrice de Cabinet', 'Directrice de cabinet', 'Directeur de cabinet', 'Directeur de Cabinet'])
+                or(
+                    where("poste", "in", [
+                        'Membre du Directoire', 'membre du directoire', 'MEMBRE DU DIRECTOIRE', 'Membre Du Directoire',
+                        'Président', 'president', 'President', 'PRESIDENT', 'PRÉSIDENT', 'Point Focal'
+                    ]),
+                    where("poste", "in", [
+                        'Secrétaire Général', 'secretaire general', 'SECRETAIRE GENERAL', 'SECRÉTAIRE GÉNÉRAL',
+                        'Directrice de Cabinet', 'Directrice de cabinet', 'directrice de cabinet', 'DIRECTRICE DE CABINET',
+                        'Directeur de Cabinet', 'Directeur de cabinet'
+                    ]),
+                    where("poste", "in", [
+                        'directeur de cabinet', 'DIRECTEUR DE CABINET', 'Point Focal Régional', 'Point focal régional'
+                    ])
+                )
             )
         )
     );
@@ -632,7 +645,20 @@ export async function getDirectoireMembers(): Promise<Employe[]> {
                     and(where('matricule', '>=', 'DIR'), where('matricule', '<=', 'DIR\uf8ff')),
                     and(where('matricule', '>=', 'PRE'), where('matricule', '<=', 'PRE\uf8ff')),
                     and(where('matricule', '>=', 'D 0'), where('matricule', '<=', 'D 0\uf8ff')),
-                    where('poste', 'in', ['Membre du Directoire', 'Président', 'Secrétaire Général', 'Directrice de Cabinet', 'Directrice de cabinet', 'Directeur de cabinet', 'Directeur de Cabinet'])
+                    or(
+                        where('poste', 'in', [
+                            'Membre du Directoire', 'membre du directoire', 'MEMBRE DU DIRECTOIRE', 'Membre Du Directoire',
+                            'Président', 'president', 'President', 'PRESIDENT', 'PRÉSIDENT', 'Point Focal'
+                        ]),
+                        where('poste', 'in', [
+                            'Secrétaire Général', 'secretaire general', 'SECRETAIRE GENERAL', 'SECRÉTAIRE GÉNÉRAL',
+                            'Directrice de Cabinet', 'Directrice de cabinet', 'directrice de cabinet', 'DIRECTRICE DE CABINET',
+                            'Directeur de Cabinet', 'Directeur de cabinet'
+                        ]),
+                        where('poste', 'in', [
+                            'directeur de cabinet', 'DIRECTEUR DE CABINET', 'Point Focal Régional', 'Point focal régional'
+                        ])
+                    )
                 )
             )
         );

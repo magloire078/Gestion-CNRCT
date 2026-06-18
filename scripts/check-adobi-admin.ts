@@ -16,19 +16,32 @@ async function checkAdobi() {
     console.log("Recherche de l'agent ADOBI...");
     const snap = await db.collection('employees').where('lastName', '==', 'ADOBI').get();
     
-    if (snap.empty) {
-        console.log("Aucun agent nommé ADOBI trouvé.");
-    } else {
-        snap.forEach(doc => {
-            const data = doc.data();
-            console.log("\n==================================");
+    snap.forEach(doc => {
+        const data = doc.data();
+        console.log("\n====== ADOBI ====================");
+        console.log(`Nom: ${data.lastName} ${data.firstName}`);
+        console.log(`Region: ${data.Region}`);
+        console.log(`Statut: ${data.status}`);
+        console.log(`Poste: ${data.poste}`);
+        console.log(`DepartementID: ${data.departmentId}`);
+        console.log(`Matricule: ${data.matricule}`);
+    });
+
+    console.log("Recherche de l'agent DIOMANDE Gouamou...");
+    const snapDiomande = await db.collection('employees').where('lastName', '==', 'DIOMANDE').get();
+    
+    snapDiomande.forEach(doc => {
+        const data = doc.data();
+        if (data.firstName && data.firstName.includes('Gouamou')) {
+            console.log("\n====== DIOMANDE ==================");
             console.log(`Nom: ${data.lastName} ${data.firstName}`);
             console.log(`Region: ${data.Region}`);
             console.log(`Statut: ${data.status}`);
             console.log(`Poste: ${data.poste}`);
             console.log(`DepartementID: ${data.departmentId}`);
-        });
-    }
+            console.log(`Matricule: ${data.matricule}`);
+        }
+    });
 
     // Cherchons aussi "Ake Placide" au cas où le lastName n'est pas "ADOBI"
     console.log("\nRecherche de 'Ake Placide'...");

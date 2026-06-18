@@ -162,12 +162,10 @@ export function RegionalCommittees({
                                       <Badge 
                                         className={cn(
                                           "mt-2 border-none rounded-full px-3 py-0.5 text-[9px] font-black uppercase tracking-widest",
-                                          selected.president?.departmentId === '9ywKFDgVMS86rZLPYhpm' 
-                                            ? "bg-amber-100 text-amber-700" 
-                                            : selected.president?.status === 'Actif' ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"
+                                          selected.president?.status === 'Actif' ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"
                                         )}
                                       >
-                                        {selected.president?.departmentId === '9ywKFDgVMS86rZLPYhpm' ? 'Promu' : (selected.president?.status || 'Actif')}
+                                        {selected.president?.status || 'Actif'}
                                       </Badge>
                                     )}
                                   </div>
@@ -230,12 +228,10 @@ export function RegionalCommittees({
                                               <Badge 
                                                 className={cn(
                                                   "bg-transparent border-none p-0 text-[8px] font-black uppercase tracking-widest leading-none shadow-none hover:bg-transparent",
-                                                  member.departmentId === '9ywKFDgVMS86rZLPYhpm' 
-                                                    ? "text-amber-500"
-                                                    : member.status === 'Actif' ? "text-emerald-600" : "text-slate-400"
+                                                  member.status === 'Actif' ? "text-emerald-600" : "text-slate-400"
                                                 )}
                                               >
-                                                {member.departmentId === '9ywKFDgVMS86rZLPYhpm' ? 'Promu' : (member.status || 'Actif')}
+                                                {member.status || 'Actif'}
                                               </Badge>
                                             </>
                                           )}

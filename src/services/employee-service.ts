@@ -699,7 +699,8 @@ export async function getRegionalCommitteeDetails(region: string): Promise<Regio
         const bureauHead = regionalStaff.find(m =>
             m.poste?.toLowerCase().includes('membre du bureau') ||
             m.poste?.toLowerCase().includes('président') ||
-            m.poste?.toLowerCase().includes('president')
+            m.poste?.toLowerCase().includes('president') ||
+            m.poste?.toLowerCase().includes('point focal')
         ) || null;
 
         // 2. Collect up to 2 chefs per department in this region
@@ -749,7 +750,8 @@ export async function getRegionalCommittees(): Promise<RegionalCommittee[]> {
             const president = regionalStaff.find(m =>
                 m.poste?.toLowerCase().includes('membre du bureau') ||
                 m.poste?.toLowerCase().includes('président') ||
-                m.poste?.toLowerCase().includes('president')
+                m.poste?.toLowerCase().includes('president') ||
+                m.poste?.toLowerCase().includes('point focal')
             ) || null;
 
             committees.push({
